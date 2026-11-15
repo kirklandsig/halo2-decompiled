@@ -627,6 +627,17 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // before the call 262 (same code); the closure as `!points2d_differ(...)` 269 (747 B); a long flag 290; the heading and
 // flag after the lowest scan 289; the departure as `left_start = left_start || differ(next, first)` 262 (same code).
 // On this body: the three gotos as `return hull_count;` with the positive closure 170 (763 B).
+// M3 lane 11 r103 (fast with 0x239d50, matched each time). Lane 1 r103's completion-flag form re-measured 120 (784 B; current
+// declared at function scope before the classifier call). On it: current assigned after the classifier call 215 (791 B,
+// prologue exact but `count` takes EBX for the whole function), current assigned just before the lowest scan 216, the loop
+// test as `(short)hull_count < count && !done` 211 (767 B), the candidate scan as a forceinline helper taking the count by
+// value 189 (784 B; on the after-call form 212). Diagnostic only (volatile parameter reads, not keepable this round): with
+// both `current = count` after the call and the loop test reading the count through a volatile view, 117 (767 B): retail's
+// prologue, current reloaded from the count's home, points ESI, current EDI and the hull count cached in EBX; left were the
+// lowest-point init order (lowest_y first), the loop entry `jmp` to a top test comparing with the count's home, the
+// departure block's ECX/EAX naming and retail's separate epilogue for the classifier-fail path. Either read alone 216/215.
+// So retail never gives `count` a register; a plain read through its address (`*&count` or a const pointer) is folded
+// away (215).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -821,6 +832,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // retail takes ECX. The count stays a short in retail (the alias branch loads word ptr [ebp+8] and the
 // guard compares ax with word ptr [ebp+8]), so this is the count's lifetime inside the body and not its
 // width; the declaration that fixes its width lives in src/unknown_17d9a0.cpp, which is not mine to edit.
+// MiniMax I (11-15): no new form, no lower score (129): retail loads the count's four-byte home and keeps the low word
+// in CX for the loop guard, so the previous-side bool is spilled to esp+0xd, while this build loads the sixteen-bit home
+// and keeps the bool in CL; the home is read as a dword only when the parameter is a thirty-two-bit type, and that width
+// is fixed by the declaration in src/unknown_17d9a0.cpp, which is not this lane's file.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.

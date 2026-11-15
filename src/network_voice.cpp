@@ -1464,6 +1464,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // parameter and the cursor `const` 94 (same code). Re-measured: a named bit inside the membership helper 94 (MiniMax
 // S in 0x55c40 note); the identity helper called inside the product 165 (the in-loop flag). Listing of the listed
 // flag-first form (93): the channels argument becomes a stack argument loaded into EBP and the flag still takes BL.
+// MiniMax S (11-14): no new form, no lower score (94): the identity flag still takes bl where retail takes al, and
+// that moves the kept mask, the value load and the accumulate with it; every spelling of the flag (function scope,
+// declared first, wide, word, char) compiles to the same code.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1532,6 +1535,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // MiniMax A (11-13): no new form, no lower score (60): the membership helper's mask and shift operands swapped compile to the same code (all four network-voice scores unchanged), and the register split stands (the player bit in EBX and the entry size in EBP where retail has EBP and EBX).
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
+// m3 lane 5 r185 (fast with 0x56380/0x564c0/0x53b00/0x56000, control 60; both builds return with ret 0xc): one loop
+// counter declared at function scope for both loops 60 (same code); the membership result in a named bool 60 (same
+// code); the entry size typed short 145 (456 B, 0x56380 13); the include_mask arms swapped with the test negated 72;
+// the success length as `2 + written * entry_size` 60 (same code); the bit clear as `&= (word)~(1 << player)` 60 (same
+// code). Re-measured: the flag byte stored in each include_mask arm 176 (472 B), the player bit signed 60 (same code).
 // MiniMax H (11-11): no new form, no lower score (60); the membership helper's mask test written with the shift first gives the same code, so the mask load still reaches EAX before the shift where retail keeps the zero result in EAX and loads the mask into ECX after it.
 // MiniMax S (11-11): no lower score (60): the player bit as a named local inside the membership helper 60 (same
 // code), the entry size as `include_mask ? 13 : 11` 147 (461 bytes), and the same size with the retail order
@@ -2135,6 +2143,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax H (11-13), NOT kept (coordinator): 85 -> 74 came from two new __forceinline twins of voice_port_flag1/2
 // (voice_port_flag1_inlined / voice_port_flag2_inlined) called at the inner loop's tests: new _inline twins of
 // existing functions are not kept (noinline ruling, 10-30).
+// MiniMax S (11-14): no new form, no lower score (85): reading the mode once into a local and comparing it with
+// 1, 2 and 3 gives 104 (retail keeps the mode in ecx and materialises the active test), so the two mode helpers
+// stay; what is left is retail's inner loop calling the port flag getter twice where this build calls the
+// out-of-line copy, and retail's remote mask in esi.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {

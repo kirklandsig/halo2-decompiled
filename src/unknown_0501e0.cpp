@@ -511,6 +511,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // the lead with the second point's offsets first 292 (masked 60); this file's helper rewritten in place with scalar
 // copies scaled from the input and forward-first rows 295 (1086 B, masked 79), with the second offsets first 295 (masked
 // 76). Body unchanged.
+// M3 lane 5 r184 (fast with 0x30bf0/0x30290/0x142640, all matched; control 206, register-masked aligned 176): the helper
+// reading the camera's scale itself (no scale parameter) 209 (1143 B); the copy scaled in place (`vector3f_scale(&scaled,
+// arg_0, &scaled)`) 206 (masked 176, no change); one offset loop with the second point's statement first 211 (1141 B); the
+// first view's two depth tests before the second view's sign test 257 (1143 B); the second offset loop's counter named
+// `component` like the first 206. Body unchanged.
 // M3 lane 12 r124 (fast with 0x30290 and 0x30bf0, both MATCH; base 206): retail loads the first view's coefficients into
 // registers (coefficient first, right.i kept in xmm7 for the second view) and keeps the scale in xmm6 for both tests, so
 // nothing it stores between the views can alias the camera; ours folds the coefficients as memory operands and reloads the
@@ -518,6 +523,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // camera passed as a pointer with its scale read inside 209 (1143 B, same structure); the scaled copy assigned in an
 // if/else 327 (1198 B); a source pointer selected by the scale step 292 (1170 B); the second view in place (first out of
 // place) 258 (1136 B). Re-measured: the existing transform_vector in place with the limits in the condition 260 (1113 B).
+// M3 lane 12 r126 (fast with 0x30bf0/0x30290, matched; control 206, register-masked aligned 185): the view helper
+// returning the view vector by value (`vector3f local_2 = world_vector_to_view(scale, &local_0);`) 278 (1153 bytes)
+// [202]. Re-measured: the existing transform_vector in place on each offset with the later reads through `vector3f &`
+// aliases 309 (1080 bytes) [117]; the depth limits written in the condition 214 [157]. Body unchanged.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

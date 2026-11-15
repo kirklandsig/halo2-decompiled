@@ -640,12 +640,27 @@ void __stdcall function_1160c0(real dt)
 // body but 0x1697c0's removed) flips it back to EDI; but in that small image 0x211060 takes its mover settings in EDI instead of
 // on the stack, and with 0x211060's own body out of the image the base is EDI again, so the EDX base there comes from a
 // different 0x211060 convention, not from anything in this body. Not a lead.
+// m3 lane 12 r125 (fast with 0x116750/0x73360/0x54590, control 171): the low slots are retail's in exact reverse and
+// the per-slot reference counts fit heaviest-lowest in both builds (ours reads the axis from memory more, retail the
+// cosine), so they follow the rotation's allocation. 0x211060 takes EAX plus the stack here as in retail (full image).
+// The rest-offset copy at the loop top 289 (1354 bytes), after the angle call 207; position and direction declared at
+// the loop top 171, location declared before origin and forward 171, `previous, predicted` at function scope 171 (all
+// three the same code).
 // M3 lane 3 r243 (fast with 0x116750, matched throughout; base 171): on lane 13 r89's match-only rotation-
 // into-`rotated` form (re-measured 165): `inverse_dt` computed once ahead of the loop 175; the guard as `dt > 0.f &&
 // !record->fixed` 170 (first difference +0x30); the vertical declared ahead of the loop 301; `++node->ticks` ahead of
 // the stiffness 169; `++node->ticks` just before the position store 266; `previous = position` ahead of the velocity
 // rows 165 (same code). On the body itself: the vertical declared `const` 171 (same code). The segment base still
 // takes EDI where retail takes EDX. Body unchanged.
+// M3 lane 13 r95 (fast with 0x116750/0x73360/0x54590, 0x116750 matched throughout; control 171): `++node->ticks` ahead
+// of the segment selection 274 (first difference +0x51); the vertical declared ahead of the rest-offset copy 171 (same
+// code, not counted). On lane 13 r89's match-only rotation into `rotated` (re-measured 165), the three rows in the order
+// y, z, x 158 (1368 bytes; the rest offset takes retail's +0x50 home; one-use named parts and a row order picked by
+// score, so match-only: build/r95/lead-1161f0-158.patch in the m3-lane13 worktree); the other orders z, y, x 179,
+// y, x, z 179, x, z, y 179, z, x, y 158 (other code). On the y, z, x form: the three cross terms named ahead of the
+// rows in that order 158 (other code); the rest-offset copy after the angle call 181 (1370 bytes); cosine computed
+// ahead of sine 159; same code as it: `predicted` through vector3f_add, the projection named, `rotated` declared beside
+// the vertical. Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

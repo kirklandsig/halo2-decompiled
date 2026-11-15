@@ -107,6 +107,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // m3 lane 14 r92 (fast with 0x3d2c0, control 21): the elapsed clamp just before the force flag 172; force as
 // `initialized && valid ? false : true` 21 (same code); the update elapsed written at its test with no local 259
 // (802 bytes); elapsed renamed sample_elapsed 21; the object as `byte *const` 21.
+// m3 lane 14 r97 (fast with 0x3d2c0, 0xd1850 and 0xd4080, control 21): update-first re-measured 228 (homes and EBX load as
+// retail, the timestamps in EDI/ESI, the false store at the very top); a 1200 s permuter run from that form (77 tries) best
+// 167 (volatile and constant locals); `update` started as `force` after a combined `!force && flag` return 246 (804 bytes);
+// force as `!(initialized && valid)` with the update time in a named local used twice 21 (same code); the force arm
+// inverted with the flag return nested in its own braces 25; the false store and the object's flag read (a named bool)
+// ahead of force 246 (at retail's length).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

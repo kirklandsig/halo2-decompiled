@@ -893,6 +893,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // value (`(v < 1 ? 1 : v > 16 ? 16 : v) != v` on a `long` argument, both uses) 320 (1243 B, masked 117: no copy, one read).
 // A corpus scan of all matched retail code finds no other `mov reg, const; cmp reg, reg2; jg` clamp, so no matched source
 // shows retail's form. Body unchanged.
+// m3 lane 8 r168 (fast with 0x183670): matched 0x182b90's PIN compiles to our `cmp eax, 1; jge; mov ecx, 1` (tools/disasm.py), so
+// retail's `mov ecx, 1; cmp ecx, edx; jg` here comes from another source shape. The classifier through a forced-inline pin(value,
+// lower, upper) written `value < lower ? ...` or `lower > value ? ...` 238/238 (same code); `limited = 1; if (value >= 1) { limited =
+// 16; if (value <= 16) limited = value; }` 320 (1243 B, `cmp eax, ecx; jl`); `limited = value; if (value < 1) ... else if (value >
+// 16) ...` 238; an if/else chain on `1 > value` / `16 < value` 238; the 0x1e byte test through a forced-inline helper 238 (same code);
+// a forced-inline material getter tested then fetched 377 (1284 B), inside a bool helper 318 (1245 B). The data word stays one load
+// in every form. Body unchanged.
 // m3 lane 15 r85 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238, masked 135/109): on lane 11
 // r95's 235 lead, the origin as three reals read z, y, x through a `point3f const *position` 366 (1275 B: ours then reads them
 // exactly as retail, `movss [eax+0x58]` ahead of `add eax, 0x50`, but packs all three into 4-byte slots and keeps contact in
@@ -901,6 +908,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the decoded type named 238 (a scheduling shuffle only). Diagnostic (reverted, not a source form): a full memory barrier
 // ahead of the pointer test and of the byte test gives retail's three data loads but also reloads second->shape before each
 // (retail loads the shape once), 331 (1255 B): only a reload of the data field alone fits retail, and no permitted form gives it.
+// P516: Binary-enumeration result domains at carried validity/root/key/distance producers,
+// positive then complementary encoding: 284/248/238/238/249/248/238/238.
+// NOT kept: no gain or frame recovery; original byte result, guards, observations and collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

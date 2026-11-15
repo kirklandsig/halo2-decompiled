@@ -727,7 +727,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 331 (was 331): every block's zero is XMM1 where retail uses XMM0 (the plane arm, timer, animation case and
+// score 149 (was 331): 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
+// timer, animation case and field-of-view tail), following the plane length's hoisted left.k load (retail left.j); that
+// costs the animation case a zero copy and the field-of-view tail its reuse of the target test's register (the 4 extra
+// bytes). Also left: the distance dot's operand loads, the yaw rotation's product/negation order, and the pan arm's
+// basis-builder argument setup and the shared quaternion helper's sum order.
+// Earlier at 331 (was 331): every block's zero is XMM1 where retail uses XMM0 (the plane arm, timer, animation case and
 // field-of-view tail), following the plane length's hoisted left.k load (retail left.j); the pan arm's basis-builder
 // argument setup and the shared quaternion helper's sum order remain.
 // MiniMax R (11-14): no lower score (331): in the case-2 length the dot hoists the left vector's k component before the copy and
@@ -1089,6 +1094,32 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // follow names); the animation case's `command->distance = command->timer = 0.0f;` 333, `command->timer =
 // command->distance = 0.0f;` 331; the plane arm's t as one ternary 331 (same code); the cosine computed right after the
 // sine 331; the animation case's `flags |= 0x19` after its three stores 332.
+// M3 lane 13 r94 (fast with 0x16c6f0/0x13cb40/0x23d090, all MATCH; plain where kept; masked = registers masked, aligned):
+// kept, 331 -> 187 (1704 B, masked 45 -> 40): the point-type switch's `flags |= 0x40` written once after the switch
+// (case 2 and the old default arm without theirs, case 1 ending in its own break). VC tail-duplicates the update into
+// both arms, and the old default arm then takes retail's split load/xorps/or/store with its own jump; the base's
+// fused default `or` had hidden 8 extra bytes in the pan and animation arms. Kept, 187 -> 149 (1700 B, masked 35): the
+// pan rows written through `point3f *position = &command->position`; the stores through the pointer keep the flags
+// load below them, so the pan arm ends in retail's memory `or [ebp], 1` (on older bases this pointer scored 367/391).
+// On 331: the case-2 point fields through an `s_camera_point_state *` local 331 (masked 43, the distance dot's i
+// product loads flip to retail's order); the projection scale through a new (plane, point, direction) inline helper
+// 371 (1700 B); with the point pointer, the self-dot length 369 (1700 B) and `dot3f(&left, &plane.n)` 372 (1700 B);
+// re-measured, the self-dot length 329 (masked 41: retail's left.j preload, but the length/zero colours stay swapped);
+// `plane` at the point-case scope, `if (length_squared)` and `time_scale ?` 331 each (same code). Diagnostic: a zero
+// store at the top still colours XMM1 (456), so the zero's register does not follow which 0.0f comes first.
+// On 187: t initialised to 0.0f with the guarded assignment 404; the pan position through real_point3d_set 167 (1700 B,
+// masked 47); the case-2 zero arm first 197; the self-dot length 185 (masked 36). On 149: the distance dot's operands
+// swapped 149 (masked 33: its k and j products take retail's load order, the i product does not); with the case-2
+// point pointer 400 (1704 B), the point pointer alone 400; the field-of-view target named for its test, reached arm and
+// blend 393 (1696 B); the length as `dot3f(&left, &plane.n)` 399 (1704 B), as the self-dot 397 (1704 B), as
+// `dot3f(&plane.n, &plane.n)` 185 (1696 B).
+// P517: Completed object-validation available/missing result domains bool/byte/short/long at the original
+// early call/test; 400/400/400/400/400/400/400/400.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P520: Standard plane-length/pan-range/position-fraction/FOV-range/origin-dot/signed-distance/distance-dot/complete-plane reduction providers:
+// 475/425/426/459/474/495/428/473. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Real angle/sine/cosine API domains, seven subsets then immutable complete yaw graph:
+// 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery; original complete body and helpers restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
@@ -1145,17 +1176,15 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 							t = 0.0f;
 						}
 						vector3f_add_scaled(&camera->point.offset, &camera->point.left, t, (vector3f *)&command->object_matrix.position);
-						command->flags |= 0x40;
 					}
 					break;
 				case 1:
 					command->object_matrix.forward = *g_4687a8;
 					command->object_matrix.up = *g_4687b0;
 					command->object_matrix.left = *g_4687ac;
-				default:
-					command->flags |= 0x40;
 					break;
 				}
+				command->flags |= 0x40;
 			}
 			command->timer = time_scale != 0.0f ? game_ticks_to_seconds(camera->ticks) / time_scale : 0.0f;
 			command->forward = camera->forward;
@@ -1213,9 +1242,10 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 			command->up = transform.up;
 			real fraction = PIN(t, 0.0f, 1.0f);
 			camera = camera_scripting_state;
-			command->position.x = camera->position.x * (1.0f - fraction) + camera->pan.position.x * fraction;
-			command->position.y = camera->position.y * (1.0f - fraction) + camera->pan.position.y * fraction;
-			command->position.z = camera->position.z * (1.0f - fraction) + camera->pan.position.z * fraction;
+			point3f *position = &command->position;
+			position->x = camera->position.x * (1.0f - fraction) + camera->pan.position.x * fraction;
+			position->y = camera->position.y * (1.0f - fraction) + camera->pan.position.y * fraction;
+			position->z = camera->position.z * (1.0f - fraction) + camera->pan.position.z * fraction;
 			command->flags |= 1;
 		}
 		break;

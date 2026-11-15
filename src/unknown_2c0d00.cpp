@@ -490,6 +490,20 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // P506: Input priority defaults before actor lookup, ignore/block/range subsets 1/2/4/3/5/6/7 and
 // guarded all: 918/918/958/907/958/979/973/973 reduced (control 926, full 920). NOT kept: native
 // later input reads/frame not recovered; original complete body restored.
+// M3 lane 15 r86: no new form run. The leads in the listing are the second `straight = 1` store on the actor NONE path,
+// the type byte re-read at its three later uses, the shared inflation/skip tail and the actor/unit/self-unit registers.
+// The note above already lists each of them with its score (rounds 84, 89, 94 and 225). No existing accessor for the type
+// byte exists to give its re-reads naturally. Body unchanged at 920.
+// M3 lane 8 r169 (plain unless marked f; fast misleads here, fast control 926): an opcode alignment puts most of the structural
+// gap in one moved block: retail lays the object distance test straight after the other-actor inflation tail (shared store of
+// xmm0, skip in [esp+0x12]) and moves the 0x13c branch and the type 1/7/11 arms after the motion block's `jmp`; ours keeps them in
+// source order with each inflation path ending `sete bl; jmp`. LEAD, not kept (a bool started false and set by an if; the direct
+// form is main's 920): the type-1 arm as `if (team == actor->unknown024 || !function_1df560(...)) skip_classification = true;`
+// 909 (3718 B; retail's type-1 arm only ever stores 1, `mov byte ptr [esp+0x12], 1`). The unit no-obstacle bit through the shared
+// `s_object_view` word bitfield `flag2` (as 0x20ba00 reads it; gives retail's `mov; shr 2; test 1`) 930 (934f); the definition
+// bit as `(bool)((definition->flags >> 3) & 1)` (retail's `mov; shr 3; test 1`) 933 (916f); all three 930; the squared length
+// computed before the combined radius 926f (same code); the other-actor skip as `if (!enemy) skip_classification = true;` 950f.
+// Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1832,6 +1846,16 @@ long function_1fa7f0(void);
 // ordering: 461/461/450/445/481/436/459/458 reduced (control 400). NOT kept: six recover frame
 // 0x10c but miss native conditional-copy shape and score; extra-pair forms grow to 0x11c. Original
 // body restored.
+// M3 lane 15 r86 (fast with the file and 0x270930, all as before): the delta block's three statements in z, y, x order 400
+// (different code: z then takes XMM0 as in retail, but its square is still taken in a copy; register-masked 258 -> 272);
+// the delta as three real locals declared x, y, z or z, y, x 400 (same code). Body unchanged.
+// M3 lane 8 r169 (fast with 0x270930 and 0x2c2a70, matched throughout): retail's distance block has the existing 0x210a30's
+// shape (source fallback copied in two places, the output's NONE/failure copies shared, one z, y, x tail sum). The block as
+// `function_210a30(source, &out->point) > 400.0f` with `inline` on 0x210a30's /Ob1 definition 536 (1668 B: it expands here,
+// EBX becomes the entry zero as in retail, but the 0x210850 calls inside stay out of line, and the matched caller 0x1f45c0
+// expands it too and is lost, 250); both conversions in 0x210850's nested shape 456 (1762 B); origin copied from
+// `query->source.point` 400 (same code); a success flag with `break` in place of the goto 400; the side flipped in place with
+// `edge` declared in the scan arm 457 (1744 B). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

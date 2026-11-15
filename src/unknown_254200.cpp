@@ -202,6 +202,13 @@ void function_254200(void)
 // swap).
 // Also: the two readiness tests as nested ifs 4; the bitmap pointer declared in the if condition 4; the two
 // dimension locals declared width first 4 (all same code).
+// Round 105 (m3 lane 1, single-address fast, control 4): the two dimension locals typed short 224 (1113 bytes); the
+// texture and dimension block as a call of the existing 0x14390 (`function_14390(0, bitmap, 0.f)`) 265 (1073 bytes, it
+// stays a call); the size doubled in place in its parameter (`arg_2 *= 2.f;`) 19 (slot changes only, the reload pair
+// unchanged); the bitmap chosen by default-then-override (`= local_0; if (arg_4) = local_1;`) 13; one named globals
+// getter result for both bitmap lookups 284 (1088 bytes). The two reloads stay swapped. The texture and dimension block is
+// 0x14390's body: with `inline` on 0x14390's definition (its file is /Ob1) the call expands here to the same code, 4, but
+// five other callers then expand it as well (0x144f0 79, 0x14560 119, 0x43a40 295, 0x254200 150, 0x2548f0 553): not kept.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -507,6 +514,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 2; the first quad's Begin and vertex calls through the IDirect3DDevice8_ wrappers with a NULL device (an extra inline level and an
 // unused parameter, no code) 2; the first block's texture-stage calls through IDirect3DDevice8_SetTextureStageState 465 (2236 bytes,
 // as with the reference casts dropped); the last quad through the IDirect3DDevice8_ wrappers 2. All restored.
+// Round 164 (m3 lane 7, fast; 0x254200 matched, 0x254490 4): descriptive names for the scale, the point, the colour
+// pointer, the two bitmaps, and all seven locals and parameters together 2 each (same code); the first quad (0x1cf50,
+// Begin, the four vertices, End and both pragmas) in a forceinline helper taking the colour pointer and the scale 2 (same
+// code), taking the colour and the lower and upper coordinates computed at the call 384 (2258 bytes). In this pair and in
+// 0x254490's, retail emits the two reloads in ascending register order (xmm0 first), ours in descending order; the
+// register each value gets already agrees.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

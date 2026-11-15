@@ -834,6 +834,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // that copy 274 (1152 B); the frame rotation copied once per emitter, both rotations through the copy 373 (1199 B); the
 // position rotated into a separate point and translated back into the callback point 183 (1098 B); the three per-particle
 // property tests as `(flags & n) == 0` 124 (1136 B); the emitter-level scale test as `flags & 4` 210 (1137 B). Body unchanged.
+// M3 lane 5 r184 (fast with 0x173c10/0x175430/0x2477b0/0x173ba0, matched throughout; control 42): `real multiplier =
+// 1.0f, scale = 1.0f;` 42; both transform tests as `definition->unknown0c != 0` 42; indexed definitions with scale first and
+// the motion rotated before the position's last translation add 115 (1136 B); the emitter mask and particle mask `dword
+// const` 42; the location's first emitter index named before the loop's index 109. Body unchanged.
 // M3 lane 8 r167 (fast with 0x2243c0; control 42, register-masked 15: the offset's zero store ahead of the list test and
 // row i of both in-place rotations, (left*y + up*z) + forward*x where retail sums (left*y + forward*x) + up*z): the
 // translated position declared as a vector3f copied from the particle's position (no casts at the rotation) 42 (same
@@ -1510,7 +1514,15 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax E (11-15): 12 (was 47): the view global read at each use, the availability produced by a branch on
+// the query result and the same-view flag cleared by one owner/view/availability test; what still differs is
+// the flag's true store, which ours emits ahead of the view test where retail's sits between the
+// availability's test and its branch; the body is otherwise retail's, at retail's 498 bytes.
 // score 47 (was 47): availability clear/production and later view observation remain;
+// MiniMax E's not-kept 12 form (above): the same-view flag's true store is emitted ahead of the view test, retail writes it
+// between the availability's test and its branch; the availability's zero store also comes before the second
+// definition call where retail's comes after the owner lookup; frame 0x14, the owner, the view, the boolean
+// homes and the post-attachment view refresh agree.
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
 // tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
@@ -1942,6 +1954,13 @@ bool function_17afd0(long effect_index, long value);
 // default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
 // bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
 // availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
+// P515: Independent availability/same-view/attachment/draw binary enumerations, positive then complementary:
+// 129/143/120/110/122/147/120/112. NOT kept: no native result-home equality; original
+// snapshots, query gates, traversal and complete executable body restored.
+// MiniMax E (11-15), NOT kept: 12 (was 47) set same_view and available by tests (same_view = true, then false when
+// a test fails; available = false, then true) and read g_4b9ed8 again at each use in place of the view local.
+// Test-set flags and score-picked re-reads are kept only with a byte match; the form is a lead for a match. Code
+// back to main, notes kept.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -1697,6 +1697,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // P500: Complete standard RGB bias/reflection/scale arithmetic, seven subsets, then both luminance producers:
 // 530/983/650/1012/660/1080/1110/1343. NOT kept: All regress; reflected/scale forms grow beyond retail and do not
 // recover native frame/result/carrier shape. Original complete executable body restored.
+// m3 lane 14 r96 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529): retail's only call
+// (0xd4080: pushes, then `mov edx, edi` for the query and `mov ecx, ebx` for the type, the block already in EAX for its NULL
+// test) fits (type, query, block) under the last-to-first setup rule, as lane 1 r90 found. New this round: the scan reading
+// `block->count` in its own test (no count local, no outer test) 582 (2167 B); the square from the stored `record->length`
+// 586 (2166 B; 0x3db00 lost, 8; 0xd4080 508); every later length use from `record->length` as well 577 (2175 B; same
+// losses); the normal's squared length passed as `i * i + j * j + k * k` 540 (2174 B); the type mask as `long` 529 (same
+// code). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1773,6 +1780,10 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax C (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 (three stack slots
+// too many), retail still clears its flag byte at the entry where this build clears it after the first branch, and the
+// 0xd37f0 call still hands its block and query over in the other order; the forms for the frame and the homes are in the
+// notes below and none of them lowers the score, and the callee's own file is not this lane's.
 // MiniMax B (11-13): no new form, no lower score (378): aligned the two listings instruction by instruction: what is
 // left is the frame (0x4c against retail's 0x40, three stack slots against retail's), the flag byte that retail clears
 // in the entry block and this build clears after the first branch, the length's square that retail stores in its slot
@@ -2534,6 +2545,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
 // then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
 // original copies and body restored; status/mesh/sample homes and selective expansion remain.
+// MiniMax C (11-15): no new form, no lower score (542): the frame and the extent agree, and what is left is the
+// status, mesh and sample homes plus the two helpers this link expands where retail calls them (0x24590 and 0x13da30);
+// the forms for the homes are in the notes below and none of them lowers the score, and the callees' own files are not
+// this lane's: BLOCKED-BY 0x24590 and 0x13da30.
 // P347: Actual twice-consumed dynamic-brightness result, bool/byte/short/long, positive/complementary truth:
 // 542/542/542/542/542/542/542/542. NOT kept: All eight tie 542 at native extent and frame; status/mesh homes and selective helper expansion remain. Original complete body restored.
 // M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,

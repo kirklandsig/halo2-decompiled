@@ -1129,6 +1129,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // vector selection: 142/142/142/142/241/241/241/241. NOT kept: Every outcome regresses; native saved
 // projectile/type and shared vector homes remain unresolved. Both exact controls survive. Original complete
 // executable body restored.
+// P511: Complete terminal placement success/failure outcomes in bool/byte/short/long:
+// 92/92/92/92/92/92/92/92. NOT kept: all canonicalize without recovering saved projectile/type
+// and shared-vector homes. Original complete body and all call tuples restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2050,6 +2053,13 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // Diagnostics (reverted): with a constant primary the type loads at the bit test, after the movsx (133); with a
 // constant bit the compare reads the argument from memory ahead of the lookup (100). Permuter (fast, anneal, 600 s):
 // 27 tries, best 11.
+// Round 201 (m3 lane 4; a one-file LTCG harness of this file reproduces the entry block, candidates confirmed fast): the
+// type read through its own address into a local after the lookup 11 (folds back); 13 renames of type/primary/actions/
+// unit_index and a `!= false` test 11 (same code); actions and primary declared bare, assigned in that order 11; the unit
+// lookup in its own block scope 90 (233 B); the masked index in a named local 26. Retail's order (global in ECX, then the
+// type reloaded into ECX) appears only when the lookup is its own statement ahead of `primary`: a single-use `actions` is
+// forward-substituted into the test, so the compare always comes first; a unit or header statement is then reused by the
+// put-away code after the branch (harness 72/68), where retail reloads the global and data and keeps only the scaled index.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -2765,6 +2775,15 @@ __forceinline char unit_action_round(real value)
 // P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
 // 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
 // not recovered; original body restored.
+// m3 lane 9 r124 (fast with 0xe9ed0/0xea090/0xe9780, all matched throughout; diagnostics, all restored): retail never
+// constant-folds the result, even on the success path (`mov byte [esp+0x12], 1` ... `mov al, [esp+0x12]` after the
+// 0x7f/0xff stores), as if the byte lived in memory; the result declared volatile (forbidden, diagnostic only) gives the one
+// exit and retail's result/is_biped homes (0x12/0x13): 299 alone; with first_person_name = NONE first 300; with the
+// short-slot hand getter too 304; with TEST_FIELD_BIT on the 0x1b test too 250; with the fallback switch too 101 (1188 B,
+// below round 187's goto form, re-measured here 107; the goto form alone 240); the hand getter, bit and switch without
+// first_person_name first 315; type declared ahead of first_person_name on the 101 form 101. Left on 101: pool EDI for EBP,
+// offset EBX for EDI, the NONE carrier EBP for EBX (retail's first_person_name, also the getter's compare register),
+// type EBX for EBP, `current` EAX for ESI.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

@@ -1316,6 +1316,13 @@ long function_1931a0(long count, s_surface_description *variant);
 // build/r197/lead-0x73530-loop-lookup.patch), plus `long histogram[16]` (retail clears 16 dwords) MATCH, 0x7e210 933 (2704
 // bytes). So the session's register needs no change to the inline choices, only to the first pass's register pressure.
 // Diagnostic (compiler setting, reverted at once): no inlining around only the top lookup statement MATCH here, 0x7e210 942.
+// M3 lane 14 r97 (fast with 0x7e210, 0x192e60, 0x63220; control 8 / 766; trials in 0x7e210, all restored): the loop's variant
+// through the existing 0x192e60 after the rating reads plus `long histogram[16]` MATCH here, 0x7e210 918 (2736 B, frame 0xb4,
+// session in EAX, but the top 0x192e60 still inlines, the loop call and the capacity switch stay calls); that with the
+// capacity switch `__forceinline` 8 (0x7e210 868, 2788 B); that with the capacity case labels grouped 8 (888, 2768 B); the
+// player value through the existing 0x63220 plus the long histogram MATCH, 0x7e210 1141 (2476 B); the 0x192e60 call as the
+// loop body's first statement plus the long histogram MATCH, 0x7e210 937 (2704 B, frame 0xb0, top still inlined). Still
+// BLOCKED-BY 0x7e210: every form that gives the session EAX raises 0x7e210.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1642,6 +1649,12 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
+// SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
+// variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
+// Earlier 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// MiniMax S (11-15): no new form, no lower score (703).
 // score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
 // static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a

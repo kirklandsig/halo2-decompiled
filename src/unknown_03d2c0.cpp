@@ -130,11 +130,6 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
-// MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
-// form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
-// stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
-// else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
-// MiniMax S (11-14): no new form, no lower score (77): the first difference is still the jump target at +0x54 and the block layout that follows it - retail keeps the result in ESI and tests it before the reload where this build copies it into EAX at the merge point and puts the cold "no result" return block ahead of the initialization instead of after it - and this body is 510 bytes against retail's 518; the forms tried this round (the flag set in both arms of the allocation test, the walk's NONE exit as a then-arm return, the allocation test inverted, the flag hoisted above the allocation) score 83 or worse, so the body stands.
 // score 77 (was 77): m3 lane 4 r196 note at the end; round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
 // `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
 // walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are
@@ -292,6 +287,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // found test 77 (same code); `initialize` declared first 79 (first difference +0x19); the walk's best index stored before its
 // age 79; the walk's first index declared ahead of the oldest age 91; the negative-age test as `0.0f > age` 77 (same code); the
 // record pool read once into a function-scope local used for all six pool accesses 77 (same code).
+// P509: Ordinary inline visibility at allocation/scan/state-output/update providers,
+// four isolated, three update pairs and all four: 77/77/77/77/77/77/77/77.
+// NOT kept: no cached-hit/merge/trailing-return equality; every declaration and body restored.
 // m3 lane 15 r85 (fast with 0x3db00, 0x3dd10 and 0x3d2c0, all MATCH; control 77, register- and stack-masked aligned 20).
 // Retail's own code shows the found path skips the merge test while the allocation-success path tests the allocated index
 // again (`cmp esi, -1; mov cl, 1; je`), so the merge test is on a copy of the allocation test's variable. Grid on lane 14
@@ -314,6 +312,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // the copy without the else-return 85; with the merge on cache_index 156/87/87/100. On lane 14 r84's `result = NONE` base
 // with the 9 form's arms: 9's walk exit 86 (re-measured), copy then test 86, copy alone 100, `if (result != NONE)
 // initialize = true;` alone 100; merge on cache_index 159/86/100/170.
+// MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
+// form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
+// stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
+// else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
+// MiniMax S (11-14): no new form, no lower score (77): the first difference is still the jump target at +0x54 and the block layout that follows it - retail keeps the result in ESI and tests it before the reload where this build copies it into EAX at the merge point and puts the cold "no result" return block ahead of the initialization instead of after it - and this body is 510 bytes against retail's 518; the forms tried this round (the flag set in both arms of the allocation test, the walk's NONE exit as a then-arm return, the allocation test inverted, the flag hoisted above the allocation) score 83 or worse, so the body stands.
+// M3 lane 7 r163 (fast with 0x3db00/0x3dd10, both MATCH): the allocation as `result = cache_index =
+// record_pool_allocate(...)` 77 (same code); the walk's NONE return after `initialize = true;`, outside the walk block,
+// 145 (508 bytes); the found arm without braces 77; the merge test as `if (result == NONE) return result;` before an
+// unconditional record block 79 (507); the walk step's ternary as `index != NONE ? ... : 0` 81.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

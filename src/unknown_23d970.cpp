@@ -971,6 +971,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // `lea ecx` stores) re-measured 43; on it, `right` declared before `direction` 43, the cosine before the pointer 43, the
 // pointer for the three stores only (the call through the field) 43, and `right` renamed to sort the other way 43 (same
 // code: the name does not decide the colour tie). Body unchanged.
+// m3 lane 8 r168 (`--fast 0x23de50 0x1f0870`): the first product from the `direction` local without the else pointer 43 (1261 B,
+// first difference +0x200, positional only); direction_from_angles re-measured 156; the else arm through a forced-inline helper that
+// reads yaw and pitch through the observer pointer at each use (one caller, diagnostic) 47 (1264 B): the else arm is then exactly
+// retail's (`fstp [ecx + 4]`, `[ecx + 8]`, both angles re-read) and only the products differ; on it the product helper grid (first
+// cross3f / function_1f087b / cross3f_staged by second function_1f087b / cross3f / cross3f_staged) 47/222/221 whatever the first
+// helper; with the first product from `direction` 215; dead-local phases +1..+7 43/43/47/47/219/219/47 (+1/+2: else arm exact,
+// products as main's). Body unchanged.
 // m3 lane 15 r85 (`--fast 0x23de50 0x1f0870`, control 45, register-masked aligned 12; 0x1f0870 stays 234). Re-measured:
 // cross3f_staged for the second product 217 (1270 B), function_1f087b reading forward through the output view 216 (1265 B).
 // New, both the same code as that 216: the view for the first product only, and for both products; the else arm's trig
@@ -980,6 +987,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // operations), then the second product's schedule (retail k, j, i, copying right's registers) and the else arm's j/k
 // stores through EDI (retail ECX). The k-first cross-module helpers, the setters and the angle helpers are listed above;
 // no further untried natural form found.
+// M3 lane 13 r95 (`--fast 0x23de50 0x1f0870`, control 45): no unlisted natural form of the two products is left (as
+// rounds 87, 164, 77 and 85 found), so the trials went to the statements around them: the target arm's `if (!object)`
+// with the arms swapped 361 (1219 bytes); the delay update as `observer->delay -= ...; if (0.f > observer->delay)
+// observer->delay = 0.f;` 96 (1261 bytes, retail's length, the subtraction no longer recomputed as retail does); the
+// delay update ahead of the timer update 108 (1261); `advance ||` tested first in the final condition 362 (1247); the
+// timer-3 block's modes[3] store first 48. Same code (not counted): the gamepad choice as if/else (0x23e400's form), the
+// else arm's products cosine-first. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

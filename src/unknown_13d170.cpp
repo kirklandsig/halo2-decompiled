@@ -676,6 +676,18 @@ struct s_physical_block_iterator
 // factory/less/reversed-greater/constructors/readonly/readonly-less/ordinary/negated-order keys:
 // 349/349/347/356/408/408/408/352. NOT kept: native policy placement and frame/extent not
 // recovered; original complete body and includes restored.
+// M3 lane 15 r86 (fast with the file and 0x13d320, all MATCH): lane 9 r109's 93 lead reapplied 93 (1213 B, first difference
+// +0x338). On it: `entry->previous = best.previous;` in both NONE arms 93 (same code: VC propagates the NONE); the allocation
+// in `long index`, copied to result at the top of the success arm, 211 (round 89's 211). No further natural form found on the
+// 201 body. Body unchanged.
+// M3 lane 8 r169 (fast with 0x13d320, MATCH each time): lane 9 r109's 93 lead rebuilt on main 93 (1213 B, first difference
+// +0x338; left: the walk's high-water count/bit EBX/EDI where retail has EDI/EBX, the overlap sum built in best.offset's register
+// with best.offset reloaded where retail adds into pages' register and compares a copy (`mov edx, edi; cmp eax, edx`), NONE
+// materialized in EDI before the allocation test where retail tests the immediate and sets EBX to NONE in the arm, result in
+// EBX for retail's EDI). On it: the insertion reading the block data at each use (no `blocks` local) 93, the walk iterator built
+// by an aggregate initializer 93, the overlap test through a forceinline range helper `(offset, pages, other_offset,
+// other_pages)` 93 (each the same code); the default policy as a result-style comparator too 360 (first difference +0x1); the
+// limit update as a conditional store folded into the final test 354 (+0x2f). Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

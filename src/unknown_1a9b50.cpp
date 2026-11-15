@@ -709,6 +709,10 @@ extern point2f *g_468778;
 // declared first 393 (same code); the settings test as its own early return 410. Diagnostics (reverted, not source
 // forms): one settings read fewer (the -0.4 test's distance replaced) 403 and one prop read more 407, settings still
 // ESI in both, so reference counts alone do not rank prop over settings here. Body unchanged.
+// m3 lane 12 r125 (fast with 0x1aab50 and 0x265d30, control 375): the view and state pointers through the existing
+// prop_node_view / prop_node_state 375 (same code). The actor looked up before 0x1e4f90 crossed with constant exits,
+// local_2 declared first and the prop pointer at function scope: 413 (1555 bytes), 408 (1550), 413, 408, 393, 398, 393,
+// 398 (the constant-exit four at 1549 bytes); every actor-first form keeps arg_0 in EBX and the prop in memory.
 // m3 lane 15 r85 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
 // register-masked 106). Re-measured lane 11 r100's actor-first, constant-exit form 393 (masked 113: arg_0, actor, settings,
 // arg_1 and prop sit in EBX/EDI/ESI/EBP/arg_1's home where retail has EDI/EBP/[esp + 0x10]/ESI/EBX). New: the prop arm
@@ -716,6 +720,12 @@ extern point2f *g_468778;
 // positional drop only, five points, not kept); that on the 393 form 393; that with the prop's NULL default dropped 392
 // (1550 B), on the 393 form 391; the actor looked up inside the block after the slot tests 408 (1558 B), with the prop-index
 // test 427 (1570 B). The tail's `lea R, [slot + 0x2d]` field pointer is the same code in both builds (ESI here, EBP in retail).
+// M3 lane 13 r95 (fast with the file's functions and 0x265d30, all matched but 0x1aab50 at its own 382; control 375):
+// `s_unit_request local_17 = {0};` for the memset 374 (positional only: it drops the zero store to the type field that
+// retail keeps before its 0x1a store; one point, not kept); in the 0.8 arm the field_15 store ahead of the copy 387; in
+// the first arm the field_15 store after the two negated components 379; the request's unknown6 store ahead of the
+// direction copy 375, field_12 set ahead of the submit call 375, the second prediction's field_15 store after its copy
+// 375 (other code each). Same code (not counted): the view fetched ahead of the state. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

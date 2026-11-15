@@ -1118,6 +1118,16 @@ real normalize2d(point2f *v);
 // NOT kept: all regress and shorten away; original fast merge and full body restored.
 // P498: Actual request/fallback-facing/retry-output declarations within the admitted path, seven subsets, then complete graph with early uninitialized result. The exact first-query prefix survives; native retained DL and independent request/movement/invalid return transport remain.
 // Scores 135/135/135/135/135/135/135/135. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// P511: Original-site direction/facing normalizer results in real/none, none/real, real/real,
+// double/none, none/double, double/double, real/double, double/real: 135/135/135/170/153/175/153/170.
+// NOT kept: real captures tie; double receivers grow away from native extent and regress.
+// Original full body restored; initial DL retention and separate request/invalid return transport remain.
+// P513: Original-site movement-speed eligibility/exclusion outcomes, bool/byte/short/long,
+// on the retained separate facing/request graph: 135/135/135/135/135/135/135/135. NOT kept: no DL/return
+// repair or equality; original observations, thresholds, calls and complete body restored.
+// P515: Independent trajectory/validity/first-type/retry binary enumerations, positive then complementary:
+// 172/141/202/135/192/253/213/135. NOT kept: no native DL/return equality; original
+// independent producers, trajectory tuples, request/facing graph and full body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1459,6 +1469,13 @@ real function_50650(real cosine);
 // products, and that retail's four pops sit after the last merge's comiss where our LTCG build puts
 // them before; the earlier rounds' forms (the clamp shapes, the two-pointer dot helper, the velocity
 // copy, the staged final product) all measure 137 or worse.
+// MiniMax D (11-15): no new form, no lower score (137; the fast check reads 117): the five scale locals hold retail's
+// values and the closing product multiplies the velocity scale before the speed scale as retail does, but retail stores
+// the facing scale's 1.0f before the turning scale's while this build stores the turning scale first (the declaration
+// order that fixes it measures 135), and the actor and the object still take retail's registers the other way round
+// (retail holds the actor in EDI and the object in ESI), so the prologue is one byte shorter and every later row pairs
+// with the wrong row; the actor written as the scaled offset first and the offset held in its own local both compile to
+// the same code.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1879,6 +1896,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // retail's, and changing the parameter order is not a form this round may use. The left/right direction
 // swap (239), the swap with the shared origin local (289) and the swap with the operands exchanged
 // (291) all score worse than the 238 they start from, so the body was restored.
+// MiniMax D (11-15): no new form, no lower score (238): the permuter's five tries over the reduced image scored 231 at
+// the baseline and none below it, and the direction swap (239), the swap with the shared origin local (289) and the
+// swapped operands (291) still measure worse, so the body stands; the parameter order retail uses is the one the note
+// below reports and is left alone.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

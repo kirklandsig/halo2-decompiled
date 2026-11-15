@@ -697,6 +697,14 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // round: the two index dwords and the type/reset bytes reached as two-element arrays (diagnostic) 3, same code, so constant
 // array elements do not chain; the two zero bytes cleared with a two-byte memset 87 (577 bytes: one word store, the pool
 // pointer hoisted).
+// Round 84 (m3 lane 2, fast; the fast baseline agreed with plain at 3): the sound index and the driver index as one
+// chained NONE store, either order, 8 each (the stores then follow source order exactly); the driver index stored from
+// `voice->sound_index` 3 (forwarded, same code); unknown0e stored from `(short)voice->sound_index` 70 (571 bytes,
+// diagnostic); the bit-vector fills through SOUND_SYSTEM with no `system` reload 3 (same code). Re-measured: the type
+// stored first 2 (only those two stores swap; `inc esi` stays right after `inc edi`), both increments in the for 10
+// (`inc esi` rises to just after `or ecx, -1` and `inc edi` stays at the loop end). So the instruction that feeds the
+// loop's final compare rises to just below the last flag writer before it, while the stores and `inc edi` keep source
+// order: retail needs a flag writer (or a dependency) after the second store at scheduling time.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1295,6 +1303,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax S (11-15): no new form, no lower score (94).
 // score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
 // and arm 1's product order and XMM colours (fade_out multiplied from memory before the reciprocal, elapsed in XMM2).
 // MiniMax B (11-12): no new form, no lower score (94); a fade-in local with the scaled local reaches 87, but each holds a
@@ -1618,6 +1627,10 @@ long function_2197f0(real gain);
 // `real remaining = ambience_fade - elapsed;`, `real held = elapsed - hold;` and the product named before the sum 87
 // each (same code: one-use names are forward-substituted); on the kept body arm 3 written interpolation first 107
 // (687 B); the four `s_decibels(0ul)` zeros as `s_decibels(0.0f)` 187 (707 B).
+// M3 lane 13 r95 (fast with 0x1251e0/0x221810, both matched; control 94): arm 4 ending in its own `return *(long
+// *)&gain;` 176 (667 bytes, first difference +0x11); arm 1 likewise 183 (659); one `duckings` array-base pointer for
+// the else branch's two element pointers 111 (688); SOUND_SYSTEM read ahead of the function_221810 call 106; the first branch
+// without its ducking pointer (the element indexed at each field use) 248 (742). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2740,6 +2753,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
 // (`movsx ebp, ax`) where retail copies the dword, and we call 0x219070 with two arguments where retail passes one.
+// MiniMax S (11-14): no lower score (17): the set index is still sign-extended (movsx ebp, ax) where retail copies
+// the dword, and this build still pushes two arguments where retail calls 0x219070 with one; both are fixed by that
+// callee's declaration in another file, and the delayed start still stores the flag byte before the start time.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -3059,6 +3075,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax S (11-15): no new form, no lower score (96).
 // MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
 // true value set at the entry and BL holds the false value across the two cleanup calls - while this build
 // keeps it in a byte in the frame, so retail's frame is eight bytes and ours carries the extra slot; a form
@@ -3395,6 +3412,18 @@ static inline short sound_voice_find_available_channel(char type)
 // result in BL only on the failure path; the explicit-return form (no result variable, return true in the commit arm,
 // return false in the failure arm and return true at the end) measures 135 (431 bytes) and moves the mov al, 1 from
 // the entry to the exit, and the same form with a bool result left in place gives the same 135.
+// M3 lane 13 r95 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): the find-or-create arm
+// first (`if (requested_buffer == NONE) { if (sound->priority & 2) ... } else { status test }`) 115 (430 bytes); the
+// second bit update from `channel` (no re-read of the stored index) 128 (436); the final test through the
+// requested-buffer local only (the assignment still re-reads the field) 141 (443); the channel-system pointer read at
+// the top of the channel block 117 (430); the unknown0e test ahead of the priority test 97. Same code (not counted):
+// the commit's channel store ahead of the unknown0e store, `->GetStatus(&status)`, the requested-buffer local dropped;
+// the buffer default declared ahead of the driver default 91 (432 bytes, the same code as the chained `driver_index =
+// buffer_index = NONE`, round 235's listed 91). Diagnostic: lane 5 r178's 15 form rebuilt, 15 at 430 bytes: retail's
+// layout is failure block, shared return, then the commit with its own return copy, so the commit has its own exit;
+// that form with the commit ending `return true;` (gotos or a one-pass do/while, result declared first or after the
+// sound, bool or byte) 125/125/125/126 (430/433 bytes: `mov bl, 1` at the entry and the sound in EDI), lane 4 r185's
+// do/while form re-measured 111. Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3929,6 +3958,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // Also: the class-flag byte read as a signed short 79, as a char 72 (folds); that flag in a named bool after the
 // range 78; the voice's previous owner in a named local for its three uses 78; flag4 as a shift of the playback flags
 // word 78; the source-updated test as a shift of that word 78.
+// Round 84 (m3 lane 2, fast): permuter on the range-in-case-0 base (78; anneal, 600 s, 56 tries) best 62, only the
+// listed word voice index. On that base: `reason` declared at the loop-body top 78; case 0 without its closing 0xe stop
+// (diagnostic) 171, the swap kept; the range index named as a short before the pointer 88; the entry reading the pool
+// global directly with `sounds` set only by the increment 78 (same code); the voice as `g_4e6378 + voice_index` 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4011,6 +4044,7 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
+// MiniMax C (11-15): no new form, no lower score (101): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (101); retail still expands 0x16f3a0 where ours keeps the call, which is a caller-side decision in a file I may not edit.
 // MiniMax H (11-11): no new form, no lower score (101); the body is unchanged, because the lookup of the
 // object type is still expanded where retail calls it out of line and the depth pair that would keep it
@@ -4646,6 +4680,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax C (11-15): no new form, no lower score (535): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (535); retail still expands 0x1420f0 and 0x11c120, which carry noinline declarations on main.
 // MiniMax C (11-14): no new form, no lower score (535): the frame is still 0x134 against retail's 0xe8 and
 // 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line; keeping them out of line

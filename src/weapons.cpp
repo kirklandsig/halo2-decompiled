@@ -3052,6 +3052,9 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // weapon sits in EDI where retail keeps it in EBP, so the prologue and the switch's entry layout differ before
 // any case body is reached.
 // MiniMax A (11-14): no new form, no lower score (389); a local copy of the weapon index compiles to the same bytes, and what is left is that ours opens with an eight-byte frame where retail opens with one four-byte slot, keeps the weapon in edi and the index in ebp where retail keeps them the other way round, loads the definition table before the weapon, and builds a jump table where retail builds a comparison tree whose root is `cmp esi, 0x10000573` and whose two activity names are ordinary cases.
+// MiniMax S (11-15): no new form, no lower score (389): ours opens with an eight-byte frame and keeps the weapon in EDI where
+// retail opens with one slot and keeps it in EBP, and ours tests 0x1d0007ba and 0x0c000569 before the switch where retail has
+// them as cases of a tree whose root branches `jle` where ours branches `jg`.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3425,6 +3428,10 @@ struct s_ammo_conversion_entry
 // the divergence starts in the prologue, where retail holds the destination weapon in EBP and the
 // other weapon in EBX while ours holds the destination in EDI and spills the other; the acquisition
 // flag is stored the other way round as well, and flipping it to retail's sense compiles worse.
+// MiniMax S (11-15): no new form, no lower score (190): retail keeps the destination weapon in EBP and the other weapon in
+// EBX, stores the acquisition flag the other way round (a byte zeroed in the prologue and set with `setg` on "acquired") and
+// keeps the conversion entry without a nullable test, while ours holds the destination in EDI, spills the other and tests the
+// entry for null.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3644,6 +3651,8 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // loads the pool pointer and takes the argument into EBX, so the prologue's registers and the four extra frame bytes
 // differ before any case body is reached.
 // MiniMax A (11-14): no new form, no lower score (607 in the plain check, 643 in the fast one); retail's frame is four bytes shorter than ours and its homes for the weapon index, the definition and the two barrel offsets differ, so the prologue and the copy-out loop stay laid out differently.
+// MiniMax S (11-15): no new form, no lower score (607): retail keeps the weapon index in EBX and the barrel offset in EDI with
+// a frame four bytes shorter than ours, and the copy-out loop and the effect marker's block order differ.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

@@ -77,6 +77,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90. The body stands.
 // MiniMax G (11-12): no new form, no lower score (343): retail's angles are the x87 products of the step with 0.5 and 0.3 and its
 // axes are at 0x485624 and 0x485630, which the file's two helpers already take; the frame and the spill homes are what is left.
+// MiniMax D (11-14, run 90): no new form, no lower score (334): the frame is 0x98 bytes here against retail's 0x90
+// and the register homes of the body still differ; the compile-only copy that reproduces this build's register
+// skeleton exactly was screened and left as it is, so what is left is the frame size and the homes; re-measured at
+// 334 (1781 bytes, against retail's 1779).
 // score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
@@ -1970,6 +1974,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // before y 184 is frame 0x18 (not R229's 0x20 by-value 184); the helper returning y with x computed by each case 186;
 // x before the perpendicular 189 (800 bytes); same code as 179: `return 0.0f` in case 0 and default, `(real)atan2(y, x)
 // * scale * ...`, only the first or only the second cross through cross3f, an unused caller-scope vector.
+// m3 lane 8 r168 (`--fast 0x2f2d0 0x2e9e0 0x497a0`; 0x497a0's file defines the camera storage, which the reduced image otherwise
+// leaves unresolved): diagnostic `#pragma optimize("p", on)` 183 (812 B; atan2 becomes a CRT call and the sums stay (i + k) + j);
+// round 73's offsets-first case 3 re-measured 177 with 0x2e9e0 573; on it cases 1/3 y written ijk/ikj/jik/kij/kji 182/180/186/186/186
+// (jki 177), x written ijk/ikj/jik/jki/kij 177 each (same code). Body unchanged.
 // M3 lane 3 r243 (fast with 0x2e9e0, control 193/492): cases 2 and 4 with explicit `(k + j) + i` groupings 193 (other
 // code, same count); case 1's dots read g_4b9dac directly with no reference copy 204 (776 B; 0x2e9e0 573, the callee
 // then uses XMM7); case 1's sums grouped `(j + k) + i` and `(k + j) + i` 193 (other code); cases 2 and 4 computing x
@@ -2272,6 +2280,14 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // P499: Actual distance/angular/optical last-use blocks, seven subsets, then complete bounded-fade phase:
 // 492/492/492/492/492/492/492/492. NOT kept: All eight tie 492 at the original extent and frame; native output
 // homes remain. Original complete executable body restored.
+// M3 lane 12 r126 (fast with 0x2f2d0; control 492, register-masked aligned 242): delta through the existing
+// scaled_difference3f(camera, position, 1.0f, delta) 540 [244]; reflected through the existing vector3f_scale of the
+// camera forward by `forward`, then scaled_difference3f(delta, projected, 2.0f) 559 [234]; the depth-test toggle as one
+// comparison (`bool depth_test = (*flags & 8) != 0; if (depth_test != g_4c19c0)`, one 0x222d0 call with `depth_test ? 2 :
+// 0`) 690 (2127 bytes: one inlined 0x222d0 copy where retail has two); the unoccluded alpha's product operands swapped 492
+// (same code: retail loads the context alpha from its home and multiplies by the attenuation register, ours copies the
+// attenuation and folds the home). Retail reloads 0.0/1.0 into XMM6/XMM5 at each iteration's top (0x2ee49) and keeps the
+// attenuation and the size in stack homes. Body unchanged.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2903,6 +2919,10 @@ real magnitude3d(vector3f const *v);
 // target reciprocal 155 (same code), the angle product in SSE 155, the fallback as three blocks 155 (same code), the cross
 // term added with its sign flipped 184 (1019 bytes). Left on 155: the raw length and the dot share retail's +0xc; ours
 // keeps the length in a's slot, which permutes the first/axis/second homes.
+// m3 lane 8 r168 (fast with 0x24590/0x30bf0/0x1ecf50): `0.9999f > fabs(dot)` 170 (same code); acos on a fresh dot3f(&first,
+// &second) 198 (1039 B); the rotation through the existing shared rotate_direction (forced inline in src/unknown_1eb8a0.cpp, called
+// from three other files) on `first` in place 181 (1030 B), with `real cosine = dot;` for acos 182 (1026 B, frame 0x34), with
+// vector3f_scale for the output 181 (same code). Body unchanged.
 // M3 lane 3 r243 (fast with 0x24590/0x30bf0, both matched; control 170; a fast run without those two in the image
 // gives 315 at 997 B for unchanged code, so list them): code-changing: the fallback clamp as three arms that each
 // update the component (`-= step`, `+= step`, `+= delta`) 213 (1081 B); the fallback index as `char` 250 (965 B); the
@@ -2986,6 +3006,7 @@ extern s_record_pool *g_4e030c;
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count);
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
+// MiniMax S (11-15): no new form, no lower score (113).
 // MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail spills
 // the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the cursor in
 // EBP, where ours holds the total in EBP; the index's register is fixed by the unmatched callee 0x31590, whose body is
@@ -3008,6 +3029,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 and the list
 // still rides in ebp from the entry where retail spills it and reloads it at the loop top, and the count's compare
 // still lands in eax where retail puts it in ecx; the reduced image scores 147 here, as earlier rounds recorded.
+// MiniMax R (11-15): no new form, no lower score (146): the index still rides in EDI into the call to 0x31590, whose register convention is set in another file, and the allocator does not tie the index to the argument register here.
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
@@ -3327,6 +3349,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // base in ebp where this build keeps the counter in ebp and the base in edx, and the two stack homes are the other
 // way round; the permuter's search (18 tries, 308 s) reached 316 with the first block nested, one point short of
 // the keep bar.
+// MiniMax D (11-14, run 90): no new form, no lower score (317): the names and the declaration order do not move the
+// first/i slots here, and what is left is the frame's homes, which the compile-only copy reproduces as they stand;
+// re-measured at 317 (1324 bytes, as retail's).
 // score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
@@ -3514,6 +3539,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // P508: Complete inclusive admitted-prefix end in long/dword, each with bool/byte/short/long
 // original found state: 358/358/361/358/358/358/361/358. NOT kept: all regress at native length;
 // state/prefix and ordinal homes remain wrong. Original count representation and full body restored.
+// M3 lane 12 r126 (fast with 0x4b160, MATCH each time; control 317, register-masked aligned 105): the third pass as
+// `i = first; while (last >= i)` with `else ++i;` and no `--i` 318 [113]; the swapped-in entry re-tested by an inner
+// `while (last >= i && ...)` (no `--i`) 368 (1303 bytes) [101]; the third pass as `if (last >= i) do { ... } while (last
+// >= ++i);` 370 (1338 bytes) [106]. `first` keeps EBP in all three; retail's third pass is the `--i` form (its body runs
+// `dec ebp` and then `inc ebp`). Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4307,6 +4337,16 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // P508: Actual final getter fade/active outputs at entry, across recursion and after recursion,
 // with original-site zero defaults, eight ownership/order forms: 70/70/70/70/70/70/70/70.
 // NOT kept: no native scratch/frame equality with the default provider present; original complete body restored.
+// M3 lane 12 r126 (fast, diagnostics only): the getter route (`real fade = 0.0f; bool active = false;` then
+// function_c6b90(object_index, 0x11000088, &fade, &active)) re-measured 2 on the reduced image (only the two zero stores
+// in the other order) and 70 with 0xff5f0 in the image. Retail's 0xff5f0 stores through its two output pointers only at
+// its two found tails and passes neither to a call, and it is on no call cycle with this function or 0xc6b90 (its
+// callees 0x102070, 0x10cf50, 0x162b10, 0x162b70 and 0x242140 reach neither), so its code comes ahead of this function's
+// in the link either way; a dead call from 0xff5f0's default arm back into this function (a cycle) stops 0xc6b90
+// inlining here at all (219). Retail keeps `active` in the dead object-index argument slot ([esp + 0x20] after the
+// pops) and the fade at +0xc. No form inside this body changes more than those two stores. BLOCKED-BY 0xff5f0.
+// New forms on this body, both worse: the first fade's range test as `field >= 0.0f && field <= 1.0f` 155 (724 bytes);
+// the shadow-mode switch as `if (mode == 0) ... else if (mode == 2) ...` 115 (766 bytes).
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5897,6 +5937,19 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
+// MiniMax I (11-15, second pass): no new form, no lower score (269): taking the return of 0x3ba90 as a byte makes
+//   the body exactly retail's 1638 bytes with 436 instructions, the same count as retail, but the score falls only
+//   from 269 to 266, so the body stands. What still differs: retail stores that byte in a stack slot and reloads it
+//   (0x2c10e, 0x2c125) where this build keeps the long return in a register, and the two differences listed below
+//   are unchanged.
+// MiniMax I (11-15): no new form, no lower score (269): the permuter's best variant (205 on the reduced image)
+//   needs a flag set by one test and read by the next, a swapped argument pair at the second 0x25dc0 call and a
+//   constant held in a local, so none of it can be kept. What still differs: retail builds the first flag of the
+//   second 0x25dc0 call with a branch diamond (mov dl,1 / jle / xor cl,cl / jmp / mov cl,1) where this build
+//   folds it to setle; retail keeps the object pointer of the weapon lookup in esi and reads the tag through it
+//   (0x2c25c, 0x2c260) where this build loads it into eax and dereferences eax; retail stores the byte return of 0x3ba90
+//   in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register; the
+//   0x14b60 call takes its first argument in eax in retail and on the stack here.
 // score 269 (was 331): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based gate, two 0x15680
 // calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool stipple_enabled`
 // (260; kept only with a match, coordinator 11-08) passes 1, 3, 5, 8 and 20 now
@@ -6213,6 +6266,13 @@ PRIVATE __forceinline real absolute_32350(real value)
     return value >= 0.0f ? value : 0.0f - value;
 }
 
+// MiniMax I (11-15): no new form, no lower score (445): the constant 1 that retail holds in ebx through the
+//   inlined pass and the result byte that shares that pass's enabled slot both come from 0x44370 being inlined
+//   with its mode table folded, and that is blocked by 0x44370. What still differs: retail pushes esi/edi only
+//   after the early exits and its frame is four bytes smaller; retail stores the byte returned on the failure
+//   exits at entry and reads it back from memory, so it has five epilogue copies where this build folds the exits
+//   together; retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm (a ja/jbe
+//   diamond) where this build selects with a move; 0x4a1e0 takes its three arguments in eax/ecx/edx in retail.
 // score 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
 // late enable); the notes below were written at 491.
 // Earlier 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every

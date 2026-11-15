@@ -463,11 +463,25 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // written back `axis * projection + v * cosine - cross * sine` 213 (frame 0x11c; one spill then lands above the creation
 // data); with the rows' first two terms swapped 213; cosine before the dot 213; the cross before the dot 231 (1196 bytes);
 // the cross vector declared at the helper's top 213. Helper restored.
+// M3 lane 5 r184 (fast with 0x28dab0/0x256bd0/0x259d0, all matched; control 173): in function_28dbd2, the sine first (sine,
+// cosine, projection, cross) 182; the sine right after the cosine 226; the closing sums as `arg_2->i += arg_1->i +
+// local_3.i` 173; the sums `arg_1->i + arg_2->i + local_3.i` 173; the cross into local_3 first (cross, cosine, projection,
+// sine) 210 (1198 B: frame 0x118 as retail, but the cross is then computed ahead of the dot where retail computes sine, dot,
+// cosine, projection, then the cross terms); around it: cross, sine, cosine, projection 192 (1215 B); sine, cross, cosine,
+// projection 238 (1198 B); cross, cosine, sine, projection 239 (1198 B). Helper restored.
 // M3 lane 12 r124 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; base 173, frame 0x11c): in function_28dbd2, the cross scaled
 // by the sine into a second vector 226 (1209 B, frame 0x11c); the rotated rows into a local vector copied back 288 (1260 B,
 // frame 0x128); the projected axis scaled into a second vector 229 (1200 B); the cross vector declared at the helper's top 173
 // (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173 (same code). The extra frame dword is the cross vector's own
 // 12-byte home (two members spilled into it); retail spills cross j and k as separate scalars with the sine between them.
+// M3 lane 2 r85 (fast with 0x28dab0/0x256bd0, both matched throughout; base 173, 42 of its differences are stack offsets
+// from the extra frame dword): in function_28dbd2, sine, dot3f(axis, v), cosine, `projection *= 1 - cosine`, scalar
+// cross(v, axis) j and k, rows `axis * projection + v * cosine - cross * sine` with cross i in row i 228 (1194 bytes, frame
+// 0x114; sine first and the cosine after the dot as in retail); on it 0 to 7 unused `long` locals at the caller's top
+// 228 each (the same code: the symbol-count phase does not move this body's XMM operands either); the scalar cross terms
+// before the cosine 227 (1199 bytes); cross3f(v, axis) first, then sine, dot, cosine 233 (1196 bytes); sine, dot3f(v,
+// axis), cosine, projection, cross3f(v, axis) vector 213 (1209 bytes, frame 0x11c; same as round 82's dot3f(axis, v) form,
+// re-measured 213); scalar cross(axis, v) terms added in the rows 229 (1200 bytes, frame 0x114). Helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

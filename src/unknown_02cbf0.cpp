@@ -91,6 +91,11 @@ static __forceinline long floor_to_long_inline(real value)
 // first and masks it twice (the flags term takes the register the entry term had); writing the chain as the flags
 // term, then the category's shift, then the entry's own word rebuilds the body byte for byte, and the permuter
 // (20 tries, 241 s) left the baseline at 10.
+// MiniMax D (11-14, run 90): no new form, no lower score (10): the first word's OR order still differs - retail ORs
+// the flags and the category before the other field while this build ORs them the other way round; thirteen
+// hand-written variants and a 300-second permuter run (26 tries) all produced byte-identical code, so what is left
+// is the order of the two ORs inside that word; re-measured at 10 (1033 bytes, as retail's).
+// MiniMax R (11-15): no new form, no lower score (10): the first word's OR chain still takes the flags term last where retail takes it first - re-associating the chain into retail's shape ((flags | category) | kept) compiles to byte-identical code, so MSVC canonicalises the operand order - and the kind's shift still lands in esi before the copy where retail shifts eax and copies it; the kind as a dword, the shift as a multiply by 0x20000000 and the entry's masked bits in a named local all give the bytes we already have.
 // score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
 // and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.

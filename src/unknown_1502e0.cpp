@@ -1091,6 +1091,15 @@ struct s_tail_transfer_traits
 // P495: Actual minimum-scan age/weapon/per-pass-clock workspace subsets, then actual shortest
 // workspace on the complete graph: eight 144 at 826 bytes. NOT kept: selected-traits/unit/NONE
 // ownership unchanged; original producer timing, no-seat pool copy, ties and complete body restored.
+// M3 lane 15 r86 (fast with the file's functions, 0xcbd50 and 0xcbe60): the no-seat branch as a hand loop of the existing 0xcbd50
+// in 0x1509e0's style (`held[hand] = function_cbd50(unit_index, <unit through the pool copy>->held_slots[hand])`, then
+// `primary = held[0]; secondary = held[1];`): with `long hand` 143 (832 B; VC unrolls it, each slot read is fresh, but 0xcbd50's
+// weapon read merges with the main unit); on the global 149 (the copy is then used once: same code); with `long primary;`
+// unpreset 169; cbe60 before the loop 219. With `short hand` 134 (809 B, frame 0x2c, register-masked 30 against 49: the loop
+// stays rolled with the array in memory, and the seat arm's primary moves into a register as retail's EDI). NOT kept: the
+// counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
+// `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
+// cbe60 before the loop 161 (802 B). Body unchanged.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1206,6 +1215,12 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 long function_cbd50(long unit_index, short weapon_index);
 
 // score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// m3 lane 5 r185 (fast with 0xcd7b0/0xcbd50/0x151aa0/0x151940, control 215): the bit-3 tests in a second loop after the
+// lookups 293 (1008 B); held and pending as one `long weapons[2][2]` 215 (same code); the pending lookup ahead of the
+// held one 207 (the pool pointer then takes EDI as retail, but retail reads the held slot first, so the order is against
+// retail's: not kept); `short hand` in the first loop 310 (1027 B); the weapon's own flags read once ahead of the slot
+// loop 371 (902 B); the mode clears as chained `modes[hand + 2] = modes[hand] = false;` in the first loop, the parent
+// loop or both 215 (same code).
 // M3 lane 6 r180 (fast): retail reads each held and pending weapon through its own lookup (the slot and the weapon from
 // one lookup, the unit index re-read from the player for each); 0xd1540's form per iteration (a pool copy per weapon,
 // the slot read and `weapon = NONE; if (slot != NONE) weapon = ...` on it, then stored) gives the one-lookup-per-weapon
@@ -1605,10 +1620,27 @@ void function_150820(dword *bits, bool local_only)
 
 // score 43 (was 43): player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
 // EDX, primary ECX, hand EAX; ours ECX, EAX, EDX); 0x151b80 shows the same exchange.
+// m3 lane 5 r185 (fast with 0x151b80/0xcd7b0/0xa8f80/0xcd4e0, control 43): the hand typed bool 89 (197 bytes); the
+// weapon and 0xcd7b0 tests held in a named bool 43 (same code); `result = true;` ahead of the 0xa8f80 call 71 (215
+// bytes); the `modes[hand]` test nested under the 0xcd7b0 test 43 (same code). Diagnostic: the names of player and hand
+// exchanged 43 (same code: register choice is not name-driven here). A 2100 s fast annealing permuter run (seed 185,
+// 175 tries) found none below 43.
 // M3 lane 6 r180 (fast): the 0xcd4e0 arm as `else if (function_cd4e0(...)) result = true;` 47; no weapon local (the
 // field read at the test and the 0xcd7b0 argument) 43 (same code); a guard return for a NONE unit index 80 (199
 // bytes); the weapon as a NONE preset set under `if (slot != NONE)` with one test after 43 (same code); the first two
 // together 47.
+// MiniMax G (11-14): no new form, no lower score (43): the difference is still only the register rotation - retail keeps
+// the player in esi, the hand in edi, the unit index in edx, the policy byte in cl and the scaled object index in ecx,
+// this build keeps them in edi, esi, ecx, al and eax - and both bodies are 210 bytes with the same instruction sequence.
+// New this round: the object lookup written as a four-byte entry array, ((long *)g_4e0300->data)[(player->unit_index &
+// 0xffff) * 3 + 2], keeps the native AND32 mask and the scaled index but still puts the pool in edx and the scaled index
+// in eax (43, 210 bytes); the shared player getter as an array index of the player table (43, same code); a pool copy
+// declared first for the lookup (43, same code); a unit-index local for the test, the lookup and the call (43, same code);
+// the hand as a conditional, a bool copy of the policy byte, a byte modes array and the modes array declared early (43
+// each). F393's word ordinal is the only form that recovers every retail role - player esi, unit index edx, hand edi,
+// policy byte cl, scaled index ecx - but it replaces the native mov eax, edx; and eax, 0xffff with movzx eax, dx, so the
+// body is 206 bytes and scores 64; the 32-bit mask and the word ordinal cannot be combined, as the cast folds the mask
+// away. The permuter ran 26 tries over 308 s (0.08 tries/s) and reported nothing better than the baseline 43.
 // MiniMax E (11-14): no new form, no lower score (43): the length still matches retail's 210 bytes and every
 // difference is the same pairwise register rotation (retail: player esi, hand edi, unit index edx, primary cl,
 // sete al; ours: player edi, hand esi, unit index ecx, primary al, sete dl); the permuter ran 625 s over six tries
@@ -1623,7 +1655,7 @@ void function_150820(dword *bits, bool local_only)
 // MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
 // rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
 // ecx, temp edx) and the permuter was killed at its time limit without reporting.
-// MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
+// MiniMax D (11-08): no lower score (43): the saved roles are exchanged - retail keeps the player record in esi
 // and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
 // retail reuses esi.
 // MiniMax B (11-06): no new form, no lower score; the player pointer and the hand still swap ESI and EDI

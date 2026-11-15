@@ -487,6 +487,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // both planar copies 702 (kept). On 702: float squares in the root 756 (3467 B); `MIN(1.0f, ratio)` at both clamps 702;
 // the 0x654 arm with `else local_21 = true;` and no initial value 746 (3471 B); the squared-speed floor as
 // `MAX(local_16 * local_16, 0.001f)` 704; a named `1 - field_64` complement for the three blend rows 702 (operands move).
+// P512: Actual collision-query blocked/clear result in bool/byte/short/long, on the double-free
+// 702 graph: eight 702 at 3473/3499 bytes. NOT kept: one-use receivers do not recover frame
+// 0x88 or shared query/planar-point home; original complete executable source restored.
+// P514: Independent configuration/query-vector/planar-point/position/response/correction/
+// persistent-collision/normalized-input lexical identities on the double-free 702 graph:
+// eight 702 at 3473 bytes. NOT kept: frame remains 0x8c versus 0x88; original body restored.
+// P517: Completed collision-query output scope ending before either branch, carrying blocked/clear
+// bool/byte/short/long results; 702/702/702/702/702/702/702/702.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -865,6 +865,13 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // out-of-line iterator step (0x16bb70) 71 (it stays a call); the header's calling iterator copy 70 (0x16bc00 out of line); the
 // key wrapper's conversion returning `long const &` 14 (diagnostic, header restored); the match test as two mismatch
 // `continue`s 14; a local key aggregate for the call, the test and the stores 14 (the 14s are the same code).
+// Round 106 (m3 lane 1, fast): `register` on the font parameter does not build (the checker's generated cast); the
+// whole body in a forced-inline helper with plain long parameters 14; the datum-iterator walk with the prediction read
+// in the body 14; a long return 20 (189 bytes; the font still EBX). Diagnostics: the iterator as a scalar index over
+// data_next_absolute_index_inlined 88 (203 bytes); `iterator.index = NONE` ahead of the header call 60 (191 bytes: the
+// index takes ESI across the call, the font EBX, the mask EBP); without the search loop 173, where the font takes ESI
+// and the character EDI. Reading: the hoisted bitmap pointer and count are coloured first (ESI, EDI), then the font
+// (EBX), the mask last (EBP); retail colours the mask before the font, as if its mask were a cross-block value.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
