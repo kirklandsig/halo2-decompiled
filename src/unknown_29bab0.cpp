@@ -468,6 +468,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // default then fully assigned leaves: 648/690/648/690/722/721/724/723 (fast control
 // 648, full 715). NOT kept: no native entry/home equality or gain; original full
 // Boolean decision, radial double, helpers and complete body restored.
+// m3 lane 15 r84 (plain each with 0x29b990 MATCH, 0x29b2e0 176 and 0x1f9e70 137 unchanged; control 715; fast gives 648 here):
+// local_6 += local_7 through the existing vector3f_add 757 (3478 B). Same code as the control (not counted): local_26 through
+// the existing vector2d_from_points2d; the side test and the flip test through the existing cross_product2d, each and both;
+// `__assume(local_2 != NULL)` in the steering arm; the output scale through the existing vector3f_scale; `local_27 =
+// MIN(local_27, local_20)`. Retail computes `0 - local_17.j` once (xorps/subss into XMM3) and reuses it in the side test
+// and local_25, where ours folds each negation into a subtraction (the named negation forms are listed above). Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

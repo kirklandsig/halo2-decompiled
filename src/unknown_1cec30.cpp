@@ -2549,6 +2549,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // 91/91/91/91; alias-conditioned scaler input/publication, then tiny/result pairs:
 // 477/645/477/477. NOT kept: no early velocity-load or property-zero repair;
 // original whole body, normalizer and scaler restored.
+// P491: Existing shared magnitude at normal/sample/both, original and inline contracts,
+// both forced and shared behind the existing length boundary: 91/91/91/91/91/91/91/91.
+// NOT kept: no early velocity j/k or property-zero repair; original complete body,
+// private magnitude helper and declarations restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

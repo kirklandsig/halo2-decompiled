@@ -1105,6 +1105,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P486: Standard coordinate-range dot reductions at initial/turned/old-side/new-side,
 // paired side/initial-turned/all/all-explicit operators: 180/277/258/258/267/288/296/361. NOT kept:
 // no native rotation or output-load repair; original full body and includes restored.
+// m3 lane 1 r103: reviewed (aligned 89, register-masked 49), no trial run. The first difference is the inlined rotate_direction's
+// products (ours loads axis.j/axis.k and multiplies by the vector's registers, retail copies v.j/v.k and multiplies by the axis
+// from memory); its body sits in src/unknown_1eb8a0.cpp, where every listed body form loses matched 0x1ecf50 or raises another
+// user, and the rest (side dots, flag byte, exits) is the listed commutative-operand and flag group.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
