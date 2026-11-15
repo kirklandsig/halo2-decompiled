@@ -932,7 +932,7 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
-// MiniMax R (11-15): score 175 (was 257): case 1's and case 6's player test inverted, so the NONE arm comes
+// MiniMax R (11-15), not kept (the merge measured 341 -> 340 fast, under the bar): reported 175 (was 257): case 1's and case 6's player test inverted, so the NONE arm comes
 // first and retail's case-1 block layout returns (the body is 1424 B against retail's 1444). Left: retail keeps
 // the non-NONE arm inline in both cases where this build keeps the NONE arm inline, this build's case 1 and
 // case 6 copies of the 0xcafc0 call sit side by side where retail keeps them apart, the result/presence byte
@@ -953,11 +953,6 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
-// score 175 (was 257): case 1's and case 6's player test are inverted, so the NONE arm comes first and retail's
-// case-1 block layout returns (1424 B against retail's 1444); left: retail keeps the non-NONE arm inline in both
-// cases where this build keeps the NONE arm inline, this build's case 1 and case 6 copies of the 0xcafc0 call sit
-// side by side where retail keeps them apart, the result/presence byte homes are still swapped, and the 0x1ffbd0
-// call still holds the actor index in EDI where retail reloads it from the stack.
 // score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
 // fall-through predecessor (retail: case 2's remembered 0x1e3b00 block; ours: the merged 0xcafc0 block).
 // Round 176 (m3 lane 5, plain): case 1's object index local renamed 257 (same code: the merge is
