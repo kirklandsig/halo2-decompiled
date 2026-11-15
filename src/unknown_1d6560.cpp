@@ -429,6 +429,8 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // P513: Original-case low-level admission/exclusion outcomes, bool/byte/short/long:
 // 96/96/96/96/96/96/96/96. NOT kept: no native type/entry recovery or equality; original
 // repeated dispatch, body acquisition, results and caller-compatible convention restored.
+// P535: Terminal case-11 upper-level admission/exclusion in bool/byte/short/long at its original producer; header-first/type/body allocation remains.
+// 96/96/96/96/96/96/96/96. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

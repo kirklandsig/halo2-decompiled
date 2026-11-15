@@ -504,6 +504,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // bit as `(bool)((definition->flags >> 3) & 1)` (retail's `mov; shr 3; test 1`) 933 (916f); all three 930; the squared length
 // computed before the combined radius 926f (same code); the other-actor skip as `if (!enemy) skip_classification = true;` 950f.
 // Body unchanged.
+// P535: Complete relationship inflation results, conditional/exhaustive/actor-inclusive producers; reduced control 926, full 920. New zero-result publication is absent from native retained-default paths; frame 0x2cb4 still exceeds 0x2cac.
+// 916/916/916/916/916/916/916/916. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
