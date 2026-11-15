@@ -418,6 +418,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [0]; the kind-7 read so indexed 96 [13]; case 7's kind test as `kind == 6 ? 8 : flags & 8 ? 7 : 6` 96 (other code) [0];
 // the rigid body declared before object_index 100 at 264 B [13]; object_index as a `word` read once with both type reads
 // unmasked 100 at 260 B [208]. Same code: the kind-7 switch with `default: return 1;`.
+// P513: Original-case low-level admission/exclusion outcomes, bool/byte/short/long:
+// 96/96/96/96/96/96/96/96. NOT kept: no native type/entry recovery or equality; original
+// repeated dispatch, body acquisition, results and caller-compatible convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

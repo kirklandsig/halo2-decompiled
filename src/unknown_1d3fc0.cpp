@@ -434,6 +434,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // M3 lane 7 r162 (fast, 0x1c4a80 matched): the normalizer's squared length through reciprocal_normalize.h's k, j, i statement
 // sum 153 (first difference +0x44), through its k, i, j sum 152; forward, up and the dot declared at the function top 110; up's
 // pointer declared at the top before forward's 110; forward's before up's 110 (same code each).
+// P513: Original-site matrix axis admission/exclusion outcomes, bool/byte/short/long:
+// 185/185/185/185/148/148/148/154. NOT kept: no exact reciprocal/late-k or projection repair; original
+// live flag observation, four-use normalizer, shared products and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

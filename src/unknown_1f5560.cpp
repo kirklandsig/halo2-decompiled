@@ -1122,6 +1122,9 @@ real normalize2d(point2f *v);
 // double/none, none/double, double/double, real/double, double/real: 135/135/135/170/153/175/153/170.
 // NOT kept: real captures tie; double receivers grow away from native extent and regress.
 // Original full body restored; initial DL retention and separate request/invalid return transport remain.
+// P513: Original-site movement-speed eligibility/exclusion outcomes, bool/byte/short/long,
+// on the retained separate facing/request graph: 135/135/135/135/135/135/135/135. NOT kept: no DL/return
+// repair or equality; original observations, thresholds, calls and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

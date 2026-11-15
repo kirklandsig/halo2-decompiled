@@ -1403,6 +1403,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 234/554/234/546/232/339/234/614. NOT kept: The native-sized memcpy copies tie 234; history memcpy gains only two
 // at 3050 bytes, and all overlap-safe copies regress. No native damping or raw/bounded home recovery. Original
 // complete executable body restored.
+// P513: Actual history admission positive/complement/nested/branch-produced, then prior-tick validity
+// positive/complement/nested/branch-produced: 484/484/234/508/484/484/234/499. NOT kept: no exact damping/vector
+// recovery; original observations, copy boundaries, helpers and complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
