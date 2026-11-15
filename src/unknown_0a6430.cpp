@@ -107,6 +107,11 @@ PRIVATE byte *update_object_0a6430(long index)
 // linear first (the call's order) 19; the mode as the bool result without `? 1 : 0` 126 (544 bytes); (diagnostic,
 // one-use) a `state + 0x50` pointer for the 0x100 compare and call 16; the 0x100 mask test and compare in one `if`
 // with the object read in place 16. The permuter (617 s, 22 tries) found nothing below 15 instruction lines.
+// M3 lane 9 r127 (fast): the value every caller drops (the third argument of each `v31(a, b, c, d)` caller) added as an
+// unused parameter before the state, at the definition, the header and all six calls 16 (byte-identical: LTCG drops it and
+// the callers stay matched); the same in the callers' own order (object index, mask, c, state) 16 (byte-identical); the
+// 0x40 block's object through the header form 16 (same code); the 0x100 quotient named as a region count 16 (same code);
+// that compare state-byte first with `!=` and the call in the else 17.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

@@ -1749,6 +1749,10 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // animation push as retail, so the render model's reload sets the order in the real build too; 0x1cbf50 keeping the
 // unused argument by a bare address expression after its call 378 (the argument is dropped). A compile-only build gives
 // another argument order, so it cannot screen this.
+// M3 lane 9 r127 (fast): the second sample call reading the channel's animation id directly (the first keeps the local)
+// 330 (1634 bytes); the factor as `(real)(1.0 / 30.0)` 2; the first call's 0.0f through a start-time local 2; the
+// definition, model and render-model lookups through a file-local inline tag getter 2; a const state pointer with the
+// flag block reading the animation and time through a const channel reference declared first in the block 2.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
