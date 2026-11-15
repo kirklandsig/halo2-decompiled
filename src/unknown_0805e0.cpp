@@ -52,6 +52,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax R (11-15): no new form, no lower score (43): a separate 16-bit successor local does split the
+// successor from the index, but the compiler still keeps the index in a scratch register and copies it into
+// the entry pointer, so the successor's own register is a general one and the & 3 mask stays an immediate:
+// the successor local with the index stepped at the loop's end 51, the same with the successor declared ahead
+// of the loop 51 and the same with the index stepped before the eligibility test 49, all worse than the kept
+// 43, so the original body stands.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;

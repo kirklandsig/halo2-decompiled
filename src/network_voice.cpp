@@ -1520,6 +1520,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax R (11-15): no new form, no lower score (60): the entry size as `include_mask ? 13 : 11` 147 and as
+// `11 + 2 * (include_mask != 0)` 146 both move the mask byte into a register before the compare where retail compares it
+// against a zero register; the size computed at function entry 163; the size declared before the clamped copy and the
+// player bit declared inside the capacity block 60 (the same code); the membership test written directly against the
+// queue's mask word 154 (it loses the helper's setne and test). The player bit in EBX against retail's EBP and the
+// entry size in EBP against retail's EBX stand, and with them the zero result cannot stay in EAX, so the capacity-fail
+// exit keeps its own epilogue (460 bytes against retail's 449).
 // MiniMax R (11-14): no lower score (60): retail's entry size comes from a compare and setne on the include_mask byte, a
 // value whose range it does not know, where this build zero-extends it - with a bool parameter MSVC always knows the
 // range is 0 or 1, so retail's form needs the parameter declared as a byte, a signature change this lane may not make.

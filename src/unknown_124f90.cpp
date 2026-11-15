@@ -2749,6 +2749,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // src/unknown_218ac0.cpp; declaring them long here leaves both calls unresolved (the linker puts the
 // return type in the name: LNK2001 on `long __fastcall function_218f50(...)`), and the delayed start
 // still stores the flag byte before the start time.
+// MiniMax R (11-15): no new form, no lower score (17): the sound set index is still sign-extended where
+// retail copies the dword and 0x219070 is still called with two arguments where retail passes one; both are
+// fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
