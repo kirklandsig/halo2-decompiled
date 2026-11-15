@@ -821,6 +821,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // state block 96 (491 bytes, both callers lost); one index shared by the copy countdown and the player loop 22 (same
 // code); a walked output pointer in the player loop's increment 26; the preset pair with the variant under the
 // live-state test 46; the preset pair with one shared index 46 (session ESI in both).
+// Round 108 (m3 lane 10, fast with the inlined callees and both callers; control 22): the preset pair declared at
+// function scope ahead of the result 46 (session ESI); member count and countdown `dword` 23 (`jbe`); the copy as
+// `do { ...; i++; } while (i != member_count)` 42; the machine buffer zero-initialised in its declaration (no memset)
+// 24, the player buffer the same way 148 (495 bytes). Same code: the opening in De Morgan form or with `== 0`/`== NULL`,
+// the copy source through `&session->members[i]`, players declared first, no address pointer (the cast at both uses).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

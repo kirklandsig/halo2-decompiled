@@ -862,6 +862,14 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // two complete graphs: 87/87/87/87/87/87/87/87. NOT kept: All eight tie 87 at native frame and extent; the unit
 // argument and subsequent scalar/query homes do not move. Every declaration restored. Original complete executable
 // body restored.
+// M3 lane 10 r108 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900; control 87, plain 87): the matched
+// siblings 0x1ae440 and 0x1a9ec0 read the unit into a named long once ahead of the 0x110ab0 test, as lane 17's match-only
+// form does. That form rebuilt 17; on it the guard's tests nested 17 and the unit local declared at function scope 17 (same
+// code); with the adjusted projection in the length local 17 (groups +0x14/+0x18 swapped). On this body: the size named for
+// both sums and the request stores short/long/type 87 (same code without the unit local), with the target lookup ahead of
+// the copies 92 (964 bytes); both k clears after the second copy 88; the radius read after the target vector 96; the adjusted
+// projection written into the length local 88; the unit's object lookup ahead of the lateral test 104; `-local_3.j` for the
+// side vector's i 87 (same code).
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
