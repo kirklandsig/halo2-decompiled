@@ -1290,6 +1290,11 @@ void function_143250(
 // P511: Standard real-return roots, band-two 15/5 and band-three 2/35/105/21/7, then all seven:
 // 1307/1307/1324/1322/1322/1324/1324/1266. NOT kept: nonexact root-return/precision contracts only change spill/scheduling;
 // qword fsqrt producers, frame 0x2fc versus 0x300 and displaced scalar homes remain. Original polynomial restored.
+// M3 lane 12 r127 (fast with 0x143250 matched, 0x22850 226, 0x23690 330; control 1333, register-masked aligned count 171):
+// retail gives band three's r6_r0 its own home (0x234, stored at retail 0x144008); its two uses are r6_r0_r7 and r6_r0_r8.
+// r6_r0_r8 declared right after r6_r0_r7 1567 (10734 B); r6_r0_r8 declared just ahead of band three's matrix[25] 1531
+// (10708 B); r6_r3_r8 declared right after r6_r3_r7 1560 (10739 B); both moves together 1563 (10723 B); r6_r3_r8 declared
+// just ahead of band three's matrix[23] 1532 (10712 B). Body unchanged.
 // P521: Current complete matrix initializers, band masks 1/2/4/3/5/6/7 and all immutable:
 // Third-band initializer alone recovers native frame 0x300 and first +0x4c, but regresses to 1498.
 // 1420/1410/1498/1420/1556/1535/1556/1556. NOT kept: no exact native matrix/scalar-storage recovery; original complete body restored.

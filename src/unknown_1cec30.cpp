@@ -849,10 +849,12 @@ void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_ha
 	}
 }
 
+/* a member: its one caller (0x1c4c50) sets up the index (ECX) before the component (EDX), as for a member
+   whose `this` comes first */
 // @retail 0x1d10b0
-void havok_component_rigid_body_linear_velocity_add(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
+void s_havok_component::rigid_body_linear_velocity_add(long rigid_body_index, vector3f const *velocity)
 {
-	hkRigidBody *rigid_body = havok_component_rigid_body_get(rigid_body_index, component);
+	hkRigidBody *rigid_body = havok_component_rigid_body_get(rigid_body_index, this);
 	hkVector4 impulse;
 	real mass;
 
