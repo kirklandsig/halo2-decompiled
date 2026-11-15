@@ -776,6 +776,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P527: Late request mode/class/type/all actual field-lvalue references, mutable then readonly:
 // 348/348/348/348/348/348/348/348. NOT kept: no destructive graph/base or byte-return repair;
 // original request arguments, fallback snapshots and complete executable body restored.
+// P531: Two-field default-name chains in both orders, then all six three-field
+// chains: 350/348/350/351/351/350/350/348. NOT kept: native destructive graph/base
+// reloads and return-byte normalization remain; some forms disturb the agreeing
+// lookup prefix. Original separate stores and complete executable body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

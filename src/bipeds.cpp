@@ -3092,6 +3092,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // On the 49 body: the rate named before the call 49 (computed on x87); the +0x134 flag through bit_vector_set 57 (237 bytes,
 // the failure path then retail's exactly); that plus the clears through word_flags_set 85; that plus the getter 57; the
 // first clear ahead of the settled store 49 (same code).
+// P531: Four original incoming-index identities and four original tag-pointer
+// identities: eight 63 at native 245-byte extent. NOT kept: extra EBP, widened
+// count/body transport and the hoisted 0x9fff clears remain. Original complete
+// executable body and all original identities restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4802,6 +4806,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // initialization, then complete construction graph: 343/336/336/336/336/446/331/441.
 // NOT kept: direction gains five above 30; no native matrix/origin/pivot-home equality.
 // Original complete executable body restored.
+// P531: Existing two-use pivot helper with complete branch-owned scalar outputs,
+// direct/captured inputs, repeated/cached scale and unity/nonunity-first arms:
+// 404/360/404/360/404/360/404/360. NOT kept: native matrix/origin/property
+// homes do not recover; original helper and complete executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5767,6 +5775,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // alone reaches the bar. Forms: the normalize length named 153 (the n = 1 code); length and rate named 162 (857 B); `side`
 // scoped around the crosses 79 (same code); rotate_direction's dot folded into its projection 144 (905 B; matched 0x1ecf50
 // lost); the crosses as left = up x forward then up = forward x left (cross3f, cross3f_staged) 91, both through cross3f 203.
+// P531: Complete two-vector rotation over a real pointer table, counted/while/body-step/
+// pointer-cursor traversals, up captured before traversal then at its original phase:
+// 338/338/338/354/335/335/335/325. NOT kept: every form regresses and loses native frame/
+// extent; original two calls, scalar/vector storage and complete body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
