@@ -3887,6 +3887,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // symbol count). Retail copies both register values before destroying them (`mov eax, ebx; shl`, `mov al, cl; neg`); our
 // forms give one or the other. The one-file LTCG harness of this file builds 4628 B (not usable). Mode zero's extra
 // texture test as `(long)configuration == NONE` 9 (same code).
+// m3 lane 14 r99 (fast, control 9; left: only the input word's shl hoisted above the clear in EBX and the two reload pairs):
+// the RGB word through the shifted local with the alpha word shifted in place 939 (CSE'd: the no-local code); the power of
+// two named for its two uses in modes zero and one 832 (4840 B); both selectors `long const` 9 (same code); const selectors
+// with no shifted local 939; the selectors from one if/else on small with no shifted local 952. Re-measured: no shifted
+// local 939 (shift retail's, but small loads into AL after fraction's move to EBP where retail loads CL first).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
