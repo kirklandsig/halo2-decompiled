@@ -536,6 +536,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // cosine arg_3's home). New on it: rotation rows with the projection term first in the i and k rows 171; the second
 // normalization's failure test as `!` 198 (1718 B); the half-pi limit as if/else 171; the else arm's zeros chained 174; the
 // two angle declarations moved up to the lookups 171.
+// P538: Unrounded planar-root/rotation-sine/rotation-cosine API producers, subsets
+// 1/2/4/3/5/6/7 then complete immutable: 263/179/179/263/263/177/264/264.
+// NOT kept: all regress; combined root/trig forms lose the matched sibling (24); original helpers and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

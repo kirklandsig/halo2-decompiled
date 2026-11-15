@@ -113,6 +113,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // force as `!(initialized && valid)` with the update time in a named local used twice 21 (same code); the force arm
 // inverted with the flag return nested in its own braces 25; the false store and the object's flag read (a named bool)
 // ahead of force 246 (at retail's length).
+// m3 lane 14 r99 (fast with 0x3d2c0, 0xd4080 and 0xd1850, control 21), all on the update-first form (`bool update = false;`
+// ahead of force, 218: the object's EBX load and homes as retail; left the timestamps in EDI/ESI, the false store after the
+// home store and no reload in the force arm): both timestamp NONE tests compared as signed longs 218; force declared bare
+// ahead of update and assigned after the false store 218; force as `!(initialized && valid)` 218; the elapsed clamp ahead
+// of force 239 (816 B); the object as `byte *const` 218.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

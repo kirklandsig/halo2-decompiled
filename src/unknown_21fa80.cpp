@@ -401,6 +401,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // `*(real *)&stream->unknown0c = gain;` 593 (1935 bytes, first difference +0x0); the stream's 0x20 bit compared through a `(bool)` cast
 // 544. Retail also writes the bit-5 test of the send flags and every input-bit test to the +0xe byte before branching (the volatile
 // shape), and inlines exp/log10/sqrt as x87 code: the file's /Op stays the blocker.
+// P535: Immutable original selected-gain bits/mode/direct producers, seven subsets then all with immutable changed outcome; native driver/stream/gain roles and 0x224 frame remain unrecovered.
+// 544/544/544/544/544/544/544/544. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

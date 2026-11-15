@@ -640,6 +640,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // add canonicalises); the tag arm's third-accumulator weight added between the second and third merges (accumulator order) 607
 // (other code, same count); the palette range as a `g_547f80` default overridden by an if 702 (3827 bytes). The top cause (the 0x130f60 result
 // moved to EDX with NONE in EAX) is unchanged.
+// P537: Actual returned alternate identity has an early existence decision, positive then
+// complementary bool/byte/short/long: 620/620/698/697/620/620/698/697. NOT kept:
+// extra code, no provider/NONE or palette/SIMD recovery; original helpers and body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -542,6 +542,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // load order (segment i first, global j and k first) 206 (same code: the operands canonicalise). On lane 13 r96's macro lead
 // (re-measured 256 at 1136 B): its rows in transform_vector's right/up/forward term order 256 (same code); x/y/z reals scaled in
 // place inside the macro, as transform_vector does, 295 (1174 B); both offsets through vector3d_from_points3d 256 (other code).
+// P537: Independent perspective-root/orthographic-root/normalizer double API-result
+// producers, seven subsets and immutable all: 207/206/238/207/239/238/239/239.
+// NOT kept: no exact result or frame recovery; original math APIs, helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

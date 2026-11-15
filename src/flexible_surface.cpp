@@ -365,6 +365,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax S (11-15): no new form, no lower score (117, was 117): on this body the row-i projection operand swapped to
+// projection*axis.i compiles to retail's own order and changes no byte (round 41's projection*axis rows were on the field-wise
+// `old` copy, not here), and a permuter run with a new seed stays at the starting score; the frame is still 0x28 against
+// retail's 0x20, since retail keeps the old direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and its
+// dot is summed k, j, i, an order the shared dot3f cannot produce.
 // MiniMax B (11-13): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches cross3f and dot3f; the rotation in place is the shared rotate_vector_170d70 body written out, which is kept only with a match.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
@@ -750,6 +755,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 158, sine then the axis draw then cosine 158 (all three the same code); the projection first (re-measured 163) with
 // cross3f_staged 163, with dot3f(&global, &axis) 163. Retail computes the dot first, then cross j and k (spilled), then cross i inside
 // the i row (0x177d10's statement order), which neither shared cross helper gives. Body unchanged.
+// P537: Actual normalization return/absolute-magnitude producers, real/double/const-real/
+// const-double: 117/118/117/118/117/118/117/118 at 880 bytes. NOT kept: no exact
+// result or frame recovery; original call/test, shared products and complete body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -882,6 +890,7 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side
 // loop and the outer vertex calls stand as they are.
 // MiniMax C (11-01): no new form, no lower score.
+// MiniMax S (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
 // score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
 // tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.

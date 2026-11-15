@@ -196,6 +196,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // object parameter named source_object_index 116, both 116, the tag named definition_index 116 (parameter names do not
 // move the EBP contest); the started test and dispatch in a forceinline helper taking the object by value with its own
 // parameter's address taken 116 (the address folds away).
+// Round 166 (m3 lane 7, plain, every object read plain, control 116): the positioned arm first under `object_index != NONE
+// || positioned` 116; the clamp through the existing PIN_126660 macro 116; the description bit as one ternary assignment
+// 116; the sound index declared per arm, each arm storing it and returning on success 165 (537 bytes); the tag index
+// copied once into a local used by every later read 116.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

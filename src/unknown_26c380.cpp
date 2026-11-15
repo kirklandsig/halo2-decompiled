@@ -579,6 +579,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 397 (1617 B). On the goto form with the line as plane2f {n, d} (304, 1612 B): the 2-D dot written vector-first 304 (same code);
 // one to four unused long locals 304/304/304/303. In the 32 form and in retail one priority order sets both the three XMM homes
 // and the stack slots (ours n.j, n.i, d; retail d, n.j, n.i).
+// P538: Actual traversal-limit outcome at its original word comparison, positive/complementary
+// bool/byte/short/long: 244/244/244/244/244/244/244/244. NOT kept: no byte/line/sector-home
+// or shared-tail repair; original count test, edge/query observations and complete traversal restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
