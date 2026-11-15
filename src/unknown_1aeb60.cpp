@@ -588,6 +588,10 @@ struct s_1af5c6
 // Diagnostic (not kept): the ignore index's address taken 136 (frame 0x84). Left as before: the mask temp (EAX, retail ECX),
 // the ignore index's load (retail at the head of the block after the mask, as an IR load the scheduler hoists; ours right
 // before its push) and the distance's home (+0x10, retail +0x14).
+// Round 183 (m3 lane 6, fast with 0x1af810, 0x1b2770 and 0x1c8df0, which reads 20 as the full build): a 600 s
+// permuter run with those three as context (40 tries) best 20; the raised source z as `local_5.z + 0.05f` 22; the
+// cluster index chosen by one conditional expression 20 (same code); the prop state pointer const 20 (same code); the
+// mask's 0x20 bit cleared with `&= ~0x20` on this form 20 (same code). Still BLOCKED-BY 0x1c8df0's call-site inlining.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

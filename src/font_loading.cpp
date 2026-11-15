@@ -830,6 +830,9 @@ static inline long font_character_pixel(long alpha, long color)
 // font_character_pixel without the (byte) cast on the low alpha bit, used at this function's two pixel stores
 // only. A twin helper picked by score is not kept; if retail differs, change the shared helper and keep its other
 // callers matched. Code back to main, notes kept.
+// P530: Plain switch/ordinary fill induction pairs (for/while/body increment),
+// eight nonoriginal pairs: 59/59/59/59/59/59/59/59. NOT kept: no native
+// parity/literal/run-register repair; original indexed fills and complete body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

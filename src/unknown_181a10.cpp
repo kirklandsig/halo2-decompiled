@@ -908,6 +908,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the decoded type named 238 (a scheduling shuffle only). Diagnostic (reverted, not a source form): a full memory barrier
 // ahead of the pointer test and of the byte test gives retail's three data loads but also reloads second->shape before each
 // (retail loads the shape once), 331 (1255 B): only a reload of the data field alone fits retail, and no permitted form gives it.
+// m3 lane 15 r88 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the material test nested
+// under the component/kind test 238 (same code); the classifier comparing its own copy (`limited != value`, one data read)
+// 320 (1243 B); the fraction test as `fraction <= distance` 304 (1243 B); `valid` declared at the top 263 (1246 B); `hit`
+// declared ahead of the origin copy, assigned after it, 238 (same code). Body unchanged.
 // P516: Binary-enumeration result domains at carried validity/root/key/distance producers,
 // positive then complementary encoding: 284/248/238/238/249/248/238/238.
 // NOT kept: no gain or frame recovery; original byte result, guards, observations and collector restored.

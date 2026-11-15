@@ -1213,6 +1213,10 @@ void function_2118c0(void)
 // the band loop's foot (`row = b << 3;` after `b++`, zero before the loop) 148 (784 B: rows unreduced, row re-shifted,
 // b kept); a `word` band counter 10 (same code); the wrapped rows relative to the current row pointer (`p1 + (w3 - k) * 8`)
 // 263 (858 B).
+// M3 lane 8 r171 (fast with 0x212100): the wrapped knot indices written in place in the three row subscripts (no
+// index locals) 174 (756 B); the band loop over a short row stepped by 8 to 24 with no band counter 150; a `word` band
+// counter with `long row = b * 8` 150; the seeding loop's row written `(b << 3) + k` with `long row = b * 8` 150, with
+// the band row as now 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2683,6 +2687,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // squares over the z, x, y differences defined and summed in three orders (six forms) 11 each; the function's own
 // locals (z,x,y or x,y,z) ahead of an expression-only helper (eight forms) 418-432 (1940/1944 bytes); no helper,
 // the locals in the six definition orders with a staged sum declared before or after them 45 (y before z) or 47.
+// Round 108 (m3 lane 10, fast): the helper also filling a `vector3f *delta` out-parameter: filled k, i, j with outer
+// x, y, z copies 336 (retail's colours, z subtracted fully first, case 7 loses its fold); filled j, k, i with outer
+// copies 343 (y first, y XMM2, x XMM3), with the copies declared z, x, y 349; the cases reading delta's fields directly
+// 365 (y first and y XMM3, but z XMM2, x XMM0, sum XMM1; the fill order and a vector3d_from_points3d fill give the same
+// code); that with a one-expression sum 363.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

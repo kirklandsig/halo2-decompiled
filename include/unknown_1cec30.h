@@ -445,6 +445,7 @@ struct s_havok_component
 	real rigid_body_mass_get(long rigid_body_index);
 	real function_1d1230(long rigid_body_index);
 	void rigid_body_matrix_get(long rigid_body_index, struct transform4x3f *matrix);
+	void rigid_body_linear_velocity_add(long rigid_body_index, vector3f const *velocity);
 };
 
 inline s_havok_component *havok_component_get(long component_index)

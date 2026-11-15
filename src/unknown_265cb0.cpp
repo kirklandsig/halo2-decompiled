@@ -370,6 +370,11 @@ real function_30bf0(vector3f *vector);
 // MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
 // first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
 // against retail's 1308.
+// MiniMax R (11-15): no new form, no lower score (84): re-measured at 1310 bytes against retail's 1308, the
+// remaining differences are the stack homes (ours at frame+0x10, +0x18 and +0x1c where retail keeps them at
+// +0x1c, +0x28 and +0x30) and the two seat-loop cross products, whose operand order differs because both
+// products are computed by a helper that lives in another file's header and is therefore not this lane's to
+// rewrite; every form in the note block below has already been measured, so the body stands.
 // score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.

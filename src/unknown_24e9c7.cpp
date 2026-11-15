@@ -487,6 +487,13 @@ struct s_24e9c7_points
 // size itself, spilling it to the side point's own home at -8; every in-place form here folds the negation out instead.
 // M3 lane 12 r126 (fast with 0x24e59f/0x22a664, matched): up, side and back as aggregate initializers 125 (same
 // code). No code-changing form found outside the note. Body unchanged.
+// M3 lane 13 r96 (fast with 0x24e59f/0x22a664, both MATCH; control 125): side filled from the across scalars and scaled in place
+// (`side.x = across_i; ... side.x *= (real)half_width;`) 139 (746 B); the half width converted once into a named real with
+// the side products y first 125 (743 B, other code); in-place side with `size * (0.0f - forward_j)`, the named real half width
+// and y-first scaling 141 (740 B); an across point copied into side by aggregate assignment and scaled in place 178 (770 B,
+// frame changes); the in-place side with the half-width scaling y first (lane 12 r124's 123 form) re-measured 123, with
+// `-forward_j * size` the same code, with the unscaled perpendicular scaled by size in place 141 (752 B). None spills the
+// across j product to -8 ahead of the heights, so result keeps -8 (retail -0x10).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
