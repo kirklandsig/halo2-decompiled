@@ -368,6 +368,17 @@ __forceinline bool function_184448(long arg_0)
 // MiniMax D (11-11): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
 // initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
 // 0x48e70 call, whose definition is in another machine's file.
+// M3 lane 10 r106 (fast; masked aligned count in brackets, base 454): retail's normalizes square each component with
+// memory operands (`fld [k]; fmul [k]`, sum k, j, i) and keep the root on the x87 stack for fabs; the double-product
+// helper here loads each component once and pops three leftovers. The zero-velocity copy and the force-record lookup
+// ahead of the sample normalize (retail schedules both inside its x87 block) 981 [430]; both normalizes through the
+// existing normalize_inline 982 [414] (4563 B; its squares come k, i, j); the helper as `(real)sqrt((double)(k*k + j*j +
+// i*i))` with the scale arm first 990 [415] (4563 B; the compile-only build gives retail's x87 block exactly); reorder plus
+// normalize_inline 958 [407] (4590 B, 994 instructions as retail; seven points, not kept); that plus the axis table read
+// at each use 967 [374] (frame 0x11cc, first difference +0x1c); plus a long vertex counter 1006 [396] (4622 B); plus a
+// long bounds index 991 [383]; reorder plus the float-sum helper 963 [393] (4596 B); reorder, normalize_inline and the
+// per-face bounds at the face-loop top 969 [412], the same on the axis form 969 [365]; reorder, normalize_inline and a
+// bool edge side 963 [397]. The positional count stays near 965 because the first block's registers shift every line.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

@@ -1799,6 +1799,13 @@ done:
 // form (re-measured 27 at 236 bytes): the type local `long const` 27, the name entry read as a short array (fields
 // [0x10]/[0x11]) 27, the three definition reads in the orders size, palette, placement and placement, size, palette
 // 27/27 (all four the 27 form's code); the call returned inside the test 81 (244 bytes, round 174's code).
+// Round 105 (m3 lane 10, fast; on the 27 form unless noted): the definition declared bare before the type 27 (same
+// code); one inline wrapper doing the table reads and the call 30; the placements pointer stepped in place by the
+// product 27; the scenario global read for the palette only 34; two definition locals, one per read group, 27. A
+// 600 s permuter run (57 tries) on the 27 form found 21 only with a volatile datum and swapped call arguments. Reading:
+// retail's `mov esi, eax` copy is the shape of matched 0xa5bd0 (`mov edi, ebx` before its +0xe/+0xa reads), where the
+// re-reads sit in a later block than the first read; here every read is in one block and CSEs into one value.
+// Diagnostic: `__assume(type >= 0)` before the table read 27 (no change).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

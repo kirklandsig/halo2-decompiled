@@ -1230,6 +1230,10 @@ bool __stdcall function_2399da(long controller_index)
 // MiniMax A (11-14): no new form, no lower score (90); the identity pointer and the requested rank still take the
 // two registers the other way round, so ours copies the identity into eax before the removal call, and that copy
 // costs the two bytes that move every later jump.
+// M3 lane 10 r106 (fast with 0xac050/0xac360/0x2399da): the requested rank copied into a local at function entry 90; the
+// may-change flag as `(flags & 0x800) != 0` 90; the permission compare as `(long)member.dwPrivileges < own_rank` 91; the
+// rank read once through its own address at the dispatch 90, and through its address at each of the four uses 90 (all
+// but the third the same code): taking the parameter's address does not move it off the colouring tie.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

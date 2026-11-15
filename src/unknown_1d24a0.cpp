@@ -465,6 +465,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // unrolled into three `mulss` and keeps both vectors in memory, while this build's rolled loop walks a counter and leaves a 0x1f0 frame
 // against retail's 0x1d4; a by-value helper that returns the scaled vector (measured this round) is worse at 1555 (4795 bytes), and the
 // earlier unrolled pointer form is worse at 1199 (4008 bytes).
+// M3 lane 10 r106 (fast; masked aligned count in brackets, base 366): the matrix product and quaternion conversion as
+// two statements (no nested returned pointer) 917 [367] (4283 B); the slot index read into its local ahead of the
+// attached-object lookup 946 [359] (4244 B); the other three solver coefficients as `arg_1 * field` 902 (same code); the
+// component and slot locals renamed to the other sort order 902 (same code); the angular pair read from the record at
+// each use (retail's [ebp+0x58]/[ebp+0x5c]) with a long scale counter 950 [357] (4220 B). Retail re-makes its zero
+// (`xorps`) and reloads every live XMM value after both 0x24590 calls although 0x24590 is pure x87.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
