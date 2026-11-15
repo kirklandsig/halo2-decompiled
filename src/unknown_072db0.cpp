@@ -1458,7 +1458,6 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// NOT kept (coordinator screen, MiniMax C 11-15): a new #pragma (reverted): `#pragma optimize("g", off)`; the body is main's again.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
