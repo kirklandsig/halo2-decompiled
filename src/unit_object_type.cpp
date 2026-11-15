@@ -7321,6 +7321,17 @@ public:
 // declaration of 0x106030 (diagnostic, reverted at once) leaves it inlined (498). Ours keeps
 // weapon->definition_index and the pool data pointer in frame slots across the slot loop because the inlined
 // 0x106030 writes no memory; retail's call to it forces the reloads it shows.
+// MiniMax E (11-14): no new form, no lower score (492): the pool read for the two header lookups still compiles to
+// `mov eax,[0x4f4eac]; mov ecx,[eax + 0x44]` where retail loads the pool into ECX and reuses that register for the
+// data pointer (`mov ecx,[0x4e0300]; mov ecx,[ecx + 0x44]`), so retail's first lookup is `mov edx,[ecx + eax + 8]`
+// (the data as the base) and ours is `mov ebp,[eax + ecx + 8]` (the offset as the base). Worse: the pool and the data
+// in locals (the file's matched pattern) 500 (the data then takes EBP and EBP is pushed, retail keeps the data in
+// ECX); the data as a local of g_4e0300->data 500; the headers array in a local 500; the pool local used at both
+// lookups 492 (no change); the data local for the unit only and the macro for the weapon 507; empty/loaded declared
+// before the other flags 492 (no change). Still differs: the pool register, the base/index order of the first
+// lookup, the unit in EBP (retail keeps it in EDX and stores it), the weapon definition in a frame slot (retail keeps
+// it in ESI), the empty flag in a frame byte (retail keeps it in DL), the slot loop's induction registers and the
+// frame slot layout.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -9046,6 +9057,18 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax E (11-14): 493 -> 456 (2204 bytes vs retail 2229): the unit and the parent unit read through one pool
+// local (objects = g_4e0300 with its data pointer in data, the file's matched pattern), the material local typed
+// c_type_47f957 (its copies are word moves, as retail's) and the range read from the weapon definition at each use
+// (the frame is 0x17c as retail's; with a range local it is 0x180). The prologue now loads the unit index from the
+// stack first and keeps the pool in EDI with the unit in EBX, as retail does. Still differs: the tag table is in ECX
+// and the data pointer in ESI (retail: ESI and ECX), the definition is stored before the weapon index test (retail
+// stores it after), the -1 is materialised late (retail holds it in EBP and compares `cmp cx, bp`), and the
+// definition and unit sit in slots 0x50/0x58 (retail: the definition alone in 0x58). Worse: the pool local at every
+// lookup (543), the weapon index through the existing function_cbd50 (514) or as `= NONE; if` (473, 534), the NONE
+// locals declared before the weapon index (502, 537), the pool local without the data pointer (474), the tag table
+// as a local alone (487), the material class alone (487).
+// score 456 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
@@ -9099,11 +9122,13 @@ struct s_unit_melee_collision
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
-	s_unit *unit = UNIT_GET(unit_index);
+	s_record_pool *objects = g_4e0300;
+	byte *data = objects->data;
+	s_unit *unit = *(s_unit **)(data + (unit_index & 0xffff) * 12 + 8);
 	byte *local_98b918_2 = UNIT_DEFINITION_GET(unit);
 	short index = unit->current_weapon_index;
 	long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
-	short material_index = g_47d8e0;
+	c_type_47f957 material_index(g_47d8e0);
 	point3f point = unit->position;
 	vector3f normal = *g_4687b0;
 	long hit_index = NONE;
@@ -9132,7 +9157,6 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		up.k = aim->i * across.j - aim->j * across.i;
 		real width = *(real *)(local_67e06b + 0x1b0) * 0.5f;
 		real height = *(real *)(local_67e06b + 0x1b4) * 0.5f;
-		real range = *(real *)(local_67e06b + 0x1b8);
 		across.i *= width;
 		across.j *= width;
 		across.k *= width;
@@ -9146,9 +9170,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				vector3f ray;
 				s_unit_melee_collision collision;
 
-				ray.i = (real)i * across.i + (real)j * up.i + aim->i * range;
-				ray.j = (real)j * up.j + (real)i * across.j + aim->j * range;
-				ray.k = (real)j * up.k + (real)i * across.k + aim->k * range;
+				ray.i = (real)i * across.i + (real)j * up.i + aim->i * *(real *)(local_67e06b + 0x1b8);
+				ray.j = (real)j * up.j + (real)i * across.j + aim->j * *(real *)(local_67e06b + 0x1b8);
+				ray.k = (real)j * up.k + (real)i * across.k + aim->k * *(real *)(local_67e06b + 0x1b8);
 				collision.material_type = NONE;
 				if (!function_1697c0(0x2480000f, &center, &ray, unit_index, NONE, (s_collision_result_1697c0 *)&collision))
 				{
@@ -9162,7 +9186,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				case 3:
 					if (hit_index == NONE)
 					{
-						material_index = collision.material_type;
+						material_index.m_index = collision.material_type;
 						if (collision.bsp_surface_flags[0] & 8)
 						{
 							surface_type = collision.bsp_surface_flags[1];
@@ -9186,7 +9210,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 					{
 						hit_index = object_index;
 						hit_type = (char)object->type;
-						material_index = collision.material_type;
+						material_index.m_index = collision.material_type;
 						hit_t = collision.t;
 					}
 					break;
@@ -9241,7 +9265,8 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		{
 			goto impact;
 		}
-		byte *parent_definition = UNIT_DEFINITION_GET(UNIT_GET(hit_index));
+		data = objects->data;
+		byte *parent_definition = UNIT_DEFINITION_GET(*(s_unit **)(data + (hit_index & 0xffff) * 12 + 8));
 		if (!((*(dword *)&UNIT_SEATS(parent_definition)[unit->parent_seat_index].flags >> 11) & 1))
 		{
 			goto impact;
@@ -9255,7 +9280,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 
 			if (*(long *)(graph + 0x60))
 			{
-				material_index = *(short *)(*(byte **)(graph + 0x64) + 0xce);
+				material_index.m_index = *(short *)(*(byte **)(graph + 0x64) + 0xce);
 			}
 		}
 	}
@@ -9270,7 +9295,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		hit.unknown04 = surface_type;
 		hit.unknown08 = surface_a;
 		hit.unknown0c = surface_b;
-		hit.material_index = material_index;
+		hit.material_index = material_index.m_index;
 		/* the header types this byte as a bool, but retail stores the seat group byte unchanged */
 		*(char *)&hit.unknown18 = hit_seat;
 		hit.unknown14 = 0.0f > scale ? 0.0f : (scale > 1.0f ? 1.0f : scale);
@@ -9293,9 +9318,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		}
 	}
 impact:
-	if (global_material_get(material_index))
+	if (global_material_get(material_index.m_index))
 	{
-		function_ceee0(unit_index, damage_index, material_index, &point, &normal);
+		function_ceee0(unit_index, damage_index, material_index.m_index, &point, &normal);
 		if (self_damage_index != NONE)
 		{
 			s_type_1e6529 damage;
