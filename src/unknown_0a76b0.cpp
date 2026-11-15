@@ -2053,6 +2053,13 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // Diagnostics (reverted): with a constant primary the type loads at the bit test, after the movsx (133); with a
 // constant bit the compare reads the argument from memory ahead of the lookup (100). Permuter (fast, anneal, 600 s):
 // 27 tries, best 11.
+// Round 201 (m3 lane 4; a one-file LTCG harness of this file reproduces the entry block, candidates confirmed fast): the
+// type read through its own address into a local after the lookup 11 (folds back); 13 renames of type/primary/actions/
+// unit_index and a `!= false` test 11 (same code); actions and primary declared bare, assigned in that order 11; the unit
+// lookup in its own block scope 90 (233 B); the masked index in a named local 26. Retail's order (global in ECX, then the
+// type reloaded into ECX) appears only when the lookup is its own statement ahead of `primary`: a single-use `actions` is
+// forward-substituted into the test, so the compare always comes first; a unit or header statement is then reused by the
+// put-away code after the branch (harness 72/68), where retail reloads the global and data and keeps only the scaled index.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {

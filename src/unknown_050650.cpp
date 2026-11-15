@@ -1861,6 +1861,11 @@ struct s_actor_looking_structure_view
 // 0x296e60 303 -> 311 (1460 B), so the shared helper change is not keepable; left at 13: the dot's accumulator (XMM2 for
 // XMM0), the j row's XMM5/XMM6 and the score's inner pair k, i (retail i, k); scans on it 13 (top n = 1 23). The trace's
 // first byte as the named bool of the sector-trace record needs a cast (the real signature takes the path record).
+// Round 201 (m3 lane 4, fast with 0x2980d0, 0x296e60, 0x297660, 0x26c590 and the trace/normalise callees): a named
+// pointer to the actor's facing for both copies 144 (928 B); the selected direction by index at its three uses 39; the
+// structure/pathfinding lookup ahead of the actor 224; the normalised length named before its test 144 (928 B);
+// re-measured the up-axis pointer local 70 and the candidate pointer 139; permuter (600 s, seed 201, 62 tries) none
+// below 23. Retail's dot starts `movss xmm0, [axis + 4]` hoisted above the candidate copy; ours starts v.k * axis.k.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
