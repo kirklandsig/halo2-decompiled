@@ -1270,6 +1270,12 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // single-producer t03 scores 306 reduced but 299 plain at 1404/1444, so it regresses and shortens away from
 // retail; every form restored. Original complete executable body restored.
 // MiniMax A (11-14), NOT kept: 335 (was 341), a 6-point gain, under the 8-point bar for a function above 30.
+// Round 105 (m3 lane 1, fast with 0x297a50/0x297660/0x2980d0 and every callee, control 258 = full 257): the remembered
+// branch of cases 1 and 2 as one shared forced-inline helper (0x210850, then 0x1e3b00 unless aiming) 258 (same code: ours
+// still loads the object before the pushes and copies &point into EDI); that helper returning false when aiming 258 (same
+// code); point_valid set once at a label ahead of aim_at_point for cases 3/5/6 368 (the three callers drop to 4/1/2, as
+// round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
+// `field_x50962e != NONE` test 258 (all same code but the label form).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

@@ -472,6 +472,11 @@ struct s_24e9c7_points
 // named once (`long shader_index`, test and call) 174 (742 B); the marker's kind named once for the bounds tests and the index
 // 130; the sequence index read from the kind at its four uses 125 (same code); the sequence's fields read through
 // `group->sequences[sequence_index]` at each use (no `sequence` pointer) 163 (747 B). Body unchanged.
+// M3 lane 5 r184 (fast with 0x24e59f/0x22a664, both matched each time; control 125, masked aligned 94): `size += 1.0f;` as
+// a second statement 125; the integer dimensions first in both extent products (`(real)bitmap->height * (bounds.y1 -
+// bounds.y0) * scale`) 125; size, the across pair and scale as `real const` 125; the forward pair read through one point
+// view of the placement for the across products and up 125; the kind, group, sequence and bitmap pointers `const` 125.
+// None moves the early across spill or the homes above the result. Body unchanged.
 // M3 lane 12 r124 (fast with 0x24e59f/0x22a664, both matched each time; base 125). In-place side = the side point filled right
 // after size with the across products (`side.x = size * -forward_j; side.y = size * forward_i;`, no across locals) and later
 // scaled by the half width: re-measured 144 (746 B), with `(0.0f - forward_j)` 139 (742 B). New: the size step written y first
