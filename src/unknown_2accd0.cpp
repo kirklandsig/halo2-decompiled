@@ -1070,6 +1070,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // signature buffers at function scope 177 (688 bytes); with the signature case's own byte count 89; on this body,
 // `body_size > body_offset` for the body test 162 (689 bytes). The `fadd` 2^32 and 1.0f constant lines (3) are flagged
 // as differing targets here, where 0xdaaa0's identical constant fields verify.
+// m3 lane 9 r123 (fast with the file's 19 other functions): the caller-buffer arm setting size to 0xffffffff with one MIN
+// after both arms 155 (VC keeps the constant, `or edi, -1`, and the clamp becomes cmova); diagnostic re-measure of no total
+// local 88 (head as retail, but the hoisted body_size coalesces with the signature position in ESI, so header/handle
+// temporaries rotate one step; with the total local the head's EAX shifts the rotation back); the caller-buffer arm's
+// size as `size = body_size; size -= body_offset;` 34; `real total_size = total;` (implicit conversion) 34; the total typed
+// `unsigned long` 34; the total summed header, signature size, body 34 (all same code).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

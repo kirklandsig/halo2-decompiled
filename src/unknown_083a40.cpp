@@ -783,6 +783,15 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // 0x84e90/0x69260; reduced image agrees at 28): about 30 tries in 8 minutes, none better (stopped at the run's time limit).
 // The occupied record's apply-update given `&watcher->players` 28 (same code); the swap test as `slot != NONE && i != slot`
 // 29.
+// Round 101 (m3 lane 11, fast with the file's functions and 0x84e90/0x84c90/0x69260, all others MATCH): an unused local at
+// the top 28 (same code). On the swap order (collection, player, update, other) at definition, declaration and call
+// (re-measured 32: the swap call and the occupied block's head are retail's; left are the occupied key's grouping, ours
+// (inverse + cursor) + collection, retail (collection + inverse) + cursor, and the last record's load order): the last
+// record's controller read declared before unknown14 43; the occupied key indexed by `update->player_index` 32, as
+// `&update->key` / `&...key` 32, `collection` defined before the session-mask `continue` 32, `collection` through an
+// inline accessor returning `&watcher->players` 32 (all four the same code as the swap-order base). Reading: the key sum
+// is canonical for every spelling; only the operand ranks move it, and none of these moves `collection` below the
+// hoisted inverse base. Restored to main's order.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

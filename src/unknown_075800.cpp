@@ -961,7 +961,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
-// score 143 (was 153): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
+// score 143 (was 143; 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
+// Earlier 143 (was 153).
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
 // Earlier 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
@@ -1446,6 +1447,17 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // classifiers, every case body, lookup and call tuple restored.
 // P497: Connection completion at the primary join on the accepted primary-11/terminal-18 graph, seven subsets then all primary operations: 196/196/196/196/196/196/196/196 (reduced control 196; full 143).
 // NOT kept: no delayed ESI save or outlined terminal-handler repair; original complete dispatcher and all call tuples restored.
+// M3 lane 12 r124 (the r121 one-file LTCG harness, plain bytes; control 126 for the plain 143, the one retail-order switch 145
+// at 440 B with type ECX, address EAX, message stacked): on the one switch, the three lookups through a plain `inline` member
+// `find_connection(address)` 179 (416 B: the helper stays out of line, type EAX, address ECX, message stacked), through a
+// file-local `static inline` helper taking (handler, address) 179, through the member defined where it is declared 179 (the same
+// code each); that member helper on this two-switch body 176 (453 B); the in-band types 1, 15, 16, 17, 19, 20, 21 as empty
+// `break` labels beside 18 in the late switch 126 (same code). The address stays a register argument whenever the lookups
+// take it directly or through a call; only an inlined use across a call (the late 0x94420) stacks it.
+// P499: Complete classifier with former terminal case 18 before primary cases 2/3/4/8/9/10/12/13:
+// 216/216/216/216/216/218/218/218. NOT kept: All regress against reduced control 196, shorten to 420 versus native
+// 444, and lose the correct incoming allocation; full baseline 143 stays authoritative. Original complete
+// executable body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

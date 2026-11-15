@@ -836,6 +836,11 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // test inverted with an early return ahead of the 0xe4bd0 call 13 (all the same code). Still BLOCKED-BY 0xe4bd0
 // (src/bipeds.cpp, held by another lane this round) and BLOCKED-BY 0xe5930: retail calls 0xe5930 from all six of its
 // callers, ours expands it inside 0xe4bd0 (113 bytes against 61), which gives 0xe4bd0 the EAX convention.
+// M3 lane 7 r162 (fast): the type-mask test as TEST_FIELD_BIT 10 (93 bytes: the shift narrows to `mov al, 1; shl al,
+// cl`, retail shifts EAX); the existing word_flags_set for the +0x33e clear 10 (95 bytes, round 112's form re-measured);
+// both 9 (92 bytes, narrow shift); with byte_flags_set for the +0x10a clear too 9; the mask spelled `(1 << 0)` with the
+// word setter 10. None kept (the 9s rest on a narrowing bool cast, the 10s gain 3). Still BLOCKED-BY 0xe4bd0 (src/bipeds.cpp
+// held this round) and 0xe5930: the only differences left at 10 are the tail call and the argument register.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -3478,6 +3483,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // ebp); memcpy record copies 132; record copies straight from the seat and the definition field (no source
 // locals) 127. Re-measured: record copies from the source locals 132; the byte result 85 (396 bytes, but one
 // merged setne tail where retail has three epilogues).
+// MiniMax S (11-14): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once and copies the five dwords from it.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -3650,6 +3656,11 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // the pool pointer ESI and a `mov ebp, edx` follows the loop); a walk-local last index under no guard 12 (folds away);
 // the root's NONE in an else arm 95 / 86 (retail's pair, `or ebp, -1` after the loop). Permuter (fast, anneal, 600 s,
 // 71 tries): best 12.
+// M3 lane 7 r162 (fast, 12 throughout): the Havok part as a forceinline helper taking the root and the object index
+// (diagnostic: the root as an inlinee parameter) 12, same pair; the component index read once into a named local for the
+// test and the lookup 87 (293 bytes); one combined index/m_fixed/keyframed test with the keyframed method called on the
+// component (0x1c4b00's form) 12; `bool result;` declared first and set false where it was 12; the query result as a
+// conditional expression 27.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -6263,6 +6274,9 @@ void function_cf040(long unit_index, short type)
 // both orders, with the offset as a pointer added to the data as a long, with a byte offset local,
 // with the loop's hand variable as an int and with the hand variable declared outside the loop all
 // compile to the same bytes; a 280 s permuter run (28 tries) stays at 1.
+// MiniMax G (11-14): no new form, no lower score (1): the one difference is still the SIB byte of the weapon loop's
+// header lookup, ours taking the pool data as the address base and retail the byte offset; the offset-first and the
+// pointer-to-header spellings in the lines above compile to the same bytes here as well, so the body stands.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
@@ -6502,6 +6516,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // store); `failed` declared at function scope and assigned at the check 59 (same code); the allocations as an
 // `&&` chain in the if with the success arm first and the out-of-memory arm in the else 193 (the check and
 // out-of-memory blocks move to the end, the success arm takes retail's EAX/ECX/EDX). Re-measured: no data local 59.
+// MiniMax S (11-14): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's scratch registers stay swapped.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -6644,6 +6659,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
+// MiniMax G (11-14): no new form, no lower score (300): the weapon index and the mode still take EBX and EDI where
+// retail keeps them in EDI and BX, the two weapon flag tests are still not stored in the readiness byte as retail
+// stores them, and the frame order (ours: hands 0x14, unit 0x18, weapon 0x1c; retail: unit 0x14, weapon 0x18,
+// hands 0x1c) still differs; the forms that fix one of those are in the notes below and none lowers the score.
 // MiniMax A (11-14): score 272 (was 280): the two weapon flag tests and the readiness flag now live in the first byte of the
 // four-byte hand-modes buffer that 0xcd7b0 fills, so the flag values are stored into that byte as retail stores them
 // (`and cl,1` into the buffer) and the buffer is four bytes wide, as 0xcd7b0 writes four; the mode 3/4 buffer is four bytes
@@ -7955,6 +7974,10 @@ struct s_unit_turn_state_view
 	word unknown7 : 1;
 };
 
+// MiniMax G (11-14): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
+// 0x11f0d0 differently): the moved flag still sits in a register where retail keeps it in a stack byte, the state and
+// aim pointers still take the other register roles, and the two divisions by the stored step still share one
+// reciprocal; the forms tried for each of those are in the notes below and none of them lowered the score.
 // MiniMax A (11-12): no new form, no lower score (395 in the plain build, 453 in the reduced one): the moved flag still sits in a register where retail keeps it in a stack byte, the state and aim pointers still take the other register roles, and the two divisions by the stored step still share one reciprocal; the forms for each of those are in the note below and none is kept, so the body stands.
 /* turns the unit's aim (+0x168) toward its desired aim (+0x15c) and its
    look (+0x18c) toward +0x180 at the definition's rates (scaled while it
@@ -8519,6 +8542,10 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    delay and stun, the timer +0x2bc, its death direction, the player and
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
+// MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
+// retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
+// the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.
+// score 62 (was 116; earlier 129, 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // score 116 (was 129; earlier 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // score 129 (was 383; earlier 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
@@ -8715,8 +8742,9 @@ void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 
 		if (range > report->distance)
 		{
+			real minimum = *(real *)(definition + 0x5c);
 			real shake = (range - report->distance) / range *
-				(*(real *)(definition + 0x60) - *(real *)(definition + 0x5c)) + *(real *)(definition + 0x5c);
+				(*(real *)(definition + 0x60) - minimum) + minimum;
 
 			function_1c9e10(unit_index, &report->direction, shake);
 		}

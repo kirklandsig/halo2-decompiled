@@ -463,6 +463,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // written back `axis * projection + v * cosine - cross * sine` 213 (frame 0x11c; one spill then lands above the creation
 // data); with the rows' first two terms swapped 213; cosine before the dot 213; the cross before the dot 231 (1196 bytes);
 // the cross vector declared at the helper's top 213. Helper restored.
+// M3 lane 12 r124 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; base 173, frame 0x11c): in function_28dbd2, the cross scaled
+// by the sine into a second vector 226 (1209 B, frame 0x11c); the rotated rows into a local vector copied back 288 (1260 B,
+// frame 0x128); the projected axis scaled into a second vector 229 (1200 B); the cross vector declared at the helper's top 173
+// (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173 (same code). The extra frame dword is the cross vector's own
+// 12-byte home (two members spilled into it); retail spills cross j and k as separate scalars with the sine between them.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
