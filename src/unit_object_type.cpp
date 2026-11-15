@@ -836,6 +836,11 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // test inverted with an early return ahead of the 0xe4bd0 call 13 (all the same code). Still BLOCKED-BY 0xe4bd0
 // (src/bipeds.cpp, held by another lane this round) and BLOCKED-BY 0xe5930: retail calls 0xe5930 from all six of its
 // callers, ours expands it inside 0xe4bd0 (113 bytes against 61), which gives 0xe4bd0 the EAX convention.
+// M3 lane 7 r162 (fast): the type-mask test as TEST_FIELD_BIT 10 (93 bytes: the shift narrows to `mov al, 1; shl al,
+// cl`, retail shifts EAX); the existing word_flags_set for the +0x33e clear 10 (95 bytes, round 112's form re-measured);
+// both 9 (92 bytes, narrow shift); with byte_flags_set for the +0x10a clear too 9; the mask spelled `(1 << 0)` with the
+// word setter 10. None kept (the 9s rest on a narrowing bool cast, the 10s gain 3). Still BLOCKED-BY 0xe4bd0 (src/bipeds.cpp
+// held this round) and 0xe5930: the only differences left at 10 are the tail call and the argument register.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -3650,6 +3655,11 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // the pool pointer ESI and a `mov ebp, edx` follows the loop); a walk-local last index under no guard 12 (folds away);
 // the root's NONE in an else arm 95 / 86 (retail's pair, `or ebp, -1` after the loop). Permuter (fast, anneal, 600 s,
 // 71 tries): best 12.
+// M3 lane 7 r162 (fast, 12 throughout): the Havok part as a forceinline helper taking the root and the object index
+// (diagnostic: the root as an inlinee parameter) 12, same pair; the component index read once into a named local for the
+// test and the lookup 87 (293 bytes); one combined index/m_fixed/keyframed test with the keyframed method called on the
+// component (0x1c4b00's form) 12; `bool result;` declared first and set false where it was 12; the query result as a
+// conditional expression 27.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {

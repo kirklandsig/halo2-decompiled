@@ -2039,6 +2039,10 @@ void function_b7360(long object_index);
 // payloads, masks 1/2/4/3/5/6/7: 410/390/343/342/423/392/422; point flag 277.
 // NOT kept: all regress; most payload forms grow past 1848 bytes. Original callback
 // and includes restored; native pool/actor/output homes and retained reference remain.
+// M3 lane 7 r162 (fast with 0x259e70, 0x259ec0, 0x25ab50 matched): the 1/19 arm in a block with a `long reference` local
+// for the check and the copy 272; the actor through actor_get(arg_0) at each use, no actor local 519 (1900 bytes); the 1/19
+// reference local with the actor looked up first 487 (1852); reference locals at the 1/19 arm and case 5 461 (1852); both
+// with the actor first 460 (1852). The actor-first order alone re-measured 487 (retail's pool load order, arg_0 still ESI).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
