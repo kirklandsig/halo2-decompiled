@@ -2748,6 +2748,9 @@ __forceinline char unit_action_round(real value)
 // one `goto` to the single exit (the switch's default and mode-else fall out as `name == NONE` under `if (name != NONE)`,
 // the animation failure is the goto) 329 (1224 B), the score and length of lane 14 r83's goto-free single exit (threading
 // copies the 0xe9780 fallback block into the mode-1 path). No unlisted form for the seven causes the masked diff shows.
+// P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
+// 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
+// not recovered; original body restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
