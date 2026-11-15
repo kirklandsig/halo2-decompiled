@@ -180,6 +180,10 @@ union s_185be7
 // MiniMax B (11-14): no new form, no lower score (590); the extent is retail's 3777 bytes to within two, and the walk shows the
 // gap is in the block layout and the stack homes of the input/output records, not in the statements; the earlier rounds' counted
 // mask, selected-byte and input-copy forms are the only ones that moved the frame at all.
+// MiniMax R (11-15): no new form, no lower score (590): the body is still two bytes over retail's 3777 and the
+// control global is still carried in EBX from the entry block, where retail reads it into ECX a second time at the
+// flag test after the magnitude and pow calls and keeps NONE in EBX for its early uses; the only spelling that
+// reproduces the reload takes the global's address, which this lane may not do.
 // score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected
