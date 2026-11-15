@@ -709,6 +709,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // MiniMax I (11-14): no new form, no lower score (412): the record pointer is still copied into edi and read with
 // edi plus the index where retail keeps it in eax, and the frame is still four bytes larger with its pushes in a
 // different order.
+// M3 lane 9 r126 (fast with 0x1e34e0, 26 throughout; control 412): retail's inlined 0x2641c0 reuses the actor's slot offset
+// computed at entry (`[esp + 0x28]`) as well as the pointer (`[esp + 0x20]`). The current target read once per pass into a
+// named `current` for its two tests 422 (frame 0xa0 and 1616 B, but the actor is still a stack argument); the progress word
+// named once for the maximum test and store 412 (same code); `p` fetched first with `node` cast from it 412 (same code);
+// `byte *const actor` 412 (same code); the list head read through the held actor pointer 442 (1616 B, re-measure of
+// round 46's form). Body unchanged.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
