@@ -736,6 +736,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // rotation (written-out helper bodies, match-only): an in-place scalar rotation on the global with the existing sine and
 // cosine 183 (852 B); the path-rotate spelling (cross and result vectors, aggregate copy back) 182 (905 B); a rotation
 // taking the angle, sine and cosine computed inside after the axis draw, 145 (880 B). Body unchanged.
+// M3 lane 13 r96 (fast with 0x118140, 0x117c80, 0x30bf0, all MATCH; control 117; both sides end in a plain `ret`, so the
+// queue's `ret 4` remark is stale): the tail with float-rounded trig arguments, `cos((real)(time * 0.001)) * cos(time *
+// 0.0006f) + (real)sin((real)(time * 0.005))`, on this body 171 (892 B: the tail is then retail's x87 sequence, the 0.001
+// cosine first, `fxch; fxch` and the `fst` stores of the sine argument and result, but the body grows 12 bytes); dot3f
+// and cross3f reading the global while `old` serves only the rows 164 (893 B); `old` as the aggregate initializer `{
+// g_55ecd4.i, g_55ecd4.j, g_55ecd4.k }` 154 (880 B, frame 0x34: the global is then read with movss, j first, as retail,
+// but the cross product moves to the frame; cross3f_staged on it the same score), with the projection before cross3f
+// 152 (884 B, frame 0x28), with `old` initialized before the axis draw 158 (frame 0x34).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
