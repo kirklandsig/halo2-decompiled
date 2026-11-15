@@ -1976,6 +1976,9 @@ long g_4858b8;
 
 #if 0
 // Retail 0x14b60. The additional clear call changes matched 0x14ac0's stack frame.
+// Measured on r789 with the lane_w stub removed and this body enabled: game
+// 10,622 -> 10,617, 0x14ac0 0 -> 2 and 0x44370 85 -> 89. The clear call's stub
+// convention (retail takes flags in eax, ours pushes it) is part of the cost.
 // Retail 0x14b60
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil)
 {
