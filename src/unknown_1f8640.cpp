@@ -788,6 +788,10 @@ struct s_1f8a70_actor
 // radius-zero tail. Retail keeps node then radius in both, so the two tails end in different stores and stay separate.
 // Also: the mode switch's default as `route_mode = NONE; break;` (the route test then fails by itself, no goto) 379 (1620 bytes;
 // the head still follows case 7).
+// M3 lane 15 r86: no new form run. Retail's layout (the route test behind case 5's `route_mode = 1` tail, then cases 6
+// and 7) comes only from lane 1 r99's flag form, which is kept only with a match. Retail's failure-path reload of
+// route_found, the materialised `node != NONE` and the case 7 store order are each listed above with their scores.
+// Body unchanged at 182.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

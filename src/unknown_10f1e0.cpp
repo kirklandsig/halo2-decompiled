@@ -1766,6 +1766,18 @@ long function_cbd50(long unit_index, short weapon_index);
 // P496: Signed first/second count expression parts and serial slot workspace in seven subsets, then shared count storage:
 // 314/327/164/327/314/327/327/327. NOT kept: no exact native storage/producer recovery; pool/state, first signed-count materialization and result normalization remain.
 // Original complete executable body restored.
+// M3 lane 15 r86 (fast with 0x1103a0/0x112070/0x10ff40/0x111650/0xcbd50/0xc70b0, all unchanged). Base: a pool copy `objects`
+// for the entry unit and both weapon-object reads, the if-form depletion and a bool result 349 (1257 B; lane 9 r105's cell,
+// re-measured; with the byte result 326, round 77's). New on it: the second seat read from the entry `unit` 348 (1258 B); the
+// first seat read through the copy 329 (1276 B, register-masked 31 against this body's 70), with the byte result 336 (1299 B);
+// both seat reads through the copy 353 (1319 B); the first query through the existing unit_get_current_weapon 349 (different
+// code), plus the second as `function_cbd50(unit_index, unit_weapon_view_get(unit_index)->next_weapon_index)` 349; the second
+// seat read through the copy 348. Same code: the second query's index through `*unit_reference` (349); the first seat read
+// through the copy as a byte offset (329). Diagnostic (removed): both queries through a new `(unit_index, hand)` function in
+// another file 349. Finding: with the first seat read through the copy, 0xcbd50's own lookup for the first query sits inside
+// its NONE test, and the second query then reloads `[pool + 0x44]` and re-derives the unit from the pool kept since entry,
+// which is retail's second query; whenever the first query's lookup on the global is unconditional, the second merges with
+// it. Retail has both: the first query re-derived unconditionally and the second fresh. Body unchanged.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

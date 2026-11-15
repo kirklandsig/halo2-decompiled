@@ -1069,6 +1069,15 @@ struct s_tail_transfer_traits
 // P495: Actual minimum-scan age/weapon/per-pass-clock workspace subsets, then actual shortest
 // workspace on the complete graph: eight 144 at 826 bytes. NOT kept: selected-traits/unit/NONE
 // ownership unchanged; original producer timing, no-seat pool copy, ties and complete body restored.
+// M3 lane 15 r86 (fast with the file's functions, 0xcbd50 and 0xcbe60): the no-seat branch as a hand loop of the existing 0xcbd50
+// in 0x1509e0's style (`held[hand] = function_cbd50(unit_index, <unit through the pool copy>->held_slots[hand])`, then
+// `primary = held[0]; secondary = held[1];`): with `long hand` 143 (832 B; VC unrolls it, each slot read is fresh, but 0xcbd50's
+// weapon read merges with the main unit); on the global 149 (the copy is then used once: same code); with `long primary;`
+// unpreset 169; cbe60 before the loop 219. With `short hand` 134 (809 B, frame 0x2c, register-masked 30 against 49: the loop
+// stays rolled with the array in memory, and the seat arm's primary moves into a register as retail's EDI). NOT kept: the
+// counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
+// `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
+// cbe60 before the loop 161 (802 B). Body unchanged.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
