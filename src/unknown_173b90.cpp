@@ -1514,7 +1514,14 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 47 (was 47): availability clear/production and later view observation remain;
+// MiniMax E (11-15): 12 (was 47): the view global read at each use, the availability produced by a branch on
+// the query result and the same-view flag cleared by one owner/view/availability test; what still differs is
+// the flag's true store, which ours emits ahead of the view test where retail's sits between the
+// availability's test and its branch; the body is otherwise retail's, at retail's 498 bytes.
+// score 12 (was 47): the same-view flag's true store is emitted ahead of the view test, retail writes it
+// between the availability's test and its branch; the availability's zero store also comes before the second
+// definition call where retail's comes after the owner lookup; frame 0x14, the owner, the view, the boolean
+// homes and the post-attachment view refresh agree.
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
 // tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
@@ -1962,23 +1969,24 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
-            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
                 owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
             else
                 owner = NONE;
-            long view = g_4b9ed8;
-            if (view != NONE)
-                available = !function_155760(view);
-            bool same_view = owner != NONE && view == owner && available;
-            bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
+            bool same_view = true;
+            bool available = false;
+            if (g_4b9ed8 != NONE && !function_155760(g_4b9ed8))
+                available = true;
+            if (owner == NONE || g_4b9ed8 != owner || !available)
+                same_view = false;
+            bool attached = available && effect_index != NONE && function_17afd0(effect_index, g_4b9ed8);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
+                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }

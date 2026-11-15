@@ -504,6 +504,11 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax E (11-15): no new form, no lower score (303): the frame agrees at 0xa8 and the diff is still the temp's
+// home (retail keeps the length, the random integer and the sine in one frame-bottom slot, ours keeps the length
+// above the result byte) and the candidate, which retail holds in registers across the two rotations while ours
+// spills it between them; recovering either needs the rotation written out at the call site or the normaliser's
+// length inlined, and its magnitude3d sits in another file, so the body stands.
 // MiniMax S (11-14): no new form, no lower score (303): the frame agrees at 0xa8 and the diff is the temp home (retail
 // keeps the length, the random integer and the sine in one frame-bottom slot, ours keeps the length above the result
 // byte) and the candidate, which retail holds in registers across the two rotations while ours spills it between them
