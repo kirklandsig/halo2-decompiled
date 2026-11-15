@@ -730,6 +730,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draws 136; cosine computed before sine as two statements 118; the rotation pair through sinf/cosf 117 (other code); the
 // definition lookup after the time product 160; the cross product as axis x old with the rows adding it 134 (881 B).
 // Same code: cosf for the opening oscillation, the record in its own local first, the axis drawn before sine/cosine.
+// M3 lane 11 r103 (fast with 0x118140, 0x117c80, 0x30bf0, all matched each time; both sides end in a plain `ret`):
+// cross3f_staged for cross3f 117 (same code); the rows through the existing vector3f_scale and vector3f_add_scaled
+// (old by cosine, then the axis by the projection, then the cross by -sine) 193 (914 B). Diagnostics with a file-local
+// rotation (written-out helper bodies, match-only): an in-place scalar rotation on the global with the existing sine and
+// cosine 183 (852 B); the path-rotate spelling (cross and result vectors, aggregate copy back) 182 (905 B); a rotation
+// taking the angle, sine and cosine computed inside after the axis draw, 145 (880 B). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
