@@ -597,6 +597,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1534/1519/1441/1506/1445/1421/1420/1809. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // P522: Real second-coefficient root/first-normalizer absolute/second-normalizer absolute,
 // seven domains then complete real-root API graph: 1396/1394/1396/1449/1394/1449/1375/1394. NOT kept: no exact native frame/API recovery; original complete body and helpers restored.
+// P524: Actual contact decision-byte storage at 70/80/81/82/83/b3, then all signed/unsigned:
+// 1375/1430/1375/1375/1375/1375/1430/1430. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

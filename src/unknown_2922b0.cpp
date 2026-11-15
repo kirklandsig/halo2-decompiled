@@ -533,6 +533,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 679/704/686/661/719/703/1055/738. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // P522: Real sine/cosine/paired/sine-root/cosine-root/all APIs, immutable angle/complete scalar formals:
 // 561/561/561/556/556/561/561/561. NOT kept: no exact native success/workspace recovery; original complete body and helpers restored.
+// P524: Actual collision material 16-bit allocation short/word/long/dword/int/unsigned-int/signed-enum/unsigned-enum:
+// 558/558/557/557/557/557/557/557. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

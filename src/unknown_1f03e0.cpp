@@ -1416,6 +1416,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 565/523/375/636/633/341/551/698. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // P522: Immutable damping/direct/flying/bounded-step/all decisions, real input/history/both root APIs:
 // 234/234/234/234/234/305/234/313. NOT kept: no exact damping/vector recovery; original complete body and helpers restored.
+// P524: Actual full-width contact flags dword/unsigned-int/long/int, admission byte byte/signed-char/char, both native fields:
+// 234/234/557/557/234/234/234/234. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
