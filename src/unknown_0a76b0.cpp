@@ -1125,6 +1125,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // P495: Corresponding blend products named in all rows: row-local aim/velocity/both 92/139/142;
 // full aim/velocity/both-aim-first/both-velocity-first phases 92/139/139/92; immutable complement on last 92.
 // NOT kept: ties or regressions; original vector homes, full arithmetic and body restored.
+// P505: Actual left-normalization magnitude/bool/byte/long fallback outcomes, conditional statement then complete
+// vector selection: 142/142/142/142/241/241/241/241. NOT kept: Every outcome regresses; native saved
+// projectile/type and shared vector homes remain unresolved. Both exact controls survive. Original complete
+// executable body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)

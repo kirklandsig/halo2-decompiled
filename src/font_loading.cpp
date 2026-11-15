@@ -815,6 +815,10 @@ static inline long font_character_pixel(long alpha, long color)
 // three pixel sites where retail masks it in thirty-two, the colour literal is still built with a shift and an add
 // where retail keeps its two bytes in separate registers, and the run of two is still folded into the count and the
 // cursor as an immediate where retail adds the register.
+// P505: Existing pixel helper owns encoded-input extraction, long/dword/word/byte input with ordinary then forced
+// expansion: 97/96/96/96/97/96/96/96. NOT kept: All eight regress despite four-byte shortening; native parity,
+// literal assembly and run-two transport are not recovered. All calibrated file and matched-caller controls stay
+// unchanged. Original complete executable body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

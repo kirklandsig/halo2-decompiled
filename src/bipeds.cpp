@@ -1871,6 +1871,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P502: Case-six target outcomes, present then missing target first, each native/setter/memcpy/memmove fallback:
 // 570/558/570/576/563/557/568/578. NOT kept: 558/557 reach retail extent but retain frame 0xf8/0xfc and delayed
 // default copies after root lookup. Original body/helper restored.
+// P505: Whole existing-record iterator copies at coherent velocity/facing/target boundaries, seven subsets then
+// complete backward copy: 636/655/587/678/644/667/688/688. NOT kept: All regress; velocity-only recovers native
+// extent but misses entry scheduling, while other transfers shrink away from native length and do not recover
+// gravity/material/airborne homes. Original complete executable body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4189,6 +4193,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P502: Existing yaw-helper vector/axis/output ownership, seven subsets then immutable inputs:
 // 679/686/682/686/679/686/686/686. NOT kept: all regress against reduced 614, shorten away from retail and miss
 // native frame/result/flight homes. Original body/helper restored.
+// P505: Existing yaw vector/axis/both reference contracts and forced original expansion, then destination-pointer
+// return under all four object contracts: 614/614/614/614/614/614/614/614. NOT kept: All eight tie reduced control
+// 614 versus full baseline 548; native result/flight homes and reduced frame mismatch remain. Original helper and
+// complete body restored. Original complete executable body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4722,6 +4730,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P502: Collision-target fallbacks, nested then short-circuit, each native/setter/memcpy/memmove:
 // 307/386/307/403/334/351/334/418. NOT kept: 307 moves default copies after the collision query; retail copies
 // before it. Matrix/origin homes remain displaced. Original body/helper restored.
+// P505: Actual complementary pointer standard/iterator/ordinary exchange, then contact-record
+// standard/iterator/range/ordinary/plain-loop exchange: 393/393/336/424/424/421/379/377. NOT kept: Every exchange
+// ties or regresses; payload exchanges disturb native frame homes, and no form recovers native matrix/origin
+// storage. Original complete executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
