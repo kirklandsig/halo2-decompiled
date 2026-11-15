@@ -26,7 +26,7 @@ struct s_visibility_bound_record
 // saves and we form it with an add into EDI after them; the entry's flags are read ahead of the tag test here
 // and in each arm there.
 // MiniMax I (11-14): no new form, no lower score (443): the first difference is still at +0x10, where retail forms the entry address as a sign-extended index scaled by the entry size and added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail keeps the tag table in esi and spills the entry at [esp+0x30], we keep the entry in a register, and the part centre's body is inlined from 0x142570 in another file.
-// score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
+// Earlier at 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
 // unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag
@@ -404,6 +404,16 @@ struct s_visibility_bound_record
 // (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + table]`) and this build forms it as a shifted copy
 // added to the same table (`shl edi, 5`, `add edi, ...`); retail then loads the tag table into esi and spills the
 // entry at [esp+0x30] while this build keeps the entry in a register.
+// m3 lane 6 r181 (fast with 0x3e380/0x43a40/0x44720/0x45560/0x458d0/0x45a80 matched throughout; control 443, aligned/register-masked
+// 336/148): LEAD (declaration move, match-only): retail reads the visibility-word pointer (+0x14) in the bottom arm right after the tag,
+// before the object lookup and the node loop's calls; `visible` declared at the top of that arm 456 (1760 B) but aligned 246, masked 122:
+// the entry address is then formed ahead of the pushes as in retail. On it: a state local for the views and active reads 454 (1749 B,
+// 259/118); the flags read at each use 447 (1750 B, 245/121); both 443 (1762 B, 246/119); those plus 0x458d0/0x45a80's index as `long`
+// with `(short)index` in their bodies (no address-of; both and 0x45560 stay matched, retail's arms push `movsx eax, word [ebp + 8]`)
+// 487 (1780 B, 234/104: both call arms then set up as retail's); with the arms as `if (!parts) 458d0 else 45a80` (retail's layout) 487
+// (232/103). Left on that: the zero constant in EBX (retail keeps the entry there), the list-start stores, the two-step frustum source
+// pointer, the plane cursor at .k and the j/k register naming, the tag table reloaded in the bottom arm, the bound centre copied with
+// integer moves (retail loads it into xmm0-2 and scales in place: 0x142570's body, /Ob1 file).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

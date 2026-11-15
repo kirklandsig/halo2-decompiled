@@ -698,6 +698,11 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // zero flag's frame slot is exchanged with the global's; the only spelling left is a declaration
 // order change (the bsp assignment before the point copy), which the rules ask to be reported
 // rather than made.
+// m3 lane 6 r181 (fast, control 172 = plain; aligned/register-masked 99/54): the vertex loop as `valid && vertex < 3` with
+// a plain assignment 273 (675 B: the loop is no longer unrolled); same code as the control: the vertex flag declared at
+// function scope beside the result and reset per triangle, the reference and surface selections as if/else statements.
+// Re-measured: the byte result declared first with `definition = NULL` at its declaration 185 (726 B, aligned 97/54; now
+// `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
