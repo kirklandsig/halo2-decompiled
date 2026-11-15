@@ -1227,6 +1227,9 @@ bool function_14ed80(void)
 // 42 (154 bytes); `short index` 52 (176 bytes); the outputs declared bare and set to NONE between the clamp and the remap 59
 // (155 bytes, 0x14f0f0 40); the sign test, clamp and remap as a force-inline helper taking only the player and reading the
 // global itself, a second globals local in the body for the bound test 54 (globals last, as the second assignment).
+// Round 106 (m3 lane 1, fast): the index read first and the clamp as an if/else-if against the count read at each use 53;
+// no player local (the getter at both reads) 51 in the full build (as the harness). Diagnostics: without the remap 73,
+// without the bound test 81, the outputs stored without their NULL tests 24: the named globals local takes EDX in each.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
