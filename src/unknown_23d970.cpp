@@ -998,6 +998,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // and crossed in place by the aliasing-safe cross3f_staged 252 (1291 B), by function_1f087b 251 (1290 B: right is stored
 // and reloaded, not forwarded); `right` declared ahead of previous_up 45 (same code), that with cross3f_staged for the
 // second product 217 (1270 B); `direction` declared ahead of previous_up with cross3f_staged 217. Body unchanged.
+// P539: Native float trig API pitch-cosine/yaw-pair/pitch-sine families, seven nonempty subsets,
+// then immutable reused cosine on the complete graph: eight at 45. NOT kept: no byte equality
+// or native product/store-base repair; original full callback and shared producers restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
