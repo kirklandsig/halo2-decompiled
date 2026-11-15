@@ -1298,6 +1298,11 @@ void function_143250(
 // P521: Current complete matrix initializers, band masks 1/2/4/3/5/6/7 and all immutable:
 // Third-band initializer alone recovers native frame 0x300 and first +0x4c, but regresses to 1498.
 // 1420/1410/1498/1420/1556/1535/1556/1556. NOT kept: no exact native matrix/scalar-storage recovery; original complete body restored.
+// M3 lane 11 r106 (fast with 0x143250 matched; control 1333): retail recomputes r6 * r3 and r6 * r0 in band three (its
+// 0x90 and 0x234 homes are stored from fresh `mulss` at 0x143fe9/0x144008), so band two's products are not reused there.
+// Band two's `s15 * s5` 1333 and band three's `s2 * s35` 1333 (same code: products re-sorted); band one's four negatives
+// as unary minus 1333 (same code: compiled as 0 - x); band three's sqrt(7) declared after s21_s35 1535 (10748 B); band
+// two's root product as one `(real)sqrt(5.0) * (real)sqrt(15.0)` 1729 (10712 B).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

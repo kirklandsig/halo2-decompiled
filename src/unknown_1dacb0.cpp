@@ -1755,6 +1755,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // second request keyed on `iterator.graph` alone 962 (2791 B); the entry pointer initialised to NULL 828.
 // Retail's second request copies the found mode into EBP once (an inline-argument copy of the mode alone; the other
 // two found keys are read from their homes), the sign that retail's mode output was treated as escaping.
+// M3 lane 11 r106 (fast with 0x1dc790 and 0x1dc8c0 matched; base 828): the three found outputs stored type, class, mode
+// 829; the iterator declared after the three outputs 828 (same code); the early exit returning a fresh `c_type_709360()`
+// with `result` declared after it 988 at retail's 2825 bytes (the early exit then gets its own epilogue writing through
+// the return pointer, where retail jumps to the shared exit), with `result` declared inside the block 988; the NONE test
+// written `NONE == weapon_class` 828 (same code: the compare's registers do not follow the operand order).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
