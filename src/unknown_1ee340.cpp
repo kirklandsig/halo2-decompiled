@@ -221,6 +221,10 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // form). first_edge declared first with edge_index copied from it 6; the w store through the point setter's
 // returned pointer 6 (same code).
 // Also: the radius written as a double literal 6 (same code); the vertex pointer taken before the transform 69.
+// M3 lane 3 r245 (fast with 0x1ee4d0/0x1ee500, both matched): dead-local phase scan, 0..8 unused locals after the first
+// member store, 6 at every n (diagnostic: neither spot is a symbol-count tie); the `index` parameter renamed 6 (same code);
+// the vertex pointer formed from a byte offset of `this` 6, from the array address as an integer 6 (same code, diagnostics);
+// the point stored through the existing void vector3f_assign 6 (same code).
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)

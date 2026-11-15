@@ -235,6 +235,11 @@ void juggernaut_set(long player_index, bool juggernaut)
 // flags local alone (read after waiting) gives retail's count EBX and pointer EBP (75: waiting is then materialized in AL
 // and the flags word loaded into DX ahead of its test), so the pair follows the loop body's IL, not the draw alone; the
 // flags local read before waiting 102 (258 bytes); the store written in both arms of `if (...) else if (...)` 20 (merged).
+// Round 200 (m3 lane 4, fast): the pair alone makes the 20: retail's `movzx eax, word ptr [ebp]` is a byte longer than
+// ours through EBX, which shifts every later branch and call. The player pointer read at the loop top 20; `waiting`
+// declared at function scope 20; the player pointer declared at function scope 20; `waiting` as `function_15d770(i) ?
+// true : function_15db30(i)` 20 (all the same code); count assigned after the iterator setup 22 (re-measured: only the
+// xor moves). A 693 s permuter run (seed 2001, 44 tries) found 17 only with an unsigned count (wrong modulo) and volatiles.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

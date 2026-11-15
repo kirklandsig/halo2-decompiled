@@ -2166,6 +2166,12 @@ void function_269250(long clump_index, long actor_index);
 // at each step with no snapshot local 126 (identical code: LTCG hoists the read across 0x268bb0 into the same stack
 // byte, so the snapshot is not what keeps it there); the team test as `actor->unknown024 == group->team` 126. On this
 // body, the walk given `g_4f55d0->active` with no snapshot local 87 (identical code). Body unchanged.
+// M3 lane 6 r182 (fast with 0x268840/0x1e46c0/0x268bb0/0x269040/0x269250/0x2694d0/0x269580/0x26ae30/0x268510/0x268c90,
+// all matched but the unmatched 0x269040; control 87 fast = plain, masked 45): the activity snapshot as `short` 125 (480 B,
+// first difference +0x4b); on the in-arm form (126 re-measured, selection stored first) the selection from the walk's datum
+// index with a `short` snapshot 138 (480 B); on this body the datum-index selection with a `short` snapshot 156 (458 B); the
+// selection stored before best with a `short` snapshot 125; the snapshot taken ahead of the walk's construction 87 (same
+// code). In both forms our walk lays the found block after the loop body and keeps the selection in EDI.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

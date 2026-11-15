@@ -388,6 +388,13 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // it is hoisted above the `changed` test and the float fabs overload still rounds its result); named right after `gain`
 // 544; that local as `double` 541 (fabs becomes a CRT call; matched 0x21f8a0 lost at 67, reverted at once); the named
 // float local tested as `fabs(gain_change) >= 0.1f` 544; the pitch clamp as if/else-if 544. Body unchanged.
+// M3 lane 6 r182 (fast with 0x21f8a0, 0x128ca0, 0x21c400 and the callees; fast control 544 = full, masked 235): the voice
+// sends as `switch (mode) { case 0: add; break; case 1: add; add; break; }` 562 (1884 B, masked 225: retail's block shape,
+// the positional score rises with the shorter body); with `fabsf` on the gain test 562 (same code: fabsf is the float fabs
+// here); with `fabsf` at all six difference tests 562 (same code); the switch with the gain difference named before the test
+// and fabsf at all six 548 (1907 B, masked 239); the named difference with fabsf at all six 544 (same code as this body);
+// the cached gain stored at the top of the gain block 550 (1901 B, masked 236). The switch alone repeats lane 12 r81's form.
+// BLOCKED by the file's /Op (a flags decision: retail's double fabs, exp, log10 and sqrt expand inline and unrounded).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
