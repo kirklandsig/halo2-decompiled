@@ -144,6 +144,12 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // Round 177 (m3 lane 6, `--fast 0x1af160 0x1e1f20`): the 0x261280 bool output initialised false 201 (979 bytes); its long
 // output initialised 0 235 (980 bytes); the 0x262b40 result as a const pointer 12; the 0x1e4be0 result kept `void *` 12; the
 // prop node as a const pointer 12. A compile-only lab is not faithful here (without LTCG the offset stays in EBP).
+// M3 lane 14 r97 (`--fast 0x1af160 0x1e1f20`, control 12): the equal-arm store through the array-index actor getter
+// 12 (same code); the prop node through the existing prop_ref_get as `s_prop_datum *` with its two casts dropped 12 (same
+// code, not kept); the node getter's body written out 12 (diagnostic: inline return temporaries do not order the tie); the
+// top actor through the array-index getter 12 (diagnostic, same code); no asm (a plain cast and the helper call) 135
+// (diagnostic: the actor then takes retail's 0x24 but the offset moves to 0x20). The permuter cannot search this
+// function: its reduced image scores 209 even with 0x1e1f20 as context.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

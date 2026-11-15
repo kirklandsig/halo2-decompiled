@@ -882,6 +882,11 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // retail's `pop esi; mov al, 1`); 0x37260 still flips it with a one-line body. The same pair flips 0x4ff50's own
 // epilogue (pops interleaved with its last stores as retail without 0x37260, not with it), so the order is an
 // image-wide code-generation state, not this body's: no form here moves it.
+// m3 lane 14 r97 (fast with 0x188180, control 2): 0x37260 and 0x4ff50 are not reachable from 0x1895f0 (neither is a
+// callee of it), so the state is not a call-graph summary; `auto_inline(off)` in place of the inline-depth pragma 269
+// (diagnostic: the callees inline as without the pragma); the camera exit as `return local_1;` 179 (661 B); the
+// velocity copied before the forward normalize 41; the square root left positive and subtracted per component 53
+// (660 B); the player-unit test as one ternary comparison 167 (667 B).
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
