@@ -365,6 +365,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax S (11-15): no new form, no lower score (117, was 117): on this body the row-i projection operand swapped to
+// projection*axis.i compiles to retail's own order and changes no byte (round 41's projection*axis rows were on the field-wise
+// `old` copy, not here), and a permuter run with a new seed stays at the starting score; the frame is still 0x28 against
+// retail's 0x20, since retail keeps the old direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and its
+// dot is summed k, j, i, an order the shared dot3f cannot produce.
 // MiniMax B (11-13): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches cross3f and dot3f; the rotation in place is the shared rotate_vector_170d70 body written out, which is kept only with a match.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
