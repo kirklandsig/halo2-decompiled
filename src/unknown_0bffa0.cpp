@@ -899,6 +899,11 @@ byte g_55e708;
 // (`if (type != 2 || ... || !(count = ...)) count = ...`) 38; the clamp as two tests on `count > 1` 38; the outer
 // test as an early return 38; the outer test as nested ifs 38 (same code each); the second tag read into a named local
 // for its test and call 40.
+// M3 lane 9 r126 (fast with the same list, control 38): retail computes the fallback count into EDX and copies it to EAX
+// for the join (ours computes it straight into EAX), and every later scratch pick follows that rotation. The first-person
+// count in its own variable with `count = first_person_count ? first_person_count : <fallback>` 106; one object-index local
+// for the two marker queries only 128 (618 B); the fallback result in a `short` local copied to count 38 (same code); the
+// fallback query written in both arms of the first-person test (count zero-initialised or not) 156/156 (639 B, not merged).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1297,6 +1302,9 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // `i == 3 || i == 1` 565 (2840 bytes); the arm test `shape->kind == 0` without its `(short)` cast 577 (2816); the sphere
 // depth and flag clears after the matrix setup 575 (2831); in the cone arm the left copy ahead of the forward copy 300;
 // the sphere point count stored ahead of the four projections 638 (2806). Body unchanged.
+// M3 lane 9 r126 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, control 290): the sphere depth from the `radius`
+// local 531 (2831 B); `center` declared at the cone arm's top 290 (same code); `box2f bounds;` assigned after the entry
+// pointer 288, with `entry` declared first 288 (two points, under the bar); `entries + i` 290 (same code). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

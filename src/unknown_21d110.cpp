@@ -532,6 +532,14 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // redirect lifted for this function) changes 0x189fe0's register use under /GL: its callers then pass the request
 // in EDX where retail uses EAX, and ten matched functions are lost (0x1890c0, 0x189340, 0x1895f0, 0x189650,
 // 0x1896c0, 0x189710, 0x189760, 0x189a50, 0x18bb80, 0xfcea0). The body stays at 181.
+// M3 lane 9 r126 (fast with 0x189fe0, its matched callers 0x1890c0/0x189340/0x1895f0/0x189650/0x1896c0/0x189710/
+// 0x189760/0x189a50/0x18bb80/0xfcea0, 0x125f70 and 0x21dcf0): the 94 form re-measured, 94 at 427 B (state in EAX as retail),
+// but 0x189fe0 then takes its request in EDX (110 -> 135) and its ten matched callers differ by 1 to 16. Its halves: the
+// start helper force-inlined alone 285 (552 B; 0x189fe0 115, callers lost: the start inline is what moves the request
+// register), the delete called out of line alone 214 (366 B; 0x189fe0 110, callers kept); the 94 form with the fallback
+// through the force-inlined start helper too 94 (same code, 0x189fe0 135). Diagnostic (reverted): the 94 form with 0x221810
+// kept out of line (retail calls it at 0x189fe0's first lookup, ours expands it) puts both of 0x189fe0's arguments on the
+// stack (156 at 450 B), so that pairing is not retail's either. Still BLOCKED-BY 0x189fe0 (its request convention).
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
