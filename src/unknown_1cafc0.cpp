@@ -764,6 +764,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P512: Primary-failure subtree on the twelve-byte shared expansion, byte/char/signed-char/
 // bool/word/short/int/long success: 567/567/567/594/601/601/598/598. NOT kept: native destructive graph-base/lazy
 // reload ownership and return-byte normalization remain; original full body restored.
+// P514: Independent binary-enum presence at primary/alternate-permission/alternate-index
+// and the five original fallback queries: eight 348 at 1782 bytes. NOT kept: native
+// destructive graph-base/reload homes and byte normalization remain; original full body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

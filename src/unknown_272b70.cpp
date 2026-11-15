@@ -2934,6 +2934,9 @@ struct s_scenario_scripting_view
 // P502: Binary enum outcomes at actor/data/lower/upper/source/metric/commit/loop boundaries:
 // 80/80/80/80/80/80/80/80. NOT kept: all tie; actor/counter/selector allocation and early scripting-data
 // observation remain. Original body/helper restored.
+// P514: Native/returned source pointer/reference with branch-owned displacement and length/
+// self-dot metric, each on early/loop-owned short traversal: 96/90/84/95/96/90/84/95. NOT kept:
+// no native actor/counter/home repair; original complete search and helper calls restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

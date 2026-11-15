@@ -490,6 +490,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P512: Actual collision-query blocked/clear result in bool/byte/short/long, on the double-free
 // 702 graph: eight 702 at 3473/3499 bytes. NOT kept: one-use receivers do not recover frame
 // 0x88 or shared query/planar-point home; original complete executable source restored.
+// P514: Independent configuration/query-vector/planar-point/position/response/correction/
+// persistent-collision/normalized-input lexical identities on the double-free 702 graph:
+// eight 702 at 3473 bytes. NOT kept: frame remains 0x8c versus 0x88; original body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
