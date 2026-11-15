@@ -535,6 +535,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 561/561/561/556/556/561/561/561. NOT kept: no exact native success/workspace recovery; original complete body and helpers restored.
 // P524: Actual collision material 16-bit allocation short/word/long/dword/int/unsigned-int/signed-enum/unsigned-enum:
 // 558/558/557/557/557/557/557/557. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P526: Original-site ray travel product mutable/const, shared local-range clearance floor mutable/const, four paired ownership graphs:
+// 563/563/651/651/656/656/656/656. NOT kept: no byte-equal native success/workspace recovery; original ray expressions and all in-place snapshots restored.
+// Original complete executable source restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

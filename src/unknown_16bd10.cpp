@@ -1122,6 +1122,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery; original complete body and helpers restored.
 // P524: Actual camera point-type/tick/object/pan-time storage, masks 1/2/4/8/3/12/15, unsigned point type:
 // 149/149/149/149/149/149/149/150. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P526: Actual observer flags unsigned-int/long, object index int/full-width-long, output mode byte/char/signed-char fields, coherent complete output metadata:
+// 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery.
+// Original complete executable source restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

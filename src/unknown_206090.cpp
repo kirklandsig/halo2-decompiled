@@ -599,6 +599,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // seven domains then complete real-root API graph: 1396/1394/1396/1449/1394/1449/1375/1394. NOT kept: no exact native frame/API recovery; original complete body and helpers restored.
 // P524: Actual contact decision-byte storage at 70/80/81/82/83/b3, then all signed/unsigned:
 // 1375/1430/1375/1375/1375/1375/1430/1430. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P526: Native first/second/both material value assignments, complete descriptor aggregate, plain paired-publication loop, loop-owned collection, aggregate plus loop, materials plus loop:
+// 1375/1375/1375/1409/1368/1425/1449/1391. NOT kept: seven-point loop lead below margin; other forms tie or regress, frame still 0x5d0 versus 0x58c.
+// Original complete executable source restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

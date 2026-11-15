@@ -1418,6 +1418,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 234/234/234/234/234/305/234/313. NOT kept: no exact damping/vector recovery; original complete body and helpers restored.
 // P524: Actual full-width contact flags dword/unsigned-int/long/int, admission byte byte/signed-char/char, both native fields:
 // 234/234/557/557/234/234/234/234. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P526: Entry damping/direct/flying/gravity values from full Boolean arms, then false-initialized true arms:
+// 580/576/576/576/582/634/631/584. NOT kept: unmatched entry-result transport; no native damping/vector recovery.
+// Original complete executable source restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

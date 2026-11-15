@@ -3387,6 +3387,9 @@ real g_47ff30 = 2.5f;
 // P518: Completed post-normalization usable/fallback outcomes in bool/byte/short/long:
 // 721/721/721/721/721/721/721/721. NOT kept: branch-produced result transport needs equality;
 // original length, fallback, mass observations and complete body restored.
+// P526: Immutable one-time tick factor; absolute/scaled/complete friction stages mutable then immutable; complete immutable stages with tick factor:
+// 672/672/672/672/672/672/672/672. NOT kept: no byte-equal native frame/friction-stage recovery; original helper and runtime static restored.
+// Original complete executable source restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
