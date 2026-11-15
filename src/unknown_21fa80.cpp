@@ -395,6 +395,12 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // and fabsf at all six 548 (1907 B, masked 239); the named difference with fabsf at all six 544 (same code as this body);
 // the cached gain stored at the top of the gain block 550 (1901 B, masked 236). The switch alone repeats lane 12 r81's form.
 // BLOCKED by the file's /Op (a flags decision: retail's double fabs, exp, log10 and sqrt expand inline and unrounded).
+// M3 lane 2 r88 (plain each with 0x21f8a0, MATCH each time; control 544, fast still carries the builds-differently caveat): the
+// amplitude clamp as an if/else-if on a copy 543 (one under, not kept); the buffer volume as one call with a conditional argument 544;
+// the send level assigned straight from its conditional expression (no `level` local) 546 (1903 bytes); the cached gain stored as
+// `*(real *)&stream->unknown0c = gain;` 593 (1935 bytes, first difference +0x0); the stream's 0x20 bit compared through a `(bool)` cast
+// 544. Retail also writes the bit-5 test of the send flags and every input-bit test to the +0xe byte before branching (the volatile
+// shape), and inlines exp/log10/sqrt as x87 code: the file's /Op stays the blocker.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

@@ -634,6 +634,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // EBX, retail EBX/EDI), the result/NONE pair (EDX/EAX in retail), the early `movsx ecx, cl`, the 0x88 pointer's `lea`
 // before the tag test's branch, the tag arm's clamp store and `mov eax, edx`, one fallback add's operand order, the
 // tag arm's four-channel schedule and the 0x6c store.
+// M3 lane 2 r88 (fast with 0x130f60, 0x131030, 0x1317a0, 0x12e5e0, all MATCH; control 607): retail adds the third accumulator's
+// weight with its operands reversed (`movaps xmm1, xmm0; addss xmm1, [acc]`) in the tag arm and the fallback; written as
+// `local_7.weight = local_25 + local_7.weight` in the tag arm 607, the same in the fallback 607, both 607 (all the same code: the
+// add canonicalises); the tag arm's third-accumulator weight added between the second and third merges (accumulator order) 607
+// (other code, same count); the palette range as a `g_547f80` default overridden by an if 702 (3827 bytes). The top cause (the 0x130f60 result
+// moved to EDX with NONE in EAX) is unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

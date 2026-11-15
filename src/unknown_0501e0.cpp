@@ -537,6 +537,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // worktree): the second view keeps its scaled copy in registers where retail spills i and k to [esp+4]/[esp] and
 // multiplies from memory, the opening loads' order, and the blend scale and root argument in each other's slot
 // ([esp+4]/[esp] for retail's [esp]/[esp+4]; renaming the blend scale changes nothing).
+// M3 lane 2 r88 (fast with 0x30290 and 0x30bf0, both MATCH; control 206): the clamped orthographic value declared at the top of
+// the orthographic arm 206 (same code: its slot stays [esp], retail's [esp+4]); the orthographic dot written out with retail's
+// load order (segment i first, global j and k first) 206 (same code: the operands canonicalise). On lane 13 r96's macro lead
+// (re-measured 256 at 1136 B): its rows in transform_vector's right/up/forward term order 256 (same code); x/y/z reals scaled in
+// place inside the macro, as transform_vector does, 295 (1174 B); both offsets through vector3d_from_points3d 256 (other code).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

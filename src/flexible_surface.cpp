@@ -744,6 +744,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // g_55ecd4.i, g_55ecd4.j, g_55ecd4.k }` 154 (880 B, frame 0x34: the global is then read with movss, j first, as retail,
 // but the cross product moves to the frame; cross3f_staged on it the same score), with the projection before cross3f
 // 152 (884 B, frame 0x28), with `old` initialized before the axis draw 158 (frame 0x34).
+// M3 lane 2 r88 (fast with 0x118140, 0x117c80, both MATCH; control 117): base for these, re-measured, round 69's tail (the
+// float-overload casts: retail's fxch pair and three fst stores) with no `old` copy and cross3f/dot3f/rows on the global 158 at
+// 880 B (the global's j/k then load right after the seed store, as retail). On it: the axis drawn before sine/cosine 158, cross3f_staged
+// 158, sine then the axis draw then cosine 158 (all three the same code); the projection first (re-measured 163) with
+// cross3f_staged 163, with dot3f(&global, &axis) 163. Retail computes the dot first, then cross j and k (spilled), then cross i inside
+// the i row (0x177d10's statement order), which neither shared cross helper gives. Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
