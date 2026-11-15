@@ -1953,6 +1953,10 @@ bool function_17afd0(long effect_index, long value);
 // default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
 // bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
 // availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
+// MiniMax E (11-15), NOT kept: 12 (was 47) set same_view and available by tests (same_view = true, then false when
+// a test fails; available = false, then true) and read g_4b9ed8 again at each use in place of the view local.
+// Test-set flags and score-picked re-reads are kept only with a byte match; the form is a lead for a match. Code
+// back to main, notes kept.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
@@ -1969,24 +1973,23 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
+            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
                 owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
             else
                 owner = NONE;
-            bool same_view = true;
-            bool available = false;
-            if (g_4b9ed8 != NONE && !function_155760(g_4b9ed8))
-                available = true;
-            if (owner == NONE || g_4b9ed8 != owner || !available)
-                same_view = false;
-            bool attached = available && effect_index != NONE && function_17afd0(effect_index, g_4b9ed8);
+            long view = g_4b9ed8;
+            if (view != NONE)
+                available = !function_155760(view);
+            bool same_view = owner != NONE && view == owner && available;
+            bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
+                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }
