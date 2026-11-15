@@ -726,6 +726,11 @@ extern point2f *g_468778;
 // the first arm the field_15 store after the two negated components 379; the request's unknown6 store ahead of the
 // direction copy 375, field_12 set ahead of the submit call 375, the second prediction's field_15 store after its copy
 // 375 (other code each). Same code (not counted): the view fetched ahead of the state. Body unchanged.
+// M3 lane 7 r165 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
+// aligned 263): the first arm's negated facing as `-local_8->i` / `-local_8->j` 390; the planar copy for the 0.866 test as
+// `*(point2f *)&local_9` 384; the facing pointer declared inside the `!function_110ab0` block 378; the actor's facing through
+// a named pointer for its six reads 375 (aligned 265); the actor's position through a named pointer for its six reads 377.
+// Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
