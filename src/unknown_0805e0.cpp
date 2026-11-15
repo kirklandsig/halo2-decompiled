@@ -444,6 +444,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the first form with the successor read through the table before the entry 55 (callers lose); the first form as a
 // guarded do-while 58 (callers lose); the `index = NONE` / `else index = next` form with the table-first successor 60
 // (137 bytes). Original body restored.
+// P529: Existing offline-identity predicate returns its original comparison as
+// char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
+// NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit
+// repair; original private predicate and complete executable source restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

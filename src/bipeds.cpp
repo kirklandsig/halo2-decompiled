@@ -1886,6 +1886,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // complete backward copy: 636/655/587/678/644/667/688/688. NOT kept: All regress; velocity-only recovers native
 // extent but misses entry scheduling, while other transfers shrink away from native length and do not recover
 // gravity/material/airborne homes. Original complete executable body restored.
+// P529: Actual returned-position pointer at initialization/grab/animation consumers,
+// seven phase subsets then the immutable complete receiver: 645/623/639/635/642/639/643/643.
+// NOT kept: native frame 0xfc recovers but every score regresses; original complete
+// body restored, gravity/material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4244,6 +4248,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P508: Complete turn-side-oriented overshoot, branch/selection and unary/zero-subtraction
 // producers: 607/614/607/607/607/614/607/607 (reduced 614, full 548). NOT kept: seven-point
 // leads miss the gate, frame stays 0x7c versus native 0x78, and sign stand-ins miss equality. Full body restored.
+// P529: Actual initial-side/clamp-side/turn-input coordinate aggregate initialization,
+// seven subsets then immutable initial side: 614/614/634/614/634/634/634/634
+// (reduced control 614, full 548). NOT kept: no improvement or native result/flight-home
+// equality; original complete executable source restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4790,6 +4798,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P512: Actual clearance-query hit/clear result in bool/byte/short/long, after the original
 // pre-query target copy: eight 336 at 1924/1937 bytes. NOT kept: one-use receivers do not repair
 // native matrix/origin/property homes; original complete executable source restored.
+// P529: Actual origin/offset/placed/delta/back/target/direction coordinate aggregate
+// initialization, then complete construction graph: 343/336/336/336/336/446/331/441.
+// NOT kept: direction gains five above 30; no native matrix/origin/pivot-home equality.
+// Original complete executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
