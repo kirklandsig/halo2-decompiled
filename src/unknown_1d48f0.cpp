@@ -47,6 +47,9 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax H (11-14): no new form, no lower score (298): declaring the result flag before the two
+// optional-state homes, and between them, both measure 400 against the body's 298, so the flag's
+// declaration point is what sets the small homes' packing; the body is unchanged.
 // MiniMax D (11-14): no new form, no lower score (298): the first difference is still at +0x21 with the frame 0x1d4
 // in agreement, and the expansion that shapes everything after it (retail expands 0x279740 at the first release and
 // calls 0x11bed0 out of line where this build does the opposite) is settled in src/unknown_11bed0.cpp, which this

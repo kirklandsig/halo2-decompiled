@@ -13,6 +13,9 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax H (11-14): no new form, no lower score (171): swapping the two operands of the first dot
+// product produces byte-identical code, so the products' destination registers are the allocator's
+// choice and not the source's; the body is unchanged.
 // MiniMax D (11-14): no new form, no lower score (171): round 66's three order changes were measured again on this
 // tree - the copy source changed to local_1 (175), the result set before the output store (238), the clearance moved
 // into its use block (242) and all three together (232) - so every one of them is worse than the body below and the
