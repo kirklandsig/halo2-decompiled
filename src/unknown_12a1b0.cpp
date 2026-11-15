@@ -1679,6 +1679,9 @@ struct s_looping_detail_request
 // MiniMax S (11-14): no new form, no lower score (110): the acquisition schedule and the first-player query (expanded
 // here, called in retail) are unchanged; the earlier rounds' result, workspace, copy and payload forms land at 110 or
 // worse, and the call boundary of that query is the whole difference.
+// P525: Actual request flags/mode/type full-width signed field storage, seven
+// graphs then complete int units: eight 110 at 508/508 bytes. NOT kept: no native
+// offset transport or first-player call recovery; original request record and complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2281,6 +2284,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P523: Actual ring first/index/count full-width signed bitfield domains, seven
 // subsets then complete int units: eight reduced 479 (control 479, full 305). NOT kept:
 // no native frame/ring recovery; original iterator, helpers, request and body restored.
+// P525: Actual signed range-count/base and track/detail-count full-width field storage,
+// each, range pair, outer pair, first three and complete graph: eight reduced 479 (control 479, full 305).
+// NOT kept: native frame/request/range homes remain and no byte equality; original fields and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3194,6 +3200,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // MiniMax S (11-14): no new form, no lower score (597): the track loop's registers still differ - retail holds the
 // state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track
 // definition in ebp; the forms listed below score 590 or more.
+// P525: Actual initialized/hardware/enabled full-byte field allocation, seven unsigned
+// graphs then complete signed allocation: eight reduced 694 (control 694, full 597).
+// NOT kept: native entry true/flags and record/track homes remain; original admission fields and complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

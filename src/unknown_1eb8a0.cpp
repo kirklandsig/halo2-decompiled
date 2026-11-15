@@ -573,6 +573,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P523: Actual fast/active/limited/settled full-byte bitfields, unsigned/signed pairs:
 // reduced 614/614/674/674/681/681/614/614 (control 614, full 622). NOT kept: no exact
 // flag-storage or sample-home recovery; complete record, helper and body restored.
+// P525: Actual signed tick-state counter/duration/ticks-left full-width storage,
+// subsets 1/2/4/3/5/6/7 then complete int units: 622/676/622/676/622/676/676/676.
+// NOT kept: no native sample-home repair or byte equality; duration forms move the first gap earlier. Original record and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

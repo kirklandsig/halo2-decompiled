@@ -770,6 +770,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P517: Complete lazy fallback admission after alternate lookup, allowed/blocked bool/byte/short/long
 // results; 348/348/348/348/348/348/348/348.
 // NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P525: Actual urgent-resource count, inheritance count and inherited graph-index
+// full-width signed storage, seven graphs then complete int units: eight 348.
+// NOT kept: native destructive graph/base reloads and return-byte normalization remain; original shared records and complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
