@@ -1840,6 +1840,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 void function_269250(long clump_index, long actor_index);
 
 // score 87 (was 87): round 112 (m3 lane 12) note at the end.
+// MiniMax I (11-15): no new form, no lower score (87); retail keeps the walk's pool in ebx, the selection on the stack and the two scores on the x87 stack, ours keeps the pool in memory, the selection in edi and compares with comiss; the in-arm compare (126) and the walk's datum index as the selection (128) both score worse, and the walk helpers are shared with four matched functions.
 // MiniMax G (11-14): no new form this round, unchanged (87; 89 on this build's reduced image): retail hoists the
 // walk's pool load into ebx and keeps the selection on the stack, ours keeps the pool in memory and the selection in
 // edi; the two walk helpers are shared with four matched functions and were left as they are.
