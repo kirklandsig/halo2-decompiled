@@ -619,6 +619,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P516: Reference-returning integer sequence maxima, long/short and both argument boundaries:
 // 425/425/409/409; with lower-first bounded-index minimum 462/462/460/460.
 // NOT kept: regressed frame/extent and no tint/UV repair; original includes, clamps and callback restored.
+// m3 lane 10 r109 (fast, control 194): the pivot as two reals 295 (1971 bytes); the second set's extents computed y first
+// (retail computes `by` ahead of `bx`) 208; the first set's two reciprocals declared before the second set's extents 194
+// (same code); the flip computed ahead of the extents 249; the blended reciprocals without the two one-use locals 322.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -824,6 +824,7 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // declared at the function top 42 (same code). Re-measured: indexed definitions 115 (1136 B); the unused-local scan of line
 // 338's four structures plus scale-first alone gives nothing under 40 (scale first 40/107/51/51/55/55/55/68 for n = 0..7).
 // Body unchanged.
+// MiniMax I (11-15): no new form kept: the emitter list test wrapped around the loop with the offset's zero store inside it and the scale declared before the multiplier measure 39 (was 42), under the keep bar, so the body stands.
 // MiniMax R (11-14): the emitter list test wrapped around the loop with the offset's zero store
 // inside it, and the scale declared before the multiplier, measure 39 (was 42) at 1130 bytes; not
 // kept, since the gain is under eight and the score stays above 30. Left: row i of both rotations
@@ -850,6 +851,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the emitter definition formed after the emitter lookup, before the first-particle read, 42; `particle_mask` computed right
 // after `emitter_mask`, before the emitter-level property calls, 263 (1117 B). Diagnostic: the particle pointer renamed to
 // sort either side of the emitter definition 42/42 (names do not set the order of the two reloads after each property call).
+// MiniMax S (11-15): no new form, no lower score (42): the i row of both rotations sums the up product before the forward
+// one where retail sums the forward one first, the copy's second and third components swap, and the two saved registers are
+// reloaded in the other order after each property call; the rotation's term order is fixed by the shared helper's text.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1960,6 +1964,14 @@ bool function_17afd0(long effect_index, long value);
 // default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
 // bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
 // availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
+// M3 lane 3 r246 (fast; base 47): the camera test reading the view global (view local elsewhere) 110 at 500 bytes, re-measured:
+// it gives retail's view reload after 0x17afd0 and keeps the base's homes (NONE/owner in EBP, availability in BL, same_view
+// in its stack byte), so the rest is one instruction out of step (the early `xor bl, bl`) plus the 2-byte neg/sbb/inc; on
+// it: the availability as one `view != NONE && !query` with no early clear 113 (498 bytes; NONE takes EBX, owner ESI, the
+// availability AL, same_view BL); the early clear moved after the view read 121 (496 bytes); false after the view read and
+// set by `if (view != NONE && !query)` 138 (510 bytes, availability spilled); the early clear kept with that set 142 (510
+// bytes); that with same_view true and cleared by one test 145 (513 bytes). Only the early clear with the arithmetic set
+// keeps retail's homes in our build.
 // P515: Independent availability/same-view/attachment/draw binary enumerations, positive then complementary:
 // 129/143/120/110/122/147/120/112. NOT kept: no native result-home equality; original
 // snapshots, query gates, traversal and complete executable body restored.

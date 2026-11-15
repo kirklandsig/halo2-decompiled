@@ -689,6 +689,13 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // code). Left: the not-valid exit's target and the failure block's pops, and the dot's i product (up first in ours).
 // Also: the two failure stores as a forced-inline clear helper taking the entry 8 (same code); the valid block (inverse
 // through the final normalize) as a forced-inline helper taking the entry 14 (real build; earlier only in a harness).
+// M3 lane 4 r202 (fast with 0xb7060, MATCH each time; base 8): the failure stores as an else arm at each of the three
+// tests (no return) 196 (973 B, head flips); the valid block as a forced-inline helper returning bool (false when not
+// valid) whose result the function ignores 14; a success flag set after the valid block with the stores under
+// `if (!updated)` 14; `else { return; }` on the valid test 8 and a return inside the valid block 8 (same code; both were
+// harness-only before). A 600 s permuter run from this body: 70 tries, best 8. Compile-only (/O2 /arch:SSE /Gr reproduces
+// the tail and the dot): a `real` return of the last normalize, the body in `do { } while (0)` and a forced-inline bool
+// helper for the whole body under `if (!helper())` keep our tail; only the listed bool return gives retail's.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

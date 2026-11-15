@@ -382,6 +382,16 @@ __forceinline bool function_184448(long arg_0)
 // long bounds index 991 [383]; reorder plus the float-sum helper 963 [393] (4596 B); reorder, normalize_inline and the
 // per-face bounds at the face-loop top 969 [412], the same on the axis form 969 [365]; reorder, normalize_inline and a
 // bool edge side 963 [397]. The positional count stays near 965 because the first block's registers shift every line.
+// MiniMax R (11-15): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so the
+// worklist array sits at +0x1e0 where retail's sits at +0x1d8 and the interior slot layout differs throughout; the
+// initial surface pointer is still carried in ESI where retail carries it in EDI, and the surface list pointer in EBX
+// where retail carries it in ECX; the negated plane is still computed in the registers where retail stores it and reads
+// it back. New forms tried and dropped: the search condition with the element test first (971), the permuter's four
+// forms (969 with the cached worklist entry dropped and the sample store moved), the negation in the other order (964,
+// one point), and the prefix increment and the zero comparison (no change).
+// MiniMax S (11-15): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4 and the scene and
+// geometry homes are rotated, so every later load sits at a different offset; the endpoint, counter and width forms of the
+// earlier rounds all score 965 or worse.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
