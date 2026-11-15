@@ -1810,6 +1810,10 @@ done:
 // retail's `mov esi, eax` copy is the shape of matched 0xa5bd0 (`mov edi, ebx` before its +0xe/+0xa reads), where the
 // re-reads sit in a later block than the first read; here every read is in one block and CSEs into one value.
 // Diagnostic: `__assume(type >= 0)` before the table read 27 (no change).
+// M3 lane 16 r121 (fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 bytes: type ESI, definition ECX, no copy);
+// on it a `short` type local 27, the definition read as a short array ([6], [7], [5]) 27, the datum as
+// `&placements[index * size]` 27 (all the 27 form's code); one function-scope `type` assigned in the force path and the
+// placement block, on main's body 17 and on the 27 form 27 (both the same code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
