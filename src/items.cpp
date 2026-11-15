@@ -2011,6 +2011,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P523: Actual object activation bit 8, dword/long/word/short/byte/signed-char/char/bool
 // allocation units: 140/201/205/203/205/205/205/205. NOT kept: no exact activation/return-
 // byte or release/event recovery; original record overlay, entry test and full body restored.
+// P527: Native coordinate-array impulse/damping/both for loops, then while loops;
+// independent fixed-three do loops on the current spin/paired-setter graph:
+// 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
+// shared impulse producer, damping statements and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

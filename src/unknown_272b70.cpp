@@ -2941,6 +2941,9 @@ struct s_scenario_scripting_view
 // P514: Native/returned source pointer/reference with branch-owned displacement and length/
 // self-dot metric, each on early/loop-owned short traversal: 96/90/84/95/96/90/84/95. NOT kept:
 // no native actor/counter/home repair; original complete search and helper calls restored.
+// P527: Existing difference/self-product scalar field-lvalue nodes start/end/output/self/
+// start-end/start-output/end-output/all: 80/80/80/80/80/80/80/80. NOT kept: no native
+// actor/counter/selector or guarded-data repair; original shared header and full search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
