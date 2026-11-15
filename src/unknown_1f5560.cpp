@@ -1125,6 +1125,9 @@ real normalize2d(point2f *v);
 // P513: Original-site movement-speed eligibility/exclusion outcomes, bool/byte/short/long,
 // on the retained separate facing/request graph: 135/135/135/135/135/135/135/135. NOT kept: no DL/return
 // repair or equality; original observations, thresholds, calls and complete body restored.
+// P515: Independent trajectory/validity/first-type/retry binary enumerations, positive then complementary:
+// 172/141/202/135/192/253/213/135. NOT kept: no native DL/return equality; original
+// independent producers, trajectory tuples, request/facing graph and full body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

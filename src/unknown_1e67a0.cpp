@@ -1120,6 +1120,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P513: Complete animation readiness/exclusion outcomes at the original gate, bool/byte/short/long:
 // 144/144/144/144/144/144/144/144. NOT kept: native-length forms regress and miss rotation j/k ownership;
 // original initialization, admission, helpers, arithmetic and complete body restored.
+// P515: Independent moved-away/angle/turn/snap binary enumerations, positive then complementary:
+// 118/144/144/140/118/144/144/140. NOT kept: no native rotation/side/output equality;
+// original guard observations, shared rotation, arithmetic and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

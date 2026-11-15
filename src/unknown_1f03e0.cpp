@@ -1406,6 +1406,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // P513: Actual history admission positive/complement/nested/branch-produced, then prior-tick validity
 // positive/complement/nested/branch-produced: 484/484/234/508/484/484/234/499. NOT kept: no exact damping/vector
 // recovery; original observations, copy boundaries, helpers and complete body restored.
+// P515: Independent canonical damping/direct/flying/gravity enumerations, positive then complementary:
+// 313/235/237/337/623/635/630/626. NOT kept: no exact native flag/vector residence; original
+// observations, helpers, arithmetic and complete executable body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
