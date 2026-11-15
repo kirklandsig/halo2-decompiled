@@ -3371,6 +3371,14 @@ PRIVATE __forceinline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// MiniMax I (11-15): no new form, no lower score (557): the score is a desync rather than a count - our frame is
+//   0x7c and retail's is 0x80, and `sub esp, 0x7c` is three bytes where `sub esp, 0x80` is six, so the two
+//   listings compare unrelated instructions from the prologue on. The frame form with the decision byte in a slot
+//   of its own needs a flag set by one test, which is kept only with a match, and the channel words that retail
+//   passes whole to 0xe6a20 come from that caller's parameters, which are in another file. What still differs:
+//   retail keeps the control pointer in esi and the object pointer at +0x1c where this build keeps the control
+//   pointer in eax and the object at +0x20; the buffer address is re-formed after 0x1c7380; NONE is kept in esi
+//   late; the tail's OR order.
 // MiniMax H (11-14): no new form, no lower score (557): the score is a desync, not a count. Our frame is 0x7c and
 // retail's is 0x80, and `sub esp, 0x7c` is three bytes where `sub esp, 0x80` is six, so the two listings compare
 // unrelated instructions from the prologue on. With retail's frame (the decision flag in a byte of its own at +0x1b,

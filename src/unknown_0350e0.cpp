@@ -5936,6 +5936,19 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
+// MiniMax I (11-15, second pass): no new form, no lower score (269): taking the return of 0x3ba90 as a byte makes
+//   the body exactly retail's 1638 bytes with 436 instructions, the same count as retail, but the score falls only
+//   from 269 to 266, so the body stands. What still differs: retail stores that byte in a stack slot and reloads it
+//   (0x2c10e, 0x2c125) where this build keeps the long return in a register, and the two differences listed below
+//   are unchanged.
+// MiniMax I (11-15): no new form, no lower score (269): the permuter's best variant (205 on the reduced image)
+//   needs a flag set by one test and read by the next, a swapped argument pair at the second 0x25dc0 call and a
+//   constant held in a local, so none of it can be kept. What still differs: retail builds the first flag of the
+//   second 0x25dc0 call with a branch diamond (mov dl,1 / jle / xor cl,cl / jmp / mov cl,1) where this build
+//   folds it to setle; retail keeps the object pointer of the weapon lookup in esi and reads the tag through it
+//   (0x2c25c, 0x2c260) where this build loads it into eax and dereferences eax; retail stores the byte return of 0x3ba90
+//   in a stack slot and reloads it (0x2c10e, 0x2c125) where this build keeps the long return in a register; the
+//   0x14b60 call takes its first argument in eax in retail and on the stack here.
 // score 269 (was 331): r136 lane 7: the shared pass helper follows 0x44370's body (mode-based gate, two 0x15680
 // calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool stipple_enabled`
 // (260; kept only with a match, coordinator 11-08) passes 1, 3, 5, 8 and 20 now
@@ -6252,6 +6265,13 @@ PRIVATE __forceinline real absolute_32350(real value)
     return value >= 0.0f ? value : 0.0f - value;
 }
 
+// MiniMax I (11-15): no new form, no lower score (445): the constant 1 that retail holds in ebx through the
+//   inlined pass and the result byte that shares that pass's enabled slot both come from 0x44370 being inlined
+//   with its mode table folded, and that is blocked by 0x44370. What still differs: retail pushes esi/edi only
+//   after the early exits and its frame is four bytes smaller; retail stores the byte returned on the failure
+//   exits at entry and reads it back from memory, so it has five epilogue copies where this build folds the exits
+//   together; retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm (a ja/jbe
+//   diamond) where this build selects with a move; 0x4a1e0 takes its three arguments in eax/ecx/edx in retail.
 // score 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
 // late enable); the notes below were written at 491.
 // Earlier 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
