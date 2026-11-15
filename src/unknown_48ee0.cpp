@@ -285,6 +285,12 @@ extern real g_4c9798[36];
 // MiniMax I (11-14): no new form, no lower score (174): the mode bit still loads the flags into edx where retail uses
 // eax, so that load is a byte longer and every later address drifts, and the mode and the size still take the frame's
 // slots in the other order.
+// m3 lane 11 r102 (fast, 0x1ddd0 MATCH each time; still BLOCKED-BY 0x48e70, machine 1's file this round): one named bool
+// for the small-target test at its three uses 333 (1489 B); the size clamp with the upper bound tested first 248 (1479 B,
+// retail's length, but the clamp then stays in XMM where retail stores it to the frame and reloads it around the rounding
+// calls); both limits from one if/else 346 (1458 B); the clamp as two independent ifs 258 (1484 B); the direction reference
+// declared ahead of the first plane rows and used there too 326 (1483 B). Same code: `maximum` declared ahead of the limits,
+// the two rounding results named before their 64-alignment.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
