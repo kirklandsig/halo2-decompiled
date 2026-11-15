@@ -1518,7 +1518,8 @@ bool function_17afd0(long effect_index, long value);
 // the query result and the same-view flag cleared by one owner/view/availability test; what still differs is
 // the flag's true store, which ours emits ahead of the view test where retail's sits between the
 // availability's test and its branch; the body is otherwise retail's, at retail's 498 bytes.
-// score 12 (was 47): the same-view flag's true store is emitted ahead of the view test, retail writes it
+// score 47 (was 47): availability clear/production and later view observation remain;
+// MiniMax E's not-kept 12 form (above): the same-view flag's true store is emitted ahead of the view test, retail writes it
 // between the availability's test and its branch; the availability's zero store also comes before the second
 // definition call where retail's comes after the owner lookup; frame 0x14, the owner, the view, the boolean
 // homes and the post-attachment view refresh agree.
