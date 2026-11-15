@@ -2267,6 +2267,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
+// score 3 (was 3): retail loads the region entry (`mov eax, [edi]`) between the `info` test and its `je` and addresses
+// the region flags as [eax + edx + 4] where ours has [edx + eax + 4]; every form that evaluates the entry ahead of the
+// info test gives both, but then `definition` becomes a register argument, `info` takes EBP and `object` is spilled.
+// M3 lane 6 r180 (fast): the guard inline taking (info, accumulator) with the entry read into a local before the info
+// test 228 (870 bytes); an inline returning the region pointer or NULL, the caller testing the flags and the definition
+// flag 225 (878), the same with early returns 241 (880); round 114's inline guard as `__forceinline` 228 and with
+// `object` declared `s_damage_object *const` 228 (both the same code as the lead).
 // MiniMax G (11-12): no new form, no lower score (3): nothing new this round; retail still hoists `mov eax, [edi]` above the
 // info `je` and addresses the region flags as [eax + edx + 4] where ours uses [edx + eax + 4].
 // MiniMax G (11-12): no new form, no lower score (3): the passed bool and the short team are locals as in 0xd5d20;
@@ -2302,7 +2309,7 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // MiniMax D (11-06, run 49): no new form, no lower score (3); the region pointer is still loaded after the `info` test where retail loads it before, the object pointer and the 1 << type shift still use different registers, and the `lea ebx, [ecx + 8]` still comes before the last call's first push.
 // MiniMax B (11-06, run 42): no new form and no lower score (3); retail loads the region index before the branch
 // that tests the entry pointer, ours loads it after the branch, so the load and the `je` are swapped.
-// score 3 (was 5; earlier 40): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
+// Earlier, at score 3 (was 5; earlier 40): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
 // result to a stack byte and pushes the dword, and sign-extends the team into esi/ecx); what is left is scheduling (the
 // `mov eax, [edi]` before the `info` test, which register the object pointer and the 1 << type shift use) and the
 // `lea ebx, [ecx + 8]` before the last call's first push.

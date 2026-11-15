@@ -909,6 +909,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
 // score 240 (was 240): earlier 240 (was 291); 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// M3 lane 6 r180 (fast): retail's frame lacks our `orientations` home (it keeps orientations in ESI) and loads
+// input_matrices into EDX at entry for the late final_matrices store, with a separate EDI copy for `result`, so the +0xb3
+// byte must take BL; ours holds the parameter in ESI for both. On the current body: final_matrices declared at the top
+// after `result` 240, before it 240; `result` declared ahead of the header 240; the header pointer declared `const` 240;
+// `result` and final_matrices both ahead of the header 240; the two early exits returning input_matrices 240 (each the
+// same code or a same-score reshuffle: the entry keeps object_index in EDX and the parameter in ESI).
 // 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
 // difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
 // difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
