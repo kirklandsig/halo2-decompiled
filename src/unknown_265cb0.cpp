@@ -791,6 +791,12 @@ real function_30bf0(vector3f *vector);
 // offsets masked 18): no trial run. The masked residue is the result's home and the two seat-loop cross products' operand
 // loads (2 bytes); a grep of this note for each lead (world-up copy or pointer, typed forward, seat pointer, count width,
 // facing flag, range, plane, clip, out-of-range, mode tests, maxima) finds every natural form already listed.
+// M3 lane 14 r95 (fast with 0x263740, 0x25c9d0, 0x26d370 and 0x263d70, all MATCH): scope trials for the clip amount's
+// shared home (ours shares it with the seat loop's down-counter, retail with the squared distance; the amount itself has two
+// memory references, the lea for the call and one load): the seat count declared in the settings block 84, the clip amount
+// declared at the endpoint block's top 84, the seats array declared at the facing block's top 84 (all same code), so
+// lexical scope does not pick the partner. Also same code: the settings pointer typed `byte const *` 84, the squared
+// distance `real const` 84.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2529,6 +2535,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Also on 378 (same code, 378): the vehicle test as `!(vehicle_type == 0 || vehicle_type == 1 || vehicle_type == 4)`; the
 // players iterator declared ahead of the vehicle lookup. Every free register choice up to the vehicle test's `xor ecx, ecx` is
 // retail's; the first one after it (the iterator's table pointer) and those inside the players loop are one rotation step on.
+// M3 lane 14 r95 (fast with the file's 33 matched functions and 0x26be00's users 0x1b99d0, 0x1c1d50, 0x1e23c0, 0x25b440,
+// 0x25d770, 0x25d810, 0x267840, 0x267c50, all MATCH): 0x26be00 (ours now, inlined at the first difference) written as one
+// statement without its one-use object pointer 168 (same code: `[eax + ecx + 0x58]` stays); the actor's `data` alias
+// dropped for `((byte *)actor)` at its 30 uses 168 (same code); the other actor as `other = NULL; if (index != NONE) other =
+// actor_get(index);` 382 (block layout moves); the prop flag through the `prop` local instead of the second prop_get 655
+// (2845 B: retail fetches it again); the players threshold typed short without the two casts 168 (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
