@@ -626,7 +626,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // MiniMax D (11-14): no new form, no lower score (569): the body is still 39 bytes shorter than retail's with the frame
 // at 0x114 as retail, and the radius and the trace and pivot homes still differ; the forms the earlier rounds measured
 // (the shared endpoint setters, the centre copy, the obstacle-radius observation and the trace-field sector forms) all
-// score 767 or more, so the body stands.
+// measure 767 or more, so the body stands.
 // Earlier 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax R (11-15, later): no new form, no lower score (569): the permuter over the full image (316 seconds, three
 // tries) found no form better than the full image's own 539 differing instructions, so no rewrite of the body scores
@@ -640,7 +640,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // use, this build keeps it in xmm5 from the prologue to the last use, so every block after the first pair is
 // shifted by four bytes; the frame is 0x114 as retail's and the body is 39 bytes short. The promotion only ends
 // if the parameter's last use moves, which changes the code, so the body stands.
-// score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
+// Earlier 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
@@ -1031,6 +1031,15 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // first-offset arms 569 (same code); function_2994a1 as plain `inline` 569 (same code); the three sweep points
 // declared in the loop body 569 (same code). Ours still allocates the radius to XMM5 for the whole body (and tail-
 // merges the two first-offset arms on it); retail loads it from its home in each block.
+// M3 lane 15 r89 (fast with 0x29a190, matched throughout; control 569 = full; all restored): the 2-D offset helper's scale as
+// `real const &` 732 (3349 B: the second if's arms stop sharing their tail as in retail, but the radius still sits in XMM5 from
+// the entry; the reference folds away when inlined); the body after the NONE test nested in `if (local_11 != NONE)` with the one
+// `return local_0;` 809 (the je reaches the end as retail, but that exit reads local_0 and the three bool homes move); nested with
+// `return local_0;` inside and `return true;` after it 790 (3348 B; retail's epilogue order and je, positions shifted by the
+// missing radius reloads); the obstacle angle as a float sum without the double casts 601 (3353 B; SSE addss, retail x87 `fadd
+// dword`); that sum written into the sin/cos arguments 808 (3402 B). Lead: retail reloads the radius after 0x2108a0/0x210770 though
+// neither of them nor their callees 0x1427f0/0x210d10 touches XMM5 in either build, so retail's link-time compile treated one of
+// them as clobbering the XMM registers; no source form here reproduces that.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
