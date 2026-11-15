@@ -756,6 +756,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // timer 180 at 1888 (re-measure); the loop's `view->fade_time` read once into a named local 290 at 1892; the
 // message-text arm with a named `message_text` for its three uses 103 (same code); the scripted test as nested ifs
 // 103 (same code); the flash fraction clamp as a ternary 103 (same code); the loop's fade clamp as if/else-if 110.
+// M3 lane 13 r92 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 114): retail's row counter
+// shares the flash scalar's home (-0x18; flash is address-taken in both builds) where ours spills the counter at -0x44. The
+// rows loop in a block of its own (the counter's scope then a sibling of the flash block; this build has no for-scope
+// conformance) 114 (same code: spill homes do not follow lexical scope); that with the bool timer 191 (1888 bytes); the row
+// height as a short 261 (1903 bytes); the row height declared once at the loop block's top 114 (same code); the qsort call
+// inside the loop block 114 (same code).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

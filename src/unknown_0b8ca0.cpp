@@ -688,6 +688,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // MiniMax B (11-13): no new form, no lower score (165): the permuter cannot search this function on the reduced
 // image (248 differences there against the full image's 165), and the earlier 71-point form rested on match-only
 // forms, so the body stands as it is.
+// MiniMax A (11-14): no new form, no lower score (165): the frame is ours (0xac, unaligned) where retail
+// realigns to eight bytes with a 0xb4 frame, and retail evaluates the atan2 sum before the dot product and
+// applies fcos after it, so the first difference is still at +0x1a and every later offset shifts with it.
 // score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where

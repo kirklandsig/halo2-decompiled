@@ -601,6 +601,14 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax H (11-14): no new form, no lower score (675): the frame 0x1f88 and the length agree with retail, but the
+// prologue's homes do not: retail takes the path pointer into ebx after the pushes and keeps the success result in the
+// stack byte at [esp+0x13], where this build takes the path pointer into eax before the pushes and keeps the result in
+// a dword; retail also loads the source radius before the 0.2f constant, so the two orders differ before the first
+// step block is reached and every later home follows.
+// The permuter over this body (300 s, one job, 26 tries over the reduced and the full image) lowers the baseline of 675
+// by one point only, to 674, and the form it found is the banned one: the two cache offsets are hoisted into a local
+// that holds the constant (tmp0), so it was dropped.
 // MiniMax R (11-14): no lower score (675): the permuter ran over this body (300 s, three tries) and
 // never beat its baseline; the frame 0x1f88 and the length agree, retail keeps the success result in
 // a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and the
