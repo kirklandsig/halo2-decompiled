@@ -573,6 +573,9 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
 // MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
 // and the shared rotate helper in the other file decides them.
+// MiniMax B (11-14): no new form, no lower score (13); only the j and k rows of the inlined rotation still differ,
+// and they follow the shared rotation helper's text in src/unknown_170d70.cpp, which this lane may not edit
+// (BLOCKED-BY 0x170d70); every other row of the body is retail's.
 // score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
 // rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
 // this lane may not edit.

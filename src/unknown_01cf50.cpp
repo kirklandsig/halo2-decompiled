@@ -7969,6 +7969,21 @@ real scenario_ramp_evaluate_current(long index);
 // MiniMax E (11-11): no new form, no lower score (139); retail's frame is 0x58 bytes with the frame pointer pushed
 // inside the filter loop, ours is 0x5c with it in the prologue, so every stack slot sits four bytes off.
 // MiniMax H (11-12): no new form, no lower score (130): this build still pushes ebp in the prologue and frames 0x5c while retail pushes ebx, esi and edi and frames 0x58, saving ebp around the filter loop instead, so every stack slot sits four bytes off and the grid's stores come in another order.
+// MiniMax B (11-14): score 125 (was 130): the grid's four bounds are read straight from the globals, so the
+// one-use left/top/right/bottom locals are gone; the grid's stores still come in the source order (grid[0].x,
+// grid[0].y and so on) where retail stores the two left values first, then the top, the right and the bottom,
+// then the zeros and the ones; what still differs is the frame, which is 0x5c here against retail's 0x58 with
+// four unused bytes above the grid (the blur block reserves a slot for the strength local and then keeps the
+// strength in the dead blur argument's slot), and ebp, which this build pushes in the prologue where retail
+// saves it around the filter loop, so every stack slot still sits four bytes off.
+// MiniMax B (11-14, later): no new form, no lower score (125); retail's blur block keeps the 0.9 in xmm5 across
+// the ramp call and stores it in the distortion slot before that call, and moving our initialisation above the
+// call reproduces that block instruction for instruction but scores 129, so the kept form stands; the clamp's own
+// local, the state local, the loop counter's type and the grid's scope each leave the frame at 0x5c; our
+// twenty-two slots sit at the same offsets from the frame's bottom as retail's (the distortion at the bottom, the
+// ramp result four above it, the weights eight to twenty and the grid twenty-four to eighty-four), so the whole
+// difference is the one unused slot at the top and the frame pointer saved in the prologue where retail saves it
+// around the filter loop; the grid's sixteen stores carry the same values on both sides, only their order differs.
 // score 130 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
@@ -7993,6 +8008,7 @@ real scenario_ramp_evaluate_current(long index);
 // retail pushes ebx, esi and edi and frames 0x58, saving ebp around the filter loop instead, so every stack slot sits
 // four bytes off; the grid's fields stored in retail's order give 120, but that form was already rejected as a store
 // order picked by score.
+// MiniMax B (11-15), NOT kept: 125 (was 130), a 5-point gain, under the 8-point bar for a function above 30.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
