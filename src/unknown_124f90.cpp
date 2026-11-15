@@ -705,6 +705,14 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // (`inc esi` rises to just after `or ecx, -1` and `inc edi` stays at the loop end). So the instruction that feeds the
 // loop's final compare rises to just below the last flag writer before it, while the stores and `inc edi` keep source
 // order: retail needs a flag writer (or a dependency) after the second store at scheduling time.
+// Round 185 (m3 lane 6, fast): the ten stores in the aggregate's field order 11 (stores keep source order); the stores from
+// unknown0a on in a forceinline helper taking the voice index (re-deriving the voice from the pool global) with the index
+// advanced after it 3 (`inc esi` now follows the first two stores as in retail, but `inc edi` moves there with it); the
+// index copied first (`short index = voice_index++;`) for the voice and that helper 107 (565 bytes, the copy takes its own
+// register); the first two stores and that helper in a forceinline init helper taking (voice index, type), called with
+// `voice_index++` 3 (same code as the helper form); `register` on the inner counter 3. Diagnostic (reverted, not a source
+// form): a compiler memory barrier after the second store matches in the fast check, so retail behaves as if a scheduling
+// fence sits there that holds `inc esi` but not `inc edi`.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -3978,6 +3986,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // listed word voice index. On that base: `reason` declared at the loop-body top 78; case 0 without its closing 0xe stop
 // (diagnostic) 171, the swap kept; the range index named as a short before the pointer 88; the entry reading the pool
 // global directly with `sounds` set only by the increment 78 (same code); the voice as `g_4e6378 + voice_index` 78.
+// Round 185 (m3 lane 6, fast; the 6 form re-built at 6): with the range in case 0, `register` on the sound index 78, a
+// named long range index before the pointer 78, the class-flag test as bit 21 of a dword bit-field at +8 80 (`shr eax, 0x15`);
+// on the 6 form, the loop end as `data_datum_index(sounds, data_find_index(sounds = g_4e637c, next))` (the reload after
+// the ternary through the one pool local) 82 (pool ESI, index EBP), the same with the range above the mode 49.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
