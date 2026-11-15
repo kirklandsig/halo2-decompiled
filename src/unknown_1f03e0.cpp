@@ -1416,6 +1416,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 565/523/375/636/633/341/551/698. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // P522: Immutable damping/direct/flying/bounded-step/all decisions, real input/history/both root APIs:
 // 234/234/234/234/234/305/234/313. NOT kept: no exact damping/vector recovery; original complete body and helpers restored.
+// M3 lane 4 r202 (fast with 0x1f0450/0x24590, both MATCH; base 234): the damping factor written at its two uses 433
+// (3049 B); the first arm clearing gravity just before its last add-scaled (retail stores the byte before the out.k store
+// it shares with the general arm) 233 (3047 B, a gain of 1), with the flags declared flying, direct, damping, gravity 229
+// (first difference +0x31), with the general arm's rows as three statements 559 (3037 B), with both arms' rows as
+// statements 346 (3052 B); the direct arm's limit test as `<= step` with the arms swapped 237; the direct arm's step
+// computed before delta 577 (3031 B). Compile-only: all 64 operand orders of contact_cross's six products give the same
+// code. Left: the general arm's k sum ends in XMM2 (retail XMM0), so the first arm's out.k store is not tail-shared.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
