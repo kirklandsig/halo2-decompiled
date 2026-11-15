@@ -2488,6 +2488,12 @@ event_done:
 // MiniMax S (11-14): no new form, no lower score (63): the head's load stays folded into the datum address
 // because the base-plus-scaled-index pointer is formed by a helper in another file, so the add that precedes
 // the load in retail cannot be produced here; the body was re-measured and did not move.
+// MiniMax S (11-15): no new form, no lower score (63): retail still adds the record base into the scaled index
+// before its first load and still reloads the object's index from the effect after the 0xbadc0 validity call, where
+// this build caches the index in esi across the call and reads the field before the add; the head's load still folds
+// into the datum address where retail forms the pointer. This round the object index named in a local of its own
+// gives the same code (63) and reading the object index before the definition lookup gives 78, so both were
+// restored; 0xbadc0 and 0xbaf80 live in src/unknown_0bad50.cpp: BLOCKED-BY 0xbadc0, 0xbaf80.
 // score 63 (was 63): unchanged this round: retail adds the record base into the scaled index before its
 // first load and keeps the object's index in EAX across the validity call, where ours reads the field
 // before the add and caches the index in ESI; the validity callee's body is in another file, so the

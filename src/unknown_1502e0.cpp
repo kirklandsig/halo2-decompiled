@@ -1222,6 +1222,12 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax S (11-15): no new form, no lower score (215): the tag table still stays enregistered (EBX) through the first
+// loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are
+// still not retail's; the counted-phase forms tried this round (the bit-3 tests in a second loop after the lookups,
+// the pending lookup ahead of the held one, the weapon's own flags read once ahead of the slot loop, the mode clears
+// chained) all regress or leave the same code, and the grouping that moves the tag table's home is not a form the
+// review keeps.
 // score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
 // m3 lane 5 r185 (fast with 0xcd7b0/0xcbd50/0x151aa0/0x151940, control 215): the bit-3 tests in a second loop after the
 // lookups 293 (1008 B); held and pending as one `long weapons[2][2]` 215 (same code); the pending lookup ahead of the
@@ -1635,6 +1641,13 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax S (11-15): no new form, no lower score (43): the whole difference is still the one register rotation -
+// retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in edi,
+// esi and ecx - and the two bodies are 210 bytes with the same instruction sequence; the hand test writes its result
+// into al where retail writes into dl. This round the unit index read into a named local of its own for the test,
+// the lookup and the two calls gives 80, the hand computed at entry before the player lookup gives 86 (200 bytes), the
+// hand as a bool gives 89 (197 bytes) and the hand declared outside the block and assigned inside leaves the same
+// code (43), so all four were restored; no declaration order, hand width or result spelling moves the rotation.
 // score 43 (was 43): player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
 // EDX, primary ECX, hand EAX; ours ECX, EAX, EDX); 0x151b80 shows the same exchange.
 // m3 lane 5 r185 (fast with 0x151b80/0xcd7b0/0xa8f80/0xcd4e0, control 43): the hand typed bool 89 (197 bytes); the

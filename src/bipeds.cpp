@@ -1570,6 +1570,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
 // in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
+// MiniMax S (11-15): no new form, no lower score (566): retail's frame is still 0xfc against this build's 0xf8 - the
+// dword it is short of is the gravity argument's, and the inline accessor that would supply it is a new function in
+// this call graph, which flips the matched 0x54590 - and retail's definition pointer sits at the top of the frame
+// where ours sits mid-frame, so every stack home after the prologue is four bytes out; the call to 0x1e5bb0 still
+// passes seventeen values where retail passes twenty-one, and the speed-scale block still computes `1.0f - a*b`
+// before the helper's multiply where ours multiplies first. The ground-body receiver, nearest-contact output and
+// discarded query-output forms all give 566 or regress, so the body stands.
 // score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // MiniMax B (11-14): no new form, no lower score (566); retail's frame is 0xfc against our 0xf8 (one dword more) and its
