@@ -335,6 +335,11 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // every phase; phase 3 only moves the v.i load), the same with 0-5 dead float products in the helper. The dot written flat
 // i, k, j at phases 0-7 43-48; grouped j + (i + k) 55-63 (1409 bytes); the +0x18/+0x1a pair through a pointer 54-65
 // (1409 bytes); the pair as a two-short member written directly 30 (same code, still hoisted); a const entry pointer 30.
+// Round 164 (m3 lane 7, fast): the cross terms through the existing cross3f_staged(vector, axis) into a vector local with
+// the named components kept 152 (1414 bytes); the textbook rotate (cross product into a vector local through
+// cross3f(vector, axis), rows reading the vector in place, `v * cos + a * proj - cross * sin`) 53 at 1405 bytes (dot still
+// k, j, i), the same through cross3f_staged 53, cross3f(axis, vector) with the cross term added 55, the textbook rows
+// written scalar first 53.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
