@@ -701,6 +701,14 @@ extern point2f *g_468778;
 // T105: Progressive final-result logical/bitwise refinement, bool/byte/short/long:
 // 375/395/404/406/375/373/406/407. NOT kept: two-point best is below the gate
 // and no native result/carrier equality; original result and complete body restored.
+// M3 lane 11 r100 (fast with the file's functions and 0x265d30, 16 MATCH in each; 0x1aab50 at its own 382): the actor
+// looked up before the settings call with constant exits (`if (!local_1 || f13 || f14 || f2d) return false;`, the
+// final expression returned) re-measured 393 (frame 0x40): ours then gives arg_0 EBX (0x1e4f90's register), the actor
+// EDI (spilled at [esp + 0x20]), settings ESI (split: ESI later serves the facing pointer) and arg_1 EBP, prop in
+// arg_1's home; retail arg_0 EDI, actor EBP, arg_1 ESI, prop EBX, settings at [esp + 0x10] only. On it: the arg_1 view
+// declared first 393 (same code); the settings test as its own early return 410. Diagnostics (reverted, not source
+// forms): one settings read fewer (the -0.4 test's distance replaced) 403 and one prop read more 407, settings still
+// ESI in both, so reference counts alone do not rank prop over settings here. Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -876,6 +884,9 @@ static __forceinline long real_to_long(real value);
 // MiniMax E (11-11): no new form, no lower score (382): the frame and the length agree and the early false exit's place is right, but the object/magnitude and query scalar homes still differ, and the helper retail keeps out of line is expanded here (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // MiniMax S (11-11): no new form, no lower score (382): the frame and the length agree, but the early false exit's place, the object/magnitude homes and the query scalar homes still differ.
 // MiniMax G (11-14): no new form, no lower score (382): an early `return false` for the three flags folds the result byte away (frame 0x54, 508); retail keeps the byte and puts its false exit at +0xe5.
+// MiniMax H (11-14): no new form, no lower score (382): the frame and the length agree, but the early false exit's
+// place, the object and magnitude homes and the query scalar homes still differ, and any early return form here
+// folds the result byte away and shrinks the frame to 0x54, which reads 508.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose

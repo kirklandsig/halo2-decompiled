@@ -580,6 +580,16 @@ struct s_text_line_measurement
 // advance-first test sums; a width-first update; 120 of the 720 orders of the six entry declarations; 1-12 dead long and
 // 1-8 dead real locals; 90 explicit-parenthesis shapes of the test and the update (the copy appears only where the test
 // and the update share a parenthesized partial sum, which then moves the update ahead of the test).
+// m3 lane 1 r103 (fast with 0x13f700/0x13f0e0): the bound `real right = bounds->x1;`, the start `real left = position->x;`, or
+// both, named right before the test 77 each (same code). Re-measured as a diagnostic: the advance product written at both uses
+// 111; its listing shows why the width loads late here: the width takes the scale's XMM3 once the scale dies, so the load cannot
+// be hoisted; retail gives XMM3 to a second copy of the advance (`movaps xmm3, xmm0`) and the width XMM4. With the product at
+// both uses the width does load early (the scale is still live), but the update reuses the test's product in place, so there
+// is still one advance range. No untried natural form found.
+// P492: Original two flags produced by token/setting/break-index tests,
+// seven bool subsets then all byte: 111/134/116/115/108/119/123/123.
+// NOT kept: no native advance copy or early width-load recovery; original
+// flags, lazy reads, arithmetic groups and complete body restored at 77.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

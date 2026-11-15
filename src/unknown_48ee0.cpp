@@ -282,6 +282,9 @@ extern real g_4c9798[36];
 // MiniMax C (11-14): no new form, no lower score (174); the mode flag still loads into edx where retail
 // keeps it in eax, and that one byte of drift offsets every later address field; a 300-second permuter
 // run (3 tries) found no better form.
+// MiniMax I (11-14): no new form, no lower score (174): the mode bit still loads the flags into edx where retail uses
+// eax, so that load is a byte longer and every later address drifts, and the mode and the size still take the frame's
+// slots in the other order.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
