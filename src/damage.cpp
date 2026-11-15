@@ -4438,6 +4438,9 @@ bool function_138880();
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
 // MiniMax I (11-14), NOT kept at review (a one-use team local at each call and a score-picked statement order are kept only with a match; 0xd5de0 357 -> 330 back to main): score 117 (was 194): the object's team read into one `word` local that both 0x1e9720 calls use (retail's `xor ecx, ecx; mov cx` at both), and the body block's info branch takes its rate before its maximum, so retail's XMM2 (maximum) and XMM0 (rate) loads come out in that order.
+// MiniMax C (11-14): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the
+// 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the
+// second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three

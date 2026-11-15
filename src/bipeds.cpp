@@ -532,6 +532,9 @@ void function_e5930(long unit_index);
 // MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still expands here, so the reset dispatch keeps its extra instructions.
 // MiniMax E (11-11): no new form, no lower score (118): the flag store scheduling and the final helper's expansion remain; the helper 0xe5930 is defined in another file and a new noinline declaration is not allowed: BLOCKED-BY 0xe5930.
 // MiniMax H (11-12): no new form, no lower score (118): the reset dispatch still expands here where retail calls it, and the dispatch's own file is not this lane's to edit.
+// MiniMax C (11-14): no new form, no lower score (118): retail calls 0xe5930 out of line where this build expands the reset
+// dispatch (413 bytes against retail's 343), and retail's 0x1f0 test shifts the dword first where the field is a byte here, so the
+// test folds to a byte test; the callee's file is not this lane's: BLOCKED-BY 0xe5930.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
@@ -725,6 +728,9 @@ struct s_biped_flags_10a_view
 // the shared exit for its early return, where ours compares the field in memory, spills the object index at
 // [esp+0x20] where retail uses [esp+0x24] and returns inline.
 // MiniMax H (11-12): no new form, no lower score (222): the state pointer is still rematerialized instead of spilled to its stack home, and retail's early exit still jumps to a shared epilogue this build does not have.
+// MiniMax C (11-14): no new form, no lower score (222): retail computes the state pointer at the head and spills it, so the head is
+// 25 bytes short, the 0x111650 call takes its names in EAX where retail pushes both arguments, and the type-0 bit is read as
+// `shr al, 2; and al, 1` where this build folds it into `and al, 4`: BLOCKED-BY 0x111650.
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -5101,6 +5107,8 @@ void function_e4300(long arg_159e6d)
 // MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still inlined at this straight-line call site, where retail keeps the call.
 // MiniMax E (11-11): no new form, no lower score (91): our LTCG still expands the reset-mode dispatch where retail calls 0xe5930 out of line (113 bytes against 61); the callee's file is not mine and a new noinline declaration is not allowed: BLOCKED-BY 0xe5930.
 // MiniMax H (11-12): no new form, no lower score (91): the reset dispatch still expands at this straight-line call site, and retail takes the index from ESI where this build takes it from the argument register.
+// MiniMax C (11-14): no new form, no lower score (91): retail calls 0xe5930 out of line where this build expands the reset dispatch
+// (113 bytes against retail's 61), and no spelling of the call site keeps the callee out of line: BLOCKED-BY 0xe5930.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
