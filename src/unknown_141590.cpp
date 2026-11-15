@@ -1272,6 +1272,9 @@ void function_143250(
 // the nine rotation locals 1333 (same code); `result[0] = coefficients[0];` first 1361; the r6_r3 and r6_r0 pairs'
 // declarations exchanged 1334; band three's sqrt(2) declared at its first use 1336; band two's sqrt(5) before sqrt(15)
 // 1333. Body unchanged.
+// P500: Current-polynomial actual 3x3/5x5/7x7 matrix lifetimes, seven subsets, then all entry declarations:
+// 1420/1420/1333/1420/1420/1435/1420/1420. NOT kept: No native spill-home/frame recovery: all tie or regress and
+// separate workspaces shorten away from retail. Original complete executable body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -716,6 +716,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // MiniMax I (11-14): no new form, no lower score (334): the gate's byte is still read with the base and the index
 // in one operand where retail adds the index to the base first and reads the byte from it, and the flag byte and the
 // settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
+// P500: Standard reciprocal/interpolation/inherited-velocity arithmetic, seven subsets, then initial-position
+// products: 384/573/352/625/421/575/627/650. NOT kept: All regress; native separate effect address, gate/settings
+// homes and extent are not recovered. Three matched controls remain exact. Original complete executable body
+// restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

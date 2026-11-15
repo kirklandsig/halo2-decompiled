@@ -1687,6 +1687,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
 // NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
 // caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
+// P500: Complete standard RGB bias/reflection/scale arithmetic, seven subsets, then both luminance producers:
+// 530/983/650/1012/660/1080/1110/1343. NOT kept: All regress; reflected/scale forms grow beyond retail and do not
+// recover native frame/result/carrier shape. Original complete executable body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

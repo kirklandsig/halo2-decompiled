@@ -973,6 +973,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // ahead of get_next_send, 82 (229 bytes); the message array taken into a pointer local at the top 77 (228 bytes), inside
 // the block 78, inside the block with the bound read from the member in the loop test 78 (229 bytes); `next > oldest`
 // tested ahead of the index helper with a named oldest (diagnostic, an implied test) 77 (230 bytes). The reduction stays.
+// P500: Existing shared index-helper lower/upper guard and result graphs, eight complete forms:
+// 76/86/86/86/91/87/60/60. NOT kept: Strength reduction remains or native extent/register ownership regresses; no
+// exact result. Shared helper and every caller restored. Original complete executable body restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

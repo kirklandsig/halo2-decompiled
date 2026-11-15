@@ -852,6 +852,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // g_4e3b44;`, read once for the biped radius) 76: the timing call's lea temporaries and the request stores take retail's
 // registers (the 0x110ab0 argument still ECX); with lane 17's unit local before the test as well (written as a comma
 // expression, a diagnostic) 45, first difference +0x5b, so the two do not add (lane 17's form alone was 42).
+// P500: Existing unit/properties/location/side/animation/callback ordinary-inline contracts, six individual and
+// two complete graphs: 87/87/87/87/87/87/87/87. NOT kept: All eight tie 87 at native frame and extent; the unit
+// argument and subsequent scalar/query homes do not move. Every declaration restored. Original complete executable
+// body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
