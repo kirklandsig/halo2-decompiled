@@ -1303,6 +1303,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax S (11-15): no new form, no lower score (94).
 // score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
 // and arm 1's product order and XMM colours (fade_out multiplied from memory before the reciprocal, elapsed in XMM2).
 // MiniMax B (11-12): no new form, no lower score (94); a fade-in local with the scaled local reaches 87, but each holds a
@@ -3067,6 +3068,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax S (11-15): no new form, no lower score (96).
 // MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
 // true value set at the entry and BL holds the false value across the two cleanup calls - while this build
 // keeps it in a byte in the frame, so retail's frame is eight bytes and ours carries the extra slot; a form
