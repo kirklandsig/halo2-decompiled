@@ -382,6 +382,13 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // stay in EBX where retail reloads them from the send record after each byte store); that with the fall-through two-case
 // mode switch 559 (1916 bytes, masked 234). Lead: retail's flag byte behaves like one address-taken bool that the
 // compiler treats as possibly aliasing the send record.
+// M3 lane 6 r182 (fast with 0x21f8a0, 0x128ca0, 0x21c400 and the callees; fast control 544 = full, masked 235): the voice
+// sends as `switch (mode) { case 0: add; break; case 1: add; add; break; }` 562 (1884 B, masked 225: retail's block shape,
+// the positional score rises with the shorter body); with `fabsf` on the gain test 562 (same code: fabsf is the float fabs
+// here); with `fabsf` at all six difference tests 562 (same code); the switch with the gain difference named before the test
+// and fabsf at all six 548 (1907 B, masked 239); the named difference with fabsf at all six 544 (same code as this body);
+// the cached gain stored at the top of the gain block 550 (1901 B, masked 236). The switch alone repeats lane 12 r81's form.
+// BLOCKED by the file's /Op (a flags decision: retail's double fabs, exp, log10 and sqrt expand inline and unrounded).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

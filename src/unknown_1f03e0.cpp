@@ -1403,6 +1403,19 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 234/554/234/546/232/339/234/614. NOT kept: The native-sized memcpy copies tie 234; history memcpy gains only two
 // at 3050 bytes, and all overlap-safe copies regress. No native damping or raw/bounded home recovery. Original
 // complete executable body restored.
+// P513: Actual history admission positive/complement/nested/branch-produced, then prior-tick validity
+// positive/complement/nested/branch-produced: 484/484/234/508/484/484/234/499. NOT kept: no exact damping/vector
+// recovery; original observations, copy boundaries, helpers and complete body restored.
+// P515: Independent canonical damping/direct/flying/gravity enumerations, positive then complementary:
+// 313/235/237/337/623/635/630/626. NOT kept: no exact native flag/vector residence; original
+// observations, helpers, arithmetic and complete executable body restored.
+// P518: Direct raw/bounded library initial/fallback/both, scalar initial/fallback/both,
+// overlap-safe initial/fallback on the native-length setter graph: 234/234/555/561/588/597/576/574.
+// NOT kept: no exact raw/bounded residence; original complete body restored.
+// P520: Standard general delta/history-input/anchor/relative/reconstruction/history-copy/bounded-copies/complete history coordinate providers:
+// 565/523/375/636/633/341/551/698. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Immutable damping/direct/flying/bounded-step/all decisions, real input/history/both root APIs:
+// 234/234/234/234/234/305/234/313. NOT kept: no exact damping/vector recovery; original complete body and helpers restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

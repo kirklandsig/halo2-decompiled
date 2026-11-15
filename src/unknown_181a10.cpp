@@ -908,6 +908,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // the decoded type named 238 (a scheduling shuffle only). Diagnostic (reverted, not a source form): a full memory barrier
 // ahead of the pointer test and of the byte test gives retail's three data loads but also reloads second->shape before each
 // (retail loads the shape once), 331 (1255 B): only a reload of the data field alone fits retail, and no permitted form gives it.
+// P516: Binary-enumeration result domains at carried validity/root/key/distance producers,
+// positive then complementary encoding: 284/248/238/238/249/248/238/238.
+// NOT kept: no gain or frame recovery; original byte result, guards, observations and collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

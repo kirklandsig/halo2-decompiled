@@ -718,6 +718,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // B); the limit computed before the squared length 64 [18]; the rate local dropped (the global passed to
 // vector3f_add_scaled) 79 (same code). On the body: the limit computed right after the rate and tick reads 85. Body
 // unchanged.
+// P516: Complete correction admission, including both lazy location comparisons, carried in
+// bool/byte/short/long, then complemented: 46/46/46/46/46/46/46/46 (366 B; first +0x20).
+// NOT kept: all regress; original limit/location gate, prediction, delta and correction helpers restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

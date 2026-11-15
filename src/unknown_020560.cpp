@@ -132,6 +132,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 240 (m3 lane 3, fast with 0x143c0 and 0x16b90): the entry as `state + (index << 6) + 0x1320` 4; the clear as a
 // plain assignment 4, with a `1L` shift 4; `level` declared at loop scope after the entry 4; the mask declared in a
 // `for` header with an empty step 4.
+// Round 106 (m3 lane 1, fast): the clear's count masked, `~(1 << (index & 31))`, 18 (400 bytes: the `and` stays); the
+// entry's current level in a named local for the test 4; `long index` outside and the clear as the step of
+// `for (; remaining; ...)` without a `continue` 4. Diagnostics: the level store ahead of the 0x143c0 call 38, the bitmap
+// declared once outside the loop and not reset 109: the clear keeps EDX in both. Retail 0x143c0 does not read EDX.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

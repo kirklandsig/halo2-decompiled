@@ -983,6 +983,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // P500: Existing shared index-helper lower/upper guard and result graphs, eight complete forms:
 // 76/86/86/86/91/87/60/60. NOT kept: Strength reduction remains or native extent/register ownership regresses; no
 // exact result. Shared helper and every caller restored. Original complete executable body restored.
+// m3 lane 14 r96 (fast with 0x96510, 0x94df0, 0x94bf0 2, 0x96b00; control 60): in retail `next` lives in ESI, saved
+// with `push esi` ahead of the loop guard (EBX is pushed only inside it), where every form here keeps it in ECX. `next`
+// declared ahead of the window pointer (`long next = m_next_sequence + 1;`, then `for (; next < newest; next++)`) 60, on the
+// 63 form 63, on the member-window form 89; `next` declared at function scope ahead of `type` and assigned in the block 60;
+// the member form started as `long next = m_next_sequence; for (next++; ...)` 89 (all the same code as their base forms:
+// the declaration position does not move `next` into ESI or stop the second counter).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
