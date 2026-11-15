@@ -482,6 +482,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax I (11-15): no new form, no lower score (32): the width-cast form MiniMax D measured (24) and the volatile word (24)
+// were not retried, and the one-use team-bit carrier that reached 29 stays dropped as a one-use local under the bar; what
+// is left is retail's word load and word spill of the old mask and its reload into ECX ahead of the first jne.
 // MiniMax B (11-12): no lower score than 32 without the width cast MiniMax D's 11-11 round measured (24) or a volatile word
 // present (24): the mask test placed first hoists the mask load into ECX ahead of the jne as retail does, but swaps the
 // mask and old-playing stack slots (91-122), and a 32-bit OR of the mask with the present in the store still reloads the

@@ -1242,6 +1242,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
+// returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
 // score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
