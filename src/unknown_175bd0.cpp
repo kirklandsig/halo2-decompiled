@@ -2621,6 +2621,9 @@ event_done:
 // lookup (t), the first test and 0xbadc0's argument through it (f), then a, b, d: t alone 84 [84]; t+d 205; t+b 181; t+b+d 170;
 // t+a 177; t+a+d 166; t+a+b 177; t+a+b+d 166; f alone 203 (581 bytes); f+d 212; f+b 203; f+b+d 205; f+a 204; f+a+d 263; f+a+b 199;
 // f+a+b+d 206; with t too the f rows repeat (203/212/203/205/204/263/199/206). None below 63; body unchanged.
+// MiniMax G (11-14): no new form, no lower score (63): the object index stays cached across the 0xbadc0 call where
+// retail reloads it from the effect and keeps NONE in ESI, and the head's load stays folded into the datum address
+// where retail forms the pointer first; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
 // MiniMax H (11-13): no new form, no lower score (63): the object index is still cached across 0xbadc0 where retail
 // reloads it from the effect, and the head's load is still folded into the datum address where retail forms the pointer
 // first; both callees live in another file.
