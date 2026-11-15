@@ -1631,6 +1631,12 @@ long function_2197f0(real gain);
 // *)&gain;` 176 (667 bytes, first difference +0x11); arm 1 likewise 183 (659); one `duckings` array-base pointer for
 // the else branch's two element pointers 111 (688); SOUND_SYSTEM read ahead of the function_221810 call 106; the first branch
 // without its ducking pointer (the element indexed at each field use) 248 (742). Body unchanged.
+// M3 lane 16 r122 (fast with 0x1251e0/0x221810, both matched; control 94): arm 1's clamp value dividing by the fade-in time
+// read through `sound_class->duckings[sound_system->ambience_index]` 99 (684 bytes: the value then stays a divss, in the branch);
+// that division made eager (`real t = time / ...; if (!(1.0f > time * inverse)) t = 1.0f;`) 150 (681 bytes: retail's
+// division-before-compare shape, but every field is then addressed from sound_class plus the scaled index); the reciprocal through a one-caller
+// inline `return 1.0f / value;` helper 94 (same code: the division is still turned into `inverse * time`); the second fade-out
+// test as `elapsed < hold + fade_out` 94; the clamp test as `time * inverse < 1.0f` 94 (same code each). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3424,6 +3430,12 @@ static inline short sound_voice_find_available_channel(char type)
 // that form with the commit ending `return true;` (gotos or a one-pass do/while, result declared first or after the
 // sound, bool or byte) 125/125/125/126 (430/433 bytes: `mov bl, 1` at the entry and the sound in EDI), lane 4 r185's
 // do/while form re-measured 111. Body unchanged.
+// M3 lane 16 r122 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): lane 5 r178's match-only 15
+// form rebuilt from this note 15 at 430 bytes (unchanged: the early exits share the commit block's epilogue). On it: the
+// first bit update from `voice->channel_index` 15 (same code); both bit updates from `channel` 122 (431 bytes); an 1800 s
+// fast annealing permuter run (seed 122, the four callees as context): 195 tries, best 13, only with a `volatile` voice
+// pointer and constant locals (not allowed). On the kept body the first bit update from `voice->channel_index` 96 (same
+// code). Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
