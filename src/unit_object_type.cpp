@@ -6654,6 +6654,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
+// MiniMax G (11-14): no new form, no lower score (300): the weapon index and the mode still take EBX and EDI where
+// retail keeps them in EDI and BX, the two weapon flag tests are still not stored in the readiness byte as retail
+// stores them, and the frame order (ours: hands 0x14, unit 0x18, weapon 0x1c; retail: unit 0x14, weapon 0x18,
+// hands 0x1c) still differs; the forms that fix one of those are in the notes below and none lowers the score.
 // MiniMax A (11-14): score 272 (was 280): the two weapon flag tests and the readiness flag now live in the first byte of the
 // four-byte hand-modes buffer that 0xcd7b0 fills, so the flag values are stored into that byte as retail stores them
 // (`and cl,1` into the buffer) and the buffer is four bytes wide, as 0xcd7b0 writes four; the mode 3/4 buffer is four bytes
@@ -7965,6 +7969,10 @@ struct s_unit_turn_state_view
 	word unknown7 : 1;
 };
 
+// MiniMax G (11-14): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
+// 0x11f0d0 differently): the moved flag still sits in a register where retail keeps it in a stack byte, the state and
+// aim pointers still take the other register roles, and the two divisions by the stored step still share one
+// reciprocal; the forms tried for each of those are in the notes below and none of them lowered the score.
 // MiniMax A (11-12): no new form, no lower score (395 in the plain build, 453 in the reduced one): the moved flag still sits in a register where retail keeps it in a stack byte, the state and aim pointers still take the other register roles, and the two divisions by the stored step still share one reciprocal; the forms for each of those are in the note below and none is kept, so the body stands.
 /* turns the unit's aim (+0x168) toward its desired aim (+0x15c) and its
    look (+0x18c) toward +0x180 at the definition's rates (scaled while it

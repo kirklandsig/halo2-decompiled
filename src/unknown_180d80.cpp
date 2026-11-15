@@ -111,6 +111,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // register saves and calls 0x17cfa0 with the first index in eax, ours loads the strip record into ecx after
 // the saves and passes that index in ecx; the callee's own body is in another file, so the gap stays there.
 // The permuter's 33 annealed tries over the reduced image found nothing below the 93 baseline.
+// MiniMax G (11-14): no new form, no lower score (93): the strip-count index spelled as an unsigned short gives
+// retail's prologue and count loop but scores 103 (the three field sums then load the lower field first and the
+// 0x17cfa0 register roles turn), the same loop with the sums written the other way round gives 102, and a named
+// short strip count read at the entry gives 168; all three were restored. What still differs: the count sum and the
+// vertex cursor take the opposite stack slots, and the 0x17cfa0 call still passes the first index in ecx where retail
+// passes it in eax (that callee lives in another file).
 // score 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
 // ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
 // zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)

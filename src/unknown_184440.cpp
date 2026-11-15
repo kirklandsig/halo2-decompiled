@@ -327,6 +327,9 @@ __forceinline bool function_184448(long arg_0)
 // AC489: Plain component traversals for normalization output, point input scale and world
 // bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
 // with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
+// MiniMax G (11-14): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
+// initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
+// 0x48e70 call, whose definition is in another machine's file.
 // m3 lane 11 r60 (fast 965): record/list pointer declarations swapped 965; both chosen by ternaries 998
 // (4608 bytes); NULL/list defaults then `if (arg_0 != NONE)` 978; 0x23a220 with its two point parameters
 // swapped (retail's three callers set the single point up in EBX before the polygon in EDX; definition and every
