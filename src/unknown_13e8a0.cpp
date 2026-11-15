@@ -617,6 +617,9 @@ struct s_text_line_measurement
 // before `count++` 77 (masked 7: the update arm's adds, `inc eax` and the width-then-count stores are retail's; the early
 // width load into XMM4 and the advance copy still missing); the header's two metrics read into shorts before the kerning
 // call 77 (same code).
+// NOT kept (coordinator review, MiniMax C 11-15): 77 -> 65 rested on a one-use local computed ahead of the test
+// (real next_width = advance + offset + kerning + width; then width = next_width in the else arm), a form kept
+// only with a byte match.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
@@ -644,7 +647,6 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 					break_index = index;
 					break_width = width;
 				}
-				real next_width = advance + offset + kerning + width;
 				if (!(bounds->x1 > position->x + advance + offset + kerning + width) && count)
 				{
 					if (g_4e73a0.flags & 1)
@@ -660,8 +662,8 @@ s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const
 				}
 				else
 				{
-					width = next_width;
 					count++;
+					width = advance + offset + kerning + width;
 				}
 			}
 		}
