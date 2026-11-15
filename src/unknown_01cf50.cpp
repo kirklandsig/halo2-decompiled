@@ -1976,9 +1976,15 @@ long g_4858b8;
 
 #if 0
 // Retail 0x14b60. The additional clear call changes matched 0x14ac0's stack frame.
-// Measured on r789 with the lane_w stub removed and this body enabled: game
-// 10,622 -> 10,617, 0x14ac0 0 -> 2 and 0x44370 85 -> 89. The clear call's stub
-// convention (retail takes flags in eax, ours pushes it) is part of the cost.
+// Modeled on r789 (marker corrected to @retail so it is checked): the reduced-image
+// form is retail's 91 bytes with the flags expression written twice and no local, but
+// the full LTCG build still reserves a 4-byte home slot (`push ecx`/`pop ecx`), shifting
+// the three stack arguments, and schedules the last `or` into esi (35 differences).
+// `const`, one local, the duplicated expression, `!= 0` and moving the definition to the
+// end of the file all leave the full code unchanged. Enabling it costs five functions:
+// 0x13c20, 0x31c80, 0x335e0 and 0x133790 (matched -> todo) and 0x14ac0 (0 -> near),
+// with 0x44370 85 -> 89; game 10,622 -> 10,617. The clear stub convention is not the
+// cause; the slot is a whole-program home decision, not a body error.
 // Retail 0x14b60
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil)
 {
