@@ -193,6 +193,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // Round 200 (m3 lane 4, fast, all with the volatile read): the controller looked up for the read and again for the store
 // 12 (95 bytes); the changed flag declared above the kind read 33 (94 bytes); the controller as a reference 4; the voice
 // setting read into a local ahead of the availability test 7; setting and old setting as `dword` 4.
+// Round 184 (m3 lane 6, fast, all with the volatile read): the selection written in place as if/else with `kind == 1 &&
+// available` 11, seeded `setting = 1` with the availability fields tested in place 15, one ternary 11; the availability
+// helper taking the header's address 4, also passed through the selector 4 (same code). Diagnostic: the kind compared with
+// the settings definition's first field (a 1 the compiler cannot see) loads the kind with movsx after the request (34).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

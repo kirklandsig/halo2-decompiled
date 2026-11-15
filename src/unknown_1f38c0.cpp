@@ -1,14 +1,16 @@
 // @flags /O2 /arch:SSE /Gr
-// BLOCKED-BY the full check (#581, batch r294): enabling 0x1f38c0 and 0x1f6090 loses matched 0x1c83c0 and
+// Enabled in round 183 (m3 lane 6): with 0x29bab0's named double gone (lane 16 r119) and 0x1f9e70's dot clamped
+// through the existing PIN_126660 (no named double), this body no longer pads its callers: 0x1c83c0, 0x1e2f50 and 0x137fe0 stay matched
+// and 0x1e34e0 passes the actor in EAX as retail. 0x1f6090's body stays disabled; it has a stdcall stub.
+// Earlier: BLOCKED-BY the full check (#581, batch r294): enabling 0x1f38c0 and 0x1f6090 loses matched 0x1c83c0 and
 // 0x1e2f50 under whole-program optimisation; neither byte-matches yet. fecheck: both behave like retail on 6/6
 // in-game snapshots (0x1f38c0 takes the actor in eax; 0x1f6090 is __stdcall, 7 pushed arguments, ret 0x1c).
-// The stub for 0x1f38c0 stays.
+// The stub for 0x1f38c0 stayed.
 // Round 78 (m3 lane 13, fast): enabling this body alone (0x1f6090 as a stdcall stub) pads its callers 0x1e34e0, 0x1c83c0
 // and 0x137fe0 by four bytes (`push ecx`). The cause is two named doubles below it: 0x29bab0's `double local_27` and
 // 0x1f9e70's `double dot` (through 0x29bab0's call). With both removed (diagnostic) 0x1c83c0, 0x1e2f50 and 0x137fe0
 // match and 0x1e34e0 passes this function's argument in EAX as retail does (25). This body's own frame stays 0x1c
 // (retail 0x18, its lowest slot unused) either way. Diagnostic patch: build/r78/held-581-diag.patch (m3-lane13).
-#if 0
 /* UNKNOWN_1F38C0.CPP: an actor's movement update: it picks the path point or
    the plane it moves toward, runs the mover for the kind of thing it drives,
    notices when it stays in one place and chooses its movement speed */
@@ -38,7 +40,7 @@ void __stdcall function_1f5ab0(long actor_index, vector3f const *input, vector3f
 void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f *facing_out,
 	short *type_out, vector3f *movement_out, bool *turning, bool *reached);
 
-// Retail 0x1f38c0, disabled with its blocker above.
+// @retail 0x1f38c0
 void function_1f38c0(long actor_index)
 {
 	s_actor_view *actor = actor_get(actor_index);
@@ -86,6 +88,22 @@ void function_1f38c0(long actor_index)
 	{
 		switch (actor->unknown270)
 		{
+		case 5:
+			function_29a190(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, (real *)&actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
+		case 4:
+			function_29ab90(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
+		case 2:
+			function_29bab0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
+		case 3:
+			function_29cbb0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
+				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
+			break;
 		case 0:
 			if (actor->unknown229)
 			{
@@ -116,22 +134,6 @@ void function_1f38c0(long actor_index)
 				}
 			}
 			break;
-		case 2:
-			function_29bab0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
-		case 3:
-			function_29cbb0(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
-		case 4:
-			function_29ab90(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, &actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
-		case 5:
-			function_29a190(actor_index, actor->unknown26c, &actor->unknown5ec, &actor->unknown6d4,
-				&actor->unknown5d6, (real *)&actor->unknown814, &actor->unknown5d3, &actor->unknown5d2, pass);
-			break;
 		default:
 			actor->unknown5d0 = false;
 			actor->unknown5d2 = false;
@@ -156,8 +158,8 @@ void function_1f38c0(long actor_index)
 		}
 		else
 		{
-			actor->unknown5dc = actor->position;
 			actor->unknown5da = 0;
+			actor->unknown5dc = actor->position;
 		}
 		if (actor->unknown5da * g_510c54->rate > 2.0f)
 		{
@@ -172,8 +174,8 @@ void function_1f38c0(long actor_index)
 	}
 	else
 	{
-		actor->unknown5dc = actor->position;
 		actor->unknown5d8 = false;
+		actor->unknown5dc = actor->position;
 		actor->unknown5da = 0;
 	}
 
@@ -203,4 +205,3 @@ void function_1f38c0(long actor_index)
 
 	function_1f3640(actor_index);
 }
-#endif

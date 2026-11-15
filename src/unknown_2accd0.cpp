@@ -621,6 +621,15 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
 // the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
 // body_size in ESI, retail ECX): retail computes each sum into a fresh register.
+// M3 lane 8 r170 (fast): the direct arm's size before its buffer 34; `size == bytes` 34; the buffer arms swapped
+// (`if (!parameters->body)`) 41; no total local with 0-7 dead locals 88 each (no phase effect: dead locals change
+// nothing, only a used handle local does); a scratch-size local with the clamp `MIN(remaining, buffer_size)` 161 (691
+// bytes: the body arm is retail's, remaining in ECX from the body-size load, size EDI, position ESI, but the signature
+// sum still coalesces the body size into ESI so the head merge goes, and the clamp selects through EDX); that with the
+// total folded and the one-use handle local 156 (691). Compile-only (exact here, normalized lines, base 23): signature
+// sum body first, the two-statement position, the plain if clamp, `size = buffer_size; if (size > remaining)` on a
+// scratch-size local: same code; `body_size > body_offset` +3; reversed MIN, `remaining < size` if or ternary +1;
+// the clamp as if/else on a scratch-size local -3 at 237 instructions; `size = remaining; if (size > buffer_size)` +10.
 // MiniMax D (11-11): no lower score (34): the total converted without its own local puts the entry sum in EDX as retail but
 // reorders the signature case's file-handle load (88); declaring the position before the size changes nothing (34).
 // MiniMax C (11-09): NOT kept: 28 (was 34), I's form again (a one-use local is kept only with a match): the entry total
@@ -1083,6 +1092,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // and reads 209 (691 bytes); the signature case written ahead of the body case on this base 34 (same code); no default
 // arm 218 (695 bytes, a re-measure of the listed form); the scratch clamp as `MIN(remaining, size)` 35 (re-measure); the body
 // case's seek, read and signature update as three early `break` tests 34 (same code).
+// M3 lane 15 r90 (fast with the file's 20 functions; base 34, the no-total-local form re-measured 88): the signature and body
+// positions renamed to sort first (`a_position`) 34; `buffer` and `size` declared at function scope 34; the body block's
+// position declared (unassigned) ahead of `buffer` and `size` 34 (all three the same code: names and declaration order do not
+// move the size/position ESI/EDI pair); the shared job-buffer helper storing its two outputs before the owner and external
+// stores 34, but matched 0x2adb10 goes to 26 (not kept); the caller's body pointer in a two-use local 161 (689 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

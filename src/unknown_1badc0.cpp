@@ -34,6 +34,10 @@ real normalize2d(point2f *arg_0);
 // MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
 // the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
 // reordering of the three difference blocks regresses (219, 219, 221, 231, 231) and the squared length's sum order makes no difference.
+// score 171 (was 171): MiniMax R (11-15): no new form, no lower score; a 300 s permuter run over the reduced image
+// searched 41 variants and left the baseline where it was, and the only known better form (130) rests on three
+// statement moves picked by score and on `inline` for 0x30c60, whose body is in src/unknown_030290.cpp:
+// BLOCKED-BY 0x30c60.
 // score 171 (was 180): the centre is copied before the radius and both projections now go through
 // dot_product2d on a named actor-to-centre vector, and the squared length sums its j term first as
 // retail does; the opening still hoists the point's y difference above the copy.

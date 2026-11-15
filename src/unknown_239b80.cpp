@@ -121,9 +121,10 @@ static inline real normalize2d(vector2f *v)
 	return m;
 }
 
-static inline bool points2d_differ(point2f const *a, point2f const *b)
+/* whether the displacement from one point to the other is longer than the epsilon on either axis */
+static inline bool points2d_differ(point2f const *from, point2f const *to)
 {
-	return !(fabs(a->x - b->x) < k_real_epsilon && fabs(a->y - b->y) < k_real_epsilon);
+	return !(fabs(to->x - from->x) < k_real_epsilon && fabs(to->y - from->y) < k_real_epsilon);
 }
 
 /* two pi, set up at run time */
@@ -229,7 +230,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 161 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
+// score 144 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
 // in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
 // passed to the difference helper first, and the compaction runs through memmove; the frame is still 0x18 against
@@ -638,6 +639,24 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // departure block's ECX/EAX naming and retail's separate epilogue for the classifier-fail path. Either read alone 216/215.
 // So retail never gives `count` a register; a plain read through its address (`*&count` or a const pointer) is folded
 // away (215).
+// M3 lane 13 r96 (fast with 0x239d50/0x239b80, both MATCH unless noted; control 161; the 144 form plain-confirmed with the
+// file's functions). Kept: the difference helper measures the displacement from its first point to its second (`to - from`)
+// and both calls pass (first hull point, next): 161 -> 144 (784 B). Retail subtracts first from next in both the departure and
+// the closure and loads the first index before next's (`movsx ecx, [ebp]` then `movsx eax, dx`), which this gives (main had
+// `a - b` with the closure's arguments the other way round). Before it: the departure call alone with (next, first) 162
+// (retail's subtraction, but next's index loads first). On the 144 form: a positive equality helper negated at the departure
+// 161; the departure flag `bool` 264 (762 B, 0x239d50 80); `(short)pass < count` 240; one long hull counter in `while
+// ((short)hull_count < count)` 236 (759 B); the heading zeroed before the lowest scan 213. Diagnostic (match-only): lane 1
+// r103's completion-flag body with this helper convention, a positive written-out closure and `current` at function scope
+// 116 (784 B; count EDI, points EBX, current ESI, hull count cached in ECX where retail has count in its home, points ESI,
+// current EDI and the hull count cached in EBX).
+// P536: Explicit unrounded distance/heading/short-circuit absolute-result carriers,
+// subsets 1/2/4/3/5/6/7 then complete with both coordinate differences named:
+// 144/144/162/144/162/162/162/162. NOT kept: no exact result-transport/frame recovery;
+// original real consumers, private predicate and complete body restored.
+// P538: Actual missing-successor outcome at the terminal edge, positive/complementary
+// bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no native frame,
+// count/departure-home or compaction repair; original producer, terminal edge and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -702,7 +721,7 @@ short function_239e50(short count, point2f const *points, short *indices)
 			left_start = left_start || points2d_differ(&points[indices[0]], &points[next]);
 			if (next == indices[0])
 				goto finished;
-			if (left_start && !points2d_differ(&points[next], &points[indices[0]]))
+			if (left_start && !points2d_differ(&points[indices[0]], &points[next]))
 				goto finished;
 		}
 

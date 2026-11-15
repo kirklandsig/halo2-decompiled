@@ -827,6 +827,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax R (11-15): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi with the next sequence in ecx, where retail keeps the next sequence in esi and recomputes the offset in eax on every pass; giving the index helper the member reproduces retail's loop body but moves the type local off its slot (the get_next_send setup pushes time in ebp) and the score rises to 89; the statement permuter over this body found no lower score either.
 // MiniMax G (11-14): no new form, no lower score (60): ours strength-reduces next - oldest - 1 into a second counter
 // (next in ecx, the reduced offset in esi) where retail keeps next in esi and recomputes the offset on every pass.
 // The member form (the count, the bound and the index all through &m_message_window) reproduces retail's loop body
@@ -983,12 +984,29 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // P500: Existing shared index-helper lower/upper guard and result graphs, eight complete forms:
 // 76/86/86/86/91/87/60/60. NOT kept: Strength reduction remains or native extent/register ownership regresses; no
 // exact result. Shared helper and every caller restored. Original complete executable body restored.
+// M3 lane 10 r108 (fast with 0x96510, 0x94df0, 0x94bf0, 0x96b00; control 60): the window pointer declared ahead of the send
+// call with the count read through it 80 (223 B), with the bound read through it in the loop test 80 (same code); the
+// member form (re-measured 89) with the count written as `newest - oldest` on the member 91 (the count's newest joins the
+// bound, oldest reloaded in the preheader); the count test as `> 0` 62 (227 B); a named oldest with `if (next <= oldest)
+// continue;` at the loop top (diagnostic, implied by the helper) 82 (230 B). Same code: a guarded do-while, a const window
+// pointer, `(flags & 2) == 0`, the message pointer declared with its zero as `m_messages + index`, the window pointer
+// declared inside the loop body (the member form's code).
 // m3 lane 14 r96 (fast with 0x96510, 0x94df0, 0x94bf0 2, 0x96b00; control 60): in retail `next` lives in ESI, saved
 // with `push esi` ahead of the loop guard (EBX is pushed only inside it), where every form here keeps it in ECX. `next`
 // declared ahead of the window pointer (`long next = m_next_sequence + 1;`, then `for (; next < newest; next++)`) 60, on the
 // 63 form 63, on the member-window form 89; `next` declared at function scope ahead of `type` and assigned in the block 60;
 // the member form started as `long next = m_next_sequence; for (next++; ...)` 89 (all the same code as their base forms:
 // the declaration position does not move `next` into ESI or stop the second counter).
+// M3 lane 13 r97 (one-file /GL link harness build/r97/h, ~1 s a variant, 450+ spellings; real builds fast with 0x96510 and
+// 0x94df0, both MATCH): with the index through `&m_message_window`, the count's oldest is kept for the loop (no second
+// counter) only when the count is a comparison: `newest != oldest`, `oldest != newest`, `oldest < newest`, `newest >
+// oldest`, or `sequence_window_count(&m_message_window) > 0`; every `!= 0` or truth-value count (helper, direct
+// difference, unsigned `> 0`, which folds to `!= 0`) folds oldest into the `sub` and the loop reloads it. With the
+// bound through a window pointer the bound is re-read as retail, and `count > 0` gives retail's separate loads, `sub`,
+// kept oldest and loop, but `test`/`jle` for retail's `je`. Real builds: `newest != oldest` with member bound and index
+// 102 (212 B); `oldest != newest` with the window-pointer bound 101 (213 B); `count > 0` with the window-pointer bound
+// in the test or in a local 91/91 (221 B); that with `return 4` in the found path 127 (190 B). In all of them `next`
+// takes ECX (retail ESI) and `time` is then cached in EBP for the get_next_send argument and the found path.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

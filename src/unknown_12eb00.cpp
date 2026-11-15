@@ -180,6 +180,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // bytes); the sample count read into a named bound before the accumulation loop 13. Diagnostic: the result renamed
 // `Added`, `_added` or `zz_added` 11 each (same code: the tie with the cluster cursor, a compiler IV, does not follow
 // names).
+// Round 98 (m3 lane 14, fast; both builds end `ret 8`): the outer loop test as `i != count` 12, as `count > i` 11 (same
+// code); the destination record taken with the increment (`&output[local_1++]`) for the copy and the blend 188 (1183
+// bytes); the destination record named ahead of the previous-index store, the increment kept at the end 14; the
+// cluster's index read into a named local at the loop top 11 (same code).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

@@ -523,6 +523,8 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // ([esp+0x13] against [esp+0x14]) before the type branch, this build keeps the result in a register, and declaring the result
 // above the branch so the zeroing lands in the prologue measures 197, so the body stands. The BSP global still takes EBX in retail
 // and EBP here, and the section pointer still takes retail's stack home against this build's EDX.
+// MiniMax I (11-15): no new form, no lower score (172): the frame is retail's 0x58, retail keeps the BSP global in EBX with the section in a stack home while this build keeps the section in EBX and the BSP in EBP, and the range, the plane and the vertex-join homes still differ.
+// MiniMax S (11-15): no new form, no lower score (172): retail holds the BSP global in EBX and keeps the section in its stack home while this build keeps the BSP in EBP and the section in EDX, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in src/unknown_11cb00.cpp): BLOCKED-BY 0x11e800.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
@@ -966,6 +968,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the diff is in build/r88/held-14a8e0.patch.
 // BLOCKED-BY 0x11e800 (contributor).
 // Round 103 (m3 lane 10): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// m3 lane 14 r99: listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

@@ -199,7 +199,7 @@ void s_animation_state::secondary_channels_clear()
 }
 
 // @retail 0x1cd510
-c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
+c_type_709360 s_animation_state::current_animation_get()
 {
 	c_type_709360 none;
 
@@ -215,8 +215,7 @@ c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
 	{
 		none = channels[0].animation_id;
 	}
-	*result = none;
-	return result;
+	return none;
 }
 
 PRIVATE __forceinline real blend_fraction(real blend)
@@ -770,6 +769,19 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P517: Complete lazy fallback admission after alternate lookup, allowed/blocked bool/byte/short/long
 // results; 348/348/348/348/348/348/348/348.
 // NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P525: Actual urgent-resource count, inheritance count and inherited graph-index
+// full-width signed storage, seven graphs then complete int units: eight 348.
+// NOT kept: native destructive graph/base reloads and return-byte normalization remain; original shared records and complete body restored.
+// P527: Late request mode/class/type/all actual field-lvalue references, mutable then readonly:
+// 348/348/348/348/348/348/348/348. NOT kept: no destructive graph/base or byte-return repair;
+// original request arguments, fallback snapshots and complete executable body restored.
+// P531: Two-field default-name chains in both orders, then all six three-field
+// chains: 350/348/350/351/351/350/350/348. NOT kept: native destructive graph/base
+// reloads and return-byte normalization remain; some forms disturb the agreeing
+// lookup prefix. Original separate stores and complete executable body restored.
+// P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
+// then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
+// destructive graph/base or lazy-reload repair; original complete body and declarations restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

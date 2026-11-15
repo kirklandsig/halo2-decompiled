@@ -2976,9 +2976,17 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // P512: Successful-trigger count at the threshold test, nested/merged positive/negative
 // admission, long then short count: 50/50/50/50/50/50/50/50. NOT kept: first-event index reload and actor-loop
 // alignment remain; original wrapped scan, threshold expression and full body restored.
+// M3 lane 15 r88 (fast, control 50): the second half's group index named for its NONE test and the table index 50 (same
+// code); its guard reading +0x62 as a word 52 (580 B); descriptive names for the first half's event, delay and task 50;
+// the threshold, count and trigger-list declarations reversed 50; the follow-up event ternary with its arms swapped 54.
+// The first follow-up still reloads the index from its home.
 // P514: Actual pending/delay/stored-event/index lvalue bindings, mutable then readonly:
 // eight 50 at 579 bytes. NOT kept: field/parameter aliases do not recover the first-event
 // EBP copy or actor-loop alignment; original complete body and all input observations restored.
+// M3 lane 12 r128 (fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20 and 0x203bf0; a one-file LTCG harness does not reproduce
+// this function, frame 0x18 at 575 bytes): the pending arm as `if (pending != NONE && delay <= 0) {...} else if (pending == NONE)
+// {...}` 50; the follow-up test as `NONE != local_2` without the casts 50; the follow-up event copied into a short before the
+// 0x202e90 call 50 (folded); `long const squad_index = arg_1;` for the lookup and both first-half calls 50 (copy-propagated).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

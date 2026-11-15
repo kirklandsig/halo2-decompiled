@@ -631,6 +631,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // edx` comes before it, as if the argument were set up first and the scheduler then hoisted the pool and shift loads
 // above the copy (the data load into EDX cannot cross it). On the base form the address local ahead of the block read
 // re-measured 27 (round 80's form).
+// Round 98 (m3 lane 14, fast with 0x12e210, which stays matched): round 85's 14 form re-measured 14. To set the group up
+// before the address, the release step as an inline helper taking (group, physical index): on the 14 form 14, forced
+// inline 14 (both the same code: the arm still reloads ESI after the offset load); on the base body with the field read
+// directly 27; a helper taking the block, testing its linked flag and releasing 27; the 14 form with the test and the
+// arm each through its own reference to the field 14 (same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

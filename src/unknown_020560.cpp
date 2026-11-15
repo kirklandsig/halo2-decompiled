@@ -136,6 +136,9 @@ PRIVATE __forceinline long texture_floor(real value)
 // entry's current level in a named local for the test 4; `long index` outside and the clear as the step of
 // `for (; remaining; ...)` without a `continue` 4. Diagnostics: the level store ahead of the 0x143c0 call 38, the bitmap
 // declared once outside the loop and not reset 109: the clear keeps EDX in both. Retail 0x143c0 does not read EDX.
+// Round 108 (m3 lane 1, fast): the floor helper `__stdcall` 4, `__cdecl` 4; a `void *` parameter cast to the byte
+// pointer in a local 4; the count as a `real` 4; the truncation written at the compare and the store, no truncated
+// local, 4 (the clear stays EDX in each); the level store re-derived from state and index 51 (419 bytes, no CSE).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

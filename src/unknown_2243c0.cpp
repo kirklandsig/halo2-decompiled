@@ -217,7 +217,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
+// score 117 (was 117): M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
+// the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
+// 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
+// registers are not a rotation carried from the head); the pass element passed straight into a by-value inline accessor
+// for its +4 tag, no binding, 121 (no dead lea, pass definition still EDX); diagnostic: the element passed as an unused
+// first argument of the definition lookup, evaluated after the tag load, 121 (the unused argument is removed with its lea).
+// Earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
 // subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where
 // retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element
@@ -623,6 +629,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // local_11 149; the zeros together after local_11 alone 120 (re-measure); the flags local declared just before the
 // 0x173ba0 call (retail reads +0xd8 after the two cache tests) 149, and 0x224d90 lost (36). Diagnostic: dead-local
 // phase scan n = 0..3, 117 each.
+// M3 lane 15 r90 (fast with 0x2243c0 and 0x224d90, both matched each time; control 117): the function as a member of a renderer
+// type with the definition as `this` (0x224d90's call through a cast; LTCG still passes it in EAX) 117 as `__stdcall` and 117 as
+// thiscall (same code each); that member with the fallback masked `& 0xffff` 152; block_element_224db0 plain `inline` 117 (same
+// code); the fallback re-reading the tag field masked `& 0xffff` 152 (the field load CSEs with the tag, in-place `and`, table to
+// ECX ahead of the frame); the material definition named before its +8 read 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -205,6 +205,14 @@ static __forceinline long real_to_long(real value);
 // Round 107 (m3 lane 10, fast): the projection as a plain out-of-line dot in another /O2 file (inlined by LTCG),
 // (direction, facing) or (facing, direction), 6/6 (all three terms load the facing first, as the listed dot3f forms).
 // Diagnostic: `#pragma optimize("p", on)` (float consistency) 2 (the i product unchanged).
+// Round 128 (m3 lane 12, fast; a one-file LTCG harness with the four callee objects reproduces 2): the projection as a
+// plain three-pass loop over n[] (either operand first) 20 (sum in i, j, k order, every product loads the facing); the
+// prediction helper taking the prop state pointer 2; its predicted point through vector3f_add_scaled 2; the facing
+// test and the fallback inside the prediction helper (facing passed in) 2; the half-second scale as a literal inside
+// the helper 2. Harness: dead `(void)` reads of the facing's i (ahead of the prop, of the helper, after it) or of the
+// direction's i 2 each (dropped); a `real const &` to the facing's i before the slot pointer 6 (the i product still
+// loads the facing). Reading: retail's i product behaves as a reload of a value forwarded from the dir.i store (as
+// dir.k stays forwarded in xmm2), ours as a plain memory operand.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {
