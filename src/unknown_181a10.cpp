@@ -893,6 +893,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // value (`(v < 1 ? 1 : v > 16 ? 16 : v) != v` on a `long` argument, both uses) 320 (1243 B, masked 117: no copy, one read).
 // A corpus scan of all matched retail code finds no other `mov reg, const; cmp reg, reg2; jg` clamp, so no matched source
 // shows retail's form. Body unchanged.
+// m3 lane 8 r168 (fast with 0x183670): matched 0x182b90's PIN compiles to our `cmp eax, 1; jge; mov ecx, 1` (tools/disasm.py), so
+// retail's `mov ecx, 1; cmp ecx, edx; jg` here comes from another source shape. The classifier through a forced-inline pin(value,
+// lower, upper) written `value < lower ? ...` or `lower > value ? ...` 238/238 (same code); `limited = 1; if (value >= 1) { limited =
+// 16; if (value <= 16) limited = value; }` 320 (1243 B, `cmp eax, ecx; jl`); `limited = value; if (value < 1) ... else if (value >
+// 16) ...` 238; an if/else chain on `1 > value` / `16 < value` 238; the 0x1e byte test through a forced-inline helper 238 (same code);
+// a forced-inline material getter tested then fetched 377 (1284 B), inside a bool helper 318 (1245 B). The data word stays one load
+// in every form. Body unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -1967,6 +1967,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // before y 184 is frame 0x18 (not R229's 0x20 by-value 184); the helper returning y with x computed by each case 186;
 // x before the perpendicular 189 (800 bytes); same code as 179: `return 0.0f` in case 0 and default, `(real)atan2(y, x)
 // * scale * ...`, only the first or only the second cross through cross3f, an unused caller-scope vector.
+// m3 lane 8 r168 (`--fast 0x2f2d0 0x2e9e0 0x497a0`; 0x497a0's file defines the camera storage, which the reduced image otherwise
+// leaves unresolved): diagnostic `#pragma optimize("p", on)` 183 (812 B; atan2 becomes a CRT call and the sums stay (i + k) + j);
+// round 73's offsets-first case 3 re-measured 177 with 0x2e9e0 573; on it cases 1/3 y written ijk/ikj/jik/kij/kji 182/180/186/186/186
+// (jki 177), x written ijk/ikj/jik/jki/kij 177 each (same code). Body unchanged.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2890,6 +2894,10 @@ real magnitude3d(vector3f const *v);
 // target reciprocal 155 (same code), the angle product in SSE 155, the fallback as three blocks 155 (same code), the cross
 // term added with its sign flipped 184 (1019 bytes). Left on 155: the raw length and the dot share retail's +0xc; ours
 // keeps the length in a's slot, which permutes the first/axis/second homes.
+// m3 lane 8 r168 (fast with 0x24590/0x30bf0/0x1ecf50): `0.9999f > fabs(dot)` 170 (same code); acos on a fresh dot3f(&first,
+// &second) 198 (1039 B); the rotation through the existing shared rotate_direction (forced inline in src/unknown_1eb8a0.cpp, called
+// from three other files) on `first` in place 181 (1030 B), with `real cosine = dot;` for acos 182 (1026 B, frame 0x34), with
+// vector3f_scale for the output 181 (same code). Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
