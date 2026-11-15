@@ -787,6 +787,17 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // on entity, this, info (at the top) or on object_index != NONE inside the valid arm: 49 each, same code; the early bool
 // result with the entity assume 77 (the listed early-bool code). No other unlisted natural form was found (see m3 lane 14
 // r84 and m3 lane 1 r98 above); body unchanged.
+// M3 lane 1 r104 (fast with 0xa5b10, 0x108e10, 0xbb780, matched throughout): match-only lead 37 (176 B): early bool result
+// set after the attach, the flagged index cleared in one `index != NONE && flagged` test, the field retested, and `f` read
+// through its own address as a const volatile long in the second virtual call; all of it is retail's but the retest, which
+// is not threaded (the NONE and flagged paths run `cmp [edi + 8], -1`; retail jumps to a constant store at the end). On it:
+// the local cleared too 39; the clear and retest nested in the NONE test 46. Also with the volatile f: `else if (index !=
+// NONE)` after the clear test 77 (160 B); the result set in the unflagged arm, object block under `if (result)` 73; `result =
+// !(flags & 0x10)` inside the NONE test 79 (184 B).
+// P501: Explicit two-state creation outcomes, two validity-owned and six attachment-owned lifetime/completion
+// graphs: 51/60/64/64/63/63/64/62. NOT kept: All regress; the enum result misses the native false BL and
+// independent lookup shape even where extent agrees. Original primitive result, macros and virtual calls restored.
+// Original complete executable body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

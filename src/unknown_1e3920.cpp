@@ -1240,6 +1240,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // byte/short/long/signed-char three-way results, branch-complete and unit-first: 400/419/438/442/440/438/400/543.
 // NOT kept: all regress and lengthen; original settings/bit observations, result/cleanup
 // scopes and full body restored. Native sentinel ESI and squad/query homes remain.
+// P502: Exclusive three-way cleanup choice, four producers at cleanup-local and entry scopes:
+// 289/290/264/290/289/290/264/290. NOT kept: all regress; native sentinel/squad/query homes and direct cleanup
+// comparisons remain unresolved. Original body/helper restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1853,9 +1856,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
-// MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
+// MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // M3 lane 8 r159 (fast): the halved rounds as `rounds[0] *= 0.5f;` 251 (same code). Re-measured: the loop's weapon in a
 // named `long weapon` 251 (same code; round 126's weapon entry), the raised probability as `4.0f * probability` 251 (same
 // code; round 46). No other natural form found that the notes above do not list: the levers left are 0x1e53e0's purity
@@ -2136,6 +2139,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P491: Repeated probability/delay clamp-field const/mutable references, separate/both,
 // then complete const/mutable pointers: 251/251/251/251/251/251/251/251. NOT kept: native actor/options/pool
 // residence unrecovered; original direct fields, query helpers and whole body restored.
+// M3 lane 1 r104 (fast): the weapon pair as an aggregate initialiser 251 (same code); both private slot queries
+// result-first with a `long` loop index 333 (1186 B); block 2's grenade type through a fresh lookup with `unit` fetched
+// after the grenade-settings call 251 (same code: the lookup is still CSE'd across the pure call); the options fetched
+// before the actor pointer 300; one `long unit_index` for both blocks (no 0xcbd50 swap) 349 (1182 B).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

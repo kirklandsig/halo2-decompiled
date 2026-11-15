@@ -183,7 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 622 (was 636): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// score 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
 // selected before t in each clamp, xmm homes and coefficient schedules.
 // MiniMax G (11-14): no new form, no lower score (636): retail keeps q (the fourth stack argument) in EBX from entry
@@ -547,6 +547,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the output-globals local 629. On the double-v body (fast 614): the output-globals local 612; the void read-back tail
 // 614; the first settle arm's tick scaling through the existing vector3f_scale 614; `vector3f qr = *q;` 664 (2879 B);
 // the third clamp as PIN with the factor first 614 (rm 267).
+// M3 lane 5 r183 (plain; caller 0x1eb6f0 MATCH in each; --fast builds this body at 614/2884 B, so it is no screen
+// here): retail computes the first site's third, up and down eagerly into xmm5/xmm1/xmm0 and coalesces e with the 0.001
+// register (xmm3; its later `e > 0.001` reads memory), ours forward-substitutes the three one-use values into the rem
+// tree and keeps 0.001 in xmm5. Tried: the first rem as two statements 716 (2890 B); the first rem's halves named 673
+// (2881 B: the same tree, the zero moves to xmm6 at the entry); the first down before up 622 (same code); the first
+// clamp as if/else with `e = 0.001f` in the then-arm 711 (2893 B); the first step count as a ternary 681 (2890 B);
+// dead-local phase scan n = 1..7 (fast) 614/611/611/614/614/614/614.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

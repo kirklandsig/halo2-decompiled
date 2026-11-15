@@ -727,10 +727,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// score 331 (was 331): every block's zero is XMM1 where retail uses XMM0 (the plane arm, timer, animation case and
+// field-of-view tail), following the plane length's hoisted left.k load (retail left.j); the pan arm's basis-builder
+// argument setup and the shared quaternion helper's sum order remain.
 // MiniMax R (11-14): no lower score (331): in the case-2 length the dot hoists the left vector's k component before the copy and
 // sums in xmm0, where retail hoists j and sums in xmm1; the term order of the shared dot3f does not move it (all six orders
 // score 331, and that header is not this lane's to edit) and the self-dot spelling gives the same squared length at 329.
-// score 331 (was 331; 331 before): m3 lane 8 r164 and m3 lane 2 r79 notes at the end; round 95 (m3 lane 11) before it; round 112 (m3 lane 12) before that. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
+// Earlier at 331 (was 331; 331 before): m3 lane 8 r164 and m3 lane 2 r79 notes at the end; round 95 (m3 lane 11) before it; round 112 (m3 lane 12) before that. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax H (11-11): no new form, no lower score (331); retail keeps the point case's normal in XMM3/4/5 with the zero in
 // XMM0 and ends case 2 with a read-modify-write `or [ebp], 0x40`, while ours splits the flag updates and keeps the zero in XMM1.
 // MiniMax C (11-11): no new form, no lower score (331): the length agrees (1696 bytes); case 2 still
@@ -1080,6 +1083,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // T108: Ordinary inline metadata at existing object-matrix/basis/matrix-quaternion/quaternion-matrix providers, four isolated, three pairs and all:
 // 438/331/331/331/438/331/331/438. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// M3 lane 5 r183 (fast with 0x23d090, MATCH in each): dead-local phase scan n = 1..7 331/373/361/372/372/371/371 (n = 3
+// moves the normal registers and the first difference to +0x5c, left.k still preloads); the field-of-view blend's t
+// renamed a_t or z_t 331 each (diagnostic: the tail's XMM colours, retail zero/fov/t 0/1/2 against ours 1/2/0, do not
+// follow names); the animation case's `command->distance = command->timer = 0.0f;` 333, `command->timer =
+// command->distance = 0.0f;` 331; the plane arm's t as one ternary 331 (same code); the cosine computed right after the
+// sine 331; the animation case's `flags |= 0x19` after its three stores 332.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
