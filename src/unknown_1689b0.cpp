@@ -1970,6 +1970,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // bool/byte/short/long: 619/619/619/619/619/619/619/619 (control 606).
 // NOT kept: one-use call results remain unmatched and lengthen to 2905 bytes;
 // original records, calls, geometry, counters and entire body restored.
+// P538: Unrounded direction-root/contact-root/paired absolute API producers, subsets
+// 1/2/4/3/5/6/7 then complete immutable: 667/667/667/669/667/667/659/659.
+// NOT kept: frame and extent move away; original real consumers, observations, helpers and full geometry restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

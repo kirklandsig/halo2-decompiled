@@ -654,6 +654,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // subsets 1/2/4/3/5/6/7 then complete with both coordinate differences named:
 // 144/144/162/144/162/162/162/162. NOT kept: no exact result-transport/frame recovery;
 // original real consumers, private predicate and complete body restored.
+// P538: Actual missing-successor outcome at the terminal edge, positive/complementary
+// bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no native frame,
+// count/departure-home or compaction repair; original producer, terminal edge and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

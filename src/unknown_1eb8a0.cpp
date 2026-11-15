@@ -583,6 +583,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // positive/complementary bool/byte/short/long: 622/622/622/622/622/622/622/622.
 // NOT kept: no native sample-home or coefficient-schedule repair; original
 // counter observation, arithmetic, caller tuple and complete body restored.
+// P538: Both actual direction-normalization return producers, real/const-real/double/const-double
+// and bool/byte/short/long missing-direction outcomes: 659/659/746/746/659/659/659/659.
+// NOT kept: no sample-register or coefficient-schedule repair; original calls, fallback stores and full body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
