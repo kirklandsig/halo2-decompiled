@@ -488,6 +488,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // first in each product 228. Retail keeps the heading's i and j in XMM6/XMM4 through the whole rotation and re-materialises the
 // zero k (a memory 0.0, then `xorps xmm7`) after XMM3 is reused for 1.0; every scalar form here keeps the zero in a register and
 // re-reads the heading's j from its home instead, so it spills one value fewer.
+// MiniMax E (11-15): no new form, no lower score (173): the helper rewritten to retail's row formula with the arguments
+// swapped scores 216 with the frame still at 0x11c, and the permuter over the body found nothing lower in twenty minutes.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

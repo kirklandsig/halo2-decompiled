@@ -1444,6 +1444,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // loop's variant through 0x192e60 922 (2724 B, 0x73530 1); the top lookup after the summary read with the loop's variant
 // through 0x192e60 908 (2724 B); the validity test split in two with the loop's variant through 0x192e60 901 (2740 B);
 // the type-5 scan's early return dropped and the rest of the body under `if (result)` 862 (2788 B).
+// MiniMax E (11-15): no new form, no lower score (766): retail's session arrives in EAX with a 0xb4 frame against our
+// 0xd4, and that convention is fixed by the caller in a file I may not edit.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

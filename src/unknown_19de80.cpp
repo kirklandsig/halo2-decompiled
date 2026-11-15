@@ -683,6 +683,9 @@ static inline bool teams_enabled_19e1c0()
 // cases) 419 (1473 B); both team admissions team test first 396; a named player pointer in the local-team case too 385; the
 // scoring mode read at each use 385. With the plain result ours enregisters token, token_length, event and result and leaves
 // `remaining` on the stack; retail gives `remaining` EBP and reloads the token for every compare.
+// MiniMax E (11-15): no new form, no lower score (390): the extra dword in our frame is the length temporary at +0x14
+// beside the volatile result at +0x10, and retail's first name case stores the buffer's zero word before taking its address
+// while its second case takes the address first, so retail's two copy tails stay apart where ours merge.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

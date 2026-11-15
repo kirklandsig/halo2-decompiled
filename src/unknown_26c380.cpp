@@ -579,6 +579,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 397 (1617 B). On the goto form with the line as plane2f {n, d} (304, 1612 B): the 2-D dot written vector-first 304 (same code);
 // one to four unused long locals 304/304/304/303. In the 32 form and in retail one priority order sets both the three XMM homes
 // and the stack slots (ours n.j, n.i, d; retail d, n.j, n.i).
+// MiniMax E (11-15): no new form, no lower score (244): the permuter over the body found nothing lower, and the goto form
+// that reaches 32 needs a goto, which is kept only with a byte match.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
