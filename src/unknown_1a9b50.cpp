@@ -913,6 +913,9 @@ static __forceinline long real_to_long(real value);
 // retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
 // in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
 // differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
+// score 382 (was 382): MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
+// velocity block (retail keeps the view in EAX and forms the facing pointer late with `lea esi, [eax + 0x2c]`) and from
+// 0x25d740 being expanded here where retail keeps it out of line, and that body is in src/ai.cpp: BLOCKED-BY that file.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose

@@ -938,6 +938,12 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax R (11-15), not kept (the merge measured 341 -> 340 fast, under the bar): reported 175 (was 257): case 1's and case 6's player test inverted, so the NONE arm comes
+// first and retail's case-1 block layout returns (the body is 1424 B against retail's 1444). Left: retail keeps
+// the non-NONE arm inline in both cases where this build keeps the NONE arm inline, this build's case 1 and
+// case 6 copies of the 0xcafc0 call sit side by side where retail keeps them apart, the result/presence byte
+// homes are still swapped (retail keeps the returned flag at F+2 and the presence byte at F+3), and the 0x1ffbd0
+// call still holds the actor index in EDI where retail reloads it from the stack.
 // MiniMax A (11-14, second pass): score 168 (was 177): the two flags are cleared in the order retail uses (the
 // presence byte first), and the two trailing case exits clear both flags before leaving, which gives retail's
 // byte homes (the returned flag at +0xa, the presence byte at +0x13). Left: retail keeps case 1's and case 2's
@@ -1290,6 +1296,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // code); point_valid set once at a label ahead of aim_at_point for cases 3/5/6 368 (the three callers drop to 4/1/2, as
 // round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
 // `field_x50962e != NONE` test 258 (all same code but the label form).
+// MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
