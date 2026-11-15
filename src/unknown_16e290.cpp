@@ -1771,6 +1771,12 @@ struct s_camera_clip_reference_16ebf0
 // xmm1, ours the other way round, with the same results stored to [esp+0x58] and [esp+0x5c]), and retail loads
 // [esp+0x20] before it stores the new value to [esp+0x24] where ours stores it first; the rest of the function
 // matches instruction for instruction.
+// MiniMax B (11-14): no new form, no lower score (87); what is left is the interpolation's two products, which our
+// compiler hands to the registers the other way round than retail (retail multiplies the value it loaded from
+// [esp+0x18] into xmm0 and the one from [esp+0x20] into xmm1, ours the other way round, with the same results
+// stored), and the clip block, which folds the cluster address into the load where retail materialises it; the cross
+// helper's text is in include/vector_products.h and the narrow/fraction convention of 0x171d00 is in another file,
+// so this lane may not edit either (BLOCKED-BY).
 // score 87 (was 87): unchanged this round: the two products of the interpolation keep retail's operands but our
 // compiler hands them to the registers the other way round, and the clip block folds the cluster address into the
 // load where retail materialises it; the cross helper and 0x171d00 are in other files, which this lane may not edit.

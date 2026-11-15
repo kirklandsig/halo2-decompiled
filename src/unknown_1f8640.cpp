@@ -788,6 +788,9 @@ struct s_1f8a70_actor
 // radius-zero tail. Retail keeps node then radius in both, so the two tails end in different stores and stay separate.
 // Also: the mode switch's default as `route_mode = NONE; break;` (the route test then fails by itself, no goto) 379 (1620 bytes;
 // the head still follows case 7).
+// P506: Actual route switch case/default orders 012d/021d/102d/120d/201d/d210/2d10/21d0 on the
+// native-unit two-result graph: eight 182. NOT kept: no dispatch-adjacency or late memory-result
+// recovery; original cases and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

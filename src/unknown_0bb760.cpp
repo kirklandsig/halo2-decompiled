@@ -506,6 +506,10 @@ void function_3dd10(long object_index, bool force);
 // MiniMax A (11-14): no new form, no lower score (84): the first scan still leaves on inequality where retail
 // leaves on a signed less-than; a `for` loop with `<` unrolls by four here (637 at 1310 bytes) and a do-while
 // with `<` gives retail's `jle` and `jl` but moves every stack home four bytes down (221 at 1006 bytes).
+// MiniMax D (11-14): no new form, no lower score (84): the first difference is still the order of the 1.0f load
+// and the zero xorps before the first clamp (retail zeroes the register and then loads the constant, and it
+// reads the variant byte before the blend's fstp), and the blend still sits at [esp+0x38] where retail keeps it
+// at [esp+0x1c] with the choices pointer in the other slot.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
@@ -889,6 +893,11 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // destination keeps EDI); the blend output passed as `&base[count]` 209 (609 bytes); the source read as
 // `base[i]` with no source increment 161; a plain `for (i = 0; i < count; i++)` with an indexed source and
 // destination 107; that loop stepping only the destination 161.
+// MiniMax C (11-14): no new form, no lower score (89): retail keeps the destination pointer in ebx and the
+// source pointer in its stack slot, ours keeps the destination in edi and the source in ebx, which the inner
+// loop then reuses for its function cursor, so the source is written to the stack and reloaded at every loop
+// end. The permuter's best (83) only moves constants into locals and moves the source step ahead of the
+// result store, so it was not kept.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

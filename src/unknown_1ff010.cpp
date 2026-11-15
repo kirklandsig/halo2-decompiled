@@ -511,6 +511,12 @@ void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+// MiniMax R (11-14): no new form, no lower score (77): the first difference is at +0xeb, where the two arms of the
+// direction test branch to blocks retail lays out elsewhere; behind them retail expands the rotation where our build
+// calls rotate_direction (src/unknown_1eb8a0.cpp) and normalises through normalize2d_fast (include/unknown_11cc90.h),
+// neither of which is this lane's file, and the scale products differ in order (retail `scale * x`, ours `x * scale`).
+// The score needs the controls 0x1ecf50 and 0x2b400 in the reduced image; without them the helper is not inlined
+// and the score reads 299.
 // MiniMax E (11-14): no new form, no lower score (77): retail still multiplies the scale into x and y as `scale * x` and
 // `y * scale` and keeps the test's zero in XMM0, while this build hoists the zero into XMM6 above the helper's products
 // and multiplies x * scale; the helper's body lives in include/unknown_11cc90.h and the turn in src/unknown_1eb8a0.cpp,

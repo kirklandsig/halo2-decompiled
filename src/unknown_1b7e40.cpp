@@ -69,6 +69,10 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax H (11-14): no new form, no lower score (49): retail's shared zero exit sits at +0x1de,
+// between the evaluation region and the fallback block, and the priority path ends in an epilogue of
+// its own at +0x26a, so retail branches where this build turns the two returns into a mask select; the
+// permuter's 300 s search over the reduced image (4 tries) found nothing below the baseline.
 // MiniMax A (11-13): no new form, no lower score (49); what still differs: retail calls function_26f060 with the
 // actor index in ECX and the invitation type in EDI where this build passes them in EAX and ESI, and that moves the
 // actor and the node between EBX and EBP through the body; the busy test then becomes a numeric select
