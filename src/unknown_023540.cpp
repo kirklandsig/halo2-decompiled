@@ -3851,6 +3851,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // 0x25e50's colour/scale references 11 (first.red's product operands swap; shift and pairs unchanged); the shifted word
 // declared before the clear and assigned after it 9; the alpha word through its own shifted local too 9; all four shifted
 // words (fraction, input, whole, alpha) named in parallel ahead of the first store 9.
+// M3 lane 3 r243 (fast, base 9; the stage stores follow source order, so the shift's place is the scheduler's): the
+// span clamp's `inverse_span = maximum;` ahead of the width 11 (the store then precedes the divide); the width taken
+// after the small exit from the clamped span 15, from maximum 15; the width written out at its two uses 41; offset's
+// zero declared at the negative-low test 1163; `small = true;` ahead of the two scalings 12 (the flag store moves
+// first); the exponent search as `for (exponent = 0; ...; exponent++);` 883 (4928 B, re-measured; the while form
+// stays). Body unchanged.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

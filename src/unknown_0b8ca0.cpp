@@ -921,6 +921,13 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // where our build self-aligns only for a spill temp; the angle through an inline helper (double radius, real distance) 267
 // (873 bytes), with the normalising call inside the helper 67 (same as the 67 form), (double, double) 262 (877 bytes).
 // NOT kept (coordinator review, MiniMax B 11-12): 165 -> 71 rested on match-only forms (a `visible` flag set in the cluster loop, a (real) cast on atan2, the swapped comparison); without them the full build gives 215, worse than main's 165. The body is main's again.
+// Round 244 (m3 lane 3, fast with 0xbf2c0/0x268c90 and the callees): the step helper with a single result (`result =
+// NONE; if (absolute != NONE) result = ...; return result;`) 216 (914 bytes): the result byte, link iterator and player
+// index then take retail's slots ([esp+0x13], [esp+0x40], [esp+0x14]) and the latch keeps the player index in memory,
+// but the frame is 0xbc against 0xb4 because the dot product is evaluated ahead of the 0x30bf0 call and spilled as a
+// qword where retail evaluates the angle first; on it the range zero as the model-NONE else arm 218, plus the root
+// flags read through the root object in the test 217; a named `real angle` ahead of the dot product 246 (946 bytes),
+// with `(real)atan2` 246. All restored.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -2170,6 +2177,13 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // hand-written helper), nested under an outer root-flags test 285 (same code). Re-measured on that base: `allowed` as one &&
 // expression 317 (as listed), the byte activity bit 281. BLOCKED-BY 0xb8bd0 (ours: its file's /Ob1 keeps it out of line;
 // `inline` there loses 0xbcc20/0x11b710) and 0x142570 (/Ob1, inlined by retail). No untried natural form is left.
+// Round 244 (m3 lane 3, fast): 0xb8bd0's body moved into this file (diagnostic, restored) 348 (1272 bytes, first
+// difference +0x0): LTCG then inlines it into 0x18c3b0 too, which stops matching, so retail's single inline site is not
+// a same-file effect. Object, ancestry walk and header through OBJECT_GET/OBJECT_HEADER_GET with no pool local 330 (the
+// parent and header then share one fresh data load as retail does, but the volatile index re-derives the offset); that
+// with the byte activity bit `(header->flags & 4) != 0` 327; the ancestry walk alone through OBJECT_GET 328; the walk
+// through OBJECT_GET with the header through OBJECT_HEADER_GET and `index` not volatile 324 (1203 bytes); the node
+// copied into a long local 288 (1228 bytes). All restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

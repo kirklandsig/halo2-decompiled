@@ -706,6 +706,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // length_sq3f at both uses (no local, diagnostic) 46. Body unchanged.
 // m3 lane 14 r93: no trial run; lane 18 round 17 above records that no untried natural form is left, and this round found
 // none outside the listed statement-order, helper and width families. Body unchanged.
+// M3 lane 3 r243 (fast with 0x1fc660, matched throughout; base 32 [register-masked aligned 9]): the deltas assigned i,
+// j, k re-measured 79 [16] (the stores, deltas and the (k + j) + i sum then follow retail, but the chains and tick
+// products run i, j, k). On that form: the tick scale converted at the top as a named real 85; the correction through
+// the existing vector3f_add_scaled straight into the output 99 (348 B); the call taking `tracked` directly 107 (352
+// B); the limit computed before the squared length 64 [18]; the rate local dropped (the global passed to
+// vector3f_add_scaled) 79 (same code). On the body: the limit computed right after the rate and tick reads 85. Body
+// unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
