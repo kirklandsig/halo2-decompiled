@@ -270,6 +270,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P461: Builder-owned sine/cosine/both real conversions 335/334/337; consumed
 // builder matrix identities first/second/both/readonly/reference 334 each. NOT kept:
 // no exact repair; double-input forms also lose the caller. Original helpers/body restored.
+// M3 lane 10 r104 (fast with 0x137ed0, which stays matched): the builder's nine stores in column order (forward.i,
+// left.i, up.i, forward.j, ...) 352 (1798 B); every product with the trig value first (`sine * axis->k`,
+// `cosine * (1.0f - xx) + xx`) 334 (same code); the builder in matched 0x171d90's helper order (cross terms yz, xz, xy,
+// then forward.i, left.i, forward.j, left.j, forward.k, up.i, up.k, up.j, left.k) 364 (1748 B, first difference +0x2);
+// no angle locals, `step * 0.5f` / `step * 0.3f` written in each trig call 381 (1819 B). Body unchanged.
 // P489: Whole weighted up/left/forward vector producers in seven subsets, then direct scale/add-scaled
 // composition in the actual returned vector: 416/416/436/527/532/515/605/371. NOT kept: No byte equality;
 // computed vector storage and helper operand-order alternatives are exact-only. Both original private helpers,
@@ -1798,6 +1803,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // MiniMax B (11-12): no new form, no lower score (193): this round re-read the diff statement by statement against
 // retail and found no behaviour difference; what is left is the three cross terms' order and the place of the
 // case 1 reference copy, and the helper forms that reach 177 and 182 still raise the caller to 573.
+// MiniMax H (11-14): no new form, no lower score (193): the three cross terms' order and the place of the case 1
+// reference copy still differ, and the permuter's best variant turned the atan2 arguments round, which changes the
+// behaviour, so the body stands.
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax B (11-11): no new form, no lower score (193): the helper forms that reach 177 and 182 still raise the
 // caller to 573, so the body stays as it is.
@@ -2706,6 +2714,9 @@ real magnitude3d(vector3f const *v);
 // MiniMax B (11-12): no new form, no lower score (170): retail keeps the raw current length in its own slot at
 // +0xc and the pinned value at +4, where ours reuses one slot for both, and retail re-reads the dot as a float
 // for the arccosine while our /GL build widens acosf and fabsf to their double forms.
+// MiniMax H (11-14): no new form, no lower score (170): retail keeps the raw current length in its own slot at
+// +0xc and the pinned value at +4 where ours reuses one slot for both, and under /GL our acosf and fabsf widen to
+// their double forms and drag the dot's double copy along, so the later homes shift with them.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
@@ -2974,6 +2985,9 @@ s_cached_input_list g_5234e8[4];
 // MiniMax B (11-12): no new form, no lower score (113 on the full image, 147 on the reduced one): the frame is
 // still 0x9c against retail's 0xa0 - retail spills the input list and reloads it at the loop top, keeps the total
 // on the stack and the index in EBX with the cursor in EBP, where ours holds the total in EBP.
+// MiniMax H (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail
+// spills the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the
+// cursor in EBP, where ours holds the total in EBP; the index's register is fixed by 0x31590 in another file.
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
@@ -3289,6 +3303,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // base to stack homes, so only the two registers differ (retail: the counter in edx and the base in ebp;
 // ours the other way round), and the base is a load of state->entries rather than a local, so declaring
 // the locals in another order cannot move it.
+// MiniMax H (11-14): no new form, no lower score (317): retail keeps the admission counter in edx and the entries
+// base in ebp where this build keeps the counter in ebp and the base in edx, and the two stack homes are the other
+// way round; the permuter's search (18 tries, 308 s) reached 316 with the first block nested, one point short of
+// the keep bar.
 // score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
@@ -3467,6 +3485,12 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // at every access grows the body to 1338 bytes (370) and an unsigned `first` is the same code, so what is left is
 // retail's home order (first at +0x10 and the loop index at +0x14, ours the reverse) with the state pointer in EBP
 // and `first` in EDX where we take EBP for `first` and EDX for the state.
+// M3 lane 10 r104: no trial. The open lead above (a natural form that adds one use of loop 3's index or drops one
+// reference to `first`) was checked against every reference of both: `first` is read by the loop 2 start, the loop 2
+// swap target (hoisted by retail too), the loop 3 and loop 4 starts and both sort calls, all of which retail reads; the
+// natural spellings that add a use of loop 3's index (entry through the index, the decrement before the swap, the swap
+// from the indexed entry, `i <= last`) are listed above with their scores, and none keeps the instructions. The loop
+// tests of passes 1, 2 and 4 already compare in retail's operand order. Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3599,6 +3623,13 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // MiniMax B (11-12): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and one for each element's old position, reads the
 // delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms.
+// MiniMax C (11-14): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps
+// the entry pointer in edx and the view pointer in ebx, reuses the previous camera position's three homes for each
+// element's old position and walks five pointers with a countdown, while this build keeps the entry pointer in ebx,
+// the view pointer in edi and addresses the arrays through the index; writing the first store as retail does (the
+// entry base plus the index times 0xb8) rebuilds the body at 498, a 12-byte union for the velocity components shrinks
+// the frame to 0x5c but raises the score to 513, and the permuter (18 tries, 312 s, annealed) reached 484 only with a
+// volatile pointer, so all three were restored.
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
@@ -4217,6 +4248,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // unmatched 0xc6b90 (inlined here) and 0xff5f0 bodies: BLOCKED-BY 0xc6b90, 0xff5f0. Same graph with a pointer
 // local to the field fast 155; with kind volatile plain 190; with kind as signed char plain 209 (object index in EBP);
 // main body with the first fade read per use through the object local plain 185 (773 bytes).
+// M3 lane 10 r104 (diagnostics only, all restored): the getter route (`bool active = false; real fade = 0.0f;` then
+// function_c6b90(index, 0x11000088, &fade, &active)) with another lane's matched 0xc6b90 body applied (not on main) plain
+// 70 (762 B, frame still 0x18); with 0xff5f0's tail as `*active = *value > 0.0f` as well 70. Fast bisection of the getter
+// route on main: alone MATCH; with 0xd1210 or 0xd1410 in the image MATCH; with 0xff5f0 in the image 70; with 0xff5f0 also
+// storing its `value` pointer in a scratch global 64 (768 B: the fade zero store returns). So the full build drops both
+// zero stores because link-time code generation proves 0xff5f0 keeps its two output pointers to itself; retail's build
+// did not. Retail's 0xff5f0 only stores through them at its tail, and src/weapons.cpp was link-time compiled in retail
+// (50 of its 89 functions take register arguments), so the cause is still open: BLOCKED-BY 0xff5f0. Every other
+// difference here is the frame offset, so no form inside this body was left to try.
 // P489: Complete positive/default/failure-first/nested initial result regions, original then native branch-
 // produced temporal clamp results: 230/201/232/62/231/203/233/62. NOT kept: No exact native result/frame
 // repair; tested-result alternatives are equality-only. Original positive Boolean graph, ordinary kind, all

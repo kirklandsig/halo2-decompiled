@@ -134,6 +134,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
 // stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
 // else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
+// MiniMax S (11-14): no new form, no lower score (77): the first difference is still the jump target at +0x54 and the block layout that follows it - retail keeps the result in ESI and tests it before the reload where this build copies it into EAX at the merge point and puts the cold "no result" return block ahead of the initialization instead of after it - and this body is 510 bytes against retail's 518; the forms tried this round (the flag set in both arms of the allocation test, the walk's NONE exit as a then-arm return, the allocation test inverted, the flag hoisted above the allocation) score 83 or worse, so the body stands.
 // score 77 (was 77): m3 lane 4 r196 note at the end; round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
 // `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
 // walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are

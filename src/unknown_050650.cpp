@@ -831,6 +831,11 @@ struct s_collision_result_buffer_1697c0
 // P467: Direct blocked-state bool/byte/short/long at attempt entry
 // 369/369/357/354, after both rotations 374/374/359/356. NOT kept:
 // all regress and grow; original clear state, every draw and complete sampler restored.
+// m3 lane 15 r84 (fast with 0x297660 MATCH and 0x297d30 23 throughout; control 303): `__assume(forward != NULL)` at the top
+// 298 (1453 B; `__assume(direction != NULL)` gives the same code), `__assume(origin != NULL)` 307 (1460 B), `__assume(attempt <
+// 10)` at the loop top 334 (1453 B); the pitch axis through the existing vector3f_assign 303 (1447 B); the ray through it 297
+// (1453 B, the assume form's code family; under the bar); both 306 (1452 B). The lower counts are one code family (any extra
+// statement ahead of the loop gives 1453 B and first difference +0x31), not a local change toward retail. Body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1424,6 +1429,12 @@ done:
 	return result;
 }
 
+// MiniMax S (11-14): no new form, no lower score (9): only the prologue differs - retail loads the pool into EDX, keeps the
+// actor offset in EAX (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and forms the actor with
+// `lea esi, [eax + edx]`, while this build keeps the scaled index in ESI and adds the base; changing the shared getter's
+// spelling (the offset local with a byte pointer, the base pointer with a slot local) compiles to byte-identical code here
+// and in the sixteen matched functions that share the getter, so MSVC canonicalises the lookup and the register choice is
+// not steerable from the source.
 // MiniMax H (11-13): no new form, no lower score (9).
 // MiniMax A (11-12): no new form, no lower score (9): three fresh spellings of the lookup (the byte-offset
 // product through the pool data, the offset computed before the pool read, and a byte base with an offset
@@ -1949,6 +1960,9 @@ struct s_actor_looking_turn_request
 // where retail calls it, and that helper is defined in another file. The body stands.
 // MiniMax G (11-13): no new form, no lower score (442 plain, 548 on the reduced image): the diff re-read this round keeps the frame 0xd0 against retail's 0xc8 and the cached animation words without retail's homes, and 0x1fdd90 is still inlined here where retail keeps it out of line, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (442 plain, 548 on the reduced image).
+// MiniMax S (11-14): no new form, no lower score (442): the two getters that hand back the view and the object
+// are shared with many other functions of this file, so their spelling - which decides whether the base and the
+// scaled index stay apart - was left alone and the body was re-measured unchanged.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

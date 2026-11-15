@@ -811,6 +811,10 @@ static inline long font_character_pixel(long alpha, long color)
 // byte then long ordinary alpha: 103/103/105/105/108/108/110/110.
 // NOT kept: literal extent recovery does not match parity/run transport;
 // original helper and complete decoder restored at 59.
+// MiniMax I (11-14): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the
+// three pixel sites where retail masks it in thirty-two, the colour literal is still built with a shift and an add
+// where retail keeps its two bytes in separate registers, and the run of two is still folded into the count and the
+// cursor as an immediate where retail adds the register.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

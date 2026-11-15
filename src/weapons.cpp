@@ -2909,6 +2909,23 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax H (11-14): no new form, no lower score (389): retail opens with one four-byte slot (`push ecx`) and takes
+// the table entry into ebp with the name in esi, the weapon index in edi and the definition in ebx, where this build
+// reserves eight bytes, keeps the weapon index in ebp, the weapon in edi and spills two pointers; the switch tree is
+// laid out the other way round too (ours branches `jg` to an out-of-line greater block, retail branches `jle` to an
+// out-of-line less-or-equal block that opens with the pivot's own `je`). The single switch with both activity names as
+// ordinary cases measures 412, and the permuter (42 tries, 306 s, reduced and full image) found nothing below 389.
+// The same switch with the two activity cases moved to the end of the case list measures 412 as well. The activity body
+// itself is retail's: the same four-way unrolled maximum over the barrel values with the same remainder loop, so what
+// is left is that this build keeps the caller's result in xmm0 while the helper's accumulator sits in xmm2, and retail
+// has one accumulator that is the caller's result as well, so this build spends one xmm register more (the zero in xmm4
+// and the one in xmm5 against retail's xmm3 and xmm4).
+// Declaring the definition before the weapon (the same two values, the definition still taken from the weapon
+// afterwards) measures 389 as well, so the homes do not follow the declaration order here either.
+// Retail recomputes the weapon definition inside the activity branch (0xff68b) instead of reusing the one it spilled
+// to [esp+0x10] in the prologue, so the call was measured with the definition taken from the weapon again
+// (WEAPON_DEFINITION(weapon)); the compiler folds that expression into the prologue's value and the code comes out
+// byte for byte the same, 389.
 // MiniMax R (11-14): no lower score (389): retail opens with one four-byte slot and takes the table
 // entry into ebp, ours reserves eight bytes and keeps the weapon index in ebp with two pointers
 // spilled, so the prologue and the register homes downstream differ; the permuter found nothing
@@ -3515,6 +3532,13 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax H (11-14): no new form, no lower score (607 plain, 643 fast): the frame agrees with retail at 0x1c60, but
+// the length is 2545 bytes against retail's 2533 and the homes do not: retail keeps the weapon index in ebx, the weapon
+// pointer in ebp and the barrel offset in edi and spills the definition to [esp+0x14], where this build keeps the weapon
+// index in a stack slot, the barrel offset in ebx and the definition in edi, and its stack slots sit four bytes off
+// retail's, so the prologue and every later home differ.
+// The permuter cannot search this function on the reduced image (it reports that the reduced image builds it
+// differently); on the full image its baseline is 604 differing instructions, so only a plain-image search can try forms.
 // MiniMax H (11-13): no new form, no lower score (607 plain, 643 fast); the frame agrees at 0x1c64 against
 // 0x1c60 and the weapon, barrel, definition and holder still live in different homes, so the prologue and the
 // register allocation of the barrel walk differ. Nothing here can be reshaped without touching the declarations

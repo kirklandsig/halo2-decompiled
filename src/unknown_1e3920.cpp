@@ -1537,6 +1537,12 @@ void function_1e3b60(long actor_index);
 // 68 bytes while 0x262ba0 still inlines it, 489 at 1684 bytes), so the decision follows the callee's size at a
 // non-loop site, not the caller, the file or the flags. Needed: a 0x2641c0 that compiles to retail's 78 bytes but
 // weighs more to the inliner. Still BLOCKED-BY 0x262ba0 and 0x1f38c0.
+// M3 lane 12 r123 (fast; 26 in every form): only two instructions differ (the 0x262ba0 call's `push ebx` for retail's
+// `mov eax, ebx`, the stub call's ECX for EAX); the one-byte shorter push shifts every later call. 0x2641c0 without its
+// noinline declaration, reading the actor through actor_get at each use: 0x2641c0 20, 0x264210 still inlines it (113,
+// 138 B), 0x262ba0 475; the same with its arms inverted (copy first): 0x2641c0 matches, 0x264210 114, 0x262ba0 497. In
+// 0x262ba0 a per-iteration actor pointer 471 (1648 B), that with `update` as long 479. #581 re-measured: the written
+// 0x1f38c0 enabled with a stdcall 0x1f6090 stub gives 90 here (274 B), 0x1c83c0 38, 0x137fe0 80, as in round 78.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

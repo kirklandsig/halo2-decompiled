@@ -2740,6 +2740,10 @@ __forceinline char unit_action_round(real value)
 // default/explicit operators and direct/staged products: 234/309/255/323/272/307/280/315. NOT kept: No native
 // equality; reordered float groups and staged products are exact-only. All original observations, float
 // grouping, helpers, result graph and full body restored.
+// M3 lane 7 r161 (fast with 0xe7900/0xe8420/0xa91c0/0xe9ed0/0xea090/0xe9780/0xe99a0/0xe4050/0xee7f0/0x168470, = full 234):
+// one `goto` to the single exit (the switch's default and mode-else fall out as `name == NONE` under `if (name != NONE)`,
+// the animation failure is the goto) 329 (1224 B), the score and length of lane 14 r83's goto-free single exit (threading
+// copies the 0xe9780 fallback block into the mode-1 path). No unlisted form for the seven causes the masked diff shows.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

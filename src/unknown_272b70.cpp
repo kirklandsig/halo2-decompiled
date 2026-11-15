@@ -1596,6 +1596,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // P486: Standard candidate squared-norm ranges, explicit operators, displacement
 // forward/backward ranges and paired graphs: 249/217/249/236/369/215/228/351. NOT kept:
 // no native iterator/leave/request recovery; original geometry, helper and body restored.
+// T108: Ordinary inline metadata at existing iterator-new/iterator-next/seat-scan/slot-submit providers, four isolated, three pairs and all:
+// 32/181/32/32/32/181/181/181. NOT kept: no qualifying native-shape gain or equality; original complete source
+// and every provider declaration restored. Native frame and first storage/scheduling gap remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

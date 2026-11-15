@@ -832,6 +832,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // The member form (the count, the bound and the index all through &m_message_window) reproduces retail's loop body
 // but scores 89: the count folds oldest into its `sub` and the loop reloads it instead of keeping it in ebx, and the
 // pointer form keeps oldest in ebx while the offset is reduced. No spelling gives both.
+// MiniMax S (11-14): no new form, no lower score (60): this build still strength-reduces next - oldest - 1 into a second counter in ESI where retail keeps the next sequence in ESI and recomputes the offset in EAX on every pass, and it still compares the offset against the cached newest where retail re-reads the newest at the per-step test; the member form through &m_message_window reproduces retail's loop body but scores 89 (the count folds oldest into its subtraction and the loop reloads it instead of holding it in EBX), while the pointer form keeps oldest in EBX and reduces the offset, so no spelling of the window gives both.
 // score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.

@@ -507,6 +507,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // seven families then continuing-output-first completion: 880/894/962/904/886/885/955/955.
 // NOT kept: native absolute-value shape and byte equality unrecovered; every form
 // lengthens the body. Original predicates, helpers and complete body restored.
+// M3 lane 16 r118 (fast with 0x18bb80 and the 0x188f90/0x18a5a0 family, control 866): the override target stored tag, decibels,
+// then the 1.0f gain 900 (3297 B); the decibel floor as the literal -64.0f in the three helpers 866 (identical code); the matched-sound
+// overrides under `if (sound->flags & 4 || sound->flags & 2)` with one other-sound pointer 906 (retail's block at 0x18b18d in shape,
+// `and eax, 4; jne; test cl, 2; je`, but a test repeated inside its guard: lead only); loop_path_start's allocation through the existing
+// looping_sound_new_attached(tag, NONE, NONE, 0) 909 (3357 B: inlined, and both start sites become retail's exact `mov word [ecx+4], dx;
+// or byte [ecx+5], 1` sequence, where the hand copy folds the two flag writes); with the start's second half through one datum pointer
+// (0x18a5a0's own shape) 886 fast and plain (3337 B). Lead: loop_path_start is 0x18a5a0 over 0x188f90 (0x18a5a0 sits under
+// auto_inline(off)); loop_path_logarithmic/linear are 0x2197f0/0x2195f0 (/Ob1, called out of line).
 // P491: Float exponential/logarithmic/absolute-value API families, seven subsets then
 // complete standard overloads: 866/866/866/866/866/866/866/866. NOT kept: no exact native math/entry/home repair;
 // original APIs, logarithmic result producer, helpers and complete body restored.

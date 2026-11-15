@@ -993,6 +993,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 817 (3317 B); the step chosen by if/else with the last step first 816 (3317 B); the sector index read once before
 // 0x2108a0 into the local the NONE test uses 768 (3320 B); the two result flags declared after the NONE return 569 (other
 // code). Same code: either sweep sum with its operands swapped.
+// Round 198 (m3 lane 4, fast with the file's four functions; all restored): function_2994a1's scale taken as `real
+// const &` (so the call takes the radius parameter's address) 732 (ours still loads it into XMM5 at entry); the
+// radius through a local copy `real radius = arg_6;` 569 (same code); the negated radius as `0.0f - arg_6` in both
+// first-offset arms 569 (same code); function_2994a1 as plain `inline` 569 (same code); the three sweep points
+// declared in the loop body 569 (same code). Ours still allocates the radius to XMM5 for the whole body (and tail-
+// merges the two first-offset arms on it); retail loads it from its home in each block.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
