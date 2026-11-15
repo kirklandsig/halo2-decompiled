@@ -2298,6 +2298,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // (same code: retail loads the context alpha from its home and multiplies by the attenuation register, ours copies the
 // attenuation and folds the home). Retail reloads 0.0/1.0 into XMM6/XMM5 at each iteration's top (0x2ee49) and keeps the
 // attenuation and the size in stack homes. Body unchanged.
+// MiniMax E (11-15): no new form, no lower score (492): our body is exactly retail's 2285 bytes, but our frame is 0x90 against retail's 0x94 and the locals sit in different slots (retail keeps the frame time at +0x10 and the tag at +0x30, this build keeps them at +0xc and +0x48), so the local set and order differ; the permuter refuses the reduced image here (526 against the full image's 492) and a full image try costs about 100 s.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3253,6 +3254,7 @@ s_cached_input_list g_5234e8[4];
 // the unformed address). Ours hands the index EDI, 0x31590's argument register, first, which leaves EBX to the cursor
 // and EBP to the total or list. Retail copies EBX to EDI at the call although 0x31590 never writes EDI, so its
 // allocator did not tie the index to the argument register; no source form found here unties it.
+// MiniMax E (11-15): no new form, no lower score (147): our body is 532 bytes against retail's 548; retail saves esi where this build saves ebp and keeps the native list and total in stack homes, and the call to 0x31590 still takes the index in edi here.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3561,6 +3563,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `while (last >= i && ...)` (no `--i`) 368 (1303 bytes) [101]; the third pass as `if (last >= i) do { ... } while (last
 // >= ++i);` 370 (1338 bytes) [106]. `first` keeps EBP in all three; retail's third pass is the `--i` form (its body runs
 // `dec ebp` and then `inc ebp`). Body unchanged.
+// MiniMax E (11-15): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation: retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4370,6 +4373,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // pops) and the fade at +0xc. No form inside this body changes more than those two stores. BLOCKED-BY 0xff5f0.
 // New forms on this body, both worse: the first fade's range test as `field >= 0.0f && field <= 1.0f` 155 (724 bytes);
 // the shadow-mode switch as `if (mode == 0) ... else if (mode == 2) ...` 115 (766 bytes).
+// MiniMax E (11-15): no new form, no lower score (62): the last difference is blocked by 0xc6b90, whose body lives in src/unit_object_type.cpp, a file this lane may not edit.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
