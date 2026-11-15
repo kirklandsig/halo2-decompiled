@@ -267,6 +267,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // MiniMax I (11-14): no new form, no lower score (316): the title still takes the frame's lower block where retail
 // keeps the display name there, the two of them still trade their slots, and the flag test's shift and test are still
 // laid out before the branch where retail moves them out of line.
+// MiniMax S (11-15): no new form, no lower score (316): our friend scan keeps the shift-by-10 arm next to the join and needs
+// an extra jump, while retail lays the shift-by-12 arm inline and moves the other arm out of line; the five buffer homes stay a
+// rotation apart from retail's. A 33-try permuter (reduced image) found no variant below the baseline.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

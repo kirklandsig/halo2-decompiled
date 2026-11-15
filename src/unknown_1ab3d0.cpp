@@ -202,6 +202,9 @@ static __forceinline long real_to_long(real value);
 // Round 91 (m3 lane 14, fast): the helper writing the output directly per row 50 (472 bytes); its point kept and the
 // difference as three rows 39; its products scale-first 2 (same code); the point written into the output then
 // subtracted in place 117 (498 bytes); the projection's j term through slot_state->direction 39, its j and i terms 39.
+// Round 107 (m3 lane 10, fast): the projection as a plain out-of-line dot in another /O2 file (inlined by LTCG),
+// (direction, facing) or (facing, direction), 6/6 (all three terms load the facing first, as the listed dot3f forms).
+// Diagnostic: `#pragma optimize("p", on)` (float consistency) 2 (the i product unchanged).
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax C (11-15): no new form, no lower score (107): the unit is still fetched once and kept across the two
+// 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's
+// memory summary is in src/unknown_0bad50.cpp, which this lane may not edit, so the entry saves and the later
+// register homes stand.
 // MiniMax D (11-14): no new form, no lower score (107): retail loads the unit from the object pool again after
 // the two 0xbadc0 calls, which our link does not do because that callee does not write the pool global; the
 // permuter's 17 tries reach 93 with the arguments of function_1896c0 swapped, which changes the call, so the

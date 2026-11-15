@@ -2475,6 +2475,7 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax C (11-15): no new form, no lower score (63): the body stands as found.
 // MiniMax D (11-14): no new form, no lower score (63): the head still reads the object's index through the
 // folded address where retail adds the record base into the scaled index first and reads it back, and the
 // index is still cached across 0xbadc0 where retail reloads it; 0xbadc0's body is in another file.

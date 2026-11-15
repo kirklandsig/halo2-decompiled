@@ -438,6 +438,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // tie 43 at 127 bytes; no native early-save, independent successor, mask or failure-exit recovery. Both matched
 // callers and all calibrated file controls retain their measurements. Existing helper contracts restored. Original
 // complete executable body restored.
+// M3 lane 15 r87 (fast with 0x1a303b/0x2b393c; base 43): a successor local with the found arm ending the walk by
+// `next = NONE;` (result set, no break) and `index = next` at the end 58 (the iterator moves to EBX, both callers lose);
+// the found arm clearing `index = NONE` with `else index = next;` 51 (callers keep; index and successor still one web);
+// the first form with the successor read through the table before the entry 55 (callers lose); the first form as a
+// guarded do-while 58 (callers lose); the `index = NONE` / `else index = next` form with the table-first successor 60
+// (137 bytes). Original body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

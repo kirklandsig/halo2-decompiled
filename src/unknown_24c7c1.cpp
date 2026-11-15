@@ -768,6 +768,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // conformance) 114 (same code: spill homes do not follow lexical scope); that with the bool timer 191 (1888 bytes); the row
 // height as a short 261 (1903 bytes); the row height declared once at the loop block's top 114 (same code); the qsort call
 // inside the loop block 114 (same code).
+// MiniMax S (11-15): no new form, no lower score (114): retail keeps the timer message as a byte at -0xf and the left
+// coordinate as a word at -0x3c where ours stores a dword, and the frame homes of the row counter and the flash scalar differ.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

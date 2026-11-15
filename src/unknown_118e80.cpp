@@ -1102,6 +1102,9 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax C (11-15): no new form, no lower score (92): retail's 0x119020 pushes the force as a full dword
+// (push 1) before its 0x1c4b00 call, so the two other call sites in this file compile against the long
+// parameter and the bool form cannot be taken in this file alone.
 // MiniMax G (11-14): no new form, no lower score (92): the frame is retail's (0x1f0) and the squared length is still
 // summed in the compiler's own order (retail reads 0x1f0 before 0x1e8), and the 0x119bc0 result still travels in al
 // where retail keeps it in a stack byte and pushes the containing dword; that shape needs 0x1c4b00's last parameter
