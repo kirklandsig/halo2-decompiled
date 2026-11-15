@@ -43,9 +43,6 @@ extern long g_4858b8;
 extern dword g_4b8448, g_4b8308, g_4b82e0, g_4b8438, g_4b8450;
 extern dword g_4b82fc, g_4b843c, g_4b82e8, g_4b82ec, g_4b82f4;
 extern dword g_4b81fc[];
-/* the camera flag at 0x4858c8 is the first word of the reset storage block, so it is read
-   from there like the shader pointer next to it */
-#define g_4858c8 (*(short *)g_reset_storage.unknown_4858c8)
 struct s_render_reset_state;
 void function_16b10(s_render_reset_state *state);
 bool function_14480(long tag, short stage, short index);
@@ -56,6 +53,7 @@ void function_1cf50(void);
 void function_14f60(short stage, short index);
 bool function_143c0(long tag, short index, short stage, real priority);
 byte g_485a77, g_55e6bd;
+short g_4858c8;
 long g_4e6978, g_4e697c;
 long g_485a78[2];
 extern byte g_485a76;
@@ -5308,7 +5306,7 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 
 #define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 
-// MiniMax H (11-14): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
+// MiniMax H (11-14), NOT kept at review (a cast read into the reset storage block is kept only with a match, and it left 0350e0.cpp's extern unresolved; 0x19530 498 -> 447, 0x37a60 529 -> 519 back to main): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
 //   from there (a view of the aggregate, like the shader pointer next to it) and reloaded at every use as retail does;
 //   the separate global is gone and the file that writes it writes the same aggregate word. The body is 1704 bytes
 //   against retail's 1700 and the first difference is at +0x1f. What still differs: g_4858b8 is still a separate
@@ -5849,7 +5847,7 @@ struct s_filter_coordinates
 //   the operands the other way round does not change it. Retail loads the filter count's index with movzx where
 //   this build uses xor ecx, ecx and a 16-bit move. The permuter (2 tries in 329 s) found nothing better than the
 //   baseline 642.
-// MiniMax H (11-14): the weight copy now copies the four weights into g_4c19b0..bc with memcpy, which the
+// MiniMax H (11-14), NOT kept at review (memcpy of each float only steers the stores into integer moves; 0x2d140 656 -> 642 back to main): the weight copy now copies the four weights into g_4c19b0..bc with memcpy, which the
 //   compiler turns into retail's four dword moves without a cast on the globals' addresses (the same score
 //   642, was 656, as a dword-typed global block, but no pun on the shared globals and no change to their
 //   declared type). The body length now matches retail's 2652 bytes. What still differs: our frame is 0x9c
@@ -5883,10 +5881,10 @@ struct s_filter_coordinates
 void function_2d140(long tag, real const *weights, long columns, long rows, s_filter_vector const *grid)
 {
     (void)&weights; (void)&columns; (void)&rows; (void)&grid;
-    memcpy(&g_4c19b0, &weights[0], sizeof(g_4c19b0));
-    memcpy(&g_4c19b4, &weights[1], sizeof(g_4c19b4));
-    memcpy(&g_4c19b8, &weights[2], sizeof(g_4c19b8));
-    memcpy(&g_4c19bc, &weights[3], sizeof(g_4c19bc));
+    g_4c19b0 = weights[0];
+    g_4c19b4 = weights[1];
+    g_4c19b8 = weights[2];
+    g_4c19bc = weights[3];
     if (tag == NONE || g_4b9dd2 >= g_4b9dd6 || g_4b9dd0 >= g_4b9dd4 || g_4858b8)
         return;
     long width = g_4b9dd6 - g_4b9dd2, height = g_4b9dd4 - g_4b9dd0;
