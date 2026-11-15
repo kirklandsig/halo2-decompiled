@@ -1737,6 +1737,11 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // the flag block with the sampled matrix after it 2 (harness); the render model as `(long)(void *)` of the tag data 2; the
 // animation state fetched after the matrix copy 341 (harness positional; the prologue reorders). Diagnostics (harness,
 // reverted at once): the render model or the time address-exposed, or the render model volatile, same code.
+// M3 lane 16 r121 (fast): the matrix copy as memcpy 2; `register` on the render model 2; a function-scope channel pointer
+// for both blocks 2; diagnostics (reverted at once): the first call's render model as 0 346, with the fstp after the
+// animation push as retail, so the render model's reload sets the order in the real build too; 0x1cbf50 keeping the
+// unused argument by a bare address expression after its call 378 (the argument is dropped). A compile-only build gives
+// another argument order, so it cannot screen this.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

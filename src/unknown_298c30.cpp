@@ -609,15 +609,20 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
+// at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
+// +0xf4/+0xd0 homes stay swapped against retail's +0xd0/+0xf4). Diagnostic, reverted at once: the radius read through a
+// volatile view at all 14 uses (retail reloads it from its argument slot 9 times) 786 at 3349 B, so the XMM5 radius is not
+// the only blocker.
 // MiniMax D (11-14): no new form, no lower score (569): the body is still 39 bytes shorter than retail's with the frame
 // at 0x114 as retail, and the radius and the trace and pivot homes still differ; the forms the earlier rounds measured
 // (the shared endpoint setters, the centre copy, the obstacle-radius observation and the trace-field sector forms) all
 // score 767 or more, so the body stands.
-// score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
+// Earlier 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
-// Earlier score 633 (was 719): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ, 15 bytes long.
+// Earlier 633 (was 719): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ, 15 bytes long.
 // Frame 0x11c versus 0x114, early radius retention and trace/pivot/result homes remain.
 // Earlier: frame 0x11c versus 0x114; radius caching and trace/point homes differ.
 // Shared endpoint setters 767; center CRT copy 767; step CRT copies 767;
