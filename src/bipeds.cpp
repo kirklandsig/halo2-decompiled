@@ -4743,6 +4743,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P510: Actual contact-target/placed/root-displacement/terminal-position output stages, coordinate then
 // whole-vector phases: 336/322/336/330/336/335/336/336. NOT kept: 322 grows to 1952/1937 bytes;
 // six/one-point leads fail the margin, native origin/matrix homes remain. Original full body restored.
+// P512: Actual clearance-query hit/clear result in bool/byte/short/long, after the original
+// pre-query target copy: eight 336 at 1924/1937 bytes. NOT kept: one-use receivers do not repair
+// native matrix/origin/property homes; original complete executable source restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

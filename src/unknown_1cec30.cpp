@@ -2569,6 +2569,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P510: Bounded-table count then single-occurrence search, forward/reverse and found/direct admission:
 // 368/368/486/486/523/523/585/585. NOT kept: every form regresses, disturbs the agreeing prefix and
 // grows to 1486/1518/1547/1598 versus 1454 bytes. Original full body, headers and helpers restored.
+// P512: Complete branch/conditional weighted-speed producers, positive/negative admission:
+// 430/430/284/284/430/430/284/284. Output-transport diagnostics 99/159/159/159/180/177/159/178 (old scaled-setter reference excluded).
+// NOT kept: all regress; native early velocity j/k and property-zero residence remain. Original
+// full body, setter call, helpers and arithmetic restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
