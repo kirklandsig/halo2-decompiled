@@ -150,6 +150,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // top actor through the array-index getter 12 (diagnostic, same code); no asm (a plain cast and the helper call) 135
 // (diagnostic: the actor then takes retail's 0x24 but the offset moves to 0x20). The permuter cannot search this
 // function: its reduced image scores 209 even with 0x1e1f20 as context.
+// m3 lane 14 r99 (`--fast 0x1af160 0x1e1f20`, control 12): the definition range test written `node < limit` 12 (same
+// code); the squared-distance test written `limit * limit > length` 30; the 0x1af530 range test written `call < output`
+// 12 (same code); the equal-arm store's actor lookup written as the getter's expression 12 (same code: the inline getter's
+// temporary does not order the offset's home); the 0x1e4be0 result as `dword const *` 12 (same code). 0x260670 on the
+// bool output's chain is still 440 at 3097 bytes against 3077.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

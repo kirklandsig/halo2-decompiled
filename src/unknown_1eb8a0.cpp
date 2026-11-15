@@ -579,6 +579,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P525: Actual signed tick-state counter/duration/ticks-left full-width storage,
 // subsets 1/2/4/3/5/6/7 then complete int units: 622/676/622/676/622/676/676/676.
 // NOT kept: no native sample-home repair or byte equality; duration forms move the first gap earlier. Original record and body restored.
+// P536: Inner initial-tick decision at its original output-ramp producer,
+// positive/complementary bool/byte/short/long: 622/622/622/622/622/622/622/622.
+// NOT kept: no native sample-home or coefficient-schedule repair; original
+// counter observation, arithmetic, caller tuple and complete body restored.
+// P538: Both actual direction-normalization return producers, real/const-real/double/const-double
+// and bool/byte/short/long missing-direction outcomes: 659/659/746/746/659/659/659/659.
+// NOT kept: no sample-register or coefficient-schedule repair; original calls, fallback stores and full body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

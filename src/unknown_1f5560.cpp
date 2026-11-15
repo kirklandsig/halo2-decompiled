@@ -1132,6 +1132,9 @@ real normalize2d(point2f *v);
 // P527: Actual actor definition/unit/facing member-lvalue graphs, seven subsets then
 // all addresses from acquisition: 135/135/135/173/173/173/173/173. NOT kept: no native DL/independent-return
 // repair; original live field reads, trajectory/request tuples and complete body restored.
+// P533: Existing trajectory/validity/type truth at original movement flag stores:
+// 113/113/161/267/267/247/135/135. NOT kept: 113 reloads the trajectory byte for a flag
+// where retail stores immediate one; no native DL repair or byte match. Original complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
