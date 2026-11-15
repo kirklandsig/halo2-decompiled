@@ -3059,6 +3059,11 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
+// true value set at the entry and BL holds the false value across the two cleanup calls - while this build
+// keeps it in a byte in the frame, so retail's frame is eight bytes and ours carries the extra slot; a form
+// that returns the true and the false value from their own exits reads 135 and changes the prologue's
+// register plan, and the shared exit with the byte in its slot stays closest.
 // score 96 (was 96): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
 // (false across the failure calls), and the block layout that follows from it; the closest form (15) is match-only.
 // MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path

@@ -3874,6 +3874,12 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // MiniMax A (11-14): no new form, no lower score (12): the definition and control stack homes stay swapped
 // (retail 0x20 and 0x1c against our 0x1c and 0x20) and the two flag clears stay after the lookup's branch
 // where retail clears them before it (retail's 0x11 before its 0x10).
+// MiniMax C (11-14): no new form, no lower score (12): the twelve differences are the six that store the
+// definition and the control into each other's homes (ours keeps the definition at +0x1c and the control at
+// +0x20, retail the control at +0x1c and the definition at +0x20) and the six that clear the two flag bytes,
+// which retail does at +0x11 and then +0x10 before the lookup's branch and this build does at +0x10 and then
+// +0x11 after it; exchanging the two flag declarations flips the store order but rebuilds the function at 687
+// bytes and reads 217, and the permuter over the reduced image (16 tries) finds nothing below 12.
 // score 12 (was 12): earlier 12 (was 44): earlier BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38, lifted in lane 16 r97. Measured from
 // MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
 // difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result
