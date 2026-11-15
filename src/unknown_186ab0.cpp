@@ -184,6 +184,10 @@ void player_action_initialize(s_player_action *arg_0);
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score.
 // MiniMax G (11-12): no new form, no lower score (134): the inlined count read keeps our [edx + edi] against retail's [edi + edx], and the score-1 form still needs a pragma region and a one-caller forceinline wrapper.
+// MiniMax R (11-15): no new form, no lower score (134): the frame agrees; the count byte is still read without
+// retail's sign extension (mov al / test al against retail's movsx ax / test ax, ax), the selection comparison still
+// has its operands the other way round (cmp ax, cx against retail's cmp cx, ax), and the inlined count read still has
+// retail's index operands the other way round, which is set in src/unit_object_type.cpp.
 // score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,

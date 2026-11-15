@@ -226,6 +226,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax I (11-15): no new form, no lower score (49): the result byte's register split remains (retail keeps the false
+// result in bl and sets it only after the compare); no untried form reached it this round.
 // MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
 // attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
 // between the header flag test and the object read, ours shares one address between the two reads.
@@ -235,6 +237,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
 // loads the object table's data pointer again for the object read, where ours shares one address between
 // the two reads and keeps the result in EBP.
+// MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
+// attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
+// between the header flag test and the object read, ours shares one address between the two reads.
+// MiniMax S (11-14): no new form, no lower score (49): retail keeps the false result in BL from before the creation call and sets it only after the attachment, branches on the creation call's result instead of materialising it as a 0/1 value, borrows EBP around the header flag test and loads the object table's data pointer again for the object read, where ours keeps the result in EBP and shares one header address between the two reads; the result byte at the entry and the data reload are not reachable from this file.
 // Earlier score line (49, was 49): unchanged this round (m3 lane 13 r77 too): the head's register roles still differ - retail saves
 // earlier first lines 49 (was 49), 49 (was 49); retail's bool result in BL, the EBP borrow around the
 // header test and the data reload remain; round 151's entry is the last one above the marker.
@@ -805,6 +811,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // flagged clear and the field retest 41; the field read into a named local at the join and tested 37 (same code), with the
 // second virtual call given that local 63; with no first store, the local cleared in the flagged case, published at the join
 // and the field retested 68 (the join `or eax, -1; cmp eax, -1; mov [edi + 8], eax; je` is not threaded; f stays in EBP).
+// M3 lane 11 r105 (fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout; control 49): the
+// flagged arm as `result = false;` before the reset 50; `if (object_index != NONE)` in place of `if (result)` 76 (189 B);
+// the attach given `entity->object_index` 52; the long result computed before the entity store 49 (same code); the flagged
+// arm returning false at once (no `result = false;`) 48 (one point, under the bar).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -1186,6 +1196,10 @@ bool c_projectile_type::v8(long a, long b)
 // from a forceinline taking the object 36 (189 bytes); the index reference bound at the function's top, before the
 // call, 12, with the word read 5. In the mask listings the group data reuses ESI after the flags (retail: after the
 // object). Diagnostic, compile-only: /G5, /G6, /G7 and /GB all keep `movzx eax, ax` for the word read.
+// Round 246 (m3 lane 3, fast; the mask alone re-measured 12), all with the full-width mask: the entry assigned to the
+// object local (diagnostic) 12; the group row as a `long *` indexed `(index & 0xffff) * 3` with the value at [1] 12; the
+// group data base in a local 12; `real &` references for both state fields 12; the volatile definition copy between the
+// object and the flags 51. The entry always takes ESI; the mask hands it the flags' ESI, the word read the object's.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

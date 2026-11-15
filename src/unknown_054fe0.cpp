@@ -1726,6 +1726,7 @@ struct s_summary_player_sort_entry
 // not set.
 // MiniMax E (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8; retail's three extra homes (the member index, the membership block pointer and &session->value18) would each need a named one-use local or a pointer to a field used once, which are on the reverted list, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
 // MiniMax R (11-15): no new form, no lower score (339): retail still holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne needs the /arch:SSE flag this file does not set.
+// MiniMax I (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
 // code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a

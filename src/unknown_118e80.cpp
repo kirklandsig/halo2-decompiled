@@ -1138,6 +1138,9 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // MiniMax A (11-14): no new form, no lower score (92): the frame 0x1f0 agrees, but the basis MOV/LEA, the
 // squared-component loads and the force-result publication differ, and the force argument still needs the zero
 // extension that 0x1c4b00's `long` formal cannot give (BLOCKED-BY that file).
+// MiniMax D (11-15): no new form, no lower score (92): the score is still mostly the one-row shift from the movzx of
+// the force argument, which needs 0x1c4b00's last parameter declared a bool in files this lane may not edit, and the
+// squared length still sums the three components in the order the compiler picks where retail sums them from k down.
 // score 92 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension. Round 85 (m3 lane 16): 0x1e5af0's
 // parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).

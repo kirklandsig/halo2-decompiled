@@ -1328,6 +1328,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // the same with the inner for testing `count > 0` 118 (375 B: the inner test threads away and the zero is kept again);
 // sibling first loop with later bottom tests `--count > 0` 125 (381 B), with the later counts declared before their
 // offsets 118 (375 B).
+// M3 lane 8 r171 (fast with 0x13a532, 0x1393f3): the indexed first loop over a named count with sibling later loops
+// re-measured 118 (375 B), on it the fourth mask initialised from the first (copy-propagated) 118 and the four masks
+// typed long with `(word *)` out-pointers 118; the sibling first loop with its offset declared bare at the top of the
+// function and zeroed inside the guard 118; sibling loops sharing one function-scope count 127; round 171's guard +
+// nonzero-count for in the first position only, real build 107 (368 B; the guard compares with the zero register, the
+// inner `test eax, eax; je` stays).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

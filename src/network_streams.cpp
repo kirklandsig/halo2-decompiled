@@ -983,6 +983,13 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // P500: Existing shared index-helper lower/upper guard and result graphs, eight complete forms:
 // 76/86/86/86/91/87/60/60. NOT kept: Strength reduction remains or native extent/register ownership regresses; no
 // exact result. Shared helper and every caller restored. Original complete executable body restored.
+// M3 lane 10 r108 (fast with 0x96510, 0x94df0, 0x94bf0, 0x96b00; control 60): the window pointer declared ahead of the send
+// call with the count read through it 80 (223 B), with the bound read through it in the loop test 80 (same code); the
+// member form (re-measured 89) with the count written as `newest - oldest` on the member 91 (the count's newest joins the
+// bound, oldest reloaded in the preheader); the count test as `> 0` 62 (227 B); a named oldest with `if (next <= oldest)
+// continue;` at the loop top (diagnostic, implied by the helper) 82 (230 B). Same code: a guarded do-while, a const window
+// pointer, `(flags & 2) == 0`, the message pointer declared with its zero as `m_messages + index`, the window pointer
+// declared inside the loop body (the member form's code).
 // m3 lane 14 r96 (fast with 0x96510, 0x94df0, 0x94bf0 2, 0x96b00; control 60): in retail `next` lives in ESI, saved
 // with `push esi` ahead of the loop guard (EBX is pushed only inside it), where every form here keeps it in ECX. `next`
 // declared ahead of the window pointer (`long next = m_next_sequence + 1;`, then `for (; next < newest; next++)`) 60, on the

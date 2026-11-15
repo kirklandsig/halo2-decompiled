@@ -691,6 +691,9 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // the seventh argument reads best as a short - but the declarations that fix that split live in other files,
 // so the list stands as it is; the frame is 0x16c against retail's 0x48 because retail keeps 0x1765e0 out of
 // line and this build expands it.
+// score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
+// expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
+// src/unknown_175bd0.cpp: BLOCKED-BY that file.
 // score 165 (was 165): unchanged this round: retail calls 0x1765e0 out of line with the promoted
 // register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's
 // 0x48; retail's own parameter list differs from the declaration here (the forward vector is third and
