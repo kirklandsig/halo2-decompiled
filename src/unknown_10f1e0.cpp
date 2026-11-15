@@ -1782,6 +1782,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // its NONE test, and the second query then reloads `[pool + 0x44]` and re-derives the unit from the pool kept since entry,
 // which is retail's second query; whenever the first query's lookup on the global is unconditional, the second merges with
 // it. Retail has both: the first query re-derived unconditionally and the second fresh. Body unchanged.
+// MiniMax S (11-14): no lower score (164): the depletion queries keep the && form - the if-form for both queries
+// gives 330 and the conditional-clear form 345 - and retail's depleted flag in bl with a third stack slot is not
+// reproduced by any of the four spellings tried here.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

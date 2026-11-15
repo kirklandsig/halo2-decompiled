@@ -8164,6 +8164,9 @@ real scenario_ramp_evaluate_current(long index);
 // four bytes off; the grid's fields stored in retail's order give 120, but that form was already rejected as a store
 // order picked by score.
 // MiniMax B (11-15), NOT kept: 125 (was 130), a 5-point gain, under the 8-point bar for a function above 30.
+// MiniMax S (11-14): no new form, no lower score (130): the frame contents are retail's (the ramp result in the
+// blur argument slot, the distortion, the weights and the grid), but this build still saves the frame pointer in
+// the prologue and reserves 0x5c, so every slot sits four bytes off and no source form tried here moves it.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {

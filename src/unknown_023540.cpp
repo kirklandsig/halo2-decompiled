@@ -3281,6 +3281,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // array and scale names: same code; /G5, /G6, /G7, /GB, /Oy-, /Ob1: same region (diagnostic). Left: ours issues the
 // first set's coordinate-3 `fstp` ahead of coordinate 6's `subss` (retail after it) and orders the SSE chains 6, 7, 1
 // where retail has 7, 1, 6, with identical instructions and registers.
+// MiniMax S (11-14): no new form, no lower score (54): the scheduler still places the x87 coordinate chains one
+// slot earlier among the SSE ones than retail (first difference +0x527), and the corner rows in the other orders
+// give 54 or worse.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
