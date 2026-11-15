@@ -3029,6 +3029,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 and the list
 // still rides in ebp from the entry where retail spills it and reloads it at the loop top, and the count's compare
 // still lands in eax where retail puts it in ecx; the reduced image scores 147 here, as earlier rounds recorded.
+// MiniMax R (11-15): no new form, no lower score (146): the index still rides in EDI into the call to 0x31590, whose register convention is set in another file, and the allocator does not tie the index to the argument register here.
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index
