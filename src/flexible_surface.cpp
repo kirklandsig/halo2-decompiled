@@ -870,6 +870,7 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // MiniMax E (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls
 // them, both in src/unknown_01cf50.cpp, and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against
 // our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
+// MiniMax C (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in EDX/ECX/EAX against this build's three stack arguments; the lighting pointer nulled before the lookup measures 315, seven points and under the keep bar, and 0x4b2d0's convention follows from its own body, whose second argument this round still could not move from eax into ecx.
 // MiniMax S (11-14): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where ours calls them
 // (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in
 // EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side

@@ -69,6 +69,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
+// MiniMax C (11-15): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6, and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6, forms the cross products before the x87 cosine and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90.
 // MiniMax B (11-14, later): no new form, no lower score (334): the permuter (300 s, --anneal) was stopped at its
 // outer time limit with no result, so the body stands.
 // MiniMax B (11-14): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and
@@ -81,7 +83,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // and the register homes of the body still differ; the compile-only copy that reproduces this build's register
 // skeleton exactly was screened and left as it is, so what is left is the frame size and the homes; re-measured at
 // 334 (1781 bytes, against retail's 1779).
-// score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
+// r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
 // both angles and all four trig values first 370 (1796 bytes), the same with double angles 371.
@@ -292,6 +294,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P508: Existing builder axis/output and rotation-matrix reference contracts, seven subsets
 // then all with the rotated-vector input reference: 334/334/334/334/334/334/334/334.
 // NOT kept: no native coefficient-register or scalar-publication equality; original helpers and full body restored.
+// M3 lane 5 r186 (fast with 0x137ed0, matched throughout; control 334): retail's frame is two 0x34-byte transforms
+// (scale, three axes, position) plus 0x28 bytes of temporaries: its 0x20 untouched bytes are each matrix's scale and
+// position (+0x28, +0x50..+0x60, +0x84..+0x90 against axes at +0x2c and +0x60). Both matrices as transform4x3f locals,
+// the helpers given `&first.rotation` 373 (1817 B, frame 0xb0; P489's both-receivers count); that with both passes in
+// place (i, j and k copied) 379 (1821 B, frame 0x88); in place with only i and j copied and k read again 419 (1689 B,
+// frame 0x88); the first pass in place, the second as kept 432 (1870 B); a full-transform builder that also stores
+// scale 1 and a zero position (dead stores, removed) on the kept passes 370 (1816 B, frame 0xb0). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1803,6 +1812,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // body is tuned against the callee this one calls, so the pair cannot be moved apart from this file.
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
+// MiniMax E (11-15): no new form, no lower score (193): cases 1 to 4 still differ in the dot and offset schedule - retail groups the case-1 sums and computes the case-2 and case-4 offsets through dot3f and vector3d_from_points3d where ours differs.
 // MiniMax B (11-13): no new form, no lower score (193): retail's four cases still compute their cross products with their own temporaries (its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before the jump table), so the bodies would have to be respelled one case at a time.
 // MiniMax H (11-12): no new form, no lower score (193); the three cross terms' order and the place of the case 1
 // reference copy still differ, and the helper forms that reach 177 and 182 still raise the caller to 573, so the body
@@ -2739,6 +2749,8 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
+// MiniMax E (11-15): no new form, no lower score (170): the reduced image of this file is not faithful (it scores 315 against the full build's 170), so a permuter run cannot be searched here.
 // MiniMax S (11-14): no new form, no lower score (170): retail keeps the raw current length in its own slot at +0xc and the pinned value at +4, where ours reuses one slot for both, so the later homes (the dot's float, the sine at +8, the angle and the cosine at +0xc) all shift; retail re-reads the dot as a float for the arccosine while under /GL our acosf and fabsf widen to their double forms and drag the dot's double copy along, and no source spelling recovers that float load.
 // MiniMax B (11-13): no new form, no lower score (170): the products of each cross product are still multiplied in the other order (this build takes the direction's components into xmm4 and xmm3 where retail takes them in xmm1 and xmm3), and the dot product helper's body may not be written out by hand, so the order is not ours to choose.
 // MiniMax H (11-12): no new form, no lower score (170); retail keeps the raw current length in its own slot at +0xc
@@ -2751,7 +2763,7 @@ real magnitude3d(vector3f const *v);
 // MiniMax H (11-14): no new form, no lower score (170): retail keeps the raw current length in its own slot at
 // +0xc and the pinned value at +4 where ours reuses one slot for both, and under /GL our acosf and fabsf widen to
 // their double forms and drag the dot's double copy along, so the later homes shift with them.
-// score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
+// r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
 // MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
@@ -2938,6 +2950,11 @@ real magnitude3d(vector3f const *v);
 // clamped length taken after the first normalization 243 (first difference +0x14). Same code (170): magnitude3d's
 // result through a named local (0x24590 still matched); one function-scope `delta` for the rotation size and the
 // fallback; `a` and `b` declared together and assigned after; a `dword` fallback index. Body unchanged.
+// M3 lane 5 r186 (fast with 0x24590/0x30bf0/0x3dfe0, control 170): `a`/`b` renamed to a source/target length pair
+// 170 (identical code: names do not move the raw length out of a's slot); the length tests ahead of the parallel test
+// 182 (the double copy of the dot stays, fabs and acos now adjacent); acos on a fresh `dot3f(&second, &first)` in the
+// stored dot's operand order 198 (1039 B, as the swapped form); the fallback clamp as two independent ifs 192 (1021 B);
+// the cosine declared before the sine 170 (different code, same count). Body unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3679,6 +3696,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
+// each element's old position, reads the delta from the stored view position, and copies the scaled projection
+// inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
+// MiniMax C (11-15): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, and this build's locals and register plan differ from the start.
 // MiniMax B (11-13): no new form, no lower score (486): the frame is 0x60 against retail's 0x38 and retail multiplies the mode's short by 0xb8 where this build takes a hoisted constant, so the locals and the register plan differ from the start.
 // MiniMax H (11-12): no new form, no lower score (486); the frame is still 0x60 against retail's 0x38 - retail keeps
 // one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored
@@ -3695,9 +3716,6 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // entry base plus the index times 0xb8) rebuilds the body at 498, a 12-byte union for the velocity components shrinks
 // the frame to 0x5c but raises the score to 513, and the permuter (18 tries, 312 s, annealed) reached 484 only with a
 // volatile pointer, so all three were restored.
-// score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
-// each element's old position, reads the delta from the stored view position, and copies the scaled projection
-// inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
 // MiniMax H (11-06): 486 (was 486): no new form, no lower score.
 // MiniMax E (11-09): no new form, no lower score (486).
 // MiniMax H (11-06): score 486 (was 486): no new form, no lower score.
@@ -3870,6 +3888,11 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // keepable): the speed test, normalize and scale through a second pointer formed as `state + i * 12 + 0x24` with the
 // maximum read at each use 503 (2009 B, frame 0x50 [167]), plus the output-pointer projection 563 (1958 B, frame 0x34
 // [205]). Body unchanged.
+// M3 lane 5 r186 (fast with 0x36b50, control 486): the y offset updated before x 486 (stores reordered only); the
+// magnitude written into the test (no `magnitude` local) 497 (2023 B); the previous camera position, its store and the
+// delta in a block of their own 486 (identical code: block scopes do not let `previous` and `old` share retail's one
+// 12-byte home); `old` copied through the `position` pointer declared first 486 (different code); on that, `old`
+// advanced in place for the first projection (M385's in-place receiver on this base) 544 (1977 B). Body unchanged.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

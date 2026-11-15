@@ -161,6 +161,12 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // final `return false`) 10 (same code); the cache pointer loaded at the top and tested in place of the global 17; the
 // path helper's bool as a third term of the location test with the read in its body 10; the cache global read at each
 // use, no pointer local 10. (Retail calls 0x216d70 out of line in 0x215c00 and inlines it only here.)
+// Round 98 (m3 lane 14, fast with 0x2161d0, which stays matched): the read through an inline helper taking the path as
+// a parameter 10 (same code), `__forceinline` 10, with the location record and path at function scope 10; the build and
+// the read in one inline helper taking the path and the record 72 fast (the builder's unit is outside the reduced
+// image); the path built by a forceinline wrapper returning the path, passed to the read, plain 10 (same code). Retail
+// recomputes the path at every use inside the inlined build (strncpy push, terminator, append), and 0x122810 never
+// writes ESI, so the reuse is the code generator's own choice here.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

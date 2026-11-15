@@ -519,6 +519,11 @@ struct s_ai_scene_assignment
 // 116 (364 bytes, it lives across the loop); a short next-role local for both 91, for the recursion only 74 (352 bytes);
 // a long maximum parameter with a short copy for the compares and the parameter passed on 59 (350 bytes, propagated); the
 // int copy compared without the `(short)` casts 53 (347 bytes: int compares, the role still reloaded first).
+// Round 184 (m3 lane 6, fast, on the int copy): both compares as `(short)limit <= *assignment_count` 16; an `unsigned int`
+// copy 12 (the movsx stays); the stores ordered score, actor, name, variant 12 (same code: the role reload still heads the
+// block), actor, score, variant, name 16, name, actor, score, variant 15. Re-measured: the long next-role local with the
+// direct maximum 59 at 347 bytes; `*(long const *)&maximum_count` as the copy's source folds back to the direct form (59,
+// 350 bytes). A 1800 s permuter run (anneal, 249 tries, 8 restarts) found nothing below the baseline.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
