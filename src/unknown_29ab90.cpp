@@ -439,6 +439,9 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // whole copies are all listed above).
 // MiniMax C (11-14): no new form, no lower score (286); the stack homes still sit 8 and 4 bytes above
 // retail's (ours at +0x24 against retail's +0x1c, ours at +0x14 against retail's +0x10).
+// MiniMax I (11-14): no new form, no lower score (286): the magnitude and the query output still take the frame's
+// earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working
+// vectors is still stored in a different order than retail's.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -385,6 +385,10 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 	return true;
 }
 
+// MiniMax R (11-14): no lower score (3): the three differences are still the one schedule - retail completes the rotating
+// flag's OR and store before the angle duplicate and the first axis load, this build hoists that load above the OR and
+// sinks the store below the duplicate; putting the axis copy before the flag update measures 32 (the earlier round's
+// "the axis first" order) and is reverted, so the body stands.
 // MiniMax A (11-12): no new form, no lower score (3): the three differences are still the flag OR and its store around the fld st(0) and the axis.i load that retail makes after it; the angle declared after the flag store measures 10 and the axis through a pointer local measures 3 with the same code, so the body stands.
 /* the rotation a spinning projectile makes each tick */
 // MiniMax A (11-14): no new form, no lower score (3): only the rotating flag's OR and store and the first axis load

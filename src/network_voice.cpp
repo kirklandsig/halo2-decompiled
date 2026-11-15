@@ -150,88 +150,17 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 	return result;
 }
 
-// score 2 (was 2): the engine pointer is loaded into ebp before the branch that
-// skips the creation; retail loads it after the branch. Direct creation with
-// the pointer bound after the call or in its argument 8; initialized error 2;
-// error declared at creation 2; const engine pointer 6; plain result store 36;
-// early false return 92; error before engine 2.
-// MiniMax h (11-06): no new form, no lower score: the engine address bound after the guard (8), bound as a declaration initializer (8), read from the member at each use (8) and a volatile result (30) all sink the push of ebp into the guarded block, while a reference to the member keeps that push at the entry but loads the address before the branch (6).
-// Round 19: unchanged; retail loads the engine address after the guard branch and ours loads it
-// before it. Binding the address inside the guarded block lets MSVC sink `push ebp` into that
-// block and re-encode the stack slots: null-initialised, redeclared, the result pointer moved
-// into the block and the address taken at the call all score 8.
-// MiniMax E (11-07): forms tried, none lower (2 unchanged; the engine pointer bound after the guard,
-// in an else arm and in a nested block scope all score 8, because MSVC then sinks the save of ebp into
-// the guarded block and the frame slots shift; the field address taken in the creation call is 2);
-// a reference to the engine member keeps the save of ebp at the entry but loads the address before the
-// branch (6), the same reference bound inside the guarded block sinks the save (8), and the engine
-// pointer bound before the parameters call loads the address at the top (6); a permuter run reached
-// its time limit without a measured variant.
-// skips the creation; retail loads it after the branch. With the load after the
-// branch ebp is pushed there instead of at entry, and without the volatile store
-// the true result is folded into separate epilogues. Natural nested ifs 42;
-// E_FAIL-initialised status tested after the guarded creation 39, with the field
-// address in the creation call 42, with the stored result 26; plain store
-// through the result pointer 36.
-// MiniMax D (11-06): no new form, no lower score: binding the engine pointer after the guard still sinks
-// the push of ebp into the guarded block, and the permuter run on this function reached its time limit
-// without a measured variant.
-// Round 78 (lane 10, fast): ours forwards AL to the result on the guard-fail edge (its `je` lands one
-// instruction past retail's `mov al, [esp + 0xb]`; with the engine bound after the guard it lands on
-// `pop ebx`, two past, and `push ebp` sinks: 8). The natural form (no volatile, goto or result pointer;
-// nested SUCCEEDED ifs, `result = true` after the ports loop) already gives the result retail's spill
-// slot, but copies a `mov al, 1` exit into the success path: 42 (284 bytes). On it: a flat chain of three
-// SUCCEEDED blocks 42; `result = true` ahead of the ports loop 79; `result = SUCCEEDED(error)` 42;
-// `result = port == NONE` 42; `__assume(xhv != NULL)` before the return 50.
-// Round 63 (m3 lane 15; one-file LTCG harness, exact here: base 2, natural nested ifs 42, plain store 36): the
-// creation folded into the guard, `if (!result || !SUCCEEDED(error = XHVEngineCreate(...)))`, 26; an E_FAIL-initialised
-// error with the engine pointer and creation inside `if (result)` 8 (push ebp sinks); the natural body as a
-// `do { ... } while (false)` with breaks 42; the natural nested body with an S_OK-initialised error 42; plain
-// `result = true` with the engine bound after the guard 42. Retail keeps push ebp at the entry and puts the lea after
-// the je only when the guard edge reloads the stored result; every natural form forwards AL on that edge or copies
-// a `mov al, 1` exit into the success path.
-// Round 98 (m3 lane 16, fast; the je's target is a third difference the count masks: ours skips the reload of the
-// result on the guard edge). On the natural nested body (42, 284 bytes; the result is spilled to retail's slot by
-// itself): an empty `if (!result) { }` before the return 42; an empty else arm on all four tests 42; the result as
-// the one member of a local aggregate 42; the creation joined to the guard with `&&` 42; a dead `&result` in an
-// `if (false)` block 42 (all the same code); the ports loop in an inline helper that sets the result through a
-// bool pointer 166 while it stays a call (195 bytes), 42 force-inlined. Every inlined or dead address is resolved,
-// so the result is a plain value again, the true store folds into a `mov al, 1` exit and the epilogue is copied
-// three times; retail's one epilogue needs the result's load to be opaque on every edge.
-// Round 95 (m3 lane 10, fast; natural bodies, no volatile, goto or result pointer): the natural nested body without the
-// final true store (the result is already true there) 26 (275 bytes: no `mov al, 1` exit, but push ebp still sinks past the
-// guard and the esi region's exit copies the reload); that with the engine pointer bound before the guard 20 (275, lea
-// before the je again), bound at the function's top 24; `if (!result) return result;` then the flat body 90 (270 bytes,
-// a separate `xor al, al` exit); a false-initialised result set true inside the parameters test 108 (278).
-// Round 154 (m3 lane 7, one-file LTCG harness, exact). New: the guard written as `if (result) { ... }` around the
-// body with the engine bound before it 2 (same code, one goto fewer: kept); that with the three inner gotos as breaks
-// of a `do { } while (false)` 2 (same code; not kept, the loop only stands in for the gotos); `FAILED(error)` for
-// `!SUCCEEDED(error)` 2 (same code); the result pointer declared before the call, the result assigned after it 2
-// (same code); nested SUCCEEDED ifs keeping the volatile true store 20, with the engine bound inside 26 (280 bytes).
-// Re-measured (same code as listed forms): the engine bound inside the guard block 8 (MiniMax E nested block scope);
-// the ports loop as a force-inlined bool helper returning true 39/42/42 (round 98 force-inlined helper; plain
-// `inline` stays a call, 175-178); on the goto form with the engine after the guard: split result declaration, the
-// test through `*local_0`, the call stored through `*local_0`, `result == false`, a false-initialised result, the
-// call embedded in the guard and `return *local_0` 8 each (the listed engine-after-guard 8); permuter on the
-// unchanged body (600 s, 66 tries) best 2. Diagnostic: `#pragma optimize("s", on)` on the natural nested body 115
-// (frame pointer, 244 bytes).
-// Round 192 (m3 lane 4, fast): the result pointer declared before the engine address 2; the runtime parameters declared
-// after the engine pointer and the error 2; the mode switch as an if/else 74 (291 bytes); the result assigned from the
-// parameters call in its own statement 2; the processing-mode counter as `long` 3.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
     XHV_RUNTIME_PARAMS parameters;
-    XHVEngine **engine;
-    HRESULT error;
     bool result = voice_xhv_get_runtime_parameters(&parameters, xhv);
-    engine = &xhv->engine;
-    bool *local_0 = &result;
     if (result)
     {
-        error = XHVEngineCreate(&parameters, engine);
+        XHVEngine **engine = &xhv->engine;
+        HRESULT error = XHVEngineCreate(&parameters, engine);
         if (!SUCCEEDED(error))
-            goto local_1;
+            return result;
         xhv->unknown0c = 0;
         switch (xhv->mode)
         {
@@ -247,26 +176,27 @@ bool voice_xhv_create(c_voice_xhv *xhv)
             if (xhv->unknown0c & (1 << mode))
                 error = (*engine)->EnableProcessingMode(g_52731c[mode]);
         }
-        if (!SUCCEEDED(error))
-            goto local_1;
-        error = (*engine)->SetCallbackInterface(xhv);
-        if (xhv->unknown0c & 4)
-            (*engine)->SetMaxPlaybackStreamsCount(15);
-        if (!SUCCEEDED(error))
-            goto local_1;
-        for (long port = 0; port != NONE; port = voice_port_next_index(port))
+        if (SUCCEEDED(error))
         {
-            XHV_LOCAL_TALKER_STATUS status;
-            (*engine)->RegisterLocalTalker(port);
-            (*engine)->SetProcessingMode(port, g_52731c[xhv->port_modes[port]]);
-            (*engine)->GetLocalTalkerStatus(port, &status);
-            xhv->communicator_present[port] = status.communicatorStatus == XHV_VOICE_COMMUNICATOR_STATUS_INSERTED;
-            xhv->chat_data_ready[port] = false;
-            xhv->voice_mail_active[port] = false;
+            error = (*engine)->SetCallbackInterface(xhv);
+            if (xhv->unknown0c & 4)
+                (*engine)->SetMaxPlaybackStreamsCount(15);
+            if (SUCCEEDED(error))
+            {
+                for (long port = 0; port != NONE; port = voice_port_next_index(port))
+                {
+                    XHV_LOCAL_TALKER_STATUS status;
+                    (*engine)->RegisterLocalTalker(port);
+                    (*engine)->SetProcessingMode(port, g_52731c[xhv->port_modes[port]]);
+                    (*engine)->GetLocalTalkerStatus(port, &status);
+                    xhv->communicator_present[port] = status.communicatorStatus == XHV_VOICE_COMMUNICATOR_STATUS_INSERTED;
+                    xhv->chat_data_ready[port] = false;
+                    xhv->voice_mail_active[port] = false;
+                }
+                result = true;
+            }
         }
-        *(volatile bool *)local_0 = true;
     }
-local_1:
     return result;
 }
 
@@ -1587,6 +1517,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax R (11-14): no lower score (60): retail's entry size comes from a compare and setne on the include_mask byte, a
+// value whose range it does not know, where this build zero-extends it - with a bool parameter MSVC always knows the
+// range is 0 or 1, so retail's form needs the parameter declared as a byte, a signature change this lane may not make.
+// Reading the parameter's byte through its address instead copies the parameter into a new frame slot (the byte then
+// lands at esp+0x28 and the whole frame shifts, 146), and decrementing the capacity through its address still promotes
+// it to a register (60, the same code). The player bit in EBX against retail's EBP, the kept mask in EAX against
+// retail's EBX, the capacity taken through a register against retail's in-place decrement and the capacity-fail exit's
+// own epilogue (460 bytes against retail's 449) stand.
 // MiniMax A (11-14): no new form, no lower score (60): the player bit stays in ebx where retail keeps it in ebp, the
 // entry size comes from a zero-extended mask byte here and from a compare and setne there, and the capacity-fail exit
 // keeps its own epilogue (460 bytes against retail's 449).
