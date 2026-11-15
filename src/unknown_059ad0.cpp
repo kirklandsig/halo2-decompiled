@@ -3546,6 +3546,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax C (11-15): no new form, no lower score (101): the timeout call still takes its two values where retail
+// passes a third, the dead store of the session's second field, and that value needs an unread owner parameter on
+// 0x769a0, whose definition is in src/unknown_075870.cpp and not this lane's to change; the frame agrees (0x3c) and the
+// announcement's identifier loads still split around the push, so the body stands as found.
 // MiniMax A (11-14): no new form, no lower score (101). Putting the reply member-state pointer before the
 // reply identifier drops the listing to 94 (the reply block then matches row for row) but the keep-bar sends
 // that body back. Retail still loads session+0x10 into ecx, stores it to frame +0x04 and splits the
@@ -4564,6 +4568,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // members), it scored 305 with `remote` declared first and 306 (1265 bytes) in retail order; declaring `local`
 // before `remote` with retail order gives 305. (2) retail stores session->value10 into [esp+0x1c] at 0x5e91b before
 // the 0x769a0 call (its unread owner parameter, see the 0x5e3f0 note); not expressible until 0x769a0 takes it.
+// MiniMax C (11-15): no new form, no lower score (305): the frame and the body length agree, but retail keeps its
+// flag results in stack bytes (the result byte at +0xb where this build frames it at +0xa) and stores the session's
+// value10 into a slot before its 0x769a0 call, whose unread owner parameter the callee in src/unknown_075870.cpp does
+// not take, so the extra store cannot be written from here.
 // MiniMax B (11-11): no new form, no lower score (305); retail keeps its flag results in stack slots (the byte
 // at esp+0xb, where this build keeps it in al and frames it at esp+0xa) and stores session->value10 into a slot
 // before its 0x769a0 call, whose unread owner parameter this build's callee in src/unknown_075870.cpp does not

@@ -3572,6 +3572,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
+// MiniMax C (11-15): no new form, no lower score (1000): the frame is still 0x78 against retail's 0x74 and the velocity
+// and force homes between them are still not one uniform shift; retail inlines 0x142640 and 0x1427f0 where this file
+// calls them, and both helpers live in files this lane may not edit, so the inlining and the frame cannot be reached
+// from here: BLOCKED-BY 0x142640 and 0x1427f0.
 // MiniMax B (11-13): no new form, no lower score (1000): our frame is a dword bigger than retail's 0x74 and the velocity
 // and force blocks build differently from the head; the scaled values' homes stay blocked by 0x1427f0/0x142640 (the
 // header's matrix_transform_vector has no scale step).
@@ -4713,6 +4717,12 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax C (11-15): no new form, no lower score (48): the marker count sum still lands in EAX here (movsx eax, ax;
+// add eax, edi) where retail has movsx ecx, ax and add edi, ecx - the sum written with the call first and with the
+// operands swapped both compile to the same EAX form - the definition pointer is still read into EDX before the memset
+// where retail reloads it from the stack after it (re-deriving it inside the loop scores 138, the whole frame grows),
+// and the colour constant still takes EAX where retail takes ECX; the cone call's set-up pair still waits on
+// 0x146320's file.
 // MiniMax B (11-13): no new form, no lower score (48): the marker count sum still lands in EAX here and in EDI in retail
 // (a short, a long and a split `count +=` form all compile to the same `movsx eax, ax; add eax, edi`), the definition
 // pointer is still read into EDX early where retail reads it into EAX after the memset, and the facing copy still stores its
