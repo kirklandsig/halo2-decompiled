@@ -501,6 +501,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // seven const subsets then all mutable: 382/382/382/382/382/382/382/382.
 // NOT kept: selected/default and bitmap/pass homes unchanged; original
 // field expressions, metrics, traversals and complete body restored.
+// m3 lane 9 r123 (fast with 0x29e730/0x29de20): the length helper's deltas taken arg_1 - arg_0 382 (same code); the
+// zone-entry pointer declared after the field_70 table pointer 401; the record search as a while loop with the index
+// stepped after the test 382 (same code); the pass's path sum written start to end 382 (same code); the length helper's
+// arguments swapped at the pass start and the visited point 382 (same code: the x87 square order does not follow them).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
