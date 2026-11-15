@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax D (11-15): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, and the
+// one lever that would settle it is out of this file's reach: tools/build.py prepends /GL to every source's flags,
+// so a file's "// @flags" line cannot turn it off, and a /GL- build of this file would cost 0x97f60, 0x97fe0 and
+// 0x980d0 their matches.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // MiniMax H (11-13): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, because
 // the address-taken count keeps a slot of its own under /GL; a /GL- build of this file is byte-exact but would cost
@@ -497,6 +501,14 @@ struct c_aggregate : c_child
 // scope 31; the cleanup item declared at the block loop's scope and assigned in the test 31; the cleanup reading
 // `blocks[k]` with no block pointer 31; the dispatch call through `((c_child **)children)[i]` at each pass 121 (357 B);
 // the dispatch bound named before the inner loop 31 (frame 0x8024 in each). Still BLOCKED by the build flag.
+// M3 lane 2 r87 (fast with 0x97f60/0x97fe0/0x980d0/0x97f00): the information result as `result = get_info(object,
+// &result) ? result : NONE;` 31 (same code); the cleanup object declared in the if condition 74 (368 B); error, total and
+// starts declared ahead of blocks 31 (same code); the cleanup loop over a block pointer up to `&blocks[total]` 100 (391 B);
+// the item's object read from the field at each use 67 (376 B). Still BLOCKED by the build flag. Original body restored.
+// M3 lane 11 r104 (fast with the six file-mates, all still matched): v5's count output as a `long &` parameter 31 (frame
+// 0x8024: a reference escapes to the virtual call the same way); the call's status named and published after the total
+// 32; `long produced;` then `produced = 0;` 31 (same code); the gate as nested `if (error == 0) if (child != 0)` 37; the
+// remaining room named ahead of the call 31. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

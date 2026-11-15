@@ -1057,6 +1057,10 @@ extern "C" void _ReadWriteBarrier(void);
 // removed 91 (672 bytes); the two direct volumes pinned again at the call site, `PIN(volume(gain), -6400, 0)`, 255 (758
 // bytes); the I3DL2 settings filled by a static inline helper taking (globals, voice, decibels, parameters), no
 // barriers, 724 (kept out of line, 133 bytes).
+// Round 98 (m3 lane 14, fast with 0x220e00, which stays matched): the first barrier between the two direct volumes 30,
+// that without the second barrier 31; the second barrier after the room pair, ahead of the two HF levels 27; the
+// attenuation call right after the memset, ahead of both volumes 105 (671 bytes); the room pair chained HF first
+// (`lRoomHF = lRoom = PIN(...)`) 21 (same code).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

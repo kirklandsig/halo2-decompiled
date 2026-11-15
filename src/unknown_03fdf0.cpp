@@ -549,6 +549,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 200 (m3 lane 4, fast with 0x404b0): the entry test's mask as `unknown00 & 0x1fffff & selection` 2; a named
 // `short part_index` for the five `(short)index` uses 2 (propagated); a non-const entry pointer 2 (all the same code);
 // shape from `(byte)entry->flags & 0xf` 128 (490 bytes); a `short` part counter 58 (515 bytes).
+// Round 184 (m3 lane 6, fast): the entry test and its body as a forceinline helper taking (index, entry, selection) 2,
+// (entry, index, selection) 2, with `first + n` passed and no index local 2; the part loop as a forceinline helper 2 (all
+// the same code); a block pointer for the copy and the count update only, the loop still indexed, 148. Diagnostic: a use
+// of mode after first's store (a byte global written) leaves first in mode's home (126), so mode's home is free from entry.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
