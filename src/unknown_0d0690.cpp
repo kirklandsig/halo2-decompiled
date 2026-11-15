@@ -1697,6 +1697,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // P500: Complete standard RGB bias/reflection/scale arithmetic, seven subsets, then both luminance producers:
 // 530/983/650/1012/660/1080/1110/1343. NOT kept: All regress; reflected/scale forms grow beyond retail and do not
 // recover native frame/result/carrier shape. Original complete executable body restored.
+// m3 lane 14 r96 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529): retail's only call
+// (0xd4080: pushes, then `mov edx, edi` for the query and `mov ecx, ebx` for the type, the block already in EAX for its NULL
+// test) fits (type, query, block) under the last-to-first setup rule, as lane 1 r90 found. New this round: the scan reading
+// `block->count` in its own test (no count local, no outer test) 582 (2167 B); the square from the stored `record->length`
+// 586 (2166 B; 0x3db00 lost, 8; 0xd4080 508); every later length use from `record->length` as well 577 (2175 B; same
+// losses); the normal's squared length passed as `i * i + j * j + k * k` 540 (2174 B); the type mask as `long` 529 (same
+// code). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
