@@ -389,6 +389,9 @@ __forceinline bool function_184448(long arg_0)
 // it back. New forms tried and dropped: the search condition with the element test first (971), the permuter's four
 // forms (969 with the cached worklist entry dropped and the sample store moved), the negation in the other order (964,
 // one point), and the prefix increment and the zero comparison (no change).
+// MiniMax S (11-15): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4 and the scene and
+// geometry homes are rotated, so every later load sits at a different offset; the endpoint, counter and width forms of the
+// earlier rounds all score 965 or worse.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

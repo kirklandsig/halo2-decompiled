@@ -1108,6 +1108,9 @@ struct s_tail_transfer_traits
 // initialised to NONE, and the player iterator typed s_player_iterator with its data member's address cast back to
 // s_record_pool_iterator *. A lead: the remaining 3 points may come from a natural spelling of the same double
 // lookup (an accessor written twice in the source).
+// MiniMax S (11-15): no new form, no lower score (144): everything after the two copies differs only by register assignment,
+// with the record pointer and the selection index trading EBP, EBX and EDI, so the loads, the -1 sentinel and the branch
+// targets all differ.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

@@ -851,6 +851,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the emitter definition formed after the emitter lookup, before the first-particle read, 42; `particle_mask` computed right
 // after `emitter_mask`, before the emitter-level property calls, 263 (1117 B). Diagnostic: the particle pointer renamed to
 // sort either side of the emitter definition 42/42 (names do not set the order of the two reloads after each property call).
+// MiniMax S (11-15): no new form, no lower score (42): the i row of both rotations sums the up product before the forward
+// one where retail sums the forward one first, the copy's second and third components swap, and the two saved registers are
+// reloaded in the other order after each property call; the rotation's term order is fixed by the shared helper's text.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

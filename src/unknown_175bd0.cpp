@@ -2209,6 +2209,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // result passed straight to 0x175270 162 (552 B; the node flag is then evaluated before the 0x178bc0 call, retail after); both
 // queries as the colour call's arguments with one `s_location *` for the cluster test, set_location and both zone tests 146
 // (552 B); 0x174a30's whole colour pattern (colours read before the spawn stores, definition named, queries as arguments) 187 (568 B).
+// MiniMax S (11-15): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system
+// in ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it reads the location mode from the
+// definition again for each call.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3675,6 +3678,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // M3 lane 15 r89 (fast with 0x176f60, matched throughout; control 93): the system's definition named and the type looked up
 // from it (0x174a30's spelling) 93; the matrix declared at the definition-test block's scope 93; both colour locals `dword const`
 // 93; the cached mode as a `long` 92 (337 B); that with the block's locals in the order colours, mode, particle cursor 92 (337 B).
+// MiniMax S (11-15): no new form, no lower score (93): retail's frame is 0x54 against our 0x4c, it keeps the particle system in
+// ESI and its successor in EDI where ours has them the other way round until the colour call, it spills colour A to a frame
+// home of its own instead of re-reading the effect, and it reads the location mode from the definition again for each call;
+// the form that reads the mode per call reaches retail's frame but flips the entry parameter placement.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
