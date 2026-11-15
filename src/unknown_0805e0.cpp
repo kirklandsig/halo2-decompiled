@@ -444,6 +444,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the first form with the successor read through the table before the entry 55 (callers lose); the first form as a
 // guarded do-while 58 (callers lose); the `index = NONE` / `else index = next` form with the table-first successor 60
 // (137 bytes). Original body restored.
+// M3 lane 2 r87 (fast with 0x1a303b/0x2b393c): the test chain as three nested ifs (flags; a two-use XUID local for the
+// zero and machine-local tests; exclusion and name) with result and break 43 (callers kept), with early returns 52, with
+// early returns and a successor local 49, in a guarded do-while with result and break 43; the nested ifs in `while
+// (!result && index != NONE)` with a successor local stepped at the end 37 (player on the stack, ret 8, `mov al, 1; test
+// al, al` not threaded; callers 27/15). Original body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
