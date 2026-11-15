@@ -77,6 +77,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90. The body stands.
 // MiniMax G (11-12): no new form, no lower score (343): retail's angles are the x87 products of the step with 0.5 and 0.3 and its
 // axes are at 0x485624 and 0x485630, which the file's two helpers already take; the frame and the spill homes are what is left.
+// MiniMax D (11-14, run 90): no new form, no lower score (334): the frame is 0x98 bytes here against retail's 0x90
+// and the register homes of the body still differ; the compile-only copy that reproduces this build's register
+// skeleton exactly was screened and left as it is, so what is left is the frame size and the homes; re-measured at
+// 334 (1781 bytes, against retail's 1779).
 // score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below. r136 lane 7 (at 356): a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
@@ -3335,6 +3339,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // base in ebp where this build keeps the counter in ebp and the base in edx, and the two stack homes are the other
 // way round; the permuter's search (18 tries, 308 s) reached 316 with the first block nested, one point short of
 // the keep bar.
+// MiniMax D (11-14, run 90): no new form, no lower score (317): the names and the declaration order do not move the
+// first/i slots here, and what is left is the frame's homes, which the compile-only copy reproduces as they stand;
+// re-measured at 317 (1324 bytes, as retail's).
 // score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
