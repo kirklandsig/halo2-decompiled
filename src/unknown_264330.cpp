@@ -1205,6 +1205,7 @@ real function_296600(long actor_index, long prop_ref_index);
 // The actor through the existing actor_get 90 (same code, kept: it replaces the written-out lookup).
 // MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
 // pointer still lives in edi where retail keeps it in ebx.
+// MiniMax S (11-14): no new form, no lower score (91): the actor pointer still lives in EDI where retail keeps it in EBX, and retail's `sete` for !current still sits between the first call's pushes.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

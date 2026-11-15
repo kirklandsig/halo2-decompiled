@@ -193,6 +193,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Reading of the team block: ours reloads the enable byte into DL ahead of the engine test and holds it through the team
 // byte test, where retail reloads it after that test, so retail's EDX is free for the engine index (EDX/EAX) and ours
 // takes EAX/ECX; the swap follows from the blocked reload, not a separate cause.
+// MiniMax S (11-14): no new form, no lower score (106): the enable flag's reload after the store still needs the aliasing that the held src/unknown_1967d0.cpp gets by taking &g_510cb0, so retail's EDX/EAX turnover stays unmatched here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

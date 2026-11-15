@@ -3738,6 +3738,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
 // MiniMax C (11-14): no new form, no lower score (1000); the frame still reserves 0x78 against retail's
 // 0x74, so every stack home sits four bytes higher.
+// MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4469,6 +4470,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // cannot be swapped for the score.
 // P498: Whole projection inner-product traversal/input/operator forms regress; coordinated returned-byte and sole-caller-byte form scores 130 at 791/806 and also restores. Projection input/cross ranks, trig homes and byte transport remain.
 // Scores 224/212/210/216/257/271/257/271/130. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// MiniMax S (11-14): no new form, no lower score (118): retail's default arm keeps the angle on the x87 stack while ours takes the sine and cosine from the stack, and the dot product's first term and the first cross's operand order still follow the shared helpers.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4769,6 +4771,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // EAX here (movsx eax, ax; add eax, edi) and in EDI in retail (movsx ecx, ax; add edi, ecx), the definition
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
 // still stores its three components in the order i, k, j where retail stores them in another order.
+// MiniMax S (11-14): no new form, no lower score (48): the marker count sum still lands in EAX (movsx eax, ax; add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the count taken as the primary count and summed in place, and the sum's operands swapped, all compile to the same EAX form, and the scratch zero store still follows the sum.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

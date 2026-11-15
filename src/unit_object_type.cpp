@@ -3483,6 +3483,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // ebp); memcpy record copies 132; record copies straight from the seat and the definition field (no source
 // locals) 127. Re-measured: record copies from the source locals 132; the byte result 85 (396 bytes, but one
 // merged setne tail where retail has three epilogues).
+// MiniMax S (11-14): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once and copies the five dwords from it.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -6515,6 +6516,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // store); `failed` declared at function scope and assigned at the check 59 (same code); the allocations as an
 // `&&` chain in the if with the success arm first and the out-of-memory arm in the else 193 (the check and
 // out-of-memory blocks move to the end, the success arm takes retail's EAX/ECX/EDX). Re-measured: no data local 59.
+// MiniMax S (11-14): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's scratch registers stay swapped.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
