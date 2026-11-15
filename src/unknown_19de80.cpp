@@ -677,6 +677,12 @@ static inline bool teams_enabled_19e1c0()
 // their post-call code and token stays in EDI); all four spelled differently (`>`, `<`, `>=`, `<=`) plain 509 (1349 B),
 // volatile 466 (1485 B); the plain result with `token` read through `word const *const *` to itself at every use 691 (the
 // reference folds: token still EDI, the same code). Retail's tails differ only by its per-compare token reloads.
+// M3 lane 1 r107 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390): on lane 13 r82's 385 form (named player
+// pointer in the spawn-time and lives cases with `best_score <= function_1587f0(team)`, re-measured 385 at 1443 B): every clamp
+// as `if (remaining < result)` 385; a block-scope text buffer in each name/team case (function-scope buffer kept for the formatted
+// cases) 419 (1473 B); both team admissions team test first 396; a named player pointer in the local-team case too 385; the
+// scoring mode read at each use 385. With the plain result ours enregisters token, token_length, event and result and leaves
+// `remaining` on the stack; retail gives `remaining` EBP and reloads the token for every compare.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

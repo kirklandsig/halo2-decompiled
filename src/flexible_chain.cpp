@@ -661,6 +661,10 @@ void __stdcall function_1160c0(real dt)
 // rows in that order 158 (other code); the rest-offset copy after the angle call 181 (1370 bytes); cosine computed
 // ahead of sine 159; same code as it: `predicted` through vector3f_add, the projection named, `rotated` declared beside
 // the vertical. Body unchanged.
+// M3 lane 7 r165 (fast with 0x116750/0x73360/0x54590, 0x116750 matched and 0x54590 2 throughout; control 171): the segment
+// index in a named long local 171 (same code); the segment chosen by if/else (last segment, else segment i) 297 (1379 B);
+// the segment selected ahead of the node pointer 279; `++node->ticks` ahead of the stiffness 175; the segment as
+// `segments + index` 171 (same code). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

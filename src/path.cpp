@@ -378,6 +378,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax C (11-14): no new form, no lower score (286): retail's frame is 0xe4 against this build's 0xe8 - retail keeps the edge's
 // walkable bit in a byte local written only on the "index in range" path and reuses it in the special test, while this build keeps
 // that bit in the flags and gives the frame an extra dword; the node depth is read at one address here and through a lea there.
+// MiniMax I (11-15): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4, retail keeps the edge's walkable bit in a byte local while this build keeps it in the flags, and the node depth is read through a lea here and at one address there.
 // score 286 (was 286; round 95 m3 lane 11 at the end): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
 // homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again

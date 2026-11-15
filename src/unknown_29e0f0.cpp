@@ -80,6 +80,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 }
 // score 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the selected defaults' homes,
 // point bitmap, endpoint homes and x87 scheduling differ.
+// M3 lane 8 r170: 1-7 dead long locals at the top 382 each (fast; no phase effect on the per-call x87 square orders).
+// Compile-only x87 screen (it reproduces this body's four sites: the first is retail's, the next three keep the same
+// order where retail rotates it per call): the length helper with a named sum, with named squares, as
+// `sqrt(function_29e2ea(b, a))` through the file's squared helper, or summed x, y, z: identical code; the sum cast to
+// double for sqrt +5 lines. VC canonicalises scalar sums, so the per-call rotation needs something other than the
+// helper's written order.
 // MiniMax R (11-11): no lower score (382); retail's selected point index is compared as a dword where ours is compared as a word and
 // retail's selected endpoint as a word where ours is compared as a dword, retail's group index is a sign-extended 32-bit value parked in the
 // dead argument slot, and retail's output loop indexes &arg_4->field_30[count] and rebuilds the record address from the group base; taking

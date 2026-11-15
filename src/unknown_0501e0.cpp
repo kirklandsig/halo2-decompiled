@@ -527,6 +527,16 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // returning the view vector by value (`vector3f local_2 = world_vector_to_view(scale, &local_0);`) 278 (1153 bytes)
 // [202]. Re-measured: the existing transform_vector in place on each offset with the later reads through `vector3f &`
 // aliases 309 (1080 bytes) [117]; the depth limits written in the condition 214 [157]. Body unchanged.
+// M3 lane 13 r96 (fast with 0x30290, 0x30bf0, 0x142640, all MATCH; control 206, LCS-aligned 241, register/stack-masked 176):
+// both offsets through the existing vector3d_from_points3d 207 (1142 B); the segment difference through it 206 (same code).
+// The view transform as a macro writing the output vector directly (no output pointer) gives retail's opening: the raw
+// offsets kept, the copies made before the scale test, `scale * raw` products, the scale loaded once and the second
+// offsets spilled first: with the component loop 270 (1146 B, masked 146), with three row statements 262 (1136 B, frame
+// 0x14 as retail, masked 98), that with the offset loops in retail's order 262 (masked 100), with the depth limits
+// written in the condition 256 (1136 B, masked 74). Left on that last form (build/r96/lead-501e0.patch in lane 13's
+// worktree): the second view keeps its scaled copy in registers where retail spills i and k to [esp+4]/[esp] and
+// multiplies from memory, the opening loads' order, and the blend scale and root argument in each other's slot
+// ([esp+4]/[esp] for retail's [esp]/[esp+4]; renaming the blend scale changes nothing).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
