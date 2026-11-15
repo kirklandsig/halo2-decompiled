@@ -2410,6 +2410,11 @@ dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
+// MiniMax D (11-14, run 90): no new form, no lower score (140): the frame and the length agree with retail, but the
+// preserve_alpha load is still hoisted above the simple branch's global store where retail keeps the store first and
+// re-reads preserve_alpha after the callee 0x131fc0, which lives in src/unknown_131e50.cpp; the only form that
+// reached 54 reads a global twice through a volatile, which the rules ban; re-measured at 140 (1729 bytes, as
+// retail's). BLOCKED-BY the callee.
 // score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
 // variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
 // and re-reads preserve_alpha after 0x131fc0 where ours hoists its load above the `simple` branch into CL.
@@ -2813,6 +2818,11 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax E (11-11): no new form, no lower score (364); the entry block matches retail's, but our body is 54 bytes
 // longer than retail's (1597 against 1543), which moves every later jump target, and the extra code is not located.
 // MiniMax H (11-12): no new form, no lower score (364): the body is still 54 bytes longer than retail's, so the shared exit lands at +0x621 where retail's is at +0x5eb, and the inlined matrix copy still loads its values into registers before storing them where retail stores each value as it loads it.
+// MiniMax D (11-14, run 90): no new form, no lower score (330): retail inlines the second 0x235a0 copy and calls
+// the first one out of line, while this build inlines both, so the two cancel in length but shift everything between
+// them; the byte count is still rounded up to a multiple of four before it is tested for zero, and the masked handle
+// is still compared with minus one where retail does that before the size is stored; re-measured at 330 (1591 bytes
+// in the reduced image, against retail's 1543). BLOCKED-BY 0x235a0.
 // score 330 (was 364; earlier 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -3271,6 +3281,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // array and scale names: same code; /G5, /G6, /G7, /GB, /Oy-, /Ob1: same region (diagnostic). Left: ours issues the
 // first set's coordinate-3 `fstp` ahead of coordinate 6's `subss` (retail after it) and orders the SSE chains 6, 7, 1
 // where retail has 7, 1, 6, with identical instructions and registers.
+// MiniMax S (11-14): no new form, no lower score (54): the scheduler still places the x87 coordinate chains one
+// slot earlier among the SSE ones than retail (first difference +0x527), and the corner rows in the other orders
+// give 54 or worse.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

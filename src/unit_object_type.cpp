@@ -5331,6 +5331,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // default 182; standalone disabled exit 186; complete result exits 194.
 // NOT kept: all tie or regress; delayed up.i, native angle homes and x87
 // forward-scale residence remain. Original cross helpers and body restored.
+// MiniMax S (11-14): no new form, no lower score (169): the cross products' SSE load order and copies and the x87
+// forward term are unchanged; the earlier rounds' forms (the cross product helper, the staged one, the view angles,
+// the double scales and the scale statement orders) all land at 169.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6283,6 +6286,9 @@ void function_cf040(long unit_index, short type)
 // MiniMax G (11-14): no new form, no lower score (1): the one difference is still the SIB byte of the weapon loop's
 // header lookup, ours taking the pool data as the address base and retail the byte offset; the offset-first and the
 // pointer-to-header spellings in the lines above compile to the same bytes here as well, so the body stands.
+// MiniMax S (11-14): no lower score (1): the weapon loop's header lookup keeps this build's SIB order (base eax,
+// index edi) where retail has the offset as the base; the lookup through the existing masked-index helper, as a
+// named header pointer, as byte arithmetic with the load and as long arithmetic in both orders give the same bytes.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
@@ -7352,6 +7358,17 @@ public:
 // declaration of 0x106030 (diagnostic, reverted at once) leaves it inlined (498). Ours keeps
 // weapon->definition_index and the pool data pointer in frame slots across the slot loop because the inlined
 // 0x106030 writes no memory; retail's call to it forces the reloads it shows.
+// MiniMax E (11-14): no new form, no lower score (492): the pool read for the two header lookups still compiles to
+// `mov eax,[0x4f4eac]; mov ecx,[eax + 0x44]` where retail loads the pool into ECX and reuses that register for the
+// data pointer (`mov ecx,[0x4e0300]; mov ecx,[ecx + 0x44]`), so retail's first lookup is `mov edx,[ecx + eax + 8]`
+// (the data as the base) and ours is `mov ebp,[eax + ecx + 8]` (the offset as the base). Worse: the pool and the data
+// in locals (the file's matched pattern) 500 (the data then takes EBP and EBP is pushed, retail keeps the data in
+// ECX); the data as a local of g_4e0300->data 500; the headers array in a local 500; the pool local used at both
+// lookups 492 (no change); the data local for the unit only and the macro for the weapon 507; empty/loaded declared
+// before the other flags 492 (no change). Still differs: the pool register, the base/index order of the first
+// lookup, the unit in EBP (retail keeps it in EDX and stores it), the weapon definition in a frame slot (retail keeps
+// it in ESI), the empty flag in a frame byte (retail keeps it in DL), the slot loop's induction registers and the
+// frame slot layout.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8221,6 +8238,12 @@ real function_50650(real cosine);
 // retail's convention) is inlined into both calls (1103 here) and flips the matched caller 0x1faf80 to 16.
 // MiniMax G (11-12): no new form tried this round, no lower score (563): the frame is still 0x8c against retail's
 // 0x80, and the two 0xc7750 calls still pass their arguments on the stack instead of in xmm registers.
+// MiniMax D (11-15): score 558 (was 563): the second of the two final directions now shares the velocity copy's
+// stack home instead of a separate local (563 -> 558, 2474 -> 2479 bytes, the first difference still at +0x2);
+// what remains: the frame is 0x98 against retail's 0x80, the two frame rotations still re-read the vector's
+// components and re-associate the three products where retail keeps them in registers and adds them in the
+// source order, and the two 0xc7750 calls still pass their arguments on the stack where retail passes them in
+// xmm registers.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
@@ -8358,6 +8381,7 @@ real function_50650(real cosine);
 // entry and leaves the body when it is null, this build stores two zeroed speeds first and only then branches,
 // and the frame is 0x8c against retail's 0x80; the two 0xc7750 calls still push position and velocity on the
 // stack where retail passes them in xmm5 and xmm4: BLOCKED-BY 0xc7750's inlining.
+// MiniMax D (11-15), NOT kept: 608 (was 614), a 6-point gain, under the 8-point bar for a function above 30.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -9086,6 +9110,18 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax E (11-14): 493 -> 456 (2204 bytes vs retail 2229): the unit and the parent unit read through one pool
+// local (objects = g_4e0300 with its data pointer in data, the file's matched pattern), the material local typed
+// c_type_47f957 (its copies are word moves, as retail's) and the range read from the weapon definition at each use
+// (the frame is 0x17c as retail's; with a range local it is 0x180). The prologue now loads the unit index from the
+// stack first and keeps the pool in EDI with the unit in EBX, as retail does. Still differs: the tag table is in ECX
+// and the data pointer in ESI (retail: ESI and ECX), the definition is stored before the weapon index test (retail
+// stores it after), the -1 is materialised late (retail holds it in EBP and compares `cmp cx, bp`), and the
+// definition and unit sit in slots 0x50/0x58 (retail: the definition alone in 0x58). Worse: the pool local at every
+// lookup (543), the weapon index through the existing function_cbd50 (514) or as `= NONE; if` (473, 534), the NONE
+// locals declared before the weapon index (502, 537), the pool local without the data pointer (474), the tag table
+// as a local alone (487), the material class alone (487).
+// score 456 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
@@ -9136,6 +9172,9 @@ struct s_unit_melee_collision
 // retail still places the 0xcfc90 arm inline after 0xa9260, ours moves it to the end); the seat group byte as `byte`
 // 386 (same code); the parent index assigned after its two NONE tests 389. Without the class, the aim mix and the moved
 // declaration (only the 0xcbd50 call, range at each use and the seat macro) 538.
+// MiniMax E (11-15), NOT kept: 456 (was 493) spelled UNIT_GET out by hand (the pool's data pointer, & 0xffff,
+// * 12 + 8) instead of the existing accessor, wrapped the material index in a class, and read the range field
+// three times instead of the named local. Code back to main, notes kept.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

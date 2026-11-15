@@ -1737,123 +1737,46 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
-// score 4 (was 4): the collision bool's byte home is +0x13 where retail keeps it at +0x10, and the product loads the
-// hit fraction where retail loads the distance; both come from retail inlining 0x1c8df0 at the first branch (round
-// 115 below: BLOCKED-BY 0x1c8df0). Earlier notes, merged into this one:
-// MiniMax G (11-10): no new form, no lower score (4): the hit fraction held in a named local scores 2 (the product becomes distance times fraction), but that local holds a value used once and the form is recorded above as not kept, so the original body stays. The collision flag's byte home is still +0x13: declaring it in the outer scope, and three named bool comparisons in the else branch (each used once in a condition), do not move it, because those bools are dropped before the frame is laid out; inlining the flag's expression at its use drops the slot and the code (256).
-// MiniMax C (11-09): no new form, no lower score (4): the full build's diff is only the collision
-// flag's byte home, ours at +0x13 where retail has +0x10; the rest of the frame agrees slot for
-// slot (the type slot at +0x14, the dwords at +0x18 to +0x3c, +0x48 and the word at +0x58), and the
-// else branch, the call and the epilogue are instruction for instruction retail's. MSVC gives the
-// first byte local of a frame group the group's top byte, so retail's source must declare three
-// byte locals before the flag; dead ones are dropped before the frame is laid out, as three dead
-// chars and three chars loaded from memory both leave the home at +0x13. The permuter was stopped
-// by its time limit without a result.
-// MiniMax S (11-06): no new form, no lower score (4): the collision flag's byte home stays at +0x13 for char, uchar, byte, const bool, ternary and duplicated-flag spellings; naming the guard comparison, the range comparison or the flag moves the flag into a register (261 each), and so do nested ifs for the guard with an early return (244) and with the else block duplicated (753). The permuter (600 s) found nothing below 4.
-// MiniMax H (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 even when its
-// declaration moves to the function top (it keeps the top byte of the first four byte pack, so retail must
-// create three boolean objects before it), and the product keeps the hit fraction in the register: swapping
-// the two product operands and writing the test as `1.f > a * b` both compile to the same bytes.
-// MiniMax B (11-03): the entry short inlined, the allow flag inlined and the collision flag declared
-// first each promote that flag to a register (261); its byte home and the product order still differ.
-// Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
-// alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
-// MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).
-// MiniMax G (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 and the product keeps the hit fraction in the register.
-// MiniMax B (11-06): the hit fraction read into a named local before the distance is computed scores 2,
-// but that local holds a value used once and the same form was recorded as not kept on 10-31, so the
-// original body is restored (4); only the collision bool's byte home is left.
-// Earlier (4, was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
-// and the product loads the hit fraction where retail loads the distance.
-// Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
-// collision flag, scoped ray setup/result, guarded collision fraction, hit distance, native
-// collision output, ray/distance endpoints, final query point, projection and displacement
-// workspace forms, product operand swap, flipped comparison, named product local, local_4
-// rename, local declaration orders, uninitialized-early local_22; none beat this score.
-// its low word, so the test reads it as a short (same width pattern as the kept cast in
-// 0x1af5c0); that also cleared the constant/call-address artifacts and the trailing pad.
-// Still differ: the collision bool's byte home (+0x13 against +0x10), the product's load
-// order (loads the hit fraction where retail loads the distance), and the allow-byte init
-// store placed after the second type test in retail (sunk past the first branch).
-// Earlier rounds at 14: byte collision flag 14; byte allow flag 43; long initial mode 34;
-// short collision flag 247; scoped ray setup/result 14 (plain).
-// Guarded collision fraction 14 plain; hit distance 14; native collision output 228; ray endpoint 232;
-// distance endpoint 201; both endpoints 266; final query point 111; horizontal normalization value 177.
-// reuse ray displacement 14p; existing dot helper 14p.
-// squared length lifetime 14p; normalization result lifetime 14p.
-// shared projection output 25p; shared displacement workspace 60p.
-// sibling byte home name 14p; native projection mode 14p.
-// Immutable collision decision and cluster/origin values 14 each; external actor/candidate/context
-// records 14 each; visible-path collision decision 257; external definition record 53;
-// initialized native collision output 236 (plain).
-// parent index 251; early collision mask 255.
-// unattached decision 15; mask bit clear 14.
-// index plus bit clear 251; unattached mask bit 17.
-// shared parent index 249; shared attachment decision 53.
-// This round (from 14, all plain): bool declared at block top 14; product operands swapped,
-// flipped comparison, named product local, local_4 rename, local_18-first and local_15/16
-// declaration orders, bool declared after the first query call, local_22
-// uninitialized-early, byte-typed local_4: all tie at 7. local_22 initialized before the
-// mode selection 113; the entry type copy reused in the allow test 260.
-// tried immutable distance 7p; guarded classification 210p; nested hit classification 199p; classification enum 7p;
-// projection first 7p; allow from second type 6p; allow from first type 8p; native query flag 123p.
-// collision byte home, distance product loads and allow store remain;
-// early short result 7; entry short result 7; unsigned short result 7; early unsigned result 7;
-// early distance 7; entry distance 7; shared candidate field pointer 7; early definition pointer
-// 7.
-// MiniMax E (11-10, later 2): the parameter layout is retail's, confirmed from the compiled prologue, which
-// matches retail opcode for opcode (`mov ebx, [esp + 0x88]` and `mov ebp, [esp + 0x90]` are the first and
-// second stack arguments, the third at [E+0xc], and the callee pops twelve bytes), so nothing here is blocked
-// by the declaration; only the frame's byte group and the two product slots are.
-// MiniMax E (11-10, later): still no lower score (4). Two findings for the next round. First, the
-// product's operand order does not follow the source: with `local_13 * local_7.t` and with
-// `local_7.t * local_13` the code is the same (`movss xmm0, [esp+0x38]; mulss xmm0, [esp+0x18]`),
-// so MSVC fixes the order itself and the swap cannot be steered from the expression. Second, the
-// remaining four differing instructions are the collision flag's byte home, ours at +0x13 where
-// retail has +0x10 (the `setne` and the `mov cl` that reads it), plus the two product
-// instructions; every other frame slot agrees (the type slot at +0x14, the dwords at +0x18 to
-// +0x3c, +0x48 and the word at +0x58). The flag is the first byte local of the frame's byte area
-// and ours sits three bytes above the area's base, so retail's source must place three byte
-// locals between the flag and the second bool at +0x14; adding them as one-use bools is a
-// banned form.
-// MiniMax E (11-10): no new form, no lower score (4). The whole body is retail's instruction for
-// instruction except the collision flag's byte home, ours at +0x13 where retail has +0x10; every
-// other frame slot agrees (the type slot at +0x14, the dwords at +0x18 to +0x3c, +0x48 and the
-// word at +0x58), so the flag's byte group is the only difference. The flag's own type does not
-// move it. Moving the second bool (local_22) to the top of the function costs the whole body
-// (246), making it an int leaves the home at +0x13 and changes the argument setup (62), and
-// naming the repeated `definition->flags & 8` test in a bool used at both places spills it
-// (290). The home stays at +0x13 when the second bool is a byte group member of its own, so the
-// group holds the flag alone and MSVC gives it the group's top byte; retail's flag is the
-// group's bottom byte, which needs three more live byte locals before it.
-// Round 416: Actual visibility/collision/near-distance Boolean results, each and all combinations,
-// 4/4/4/4/4/4/4; native signed-byte attachment decision 4. All restored.
-// The one-use predicate results are restored without an exact match; byte +0x13/+0x10 and the
-// distance/fraction product loads remain.
-// Round 97 (m3 lane 1; fast with 0x1c8df0, 0x1e55d0 and 0x1e1f20 listed: alone the fast check carries a caveat
-// and misbuilds this function, 261 at 916 bytes for every form). The first branch is 0x1c8df0 with constant
-// arguments (the ones 0x1b2770's call passes). Calling it there with the callee kept out of line 525 (670 bytes, a
-// call); with the callee's noinline declaration dropped the call is inlined here (249, 921 bytes: the parent bool
-// goes to BL and the frame is 0x7c) but also into matched 0x1b2770 (656, 1359 bytes), so not kept. One
-// function-scope bool for the parent test assigned in both branches 49 (952 bytes). The hit fraction as a local in
-// the hit block (the listed form) 2, declared at the branch top 2, with a zero store on the not-visible arm 2, at
-// function scope 2: only the bool's home is then left, and none of them moves it. Reading of the frame: retail's
-// three dword slots are +0x10 (this bool alone, its low byte), +0x14 (the else branch's mode, then its allow bool
-// in the same slot's low byte) and +0x18 (distance / side count); ours gives the lone bool a 1-byte home placed
-// after the dword slots (+0x13), so retail's bool is held in a dword slot the way a spilled call argument is.
-// Round 115 (m3 lane 16, fast with 0x1c8df0, 0x1e55d0 and 0x1e1f20; control 4): BLOCKED-BY 0x1c8df0 (its noinline
-// declaration; retail inlines that call at this first branch, with 0x1b2770's constant arguments, and keeps the else
-// branch's call out of line). Diagnostics, not kept (a file-local forceinline copy of an existing function): 0x1c8df0's
-// body copied as a forceinline helper and called here with the parent test as its bool argument puts the bool at
-// retail's +0x10 and loads the product distance first, as retail (220 positional: only the setup registers differ, the
-// row sign-extended into EBX where retail zero-extends it into AX); the same with the row passed through a short local
-// 249 (the bool goes to BL, frame 0x7c); this body unchanged inside a forceinline helper taking the flag as a bool
-// parameter 220 (+0x10, product still fraction first), so the home is the inlined bool parameter's and the product
-// order is the fraction copied at the hit; the flag returned by a forceinline predicate 4 (+0x13, a return value
-// gets no parameter home). Plain forms: the flags built with `&= ~0x20` as in 0x1c8df0 4 (same code); the
-// visibility test in 0x1c8df0's spelling (two NONE tests and a negated call) 23.
-// Also: the distance through the existing magnitude3d 185 (959 bytes, it stays a call); the flags as a ternary in the
-// query call's argument (no flags local) 214; the visibility arms swapped with the test negated 4 (same code).
+/* what an actor at origin sees of a target point: 0 clear, 2 blocked close by the target, 4 blocked or out of sight;
+   the parameters follow retail's setup, which evaluates them last to first (the parent test, the cluster, the origin) */
+static __forceinline short target_sight_type(point3f const *origin, short origin_cluster, short target_cluster,
+	point3f const *target, bool parented)
+{
+	short type;
+	if (clusters_visible_11c010(origin_cluster, target_cluster))
+	{
+		s_collision_result_25f7b0 collision;
+		collision.unknown24 = NONE;
+		long flags = 0x15808c2f;
+		if (parented)
+			flags = 0x15808c0f;
+		vector3f direction;
+		vector3d_from_points3d(origin, target, &direction);
+		if (!function_1697c0(flags, origin, &direction, NONE, NONE, (s_collision_result_1697c0 *)&collision))
+		{
+			type = 0;
+		}
+		else
+		{
+			real fraction = collision.t;
+			vector3f offset;
+			vector3d_from_points3d(origin, target, &offset);
+			real distance = (real)sqrt(length_sq3f(&offset));
+			if (distance < 1.f)
+				type = 4;
+			else if (distance * fraction < 1.f)
+				type = 2;
+			else
+				type = 4;
+		}
+	}
+	else
+	{
+		type = 4;
+	}
+	return type;
+}
+
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {
@@ -1870,41 +1793,8 @@ void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *
 				local_3 = function_272af0(g_4e0348, &arg_2->position);
 			else
 				local_3 = arg_2->definition->unknown12;
-			bool local_4 = local_0->unknown26c != NONE;
-			short local_5 = *(short *)((byte *)local_0 + 0x254);
-			point3f const *local_6 = (point3f *)((byte *)local_0 + 0x22c);
-			short type;
-			if (clusters_visible_11c010(local_5, local_3))
-			{
-				s_collision_result_25f7b0 local_7;
-				local_7.unknown24 = NONE;
-				long local_8 = 0x15808c2f;
-				if (local_4)
-					local_8 = 0x15808c0f;
-				vector3f local_9;
-				vector3d_from_points3d(local_6, &local_2, &local_9);
-				if (!function_1697c0(local_8, local_6, &local_9, NONE, NONE, (s_collision_result_1697c0 *)&local_7))
-				{
-					type = 0;
-				}
-				else
-				{
-					vector3f local_10;
-					vector3d_from_points3d(local_6, &local_2, &local_10);
-					real local_13 = (real)sqrt(length_sq3f(&local_10));
-					if (local_13 < 1.f)
-						type = 4;
-					else if (local_13 * local_7.t < 1.f)
-						type = 2;
-					else
-						type = 4;
-				}
-			}
-			else
-			{
-				type = 4;
-			}
-			arg_2->type = type;
+			arg_2->type = target_sight_type((point3f *)((byte *)local_0 + 0x22c), *(short *)((byte *)local_0 + 0x254),
+				(short)local_3, &local_2, local_0->unknown26c != NONE);
 		}
 		else
 		{

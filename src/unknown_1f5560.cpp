@@ -1118,6 +1118,10 @@ real normalize2d(point2f *v);
 // NOT kept: all regress and shorten away; original fast merge and full body restored.
 // P498: Actual request/fallback-facing/retry-output declarations within the admitted path, seven subsets, then complete graph with early uninitialized result. The exact first-query prefix survives; native retained DL and independent request/movement/invalid return transport remain.
 // Scores 135/135/135/135/135/135/135/135. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// P511: Original-site direction/facing normalizer results in real/none, none/real, real/real,
+// double/none, none/double, double/double, real/double, double/real: 135/135/135/170/153/175/153/170.
+// NOT kept: real captures tie; double receivers grow away from native extent and regress.
+// Original full body restored; initial DL retention and separate request/invalid return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

@@ -682,6 +682,13 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Also, at the same phase: the dot taking the up and forward pointers 14 (its k and j rows flip); the cross taking the
 // three axis pointers 12 (two cross rows flip, the dot's i row stays); the scale taking the forward pointer 14 (the
 // first cross rows flip).
+// Round 105 (m3 lane 1, fast with 0xb7060, which matched in each; control 8): the three axis pointers declared ahead of the
+// inverse and composition calls, the normalizes after them 46; the scale and the dot both through the `forward`/`up` pointer
+// locals (`vector3f_scale(forward, dot3f(forward, up), &scaled)`) 18; `inverse` declared at the function top 8 (same code);
+// `scaled` declared with `inverse` at the head of the valid block 8 (same code); the axis pointers `vector3f *const` 8 (same
+// code). Left: the not-valid exit's target and the failure block's pops, and the dot's i product (up first in ours).
+// Also: the two failure stores as a forced-inline clear helper taking the entry 8 (same code); the valid block (inverse
+// through the final normalize) as a forced-inline helper taking the entry 14 (real build; earlier only in a harness).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

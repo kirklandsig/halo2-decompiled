@@ -583,6 +583,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1410/1427/1375/1380/1436/1388/1397/1417. NOT kept: All retain frame 0x5d0 versus native 0x58c. t03/t04 gains
 // 16/11 add one absent library call (15 versus 14), and t06 gains only three. All transfer contracts rejected;
 // original helpers and body restored. Original complete executable body restored.
+// P511: Explicit actual steering-range/dominant-force/dead-zone/compression/mass-floor/mass-range/impulse-cap/friction-slope results:
+// 1394/1375/1375/1375/1366/1394/1409/1416. NOT kept: best 1366 grows to 6243 versus native 6238,
+// with excess frame unchanged; other results tie or regress. Original complete body and all helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
