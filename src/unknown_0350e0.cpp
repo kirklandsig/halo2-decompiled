@@ -70,6 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 }
 
 // score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
+// MiniMax C (11-15): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6, and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6, forms the cross products before the x87 cosine and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90.
 // MiniMax B (11-14, later): no new form, no lower score (334): the permuter (300 s, --anneal) was stopped at its
 // outer time limit with no result, so the body stands.
 // MiniMax B (11-14): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and
@@ -3684,6 +3685,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
+// MiniMax C (11-15): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, and this build's locals and register plan differ from the start.
 // MiniMax B (11-13): no new form, no lower score (486): the frame is 0x60 against retail's 0x38 and retail multiplies the mode's short by 0xb8 where this build takes a hoisted constant, so the locals and the register plan differ from the start.
 // MiniMax H (11-12): no new form, no lower score (486); the frame is still 0x60 against retail's 0x38 - retail keeps
 // one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored
