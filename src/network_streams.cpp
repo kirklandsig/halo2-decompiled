@@ -827,6 +827,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax R (11-15): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi with the next sequence in ecx, where retail keeps the next sequence in esi and recomputes the offset in eax on every pass; giving the index helper the member reproduces retail's loop body but moves the type local off its slot (the get_next_send setup pushes time in ebp) and the score rises to 89; the statement permuter over this body found no lower score either.
 // MiniMax G (11-14): no new form, no lower score (60): ours strength-reduces next - oldest - 1 into a second counter
 // (next in ecx, the reduced offset in esi) where retail keeps next in esi and recomputes the offset on every pass.
 // The member form (the count, the bound and the index all through &m_message_window) reproduces retail's loop body
