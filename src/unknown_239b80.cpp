@@ -616,6 +616,17 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // then standard float overloads: 161/161/161/161/161/161/161/161.
 // NOT kept: extra frame word and count/departure/produced-length homes
 // unchanged; original numeric APIs, predicate and complete body restored.
+// m3 lane 4 r199 (fast with the file's functions; 0x239d50 matched throughout; control 161). Retail read in full: one dword
+// hull counter at F+0x10, top-tested (`mov ebx, [F+0x10]; cmp bx, word [count]`), `indices[(short)hull_count] = current`
+// then the increment stored back, all three pass exits and the compaction's `j < i` exit into one epilogue returning BX,
+// the departure flag a byte in the indices home, `if (!left_start) left_start = differ(next, first)` (its y test with the
+// fxch), the closure positive (both coordinates `fld eps; fcompi; jbe head`, no fxch), the heading zeroed and the flag
+// cleared before the lowest scan, current reloaded from the count home after the classifier call. As plain C (one hull
+// counter in `while ((short)hull_count < count)`, `return hull_count;` at the three exits, that departure and closure, bool
+// flag and heading before the lowest scan): 262 (731 B: points EBP, count ESI, the pass test moves); current declared
+// before the call 262 (same code); the closure as `!points2d_differ(...)` 269 (747 B); a long flag 290; the heading and
+// flag after the lowest scan 289; the departure as `left_start = left_start || differ(next, first)` 262 (same code).
+// On this body: the three gotos as `return hull_count;` with the positive closure 170 (763 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
