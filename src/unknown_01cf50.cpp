@@ -2471,6 +2471,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the
 // inlined device call's second rep movsd; the body was re-measured at 4 (359 bytes, as retail's). BLOCKED-BY the
 // sorter in src/array_sort.cpp.
+// MiniMax R (11-15): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
@@ -2565,6 +2566,7 @@ void function_1e370(void)
 // retail keeps it in ebp, and the payload copy then saves the other register; the base comes from the shared
 // helper cache_record_new, whose body the rules forbid writing out by hand; re-measured at 8 (241 bytes, as
 // retail's).
+// MiniMax R (11-15): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp, and the payload copy then saves the register that choice leaves free; the base comes out of the shared helper cache_record_new, whose body the rules forbid writing out by hand.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
 // copy of the payload saves and restores the register that choice leaves free.
 // MiniMax D (11-06): no new form, no lower score: the payload copy before the delta (33), the records
@@ -2906,6 +2908,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // second argument as the then value, the swapped arms and the init-and-if forms) all give 26, the lowest of them 25
 // only by computing the minimum instead of the maximum, so that one was not kept; the body stands at 26 (169 bytes,
 // as retail's).
+// MiniMax R (11-15): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup where retail repeats it in each of them.
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
@@ -3179,6 +3182,7 @@ struct s_429a0_payload
 // one store earlier than this build does; the base comes out of the shared helper cache_record_take, whose body the
 // rules forbid writing out by hand, and the other caller of that helper (0x1e5e0) already matches retail, so the
 // helper cannot change; re-measured at 16 (379 bytes, against retail's 378). BLOCKED-BY the shared helper.
+// MiniMax R (11-15): no new form, no lower score (16): retail still folds the record base into the payload pointer one store earlier than this build does, and the body is still one byte longer than retail's; the base comes out of the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
 // score 16 (was 16): retail folds the record base into the payload pointer one store earlier than we
 // do, the body is one byte longer than retail's, and the callback's address is a build address the
 // comparison cannot map.
@@ -3686,6 +3690,7 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // after this build loads 9 into eax where retail zeroes it first; the callee at 0x15a60 lives in
 // src/unknown_0158f0.cpp and homes its arguments differently, so the difference cannot be moved from this file;
 // re-measured at 2 (441 bytes, as retail's). BLOCKED-BY the callee.
+// MiniMax R (11-15): no new form, no lower score (2): the call to 0x15a60 still zeroes ecx before it loads 9 into eax where retail loads 9 first; the register homes of that call come from the callee's declaration in src/unknown_0158f0.cpp, which this lane may not edit.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
@@ -4059,6 +4064,7 @@ bool function_14600()
 // height ratio, while this build computes the quotient into xmm0 and loads the height later; what is left of the
 // difference sits in the callee at 0x221810, whose frame this file cannot change; re-measured at 32 (612 bytes, as
 // retail's). BLOCKED-BY 0x221810.
+// MiniMax R (11-15): no new form, no lower score (32): the XDK's device-call inline still hoists the flag byte into al before the two divisions, so this build takes the width difference in dx and the width quotient in xmm0 where retail takes them in ax and xmm2, and retail's four shader programs come from tables this project does not have.
 // score 32 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
@@ -5801,6 +5807,7 @@ void function_1bd50(void *state);
 // narrows it to a word, and the width of the load comes from the declared type of the shared global g_4858b8, which
 // belongs to a shared declaration this lane may not change; re-measured at 13 (206 bytes, against retail's 204).
 // BLOCKED-BY the shared global's declaration.
+// MiniMax R (11-15): no new form, no lower score (13): the fallback index is still loaded as a dword and masked where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; every narrowing of the shared global g_4858b8 measured this round widens to movzx or movsx as soon as the value passes through a 32-bit local.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
