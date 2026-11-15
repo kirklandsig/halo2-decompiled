@@ -2251,6 +2251,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 515/514/518/555/551/524/498/604. NOT kept: no exact native output-storage repair.
 // Original uninitialized outputs, provider contract, APIs and complete body restored.
 // Frame 0x90 versus 0x94 and output homes remain.
+// P499: Actual distance/angular/optical last-use blocks, seven subsets, then complete bounded-fade phase:
+// 492/492/492/492/492/492/492/492. NOT kept: All eight tie 492 at the original extent and frame; native output
+// homes remain. Original complete executable body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

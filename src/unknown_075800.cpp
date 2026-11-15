@@ -1446,6 +1446,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // classifiers, every case body, lookup and call tuple restored.
 // P497: Connection completion at the primary join on the accepted primary-11/terminal-18 graph, seven subsets then all primary operations: 196/196/196/196/196/196/196/196 (reduced control 196; full 143).
 // NOT kept: no delayed ESI save or outlined terminal-handler repair; original complete dispatcher and all call tuples restored.
+// P499: Complete classifier with former terminal case 18 before primary cases 2/3/4/8/9/10/12/13:
+// 216/216/216/216/216/218/218/218. NOT kept: All regress against reduced control 196, shorten to 420 versus native
+// 444, and lose the correct incoming allocation; full baseline 143 stays authoritative. Original complete
+// executable body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

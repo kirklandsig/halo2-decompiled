@@ -1863,6 +1863,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
 // P497: Actual ground-body receiver, nearest contact outputs and discarded query-output last-use scopes, seven subsets then all with header declared at use: 566/566/566/566/566/566/566/566.
 // NOT kept: no native frame-word or material/airborne/animation-home repair; original entire body and shared helpers restored.
+// P499: Complete standard ground-speed/boost/walking-recovery arithmetic, seven subsets, then eye-height
+// correction: 649/674/594/728/698/700/778/864. NOT kept: All regress and add calls absent from retail; boost
+// recovers frame 0xfc only while growing away from native length. Gravity/material/airborne homes remain
+// unresolved. Original complete executable body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4168,6 +4172,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // NOT kept: unmatched diagnostic source forms; original executable body restored.
 // P497: Serial walking/aim angle, sine and cosine workspaces, seven subsets then all with shared bounds: 602/607/609/603/603/607/610/646 (reduced control 614; full 548).
 // NOT kept: every reduced frame remains 0x7c versus native 0x78; unsupported scalar-storage interaction is unmatched. Original complete body restored.
+// P499: Complete standard vector walking-cosine/axial/pitch contributions, seven subsets, then perpendicular
+// contribution: 790/765/736/831/891/847/914/998. NOT kept: All regress against reduced control 612 and grow beyond
+// native 2712 bytes; added calls and larger frames do not recover changed-result or flight homes. Original
+// complete executable body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4694,6 +4702,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // matrix/origin/pivot homes not recovered; original transfers and complete body restored.
 // P497: Actual offset/placed/delta last-use scopes, seven subsets then complete graph with early normalization rotation: 336/336/336/336/336/336/336/336.
 // NOT kept: no native matrix/origin or low pivot-home repair; original complete body restored.
+// P499: Standard binary coordinate offset/placement/displacement transforms, seven subsets, then both collision
+// target producers: 345/442/315/421/386/434/477/401. NOT kept: The 315 lead adds an out-of-line transform absent
+// from retail and moves origin to +0x54 versus native +0x40; other forms regress or enlarge the frame. Original
+// complete executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
