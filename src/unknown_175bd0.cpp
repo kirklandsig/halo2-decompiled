@@ -2194,6 +2194,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // zz_system 184 each (diagnostic). Diagnostic only, reverted at once: the volatile re-read at the colour call
 // re-measured 40 (552 B). On the kept body: the spawn record declared first 128; a named `s_location *effect_location`
 // for the cluster test, set_location and both zone tests 142 (552 B).
+// MiniMax G (11-14): no new form, no lower score (128): retail's frame is 0x44 with colour A spilled to frame+0x00 and
+// the spawn record at frame+0x04, while ours keeps the spawn at frame+0x00 and colour A in a register; reading colour A
+// into a local declared before the spawn (this round) gives 187 at 572 bytes, so the body stands.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3638,6 +3641,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // code); colour A read at the colour call 128 (317 B, 0x176f60 25); the node flag computed inside the cursor test 110
 // (325 B, 0x176f60 25); the matrix declared at the definition-test block's scope 87; the effect-location pointer
 // declared above the spawn record 87.
+// MiniMax G (11-14): no new form, no lower score (93): swapping the two DATUM statements gives 114 at 345 bytes; retail
+// keeps the system in ESI and its successor in EDI (ours the other way round), which is what puts colour B in the frame
+// slot and colour A in a register here while retail spills colour A to frame+0x0c and holds colour B in EDI, and
+// retail's 0x54 frame comes from the definition pointer it spills at frame+0x00 and reads the mode from on every call
+// of the location cursor, the per-call form in the lines above measuring 108; a 300 s permuter run (5 tries) stays at
+// 92 differing instructions.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

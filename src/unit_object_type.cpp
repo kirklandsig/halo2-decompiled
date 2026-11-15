@@ -6273,6 +6273,9 @@ void function_cf040(long unit_index, short type)
 // both orders, with the offset as a pointer added to the data as a long, with a byte offset local,
 // with the loop's hand variable as an int and with the hand variable declared outside the loop all
 // compile to the same bytes; a 280 s permuter run (28 tries) stays at 1.
+// MiniMax G (11-14): no new form, no lower score (1): the one difference is still the SIB byte of the weapon loop's
+// header lookup, ours taking the pool data as the address base and retail the byte offset; the offset-first and the
+// pointer-to-header spellings in the lines above compile to the same bytes here as well, so the body stands.
 // @retail 0xc92c0
 bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_index, long *blocker_index, bool *grouped)
 {
