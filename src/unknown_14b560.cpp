@@ -1632,6 +1632,11 @@ static inline s_players_globals *players_globals_14f2e0()
 // of the test: a forceinline helper taking both output pointers that holds the mode test, the NONE stores and the
 // 0x14f040 call 43; a pointer local to the third-person output taken ahead of the test and used for its store and the
 // call 43 (both fold to the inside-the-block code, `mov`).
+// M3 lane 8 r167 (fast; control 5, the outputs moved into the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
+// that form the kept unit in its own state-block local with the spawned unit declared in the mode block 43; the reuse flag
+// declared ahead of the outputs at the top of the mode block 56; `long unit_index` declared ahead of the result 43; the
+// reuse flag declared beside the result at the function top 81; on the current body the kept unit in its own state-block
+// local 5 (same code). The two failure exits as `return false` 273 (1018 bytes, the round 78 form again).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
