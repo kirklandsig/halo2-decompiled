@@ -565,6 +565,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax R (11-15): no new form, no lower score (34): the two count arguments still take the other registers - the
+// player count still arrives in edx where retail puts it in eax - and the copy loop, the rep stosd fill, the call setup
+// and the final clamp all follow from that one exchange; the register homes of the arguments decide the whole body,
+// and the swap that would fix them is in the caller's argument setup in src/unknown_07a9a0.cpp, which this lane may
+// not edit. BLOCKED-BY the caller.
 // MiniMax A (11-12): no new form, no lower score (34): the player count still arrives in edx where retail only caller 0x7e210 (src/unknown_07a9a0.cpp) loads it into eax, and the copy loop, the rep stosd fill, the call setup and the final clamp all follow from that one exchange, so the body stands. BLOCKED-BY 0x7e210.
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
