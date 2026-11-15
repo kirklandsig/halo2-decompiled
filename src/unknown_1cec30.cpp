@@ -2557,6 +2557,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // paired: 300/91/419/166/430/354/419/166. NOT kept: Unsigned table alone ties 91; other forms regress to
 // 300/419/166/430/354/419/166, disturb the exact contact prefix and grow away from native length. Native early
 // velocity j/k loads and property-zero EDI remain absent. Original complete executable body restored.
+// P510: Bounded-table count then single-occurrence search, forward/reverse and found/direct admission:
+// 368/368/486/486/523/523/585/585. NOT kept: every form regresses, disturbs the agreeing prefix and
+// grows to 1486/1518/1547/1598 versus 1454 bytes. Original full body, headers and helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

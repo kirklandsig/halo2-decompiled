@@ -4740,6 +4740,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P508: Actual first/second/both contact-property zero defaults at declaration or query,
 // then paired NONE defaults at those sites: 351/336/351/358/336/358/377/368.
 // NOT kept: defaults add code or tie without native origin/matrix/property-home equality; original full body restored.
+// P510: Actual contact-target/placed/root-displacement/terminal-position output stages, coordinate then
+// whole-vector phases: 336/322/336/330/336/335/336/336. NOT kept: 322 grows to 1952/1937 bytes;
+// six/one-point leads fail the margin, native origin/matrix homes remain. Original full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
