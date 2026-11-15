@@ -1945,6 +1945,8 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // second vertex kept as a pointer in EDI (retail keeps the `%` result in EDX), and the reconstruction's two `out[axis]` stores
 // not merged (retail copies the zero into XMM0 and shares one store). Also: `radius * radius` at its use on this body 612 (2895
 // bytes); the clamp as `point_count < 8 ? point_count : 8` 606 (same code).
+// P520: Standard radius/polygon-cap/side/endpoint/nearest/reach/near-plane-normalization/count predicates:
+// 680/648/681/762/683/663/728/668. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

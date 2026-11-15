@@ -1412,6 +1412,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // P518: Direct raw/bounded library initial/fallback/both, scalar initial/fallback/both,
 // overlap-safe initial/fallback on the native-length setter graph: 234/234/555/561/588/597/576/574.
 // NOT kept: no exact raw/bounded residence; original complete body restored.
+// P520: Standard general delta/history-input/anchor/relative/reconstruction/history-copy/bounded-copies/complete history coordinate providers:
+// 565/523/375/636/633/341/551/698. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

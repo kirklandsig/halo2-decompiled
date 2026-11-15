@@ -520,6 +520,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the forward and up fields before the two axis pointers are set 654 (2871 bytes); `local_4 < FLT_MAX` 558 (same code).
 // Retail also reloads the half-width after each offset point's stores (`0 - [ebp+0x14]` for points 3 and 4), as if the
 // point stores could alias the definition; ours keeps the width and its negation in registers across them.
+// P520: Standard range/normalization/clearance/minimum/sentinel/angle/clamp/root providers:
+// 679/704/686/661/719/703/1055/738. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
