@@ -2493,13 +2493,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // bytes at +0x4d8 as one dword and two floats where retail copies three dwords through `lea ecx, [ebx+0x424]`; with the
 // aggregate copy the body is 2396 bytes like retail's, but the whole layout moves and the score rises to 610, so the
 // component copy stays.
-// score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// Earlier 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
 // (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
 // `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
-// score rises because retail reloads the state there (`mov eax, [esp+0x38]; add eax, 8`, 0x2594a7)
+// count rises because retail reloads the state there (`mov eax, [esp+0x38]; add eax, 8`, 0x2594a7)
 // where ours forms `lea eax, [ebx+8]`, which moves every later line by one; revert this line if
 // the score matters more than the NaN edge.
 // Walk b2I (11-06), every block against retail 0x259430-0x259d33 (types 0-21 through the jump table
@@ -2826,6 +2826,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // retail's length, but the actor takes EDI and the state EBX); with case 20's two distances written per component
 // from the actor's +0x238 579 (still flipped); case 10 as `unknown8c == false` 445 (same code); case 0 back after
 // case 7/8 with 7/8 breaking on a clear bit 4 and falling into it 476 (2400 B).
+// M3 lane 15 r89 (fast with 0x110ab0; control 479; all restored): case 4 reading the state's facing directly (no `facing`
+// copy, retail's form) 627 alone at 2384 B (first +0x9: the actor and state exchange EBX/EDI); that with the state alias
+// `local_2` declared ahead of the actor 627 (same code); case 14's block moved after case 21 (retail's jump-table layout:
+// 1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20) 481 (the case 14 block then sits where retail's does; case
+// 18's registers rotate and an alignment pad appears), with cases 9 and 11 as `local_0->unknown018 == arg_1` 481; the result
+// flag `local_3` as `bool` 479 (same code).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
