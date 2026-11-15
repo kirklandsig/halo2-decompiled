@@ -272,6 +272,11 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // MiniMax E (11-11): no new form, no lower score (192); the frame is still 0x84 against retail's 0x90 with the
 // origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points before
 // the point, which only the definition in another lane's file fixes (BLOCKED-BY 0x23a220).
+// MiniMax D (11-14): no new form, no lower score (192): retail's frame is 0x90 and it keeps the ray's six
+// floats in xmm0-xmm5 while it forms the two edge vectors and the cross product in registers, where ours
+// forms each difference and spills it; the point-in-polygon query still needs the points before the point
+// (BLOCKED-BY 0x23a220), and the permuter's 40 tries over the reduced image found nothing below the 187
+// baseline.
 // score 192 (was 192): this round: no new form and no lower score; the frame is still 0x84 against
 // retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon
 // query still needs the points before the point, which only the definition in another lane's file fixes.
