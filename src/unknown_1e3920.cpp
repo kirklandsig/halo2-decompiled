@@ -2143,6 +2143,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // result-first with a `long` loop index 333 (1186 B); block 2's grenade type through a fresh lookup with `unit` fetched
 // after the grenade-settings call 251 (same code: the lookup is still CSE'd across the pure call); the options fetched
 // before the actor pointer 300; one `long unit_index` for both blocks (no 0xcbd50 swap) 349 (1182 B).
+// P518: Complete lazy slot-pair present/missing results, bool/byte/short/long:
+// 251/251/251/251/251/251/251/251. NOT kept: no exact actor/options/pool residence;
+// original gates, lazy queries, observations and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -841,6 +841,9 @@ struct s_collision_result_buffer_1697c0
 // 10)` at the loop top 334 (1453 B); the pitch axis through the existing vector3f_assign 303 (1447 B); the ray through it 297
 // (1453 B, the assume form's code family; under the bar); both 306 (1452 B). The lower counts are one code family (any extra
 // statement ahead of the loop gives 1453 B and first difference +0x31), not a local change toward retail. Body unchanged.
+// P518: Existing fallback normalizer at pitch/clear/best, masks 1/2/4/3/5/6/7,
+// then pitch fallback library copy: 438/303/303/438/438/303/438/303. NOT kept: no exact
+// scratch/rotation repair; original helpers, all observations and complete body restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

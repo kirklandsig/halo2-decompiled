@@ -1409,6 +1409,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // P515: Independent canonical damping/direct/flying/gravity enumerations, positive then complementary:
 // 313/235/237/337/623/635/630/626. NOT kept: no exact native flag/vector residence; original
 // observations, helpers, arithmetic and complete executable body restored.
+// P518: Direct raw/bounded library initial/fallback/both, scalar initial/fallback/both,
+// overlap-safe initial/fallback on the native-length setter graph: 234/234/555/561/588/597/576/574.
+// NOT kept: no exact raw/bounded residence; original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

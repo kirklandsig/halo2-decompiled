@@ -3337,6 +3337,9 @@ real g_47ff30 = 2.5f;
 // P510: Existing whole current-forward/current-up/desired-forward/desired-up transfers via memcpy,
 // masks 1/2/4/8/3/12/15: 672 each; all four via memmove 743 (3217/3244 bytes). NOT kept:
 // no native frame or scalar-home repair; original row copies and complete body restored.
+// P518: Completed post-normalization usable/fallback outcomes in bool/byte/short/long:
+// 721/721/721/721/721/721/721/721. NOT kept: branch-produced result transport needs equality;
+// original length, fallback, mass observations and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6186,6 +6189,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P510: Actual drift/lateral-recombination/driver-forward/torque output stages, coordinate then
 // vector phases: 996/978/978/1047/1035/1050/997/1006. NOT kept: all tie or regress; native frame
 // and handle/matrix homes remain. Original full body and every shared helper restored.
+// P518: Complete per-component reverse/preserve decisions in bool/byte/short/long:
+// 978/978/978/978/978/978/978/978. NOT kept: no exact native loop/frame repair;
+// original comparisons, loop domain, matrix owners and complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
