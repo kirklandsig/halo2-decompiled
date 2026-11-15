@@ -8209,6 +8209,12 @@ real function_50650(real cosine);
 // retail's convention) is inlined into both calls (1103 here) and flips the matched caller 0x1faf80 to 16.
 // MiniMax G (11-12): no new form tried this round, no lower score (563): the frame is still 0x8c against retail's
 // 0x80, and the two 0xc7750 calls still pass their arguments on the stack instead of in xmm registers.
+// MiniMax D (11-15): score 558 (was 563): the second of the two final directions now shares the velocity copy's
+// stack home instead of a separate local (563 -> 558, 2474 -> 2479 bytes, the first difference still at +0x2);
+// what remains: the frame is 0x98 against retail's 0x80, the two frame rotations still re-read the vector's
+// components and re-associate the three products where retail keeps them in registers and adds them in the
+// source order, and the two 0xc7750 calls still pass their arguments on the stack where retail passes them in
+// xmm registers.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
@@ -8346,6 +8352,7 @@ real function_50650(real cosine);
 // entry and leaves the body when it is null, this build stores two zeroed speeds first and only then branches,
 // and the frame is 0x8c against retail's 0x80; the two 0xc7750 calls still push position and velocity on the
 // stack where retail passes them in xmm5 and xmm4: BLOCKED-BY 0xc7750's inlining.
+// MiniMax D (11-15), NOT kept: 608 (was 614), a 6-point gain, under the 8-point bar for a function above 30.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
