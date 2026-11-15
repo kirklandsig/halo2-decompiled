@@ -497,6 +497,10 @@ struct c_aggregate : c_child
 // scope 31; the cleanup item declared at the block loop's scope and assigned in the test 31; the cleanup reading
 // `blocks[k]` with no block pointer 31; the dispatch call through `((c_child **)children)[i]` at each pass 121 (357 B);
 // the dispatch bound named before the inner loop 31 (frame 0x8024 in each). Still BLOCKED by the build flag.
+// M3 lane 2 r87 (fast with 0x97f60/0x97fe0/0x980d0/0x97f00): the information result as `result = get_info(object,
+// &result) ? result : NONE;` 31 (same code); the cleanup object declared in the if condition 74 (368 B); error, total and
+// starts declared ahead of blocks 31 (same code); the cleanup loop over a block pointer up to `&blocks[total]` 100 (391 B);
+// the item's object read from the field at each use 67 (376 B). Still BLOCKED by the build flag. Original body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

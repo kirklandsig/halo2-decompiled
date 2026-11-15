@@ -2559,6 +2559,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 168/168/168/168/168/168/168/168. NOT kept: All eight tie 168 at 2880 bytes; iterator base/index encoding, player
 // table register, direction SIMD retention and scoring merge are unchanged. Reference-only allocation forms lack
 // byte equality. Original complete executable body restored.
+// M3 lane 2 r86 (fast with 0x25d810; 0x26be00's eight users MATCH throughout): 0x26be00's lookup spelled index-first
+// (`(index & 0xffff) * size + data`) 168 (same code: the inlined `[eax + ecx + 0x58]` stays); the players iterator's datum
+// index in a named local for both searches 168 (same code); the positive arm as `if (slot == NONE) reset; else if (slot
+// != player_slot) continue; else if (cooldown > 0) decay;` 174, with the middle test positive and `else continue;` 174;
+// the first search's index widened into a long local for the NONE test and the address 372 (that block becomes
+// retail's `movsx eax, si; cmp eax, -1`, but the players loop's registers rotate). Re-measured: 0x1c8150 for the slot
+// search alone, and for both searches, 769 each (2680 B, a call); 1 to 7 unused locals 168 each.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
