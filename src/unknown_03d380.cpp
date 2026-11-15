@@ -317,6 +317,9 @@ void function_125a90(long value);
 // MiniMax E (11-14): no new form, no lower score (36): the record's address is still built with an imul into ESI and an
 // add where retail multiplies into EAX and forms the address with a lea, so the type byte is tested in another value;
 // the layouts that put retail's special arm first need 0x221810 kept out of line, and that file is outside this lane.
+// MiniMax D (11-14, run 90): no new form, no lower score (36): the record's address is still built with an imul
+// where retail builds it another way, and the callee at 0x221810 keeps its own frame, which this file cannot
+// change; re-measured at 36 (415 bytes, as retail's). BLOCKED-BY 0x221810.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.

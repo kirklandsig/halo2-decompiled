@@ -549,6 +549,14 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 305/305/304/305, on this body 244/305/305/305/305/305/310/305; every added local breaks the edge loop's in-place
 // `mulss xmm3, [edx]` fold, and the cross's row j operand and the magnitude's j/i order stay wrong at every n, so they are not
 // a symbol-count phase. Body unchanged.
+// M3 lane 5 r184 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; goto form = the held 34 form
+// rebuilt on this body): the private magnitude helper grouped `i*i + (j*j + k*k)` on the goto form 357 (the magnitude then
+// sums k, j, i as retail, but every cross row turns to the other operand first), `k*k + (i*i + j*j)` 59, `j*j + (i*i + k*k)`
+// 361, `(j*j + k*k) + i*i` 357; on this body `i*i + (j*j + k*k)` 375, `k*k + (i*i + j*j)` 261. Diagnostic: the planar normal
+// as two real scalars with the dot written out (goto form) 425 (1557 B, frame 0x5c: the scalars coalesce into the full
+// normal, though the cross's row j and the magnitude order are then retail's). The line as a {normal, offset} record on the
+// goto form re-measured 304 (1612 B); with `distance0 = dot - offset` in each forward arm 309 at 1605 B (normal j/i take
+// retail's XMM2/XMM3, the offset XMM0 for retail's XMM1, the entry's XMM0/XMM1 swap). Body unchanged.
 // M3 lane 12 r124 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; base 244; goto form = the held 34
 // form rebuilt on this body, with lane 2 r82's tail A/C orders 32 at 1605 B; plane2f = that form with the line as plane2f
 // {n, d}, 304 at 1612 B: its slots are retail's, but the second distance's `mulss xmm3, [edx]` fold into the normal's
