@@ -3319,7 +3319,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000f0fd0,154,game,speed,a16 pad,,,001cf120 001d01c0 001d1260 001d1540,src/vehicles.cpp,matched
 000f1070,611,game,speed,a16 pad,,,000b9dd0 001697c0 001fa3a0,src/vehicles.cpp,matched
 000f12e0,58,game,speed,a16 pad,,,,src/vehicles.cpp,matched
-000f1320,89,game,speed,a16 pad,,,,src/vehicles.cpp,near
+000f1320,89,game,speed,a16 pad,,,,src/vehicles.cpp,matched
 000f1380,368,game,speed,a16 pad,,,,src/vehicles.cpp,matched
 000f14f0,71,game,unknown,a16,,,,src/vehicles.cpp,matched
 000f1540,142,game,speed,a16 pad,,,000f15d0,src/vehicles.cpp,matched
@@ -7083,7 +7083,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 001e98e0,485,game,speed,a16 pad,,,,src/unknown_1e9700.cpp,matched
 001e9ad0,438,game,speed,a16 pad,,,00225880 00225910,src/unknown_1e9700.cpp,matched
 001e9c90,75,game,speed,a16 pad,,,000b58c0,src/unknown_1e9700.cpp,matched
-001e9ce0,260,game,speed,a16 pad,,,000b58c0 001968b0 001e9df0,src/unknown_1e9700.cpp,todo
+001e9ce0,260,game,speed,a16 pad,,,000b58c0 001968b0 001e9df0,src/unknown_1e9700.cpp,matched
 001e9df0,133,game,speed,a16 pad,,,000b58c0 001968b0,src/unknown_1e9700.cpp,matched
 001e9e80,179,game,speed,a16 pad,,,000b58c0,src/unknown_1e9700.cpp,matched
 001e9f40,92,game,speed,a16 pad,,,000b58c0,src/unknown_1e9700.cpp,matched

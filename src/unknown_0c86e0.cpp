@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax D (11-14): no new form, no lower score (107): retail loads the unit from the object pool again after
+// the two 0xbadc0 calls, which our link does not do because that callee does not write the pool global; the
+// permuter's 17 tries reach 93 with the arguments of function_1896c0 swapped, which changes the call, so the
+// gain is not kept.
 // score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
 // again after the two 0xbadc0 calls (its link treats that callee as writing memory) and does the weapon lookup
 // through the second fetch; our link merges it into the entry fetch, so the entry saves, the unit index's

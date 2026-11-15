@@ -374,6 +374,14 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // original constructors, helpers and complete body restored.
 // M3 lane 5 r182 (fast 536 at 1906 B, plain 544): the log-level ternary as an if/else 536 (same code). No other untried
 // natural form found; the remaining difference is the file's /Op (rounding stores, CRT math calls, the extra frame word).
+// M3 lane 8 r167 (fast with 0x21f8a0, 0x128ca0, 0x21c400; control 544, register-masked 239): fabsl (the header's long
+// double inline, no float cast) on the gain test 541 (3 under the bar: under /Op it is a CRT call and the subtraction runs
+// in double, so not retail's shape), on all six tests 549 (1914 bytes); the three send-bit sets through the existing dword
+// setter 0xbfe20 544 (same code); a file-local forceinline dword setter that reads its bool through its own address 561
+// (1916 bytes, masked 223: it gives retail's `and cl, 1; mov byte [esp+x], cl; je` stored-byte bit tests, but the flags
+// stay in EBX where retail reloads them from the send record after each byte store); that with the fall-through two-case
+// mode switch 559 (1916 bytes, masked 234). Lead: retail's flag byte behaves like one address-taken bool that the
+// compiler treats as possibly aliasing the send record.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

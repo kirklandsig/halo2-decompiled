@@ -149,6 +149,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax H (11-14): no new form, no lower score (110): retail passes the class index to the first
+// lookup as a sign-extended byte, and whether that lookup is a call or an expansion is settled in
+// src/unknown_221490.cpp, which is not one of this lane's seven files; the body is unchanged.
 // MiniMax E (11-14): no new form, no lower score (110, was 110): the first 0x221810 lookup is still expanded in this
 // body where retail calls it out of line, and the 0x21d110 call still takes the play state by pointer on the stack
 // where retail passes it in a register; both are decided outside this file. The request is still copied field by field

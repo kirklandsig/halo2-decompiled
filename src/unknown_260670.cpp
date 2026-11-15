@@ -47,7 +47,7 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // frame 0x8a8 against 0x8a0, 3097 bytes against 3077; site 2 inlines 0x2600a0 where retail calls it, and 0x262a30 is
 // called where retail inlines it around a call to 0x13e2d0 (see the r111 lines below the notes).
 // Earlier 700 (was 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
-// score 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// Earlier 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // a bool output in a register across a later call, as retail (0x1b0540 matched with plain output locals).
 // Round 178 (m3 lane 4, plain checks; aligned = difflib count with addresses masked, 293 here): the call sequence is
 // retail's except two callees: retail calls 0x2600a0 in the sorted loop and 0x13e2d0 for the owner, ours inlines both
@@ -152,6 +152,26 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // `byte *const *` to it at the loop call 528 (same code); a global in place of scratch at that call 555 (the global takes
 // EBX instead: count never gets a register in our main loop). Compile-only (no /GL) packs the two flags at adjacent bytes
 // as retail does; our LTCG build gives each its own dword.
+// M3 lane 10 r106 (P1 fast, rest plain; masked aligned count in brackets, base 130; 0x2605d0/0x2613d0 matched throughout):
+// the sort scratch declared in its block 440 [137] (frame 0x8a4); the `selected == NONE` test after the if/else (retail's
+// random path ends `je exit; jmp shared-test`) 548 [115] (3061 B, 775 instructions as retail); that with the scratch in
+// its block 569 [117]; that with the first evaluator pass as `function_2600a0(actor_index, context, NULL)` 618 [118] (3052
+// B, frame 0x8a4); the unknown40 normalize through the existing function_30bf0 (retail's inlined block has 0x30bf0's load
+// order k, j, i and its `i * inv`, `inv * j` products; normalize_inline loads k, i, j and multiplies `inv * i`) 860 [193]
+// (it stays a call, 2985 B). Retail's 8-byte smaller frame fits its inlining: 0x262a30 inlined (its 4-byte result at
+// frame 0) and 0x2600a0 called at the sorted-loop site, ours the reverse.
+// MiniMax D (MM-DD) round: score 440 (was 440): no form found that lowers the lockstep score by the review bar, so the
+// body is unchanged. Read from retail: the frame is 0x8a0 with the locals at fixed homes (the two bools 0x6/0x7, the
+// result 0x8, the dword-stored selected 0xc, the actor 0x10, the count 0x14, the best score 0x18, the source at 0x34,
+// the settings at 0x84, the sorted array at 0xa0); ours is 0x8a8 with the two bools in their own dwords (0x3/0xb), the
+// result 0x14, the count 0x18, the best score 0x1c, the settings below the source and the array at 0xa8, so every
+// parameter offset moves with the frame. Retail's evaluator loop tests the table's proc pointer at its head and
+// calls through it (`call edx`), with the `possible` test after the index advance; the `selected == NONE` test (0x2610b9)
+// and the exit (0x261264) are one each, the random path jumping to the shared test. Trials (fast, base 440): the
+// source's unknown4c stored before the 0x270590 call as retail does 439 (one point, below the bar, reverted); the two flags
+// as bytes 439 (same code, our LTCG build still gives each its own dword); the evaluator loop with the proc test at its
+// head 460; the `selected == NONE` test moved after the if/else (retail's flow, re-measured from round 75) 547; one delta
+// for both deltas 630. The permuter (300 s) found no variant better than the base.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

@@ -989,6 +989,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // build/r123/1652e0-r123-18.patch in worktree m3-lane12). Left at 18: the remainder classification loop's i/k order
 // (retail i, k, j), the clip deltas' order (retail x, z, y), `total` in ECX (retail EAX). On this body: plane 1's
 // j and k negations through a normal pointer 113 (first +0xbb).
+// M3 lane 16 r119 (fast, 0x1648d0 and 0x320b0 matched each time; control 115): the clip ratio as `real t = 0.0f;` set
+// only in the nonzero-denominator arm 252 (first +0xb6); plane 1's normal negated straight into its components from
+// `forward` (no `negated` vector) 465 (1803 B); plane 0's three negations through a `vector3f *` to its normal 251 (1867
+// B), its j and k only 113, both planes' j and k 245. Same code: the projection's `output` taken before `culled = false`,
+// the classification as `-0.0001f < sum`, the cull update as `|= !(outside0 || outside1)`. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

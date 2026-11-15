@@ -1426,6 +1426,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // scan's exit as `return false;` 766, the machine-user compare as `memcmp(...) == 0` 766, the average as an explicit
 // division 766 (same code each); the player loop's variant lookup hoisted above the loop 846 (2796 B). Re-measured: a
 // `long` histogram 844 (frame 0xb4; the session still arrives on the stack in EBP).
+// P501: Loop-owned rejection in machine validation, group maximum, rated-player reduction, party count, group mask
+// and final admission, then complete graphs: 766/766/766/766/766/766/766/844. NOT kept: Seven graphs tie 766 and
+// leave the ingress/frame/lookup unchanged; complete native-width table regresses to 844 and shortens away from
+// retail. Every loop and table restored. Original complete executable body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
