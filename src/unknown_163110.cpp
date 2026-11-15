@@ -981,6 +981,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // after the copy; the classification's k and j terms swap operands in every row); `__assume(forward != NULL)` 145;
 // `__assume(plane != NULL)` in the pass loop 145; `__assume(point_count <= 32)` before the point memcpy 263 (1867 B);
 // `__assume(total >= 0)` before the return 247 (1867 B).
+// M3 lane 12 r123 (one-file LTCG harness exact at 21 on lane 14 r77's match-only 21 form, then --fast): on that form,
+// one plane's j and k negations through a `vector3f *` to its normal (either plane) 19 (the unrolled classification loop
+// becomes retail's; j alone 35, i 21, i+j or i+k 33, all three 23, both planes 35-45); on it, all 48 classification
+// spellings 19 (same code), grouped 39-47; every named-delta subset with every denominator order 19 at best (the
+// existing delta_i, j, k, i), 23-38 otherwise; `out = cursor` ahead of `culled = false` 18 (fast 18, first +0x384;
+// build/r123/1652e0-r123-18.patch in worktree m3-lane12). Left at 18: the remainder classification loop's i/k order
+// (retail i, k, j), the clip deltas' order (retail x, z, y), `total` in ECX (retail EAX). On this body: plane 1's
+// j and k negations through a normal pointer 113 (first +0xbb).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

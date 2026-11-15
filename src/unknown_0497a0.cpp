@@ -1161,6 +1161,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T105: Read-only paired color bounds/persistent records/point chain,
 // seven subsets then complete current/next state inputs: eight at 233.
 // NOT kept: frame/spill homes unchanged; original complete body restored.
+// m3 lane 15 r84 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233): the two vertex positions stored as aggregate
+// copies of first/second 631 (2716 B); case 4's side length through the existing length_sq3f 357 (2576 B, the listed
+// magnitude3d shape). Same code (not counted): `__assume` on vertices, input, the point pointer or index != NONE. Frame
+// cause recorded: retail's inlined pack_color4f (0x131e50, another lane's file) puts its asm homes at a +0x84, colour pointer
+// +0x88, r +0x94, scale +0x98, g +0x9c, b +0xa0, interleaved with the caller's v (+0x90); ours (the same-file copy, front-end
+// inlined) gives colour pointer +0x84, scale +0x88, a +0x94, r +0x9c, g +0xa4, b +0xa8, interleaved with the u step, V end and v.
+// The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

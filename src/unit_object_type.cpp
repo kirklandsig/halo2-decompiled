@@ -2390,6 +2390,11 @@ void function_cfec0(long unit_index)
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
 // MiniMax D (11-14): no new form, no lower score (2): the only difference left is still the last exit, where the value for unit_index == NONE is returned as the constant or eax, 0xffffffff and retail moves the register copy into eax instead; a copy of the parameter returned at that exit still folds the constant (2), and a copy carried through the body drops the register copy (47).
+// MiniMax R (11-14): no lower score (2): the last exit still returns the constant where retail moves the register copy, so
+// the body is 258 bytes against retail's 257. New forms this round: a result local compared and returned at every level (the
+// copy in ebx is dropped and the test moves to eax, 47), the same local tested through a pointer cast (2, the fold stays) and
+// the NONE test written on the local copy itself (2). The value stays a register copy only where an exit is reached from two
+// paths, and merging the exits moves the edi push into the prologue.
 // MiniMax G (11-13): no lower score (2): the only remaining difference is the last exit, where the value for
 // unit_index == NONE is returned as the constant (or eax, 0xffffffff) and retail moves the register copy
 // (mov eax, ebx), so our body is 258 bytes against retail's 257. This round tried fifteen more forms: a result local
@@ -4830,6 +4835,10 @@ void function_c50a0(long unit_index)
 // and the vehicle in ebp with the loads after the pushes, where retail keeps the global in edx and
 // the vehicle in esi and shrink-wraps the two global loads above push ebx; the register choice
 // follows the frame's shape, which the recursion and the loop's children fix.
+// P493: chained role clears 166; positive child admission 166; ordinary
+// two-pass while 166; grouping-owned assignment 253; dword driver/gunner
+// 245/172; driver bit after activity 251; pass-scope driver 166.
+// NOT kept: all tie or regress; native pool/vehicle/child ownership remains.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -5007,6 +5016,11 @@ void __stdcall function_cc810(long vehicle_index)
 // test's three multiplies are still folded into one multiply by 0.25; a named float discriminant
 // local and the square root without the (real) cast compile to the same bytes, so the promotion to
 // double is not source-controllable by those spellings.
+// P493: shared velocity magnitude 195; dword moving-away 166; paired
+// numerator names 175; nested first-root admission 160; first-root default 193;
+// conditional root result 162; shared ramp duration 162; complete coast
+// outcomes 162. NOT kept: nested admission gains only two; the rest
+// tie or regress, retaining the x87 discriminant and excess eight-byte frame.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -5231,6 +5245,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax D (11-14): no new form, no lower score (169): re-measured this round: the body is 768 bytes against retail's
+// 767 and the first difference is at +0x4a, inside the shared cross-product helper, whose own file this lane may not
+// edit; the register plan of the three direction sums and the order retail loads up.k and up.j in still differ, and no
+// spelling of the helper's callers moves them.
 // MiniMax A (11-14): no new form, no lower score (169): the first difference is inside the shared cross-product helper,
 // whose own file this lane may not edit, so the two products land in other registers; retail loads up.k and up.j before
 // up.i where this build preloads all three.
@@ -5291,6 +5309,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // up.j * forward.i 180 (774 B); `double forward_scale = cos(yaw) * cosine` 189 (the forward terms and the k row
 // become retail's `fld [m]; fmul st(n)`, but cosine is then rounded through a frame dword); also double cosine with
 // `(real)(sin(yaw) * cosine)` 191 (cosine spilled as a qword); the double scale as cos(yaw) * cos(pitch) 189.
+// P493: common byte flags 213; dword enabled/clamp carriers 209/188;
+// aim-first dispatch 174; conditional selectors 198; dispatch-owned clamp
+// default 182; standalone disabled exit 186; complete result exits 194.
+// NOT kept: all tie or regress; delayed up.i, native angle homes and x87
+// forward-scale residence remain. Original cross helpers and body restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6140,6 +6163,10 @@ void function_cf040(long unit_index, short type)
    free, its seat group's partner friendly and willing, no enemy riding
    (outside state 2), and for players a clear line to the vehicle; also
    the seat's occupant and whether the seat is grouped */
+// MiniMax E (11-14): no new form, no lower score (1): the only difference left in the whole body is still the base and
+// index order of the weapon loop's header read (ours [eax+edi+8], retail [edi+eax+8]); the offset hoisted into a local
+// of its own and used at both lookups, the lookup written as a byte pointer sum and the offset-first integer sum all
+// compile to the same bytes, and hoisting the offset to the top of the function moves the prologue (23), so the body stands.
 // MiniMax D (11-14): no new form, no lower score (1): the whole body still agrees except the weapon loop header read, whose base and index order is the other way round (ours [eax+edi+8], retail [edi+eax+8]); the cast deref of the element address at offset eight, the offset-first integer sum and the masked-index helper all keep our order.
 // MiniMax H (11-12, third pass): no new form, no lower score (1); the only difference left in the whole body is the
 // base and index order of the header read inside the weapon loop (ours [eax+edi+8], retail [edi+eax+8]). This round
@@ -6626,7 +6653,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // register homes (weapon EDI, mode BX) and retail's length (1052 bytes); what still differs is retail's flag-7 bit materialised
 // with `and cl,1` and stored in the ready byte, retail's frame order (unit 0x14, weapon 0x18, hands 0x1c), the mode-2 path's
 // `xor esi,esi` and the duplicated epilogue.
-// score 280 (was 333): the single exit with `default: __assume(0)` gives retail's stack convention
+// Earlier 280 (was 333): the single exit with `default: __assume(0)` gave the stack convention.
 // MiniMax D (11-14): no new form, no lower score (300): the frame 0x50 and the single exit with the stack convention agree, but the weapon and mode still take EBX and EDI the other way round, and the two weapon flag tests are still not stored in the ready byte as in retail.
 // score 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
 // (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; current frame 0x50
@@ -6676,6 +6703,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // buffer still take each other's frame slots (ours: the flag at 0x64 and the buffer at 0x10; retail:
 // the flag at 0x13 and the buffer at 0x64), and swapping the two declarations changes nothing.
 // NOT kept (coordinator screen, MiniMax A 11-14): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
+// P494: unit-first acquisition 303; immutable receivers 300; entry readiness declaration 300;
+// nested secondary admission 300; separate missing-primary rejection 300; conditional mode-four
+// readiness 300; final hand query through readiness 300; success from readiness 295.
+// NOT kept: final result gains five, below eight; other forms tie or regress. Original body restored.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -6836,6 +6867,10 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax D (11-14): no new form, no lower score (250): the first difference is still at +0x9, the zero constant rides
+// in xmm0 here and in xmm2 in retail, and retail's scale block multiplies the x component in place and the y component
+// into a fresh register; the one-use bool test that reached 209 is kept only with a byte match and the coordinator
+// rejected it, so the body stands at 250.
 // MiniMax A (11-14): no new form, no lower score (250): the zero constant rides in xmm0 here and in xmm2 there, and
 // retail's scale block multiplies the x component in place and the y component into a fresh register, which no single
 // expression form gives.
@@ -6903,6 +6938,11 @@ done:
 // successful-turn/final-identity library point copies 250/250; point-role names,
 // entry side workspace and byte turn result 250 each. NOT kept: ties or regressions;
 // native zero SIMD carrier, dead flag stores and state home remain.
+// score 250 (was 254): frame 0x24 agrees; native zero, dead flag stores, state home and facing tail differ.
+// P494: complete existing inline normalizer 242, immutable length 250, named squared sum 250,
+// both squared components 251, complete turn result 225, duration ticks named 250,
+// paired duration bounds 250, state receiver name 250. NOT kept: normalizer plain 242
+// loses matched 0xc2d00 (0 -> 2); turn result grows to 1120/1112 bytes. Original body restored.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7675,6 +7715,11 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // wide/byte changed result 398/237 (byte gives native 1470 bytes, gain seven below eight);
 // held countdown as complete outcome 239; sound-request/flag-word role names 244/244.
 // NOT kept: ties, regressions or subthreshold gains; native flag dword transfer remains.
+// score 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
+// P494: result before lookups 245; positive crouch admission 244; direct held outcome 236;
+// requested zoom initialized before its test 290; complete rate producers 244;
+// sound aggregate 244; both last-level divisors named 244; full-scope sound request 278.
+// NOT kept: held outcome shortens to 1448/1470 bytes; other forms tie or regress.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -7939,6 +7984,9 @@ struct s_unit_turn_state_view
 // which builds 0x11f0d0 differently): the moved flag still sits in a register where retail keeps it in a
 // stack byte, the state and aim pointers still take the other register roles, and the two divisions by
 // the stored step still share one reciprocal, so the body stands as found.
+// MiniMax S (11-14): no new form tried this round, no lower score (395): the body was re-measured and stands as
+// it was; the step helper is shared with the other callers of that file, so its spelling was left alone and the
+// moved flag's home could not be moved without the helper's own body changing.
 // score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`

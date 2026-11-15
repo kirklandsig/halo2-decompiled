@@ -441,6 +441,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // turns, then all rotations: 365/365. NOT kept: point forms grow frame 0x64
 // to 0x6c or 0x74; scalar forms are nonexact one-use producers (1745 bytes).
 // Original whole body restored; unity, wrapped-angle/cursor homes and count width remain.
+// P494: negative radius before object/sum/motion-copy/normalization producers
+// 420/420/419/419; immutable negative radius 382; normalizer magnitude/reciprocal
+// immutable 382/382; existing shared magnitude interface inside normalizer 382.
+// NOT kept: ties or regressions. Original whole body and shared normalizer restored;
+// native unity carrier, wrapped-angle/cursor homes and near trig spills remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

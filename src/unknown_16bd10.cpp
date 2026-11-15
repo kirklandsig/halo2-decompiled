@@ -1077,6 +1077,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 372 (1700 B; it still preloads left.k where retail preloads left.j); plane.d as `dot3f(&plane.n, position)` 331 (same
 // code), both together 372; `real length_squared` declared at its assignment 331 (same code); a `vector3f const *direction`
 // for the normal copy and the length 336.
+// T108: Ordinary inline metadata at existing object-matrix/basis/matrix-quaternion/quaternion-matrix providers, four isolated, three pairs and all:
+// 438/331/331/331/438/331/331/438. NOT kept: no qualifying native-shape gain or equality; original complete source
+// and every provider declaration restored. Native frame and first storage/scheduling gap remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -174,6 +174,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // holds it in esi, which the callees in the other files decide.
 // MiniMax B (11-13): the getter's table and result declarations swapped (118, same code); the difference is still a register rotation, which the parameter order of 0xd0590 in another file decides.
 // MiniMax G (11-14): no new form, no lower score (118): retail's getter loads the table into ECX (6 bytes) where ours uses EAX (5), and the rotation is decided by 0xd0590's parameter order in another file.
+// MiniMax H (11-14): no new form, no lower score (118): every instruction but a register rotation among EAX, ECX
+// and EDX differs, and it starts at the entry getter, where retail keeps the table in ECX and the result in EAX;
+// the rotation is decided by 0xd0590's parameter order, which is in another file.
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every
@@ -445,6 +448,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax D (11-11): no new form, no lower score (118): the getter still loads the table global into EAX where retail
 // loads it into ECX, and that one byte moves every later jump target; the getter as a member of the table, with the
 // count in a local, with the global tested twice, written out at the call site or left out of line all give the same 118.
+// M3 lane 5 r182 (fast with 0x1e83c0, 0x1e8d50, 0xd0590, 0xd05c0, 0x1e6bd0): case 4's seat-flag tests without the `(bool)`
+// casts on the bit-fields 510 (2288 B: the three tests fold into one mask test); that with the existing 0x1e8d50 for the
+// entry 494. Most of the 118 is call/jump displacement drift between the getter (one byte short) and case 4's child loop
+// (one byte long); BLOCKED-BY 0xd0590 (held order in build/r159/held-1e7ab0.patch).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
