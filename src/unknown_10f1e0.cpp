@@ -2148,6 +2148,9 @@ bool __stdcall function_110ab0(long unit_index)
 // P496: Serial held handle/slot/count workspaces in seven subsets, then all at entry:
 // 445/445/445/445/445/445/445/445. NOT kept: no exact native storage/producer recovery; frame eight versus twelve and pool/state/request/result homes remain.
 // Original complete executable body restored.
+// P507: Entry-read control/state displacements, short/long separately and paired, then complete
+// use-site address formation: 507/521/445/445/507/521/520/520. NOT kept: no native frame or
+// result-home recovery; original observations, pointers and complete body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2662,6 +2665,8 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // P496: Complete serial ID/weight/screen workspaces in seven subsets, then all before lookups:
 // 837/771/776/846/837/771/847/847. NOT kept: no exact native storage/producer recovery; frame 0xcc versus 0xd4 and first-angle/overlay expansion remain.
 // Original complete executable body restored.
+// P507: Persistent real/interval bound blocks primary/secondary/both, then vector pairs and two-by-two reals:
+// 776/776/776/776/776/776/776/776. NOT kept: no native frame or selective angle/overlay expansion equality; original complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
