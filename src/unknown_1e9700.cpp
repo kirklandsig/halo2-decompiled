@@ -208,6 +208,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // where retail reloads it into AL, CL and DL (the reload needs the flag's aliasing, held in globals.h),
 // the compare against the immediate where retail compares the register, and the row pointer is formed
 // before the increment against retail's `inc word ptr [eax+edx+0x16]; lea edi, [eax+edx]`.
+// NOT kept (coordinator review, MiniMax D 11-15): 106 -> 64 rested on match-only forms: a one-use current_maximum
+// local copied into old_maximum, a one-use counter pointer for the store, and the typed groups[index][12] written
+// as flattened all[index * 0x1b5 + 12] indexing.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -218,22 +221,17 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 	function_196e60(index, 0, kind, 1);
 	if ((code & 0xc0) == 0x40) function_196e60(index, 6, kind, 1);
 	long old_maximum = NONE;
-	if (g_510ca0)
-	{
-		long current_maximum = index == NONE ? NONE : g_511bf4.all[index * 0x1b5 + 12].value;
-		old_maximum = current_maximum;
-	}
+	if (g_510ca0) old_maximum = index != NONE ? g_511bf4.groups[index][12].value : NONE;
 	byte *row = (byte *)statistics + index * 0x1c;
 	short consecutive = ++*(short *)(row + 0x16);
 	if ((short)old_maximum < consecutive && g_510ca0 && !g_510ca1 && index != NONE)
 	{
-		s_input_counter *counter = &g_511bf4.all[index * 0x1b5 + 12];
 		long minimum = g_46ddc0[12].minimum;
 		long maximum = g_46ddc0[12].maximum;
 		long value = consecutive;
 		if (value < minimum) value = minimum;
 		else if (value > maximum) value = maximum;
-		counter->value = value;
+		g_511bf4.groups[index][12].value = (word)value;
 	}
 	if (function_x340af0() && player->team != NONE)
 	{
