@@ -877,6 +877,13 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // radius sum named at the radius read (`reach`, used by both tests, no radius or size local) 190 (953 B: the size read and
 // the 0x1e4a50 call move); the final side test as `local_11 + local_13 > ...` 17 and as `local_14 - local_11 < local_13 +
 // local_11` 17 (same code each: the lateral reload keeps XMM3, the maximum XMM2). Body unchanged at 87.
+// Round 203 (m3 lane 4, fast with the file's functions, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): on lane 17's 17 form with the
+// adjusted projection written into the length local (17; {length, adjusted} at +4 and {sum, side1, timing3} at +8, retail the
+// other way round): a reach declared ahead of the length and assigned `size + radius` at the first test for both tests 197
+// (951 B, the radius call sinks); the size declared ahead of the length 17 and the radius declared ahead of the length 17
+// (identical code each); constant-left float compares one site at a time (`0.f < local_11`, `0.f > local_11`, `0.5f < max`,
+// `0.f < length`, `0.f < heading_length`, `0.f < projection`, `0.95f < dot`) 17 each on that form and 87 each on this body,
+// the three side-block sites together 17. Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

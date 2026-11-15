@@ -1888,6 +1888,15 @@ struct s_actor_looking_structure_view
 // structure/pathfinding lookup ahead of the actor 224; the normalised length named before its test 144 (928 B);
 // re-measured the up-axis pointer local 70 and the candidate pointer 139; permuter (600 s, seed 201, 62 tries) none
 // below 23. Retail's dot starts `movss xmm0, [axis + 4]` hoisted above the candidate copy; ours starts v.k * axis.k.
+// Round 203 (m3 lane 4, fast = full 23): a forceinline helper holding 1-7 dead locals before the loop, at the loop top or
+// between the copy and the rotation (21 builds) 23 each, identical code; `directions + i` at the rotation and the trace 23
+// (same code); the angle named between the copy and the rotation 33; the copy inside a forceinline helper taking (source,
+// axis, angle, out) 60. Diagnostic: a file-local copy of the rotate pair with the dot `((j + i) + k)`, used only here, plus
+// the score `(i + k) + j` in explicit parentheses 13 with 0x296e60 unchanged (299), so lane 11's 13 needs no change to the
+// shared helper; the copy alone 31. Left at 13: the dot's inner pair takes XMM2 for the j product (retail XMM0), the j row's
+// XMM5/XMM6, and the score's inner pair k, i (retail i, k; parentheses stop reassociation but not the operand swap). On 13
+// own dead locals n = 1..7 23/13/13/13/13/13/13; dead helper locals 1-7 between the copy and the rotation, or ahead of
+// the score, 13 each. Not kept (a one-caller twin of the shared helper).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

@@ -1840,6 +1840,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // P532: Raw packet-mode byte/char/signed-char/short/word/long/dword/int domains
 // with uniform nonzero truth at the size producer: 146/146/146/144/144/146/146/146. NOT kept:
 // native zero/bit/size/capacity placement remains; original Boolean contract/body restored.
+// Round 203 (m3 lane 4, fast with 0x56380, 0x564c0, 0x53b00, 0x56000, all matched each time), on round 142's cewk order
+// with `include_mask ? 13 : 11` (134; head retail's through the has-player test): the player bit declared after the clamp
+// 134 (same code); the first cursor byte stored in each include_mask arm 178 (475 B), with the late bit 178; include_mask
+// declared `byte` in the definition 134 (same code); `capacity = capacity - 2` 134 (same code).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

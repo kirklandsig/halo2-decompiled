@@ -504,6 +504,16 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // bit as `(bool)((definition->flags >> 3) & 1)` (retail's `mov; shr 3; test 1`) 933 (916f); all three 930; the squared length
 // computed before the combined radius 926f (same code); the other-actor skip as `if (!enemy) skip_classification = true;` 950f.
 // Body unchanged.
+// M3 lane 4 r203 (plain): constant-left float compares, `straight = 0.95f < dot` with `aligned = 0.866f < dot`, `0.0f <
+// function_30bf0(&offset)`, `0.0f < dot && vehicle_index != NONE`, the sphere loop's `0.0f < dot` and `2.0f < dot3f(...)`
+// 920 each; own dead locals n = 1..7 920/920/932/938/933/933/929. Frame map (frame offsets, ours/retail): raised point
+// 0x30/0x24 (shared with the sphere-loop centre in both), location 0x48/0x40, type-0 offset 0x5c/0x54 and centre 0x68/0x60,
+// vehicle centre 0x74/0x6c, object matrix 0x80/0x78, object indices 0xb4/0xac, markers 8 higher each: the scalar area
+// under the raised point is 0xc larger here and the gap between raised and location 4 smaller. Aligned slot map (esp
+// offsets after the four pushes, retail -> ours): bools 0x10/0x11 aligned/0x12 skip/0x13 straight -> 0x12/0x13/BL/0x1b
+// (straight takes a dword of its own here), 0x14 -> 0x1c, 0x1c -> 0x24, bools 0x21/0x22/0x23 -> 0x22/0x21/0x23, actor 0x24
+// -> 0x14, 0x28 -> 0x28, 0x2c -> 0x30, 0x30 -> 0x34, raised 0x34 -> 0x40, range_min 0x40 -> 0x50, self_unit 0x44 -> 0x54,
+// range_max 0x48 -> 0x64, location 0x50 -> 0x58, block 0x58 -> 0x4c, ignore 0x60 -> 0x60. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
