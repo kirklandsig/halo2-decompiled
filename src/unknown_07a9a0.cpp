@@ -1422,6 +1422,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // B); `result` declared after the validity exit 766 (same code); the group loop bounded by the summary's machine count 783;
 // `first` declared before `last` 766 (same code); `available` computed from out's player count after the out stores 879 (2764
 // B). Body unchanged.
+// P501: Loop-owned rejection in machine validation, group maximum, rated-player reduction, party count, group mask
+// and final admission, then complete graphs: 766/766/766/766/766/766/766/844. NOT kept: Seven graphs tie 766 and
+// leave the ingress/frame/lookup unchanged; complete native-width table regresses to 844 and shortens away from
+// retail. Every loop and table restored. Original complete executable body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

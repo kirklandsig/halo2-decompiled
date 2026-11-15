@@ -787,6 +787,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // on entity, this, info (at the top) or on object_index != NONE inside the valid arm: 49 each, same code; the early bool
 // result with the entity assume 77 (the listed early-bool code). No other unlisted natural form was found (see m3 lane 14
 // r84 and m3 lane 1 r98 above); body unchanged.
+// P501: Explicit two-state creation outcomes, two validity-owned and six attachment-owned lifetime/completion
+// graphs: 51/60/64/64/63/63/64/62. NOT kept: All regress; the enum result misses the native false BL and
+// independent lookup shape even where extent agrees. Original primitive result, macros and virtual calls restored.
+// Original complete executable body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

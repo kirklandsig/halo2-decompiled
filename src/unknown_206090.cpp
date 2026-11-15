@@ -571,6 +571,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // at each use 1423; the impact strength at each use 1456 (6281 B); the field_70 update as one ternary add 1391.
 // Same code: local_27 and local_15 as if/else. Re-measured: the 0.2 s conversion inside the test 1398 (6265 B); the direct
 // `return a && b && c && d;` 1413 (6275 B; retail's exit shape, pops ahead of the last tests).
+// P501: Standard whole-record
+// magnitude/ray/contact-publication/direction/tangent/normalized-force/carried-force/impact-normal transfers:
+// 1410/1427/1375/1380/1436/1388/1397/1417. NOT kept: All retain frame 0x5d0 versus native 0x58c. t03/t04 gains
+// 16/11 add one absent library call (15 versus 14), and t06 gains only three. All transfer contracts rejected;
+// original helpers and body restored. Original complete executable body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

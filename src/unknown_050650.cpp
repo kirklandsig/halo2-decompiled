@@ -1247,6 +1247,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // P467: Missing-point true default, false at each original point producer,
 // bool/byte/char/short/word/int/long/dword: 343/343/343/382/382/382/382/382
 // (fast control 341; full 257). NOT kept: no equality or reduced gain; original decoder restored.
+// P501: Standard whole-point transfer at five producers, state pair, all producers and optional publication:
+// 346/341/306/345/341/379/332/338. NOT kept: Reduced control 341 differs from authoritative 257. Best plausible
+// single-producer t03 scores 306 reduced but 299 plain at 1404/1444, so it regresses and shortens away from
+// retail; every form restored. Original complete executable body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

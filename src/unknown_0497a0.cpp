@@ -388,6 +388,9 @@
 // origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
 // NOT kept: frame/basis/wave residence remains unmatched and all regress;
 // original complete body and helpers restored.
+// P501: Standard whole-record history/point/input transfer boundaries, seven subsets, then complete fallback
+// publications: 743/679/726/734/753/688/720/732. NOT kept: All regress and fail native frame/extent and rounded
+// wave residence; original copy graph restored. Original complete executable body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
