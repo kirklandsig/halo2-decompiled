@@ -1514,7 +1514,15 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax E (11-15): 12 (was 47): the view global read at each use, the availability produced by a branch on
+// the query result and the same-view flag cleared by one owner/view/availability test; what still differs is
+// the flag's true store, which ours emits ahead of the view test where retail's sits between the
+// availability's test and its branch; the body is otherwise retail's, at retail's 498 bytes.
 // score 47 (was 47): availability clear/production and later view observation remain;
+// MiniMax E's not-kept 12 form (above): the same-view flag's true store is emitted ahead of the view test, retail writes it
+// between the availability's test and its branch; the availability's zero store also comes before the second
+// definition call where retail's comes after the owner lookup; frame 0x14, the owner, the view, the boolean
+// homes and the post-attachment view refresh agree.
 // what still differs is the same-view flag: ours writes its true value to the stack byte
 // before the availability query, retail keeps the flag in BL and writes the true value only after the owner
 // tests, with the availability's own production after its query; frame 0x14, the owner, the view and the
@@ -1946,6 +1954,13 @@ bool function_17afd0(long effect_index, long value);
 // default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
 // bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
 // availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
+// P515: Independent availability/same-view/attachment/draw binary enumerations, positive then complementary:
+// 129/143/120/110/122/147/120/112. NOT kept: no native result-home equality; original
+// snapshots, query gates, traversal and complete executable body restored.
+// MiniMax E (11-15), NOT kept: 12 (was 47) set same_view and available by tests (same_view = true, then false when
+// a test fails; available = false, then true) and read g_4b9ed8 again at each use in place of the view local.
+// Test-set flags and score-picked re-reads are kept only with a byte match; the form is a lead for a match. Code
+// back to main, notes kept.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

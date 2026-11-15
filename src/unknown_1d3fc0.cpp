@@ -438,6 +438,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // and k, i, j 139 (925 B) (all six orders now measured: i,j,k 2, i,k,j 140, j,i,k 28, j,k,i 104, k,i,j 139, k,j,i 102); the
 // reciprocal computed before the short-vector test 140; the third normalization and the cross on `&local_1[0].up` 2 (same i
 // term). On the kept body the helper's scale order j, k, i 153. Body unchanged at 110.
+// P513: Original-site matrix axis admission/exclusion outcomes, bool/byte/short/long:
+// 185/185/185/185/148/148/148/154. NOT kept: no exact reciprocal/late-k or projection repair; original
+// live flag observation, four-use normalizer, shared products and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

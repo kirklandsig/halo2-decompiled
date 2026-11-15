@@ -546,6 +546,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 195 (m3 lane 4, fast): the entry test split into two nested ifs (mask and bit, then table and flags) 2; the
 // part-loop test as two nested ifs 2; a long weight passed as `(byte)weight` 97; the geometry result as `long const *`
 // with the part test `*geometry` 2; a `dword` index 2 (all the 2s the same code). Re-measured: const first and index 2.
+// Round 200 (m3 lane 4, fast with 0x404b0): the entry test's mask as `unknown00 & 0x1fffff & selection` 2; a named
+// `short part_index` for the five `(short)index` uses 2 (propagated); a non-const entry pointer 2 (all the same code);
+// shape from `(byte)entry->flags & 0xf` 128 (490 bytes); a `short` part counter 58 (515 bytes).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

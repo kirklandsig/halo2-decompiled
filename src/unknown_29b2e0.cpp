@@ -512,6 +512,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Same code: the rotation helper's cross terms in j, k, i order; the helper made in place (vector, axis, angle); its
 // projection written `(1.0f - cosine) * (...)`. Retail's second rotation writes local_7 over local_3's dead home (+0x20),
 // ours over local_5's (+0x2c).
+// M3 lane 11 r103 (fast with 0x29b990, matched each time; control 176 at 1711 B against retail's 1706): the rotation helper's
+// cross terms and rows in the path-rotate operand order (axis-first cross terms; rows `projection * a.i + v.i * cosine`,
+// `cosine * v.j + projection * a.j`, `projection * a.k + cosine * v.k`) 176 (identical code: the commutative operands are
+// canonicalized); renames of local_7 (direction, result), local_3 (aim, wanted), local_5 (target), local_8/local_9 (yaw,
+// pitch) and the normalizer's root (magnitude, root) 176 each (identical code); local_5 declared ahead of local_3 176
+// (identical); the clamp bounds as `0.0f - limit` for yaw, yaw and pitch, or all four 176 (identical); local_9, local_8,
+// local_7 declared in reverse order 176 (identical). Retail packs the three x87 roots and the inlined 0x11cc90 angle into
+// the yaw's +0xc slot (ours +0x10, with local_11) and the rotated vector into local_3's home.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

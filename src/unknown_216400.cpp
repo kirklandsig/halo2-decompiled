@@ -483,6 +483,12 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // copy, 4 bytes short before the NULL test); a bool helper handing the slot back through a pointer out-parameter 32; a
 // `full = count == 4096` flag returned negated 32 (sete CL). Note: 0x216990 (src/unknown_215b40.cpp) appends to a table of
 // the same 0x40004-byte shape (count + 4096 records of 64 bytes) with the same `count != 0x1000` test. Pointer helper restored.
+// M3 lane 16 r121 (fast with 0x216400/0x216d70/0x216e50): bool append helpers: the entry passed by value with an aggregate
+// store 80 (677 bytes); the whole found block (type store, name lookup, append) in one bool helper 32 (bool CL, count EAX,
+// list EDX, outside pairs rotated, as every bool form); the helper's result in a named caller bool 32; 0x216990's shape
+// with its out-index (`*index = count - 1` after the copy, the caller's index unused) 54 (654 bytes, the bool folds), the
+// same with `result = count != 4096` 51. Retail 0x216990 shows the same `lea (count + 1); shl; store; lea dest` sequence
+// as this append. Pointer helper restored.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

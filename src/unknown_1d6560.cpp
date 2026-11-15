@@ -426,6 +426,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 256 B [0]; left: object index EDX/headers ESI/rigid body ECX in place against retail's ECX/EDX/ESI with a `mov esi, ecx` copy,
 // headers loaded after the bodies, `mov al` + movzx type): headers as a `byte *` with `* 12 + 3` / `+ 8` offsets 24 (same
 // code); the rigid body read at each use 97 at 260 B [122]; the two flag selections as ternaries 74 at 260 B [0]. Body unchanged.
+// P513: Original-case low-level admission/exclusion outcomes, bool/byte/short/long:
+// 96/96/96/96/96/96/96/96. NOT kept: no native type/entry recovery or equality; original
+// repeated dispatch, body acquisition, results and caller-compatible convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

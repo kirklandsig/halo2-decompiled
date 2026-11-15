@@ -816,6 +816,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // chained assignment after their declarations 32 (same code).
 // P498: Saved-to-published mask accumulator, dword/word, compound/explicit OR and changed-region/unchanged-exit forms. Dword forms shorten to 381/390; word forms recover the entry and native length but miss the shared post-loop reload. Inherited local qualification is preserved.
 // Scores 100/100/100/100/77/77/77/77. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// m3 lane 9 r124 (fast): one to seven unused locals at the top (diagnostic phase scan) 32 at every count, and on the
+// word mask 77 at every count (inert); the team local as `short` 107 (400 B), with the word mask 64 (400 B), with the word
+// mask and a plain present 116 (398 B), with a plain present 106 (383 B). On the word mask the entry and loop are exact (first
+// difference +0x60): retail's present update is a spilled plain local (OR into the reloaded register, stored at once), its
+// old mask a spilled word register variable reloaded once into ECX, with globals kept in EBP across the loop; every plain
+// present form here rematerialises globals and gives present a register instead.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5469,7 +5475,7 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 29 (was 52): the failed-schedule paths `continue` to the loop latch where retail falls into the countdown block
+// score 29 (was 29; 52 before): the failed-schedule paths `continue` to the loop latch where retail falls into the countdown block
 // (the extra 4 bytes are near jumps), the schedule's index test uses the local where retail compares entries[i].index,
 // and case 1 reads into CL where retail uses AL. Earlier at 52 (was 52): native frame 0x18 and 869-byte length; initial
 // scenario/rate stores, cached index test,
@@ -5810,6 +5816,13 @@ void __stdcall function_d6bc0(long object_index);
 // before the index 167 (863 B); the object declared before the index alone 29 (same code); the delay block as a forceinline
 // called at each of the four schedule sites (index NONE, case 1 bit, case 0 bits, case 0 distance) 415 (1029 B: the four
 // inlined copies are not tail-merged); the case-0 distance test as `d <= 1.0f` 110 (877 B).
+// Round 201 (m3 lane 4, fast with 0x15c150 and the six callees, all matched each time; base 29): the schedule decision
+// as one condition (index NONE, mode 1 bit, mode 0 bits or the distance through a two-use distance helper), so failed
+// schedules fall into the countdown as in retail, 128 (869 B: retail's `movsx eax; sub eax, 0` switch lowering is lost);
+// case 0's skip test by De Morgan 29, the countdown as `value04 > 0 && --value04 == 0` 29, `default: continue;` first 29
+// (same code each); case 0's distance through the file's engine_distance_squared 38; re-measured the switch guard on
+// entries[i].index 167 (863 B). A one-file LTCG harness of this file (+ damage.cpp) does not reproduce (227 at 871 B:
+// 0x15f060's XMM3/EDI convention needs other files).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
