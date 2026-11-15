@@ -60,6 +60,24 @@ PRIVATE __forceinline real function_1a83e2(point2f *arg_0)
     return 0.0f;
 }
 
+// score 205 (fast build at 32fb6007d; was 205): walked statement by statement against retail 0x1a83e0 (r726), no behaviour
+// difference found: field offsets, the three constants (0.0001f, +-0.3f), every condition direction (retail's tests at
+// 0x1a8491, 0x1a84c6, 0x1a8963, 0x1a897c), both f5110 calls (arguments, order, result slots), the answer cascade
+// (0x1a8941-0x1a89bc) and the result stores (0x1a89c1-0x1a8a07) agree. Rounding agrees too: fst/fstp dword at
+// 0x1a8481 (normalize: |len| is tested unrounded), 0x1a87bb and 0x1a891e (both sqrt results); the sums add k, j, i
+// terms in retail's order. The remaining 205 is register allocation in the first inlined segment-distance block:
+// retail loads the segment's k, j, i into xmm3, xmm4, xmm2 (0x1a8666-0x1a8678), ours xmm4, xmm3, xmm2, and the first
+// block's sqrt argument is stored per branch (0x1a875e, 0x1a87ad) where ours stores once after the join; the second
+// block (0x1a880a-0x1a8910) already matches apart from the shift this causes. function_1a83e2 and function_1a83e1 are
+// two inlines local to this function, not copies of existing helpers: the term order differs from normalize2d (retail
+// sums y*y then x*x at 0x1a8471-0x1a847d, 0x2b400 sums x*x then y*y) and from 0x11e000 (len^2 j, k, i at
+// 0x11e00e-0x11e024 and dot i, k, j at 0x11e05a-0x11e070, here k, j, i at 0x1a8678-0x1a8691 and 0x1a86e2-0x1a86f8);
+// retail calls 0x2b400 out of line right after (0x1a84fc, 0x1a8526). Calls to the nearest existing helpers score 422
+// (normalize2d) and 920 (function_11e000, itself todo). normalize2d_fast (unknown_11cc90.h) compiles to 205 here but
+// needs a new include, so it was not added. Tried (all fast): update order k, j, i (229, 1550 bytes); k, i, j,
+// `t * seg` or `delta = seg * t + delta` forms, length_squared assigned inside the test (205); sqrt returned in each
+// branch (273, 1549 bytes); plain `inline` (944); reversing the local_7 stores (95) or the delta loads (113) lowers
+// the score but emits k first where retail emits i first (0x1a8559, 0x1a86ac), so those were dropped as score-only.
 // @retail 0x1a83e0
 bool __stdcall function_1a83e0(long arg_0, short *arg_1, real *arg_2, point2f *arg_3, bool *arg_4)
 {

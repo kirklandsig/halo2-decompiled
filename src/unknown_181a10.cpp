@@ -785,7 +785,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // key clamp, origin (+0x50), distance + radius, fraction test, the kind 24 data decode (shr 0x1d; dec; je), both
 // plane arms (operand orders and 0.0f tests), 0x1ee410 material, the final scale test and result stores: no
 // behaviour difference found. Retail inlines 0x183da0 (get_last) and 0x1cf280 (property 0x2001 scan) at the top, plus
-// one dead second get_last walk (0x18235a), and calls them only in the else arm (0x182776, 0x1827b2), so the top keeps
+// one dead second get_last walk (0x18235a), and calls them only in the else arm (0x182778, 0x1827b2), so the top keeps
 // their bodies written out (batch_contact_root / batch_contact_component). Calling the real helpers there instead
 // (query_node_entity, havok_entity_component_index_get) stays out of line: 392 (1200 bytes); index_get alone 368,
 // query_node_entity alone 361, with the dead walk inline 384, without it 404. The else arm calls query_node_entity and
