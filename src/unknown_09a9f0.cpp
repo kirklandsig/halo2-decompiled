@@ -798,6 +798,13 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // graphs: 51/60/64/64/63/63/64/62. NOT kept: All regress; the enum result misses the native false BL and
 // independent lookup shape even where extent agrees. Original primitive result, macros and virtual calls restored.
 // Original complete executable body restored.
+// M3 lane 6 r182 (fast with 0xa5b10 and 0x108e10; control 49; all match-only forms, the volatile f read as lane 1 r104's):
+// lane 1 r104's 37 form re-measured 37 (aligned 12: left the table global loaded ahead of the NONE branch and the flagged
+// store laid inline before the unthreaded `cmp [edi + 8], -1` retest, where retail jumps to a constant store at the end);
+// on it the retest as `if (entity->object_index == NONE) return result;` 61; the NONE test as an early return ahead of the
+// flagged clear and the field retest 41; the field read into a named local at the join and tested 37 (same code), with the
+// second virtual call given that local 63; with no first store, the local cleared in the flagged case, published at the join
+// and the field retested 68 (the join `or eax, -1; cmp eax, -1; mov [edi + 8], eax; je` is not threaded; f stays in EBP).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

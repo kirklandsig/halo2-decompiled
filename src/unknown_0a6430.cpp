@@ -103,6 +103,10 @@ PRIVATE byte *update_object_0a6430(long index)
 // src/unknown_0a58d0.cpp so that LTCG, not the compiler, inlines it 16 (no change). Reading: the 0x100 object, the
 // compare's quotient and byte, the pushed states pointer and the 0x200 head each sit one scratch register off in
 // rotation; the reference form fixes only the first.
+// Round 125 (m3 lane 9, fast): the three block objects `byte *const` 16; the 0x2 block's five NULL pointers declared
+// linear first (the call's order) 19; the mode as the bool result without `? 1 : 0` 126 (544 bytes); (diagnostic,
+// one-use) a `state + 0x50` pointer for the 0x100 compare and call 16; the 0x100 mask test and compare in one `if`
+// with the object read in place 16. The permuter (617 s, 22 tries) found nothing below 15 instruction lines.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

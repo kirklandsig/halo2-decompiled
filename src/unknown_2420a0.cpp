@@ -1597,6 +1597,8 @@ void function_2422d0(long slot)
 // Round 195 (m3 lane 4, fast): no index local, the team entry read for the lookup and both stores 104 (267 bytes, the
 // stores reload the entry after the call); a const object pointer and a const slot 7; the index assigned inside the
 // getter's argument 7; loop 3's result store ahead of the 0x2422d0 call 9; a short slot with `NONE == ...` 7.
+// Round 200 (m3 lane 4, fast): a 609 s permuter run (seed 2002, 66 tries) none below 7; the slot table as `dword` 7, the
+// others list as `dword` 7, the slot as `int` 7, the object index as `int` 7 (all the same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {

@@ -108,6 +108,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // the normalizer's two products follow the source order (x then y, as here) and swapping them moves the x product into
 // the copy register for 384, so the difference is the register choice alone; the entry schedule, the normalized XY and
 // magnitude homes and the candidate width are the rest.
+// MiniMax I (11-15): no new form, no lower score (382): a permutation search over this body (4 tries in 327 s) found nothing
+// better than its own baseline, and writing the far arm's difference vector as two statements measures 382 again (same code);
+// what is left in the near arm is that retail keeps the loop distance on the x87 stack for its compare (`fst` of the magnitude,
+// then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
+// float, and the body is still 40 bytes shorter than retail's.
 // score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
@@ -460,6 +465,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // declared at the function's top 433 (0x29a190 3); the inner counter `long` 411 (1671), `short` 382 (same code); the wrapped
 // angle as `>= 0.0f ? x - 2pi : x + 2pi` 382 (same code, re-measured). The 40 missing bytes are the near arm's: retail
 // rounds both trig values to float slots there and takes the y rows in SSE.
+// P519: complete emitter-facing result at its original scoring boundary,
+// bool/byte/short/long away truth then aligned complement: 391/389/381/383/389/389/381/383.
+// NOT kept: no exact result-carrier match; original emitter, operands,
+// publication graph and complete body restored. Native unity/angle homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -618,15 +627,33 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
+// at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
+// +0xf4/+0xd0 homes stay swapped against retail's +0xd0/+0xf4). Diagnostic, reverted at once: the radius read through a
+// volatile view at all 14 uses (retail reloads it from its argument slot 9 times) 786 at 3349 B, so the XMM5 radius is not
+// the only blocker.
 // MiniMax D (11-14): no new form, no lower score (569): the body is still 39 bytes shorter than retail's with the frame
 // at 0x114 as retail, and the radius and the trace and pivot homes still differ; the forms the earlier rounds measured
 // (the shared endpoint setters, the centre copy, the obstacle-radius observation and the trace-field sector forms) all
 // score 767 or more, so the body stands.
+// Earlier 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
+// MiniMax R (11-15, later): no new form, no lower score (569): the permuter over the full image (316 seconds, three
+// tries) found no form better than the full image's own 539 differing instructions, so no rewrite of the body scores
+// lower from the search and the body stands.
+// MiniMax R (11-15): no new form, no lower score (569): the scale is also the multiplier of the sweep points in
+// retail's loop (its inlined rotation reads the parameter's home and scales both components, which the shared
+// rotation helper here does not), so retail's nine reads of the parameter and this build's one are not the same
+// code; the permuter cannot search this function on the reduced image (the reduced image scores 662 against the
+// full image's 539), so the body stands.
+// MiniMax R (11-15): no new form, no lower score (569): retail loads the scale parameter from its home at each
+// use, this build keeps it in xmm5 from the prologue to the last use, so every block after the first pair is
+// shifted by four bytes; the frame is 0x114 as retail's and the body is 39 bytes short. The promotion only ends
+// if the parameter's last use moves, which changes the code, so the body stands.
 // score 569 (was 569): earlier 621; 629, 733, 633 and 719 before that (the rise to 733 was the unrounded sine/cosine below); frame 0x114 as retail, 39 bytes short; radius and trace/pivot homes differ.
 // MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
 // off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
 // and the four scale locals and the two trace results still sit at other offsets.
-// Earlier score 633 (was 719): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ, 15 bytes long.
+// Earlier 633 (was 719): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ, 15 bytes long.
 // Frame 0x11c versus 0x114, early radius retention and trace/pivot/result homes remain.
 // Earlier: frame 0x11c versus 0x114; radius caching and trace/point homes differ.
 // Shared endpoint setters 767; center CRT copy 767; step CRT copies 767;

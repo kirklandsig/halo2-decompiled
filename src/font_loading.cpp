@@ -507,6 +507,10 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax D (11-15): score 45 (was 59): the two decode sites of the type 3 class now take the alpha in a
+// full register, so the parity is masked in thirty-two bits (xor ecx, ecx; mov cl, al; and ecx, 1) as
+// retail does; still differs in the type 2 decode site, the literal word's loads, the type 3 run (add eax, 2)
+// and the switch case 1 order, and the body is four bytes longer than retail's.
 // MiniMax G (11-14): no new form, no lower score (59): the alpha parity is still masked in sixteen
 // bits (and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and
 // ecx, 1), the literal word is still built from two byte loads and a multiply (movzx eax, byte [edi+1];
@@ -819,6 +823,13 @@ static inline long font_character_pixel(long alpha, long color)
 // expansion: 97/96/96/96/97/96/96/96. NOT kept: All eight regress despite four-byte shortening; native parity,
 // literal assembly and run-two transport are not recovered. All calibrated file and matched-caller controls stay
 // unchanged. Original complete executable body restored.
+// P517: Complete packed-run orders 07362514/07326154/07362541/07653214/07162534/70416235/67401235/37401625,
+// moving case 7 with its real shared fill/count tail; 65/70/66/69/69/59/69/164.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// MiniMax D (11-15), NOT kept: 45 (was 59) added font_character_pixel_full, a twin of the existing
+// font_character_pixel without the (byte) cast on the low alpha bit, used at this function's two pixel stores
+// only. A twin helper picked by score is not kept; if retail differs, change the shared helper and keep its other
+// callers matched. Code back to main, notes kept.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

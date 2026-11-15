@@ -1557,6 +1557,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
+// MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
+// still sits at frame+0x0c where retail has it at frame+0x08, so the argument slots after the prologue pair with the wrong rows;
+// the 1.0f constant is loaded before the biped index store here and after it there, and the body is 2816 bytes against retail's
+// 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
+// in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
@@ -2841,6 +2846,11 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax E (11-15): no new form, no lower score (63): clearing +0x349 through a byte field of the flags word,
+// as retail's `and byte ptr [esi + 0x349], 0x9f` does, measures 103 (270 bytes against retail's 245) and the
+// frame's EBP and the count transport stay; what still differs is unchanged: retail tests the +0x3aa byte in
+// place and reloads it at the call, this build reads it once, and retail takes the settling count in EAX with
+// six stack arguments, whose declaration lives in another file.
 // MiniMax I (11-14): no new form, no lower score (63): retail still tests the +0x3aa byte in place where this build sign-extends it into a long, and retail clears +0x349 with a byte read-modify-write where this build hoists 0x9fff into a register and does word clears (the struct has no byte field at +0x349); the settling count still travels to 0x1d5120 as a stack argument, whose declaration lives in another file.
 // score 63 (was 63): extra EBP (the Havok base loaded early), count transport and the hoisted 0x9fff flag clears differ.
 // MiniMax H (11-12): no new form, no lower score (63): byte-typed flag bitfields (103), a byte view of +0x349 clearing through the high byte (103), the count read again at the call through BIPED_GET (76) or in place (87) and the char body with a short selection (76) all measure worse; the extra EBP, the widened count test and the hoisted 0x9fff word clears remain.
@@ -3457,6 +3467,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax E (11-15): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, retail still
+// sign-extends the state byte at +0x34b where this build zero-extends it (the signed view measures 361, under the
+// keep bar), and retail still keeps the flags bit 9 in a stack slot before the 0xe16b0 call where this build
+// computes the bit as part of the earlier held test; that slot needs a local whose address is taken, a form this
+// lane may not use, so the body stands.
 // MiniMax E (11-14): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, retail still
 // sign-extends the state byte at +0x34b where this build zero-extends it (the signed view measures 361, a gain of one
 // on a function still above 30, so it is not kept), and retail still keeps the flags bit 9 in a stack slot before the
@@ -5451,6 +5466,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax E (11-15): no new form, no lower score (79): the first difference is still inside the shared rotation helper,
+// whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file, and the operand orders the earlier rounds
+// measured still sit at or above the body, so the body stands.
 // MiniMax I (11-14): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose own file this lane may not edit, and the operand orders measured in the earlier rounds all sit at or above the body.
 // score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.

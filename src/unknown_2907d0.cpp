@@ -117,6 +117,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // copy 130 (494 bytes). Diagnostic, restored: size preference for this body 252 (344 bytes, frame pointer and string moves), so
 // the shared constant 1 is not a size/speed choice. Retail inlines 0x142640 itself here (the scale test reads [esi]); that
 // function sits in an /Ob1 file with no `inline`, so ours calls it (312) and the private copy stands in. All restored.
+// Round 106 (m3 lane 1, fast): the record as a reference parameter 19; the address local non-const 19 (same code each);
+// the transform read once through the address local into a named pointer used everywhere 113 (453 bytes, a repeat of
+// round 71's form); the point and the vector grouped in one local aggregate 115 (455 bytes, diagnostic); `inline` on
+// 0x142640 with this body calling it in place of the private copy 19 (the same code), but matched 0x16c2f0 then inlines
+// it (107, 528 bytes): reverted. The call to 0x200e60 shows as differing only because ours reads `[ebx]` where retail
+// reads `[ebp+0]`, one byte shorter, which moves the tail by one byte until the shared constant 1 moves it back.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
