@@ -4498,6 +4498,12 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // matrix, the second property/limit and the placed homes are still in another order.
 // MiniMax G (11-12): no new form, no lower score (356): the origin, the first property/distance, the matrix, the
 // second property/limit and the placed homes are still in another order.
+// MiniMax S (11-15): no new form, no lower score (336): the permuter tried 25 spellings of the body and none lowered the
+// 326 differing instructions of the baseline; the stack homes are still ours (the body matrix at 0x60 against retail's
+// 0x50, the origin at 0x44 against 0x40, the first contact property and the distance at 0x40 against retail's 0x4c, the
+// second property at 0x60 against 0x88, the travel limit at 0x5c against 0x84 and the placed pivot at 0x50 against 0x88),
+// the pivot select still takes EAX and ESI where retail takes ECX and EDI, and the body is 1924 bytes against retail's
+// 1937 because retail keeps the travel test as a byte flag.
 // score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
