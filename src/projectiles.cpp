@@ -2631,6 +2631,16 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the range check's call twice (0xf97b4 and 0xf97ca, one per arm of the average_speed test), so its code has six
 // sites for the same five statements as ours (actions 1, 2, 1, 1 at collision_count == 10, 2). A local inline copy
 // at the first use 1040, at both 1055 (4750 bytes), so all five stay calls to 0xfaa30.
+// MiniMax D (MM-DD) round: score 947 (was 947): no form found that lowers the lockstep score by the review bar, so the
+// body is unchanged (the line above's 946 is this same body read in an earlier build context; the plain and the fast
+// check here both read 947). Read from retail: the frame is 0x118 against our 0x110, the prologue keeps the projectile
+// index in EDI and the projectile in EBP (ours: the index in EBX, the definition in ESI, the projectile in EBP), and the
+// range check's 0xfaa30 call is emitted twice (0xf97b4 after the division, 0xf97ca in the zero arm) with the fraction
+// left in xmm0 across the call. Our /Ob1 build calls 0xfaa30 at all five uses; retail inlines it at two (the 1.0 test
+// before the loop and the predicted case at the end). Trial (fast, base 947): `inline` on 0xfaa30's definition in this
+// file (0xfaa30 itself still matches, its out-of-line copy survives) inlines it at all five uses and takes 0xf8eb0 to
+// 1093 (4790 bytes, frame 0x114); reverted. The two per-arm calls and the two inlined uses are compiler-level, not
+// reachable from this source without writing 0xfaa30's body out by hand.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
