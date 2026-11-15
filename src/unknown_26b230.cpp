@@ -2150,6 +2150,12 @@ void function_269250(long clump_index, long actor_index);
 // declared at the actor-loop scope beside best 87 (same code); the creation arm reusing the walk's group pointer instead of
 // declaring a second one 87 (same code); a `dword` selection 87 (same code); the in-arm compare with the selection stored first
 // plus that group-pointer reuse 126 (480 bytes). All restored.
+// M3 lane 13 r93 (fast with the eight matched neighbours, all still matched; this body 89 on the reduced image, the in-arm
+// form 126 at 480 B): dead-local phase scan on this body (n = 0..7, removed) 89 at every n; the post-loop arms in the other
+// order (`if (selected == NONE) { create } else if (selected != actor->unknown07c) { ... }`) 112 at 480 B (the creation
+// block then leads, retail lays the selected arm first), on the in-arm form 130; on the in-arm form the walk result as a
+// `byte *` cast to the group in the body 126 (same code), `selected` and `best` declared ahead of the walk 129. Body
+// unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

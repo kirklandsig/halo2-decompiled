@@ -605,6 +605,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // order only: retail stores it before the last two fields, ours after them); the tag arm's third-accumulator weight added
 // before the three merges 607; every cluster record field indexed through local_0[local_11] (no record pointer) 609;
 // a walking record pointer for the loop 794 (3861 bytes).
+// P504: Independent immutable destination/source pointer bindings at scalar, merge, four-channel and
+// normalized-publication helper boundaries: 607/607/607/607/607/607/607/607. NOT kept: All eight tie 607 at 3832
+// bytes. Provider-return/NONE, palette/selected-record and zero/SIMD carriers remain unchanged. Original pointer
+// contracts, alias-safe input captures and complete helpers restored. Original complete executable body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -1614,6 +1614,10 @@ long function_2197f0(real gain);
 // T108: Single common return with one completed/rejected-phase exit at disabled/same-ambience/composite/simple/hold/absent-current/rejected-same-attack/rejected-current-attack boundaries:
 // 94/94/94/94/94/94/94/94. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// M3 lane 5 r183 (fast with 0x1251e0, MATCH in each): the fade-in-local lead re-measured 87 (684 B, match-only); on it
+// `real remaining = ambience_fade - elapsed;`, `real held = elapsed - hold;` and the product named before the sum 87
+// each (same code: one-use names are forward-substituted); on the kept body arm 3 written interpolation first 107
+// (687 B); the four `s_decibels(0ul)` zeros as `s_decibels(0.0f)` 187 (707 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2727,6 +2731,11 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // reduced 198/204/198/204/198/204/198/204 against control 197 (868 bytes; full 17/865).
 // NOT kept: reduced scores and byte-writer length regress; all one-use results, include and body restored.
 // MiniMax C (11-11), NOT kept (coordinator 11-11): 17 -> 15 only from 0x219070's result in a one-use short local passed to sound_playback_set_chunk (match-only form); body at 17.
+// MiniMax B (11-14): no new form, no lower score (17); the sound set index is still sign extended
+// (`movsx ebp, ax`) where retail copies the dword, because 0x218f50 and 0x218f10 return short in
+// src/unknown_218ac0.cpp; declaring them long here leaves both calls unresolved (the linker puts the
+// return type in the name: LNK2001 on `long __fastcall function_218f50(...)`), and the delayed start
+// still stores the flag byte before the start time.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
@@ -3050,6 +3059,11 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
+// true value set at the entry and BL holds the false value across the two cleanup calls - while this build
+// keeps it in a byte in the frame, so retail's frame is eight bytes and ours carries the extra slot; a form
+// that returns the true and the false value from their own exits reads 135 and changes the prologue's
+// register plan, and the shared exit with the byte in its slot stays closest.
 // score 96 (was 96): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
 // (false across the failure calls), and the block layout that follows from it; the closest form (15) is match-only.
 // MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path
@@ -4727,6 +4741,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // 624 (2385; close to the listed short listener counter); the state pointer declared after `local_12` 535 (same code); the
 // cluster index stored before the leaf index 535 (same code); 0xba1d0's velocity call right after 0xcaf60 534 (a call moved by
 // score, not kept); the blend factor read ahead of the 0xcaf60 call 559 (2328).
+// MiniMax G (11-14): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
+// 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files; the
+// forms tried for the frame and the three helpers are in the notes below and none of them lowered the score.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their

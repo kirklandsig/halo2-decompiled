@@ -873,6 +873,15 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 568/568/568/568/569/569/569/569. NOT kept: all regress and shorten away from
 // retail; tag/count/plane homes and rotation spills persist. Original body
 // and every existing helper restored; calibrated with the arccosine provider.
+// m3 lane 4 r199 (plain with the file's nine functions; the others stay at their baseline counts). Apart from the listed
+// first-loop increment (retail's `inc esi` among the pushes, lane 17 r39's one-use form 528), the code is retail's and only
+// the spill homes differ; lane 11 r99's map shows three of them in exactly reversed order (retail outer index 0x88, edge
+// base 0x90, tag 0x94; ours tag 0xb4, edge base 0xb8, outer index 0xbc) and first face/group count swapped (retail
+// 0x10/0x14, ours 0x1c/0xc). New: the angle helper's clamp through the existing PIN_126660 on the dot (the macro whose
+// re-evaluated argument matched 0x1e9ce0 this round) 560 (3631 B); the edge read through `mesh->edges[edge_index]` at
+// each use 673 (3615 B); `real tolerance = projection->radius * 0.05f;` for the two tests 746 (3679 B); the face-plane
+// helper reading `mesh->planes[index & 0x7fff]` at each use 783, copying the plane and negating it in place 770. Retail's
+// bounds loop is unrolled with unconditional stores, as the ternaries give.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
