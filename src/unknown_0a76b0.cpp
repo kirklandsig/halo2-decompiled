@@ -865,6 +865,8 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
+// build, so the source stands.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
 // MiniMax I (11-14): no new form, no lower score (92): the throw path's origin split from the release point's (the
 // override copy and the first 0xcafc0 point in a local of their own) 116, and the spread blend with the velocity term
@@ -2598,6 +2600,9 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
+// (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
+// reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
 // 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary

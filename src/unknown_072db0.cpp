@@ -1649,6 +1649,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
+// the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
+// the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
+// changes nothing.
 // score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the

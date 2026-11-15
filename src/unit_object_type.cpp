@@ -4803,6 +4803,9 @@ void function_c50a0(long unit_index)
    riders, in two passes (plain seats, then seat groups whose rider is in
    place), recursing into ridden units; tells 0x1bbdf0 when the driver
    changed */
+// MiniMax I (11-15): no new form, no lower score (166): retail keeps the pool global in edx and the vehicle in esi, with the
+// global loads shrink-wrapped above the pushes; this build keeps the global in esi and the vehicle in ebp, with the loads
+// after the pushes.
 // MiniMax B (11-13): no new form, no lower score (166): re-measured with the plain build (665 bytes against retail 661, first difference at +0x7); what is left is the register allocation of the vehicle and the object pool pointer, which the recursive call register plan decides.
 // MiniMax H (11-12): no new form, no lower score (166); the register plan still differs - retail keeps the vehicle
 // pointer in ESI, the -1 and the child index in EBP and the object pool pointer in EDX (reloaded after the recursive
@@ -4973,6 +4976,8 @@ void __stdcall function_cc810(long vehicle_index)
 /* plans a motion over a distance from a velocity: accelerate, coast and
    decelerate (by the acceleration) without passing the speed limit when
    one is given; negative distances are planned mirrored */
+// MiniMax I (11-15): no new form, no lower score (162): an inner (real) cast on the sqrt argument leaves the discriminant on
+// the x87 stack and the eight-byte frame in place; retail computes the discriminant in SSE and spills it to the dead argument slot.
 // score 162 (was 162; earlier 167): m3 lane 16 r120 (all restored): the first stop test grouped `(stop_time * 0.5f *
 // velocity) * 0.5f + distance` 189, fully grouped `((stop_time * 0.5f) * velocity) * 0.5f` 206 (the whole test moves to
 // x87); the acceleration/deceleration stores after the speed limit with no `negative` local and the coast reading
