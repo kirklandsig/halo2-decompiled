@@ -731,6 +731,10 @@ extern point2f *g_468778;
 // `*(point2f *)&local_9` 384; the facing pointer declared inside the `!function_110ab0` block 378; the actor's facing through
 // a named pointer for its six reads 375 (aligned 265); the actor's position through a named pointer for its six reads 377.
 // Body unchanged.
+// MiniMax I (11-15): no new form, no lower score (375): the actor looked up before the settings call, with the entry
+// declarations in that order, measures 413 (1555 bytes) again - the actor pointer then takes edi and is spilled at
+// [esp + 0x20] and the frame grows to 0x44, where retail holds the actor in ebp, the slot in esi and the prop pointer
+// in ebx, and keeps the settings only in its home. The frame, the length and the carriers are the whole difference.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

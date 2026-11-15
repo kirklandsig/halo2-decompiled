@@ -998,6 +998,11 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // and crossed in place by the aliasing-safe cross3f_staged 252 (1291 B), by function_1f087b 251 (1290 B: right is stored
 // and reloaded, not forwarded); `right` declared ahead of previous_up 45 (same code), that with cross3f_staged for the
 // second product 217 (1270 B); `direction` declared ahead of previous_up with cross3f_staged 217. Body unchanged.
+// MiniMax I (11-15): no new form, no lower score (45): the staged helper for the second product measures 217 (1270 B) and
+// the staged helper for both products 49 (1264 B) again, so the plain cross for the first product and the staged helper
+// for the second stay the best form. The else arm's forward through a named pointer measures 43, but it is a one-use
+// pointer and the gain is under the floor, so the body is unchanged. What is left is the first product's right.i/right.j
+// colours (ours xmm1/xmm2, retail xmm2/xmm1) and the second product's schedule.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
