@@ -13,6 +13,7 @@
 #include "unknown_1dee50.h"
 #include "vector_products.h"
 #include "bit_vector.h"
+#include "unknown_1e1f20.h"
 #include <math.h>
 #include <string.h>
 
@@ -2651,6 +2652,7 @@ struct s_unit_event
 // MiniMax A (11-14): no new form, no lower score (517): retail's entry takes only the permutation index in EAX
 // and reads the region index once into EBP off the stack (`ret 0x14`), while this build hands the region index
 // over in EBX and the permutation pointer in EBP; that register-argument set follows the parameter order.
+// score 513 (was 517): 517 before m3 lane 12 r125's drop-block helper, 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // MiniMax D (11-14): no new form, no lower score (517): reading the region index directly instead of through a pointer to the parameter gives 476 here but 67 for 0xdaaa0, so the pointer form stays; retail still takes the permutation in EAX and five arguments on the stack (ret 0x14), where this build takes the permutation from the stack.
 // score 517 (was 517): 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // frame 0x38 agrees; permutation remains on the stack instead of EAX,
@@ -2808,6 +2810,17 @@ struct s_unit_event
 // `const` 511 (same code); the drop and 0x20000 blocks reading the pool at each use 523 (1900 bytes); a local copy of the
 // pool for them 523 (1900: the local is rematerialised from g_4e0300 after each drop call, and the datum offset then takes
 // EBX with the datum address CSE'd into EDI; retail keeps g_4e0300 in EDI, the offset in ESI and re-reads `data` per use).
+// m3 lane 12 r125 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd5de0, 0xd9d60; control 517): kept, both drop blocks' unit
+// lookup through the existing unit_get_current_weapon (unknown_1e1f20.h) in place of its body written out 513 (plain;
+// the second block re-reads the pool's data after 0x100390 as retail). The region-state update through word_flags_set
+// 517 (same code); the drop and 0x20000 blocks reading the pool at each use re-measured 543 plain and fast (1896 bytes),
+// with the helper 543; `permutation` declared first and assigned after the region 517 (same code); the object looked
+// up after the region and permutation pointers 561. No address of g_4e0300 is taken in src/ and 0x100390 makes no
+// calls, so the pool global's reload after the drop calls is register choice, not LTCG mod/ref.
+// The seat block is 0xe68c0 (a zeroed request of type 0x1e through 0xe6900, then the player tail 0x1e77c0) inlined in
+// retail ([0x467840] is the request table's entry 0x1e): the call `function_e68c0(0x1e, unit)` 673 (1712 bytes, left
+// out of line here); its body written out (memset, type, 0xe6900) 531 (1884 bytes, inlined, the block then retail's
+// code but for registers; not kept, a helper's body written out).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -2887,16 +2900,10 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 
 		if ((1 << datum->type) & 3)
 		{
-			byte *unit = (byte *)datum->object;
-			short field_x11c898 = *(char *)(unit + 0x212);
+			long weapon_index = unit_get_current_weapon(object_index);
 
-			if (field_x11c898 != NONE)
-			{
-				long weapon_index = *(long *)(unit + 0x218 + field_x11c898 * 4);
-
-				if (weapon_index != NONE)
-					function_100390(weapon_index, drop);
-			}
+			if (weapon_index != NONE)
+				function_100390(weapon_index, drop);
 		}
 		else if ((1 << datum->type) & 4)
 		{
@@ -2909,16 +2916,10 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 
 		if ((1 << datum->type) & 3)
 		{
-			byte *unit = (byte *)datum->object;
-			short field_x11c898 = *(char *)(unit + 0x212);
+			long weapon_index = unit_get_current_weapon(object_index);
 
-			if (field_x11c898 != NONE)
-			{
-				long weapon_index = *(long *)(unit + 0x218 + field_x11c898 * 4);
-
-				if (weapon_index != NONE)
-					function_1003e0(weapon_index, drop);
-			}
+			if (weapon_index != NONE)
+				function_1003e0(weapon_index, drop);
 		}
 		else if ((1 << datum->type) & 4)
 		{
@@ -5078,6 +5079,7 @@ struct s_damage_object_creation
 // MiniMax H (11-13): the mask's zero moved after the states call 154 (the store then lands ahead of the mask test, retail has it inside the mask block), the zero assigned after the 0xba690 call 170 and in the for-init 231 (both rebuild the function: the datum offset stays in ESI and the node count takes 0x18), so 156 stands.
 // MiniMax A (11-14): the piece loop's bottom test as `!= 0` and the first-node search scanning for the first set bit reach
 // 146, ten points and over the keep bar; the mask's zero and the guard order stay as they were.
+// score 146 (was 146): 156 before MiniMax A (11-14), 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // MiniMax D (11-14): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in eax, where this build saves first and routes the index through edi.
 // score 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
@@ -5230,6 +5232,26 @@ struct s_damage_object_creation
 // (777 bytes: the search loses its entry test and its head pad as retail, but the mask takes ESI and node_count EBX
 // with object_index left in memory); on that, the search as an inline helper taking the mask by value 187 (same code),
 // the search with its own counter 187, the zero declared in the mask block before 0xba690 229 (784 bytes).
+// m3 lane 12 r125 (fast with 0xdb810 and 0xdbb40, control 146): same code (146): the object looked up through a
+// file-local inline getter, `info` declared first and assigned after the definition, the section masks read once into
+// word locals. Retail's guard `detached > 0 && tag != NONE` around a do-while ending `!= 0` with the for/break search
+// (re-measured 187, 777 bytes) gives retail's head exactly (globals before the pushes, the datum offset spilled, mask_a
+// in EDI); only the mask taking ESI differs (object_index then in memory, node_states/node_count EDI/EBX). On it: the
+// mask as a one-element array 187 (same code: scalar-replaced), the while/ternary search 206 (815 bytes), a while loop 187;
+// a separate piece-loop copy (`long remaining_nodes = detached_nodes;` after the node loop, round 69's form) 155 at 808
+// bytes, first +0xc4: everything from the search's 0xdb810 call on is retail's code one line late; left the zero stored
+// before the states call (retail: node-loop preheader), the search's entry test and the back-edge reload order (the copy
+// blocks the jump threading retail shows, node-loop `jle` straight to the block end). On 155: the zero after 0xba690 178,
+// at the mask block's top 178 (head flips), the search as a do-while 220 (788 bytes), `while (remaining != 0)` 155, a
+// dword copy 155; grid of node bit unnamed / piece object pointer / while search with the zero late 178 214 171 215 206
+// 174 209 167, with the zero early (node bit, pointer, search) 146 (001) 156 (010) 135 (011, 798 bytes, baseline's head)
+// 178 214 171 215; the guard on the mask with the copy inside the guarded block 204, with the zero late 223, with a
+// while loop 204. None kept (a copy that only splits the mask's weight; no match).
+// On retail's guard form: the node loop as a forceinline helper returning the mask (zero inside it) 178 (head flips as
+// with any late zero), returning a dword 178, with the while/ternary search 214, the helper alone on this body 205
+// (799 bytes); the zero after 0xba690 re-measured 229 (784 bytes), with the creation record and the node states
+// declared at the function or mask-block top 229, the creation record at the top on the early-zero form 187 (all the
+// same code). Lead: the copy form's tail is retail's; what is missing is a late zero that keeps object_index in ESI.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
