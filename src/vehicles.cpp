@@ -4923,6 +4923,11 @@ extern byte g_5107ee;
 // (the two pushes, the forward's `lea ecx`, the seed's `add edi, 4`, the result's `lea eax` last) is the right-to-left
 // evaluation of a cone function declared with the seed ahead of the forward, so no caller-side form can give it:
 // still BLOCKED-BY 0x146320, whose file this round's rules hold.
+// Round 83 (m3 lane 2, fast): the marker's forward in a named const pointer used by the cone call and the strength 2
+// (same code); `vector = direction;` for the assign call 42; the marker's matrix through a const pointer at every use 2;
+// the cone result written into the ray vector and copied to the direction 9; the position and forward each in a const
+// pointer 2. Every cone caller shows the same pair (0xf6060, 0x17c0e0, and 0xce6b0 orders forward, result, seed in
+// retail): it follows 0x146320's convention, BLOCKED-BY 0x146320 (src/unknown_146240.cpp, held this round).
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
