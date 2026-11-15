@@ -6433,6 +6433,10 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // BLOCKED-BY 0x188180.
 // MiniMax G (11-14): no new form, no lower score (80): VC7.1 folds retail's redundant `jne` after the count test into one test, so its lea/test/jge/jne cannot be written.
 // MiniMax C (11-14): no new form kept, no lower score (80): the count test as count - 1 >= 0 || 0 == count - 1 (or with a last local) does compile to retail's lea/test/jge/jne exactly — MSVC folds count - 1 == 0 but not 0 == count - 1 — but the tail then pairs with retail's and scores 83 (82 with the g_47f05c global), so it is reverted; the global alone is 79 (under the bar), the typed zone 125, and the permuter found nothing below 83.
+// MiniMax D (11-14): no new form, no lower score (80): the frame is retail's 0x94 and what is left is register choice -
+// the contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte
+// test uses al against retail's cl, the material word comes from cx against retail's dx, and the down vector's three
+// components are still loaded in reverse and stored after the argument pushes.
 // score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
 // after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
 // contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al
