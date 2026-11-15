@@ -282,6 +282,10 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // all three x87 direction adds load the direction first; strength first so 170. On that body the accumulation through
 // the swapped vector3f_add, as `+=` rows, as `contribution + direction` rows 160/160/160; the no-lights arm first 191.
 // vector3f_assign with `+=` rows, colour/strength first 169/161.
+// Round 183 (m3 lane 6, fast; strength first / colour first): the pitch cosine named once as a double for both
+// products 30/121 (same code); guard returns for the flag, NONE and sky tests 243/251 (838/844 bytes); the sky index
+// as a short local 30/121 (same code); color declared before direction 36/127; a 600 s permuter run on the 30 form
+// (65 tries), none below its baseline.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

@@ -709,6 +709,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // MiniMax I (11-14): no new form, no lower score (412): the record pointer is still copied into edi and read with
 // edi plus the index where retail keeps it in eax, and the frame is still four bytes larger with its pushes in a
 // different order.
+// Round 183 (m3 lane 6, fast with 0x1e34e0 and the 0x2641c0 family): `update` as the named sampling condition with
+// `sample = update` 430 (1616 bytes and frame 0xa0 as retail, but the actor index still loads from the stack into EDI;
+// a test held in a named bool, not kept); a __forceinline declaration of 0x2641c0 here, its noinline kept in its own
+// file, 412 (same code); old_state as an unsigned word 413; the named condition with `update` long 449 (1600 bytes);
+// the named condition with `!sampled_one` tested last 454 (1600 bytes). Retail keeps all three flags in stack bytes and
+// the actor index in EBX; ours gives BL to `update`. Original body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
