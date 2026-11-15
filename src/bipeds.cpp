@@ -3122,6 +3122,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // identities: eight 63 at native 245-byte extent. NOT kept: extra EBP, widened
 // count/body transport and the hoisted 0x9fff clears remain. Original complete
 // executable body and all original identities restored.
+// MiniMax C (11-15): no new form, no lower score (63): retail's settled out-parameter is a byte (mov cl, byte ptr
+// [esp+8] and a byte store into +0x3aa) where this build's is the long of 0x1d5120's declaration, and retail
+// passes the settling count in EAX with six stack arguments, so the call setup follows 0x1d5120's count-first
+// order, whose definition lives in another file.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3818,6 +3822,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // `total` declared ahead of the random scales 354 (1924 B); re-measured diagnostic, not kept: the held 0xe16b0 unread bool
 // parameter fed from `(flags_348 >> 9) & 1` 407 on this body (1914 B, frame 0x4c, but the index moves to EAX, plain `ret`;
 // 0xdd360 224), with the `(char)` switch 407. Still BLOCKED-BY 0xe16b0 (contributor) for the frame.
+// MiniMax C (11-15): no new form, no lower score (324): the frame is 0x48 against retail's 0x4c, and the byte at
+// +0x34b is read with movzx where retail reads it with movsx - a signedness difference worth one point on its own.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -5816,6 +5822,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // pointer-cursor traversals, up captured before traversal then at its original phase:
 // 338/338/338/354/335/335/335/325. NOT kept: every form regresses and loses native frame/
 // extent; original two calls, scalar/vector storage and complete body restored.
+// MiniMax C (11-15): no new form, no lower score (79): retail keeps the first product in xmm1 alive across the
+// block and computes the next value into xmm2, where this build spills xmm1 to [esp+0x10] and reloads it later;
+// the reduced check has to list 0x1ecf50 and 0x30bf0 as well, or it reports 621 against the 79.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

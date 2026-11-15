@@ -2654,6 +2654,7 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax A (11-14): no new form, no lower score: this body's score moves with the reduced image's
 // source set (140 on a single-function image, 196 on the queue's image of 562 sources, where the
 // first difference is at +0x15); the difference itself is unchanged by the image.
+// MiniMax C (11-15): no new form, no lower score (140).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2937,6 +2938,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // while loop with the body under `if (available_samples)` 330 (same code); the second sample's source advanced in place
 // (`source += 12;`) 370; the level limit named 349 (re-measure; ESI/EDI swap at the entry); the coefficient pointer
 // formed after the clamp in one expression 336 (the pre-11-10 order).
+// MiniMax C (11-15): no new form, no lower score (330): retail forms the level's table entry with a lea pair and
+// loads the offset through that address (lea eax, [eax + edx*4] and then a load through eax), where this build
+// loads the entry into edx and adds it (mov edx, [eax + edx*4] and lea eax, [ecx + edx*4]); retail also takes the
+// level's -1 with a lea (lea edx, [eax - 1]) where this build decrements the register.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

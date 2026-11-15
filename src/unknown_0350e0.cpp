@@ -2003,6 +2003,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // all 216 first-cross x second-cross x case-1 y orders (case 1's x order is inert) the best case-1 block is 32 lines from
 // retail with registers masked: no order fixes the schedule. Also `0.0f != y` 193 (lead 177) and the helper taking the up
 // vector by pointer 193 (lead 177), both the same code.
+// MiniMax C (11-15): no new form, no lower score (193): the frame is 0x14 against retail's 0x18, and the shared
+// helper 0x2e9e0's frame is 0x90 against retail's 0x94, so both are one dword short; retail's frame here holds six
+// dwords (the two fpatan operands, the result and the three components of the reference vector) where this build
+// holds five, and retail keeps the result in the stack slot at +8 while this build keeps it in a register.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
