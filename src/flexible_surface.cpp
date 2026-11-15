@@ -744,6 +744,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // g_55ecd4.i, g_55ecd4.j, g_55ecd4.k }` 154 (880 B, frame 0x34: the global is then read with movss, j first, as retail,
 // but the cross product moves to the frame; cross3f_staged on it the same score), with the projection before cross3f
 // 152 (884 B, frame 0x28), with `old` initialized before the axis draw 158 (frame 0x34).
+// P537: Actual normalization return/absolute-magnitude producers, real/double/const-real/
+// const-double: 117/118/117/118/117/118/117/118 at 880 bytes. NOT kept: no exact
+// result or frame recovery; original call/test, shared products and complete body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

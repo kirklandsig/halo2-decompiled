@@ -609,6 +609,9 @@ struct s_text_line_measurement
 // before `count++` 77 (masked 7: the update arm's adds, `inc eax` and the width-then-count stores are retail's; the early
 // width load into XMM4 and the advance copy still missing); the header's two metrics read into shorts before the kerning
 // call 77 (same code).
+// P537: Original-site break-admission truth in positive/complementary bool/byte/short/long:
+// eight 77s at 415 bytes. NOT kept: native independent advance copy and early width load
+// unchanged; original field observation, flag writes, float trees and full body restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
