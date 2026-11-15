@@ -597,6 +597,12 @@ struct s_text_line_measurement
 // header pointee and incoming scale: 77/77/77/77/77/77/77/77. NOT kept: All eight tie 77 at 415 bytes. Native
 // independent advance copy and early running-width load are unchanged. Original producer and input mutability
 // restored; all calibrated file/provider measurements unchanged. Original complete executable body restored.
+// M3 lane 15 r87 (fast with 0x13f700/0x13f0e0; base 77, register-masked aligned 10): the can_break block between the offset
+// and the advance 111, between the kerning and the offset 111, the first of those with the width update before `count++`
+// 111 (all three move the advance conversion late and lose the hoisted 4 in EBX); `width += advance + offset + kerning;`
+// before `count++` 77 (masked 7: the update arm's adds, `inc eax` and the width-then-count stores are retail's; the early
+// width load into XMM4 and the advance copy still missing); the header's two metrics read into shorts before the kerning
+// call 77 (same code).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

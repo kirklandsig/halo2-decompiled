@@ -182,6 +182,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // Round 122 (m3 lane 9, fast with 0x2008fc 0x200891; control 14): 0-7 unused locals at the top 14 at every phase; the draw
 // pulse, bitmap entry and sequence entry pointers each as pointers to const 14/14/14; the corner array declared at function
 // scope 14 (all same code).
+// M3 lane 16 r121 (fast with 0x2008fc 0x200891, control 14): the sprite width and height converted into named reals first 85
+// (846 bytes); a block-local center point for the corners with the running x stored once after the draw call 85 (852 bytes);
+// the bounds copy as memcpy 14 (same code: ADD stays); the second step's product commuted 14 (same code); the running
+// position declared first in the function 14 (same code). Re-measure: named advance 55 (the pulse call then sinks below the
+// half extents).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

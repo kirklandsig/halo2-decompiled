@@ -290,6 +290,12 @@ long g_55e6c0;
 // `*(long const volatile *)&count` 152 (487 bytes: the count goes to EBX at the top); the height stored after the data
 // pointer 30; the three zero stores (+0x7c, +8, +0xc) ahead of the clamp 35 (the swap stays); the upper bound as its own
 // store with the lower clamp a ternary in the else arm 152 (495 bytes, unmerged).
+// Round 125 (m3 lane 9, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp's upper
+// test as `count < 4 ? count : 4` 30 (jl); the clamp in a `long const` local at the store 29; `(void)&count` 29;
+// `(void)&height` 29 (the swap stays in all three); the busy test negated with the work arm first and `result = false`
+// in the else 29. Reading: the schedule follows the allocation (the value given EDX is loaded above the kind store,
+// the one given EAX after it), so the open cause is only which of the merged clamp value and the height the allocator
+// colours first.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

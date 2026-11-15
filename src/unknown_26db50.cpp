@@ -908,6 +908,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // m3 lane 9 r123 (fast with the file's 13 matched functions and 0x1ecf50, all kept): the rotation's projection as
 // `(1.0f - cosine) * dot3f(axis, vector)` 90 (same code); the dot written out after the component reads 93; the trace point
 // summed origin first 90 (same code); `dot3f(vector, axis)` 90 (same code); `1.0f - cosine` named once 90 (same code).
+// M3 lane 15 r87 (fast with the file's functions, 0x1ecf50 and 0x26c590; base 90, register-masked aligned 57): the angle
+// with the ring term first 90, the distance's ring product written `radius * (real)ring` 90, both 90 (all the same code:
+// VC orders these operands itself); the collision record and its marker declared ahead of the entry pointer 90; that
+// with trace.distance read at each row 101 (1084 bytes).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

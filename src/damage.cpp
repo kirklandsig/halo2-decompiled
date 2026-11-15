@@ -596,6 +596,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // through a forced-inline helper 3. Ours fills the 16-bit load's latency with the `or`; retail stores right after it.
 // Also round 163 (plain): `data = (s_type_1e6529 *)memset(...)` 3 (same code); the +0x7e NONE store moved up beside +0x7c 15;
 // the +0x84 field typed `byte` and cleared with 0 3 (same code).
+// M3 lane 2 r85 (plain): the +0x7c copy after the +0x22 store 12 (the bsp load hoists above the definition store);
+// a two-byte memcpy from the global 3 (same code); the definition store last 17 (105 bytes, `mov eax, -1`); the +0x7c
+// copy after the owner's three stores 7 (the global load then waits for those stores: it may alias); the owner in
+// declaration order (player, object, team) 5. The reduced (--fast) image hoists the g_47d8e0 load above the
+// definition store (not address-taken there), so judge this body only with the plain check.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {

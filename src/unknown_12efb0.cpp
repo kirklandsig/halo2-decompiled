@@ -609,6 +609,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // normalized-publication helper boundaries: 607/607/607/607/607/607/607/607. NOT kept: All eight tie 607 at 3832
 // bytes. Provider-return/NONE, palette/selected-record and zero/SIMD carriers remain unchanged. Original pointer
 // contracts, alias-safe input captures and complete helpers restored. Original complete executable body restored.
+// M3 lane 15 r87 (fast with 0x12e5e0/0x130f60/0x131030/0x1317a0, all stay matched; base 607, register-masked aligned 275):
+// the best-tag and best-weight defaults declared after the two cluster lookups 776 (3821 bytes, the clears reorder); the
+// palette records declared ahead of the cluster distances 607 (same code); the palette arm's range read into its local
+// and then clamped like the tag arm 680 (3838 bytes); the three 0x131030 outputs declared with the function's other
+// accumulators 607 (same code); both fallback clamps as `x = x < 0.0f ? 0.0f : x;` 607 (same code); the six-field
+// helper's intensity product written inverse first (retail: `movaps xmm1, xmm0; mulss xmm1, xmm2` after the blue store)
+// 607 (same code: ours still computes it first, in place in the test's register).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

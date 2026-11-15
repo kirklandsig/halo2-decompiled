@@ -418,6 +418,17 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // [0]; the kind-7 read so indexed 96 [13]; case 7's kind test as `kind == 6 ? 8 : flags & 8 ? 7 : 6` 96 (other code) [0];
 // the rigid body declared before object_index 100 at 264 B [13]; object_index as a `word` read once with both type reads
 // unmasked 100 at 260 B [208]. Same code: the kind-7 switch with `default: return 1;`.
+// M3 lane 8 r169 (fast, caller 0x1d5bf0 in brackets): case 0 keeps retail's separate index arithmetic only when its read starts
+// from `component->object_index` and the type read goes through a local index; with the object_index local used twice (type read
+// as `((byte *)g_4e0300->data)[(object_index & 0xffff) * 12 + 3]`, case 0 through havok_object_get(object_index), flag2 bitfield)
+// the header address is CSE'd, 136 at 216 B [213]; the same byte-offset type read straight from the component, no object_index
+// local, 141 at 212 B [213] (CSE'd too, so the byte-offset spelling does not block CSE). On round 60's 24 form (rebuilt 24 at
+// 256 B [0]; left: object index EDX/headers ESI/rigid body ECX in place against retail's ECX/EDX/ESI with a `mov esi, ecx` copy,
+// headers loaded after the bodies, `mov al` + movzx type): headers as a `byte *` with `* 12 + 3` / `+ 8` offsets 24 (same
+// code); the rigid body read at each use 97 at 260 B [122]; the two flag selections as ternaries 74 at 260 B [0]. Body unchanged.
+// P513: Original-case low-level admission/exclusion outcomes, bool/byte/short/long:
+// 96/96/96/96/96/96/96/96. NOT kept: no native type/entry recovery or equality; original
+// repeated dispatch, body acquisition, results and caller-compatible convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
