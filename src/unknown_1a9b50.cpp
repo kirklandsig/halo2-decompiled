@@ -709,6 +709,10 @@ extern point2f *g_468778;
 // declared first 393 (same code); the settings test as its own early return 410. Diagnostics (reverted, not source
 // forms): one settings read fewer (the -0.4 test's distance replaced) 403 and one prop read more 407, settings still
 // ESI in both, so reference counts alone do not rank prop over settings here. Body unchanged.
+// m3 lane 12 r125 (fast with 0x1aab50 and 0x265d30, control 375): the view and state pointers through the existing
+// prop_node_view / prop_node_state 375 (same code). The actor looked up before 0x1e4f90 crossed with constant exits,
+// local_2 declared first and the prop pointer at function scope: 413 (1555 bytes), 408 (1550), 413, 408, 393, 398, 393,
+// 398 (the constant-exit four at 1549 bytes); every actor-first form keeps arg_0 in EBX and the prop in memory.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

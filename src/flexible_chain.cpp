@@ -640,6 +640,12 @@ void __stdcall function_1160c0(real dt)
 // body but 0x1697c0's removed) flips it back to EDI; but in that small image 0x211060 takes its mover settings in EDI instead of
 // on the stack, and with 0x211060's own body out of the image the base is EDI again, so the EDX base there comes from a
 // different 0x211060 convention, not from anything in this body. Not a lead.
+// m3 lane 12 r125 (fast with 0x116750/0x73360/0x54590, control 171): the low slots are retail's in exact reverse and
+// the per-slot reference counts fit heaviest-lowest in both builds (ours reads the axis from memory more, retail the
+// cosine), so they follow the rotation's allocation. 0x211060 takes EAX plus the stack here as in retail (full image).
+// The rest-offset copy at the loop top 289 (1354 bytes), after the angle call 207; position and direction declared at
+// the loop top 171, location declared before origin and forward 171, `previous, predicted` at function scope 171 (all
+// three the same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

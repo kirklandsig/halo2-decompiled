@@ -601,6 +601,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // orders the four 16-byte locals uv_a, uv_b, tint, geometry from the bottom, unlike either build, so only the --fast
 // image is a usable screen here. Every source form of the tint, clamp, colour and second-set copies the note lists
 // leaves the order; no new one found. Body unchanged.
+// m3 lane 12 r125 (fast, control 194): the tint built in a file-local inline helper returning the packed colour 791
+// (1626 bytes, not inlined), the same helper forceinline 234 (1902 bytes, frame 0x50: the tint then shares a slot);
+// the second UV set declared before the first with geometry after 194, geometry and both sets declared at the top with
+// the tint 194, `packed` declared at the top 194 (all three the same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
