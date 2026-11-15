@@ -3335,6 +3335,14 @@ PRIVATE __forceinline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// MiniMax H (11-14): no new form, no lower score (557): the score is a desync, not a count. Our frame is 0x7c and
+// retail's is 0x80, and `sub esp, 0x7c` is three bytes where `sub esp, 0x80` is six, so the two listings compare
+// unrelated instructions from the prologue on. With retail's frame (the decision flag in a byte of its own at +0x1b,
+// as in `bool local_30 = false; if (local_6 || !local_28) local_30 = true;`) the streams line up and the honest
+// count is about 680: retail keeps the control pointer in ESI and the object pointer at +0x1c where ours keeps the
+// control pointer in EAX and the object at +0x20, and retail passes the channel's +0x14/+0x16 words whole to
+// 0xe6a20 where ours passes bools. The frame form scores 681 with a body of 2579 bytes against retail's 2577, so
+// the original stands. BLOCKED-BY 0xe6a20 (its parameters) and 0xe6b00.
 // score 557 (was 566): earlier 566 (was 621), earlier 511 (was 670; 713 before round 92): frame 0x7c versus native 0x80; request/control/tag homes,
 // request-byte normalization and selected validity expansion remain. Both arguments stay on the stack; ret 8 agrees.
 // Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
