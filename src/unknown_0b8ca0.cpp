@@ -674,10 +674,9 @@ real function_c8880(long unit_index, short field_240);
 static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 {
     long absolute = function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1);
-    long result = NONE;
-    if (absolute != NONE)
-        result = (*(short *)(data->data + data->size * absolute) << 16) | absolute;
-    return result;
+    if (absolute == NONE)
+        return NONE;
+    return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
 // MiniMax I (11-15): score 38 (was 165): the pool step helper latches its result, the cluster bit table's base is read once before
