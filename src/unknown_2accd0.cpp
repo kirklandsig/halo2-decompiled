@@ -1076,6 +1076,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // temporaries rotate one step; with the total local the head's EAX shifts the rotation back); the caller-buffer arm's
 // size as `size = body_size; size -= body_offset;` 34; `real total_size = total;` (implicit conversion) 34; the total typed
 // `unsigned long` 34; the total summed header, signature size, body 34 (all same code).
+// M3 lane 15 r87 (fast with 0x2ada70/0x2adb10/0x2adec0/0x2adf70/0x2ae090, all stay matched; base 34, register-masked
+// aligned 2: only the signature sum's `add esi, ecx` against retail's `lea esi, [ecx + edx]` and one load): the switch
+// value read into a `char` local first 161 (689 bytes: the entry sum turns header first and the hoist goes); no total
+// local with the file handle named once for the body case's seek and read 182 (694 bytes), and for both cases' seeks
+// and reads 209 (691 bytes); the signature case written ahead of the body case on this base 34 (same code); no default
+// arm 218 (695 bytes, a re-measure of the listed form); the scratch clamp as `MIN(remaining, size)` 35 (re-measure); the body
+// case's seek, read and signature update as three early `break` tests 34 (same code).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

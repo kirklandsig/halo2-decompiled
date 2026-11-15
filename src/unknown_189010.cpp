@@ -169,6 +169,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // call where retail reloads them, and the 0x21d110 call passes the state by pointer on the stack where retail passes
 // it in a register; the lookup's inline-ness (src/unknown_221490.cpp) and 0x21d110's declaration
 // (include/sound_records.h) are outside this file: BLOCKED-BY 0x221810 and 0x21d110.
+// MiniMax R (11-15): no new form, no lower score (110): the first 0x221810 lookup is still expanded here where retail calls it out of line, and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register; a 300-second permuter run over this body (33 tries) found nothing better than its 107-instruction baseline on either image. BLOCKED-BY 0x221810 and 0x21d110.
 // score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
@@ -882,6 +883,11 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // retail's `pop esi; mov al, 1`); 0x37260 still flips it with a one-line body. The same pair flips 0x4ff50's own
 // epilogue (pops interleaved with its last stores as retail without 0x37260, not with it), so the order is an
 // image-wide code-generation state, not this body's: no form here moves it.
+// m3 lane 14 r97 (fast with 0x188180, control 2): 0x37260 and 0x4ff50 are not reachable from 0x1895f0 (neither is a
+// callee of it), so the state is not a call-graph summary; `auto_inline(off)` in place of the inline-depth pragma 269
+// (diagnostic: the callees inline as without the pragma); the camera exit as `return local_1;` 179 (661 B); the
+// velocity copied before the forward normalize 41; the square root left positive and subtracted per component 53
+// (660 B); the player-unit test as one ternary comparison 167 (667 B).
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

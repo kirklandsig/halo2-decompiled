@@ -490,6 +490,11 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // (`s_tag_array seats`, the element read from its address, 0x1ba090/0x1bb570 updated) exclusive/inclusive 11/8;
 // the bit test as `if (!bit3) continue;` inclusive/exclusive 8/11. Every exclusive form keeps the count in EBP,
 // the index in ESI and the zero web (guard, NULL store, first index) in EAX.
+// Round 106 (m3 lane 1, fast): the exclusive bound with a named long count, names count/i, seat_count/i, z_count/a_index
+// and a_count/z_index, 11 each (names do not decide the registers); the selected seat written through a pointer to it,
+// exclusive/inclusive 11/8 (same code); the scan as a forced-inline helper returning the seat 11, filling an out-parameter
+// 11; `short i = NONE; while (++i < tag->seat_count)` 11. Every exclusive form keeps the count in EBP, the index in ESI
+// and the guard's zero in EAX, the first pass's extended index.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -769,6 +774,10 @@ extern "C" void _ReadWriteBarrier(void);
 // the same without the barrier 44; the 0x86/0x50c tests nested in an else block 6; the flags arm's point copy before
 // the 0x420/0x41c stores 40, its 0x44d store before the copy 14. Diagnostics (reverted): without the barrier, one or
 // three more slot reads in the flags arm 44/111, the slot is still loaded after the branch.
+// Round 106 (m3 lane 1, fast): the body in a forced-inline helper taking (actor_index, state) 44 (208 bytes), taking
+// (state, actor_index) 44, the first with the barrier after its actor lookup 6 (same code). Diagnostics: a flags bool
+// computed at the top without the barrier 44 (the flags load is sunk into the NONE block, the slot load with it); a NULL
+// test of the state joined to the NONE test 52 (211 bytes: the slot loads in the entry block, the data base moves to ESI).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

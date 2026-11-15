@@ -1280,9 +1280,19 @@ void function_143250(
 // P500: Current-polynomial actual 3x3/5x5/7x7 matrix lifetimes, seven subsets, then all entry declarations:
 // 1420/1420/1333/1420/1420/1435/1420/1420. NOT kept: No native spill-home/frame recovery: all tie or regress and
 // separate workspaces shorten away from retail. Original complete executable body restored.
+// m3 lane 14 r96 (fast with 0x143250, which stays matched; control 1333 at 10752 B): band two's entry 6 written
+// `r8 * r4 + r7 * r5` 1333 (same code: the compiler re-sorts each sum, so textual term order never matters); band three's
+// declarations ordered so that every all-plus sum's terms run from the latest-declared local down (lane 9 r120's rule for
+// entry 8, applied to all 25 pure-sum chains by a stable topological sort, seven lines moved) 1577 (10738 B), so that rule
+// does not hold for every sum. On lane 9 r120's r3_r2-after-r5_r1 form (re-measured 939, 10777 B; a declaration move,
+// kept only with a match): s7_r7_r6_r6 after s7_r7_r7_r7 1536 (10789 B), s7_r6_r7_r7 after s7_r6_r6_r6 1357, r2_r2
+// and r2_r2_s105 after s35_r2_r3_r3 1597 (10739 B). Body unchanged.
 // P511: Standard real-return roots, band-two 15/5 and band-three 2/35/105/21/7, then all seven:
 // 1307/1307/1324/1322/1322/1324/1324/1266. NOT kept: nonexact root-return/precision contracts only change spill/scheduling;
 // qword fsqrt producers, frame 0x2fc versus 0x300 and displaced scalar homes remain. Original polynomial restored.
+// P521: Current complete matrix initializers, band masks 1/2/4/3/5/6/7 and all immutable:
+// Third-band initializer alone recovers native frame 0x300 and first +0x4c, but regresses to 1498.
+// 1420/1410/1498/1420/1556/1535/1556/1556. NOT kept: no exact native matrix/scalar-storage recovery; original complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

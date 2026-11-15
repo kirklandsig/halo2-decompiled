@@ -725,6 +725,18 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // products: 384/573/352/625/421/575/627/650. NOT kept: All regress; native separate effect address, gate/settings
 // homes and extent are not recovered. Three matched controls remain exact. Original complete executable body
 // restored.
+// m3 lane 14 r96 (fast with 0x247fd0 and 0x248cc0, both stay matched; masked = registers and stack offsets masked,
+// control 334 masked 70, 420 instructions against retail's 430): the in-loop tag lookup through particle_object_for_tag
+// (retail inlines it there, as matched 0x247fd0 writes it) 371 (1696 B, 431 instructions, masked 56: the extra bytes are
+// 4-byte stack displacements, the collision result and placement sitting higher than retail's); field_10's copy with a
+// `(real)` cast 334 (same code; retail copies it through XMM0, 0x247fd0 through EDX); the gate without the volatile
+// flag 394; with the in-loop lookup, the placement's NONE store moved into the final block 366 (1687 B); that with the
+// placement as a plain local of the final block 322 (1680 B, masked 56: placement_set's `lea ecx, [esp + 0x9c]` is then
+// retail's, the collision result 0x10 above retail's 0x3c because the blend and first draw still sit in the grouped
+// workspace) -- not kept: retail stores that NONE before the child loop (0x247e3a), so the gain needs a statement moved
+// against retail's order; the plain placement with the NONE store before the loop 371, declared beside the collision
+// result 371. Retail's frame: probe 0x24, direction 0x30, collision result 0x3c (0x5c bytes; the shared type is 0x4c),
+// placement 0x98, blend and first draw only in registers.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

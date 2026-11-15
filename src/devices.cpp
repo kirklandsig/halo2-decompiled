@@ -1237,27 +1237,6 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// MiniMax R (11-14, run 65): no new form, no lower score (121): the retail disassembly of 0x107ab0 shows no
-// prologue at all - ecx is the motion pointer, the five floats sit at [esp+4], [esp+8], [esp+0xc], [esp+0x10] and
-// [esp+0x14], the initial velocity arrives in xmm6 and the function returns with ret 0x14; this build pushes all
-// six floats and returns with ret 0x18, and the two matched callers (0x108600 and 0x108670) set xmm6 and push
-// only five floats. The split between xmm6 and the stack is the callee's own convention and the six-float
-// signature may not change here, so the clamp's xmm5/xmm7/xmm2 homes follow from it and the body stands.
-// MiniMax A (11-14): no new form, no lower score (121): retail takes the initial velocity in xmm6 with five stack
-// floats and returns with ret 0x14, while this build passes it on the stack and returns with ret 0x18, and the
-// six-float signature may not change; the clamp's register homes follow from that difference.
-// MiniMax H (11-14): no new form, no lower score (121): this round found no new spelling; the clamp's three values and the initial velocity keep the SSE registers the LTCG convention gives them, and the earlier rounds' ninety-six clamp variants all measured above 121.
-// MiniMax B (11-13): no new form, no lower score (121): the three clamped values are still taken in xmm5, xmm7 and xmm2 where retail takes them in xmm7, xmm1 and xmm2, and the first argument arrives in xmm6 under the custom LTCG convention, so the clamp's register choice is not ours to pick.
-// MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
-// MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
-// instead of xmm6, and the ramp-down residency and the return size differ.
-// MiniMax G (11-12): no new form, no lower score (121): the initial velocity remains stack-passed instead of xmm6,
-// and the ramp-down residency and the return size differ.
-// MiniMax B (11-12): no new form, no lower score (121): the initial velocity is still stack-passed where retail passes
-// it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
-// first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
-// definition, which this lane may not edit.
-// MiniMax I (11-14): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6, a convention the callee's own definition sets, and the third zero clamp written as an if-statement scores the same 121 (same code), so the body stands.
 // score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1528,6 +1507,30 @@ bool function_108530(long device_index, long name)
 // compares the slot), and in the acceleration block it squares the velocity in place (`mulss xmm4, xmm2`), so the deceleration
 // block reloads the cruise velocity from motion+0x18; both follow from XMM6 holding the initial velocity. The note's screens
 // (about 2000 forms, 96 clamp-phase variants, every parameter position) cover each lead I had.
+// MiniMax R (11-14, run 65): no new form, no lower score (121): the retail disassembly of 0x107ab0 shows no
+// prologue at all - ecx is the motion pointer, the five floats sit at [esp+4], [esp+8], [esp+0xc], [esp+0x10] and
+// [esp+0x14], the initial velocity arrives in xmm6 and the function returns with ret 0x14; this build pushes all
+// six floats and returns with ret 0x18, and the two matched callers (0x108600 and 0x108670) set xmm6 and push
+// only five floats. The split between xmm6 and the stack is the callee's own convention and the six-float
+// signature may not change here, so the clamp's xmm5/xmm7/xmm2 homes follow from it and the body stands.
+// MiniMax A (11-14): no new form, no lower score (121): retail takes the initial velocity in xmm6 with five stack
+// floats and returns with ret 0x14, while this build passes it on the stack and returns with ret 0x18, and the
+// six-float signature may not change; the clamp's register homes follow from that difference.
+// MiniMax H (11-14): no new form, no lower score (121): this round found no new spelling; the clamp's three values and the initial velocity keep the SSE registers the LTCG convention gives them, and the earlier rounds' ninety-six clamp variants all measured above 121.
+// MiniMax B (11-13): no new form, no lower score (121): the three clamped values are still taken in xmm5, xmm7 and xmm2 where retail takes them in xmm7, xmm1 and xmm2, and the first argument arrives in xmm6 under the custom LTCG convention, so the clamp's register choice is not ours to pick.
+// MiniMax H (11-12): no new form, no lower score (121): the initial velocity read into a local in the callee, passed through a local at the call site, both together and the formula reading the stored velocity back all measure 121, so the body stands.
+// MiniMax G (11-12): no new form, no lower score (121): nothing new this round; the initial velocity remains stack-passed
+// instead of xmm6, and the ramp-down residency and the return size differ.
+// MiniMax G (11-12): no new form, no lower score (121): the initial velocity remains stack-passed instead of xmm6,
+// and the ramp-down residency and the return size differ.
+// MiniMax B (11-12): no new form, no lower score (121): the initial velocity is still stack-passed where retail passes
+// it in xmm6, a whole-program convention the callee sets, so the whole XMM allocation after the entry differs - retail's
+// first float compare is in xmm5 where this build's is in xmm7; the caller's argument registers come from the callee's
+// definition, which this lane may not edit.
+// MiniMax I (11-14): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6, a convention the callee's own definition sets, and the third zero clamp written as an if-statement scores the same 121 (same code), so the body stands.
+// M3 lane 7 r163 (fast, callers 31/13 throughout): 1-7 unused locals 121 each; the cruise numerator's products velocity
+// first (re-measured) 121; both distance denominators as `2.0f * rate` 121; the denominator summed half ramp-up, cruise,
+// half ramp-down 121; the reset stores in field order 121; the deceleration from the local cruise velocity 121.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

@@ -1600,6 +1600,9 @@ void function_b7360(long object_index);
 // cs global later, while the cs lookup is the first statement here; the two initializers swapped measure 487 and the
 // output pointer declared first gives the same code, so the prologue is left as it is, and the table-first lookups in
 // cases 7 and 13, case 10's clear after the selector load and case 5's store order are the differences that remain.
+// MiniMax I (11-15): score 261 (was 270): the 1/19 arm sets field_3 |= 0x40 before it copies the point into the output, so the
+// flag byte is stored before the point copy where retail stores it after; the body stays 1848 bytes long and the other
+// functions in this file keep their scores.
 // score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
@@ -2043,6 +2046,12 @@ void function_b7360(long object_index);
 // for the check and the copy 272; the actor through actor_get(arg_0) at each use, no actor local 519 (1900 bytes); the 1/19
 // reference local with the actor looked up first 487 (1852); reference locals at the 1/19 arm and case 5 461 (1852); both
 // with the actor first 460 (1852). The actor-first order alone re-measured 487 (retail's pool load order, arg_0 still ESI).
+// P519: complete countdown case before 4/7/8/10/5/9/13/20 on the native-length
+// completion graph: 310/348/410/430/465/469/469/469. Earlier countdown placements used
+// the shorter completion graph. NOT kept: no exact source-order match; original
+// dispatch, point-reference observations and complete callback restored.
+// MiniMax I (11-15), NOT kept: 261 (was 270) moved the point store below the flag set (field_3 |= 0x40), a
+// statement order picked by score; kept only with a byte match. Code back to main, notes kept.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -1215,6 +1215,12 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 long function_cbd50(long unit_index, short weapon_index);
 
 // score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// m3 lane 5 r185 (fast with 0xcd7b0/0xcbd50/0x151aa0/0x151940, control 215): the bit-3 tests in a second loop after the
+// lookups 293 (1008 B); held and pending as one `long weapons[2][2]` 215 (same code); the pending lookup ahead of the
+// held one 207 (the pool pointer then takes EDI as retail, but retail reads the held slot first, so the order is against
+// retail's: not kept); `short hand` in the first loop 310 (1027 B); the weapon's own flags read once ahead of the slot
+// loop 371 (902 B); the mode clears as chained `modes[hand + 2] = modes[hand] = false;` in the first loop, the parent
+// loop or both 215 (same code).
 // M3 lane 6 r180 (fast): retail reads each held and pending weapon through its own lookup (the slot and the weapon from
 // one lookup, the unit index re-read from the player for each); 0xd1540's form per iteration (a pool copy per weapon,
 // the slot read and `weapon = NONE; if (slot != NONE) weapon = ...` on it, then stored) gives the one-lookup-per-weapon
@@ -1614,6 +1620,11 @@ void function_150820(dword *bits, bool local_only)
 
 // score 43 (was 43): player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
 // EDX, primary ECX, hand EAX; ours ECX, EAX, EDX); 0x151b80 shows the same exchange.
+// m3 lane 5 r185 (fast with 0x151b80/0xcd7b0/0xa8f80/0xcd4e0, control 43): the hand typed bool 89 (197 bytes); the
+// weapon and 0xcd7b0 tests held in a named bool 43 (same code); `result = true;` ahead of the 0xa8f80 call 71 (215
+// bytes); the `modes[hand]` test nested under the 0xcd7b0 test 43 (same code). Diagnostic: the names of player and hand
+// exchanged 43 (same code: register choice is not name-driven here). A 2100 s fast annealing permuter run (seed 185,
+// 175 tries) found none below 43.
 // M3 lane 6 r180 (fast): the 0xcd4e0 arm as `else if (function_cd4e0(...)) result = true;` 47; no weapon local (the
 // field read at the test and the 0xcd7b0 argument) 43 (same code); a guard return for a NONE unit index 80 (199
 // bytes); the weapon as a NONE preset set under `if (slot != NONE)` with one test after 43 (same code); the first two
@@ -1644,7 +1655,7 @@ void function_150820(dword *bits, bool local_only)
 // MiniMax I (11-10): no new form, no lower score (43); every difference is one clean pairwise register
 // rotation (retail: player esi, hand edi, unit index edx, temp ecx; ours: player edi, hand esi, unit index
 // ecx, temp edx) and the permuter was killed at its time limit without reporting.
-// MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
+// MiniMax D (11-08): no lower score (43): the saved roles are exchanged - retail keeps the player record in esi
 // and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
 // retail reuses esi.
 // MiniMax B (11-06): no new form, no lower score; the player pointer and the hand still swap ESI and EDI
