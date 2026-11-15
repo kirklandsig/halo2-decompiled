@@ -890,6 +890,9 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
+// MiniMax S (11-15): score 237 (was 252): the squad entry index taken as a word (its low sixteen bits, the same ones the
+// mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
+// other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // score 252 (was 252): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
 // ECX), retail's one shared spill slot for the squad pointer, the squad bit and the actor, and the unit arm's place remain.
 // M3 lane 8 r159 (fast; masked aligned 115 at 253): kept, the squad bit as `bool flag = squad && ((bits >> 10) & 1);`
@@ -1255,7 +1258,7 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 		byte *definition = g_4e3b44[character_index & 0xffff].bytes;
 		long unit_index = NONE, perception_index = NONE;
 		byte *flags = (byte *)function_1e4990(character_index);
-		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (squad_index & 0xffff) * 0x74;
+		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (word)squad_index * 0x74;
 		if (substitute && squad && squad_index != NONE)
 			while (*(long *)(definition + 0x28) != NONE)
 			{
