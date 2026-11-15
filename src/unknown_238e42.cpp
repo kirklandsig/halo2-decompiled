@@ -888,6 +888,12 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax R (11-14, run 65): no new form, no lower score (90): the whole difference is still the colouring of the
+// two values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the
+// requested rank into ecx, so the removal call needs no copy, while this build keeps the pointer in ecx and the
+// rank in eax and copies the pointer into eax before the call, two bytes that shift every later jump. The
+// callee reads its member from eax (`mov ebx, eax`), so the colouring follows from that callee's own declaration,
+// which lives in src/online_teams.cpp, a file this lane may not edit; the body stands.
 // MiniMax H (11-14): no new form, no lower score (90): retail reloads the selected identity pointer into eax and keeps
 // the requested rank in ecx, so the removal call into the matched callee 0xac050 needs no copy, while this build keeps
 // the pointer in ecx and the rank in eax and copies the pointer into eax before the call; the two extra bytes are the

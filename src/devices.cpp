@@ -1230,6 +1230,12 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax R (11-14, run 65): no new form, no lower score (121): the retail disassembly of 0x107ab0 shows no
+// prologue at all - ecx is the motion pointer, the five floats sit at [esp+4], [esp+8], [esp+0xc], [esp+0x10] and
+// [esp+0x14], the initial velocity arrives in xmm6 and the function returns with ret 0x14; this build pushes all
+// six floats and returns with ret 0x18, and the two matched callers (0x108600 and 0x108670) set xmm6 and push
+// only five floats. The split between xmm6 and the stack is the callee's own convention and the six-float
+// signature may not change here, so the clamp's xmm5/xmm7/xmm2 homes follow from it and the body stands.
 // MiniMax A (11-14): no new form, no lower score (121): retail takes the initial velocity in xmm6 with five stack
 // floats and returns with ret 0x14, while this build passes it on the stack and returns with ret 0x18, and the
 // six-float signature may not change; the clamp's register homes follow from that difference.
