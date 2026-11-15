@@ -27,6 +27,11 @@ struct s_visibility_bound_record
 // and in each arm there.
 // MiniMax I (11-14): no new form, no lower score (443): the first difference is still at +0x10, where retail forms the entry address as a sign-extended index scaled by the entry size and added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail keeps the tag table in esi and spills the entry at [esp+0x30], we keep the entry in a register, and the part centre's body is inlined from 0x142570 in another file.
 // Earlier at 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
+// MiniMax D (11-14): no new form, no lower score (443): the frame still agrees with retail's, and the difference is
+// still in the head, where retail forms the entry address with a lea into ebx from a sign-extended index before the
+// register saves and this build forms it with a shifted copy added to the table after them; the part centre's body
+// is inlined from 0x142570, whose file this lane may not edit.
+// score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
 // unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag

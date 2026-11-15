@@ -3005,6 +3005,9 @@ s_cached_input_list g_5234e8[4];
 // MiniMax H (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 - retail
 // spills the input list and reloads it at the loop top, keeps the total on the stack and the index in EBX with the
 // cursor in EBP, where ours holds the total in EBP; the index's register is fixed by 0x31590 in another file.
+// MiniMax D (11-14): no new form, no lower score (113): the frame is still 0x9c against retail's 0xa0 and the list
+// still rides in ebp from the entry where retail spills it and reloads it at the loop top, and the count's compare
+// still lands in eax where retail puts it in ecx; the reduced image scores 147 here, as earlier rounds recorded.
 // score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop top; below).
 // r136 lane 7: the list read once into `s_masked_list *list` 132 plain (fast 136 at 538 bytes, LCS-aligned 68 -> 61);
 // entry/definition/object declared at the loop body's top 147 fast; total declared before view 159 fast; index

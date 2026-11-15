@@ -691,6 +691,10 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // MiniMax A (11-14): no new form, no lower score (165): the frame is ours (0xac, unaligned) where retail
 // realigns to eight bytes with a 0xb4 frame, and retail evaluates the atan2 sum before the dot product and
 // applies fcos after it, so the first difference is still at +0x1a and every later offset shifts with it.
+// MiniMax D (11-14): no new form, no lower score (165): the frame is still ours (0xac, unaligned) where retail
+// realigns to eight bytes with a 0xb4 frame, so the result byte and the link iterator still sit in other slots and
+// every later offset shifts with the frame order; the alignment follows the two callers' call chain, whose files
+// this lane may not edit.
 // score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
