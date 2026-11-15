@@ -10,7 +10,6 @@
 #include <string.h>
 #include "object_iterator.h"
 #include "unknown_06c1d0.h"
-#include "player_queries.h"
 
 /* the players (g_4e8c24, 0x21c bytes each) */
 struct s_tail_player
@@ -1103,6 +1102,12 @@ struct s_tail_transfer_traits
 // counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
 // `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
 // cbe60 before the loop 161 (802 B). Body unchanged.
+// NOT kept (coordinator review, MiniMax I 11-15): 144 -> 3 rested on forms kept only with a byte match: each
+// weapon read through a second tail_object_get of the same unit (first_again, second_again), the pool global re-
+// read into second_objects, current_weapon/other_weapon locals holding NONE until set and then copied, other
+// initialised to NONE, and the player iterator typed s_player_iterator with its data member's address cast back to
+// s_record_pool_iterator *. A lead: the remaining 3 points may come from a natural spelling of the same double
+// lookup (an accessor written twice in the source).
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1112,11 +1117,11 @@ void function_152660(s_tail_transfer_options *options)
 	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
 		alternate = true;
-	s_player_iterator iterator;
+	s_record_pool_iterator iterator;
 	iterator.data = g_4e8c24;
 	iterator.index = NONE;
 	s_tail_player *player;
-	while ((player = (s_tail_player *)data_iterator_next_inlined((s_record_pool_iterator *)&iterator.data)) != 0)
+	while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
 	{
 		s_tail_transfer_traits *traits = 0;
 		for (long i = 0; i < 16; i++)
@@ -1133,7 +1138,7 @@ void function_152660(s_tail_transfer_options *options)
 				s_tail_transfer_unit *unit = (s_tail_transfer_unit *)tail_object_get(g_4e0300, unit_index);
 				long primary = NONE;
 				long secondary = NONE;
-				long other = NONE;
+				long other;
 				if (unit->seat_index != NONE)
 				{
 					for (long selection = 0; selection < 2; selection++)
@@ -1159,22 +1164,15 @@ void function_152660(s_tail_transfer_options *options)
 				}
 				else
 				{
-					s_record_pool *first_objects = g_4e0300;
-					s_tail_transfer_unit *first = (s_tail_transfer_unit *)tail_object_get(first_objects, unit_index);
+					s_record_pool *objects = g_4e0300;
+					s_tail_transfer_unit *first = (s_tail_transfer_unit *)tail_object_get(objects, unit_index);
 					short primary_slot = first->primary_slot;
-					s_tail_transfer_unit *first_again = (s_tail_transfer_unit *)tail_object_get(first_objects, unit_index);
-					long current_weapon = NONE;
 					if (primary_slot != NONE)
-						current_weapon = first_again->weapons[primary_slot];
-					primary = current_weapon;
-					s_record_pool *second_objects = g_4e0300;
-					s_tail_transfer_unit *second = (s_tail_transfer_unit *)tail_object_get(second_objects, unit_index);
+						primary = first->weapons[primary_slot];
+					s_tail_transfer_unit *second = (s_tail_transfer_unit *)tail_object_get(objects, unit_index);
 					short secondary_slot = second->secondary_slot;
-					s_tail_transfer_unit *second_again = (s_tail_transfer_unit *)tail_object_get(second_objects, unit_index);
-					long other_weapon = NONE;
 					if (secondary_slot != NONE)
-						other_weapon = second_again->weapons[secondary_slot];
-					secondary = other_weapon;
+						secondary = second->weapons[secondary_slot];
 					other = function_cbe60(unit_index);
 				}
 				if (primary != NONE)
