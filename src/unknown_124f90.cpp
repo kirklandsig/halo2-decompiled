@@ -1627,6 +1627,10 @@ long function_2197f0(real gain);
 // `real remaining = ambience_fade - elapsed;`, `real held = elapsed - hold;` and the product named before the sum 87
 // each (same code: one-use names are forward-substituted); on the kept body arm 3 written interpolation first 107
 // (687 B); the four `s_decibels(0ul)` zeros as `s_decibels(0.0f)` 187 (707 B).
+// M3 lane 13 r95 (fast with 0x1251e0/0x221810, both matched; control 94): arm 4 ending in its own `return *(long
+// *)&gain;` 176 (667 bytes, first difference +0x11); arm 1 likewise 183 (659); one `duckings` array-base pointer for
+// the else branch's two element pointers 111 (688); SOUND_SYSTEM read ahead of the function_221810 call 106; the first branch
+// without its ducking pointer (the element indexed at each field use) 248 (742). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3408,6 +3412,18 @@ static inline short sound_voice_find_available_channel(char type)
 // result in BL only on the failure path; the explicit-return form (no result variable, return true in the commit arm,
 // return false in the failure arm and return true at the end) measures 135 (431 bytes) and moves the mov al, 1 from
 // the entry to the exit, and the same form with a bool result left in place gives the same 135.
+// M3 lane 13 r95 (fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): the find-or-create arm
+// first (`if (requested_buffer == NONE) { if (sound->priority & 2) ... } else { status test }`) 115 (430 bytes); the
+// second bit update from `channel` (no re-read of the stored index) 128 (436); the final test through the
+// requested-buffer local only (the assignment still re-reads the field) 141 (443); the channel-system pointer read at
+// the top of the channel block 117 (430); the unknown0e test ahead of the priority test 97. Same code (not counted):
+// the commit's channel store ahead of the unknown0e store, `->GetStatus(&status)`, the requested-buffer local dropped;
+// the buffer default declared ahead of the driver default 91 (432 bytes, the same code as the chained `driver_index =
+// buffer_index = NONE`, round 235's listed 91). Diagnostic: lane 5 r178's 15 form rebuilt, 15 at 430 bytes: retail's
+// layout is failure block, shared return, then the commit with its own return copy, so the commit has its own exit;
+// that form with the commit ending `return true;` (gotos or a one-pass do/while, result declared first or after the
+// sound, bool or byte) 125/125/125/126 (430/433 bytes: `mov bl, 1` at the entry and the sound in EDI), lane 4 r185's
+// do/while form re-measured 111. Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

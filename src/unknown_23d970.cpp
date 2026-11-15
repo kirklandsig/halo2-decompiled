@@ -987,6 +987,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // operations), then the second product's schedule (retail k, j, i, copying right's registers) and the else arm's j/k
 // stores through EDI (retail ECX). The k-first cross-module helpers, the setters and the angle helpers are listed above;
 // no further untried natural form found.
+// M3 lane 13 r95 (`--fast 0x23de50 0x1f0870`, control 45): no unlisted natural form of the two products is left (as
+// rounds 87, 164, 77 and 85 found), so the trials went to the statements around them: the target arm's `if (!object)`
+// with the arms swapped 361 (1219 bytes); the delay update as `observer->delay -= ...; if (0.f > observer->delay)
+// observer->delay = 0.f;` 96 (1261 bytes, retail's length, the subtraction no longer recomputed as retail does); the
+// delay update ahead of the timer update 108 (1261); `advance ||` tested first in the final condition 362 (1247); the
+// timer-3 block's modes[3] store first 48. Same code (not counted): the gamepad choice as if/else (0x23e400's form), the
+// else arm's products cosine-first. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
