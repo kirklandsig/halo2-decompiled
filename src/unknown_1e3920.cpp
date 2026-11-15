@@ -1869,13 +1869,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
+// options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax D (11-15): no new form, no lower score (251): naming the object-pool global in a local does not make it live in a
 // register, because the compiler reads the global again after any call it cannot prove pure (the opaque callee in another
 // file the notes above name): the local after the weapon options measures 278 (the copy is spilled to a stack slot and the
 // frame grows to 0x18), the local first measures 283 (the load moves above the actor), the local holding the header array
 // measures 301 (both loads move to the top), and the local used in the first block only compiles to the same 251 code.
-// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
-// options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // M3 lane 8 r159 (fast): the halved rounds as `rounds[0] *= 0.5f;` 251 (same code). Re-measured: the loop's weapon in a
 // named `long weapon` 251 (same code; round 126's weapon entry), the raised probability as `4.0f * probability` 251 (same
@@ -2164,6 +2164,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P518: Complete lazy slot-pair present/missing results, bool/byte/short/long:
 // 251/251/251/251/251/251/251/251. NOT kept: no exact actor/options/pool residence;
 // original gates, lazy queries, observations and complete body restored.
+// M3 lane 11 r105 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60; control 251): `inline` on
+// 0x1e5280 251 (same code; 0x1ca2d0 inlines it, 243 -> 295); `inline` on 0x1e5280 and 0x1e53e0 together 277 (0x2758b0 21 ->
+// 113); the delay test as `0.0f != field` 289 (1199 B); the fraction bounds as `0.0f < field` 251 (same code); the clump index
+// read once into a named local for the tail 251 (same code). Diagnostic (flags, reverted at once): src/unknown_0259a0.cpp
+// without /GL- and its body `inline` 306: the random state then rides in EBX from before 0x259a0 through 0x259d0 as retail,
+// but the pool global is still reloaded at each lookup. Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

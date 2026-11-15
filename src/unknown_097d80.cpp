@@ -501,6 +501,10 @@ struct c_aggregate : c_child
 // &result) ? result : NONE;` 31 (same code); the cleanup object declared in the if condition 74 (368 B); error, total and
 // starts declared ahead of blocks 31 (same code); the cleanup loop over a block pointer up to `&blocks[total]` 100 (391 B);
 // the item's object read from the field at each use 67 (376 B). Still BLOCKED by the build flag. Original body restored.
+// M3 lane 11 r104 (fast with the six file-mates, all still matched): v5's count output as a `long &` parameter 31 (frame
+// 0x8024: a reference escapes to the virtual call the same way); the call's status named and published after the total
+// 32; `long produced;` then `produced = 0;` 31 (same code); the gate as nested `if (error == 0) if (child != 0)` 37; the
+// remaining room named ahead of the call 31. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

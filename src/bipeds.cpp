@@ -1223,6 +1223,11 @@ extern long *g_51e9cc;
 // its parameter-address read both dropped, the block as a call): 13, the sum i, j, k, the add field first and one
 // `mov eax, esi` for retail's `mov edi, esi` before 0xe4680 (0x2056e0 544). So retail's inlined copy is still not
 // reproduced by that body under link inlining either.
+// M3 lane 11 r104 (fast): the speed-sum local declared at the top of the dd8e0 block and assigned after the pushes 10; the
+// crouch sum in a function-scope local then PIN 10; `velocity.k = -height_change + velocity.k` 10; the clamp as an if/else
+// on a block-scoped sum 10 (all the same code); height_change given 0.0f before the dd8e0 call 361 (1490 bytes). Diagnostic,
+// value-wrong: the 0xb9b90 call dropped from the speed test leaves the crouch add field first (289), so that unmatched
+// callee's register summary is not what flips the pair.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -5791,6 +5796,8 @@ real magnitude3d(vector3f const *v);
 /* an actor riding a fast vehicle that is about to leave the ground (no
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
+// score 2 (was 2): only the 0x1fb7e0 call's argument setup differs (retail: push NONE, mov ecx, actor, xor edx, push
+// NONE; ours pushes both NONEs first). BLOCKED-BY 0x24590 (round 98 and round 101 below). Notes below, merged into one.
 // MiniMax B (11-12): no new form, no lower score (2): the two points are still the 0x1fb7e0 call's argument setup -
 // retail pushes the first NONE, moves the actor into ECX, zeroes EDX and pushes the second NONE, this build pushes both
 // NONEs before it touches the registers; the actor index in a named local, the two constants written as -1, the data
@@ -5810,7 +5817,7 @@ real magnitude3d(vector3f const *v);
 // MiniMax E (11-11): no new form, no lower score (2): the fourth argument in a local and the fifth argument in a local both keep the same two differences (the event call still pushes both NONEs before it moves the actor into ECX and zeroes EDX), and the whole type selection as one ternary keeps the same two differences; the permuter (900 s, annealing) found no match.
 // MiniMax H (11-11): no new form, no lower score (2): the two points are still the 0x1fb7e0 call's setup, where retail pushes the first NONE, moves the actor into ecx, zeroes edx and only then pushes the second NONE, and ours pushes both NONEs before the registers are set; that order comes from the callee's declaration and the argument list, which this lane may not edit.
 // MiniMax H (11-12): no new form, no lower score (2): the two remaining points are the 0x1fb7e0 call's argument setup, where retail pushes the first NONE, moves the actor into ECX, zeroes EDX and only then pushes the second NONE, while this build pushes both NONEs before it touches the registers; that order follows the callee's declaration, which this lane must keep as it is.
-// score 2 (was 2): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
+// Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,
 // 0x38c, 0x88-0x90, 0x84, 0x94), constants (0.5, 2.0, 0.0, 0.3, 0.6, 1.5707964), the sum < time test (comiss/jbe 0xe3459),
@@ -5870,6 +5877,12 @@ real magnitude3d(vector3f const *v);
 // is not kept: BLOCKED-BY 0x24590. Without it (fast): per-arm calls with a `short type` local in the upright arm 20;
 // two calls (falling, then `up.k > 0.6f && 1.5707964f > magnitude ? 0x55 : 0x56`) 20; `if (actor == NONE) return;`
 // then per-arm calls 20; three calls with the upright and magnitude tests joined by `&&` 20.
+// M3 lane 11 r104 (fast with 0x1fb7e0 and 0x24590, both matched): per-arm calls with the angular comparison written
+// magnitude-first 20; a `short type = 0x56` default with falling and the joined upright/angular test setting 0x54/0x55 60
+// (895 bytes); per-arm calls with the upright and angular tests joined 20; a long type started at 0x54 and reset to 0x56
+// inside `if (!falling)` before the joined test 53; the type chosen ahead of the actor test 242 (862 bytes). The actor
+// stays in ECX across 0x24590 in every per-arm form, as rounds 98 and 101 found. magnitude3d's seven callers that rose in
+// round 101 hold the same baseline scores (542, 749, 947, 590, 375, 902, 920), so the `inline` lead is still blocked.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

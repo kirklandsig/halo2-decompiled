@@ -533,6 +533,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 679/704/686/661/719/703/1055/738. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // P522: Real sine/cosine/paired/sine-root/cosine-root/all APIs, immutable angle/complete scalar formals:
 // 561/561/561/556/556/561/561/561. NOT kept: no exact native success/workspace recovery; original complete body and helpers restored.
+// M3 lane 11 r105 (fast; control 558): the angle limit as an if/else 558 (same code); the inactive test as
+// `field_48 <= 0.0f` 663; in the ray loop's hit block the minimum update ahead of the distance and flag stores 662 (first
+// difference +0x40), the hit flag stored before the distance 559; in the near-hit clamp `local_0 = false;` ahead of the
+// clamped distance 558 (same code). Lead, not measured: the ray points' address escapes only into 0x1697c0 (still
+// unmatched), and retail reloads the half-width after point stores as if they could alias the definition; that callee's
+// link-time summary may differ from retail's.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

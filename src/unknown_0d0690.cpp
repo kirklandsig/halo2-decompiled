@@ -1375,13 +1375,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax B (11-12): no new form, no lower score (529); retail hands this function its block in eax and its
 // query in edx while this build swaps them, so its frame is 0x2c against retail's 0x28 and the selection
 // result spills where retail keeps it in a register; the parameter order that would fix the swap is
 // retail's, and the callers' declarations are in files this lane may not edit.
 // MiniMax S (11-11): no new form, no lower score (529): retail hands this function its block in eax and its query in edx while this build swaps them, and its frame is 0x2c against retail's 0x28.
 // MiniMax S (11-14): no new form, no lower score (529): re-measured this round; retail still hands this function its block in EAX and its query in EDX while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where retail keeps it in a register; the parameter order that would fix the swap is retail's, and the callers' declarations are in files this lane may not edit.
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // Earlier (529, was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (m3 lane 13 r77 too).
@@ -1708,6 +1708,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 586 (2166 B; 0x3db00 lost, 8; 0xd4080 508); every later length use from `record->length` as well 577 (2175 B; same
 // losses); the normal's squared length passed as `i * i + j * j + k * k` 540 (2174 B); the type mask as `long` 529 (same
 // code). Body unchanged.
+// M3 lane 11 r105 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529): R T B C (`bool result
+// = false;` first, `result = true;` closing the found block, one count test with the mask named before the loop,
+// (type, query, block) with 0xd4080's call to match) 586 at 2159 B (frame 0x28 and block in EAX, but the result takes BL
+// and record leaves EBP; 0x3db00 lost, 8; 0xd4080 503); `-0.75f < direction0.k` 529; `1.4f *` leading scale0 529;
+// the first luminance's `* 2.0f` last 529; direction2 through a `turned` local negated and rotated into the record (0xd4080's
+// form) 580 (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

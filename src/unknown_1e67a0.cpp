@@ -1123,6 +1123,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P515: Independent moved-away/angle/turn/snap binary enumerations, positive then complementary:
 // 118/144/144/140/118/144/144/140. NOT kept: no native rotation/side/output equality;
 // original guard observations, shared rotation, arithmetic and complete body restored.
+// M3 lane 11 r105 (fast with 0x1ecf50/0xe3910/0xd0080/0x1ff360/0x24590/0x1cd6c0; control 114, 0x1ecf50 MATCH, 0xe3910 79,
+// 0xd0080 58, 0x1ff360 77): rotate_direction's body (src/unknown_1eb8a0.cpp, open this round), all restored: the rows stored
+// k, j, i 161 (0x1ecf50 128, 0xe3910 124, 0xd0080 71, 0x1ff360 57); the projection as `(1.0f - cosine) * dot` 114 (same code
+// for every user); the rows written scalar-first (`cosine * v`, `sine * cross`) 114 (same code); the vector's components read
+// into three locals first 192 (0x1ecf50 231, every user worse); the dot grouped (k + j) + i 109 (0x1ecf50 6, 0xe3910 85,
+// 0xd0080 59; the (j + k) + i code).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
