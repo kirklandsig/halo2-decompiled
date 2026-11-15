@@ -4220,6 +4220,7 @@ void function_1eb00()
 // MiniMax B (11-13): no new form, no lower score (79): retail's body builds four shader programs from tables and caches
 // that this project does not have, so the difference is a knowledge difference and not a local form; the ratio of the two
 // counters is still computed with the other operand order.
+// MiniMax E (11-15): no new form, no lower score (79): retail builds four shader programs from tables this project does not have, so the difference is a knowledge gap rather than a source shape.
 // @retail 0x36580
 void function_36580()
 {
@@ -5090,6 +5091,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // here and to the end of the body in retail, and the four screen values are loaded in another register order (ours
 // xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies
 // width*cosine, height*cosine, width*sine and height*sine.
+// MiniMax E (11-15): no new form, no lower score (125): our body is five bytes longer with one extra instruction (a second screen[] load and one more spill reload in the third vertex), the four products sit in other registers and other spill slots than retail's, and retail's own product order (wc, hc, ws, hs) measures 213 with a 1045 byte body.
 // @retail 0x480a0
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color)
 {
@@ -8273,6 +8275,7 @@ real scenario_ramp_evaluate_current(long index);
 // MiniMax S (11-14): no new form, no lower score (130): the frame contents are retail's (the ramp result in the
 // blur argument slot, the distortion, the weights and the grid), but this build still saves the frame pointer in
 // the prologue and reserves 0x5c, so every slot sits four bytes off and no source form tried here moves it.
+// MiniMax E (11-15): no new form, no lower score (130): the frame stays at 0x5c with the frame pointer saved in the prologue (retail reserves 0x58 and saves it around the filter loop), and removing the clamp's own local through the file's clamp_callback helper leaves both the frame and the score unchanged.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
