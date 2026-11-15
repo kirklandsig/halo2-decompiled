@@ -889,6 +889,11 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // destination keeps EDI); the blend output passed as `&base[count]` 209 (609 bytes); the source read as
 // `base[i]` with no source increment 161; a plain `for (i = 0; i < count; i++)` with an indexed source and
 // destination 107; that loop stepping only the destination 161.
+// MiniMax C (11-14): no new form, no lower score (89): retail keeps the destination pointer in ebx and the
+// source pointer in its stack slot, ours keeps the destination in edi and the source in ebx, which the inner
+// loop then reuses for its function cursor, so the source is written to the stack and reloaded at every loop
+// end. The permuter's best (83) only moves constants into locals and moves the source step ahead of the
+// result store, so it was not kept.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

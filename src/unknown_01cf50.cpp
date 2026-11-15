@@ -5467,6 +5467,8 @@ again:
 
 long g_485a60;
 
+// MiniMax C (11-14): no new form, no lower score (146): retail's inlined floor sequence is still a call to floor
+// here, the frame is still 0x8 against retail's 0xc and g_485a60 is still kept across the loop.
 // score 146 (was 353): retail inlines 0x16ae0's floor body (its asm; a 0xc frame with the value's slot) where ours
 // calls floor, so ours keeps g_485a60 in EDX across the loop where retail keeps the definition table. Round 126:
 // binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
@@ -5604,6 +5606,12 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
     function_16b90(g_485b48, tag, first, second, third, fourth, scale);
 }
 
+// MiniMax C (11-14): no new form, no lower score (73): the shader tag still goes to edx where retail keeps it in
+// ecx, the pass entry's tag is still loaded from the folded addressing mode, and the record's tag still goes
+// straight to eax where retail copies it through ebp.
+// score 73 (was 73): retail keeps the second tag lookup in ecx where ours uses edx, retail materialises the pass
+// entry's address with its own lea before loading its tag (ours folds the +4 into the load, two bytes shorter,
+// which shifts every later jump) and retail copies the record's tag through ebp where ours loads it into eax.
 // @retail 0x16610
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy)
@@ -9294,6 +9302,8 @@ void function_0496f0();
 
 extern bool g_485a74;
 
+// MiniMax C (11-14): no new form, no lower score (85): 0x14b60's first argument still goes on the stack here
+// where retail passes it in eax, and the jump-table bytes it shifts still differ.
 // score 85 (was 122): r136 lane 7: the mode table is a typed const array (retail's is in .rdata and folds where this
 // routine is inlined); the gate is a switch on the mode with raw bool gates (retail's `sub eax,2/6/9` chain and raw byte
 // copies), the cull is two 0x15680 calls (retail's load-first arm order). 80 with three forms kept only with a
