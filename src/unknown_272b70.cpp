@@ -2928,6 +2928,9 @@ struct s_scenario_scripting_view
 // complete in-place coordinate products with scalar/first/full/explicit sums:
 // 104/136/98/128/127/129/125/154. NOT kept: all regress and lengthen away from
 // retail; original magnitude producer, short traversal and complete search restored.
+// P502: Binary enum outcomes at actor/data/lower/upper/source/metric/commit/loop boundaries:
+// 80/80/80/80/80/80/80/80. NOT kept: all tie; actor/counter/selector allocation and early scripting-data
+// observation remain. Original body/helper restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -1559,7 +1559,6 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // bytes out; the speed-scale block also computes `1.0f - a*b` before the helper's multiply where ours multiplies first.
 // Earlier score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // MiniMax S (11-14): no new form, no lower score (566): retail's frame is 0xfc against this build's 0xf8 and the call to 0x1e5bb0 still passes seventeen values where retail passes twenty-one, the number of arguments being the callee's own declaration to decide; the declaration of that callee and the callers' parameter order are in files this lane may not edit.
-// score 566 (was 585): earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // material and animation homes differ.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // MiniMax I (11-09): no new form, no lower score (588); our call to 0x1e5bb0 passes 17 values where retail passes 21
@@ -1869,6 +1868,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // correction: 649/674/594/728/698/700/778/864. NOT kept: All regress and add calls absent from retail; boost
 // recovers frame 0xfc only while growing away from native length. Gravity/material/airborne homes remain
 // unresolved. Original complete executable body restored.
+// P502: Case-six target outcomes, present then missing target first, each native/setter/memcpy/memmove fallback:
+// 570/558/570/576/563/557/568/578. NOT kept: 558/557 reach retail extent but retain frame 0xf8/0xfc and delayed
+// default copies after root lookup. Original body/helper restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3970,7 +3972,6 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // and every call argument after it are one register out.
 // Earlier score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-14): no new form, no lower score (548): this build's frame is 0x7c against retail's 0x78, and the biped index and the definition pointer sit in swapped registers, so every home after the prologue is four bytes out and the flight-call arguments are one register out; the parameter order is retail's and the callers are in files this lane may not edit.
-// score 548 (was 561): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
 // index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
 // EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
@@ -4185,6 +4186,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // contribution: 790/765/736/831/891/847/914/998. NOT kept: All regress against reduced control 612 and grow beyond
 // native 2712 bytes; added calls and larger frames do not recover changed-result or flight homes. Original
 // complete executable body restored.
+// P502: Existing yaw-helper vector/axis/output ownership, seven subsets then immutable inputs:
+// 679/686/682/686/679/686/686/686. NOT kept: all regress against reduced 614, shorten away from retail and miss
+// native frame/result/flight homes. Original body/helper restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4715,6 +4719,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // target producers: 345/442/315/421/386/434/477/401. NOT kept: The 315 lead adds an out-of-line transform absent
 // from retail and moves origin to +0x54 versus native +0x40; other forms regress or enlarge the frame. Original
 // complete executable body restored.
+// P502: Collision-target fallbacks, nested then short-circuit, each native/setter/memcpy/memmove:
+// 307/386/307/403/334/351/334/418. NOT kept: 307 moves default copies after the collision query; retail copies
+// before it. Matrix/origin homes remain displaced. Original body/helper restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
