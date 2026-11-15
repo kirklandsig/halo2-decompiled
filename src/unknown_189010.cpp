@@ -169,6 +169,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // call where retail reloads them, and the 0x21d110 call passes the state by pointer on the stack where retail passes
 // it in a register; the lookup's inline-ness (src/unknown_221490.cpp) and 0x21d110's declaration
 // (include/sound_records.h) are outside this file: BLOCKED-BY 0x221810 and 0x21d110.
+// MiniMax R (11-15): no new form, no lower score (110): the first 0x221810 lookup is still expanded here where retail calls it out of line, and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register; a 300-second permuter run over this body (33 tries) found nothing better than its 107-instruction baseline on either image. BLOCKED-BY 0x221810 and 0x21d110.
 // score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
