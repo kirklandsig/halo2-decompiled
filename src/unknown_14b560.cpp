@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-15): the parent walk as a NONE-rooted do-while and as a current-rooted while: 109 each
+// (was 43), no lower score; the walk's shape only moves the allocator's choice (the datum pointer lands in
+// EBX, then in EBP), while retail keeps it in EDI and the unit index in EBX.
 // MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
 // region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
 // walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
@@ -1227,6 +1230,9 @@ bool function_14ed80(void)
 // 42 (154 bytes); `short index` 52 (176 bytes); the outputs declared bare and set to NONE between the clamp and the remap 59
 // (155 bytes, 0x14f0f0 40); the sign test, clamp and remap as a force-inline helper taking only the player and reading the
 // global itself, a second globals local in the body for the bound test 54 (globals last, as the second assignment).
+// Round 106 (m3 lane 1, fast): the index read first and the clamp as an if/else-if against the count read at each use 53;
+// no player local (the getter at both reads) 51 in the full build (as the harness). Diagnostics: without the remap 73,
+// without the bound test 81, the outputs stored without their NULL tests 24: the named globals local takes EDX in each.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -2527,6 +2533,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax C (11-15): no new form, no lower score (701): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (701): retail's locals run from +0x10 to +0x83, with the
 // two request homes at +0x44..+0x83 and the small homes at +0x14..+0x43, so retail holds two request
 // workspaces and eight bytes more of small homes than this build's one workspace and +0x2c; the body is
@@ -3079,6 +3086,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax C (11-15): no new form, no lower score (103): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (103): retail's listing loads the flag's global
 // (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
 // while this build loads the globals pointer first and takes the field's address with a lea, so the

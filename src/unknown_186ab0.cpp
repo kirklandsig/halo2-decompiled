@@ -150,6 +150,7 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax C (11-15): no new form, no lower score (134): the body stands as found.
 // MiniMax D (11-14), NOT kept (a 1-point gain, under the 8-point bar): score 133 (was 134): the selection comparison now reads the record's field 212 first
 // (cmp cx, ax against our cmp ax, cx), which is the one difference this round could close; the counted byte
 // is still read without retail's sign extension and the inlined count read keeps our [edx + edi] against

@@ -504,6 +504,11 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// MiniMax E (11-15): no new form, no lower score (303): the frame agrees at 0xa8 and the diff is still the temp's
+// home (retail keeps the length, the random integer and the sine in one frame-bottom slot, ours keeps the length
+// above the result byte) and the candidate, which retail holds in registers across the two rotations while ours
+// spills it between them; recovering either needs the rotation written out at the call site or the normaliser's
+// length inlined, and its magnitude3d sits in another file, so the body stands.
 // MiniMax S (11-14): no new form, no lower score (303): the frame agrees at 0xa8 and the diff is the temp home (retail
 // keeps the length, the random integer and the sine in one frame-bottom slot, ours keeps the length above the result
 // byte) and the candidate, which retail holds in registers across the two rotations while ours spills it between them
@@ -841,6 +846,9 @@ struct s_collision_result_buffer_1697c0
 // 10)` at the loop top 334 (1453 B); the pitch axis through the existing vector3f_assign 303 (1447 B); the ray through it 297
 // (1453 B, the assume form's code family; under the bar); both 306 (1452 B). The lower counts are one code family (any extra
 // statement ahead of the loop gives 1453 B and first difference +0x31), not a local change toward retail. Body unchanged.
+// P518: Existing fallback normalizer at pitch/clear/best, masks 1/2/4/3/5/6/7,
+// then pitch fallback library copy: 438/303/303/438/438/303/438/303. NOT kept: no exact
+// scratch/rotation repair; original helpers, all observations and complete body restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1502,6 +1510,7 @@ done:
 // MiniMax E (11-06): score 9 (was 9): no new form tried this round; the prologue still builds the
 // actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
 // and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
+// MiniMax R (11-15): no new form, no lower score (9): retail still loads the pool pointer into edx and the masked, scaled index into eax, while this build loads the pool pointer into eax and folds the index into esi.
 // score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
 // so the reduced image does not distort this one; the lookup's spelling does not change the code
 // (see below), and the prologue's register choice is not steerable from the source.
@@ -1861,6 +1870,11 @@ struct s_actor_looking_structure_view
 // 0x296e60 303 -> 311 (1460 B), so the shared helper change is not keepable; left at 13: the dot's accumulator (XMM2 for
 // XMM0), the j row's XMM5/XMM6 and the score's inner pair k, i (retail i, k); scans on it 13 (top n = 1 23). The trace's
 // first byte as the named bool of the sector-trace record needs a cast (the real signature takes the path record).
+// Round 201 (m3 lane 4, fast with 0x2980d0, 0x296e60, 0x297660, 0x26c590 and the trace/normalise callees): a named
+// pointer to the actor's facing for both copies 144 (928 B); the selected direction by index at its three uses 39; the
+// structure/pathfinding lookup ahead of the actor 224; the normalised length named before its test 144 (928 B);
+// re-measured the up-axis pointer local 70 and the candidate pointer 139; permuter (600 s, seed 201, 62 tries) none
+// below 23. Retail's dot starts `movss xmm0, [axis + 4]` hoisted above the candidate copy; ours starts v.k * axis.k.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -1988,6 +2002,10 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
+// cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
+// keeps the actor table in a register; the forms for the frame and the carriers are in the notes below and none of them
+// lowers the score, and 0x1fdd90's own file is not this lane's: BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-14): no new form, no lower score (442 plain, 548 on the reduced image): the entry block still differs
 // in its registers - retail loads the actor table into ECX, takes the row with `mov ebp, [ecx + A]`, keeps the actor
 // index in ESI and spills the scaled offset to the stack, and reads the member word with `movsx edx` and `mov di`,

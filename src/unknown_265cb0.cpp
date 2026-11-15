@@ -801,6 +801,10 @@ real function_30bf0(vector3f *vector);
 // 84/84/84/84/84/84/84/84. NOT kept: All eight tie 84 at 1310 bytes, every calibrated file/provider/caller
 // measurement is unchanged, and no native scalar home, range ingress or cross-product schedule is recovered. All
 // experimental declarations removed. Original complete executable body restored.
+// m3 lane 5 r185 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the posture scale and scaled range
+// computed ahead of one `range * range > d && scaled_range * scaled_range > d` test with a single out-of-range arm 259
+// (1270 B); the occupant's player index in a local for its test 84 (same code); `vector3f up, side;` 84 and `real b, a;`
+// 84 (same code: the homes do not follow declaration order); the merged test with the player-index local 259 (1270 B).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2073,6 +2077,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
 // [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
 // retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
+// MiniMax I (11-15): no new form, no lower score (168): retail's second player search keeps a dword result at +0x1c and a
+// 32-bit counter with a stepped pointer, and the result is read back as a word, so typing that result long with a long counter
+// measures 365 (2893 bytes against 2880) and is not kept; the first search has retail's shape already (a 16-bit result in SI, a
+// 32-bit counter) and differs only in the register that holds the table base (EDI here, EDX in retail); in the positive arm
+// retail zeroes +0x31e and jumps back to the one store of the +0x320 count, while this build stores both in the else branch and
+// falls through to the +0x31c store.
 // score 168 (was 168; m3 lane 8 r166 at the end): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring

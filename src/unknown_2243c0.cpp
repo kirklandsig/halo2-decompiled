@@ -618,6 +618,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // M3 lane 7 r162 (fast, 0x2243c0 and 0x224d90 matched): the four cache zeros together right after the pass value 148; the
 // fallback indexed by `(word)(short)local_tag` 117 (same code); no byte view of the definition, the parameter cast at each use
 // 117 (same code); the two cache tests written field first 119; the vertex input lookup stored before the flags local 132.
+// M3 lane 3 r245 (fast, 0x2243c0 and 0x224d90 matched unless noted): a non-const tag with the fallback masked `& 0xffff`
+// 152 (re-measure); the instance group read once into a dword 165; that mask plus the four cache zeros together after
+// local_11 149; the zeros together after local_11 alone 120 (re-measure); the flags local declared just before the
+// 0x173ba0 call (retail reads +0xd8 after the two cache tests) 149, and 0x224d90 lost (36). Diagnostic: dead-local
+// phase scan n = 0..3, 117 each.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

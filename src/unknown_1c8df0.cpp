@@ -245,6 +245,10 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // arg_0 earlier the same). New: side vector as an aggregate initializer 20; descriptive parameter names in the definition 20;
 // const on both point parameters 20; the mode read once into a named short 20; the two cell parameters swapped everywhere 20
 // (0x1b0400 7, 0x264b50 107).
+// Round 164 (m3 lane 7, fast with 0x1e55d0): the positive point copied from the centre then `+=` the scaled side 273
+// (re-measure of the listed copy/add form, 1203 bytes); both points copied then `+=`/`-=` 383 (1231 bytes); the scaled
+// side in a named offset vector used by both points 35; `hit` or the side vector declared at the function top 20/20
+// (same code).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

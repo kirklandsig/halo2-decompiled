@@ -1322,6 +1322,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // M3 lane 7 r158 (fast): the four masks typed dword with word out-pointers 1 (same code), with the guard-first first loop 118
 // (375 B); the success flag declared after the masks 6; the table pointer declared after the masks 1; the four masks in one
 // declaration 1.
+// M3 lane 11 r103 (fast with 0x13a532, 0x1393f3): sibling first loop with the later loops indexed by a `short` over the
+// field 122 (379 B); sibling first loop with both later loops in round 171's guard + nonzero-count for (S G G, not listed
+// above) 82 (372 B: loop 1 exact, first difference +0xae, each later loop is retail's plus its own `test eax, eax; je`);
+// the same with the inner for testing `count > 0` 118 (375 B: the inner test threads away and the zero is kept again);
+// sibling first loop with later bottom tests `--count > 0` 125 (381 B), with the later counts declared before their
+// offsets 118 (375 B).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
