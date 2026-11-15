@@ -1599,6 +1599,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // T108: Ordinary inline metadata at existing iterator-new/iterator-next/seat-scan/slot-submit providers, four isolated, three pairs and all:
 // 32/181/32/32/32/181/181/181. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// P509: Contiguous native flag-writer orders 3056/0365/3065/5603/6503/5630/6530/3560:
+// 32/32/32/32/32/32/32/32. NOT kept: no iterator/leave/request-home equality;
+// original flag stores and full body restored at the native frame and length.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

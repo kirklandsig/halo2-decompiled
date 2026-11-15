@@ -834,6 +834,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // that copy 274 (1152 B); the frame rotation copied once per emitter, both rotations through the copy 373 (1199 B); the
 // position rotated into a separate point and translated back into the callback point 183 (1098 B); the three per-particle
 // property tests as `(flags & n) == 0` 124 (1136 B); the emitter-level scale test as `flags & 4` 210 (1137 B). Body unchanged.
+// M3 lane 5 r184 (fast with 0x173c10/0x175430/0x2477b0/0x173ba0, matched throughout; control 42): `real multiplier =
+// 1.0f, scale = 1.0f;` 42; both transform tests as `definition->unknown0c != 0` 42; indexed definitions with scale first and
+// the motion rotated before the position's last translation add 115 (1136 B); the emitter mask and particle mask `dword
+// const` 42; the location's first emitter index named before the loop's index 109. Body unchanged.
 // M3 lane 8 r167 (fast with 0x2243c0; control 42, register-masked 15: the offset's zero store ahead of the list test and
 // row i of both in-place rotations, (left*y + up*z) + forward*x where retail sums (left*y + forward*x) + up*z): the
 // translated position declared as a vector3f copied from the particle's position (no casts at the rotation) 42 (same

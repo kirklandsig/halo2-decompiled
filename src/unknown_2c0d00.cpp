@@ -490,6 +490,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // P506: Input priority defaults before actor lookup, ignore/block/range subsets 1/2/4/3/5/6/7 and
 // guarded all: 918/918/958/907/958/979/973/973 reduced (control 926, full 920). NOT kept: native
 // later input reads/frame not recovered; original complete body restored.
+// M3 lane 15 r86: no new form run. The leads in the listing are the second `straight = 1` store on the actor NONE path,
+// the type byte re-read at its three later uses, the shared inflation/skip tail and the actor/unit/self-unit registers.
+// The note above already lists each of them with its score (rounds 84, 89, 94 and 225). No existing accessor for the type
+// byte exists to give its re-reads naturally. Body unchanged at 920.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1832,6 +1836,9 @@ long function_1fa7f0(void);
 // ordering: 461/461/450/445/481/436/459/458 reduced (control 400). NOT kept: six recover frame
 // 0x10c but miss native conditional-copy shape and score; extra-pair forms grow to 0x11c. Original
 // body restored.
+// M3 lane 15 r86 (fast with the file and 0x270930, all as before): the delta block's three statements in z, y, x order 400
+// (different code: z then takes XMM0 as in retail, but its square is still taken in a copy; register-masked 258 -> 272);
+// the delta as three real locals declared x, y, z or z, y, x 400 (same code). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

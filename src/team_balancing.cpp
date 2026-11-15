@@ -608,6 +608,8 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // lane) puts the player count in EAX while our build puts it in EDX; the copy loop, the `rep stosd` fill,
 // the argument rotation and the final clamp all follow from that one difference.
 // MiniMax H (11-13): no new form, no lower score (34); the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the clamp all follow from that one register, so the body stands.
+// MiniMax C (11-14): no new form, no lower score (34): the player-count roles are decided in retail's only caller, which is held
+// in another file, so the body here stands; the frame agrees and every store, test and call agrees with retail.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the
@@ -918,6 +920,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // assigned from the call 34 (same code); that with the clamp assigned back to the imbalance 45 (192 bytes); the caller's
 // setup order (EAX, ECX, EDX: player count last-declared) as parameters (extra_count, party_indices, player_count) with
 // the call in 0x7e210 and its declaration changed together, plus the result declared first, 35. All restored.
+// MiniMax C (11-15): no new form, no lower score (34): the two register arguments are the player count and the extra count, and
+// this build puts the extra count in EAX and the player count in EDX where retail puts the player count in EAX; writing the sum
+// the other way round (`extra_count + player_count`) leaves the machine code exactly as it was, so the choice is not the operand
+// order's, and the swap cannot be made here because the caller in src/unknown_07a9a0.cpp passes the two values by position:
+// BLOCKED-BY the caller.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
