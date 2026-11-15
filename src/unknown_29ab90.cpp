@@ -39,6 +39,10 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax R (11-14): no new form, no lower score (286): the frame slots still differ (ours reads [esp+0x24] and
+// [esp+0x14] where retail reads [esp+0x1c] and [esp+0x10]), the saved-direction homes differ and the planar
+// operand order differs; the fast check prints caveats that the callees 0x26c180 and 0x1f9e70 build differently in
+// the reduced image, so the full check decides the true score.
 // MiniMax D (11-11): no new form, no lower score (286): the object pointer's spill slot still sits eight bytes above retail's and the 0x1e5450 result four bytes above it, and the call result and the magnitude still take each other's registers; declaring the direction local ahead of the position copy puts the two copies in retail's homes but emits them in the other order (290), and declaring them first and assigning them in retail's order keeps the copy order but not the homes (286).
 // MiniMax D (11-10): no new form, no lower score (286): the call result and the magnitude still take
 // each other's homes, the object view still sits eight bytes higher, and the position copy and the first

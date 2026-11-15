@@ -331,6 +331,10 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // store; ours moves that store and the reload above the four flag and zero stores.
 // Round 162 (m3 lane 8, fast with 0x2936b0 0x259d0 0xb7930; control 30): the record's range test as `field_24 > 0 &&
 // field_20 > 0` 32 (the first difference moves to +0x234: forms ahead of the rotation break the matched entry code).
+// Round 122 (m3 lane 9, fast; control 30): 0-7 unused locals at the top 30/30/30/57/57/57/57/30 (the dot stays k, j, i at
+// every phase; phase 3 only moves the v.i load), the same with 0-5 dead float products in the helper. The dot written flat
+// i, k, j at phases 0-7 43-48; grouped j + (i + k) 55-63 (1409 bytes); the +0x18/+0x1a pair through a pointer 54-65
+// (1409 bytes); the pair as a two-short member written directly 30 (same code, still hoisted); a const entry pointer 30.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
