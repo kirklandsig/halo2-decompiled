@@ -2415,6 +2415,7 @@ dword __cdecl function_131fc0(real alpha);
 // re-reads preserve_alpha after the callee 0x131fc0, which lives in src/unknown_131e50.cpp; the only form that
 // reached 54 reads a global twice through a volatile, which the rules ban; re-measured at 140 (1729 bytes, as
 // retail's). BLOCKED-BY the callee.
+// MiniMax R (11-15): no new form, no lower score (140): the preserve_alpha load is still hoisted above the `simple` branch where retail loads it after the branch and again in bl, and retail's two writes of the chosen default into the parameter's own home are still missing; the callee 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp. BLOCKED-BY the callee.
 // score 140 (was 140): frame and length agree; left: retail keeps both rectangle parameters as memory
 // variables (each chosen default is written into the parameter's home, `lea ecx; mov [home], ecx; mov ebx, ecx`)
 // and re-reads preserve_alpha after 0x131fc0 where ours hoists its load above the `simple` branch into CL.
@@ -2823,6 +2824,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // them; the byte count is still rounded up to a multiple of four before it is tested for zero, and the masked handle
 // is still compared with minus one where retail does that before the size is stored; re-measured at 330 (1591 bytes
 // in the reduced image, against retail's 1543). BLOCKED-BY 0x235a0.
+// MiniMax R (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; retail inlines the first 0x235a0 copy and calls the second one, while this build inlines both, and retail's dword rounding of the byte count (sub size, remainder; add size, 4) written out after the zero test measures 392 (1624 bytes), since the body is already misaligned there.
 // score 330 (was 364; earlier 401, was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
 // the result is a bool slot (0x13);
 // `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
@@ -3875,6 +3877,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // zero declared at the negative-low test 1163; `small = true;` ahead of the two scalings 12 (the flag store moves
 // first); the exponent search as `for (exponent = 0; ...; exponent++);` 883 (4928 B, re-measured; the while form
 // stays). Body unchanged.
+// Round 201 (m3 lane 4, fast): `whole = fraction = 255` 11; the packed bytes shifted without the `(dword)` casts 9; the
+// shifted input word renamed to sort ahead of `input` 9; the two ORs written constant first 9 (same code each); on the
+// no-shifted-local form (939) one, two and three dead locals at the top 939/939/939 (the selector block does not follow
+// symbol count). Retail copies both register values before destroying them (`mov eax, ebx; shl`, `mov al, cl; neg`); our
+// forms give one or the other. The one-file LTCG harness of this file builds 4628 B (not usable). Mode zero's extra
+// texture test as `(long)configuration == NONE` 9 (same code).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

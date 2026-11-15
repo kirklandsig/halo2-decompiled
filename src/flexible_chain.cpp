@@ -652,6 +652,15 @@ void __stdcall function_1160c0(real dt)
 // the stiffness 169; `++node->ticks` just before the position store 266; `previous = position` ahead of the velocity
 // rows 165 (same code). On the body itself: the vertical declared `const` 171 (same code). The segment base still
 // takes EDI where retail takes EDX. Body unchanged.
+// M3 lane 13 r95 (fast with 0x116750/0x73360/0x54590, 0x116750 matched throughout; control 171): `++node->ticks` ahead
+// of the segment selection 274 (first difference +0x51); the vertical declared ahead of the rest-offset copy 171 (same
+// code, not counted). On lane 13 r89's match-only rotation into `rotated` (re-measured 165), the three rows in the order
+// y, z, x 158 (1368 bytes; the rest offset takes retail's +0x50 home; one-use named parts and a row order picked by
+// score, so match-only: build/r95/lead-1161f0-158.patch in the m3-lane13 worktree); the other orders z, y, x 179,
+// y, x, z 179, x, z, y 179, z, x, y 158 (other code). On the y, z, x form: the three cross terms named ahead of the
+// rows in that order 158 (other code); the rest-offset copy after the angle call 181 (1370 bytes); cosine computed
+// ahead of sine 159; same code as it: `predicted` through vector3f_add, the projection named, `rotated` declared beside
+// the vertical. Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

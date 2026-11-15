@@ -1390,6 +1390,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // `if (named) result = ...` 1020 (2791 B); 0x1dd9d0 in its own `if (result.index != NONE)` ahead of the output stores, the
 // requests after them 990 (2825 B). Retail's frame (listing): result at F+0xc, the three outputs at F+0/+4/+8, the iterator
 // from F+0x10, the per-pass candidate in found_mode's dead home F+0x44 (found_mode itself lives in EBP from entry).
+// P521: Optional mode/class/type scalar memcpy domains 1/2/4/3/5/6/7, then complete memmove:
+// 828/828/828/828/828/828/828/1059. NOT kept: no exact native output/candidate/zero-carrier recovery; original complete body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1450,6 +1452,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax D (11-15): no new form, no lower score (828): the first difference is still the NONE compare, where retail loads
+// the compared argument into edx and keeps the computed -1 in ecx while this build loads the argument into ecx and keeps
+// -1 in edx; that rides on the frame homes, where retail's result sits four bytes higher than ours and retail's third
+// resolved output sits in the frame while ours is homed in the incoming argument slot, so every later row pairs with the
+// wrong row; the iterator call, the sorted lookup and the two resource requests are unchanged.
 // MiniMax G (11-14): no new form, no lower score (828): the NONE compare still loads the compared argument into ecx
 // where retail loads it into edx and keeps the computed -1 in ecx, and the result's and the three resolved outputs'
 // frame homes still differ from retail's.
@@ -1742,6 +1749,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // `if (named) result = ...` 1020 (2791 B); 0x1dd9d0 in its own `if (result.index != NONE)` ahead of the output stores, the
 // requests after them 990 (2825 B). Retail's frame (listing): result at F+0xc, the three outputs at F+0/+4/+8, the iterator
 // from F+0x10, the per-pass candidate in found_mode's dead home F+0x44 (found_mode itself lives in EBP from entry).
+// m3 lane 9 r124 (fast, 0x1dc790 matched throughout): one to seven unused locals ahead of `result` (diagnostic
+// phase scan) 828 at every count; the lookup's result pointer (`named`) declared at block scope 828; the per-pass lookup
+// nested under `if (weapon_type_entry)` with `while (weapon_type_entry && result.index == NONE)` 828; the
+// second request keyed on `iterator.graph` alone 962 (2791 B); the entry pointer initialised to NULL 828.
+// Retail's second request copies the found mode into EBP once (an inline-argument copy of the mode alone; the other
+// two found keys are read from their homes), the sign that retail's mode output was treated as escaping.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -695,6 +695,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // realigns to eight bytes with a 0xb4 frame, so the result byte and the link iterator still sit in other slots and
 // every later offset shifts with the frame order; the alignment follows the two callers' call chain, whose files
 // this lane may not edit.
+// MiniMax R (11-15): no new form, no lower score (165): the byte flag's stack slot is still esp+0x13 against retail's esp+0xf, and the branch after the pool lookup still goes elsewhere.
 // score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
@@ -1810,6 +1811,10 @@ done:
 // retail's `mov esi, eax` copy is the shape of matched 0xa5bd0 (`mov edi, ebx` before its +0xe/+0xa reads), where the
 // re-reads sit in a later block than the first read; here every read is in one block and CSEs into one value.
 // Diagnostic: `__assume(type >= 0)` before the table read 27 (no change).
+// M3 lane 16 r121 (fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 bytes: type ESI, definition ECX, no copy);
+// on it a `short` type local 27, the definition read as a short array ([6], [7], [5]) 27, the datum as
+// `&placements[index * size]` 27 (all the 27 form's code); one function-scope `type` assigned in the force path and the
+// placement block, on main's body 17 and on the 27 form 27 (both the same code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -2000,6 +2005,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
 // marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
 // difference at +0x76.
+// MiniMax R (11-15): no new form, no lower score (285): retail has one shared epilogue at 0xb987a reached from the ancestry loop and this build duplicates it, so the first difference is the jump target at +0x76.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
