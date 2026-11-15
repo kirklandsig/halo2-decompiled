@@ -602,6 +602,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P526: Native first/second/both material value assignments, complete descriptor aggregate, plain paired-publication loop, loop-owned collection, aggregate plus loop, materials plus loop:
 // 1375/1375/1375/1409/1368/1425/1449/1391. NOT kept: seven-point loop lead below margin; other forms tie or regress, frame still 0x5d0 versus 0x58c.
 // Original complete executable source restored.
+// P528: Individual shared scale sites at point impulse/normal force/body impulse/
+// driven slip/projection/dynamic friction/static friction/load projection:
+// 1394/1443/1394/1394/1394/1394/1394/1380. NOT kept: all regress or move extent away;
+// excess frame and indexed homes remain. Original body, kernels and includes restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

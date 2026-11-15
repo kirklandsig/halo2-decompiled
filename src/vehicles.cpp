@@ -3390,6 +3390,9 @@ real g_47ff30 = 2.5f;
 // P526: Immutable one-time tick factor; absolute/scaled/complete friction stages mutable then immutable; complete immutable stages with tick factor:
 // 672/672/672/672/672/672/672/672. NOT kept: no byte-equal native frame/friction-stage recovery; original helper and runtime static restored.
 // Original complete executable source restored.
+// P528: Complete cosine-bank/sine-bank/commanded-torque product parts, seven subsets
+// then complete immutable parts: 674/672/672/672/674/672/672/672. NOT kept: no native
+// frame repair or gain; original row expressions, all helpers and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

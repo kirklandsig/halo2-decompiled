@@ -4867,6 +4867,9 @@ void function_c50a0(long unit_index)
 // two-pass while 166; grouping-owned assignment 253; dword driver/gunner
 // 245/172; driver bit after activity 251; pass-scope driver 166.
 // NOT kept: all tie or regress; native pool/vehicle/child ownership remains.
+// P528: Native byte grouping/assignment/driver/gunner, paired signed roles, complete byte
+// decisions, consumed driver-role join and unchanged-driver return: eight at 166.
+// NOT kept: no exact ownership repair; original body, accessors and recursion restored.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -6769,6 +6772,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // nested secondary admission 300; separate missing-primary rejection 300; conditional mode-four
 // readiness 300; final hand query through readiness 300; success from readiness 295.
 // NOT kept: final result gains five, below eight; other forms tie or regress. Original body restored.
+// P528: Separate actual request headers and complete payload clears, sites 1/2/4/8,
+// readiness pair, raise pair, all and immediate headers first: 295/296/295/293/289/298/306/306.
+// NOT kept: independent gains at most five; 289 needs the combined form, others tie/regress
+// or shorten to 1040/1052. Native zero stores, readiness join and ownership still differ.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -6996,7 +7003,7 @@ done:
 // a frame slot and looks the unit table up again for the second (ours merges the two lookups; a pool
 // pointer local, `holder` re-read: no change); `or byte [mem], imm` flag updates (ours load/or/store through
 // AL); the tail loading ESI = unit_index at the join. On the committed (stdcall) convention these forms
-// score worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
+// Earlier convention forms were worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
 // Round 82 (lane 11): the declaration moved after 0xbd020's (still __stdcall) gives retail's convention, the
 // direction in ECX and the rest pushed: 254 -> 250 (aligned 198 -> 96), and matches 0xc42e0.
 // Round 151: __stdcall in place of the file's /Gr
@@ -7022,6 +7029,9 @@ done:
 // both squared components 251, complete turn result 225, duration ticks named 250,
 // paired duration bounds 250, state receiver name 250. NOT kept: normalizer plain 242
 // loses matched 0xc2d00 (0 -> 2); turn result grows to 1120/1112 bytes. Original body restored.
+// P528: Actual toward/facing/output vector2f workspaces, seven subsets, then all with
+// paired scalar input stores: 242/242/242/242/242/242/242/247. NOT kept: no exact alias/home repair;
+// original point workspaces, normalizers, calls and complete body restored.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
