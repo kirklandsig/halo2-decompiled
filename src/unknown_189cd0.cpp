@@ -192,6 +192,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // 118; one exit (sound index at function scope set NONE, the duration reset tested on it after the blocks) 116. In the plain
 // listing the tag takes EDI and is reloaded from its home for the dispatch after 0x189340 takes EDI for the source, so the
 // allocator splits a variable across regions; the object holds EBP from its first test to the dispatch.
+// Round 164 (m3 lane 7, plain): on the plain-read form (no reference) the tag parameter named sound_tag_index 116, the
+// object parameter named source_object_index 116, both 116, the tag named definition_index 116 (parameter names do not
+// move the EBP contest); the started test and dispatch in a forceinline helper taking the object by value with its own
+// parameter's address taken 116 (the address folds away).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

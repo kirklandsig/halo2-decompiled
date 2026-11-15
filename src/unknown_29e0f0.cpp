@@ -509,6 +509,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // existing ingress: 427/498/421/479/555/557/551/516. NOT kept: All eight regress; squared copies disturb the
 // native frame/default graph, length copies also enlarge code. No qualifying byte equality. Original pointer input
 // observations and helper arithmetic restored. Original complete executable body restored.
+// M3 lane 15 r87 (fast with 0x29e730; base 382, aligned 403, register-masked 199): the group-slot search as a `while`
+// stepping past non-matching slots with the slot taken after it 382 (masked 201); the pass step written `local_28 =
+// local_19 - local_26; local_26 = -local_26;` 381 (a statement order, not kept); the output step as an if/else
+// increment 389 (6 instructions longer); the group record pointer formed right after the group's bitmap set 429 (1576
+// bytes); the scan's best test written `local_24 < local_21` 382 (same code).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

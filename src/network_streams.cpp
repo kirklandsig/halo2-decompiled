@@ -990,6 +990,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // continue;` at the loop top (diagnostic, implied by the helper) 82 (230 B). Same code: a guarded do-while, a const window
 // pointer, `(flags & 2) == 0`, the message pointer declared with its zero as `m_messages + index`, the window pointer
 // declared inside the loop body (the member form's code).
+// m3 lane 14 r96 (fast with 0x96510, 0x94df0, 0x94bf0 2, 0x96b00; control 60): in retail `next` lives in ESI, saved
+// with `push esi` ahead of the loop guard (EBX is pushed only inside it), where every form here keeps it in ECX. `next`
+// declared ahead of the window pointer (`long next = m_next_sequence + 1;`, then `for (; next < newest; next++)`) 60, on the
+// 63 form 63, on the member-window form 89; `next` declared at function scope ahead of `type` and assigned in the block 60;
+// the member form started as `long next = m_next_sequence; for (next++; ...)` 89 (all the same code as their base forms:
+// the declaration position does not move `next` into ESI or stop the second counter).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

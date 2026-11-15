@@ -870,6 +870,13 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // the copies 92 (964 bytes); both k clears after the second copy 88; the radius read after the target vector 96; the adjusted
 // projection written into the length local 88; the unit's object lookup ahead of the lateral test 104; `-local_3.j` for the
 // side vector's i 87 (same code).
+// m3 lane 14 r96 (fast with 0x2556b0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900, all matched; 0x110ab0 164): lane 17's
+// match-only 17 form rebuilt 17 (sum 0x10, length 0x14, index 0x18, adjusted 0x1c). On it: the object size declared at
+// the block's top and assigned at the first test 17 (same code); with the adjusted projection in the length variable as
+// well 17 (groups retail's, {length, adjusted} 0x14 and {sum, second side, timing} 0x18, retail the reverse); on that, the
+// radius sum named at the radius read (`reach`, used by both tests, no radius or size local) 190 (953 B: the size read and
+// the 0x1e4a50 call move); the final side test as `local_11 + local_13 > ...` 17 and as `local_14 - local_11 < local_13 +
+// local_11` 17 (same code each: the lateral reload keeps XMM3, the maximum XMM2). Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

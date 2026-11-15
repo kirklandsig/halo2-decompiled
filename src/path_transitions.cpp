@@ -946,6 +946,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // d, c 358, a, c, b, d 357, b, c, a, d 356. Same code as the corners form: the result declared first, surface_index declared
 // ahead of pathfinding (definition, declaration and call), `second` declared in its own block, the projection difference as
 // one expression, both length tests as `0.f < length`.
+// m3 lane 9 r124 (fast with 0x270d90, 286 throughout): one to seven unused locals at the top (diagnostic phase scan)
+// 219/220/220/220/220/220/220 (inert); the fraction as `inverse * (projected - origin)` 218, the projection's and the
+// origin's dot3f arguments swapped, singly and together, 218/218/218 (all same code); re-measured `margin =
+// state->source.radius * inverse` 218 (same code).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

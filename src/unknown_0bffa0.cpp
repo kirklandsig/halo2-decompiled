@@ -1293,6 +1293,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // matrix->scale` 479 (2815 B; one phase step, like a dead local), with +1..+7 dead locals 505-510; dead locals on main +1..+7
 // 479/480/480/484/483/483/479; the result products `transformed.i * scale` 290 and the scaling as `vi = scale * vi` 290 (same code);
 // the reference by if/else 574 and by a ternary copy 643 (re-measured). Body unchanged.
+// M3 lane 13 r95 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): the reference test as
+// `i == 3 || i == 1` 565 (2840 bytes); the arm test `shape->kind == 0` without its `(short)` cast 577 (2816); the sphere
+// depth and flag clears after the matrix setup 575 (2831); in the cone arm the left copy ahead of the forward copy 300;
+// the sphere point count stored ahead of the four projections 638 (2806). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

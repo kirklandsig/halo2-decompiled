@@ -97,6 +97,10 @@ bool function_1946f0(s_bitstream *stream)
 // Round 119 (m3 lane 9, fast): the index bound to a `long const &` 2; `int saved` 2; `register` on the index 2; a
 // `s_bitstream *const` parameter 2; the index incremented after the mask with count and clear from it, as a statement
 // or as `size - ++byte_index`, 11 each (first difference +0x15: `inc edx` then `add edi, edx`, no clear LEA).
+// M3 lane 2 r85 (fast): the definition moved to the end of the file 2 (same code; diagnostic, so source position is not
+// the lever); the mask shifted from `1u` 2; the index as `(saved + (saved < 0 ? 7 : 0)) >> 3` 74 (151 bytes; the stream
+// then arrives in EDX; diagnostic); the bit-position test ahead of the mode test 7; the mask's bit offset as
+// `saved - byte_index * 8` 36. Re-measured: the explicit masked assignment 2, the clear from `&data[index + 1]` 2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

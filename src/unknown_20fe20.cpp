@@ -1208,6 +1208,11 @@ void function_2118c0(void)
 // M3 lane 7 r158 (fast): the knot rows from `b * 8` with p1/out from the shifted row 144; the knot indices as `dword` holding the
 // word value 170 (761 B), as `byte` 157; p1/out from the shifted row too 175 (745 B); the row declared at the sample loop's level
 // 10 (same code).
+// M3 lane 11 r103 (fast): the three wrapped rows through a band pointer `vector3f (*)[8]` taken at `noise[b << 3]` (p1
+// and out as now) 219 (828 B); the row sums written index-first (`noise[w3 + row]`) 10 (same code); the row carried from
+// the band loop's foot (`row = b << 3;` after `b++`, zero before the loop) 148 (784 B: rows unreduced, row re-shifted,
+// b kept); a `word` band counter 10 (same code); the wrapped rows relative to the current row pointer (`p1 + (w3 - k) * 8`)
+// 263 (858 B).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

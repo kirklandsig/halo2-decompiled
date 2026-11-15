@@ -2573,6 +2573,12 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // 430/430/284/284/430/430/284/284. Output-transport diagnostics 99/159/159/159/180/177/159/178 (old scaled-setter reference excluded).
 // NOT kept: all regress; native early velocity j/k and property-zero residence remain. Original
 // full body, setter call, helpers and arithmetic restored.
+// P514: Existing unit-weight additive helper at contact/velocity/both, opposite contact/
+// velocity/both and the two mixed pairs: 91/139/139/91/139/139/139/139. NOT kept: no early velocity
+// j/k or property-zero repair; all shared helpers and original complete body restored.
+// P517: Actual material-sample available/missing result domains bool/byte/short/long at the original
+// query/fallback boundary; 91/91/91/91/91/91/91/91.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

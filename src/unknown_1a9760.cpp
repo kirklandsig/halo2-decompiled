@@ -232,6 +232,14 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // the degenerate test in double without the float cast 5 (the constant becomes a qword); the direction copy after
 // the rows 4 (same code); an `unsigned long` component counter on this base 4 (same code); a 600 s annealing
 // permuter run (seed 101): 57 tries, none below 4. Restored.
+// M3 lane 16 r121 (fast): the copy of unknown37c in its own `direction` local, with local_2 declared only for the output
+// (they share the stack slot, as retail's) 4 (same code); velocity and offset through `const` vector pointers 4, the
+// position through one 4 (same code); the flag store after the row loop 18 (996 bytes: interleave and registers are
+// retail's, the store sinks below the row stores); after the length statement 195 (1000 bytes); rows written out with the
+// flag first 192 (1001 bytes, the store sinks, rows in XMM2/3/7); the rows through a forceinline component-loop helper
+// 280 (927 bytes: called under this file's inline_depth(0)). Diagnostic, no flag store: 197 (989 bytes), and the block is
+// retail's instruction for instruction once the store is added back at slot 31, so retail's store has no ordering edge
+// with the row loads, where ours (indexed loop accesses) has one that delays the row loads a slot.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
