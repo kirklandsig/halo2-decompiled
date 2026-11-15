@@ -1117,6 +1117,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // copy, memcpy (same code), memmove (99, adds calls), the by-value setter, the joined exit and the flag and dot forms above.
 // Same code (fast): the five flag statements as `b ? (flags |= 1) : (flags &= ~1);` expressions; the animation test through
 // the typed channel fields (`channels[0].graph_tag_index`, `channels[0].animation_id.index`).
+// M3 lane 15 r88 (plain, control 114): `c` and `turning` as two nested ifs 114 (same code); initial_cross's j and k rows
+// with their products' operands swapped (b first) 114 (identical listing: the compiler orders the operands itself); the
+// sampled vector and angle declared at the function top 114; no rotation local (the angle product written in both trig
+// calls) 144 (1382 B: the rate is re-read after the sine and the rotation loads all go first); the old cross from the
+// `forward` parameter 264 (1391 B).
 // P513: Complete animation readiness/exclusion outcomes at the original gate, bool/byte/short/long:
 // 144/144/144/144/144/144/144/144. NOT kept: native-length forms regress and miss rotation j/k ownership;
 // original initialization, admission, helpers, arithmetic and complete body restored.

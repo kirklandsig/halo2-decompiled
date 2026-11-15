@@ -611,6 +611,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // (`for (real *component = &tint.alpha; component <= &tint.blue; ++component)`) 518 (1892 B); uv_a and uv_b declared
 // separately 194 (same code); the aspect defaults declared separately 194 (same code); the alpha product held in a local and
 // stored just before the clamp 219; the 0x180 block's products written `tint.red*seed_color.red*2.0f` 197.
+// m3 lane 15 r88 (fast; control 194). Diagnostic: the second set renamed to sort first 194 (same code: names do not order
+// these 16-byte homes). Tried: the UV encode taking the bounds by value 654 (2104 B, frame 0x6c); the second set and the
+// tint declared at the very top 194 (same code); the clamp's component pointer taken right after the tint's declaration
+// 194 (same code); `blend` declared after the pack call 498 (1953 B); the second set's unit defaults copied from the
+// first set's 347 (1955 B). Body unchanged.
 // P516: Reference-returning integer sequence maxima, long/short and both argument boundaries:
 // 425/425/409/409; with lower-first bounded-index minimum 462/462/460/460.
 // NOT kept: regressed frame/extent and no tint/UV repair; original includes, clamps and callback restored.

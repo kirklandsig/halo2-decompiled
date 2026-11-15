@@ -844,6 +844,12 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // code); the motion declared ahead of the translated position 50; the colour declared ahead of the rotation outputs 42
 // (same code); on indexed definitions with scale first (re-measured 113 at 1136 bytes, masked 34, every integer line
 // retail's, all six rotation rows reordered) the vector3f position 113 (same code) and the motion declared first 121.
+// M3 lane 15 r89 (fast with 0x173c10/0x175430/0x2477b0, matched throughout; control 42): the particle pointer declared ahead
+// of the particle loop and assigned in it 42 (same code); the next particle index read after the particle-cache invalidation,
+// before the 0x173c10 refresh, 58; the definition offset stepped before the emitter's next index at the latch 42 (same code);
+// the emitter definition formed after the emitter lookup, before the first-particle read, 42; `particle_mask` computed right
+// after `emitter_mask`, before the emitter-level property calls, 263 (1117 B). Diagnostic: the particle pointer renamed to
+// sort either side of the emitter definition 42/42 (names do not set the order of the two reloads after each property call).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
