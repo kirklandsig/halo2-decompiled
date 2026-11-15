@@ -372,6 +372,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // masks 1..7, then the original append boundary: 548/536/548/536/547/536/547/536
 // (fast control 536, full 544). NOT kept: no native frame/role recovery or equality;
 // original constructors, helpers and complete body restored.
+// M3 lane 5 r182 (fast 536 at 1906 B, plain 544): the log-level ternary as an if/else 536 (same code). No other untried
+// natural form found; the remaining difference is the file's /Op (rounding stores, CRT math calls, the extra frame word).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

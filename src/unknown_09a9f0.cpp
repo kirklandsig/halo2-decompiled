@@ -783,6 +783,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // then complete complementary predicates: 77/116/76/140/110/141/165/162.
 // NOT kept: all regress and enlarge past retail; native false BL, temporary EBP and
 // independent header/object lookups remain. Original macros, virtual tuples and body restored.
+// m3 lane 15 r84 (fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout; control 49): `__assume`
+// on entity, this, info (at the top) or on object_index != NONE inside the valid arm: 49 each, same code; the early bool
+// result with the entity assume 77 (the listed early-bool code). No other unlisted natural form was found (see m3 lane 14
+// r84 and m3 lane 1 r98 above); body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

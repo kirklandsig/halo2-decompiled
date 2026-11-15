@@ -392,6 +392,10 @@ PRIVATE inline bool score_team_present(long team)
 	return result;
 }
 
+// score 4: only the load order of criteria and fallback in the two sort
+// contexts differs (retail loads criteria first). Aggregate initialization and
+// the statement order keep the same code. Permuter: 372 tries in 600 s, no
+// lower form.
 // @retail 0x23f3e0
 void function_23f3e0(s_score_display *display, long mode, bool fallback)
 {

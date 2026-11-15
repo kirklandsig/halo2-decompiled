@@ -3648,6 +3648,9 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
+// score 9: only the EAX/EDX roles in the `1 << controller_index` mask and the
+// zero store differ. A named controller_mask local keeps the same code.
+// Permuter: 295 tries in 600 s, no lower form.
 // @retail 0x2c5897
 void c_game_engine_variant_category_list::handle_item(s_controller_reference **controller, long *item)
 {
