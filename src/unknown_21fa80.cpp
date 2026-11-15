@@ -73,8 +73,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// score 544 (was 544): earlier 545.
 // MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
-// score 544 (was 544): earlier 545. full build; b2D 11-06 statement walk against retail found no logic difference
+// Full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
 // MiniMax A (11-12): no new form, no lower score (544); the file's fixed /Op still decides the mixed
 // arithmetic: the gain difference is computed on the x87 stack where retail subtracts in SSE and takes the
@@ -382,6 +383,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // stay in EBX where retail reloads them from the send record after each byte store); that with the fall-through two-case
 // mode switch 559 (1916 bytes, masked 234). Lead: retail's flag byte behaves like one address-taken bool that the
 // compiler treats as possibly aliasing the send record.
+// M3 lane 5 r186 (all plain with 0x21f8a0, 0x12aff0, 0x21e230, 0x2201f0, 0x2215d0, 0x2216f0; control 544): the gain
+// change named (`real gain_change = gain - stored;`) after `direct` 544 (the subtraction becomes retail's SSE subss, but
+// it is hoisted above the `changed` test and the float fabs overload still rounds its result); named right after `gain`
+// 544; that local as `double` 541 (fabs becomes a CRT call; matched 0x21f8a0 lost at 67, reverted at once); the named
+// float local tested as `fabs(gain_change) >= 0.1f` 544; the pitch clamp as if/else-if 544. Body unchanged.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

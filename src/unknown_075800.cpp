@@ -1465,6 +1465,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P511: Primary case 11 before 10/14/22/23/24/6/7, then before 14 with default-owned terminal 18:
 // 195/196/196/196/196/196/195/196 fast (control 196; full 143). NOT kept: one-point best; early ESI save remains.
 // Original complete classifiers, every case interior, lookup and handler tuple restored.
+// M3 lane 5 r186 (all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 143): cases 18 and 11
+// after 24 in the first switch with the three connection cases in a late switch 221 (473 B, 0x7afd0 5); the late 18
+// test written in the first switch's default arm 143 (r121's harness form, plain); case 11 after case 7 148 (positional);
+// explicit empty `return` cases for 1, 15, 16, 17, 19, 20, 21 after case 7 143 (jump table data only); `default: break;`
+// as the first switch's first label 143. Body unchanged.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

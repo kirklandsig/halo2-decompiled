@@ -1839,10 +1839,11 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// score 87 (was 87): round 112 (m3 lane 12) note at the end.
 // MiniMax G (11-14): no new form this round, unchanged (87; 89 on this build's reduced image): retail hoists the
 // walk's pool load into ebx and keeps the selection on the stack, ours keeps the pool in memory and the selection in
 // edi; the two walk helpers are shared with four matched functions and were left as they are.
-// score 87 (was 87): round 112 (m3 lane 12) note at the end. Retail hoists the walk's pool load into ebx and keeps the selection
+// Retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
 // MiniMax A (11-11, run 58): score 87 (was 87) as the notes above record it (89 on this build's reduced image,
@@ -2156,6 +2157,15 @@ void function_269250(long clump_index, long actor_index);
 // block then leads, retail lays the selected arm first), on the in-arm form 130; on the in-arm form the walk result as a
 // `byte *` cast to the group in the body 126 (same code), `selected` and `best` declared ahead of the walk 129. Body
 // unchanged.
+// M3 lane 5 r186 (fast with the eight matched neighbours, all still matched; 0x269040 106 throughout): the in-arm
+// compare (selection then best stored in the improving arm) re-measured 126 at retail's 480 B: it already gives retail's
+// x87 compare and retail's homes for the selection (+0x14), the score (+0x18) and best (+0x1c); left are the pool held in
+// EBX (ours reloads it from the walk at each use and gives EDI to the selection) and the found block's place. A 600 s
+// permuter run on that form (48 tries) reached 122 only by swapping call arguments (wrong values), not usable. On the
+// in-arm form: best declared before the selection 126; a `dword` selection 126; `g_4f55d0->active` passed to the walk
+// at each step with no snapshot local 126 (identical code: LTCG hoists the read across 0x268bb0 into the same stack
+// byte, so the snapshot is not what keeps it there); the team test as `actor->unknown024 == group->team` 126. On this
+// body, the walk given `g_4f55d0->active` with no snapshot local 87 (identical code). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
