@@ -549,6 +549,16 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 305/305/304/305, on this body 244/305/305/305/305/305/310/305; every added local breaks the edge loop's in-place
 // `mulss xmm3, [edx]` fold, and the cross's row j operand and the magnitude's j/i order stay wrong at every n, so they are not
 // a symbol-count phase. Body unchanged.
+// M3 lane 12 r124 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0, matched throughout; base 244; goto form = the held 34
+// form rebuilt on this body, with lane 2 r82's tail A/C orders 32 at 1605 B; plane2f = that form with the line as plane2f
+// {n, d}, 304 at 1612 B: its slots are retail's, but the second distance's `mulss xmm3, [edx]` fold into the normal's
+// register is lost). New, all fruitless: on the goto form the first-edge arm with `- line_distance` in each forward branch
+// (no `distance0 -= line_distance;`) 165 (1594 B), on plane2f 309; `vector2f const line_normal` and `real const
+// line_distance` 32 (same code); every dot through the shared 2-D dot with the points read as `(vector2f const *)` views 32
+// (same code); plane2f with the normal used through `vector2f *line_normal = &line.n` (0x239b80's idiom) 342 (1612 B).
+// Also on the goto form: the 3-D normal declared first in the function, after `last_distance`, or ahead of `edge` 32 each
+// (same code: the magnitude's j/i order and the cross's row j do not follow its symbol position); on plane2f, the offset
+// taken from the 3-D normal ahead of the planar copy 373 (1613 B), the line as one initializer 370 (1613 B).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

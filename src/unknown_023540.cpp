@@ -3045,6 +3045,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 
 // MiniMax H (11-14): no new form, no lower score (54).
 // MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.
+// MiniMax B (11-14): no new form, no lower score (54); the body is retail's length and the first difference is at
+// +0x527, where our scheduler issues each x87 coordinate step one slot ahead of retail's in both corner sets, so
+// what is left is the inlined rotation's schedule and the addresses of the globals that are not matched yet (ours
+// 0x862018 against retail's 0x45dbc0); the helper's spellings (192 forms) and the corner-call orders (24 forms) all
+// give the same code as this one.
 // score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
@@ -3851,6 +3856,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // 0x25e50's colour/scale references 11 (first.red's product operands swap; shift and pairs unchanged); the shifted word
 // declared before the clear and assigned after it 9; the alpha word through its own shifted local too 9; all four shifted
 // words (fraction, input, whole, alpha) named in parallel ahead of the first store 9.
+// M3 lane 3 r243 (fast, base 9; the stage stores follow source order, so the shift's place is the scheduler's): the
+// span clamp's `inverse_span = maximum;` ahead of the width 11 (the store then precedes the divide); the width taken
+// after the small exit from the clamped span 15, from maximum 15; the width written out at its two uses 41; offset's
+// zero declared at the negative-low test 1163; `small = true;` ahead of the two scalings 12 (the flag store moves
+// first); the exponent search as `for (exponent = 0; ...; exponent++);` 883 (4928 B, re-measured; the while form
+// stays). Body unchanged.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

@@ -973,6 +973,13 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // ahead of get_next_send, 82 (229 bytes); the message array taken into a pointer local at the top 77 (228 bytes), inside
 // the block 78, inside the block with the bound read from the member in the loop test 78 (229 bytes); `next > oldest`
 // tested ahead of the index helper with a named oldest (diagnostic, an implied test) 77 (230 bytes). The reduction stays.
+// M3 lane 13 r93 (fast with 0x96510/0x94df0, both stay matched; control 60): dead-local phase scan (n = 0..7, removed) 60 at
+// every n; the start `long next = m_next_sequence + 1;` read between the send test and the count test (nested ifs) 64; the
+// lookup through the existing reliable_stream_get_message 89 (221 B: the member-view loop body, retail's, but the count
+// folds oldest into `sub eax, [edi + 0x34]` and the preheader reloads it); the flag test as nested ifs 60 (same code); the
+// window pointer declared ahead of the send call for the count only, the index through the member, with the bound in a
+// local / in the loop test / the count in its own inner if 91/89/91 (221 B). Matched 0x94df0 reuses the count's oldest
+// because its loop start reads oldest; here no spelling merges the count's oldest without the early merge that reduces.
 // P500: Existing shared index-helper lower/upper guard and result graphs, eight complete forms:
 // 76/86/86/86/91/87/60/60. NOT kept: Strength reduction remains or native extent/register ownership regresses; no
 // exact result. Shared helper and every caller restored. Original complete executable body restored.

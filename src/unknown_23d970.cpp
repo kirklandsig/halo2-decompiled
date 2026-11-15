@@ -971,6 +971,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // `lea ecx` stores) re-measured 43; on it, `right` declared before `direction` 43, the cosine before the pointer 43, the
 // pointer for the three stores only (the call through the field) 43, and `right` renamed to sort the other way 43 (same
 // code: the name does not decide the colour tie). Body unchanged.
+// m3 lane 15 r85 (`--fast 0x23de50 0x1f0870`, control 45, register-masked aligned 12; 0x1f0870 stays 234). Re-measured:
+// cross3f_staged for the second product 217 (1270 B), function_1f087b reading forward through the output view 216 (1265 B).
+// New, both the same code as that 216: the view for the first product only, and for both products; the else arm's trig
+// results without the `(real)` casts 45 (same code); in the else arm the timer stored before the flags 51 and the velocity
+// copied before the offset 47. Re-measured: velocity copied from command->offset in both arms 45 (same code). The first difference
+// after the jump offsets is still the first product's right.i/right.j colours (xmm1/xmm2 for retail's xmm2/xmm1, the same
+// operations), then the second product's schedule (retail k, j, i, copying right's registers) and the else arm's j/k
+// stores through EDI (retail ECX). The k-first cross-module helpers, the setters and the angle helpers are listed above;
+// no further untried natural form found.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -6473,6 +6473,10 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // BLOCKED-BY 0x188180.
 // MiniMax G (11-14): no new form, no lower score (80): VC7.1 folds retail's redundant `jne` after the count test into one test, so its lea/test/jge/jne cannot be written.
 // MiniMax C (11-14): no new form kept, no lower score (80): the count test as count - 1 >= 0 || 0 == count - 1 (or with a last local) does compile to retail's lea/test/jge/jne exactly — MSVC folds count - 1 == 0 but not 0 == count - 1 — but the tail then pairs with retail's and scores 83 (82 with the g_47f05c global), so it is reverted; the global alone is 79 (under the bar), the typed zone 125, and the permuter found nothing below 83.
+// MiniMax D (11-14): no new form, no lower score (80): the frame is retail's 0x94 and what is left is register choice -
+// the contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte
+// test uses al against retail's cl, the material word comes from cx against retail's dx, and the down vector's three
+// components are still loaded in reverse and stored after the argument pushes.
 // score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
 // after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
 // contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al
@@ -6667,6 +6671,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
+// MiniMax E (11-14): no form lowers it (586 in the reduced build, 579 in the full one); retail's homes are animation_id, state
+// and definition at 0x24, 0x28 and 0x2c, ours state, definition and animation_id at the same slots, and retail keeps its early
+// `return still` out of line at 0xe2d6d where ours has it inline; the hand-written 0xb7430 copy still inlines 0x1c4a80 (22
+// extra instructions) and that needs a flags change in another file.
 // MiniMax R (11-09): no new form, no lower score (594 in the reduced build); the definition pointer and the state pointer take the next stack slot round from retail's, and the body is still 87 bytes longer than retail's.
 // MiniMax R (11-06): no new form, no lower score (594 in the reduced build); the frame agrees and the tag, state and animation homes of the note below are unchanged.
 // score 579 (was 588): round 101 (m3 lane 12) notes are at the end of this note. Earlier at 588 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency

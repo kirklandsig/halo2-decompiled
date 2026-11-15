@@ -96,6 +96,13 @@ PRIVATE byte *update_object_0a6430(long index)
 // 12, a long quotient local 12, the state byte read into a local just before the compare 12 and ahead of the object
 // 12, the typed 0x200 lookup 12; the 0x200 object alone bound as a reference 16 (same code). Lead: the natural form
 // that keeps the 0x100 object as a value of its own, with the byte load ahead of the quotient.
+// Round 105 (m3 lane 10, fast): the 0x200 lookup through a header pointer (earlier screened compile-only) 16 (same
+// code); the getter given internal linkage (`static`; the empty PRIVATE leaves it external) 16; all three objects
+// (0x40, 0x100, 0x200) bound as `byte *const &object` 12 at 548 bytes (round 90's code, not kept: one-use references);
+// on that, the 0x40 flag written in place at its store 38 (549 bytes). Diagnostic: the getter defined in
+// src/unknown_0a58d0.cpp so that LTCG, not the compiler, inlines it 16 (no change). Reading: the 0x100 object, the
+// compare's quotient and byte, the pushed states pointer and the 0x200 head each sit one scratch register off in
+// rotation; the reference form fixes only the first.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

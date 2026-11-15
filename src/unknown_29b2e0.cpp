@@ -505,6 +505,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // rotation helper's cosine before its sine 173, its cross terms ahead of the projection 171 (same code), the result copy ahead
 // of the two angle stores 177, both turn limits as conditional expressions 244 (1715 B). Retail keeps the rotation's sine at
 // +0x10, its cosine in arg_3's dead home and the final pitch in arg_4's; ours gives the two dead homes to sine and cosine.
+// M3 lane 16 r119 (fast with 0x29b990, 0x11ce20, 0x11cc90, 0x1e5450, all matched each time; control 176): the two angle
+// clamps in the other order 194; the pitch delta computed after the elevation limit 213; the second angle's sign folded
+// into a conditional around the 0x11ce20 call 302 (1724 B); the yaw and pitch deltas as named locals with each clamp
+// result added back in one statement 244 (1712 B); the object lookup ahead of the actor lookup 423 (1708 B, first +0x9).
+// Same code: the rotation helper's cross terms in j, k, i order; the helper made in place (vector, axis, angle); its
+// projection written `(1.0f - cosine) * (...)`. Retail's second rotation writes local_7 over local_3's dead home (+0x20),
+// ours over local_5's (+0x2c).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

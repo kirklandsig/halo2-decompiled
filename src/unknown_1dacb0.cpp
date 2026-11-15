@@ -1375,6 +1375,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // (`jne exit; jmp top` with the result carried in ECX to the 0x1dd9d0 push, the found test a `cmp word ptr` from memory), the
 // EBP zero in both requests' fifth kind and inheritance loop (the loop's `i = 0` held in EBP as in matched 0x1ddd00) and the
 // three extra epilogues; round 227's census still holds: no untried natural loop, return or declaration form is left.
+// m3 lane 4 r199 (fast with the twin, 0x1dc790, 0x1dc8c0, 0x1ddb90, 0x1ddc70, 0x1ddd00, 0x1db120, 0x1dd9d0, 0x2963f0,
+// 0x1dd560, 0x1236f0, 0x1ce180; control 828): the type request's lookup through the existing out-of-line 0x1db120 1640
+// (2179 B: it stays a call; 0x1ddb90 122, 0x1dc8c0 806); the inherited graph through the existing out-of-line 0x1dafc0
+// 1084 (2732 B; 0x1dc8c0 531); each resource loop with its own scoped counter 828 (same code); re-measured round 417's
+// levels: the kinds copy calling 0x1ddb90 2978 (854 B), the outer copy calling 0x1ddc70 3335 (497 B). Retail's EBP zero is the
+// inheritance loop's `i = 0` of the inlined 0x1ddd00 (whose out-of-line body keeps i in EBP and stores the offset from it):
+// here it is materialised before the fifth kind and serves that kind's NULL tests and both zero stores. Round 227's census
+// still holds: no other untried natural loop, return, declaration or helper form is left.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1712,6 +1720,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // MiniMax G (11-14): no new form, no lower score (828): re-measured in the batch; the frame agrees at 0x2c, but the
 // third iterator output still takes the dead `found_mode` argument slot instead of a frame slot, so retail's result
 // shorts sit at +0xc/+0xe where ours sit at +0x8/+0xa, and retail's EBP zero carrier in the second resource request
+// is still missing.  The opening compare also still takes the other way round (ours loads the compared argument into
+// ecx and holds -1 in edx, retail the other way round); the iterator fields initialised in retail's store order score
+// 828 again and the compare written as `!= NONE` in a block scores 1040, so both stay reverted.
 // is still missing.
 // P503: Existing resource truth parameters byte/short/long, independently at each expansion layer:
 // 828/1016/1016/1016/1016/1016/927/927/927. NOT kept: inner byte ties; other domains shorten away from retail,

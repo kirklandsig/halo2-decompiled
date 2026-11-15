@@ -533,6 +533,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax S (11-14): no new form, no lower score (126): the frame, the length and the layout are retail's, and what is
+// left is register colouring alone (the velocity copy's i in ECX where retail has EAX, the 1.0 constant in xmm2 against
+// retail's xmm3, the throttle load in xmm3 against xmm2, and the two normalise blocks). The velocity copy written x
+// first gives retail's registers but stores and squares y first (130), the copy as two scalar locals moves the stack
+// homes (153), and the permuter's 25 tries found only 125 with a volatile cast, a constant local and reordered
+// statements, none of which the rules allow, so the body stands.
 // MiniMax B (11-13): no new form, no lower score (126): the velocity copy still takes x in ECX and y in EAX where retail takes
 // x in EAX and y in ECX, the entry magnitude's schedule (retail adds i*i + j*j before squaring k, so its 1.0 lands in XMM3) and
 // the reversing atan2's operand order remain; the known leads (the planar velocity copy with y-first squares 122, the blend rows
@@ -3738,6 +3744,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // and reads the parity flags with lahf, so the two bodies have different shapes from the first difference on.
 // MiniMax C (11-14): no new form, no lower score (1000); the frame still reserves 0x78 against retail's
 // 0x74, so every stack home sits four bytes higher.
+// MiniMax S (11-14): no new form, no lower score (1000): the frame still reserves 0x78 against retail's 0x74, so every stack home sits four bytes higher, and retail keeps the matrix products in the XMM registers where this build spills them to the stack.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4469,6 +4476,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // cannot be swapped for the score.
 // P498: Whole projection inner-product traversal/input/operator forms regress; coordinated returned-byte and sole-caller-byte form scores 130 at 791/806 and also restores. Projection input/cross ranks, trig homes and byte transport remain.
 // Scores 224/212/210/216/257/271/257/271/130. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
+// MiniMax S (11-14): no new form, no lower score (118): retail's default arm keeps the angle on the x87 stack while ours takes the sine and cosine from the stack, and the dot product's first term and the first cross's operand order still follow the shared helpers.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4769,6 +4777,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // EAX here (movsx eax, ax; add eax, edi) and in EDI in retail (movsx ecx, ax; add edi, ecx), the definition
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
 // still stores its three components in the order i, k, j where retail stores them in another order.
+// MiniMax S (11-14): no new form, no lower score (48): the marker count sum still lands in EAX (movsx eax, ax; add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the count taken as the primary count and summed in place, and the sum's operands swapped, all compile to the same EAX form, and the scratch zero store still follows the sum.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -4927,6 +4936,11 @@ extern byte g_5107ee;
 // (the two pushes, the forward's `lea ecx`, the seed's `add edi, 4`, the result's `lea eax` last) is the right-to-left
 // evaluation of a cone function declared with the seed ahead of the forward, so no caller-side form can give it:
 // still BLOCKED-BY 0x146320, whose file this round's rules hold.
+// Round 83 (m3 lane 2, fast): the marker's forward in a named const pointer used by the cone call and the strength 2
+// (same code); `vector = direction;` for the assign call 42; the marker's matrix through a const pointer at every use 2;
+// the cone result written into the ray vector and copied to the direction 9; the position and forward each in a const
+// pointer 2. Every cone caller shows the same pair (0xf6060, 0x17c0e0, and 0xce6b0 orders forward, result, seed in
+// retail): it follows 0x146320's convention, BLOCKED-BY 0x146320 (src/unknown_146240.cpp, held this round).
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

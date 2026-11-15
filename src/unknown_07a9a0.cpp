@@ -1422,6 +1422,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // B); `result` declared after the validity exit 766 (same code); the group loop bounded by the summary's machine count 783;
 // `first` declared before `last` 766 (same code); `available` computed from out's player count after the out stores 879 (2764
 // B). Body unchanged.
+// M3 lane 1 r104 (fast with 0x73530, 8 throughout): the output memset below the admission test 815 (2812 B); the type-5
+// scan's exit as `return false;` 766, the machine-user compare as `memcmp(...) == 0` 766, the average as an explicit
+// division 766 (same code each); the player loop's variant lookup hoisted above the loop 846 (2796 B). Re-measured: a
+// `long` histogram 844 (frame 0xb4; the session still arrives on the stack in EBP).
 // P501: Loop-owned rejection in machine validation, group maximum, rated-player reduction, party count, group mask
 // and final admission, then complete graphs: 766/766/766/766/766/766/766/844. NOT kept: Seven graphs tie 766 and
 // leave the ingress/frame/lookup unchanged; complete native-width table regresses to 844 and shortens away from

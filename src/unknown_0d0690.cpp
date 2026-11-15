@@ -1687,6 +1687,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // masks 1/2/4/3/5/6/7, then backward complete transfers: 571/597/544/596/577/597/601/596.
 // NOT kept: all regress and shorten away from retail; secondary forms also lose the matched
 // caller. Original native copies, helpers and complete body restored; frame/result/carrier gaps remain.
+// M3 lane 8 r167 (fast with 0xd4080, 0x3db00, 0x3dfe0; base = lane 5 r182's lead patch, re-measured 452 at 2189 bytes, 0xd4080
+// 449, 0x3db00 MATCH): the mask written ahead of the flags, `(1 << (type + 1)) & flags`, 452 (VC keeps `test ebx, eax`);
+// the length renamed to sort after the normalize's magnitude (normal_length, size) 452 each (the two slots stay swapped);
+// the query's three leading reals as a vector3f member read as `query->normal` for the normal copy and the length, with
+// and without the input_normal pointer (0xd1e10's three stores renamed with it, 542 unchanged), 452/452 (retail's `mov
+// ecx, edi` copy pointer does not appear); the bias local ahead of the length, right after the normal copy, right after
+// the length store 568/568/569 (2176 bytes); the normal's square as dot3f(&normal, &normal) 524 (2198 bytes).
 // P500: Complete standard RGB bias/reflection/scale arithmetic, seven subsets, then both luminance producers:
 // 530/983/650/1012/660/1080/1110/1343. NOT kept: All regress; reflected/scale forms grow beyond retail and do not
 // recover native frame/result/carrier shape. Original complete executable body restored.

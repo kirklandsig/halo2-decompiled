@@ -1391,6 +1391,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // vector) 275. Same code (234): the second rotation row with its terms the other way round (`facing.i * input.j + facing.j *
 // input.i`) in the ground arm or the direct arm (retail computes that product first in both, but VC orders the sum itself);
 // the flying arm's two zero tests as `!function_30bf0(&left)`.
+// M3 lane 14 r95 (fast with the file's 13 functions, all unchanged): on this base the existing vector3f_add(current, &limited,
+// out + 0xc) for the general arm's output 540 (3047 B) makes that arm's tail retail's row by row (XMM3, XMM0, XMM0) and the
+// first arm then tail-merges into its k store as in retail, but the direct arm's vector3f_assign k store merges there too;
+// with the direct arm's rows as three assignments as well (the listed 469 form, re-measured) the direct arm's k row is retail's
+// and x/y take XMM1/XMM0 for retail's XMM2/XMM1 with the delta/limited homes swapped; on that 469 form: both lengths through
+// magnitude3d 580 (3031 B), the direct arm's speed read from the state at its uses 545. On this body: speed read at its uses
+// 429; the speed products as `rotated.x * speed` 234 (same code). Lead: the 469 form's direct arm (speed loaded after the
+// facing.i * input.j product, the speed register scaled by a copy, delta below limited) is what still shifts the rest.
 // P503: Independent general initial/fallback, history and paired basis copies, memcpy then memmove:
 // 234/554/234/546/232/339/234/614. NOT kept: The native-sized memcpy copies tie 234; history memcpy gains only two
 // at 3050 bytes, and all overlap-safe copies regress. No native damping or raw/bounded home recovery. Original

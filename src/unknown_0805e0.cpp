@@ -52,16 +52,16 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
+// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
+// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
+// ours shares one register for index and successor.
 // MiniMax H (11-14): no new form, no lower score (43): retail's entry pointer is the index scaled in place in
 // ESI, the successor is kept apart in EBX and the & 3 mask is hoisted into AL before the loop, while ours copies
 // the index into a second register for the entry pointer and keeps the successor in a general register; the forms
 // measured this round - the successor in its own local 51, the same with the successor stored at the loop's end
 // 52, the early-return shape 49 and the mask carried through the exclusion helper 49 - all score worse than the
 // kept 43, so the original body stands.
-// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
-// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
-// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
-// ours shares one register for index and successor.
 // MiniMax B (11-12): no new form, no lower score (43); retail reads the index straight into esi and scales it
 // in place (imul esi, esi, 0x68), keeps the successor in ebx, hoists the & 3 mask into al before the loop and
 // tests the successor at the loop's end (cmp ebx, -1), while ours copies the index into a second register for
@@ -428,6 +428,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // m3 lane 1 r103: reviewed, no trial run. Retail's shape is main's single `index` (`index = entry->next` gives the EBX successor
 // and the `mov esi, ebx` back-edge copy) once the guest mask is hoisted into AL; every loop, successor, result, test and helper
 // form for the hoist is listed above, and none outside the note was found.
+// m3 lane 9 r123 (fast, with 0x1a303b/0x2b393c, both kept): the record tests as an inline predicate with early returns 40
+// (re-measured); that predicate inside an entry predicate with the flag tests as early returns 40 (same code); the entry
+// predicate as the per-pass result 69 (139 bytes, each early return materialises false); the two flag tests as one
+// `continue` filter 43; a primed lookup in `for (;;)` with result/break, `if (next == NONE) break;` and the end lookup 39
+// (129 bytes: retail's early ESI save, but the end lookup runs through EDX and the live result keeps the mask an immediate).
 // P504: Existing offline predicate scalar-reference/scalar-pointer/player-pointer/player-reference and exclusion
 // byte-value/byte-reference/byte-pointer/player-reference contracts: 43/43/43/43/43/43/43/43. NOT kept: All eight
 // tie 43 at 127 bytes; no native early-save, independent successor, mask or failure-exit recovery. Both matched
