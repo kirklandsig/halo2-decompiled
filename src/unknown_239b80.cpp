@@ -665,6 +665,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // heading 116 (same code), current after the call 216 (791 B; prologue, frame, flag slot, points ESI and indices EBP all
 // retail's, but `count` keeps EBX for the whole function so the hull count only gets ECX); on that, `dword hull_count` 216,
 // lowest_y declared first 216, the closure as `!points2d_differ` 217.
+// P536: Explicit unrounded distance/heading/short-circuit absolute-result carriers,
+// subsets 1/2/4/3/5/6/7 then complete with both coordinate differences named:
+// 144/144/162/144/162/162/162/162. NOT kept: no exact result-transport/frame recovery;
+// original real consumers, private predicate and complete body restored.
+// P538: Actual missing-successor outcome at the terminal edge, positive/complementary
+// bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no native frame,
+// count/departure-home or compaction repair; original producer, terminal edge and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -731,6 +731,9 @@ extern point2f *g_468778;
 // `*(point2f *)&local_9` 384; the facing pointer declared inside the `!function_110ab0` block 378; the actor's facing through
 // a named pointer for its six reads 375 (aligned 265); the actor's position through a named pointer for its six reads 377.
 // Body unchanged.
+// P539: Isolated first facing-test outcome, positive/complementary bool/byte/short/long:
+// 377/377/377/377/377/377/377/377. NOT kept: no native entry/carrier repair or byte equality; original direct
+// comparison, early distance, all predicate calls and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

@@ -683,6 +683,9 @@ static inline bool teams_enabled_19e1c0()
 // cases) 419 (1473 B); both team admissions team test first 396; a named player pointer in the local-team case too 385; the
 // scoring mode read at each use 385. With the plain result ours enregisters token, token_length, event and result and leaves
 // `remaining` on the stack; retail gives `remaining` EBP and reloads the token for every compare.
+// P539: Complete signed copy-capacity outcomes bool/byte/short/long, inherited/ordinary result:
+// 432/432/523/522/691/691/691/691. NOT kept: all regress; ordinary results still merge name-copy tails.
+// Original result qualifier, direct signed clamps, text workspace and complete body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

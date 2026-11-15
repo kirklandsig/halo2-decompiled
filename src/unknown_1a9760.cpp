@@ -240,6 +240,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // 280 (927 bytes: called under this file's inline_depth(0)). Diagnostic, no flag store: 197 (989 bytes), and the block is
 // retail's instruction for instruction once the store is added back at slot 31, so retail's store has no ordering edge
 // with the row loads, where ours (indexed loop accesses) has one that delays the row loads a slot.
+// Round 108 (m3 lane 1, fast): the record pointer `s_actor_view *const` 4; the loop bound as `sizeof(local_3.n) /
+// sizeof(local_3.n[0])` 4; the rows indexed from each vector's first component, `(&local_0->position.x)[component]`, 4;
+// the flag through a `bool *const` to its field 4 (re-measured); a `byte` component counter 243 (960 bytes, not unrolled).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
