@@ -1062,6 +1062,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // declared ahead of the mask copy 240 (other code); node_count computed after the mask copy 240 (other code); sample and
 // both zero pointers ahead of the mask copy 239 (a declaration move, one point); final_matrices set after the mask copy 282
 // (822 B). Same code: `sample` written through its own address.
+// M3 lane 8 r169 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout): retail reads [header + 8] three times
+// (first test, `object`, bit-29 test) with no CSE between them. The bit-30 test in a bool declared ahead of the mask copy with
+// bit 29/+0x34b through header->object 276 (845 B; the load still sinks below the copy and the bit-29 test reuses it); that with
+// the 0xbfe20 clear 194 (814 B, round 78's lead again: the bool changes nothing); the early tests through the existing 0xbf5d0
+// (made `inline` at its /Ob1 definition so LTCG expands it) and 0xbfc90 274 (847 B; the second expansion re-reads the data
+// pointer and the object, where retail's +0xb3 test reuses the first test's object; 0xe01d0 548 -> 612; 0xbf5d0 restored); the
+// 194 lead with the awake test through 0xbfc90 290 (829 B); the 0xbfe20 clear passing `!sample` 289. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

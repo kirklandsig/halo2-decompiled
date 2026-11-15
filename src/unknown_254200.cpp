@@ -514,6 +514,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 2; the first quad's Begin and vertex calls through the IDirect3DDevice8_ wrappers with a NULL device (an extra inline level and an
 // unused parameter, no code) 2; the first block's texture-stage calls through IDirect3DDevice8_SetTextureStageState 465 (2236 bytes,
 // as with the reference casts dropped); the last quad through the IDirect3DDevice8_ wrappers 2. All restored.
+// Round 164 (m3 lane 7, fast; 0x254200 matched, 0x254490 4): descriptive names for the scale, the point, the colour
+// pointer, the two bitmaps, and all seven locals and parameters together 2 each (same code); the first quad (0x1cf50,
+// Begin, the four vertices, End and both pragmas) in a forceinline helper taking the colour pointer and the scale 2 (same
+// code), taking the colour and the lower and upper coordinates computed at the call 384 (2258 bytes). In this pair and in
+// 0x254490's, retail emits the two reloads in ascending register order (xmm0 first), ours in descending order; the
+// register each value gets already agrees.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -1243,6 +1243,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P502: Exclusive three-way cleanup choice, four producers at cleanup-local and entry scopes:
 // 289/290/264/290/289/290/264/290. NOT kept: all regress; native sentinel/squad/query homes and direct cleanup
 // comparisons remain unresolved. Original body/helper restored.
+// M3 lane 7 r163 (fast with the eight matched callees and the three callers, all MATCH): 1-7 unused locals 252 each;
+// lane 9's flag loop re-measured 298 (1258 bytes), with the unit arm first 236 (1263), with the palette count read at
+// each use 345 (1264), both 340 (1272); the squad bit as `bool flag = false; if (squad) flag = ...;` 253, on the flag
+// loop with the unit arm first 232.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1865,6 +1869,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax D (11-15): no new form, no lower score (251): naming the object-pool global in a local does not make it live in a
+// register, because the compiler reads the global again after any call it cannot prove pure (the opaque callee in another
+// file the notes above name): the local after the weapon options measures 278 (the copy is spilled to a stack slot and the
+// frame grows to 0x18), the local first measures 283 (the load moves above the actor), the local holding the header array
+// measures 301 (both loads move to the top), and the local used in the first block only compiles to the same 251 code.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
@@ -2152,6 +2161,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // result-first with a `long` loop index 333 (1186 B); block 2's grenade type through a fresh lookup with `unit` fetched
 // after the grenade-settings call 251 (same code: the lookup is still CSE'd across the pure call); the options fetched
 // before the actor pointer 300; one `long unit_index` for both blocks (no 0xcbd50 swap) 349 (1182 B).
+// P518: Complete lazy slot-pair present/missing results, bool/byte/short/long:
+// 251/251/251/251/251/251/251/251. NOT kept: no exact actor/options/pool residence;
+// original gates, lazy queries, observations and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

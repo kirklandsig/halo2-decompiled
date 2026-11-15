@@ -1947,6 +1947,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax D (11-15): no new form, no lower score (305): the pitch bounds read through a pointer to the pair (as retail does, `lea ..+8` with the lower short at +0 and the upper at +2) measures 305 on its own, and the parenthesised pitch sum that adds the playing pitch before the lower bound (retail's order) measures 418 in the plain build and 478 in the reduced one, because naming the pair flips the gain approach's add and shifts every later row; both are reverted and the body stands.
 // MiniMax C (11-14): no new form, no lower score (305): the detail request's view still stops at 0x8e bytes; extending it to 0x9c gives retail's frame of 0x128 and scores 301, under the keep bar, and to retail's 0xa0 bytes it is four bytes over again.
 // MiniMax H (11-14): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128, the
 // playback pointer is still in a slot where retail keeps it in EDI, and the pitch-range counts are still read once
@@ -2274,6 +2275,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // add still flips, lower bound still first); one `long i` shared by both pitch-range loops 305 (same code); a count in both
 // for-inits with the iterator set up ahead of the fills 361 (count alone re-measured 365: the fill's NONE stays in EDX and
 // the iterator count goes to memory); the gains array declared ahead of the sounds array 305 (same code).
+// P521: Current request declaration at function/datum/live-datum/detail scope, original then complete API storage:
+// Complete storage recovers reduced frame 0x128 and first +0x39, but only two points and 1908/1923 bytes.
+// 479/479/479/479/477/477/477/477. NOT kept: no exact native request/frame/owner recovery; original complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
