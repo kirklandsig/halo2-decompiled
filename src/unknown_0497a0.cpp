@@ -702,6 +702,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // has its declaration fixed in another file, which this lane may not change; re-measured at 233 (2592 bytes, against
 // retail's 2596). BLOCKED-BY 0x131e50's declaration.
 // MiniMax R (11-15): no new form, no lower score (233): the frame is still four bytes shorter than retail's, so every stack home below the top is off by four; retail keeps the u step and the V end in eight-byte spill slots at the top of the frame where this build keeps them in four-byte homes among the channel homes, and the first-edge Y, the half-width, the cursor and the colour homes differ with them.
+// MiniMax S (11-15): no new form, no lower score (233): the frame is still 0xa8 bytes against retail's 0xac, and the
+// u step and the V end still take four-byte homes among the channel slots where retail spills them to eight-byte
+// homes at the top of the frame, so the first-edge Y, the half-width, the cursor and the colour homes all differ;
+// this round the two vertex positions stored as aggregate copies give 631 (2716 bytes) and case 4's side length
+// through the existing length_sq3f gives 357 (2576 bytes), both regressions, so the body stands. The helper this body
+// calls at 0x131e50 has its declaration fixed in another file: BLOCKED-BY 0x131e50.
 // score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
