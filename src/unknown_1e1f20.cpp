@@ -608,6 +608,9 @@ void swarm_leader_detach(long actor_index);
 // instead of being materialised and re-derived after the callback; the iterator compare reloads the
 // actor pointer instead of comparing against the cached one; and the second parameter becomes a
 // Boolean before the 0x203ed0 call where retail pushes the raw value.
+// score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
+// keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
+// is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
 // MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
 // setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
 // actor through the pool; a permuter run was stopped at its time limit without reporting a variant.

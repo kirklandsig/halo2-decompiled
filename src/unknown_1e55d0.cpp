@@ -67,6 +67,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// score 319 (was 319): no new form and no lower score; the aligned 0x94 frame still agrees, but the move
+// pointer is in EDI here and in EBX in retail while the physics pointer trades it with it, and that swap is
+// settled by the stub for 0x1ec690 (src/stubs/bipeds.cpp).
 // MiniMax D (11-14): no new form, no lower score (319): the rate as a named local (one load instead of three) reaches 320, and the move/input registers still trade EBX and EDI, which the case-3 callee 0x1ec690's stub convention settles (BLOCKED-BY 0x1ec690).
 // MiniMax C (11-14): no new form, no lower score (319): retail's prologue takes the state pointer in EAX
 // and puts it in EBX, zeroes [EBX], then takes [ebp+0xc] into EDI; ours takes [ebp+0xc] into EBX and the

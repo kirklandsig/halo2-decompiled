@@ -1346,6 +1346,10 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// score 137 (was 137): no new form and no lower score; retail still computes the actor offset in EDX before
+// the frame pushes and keeps the actor pointer in EDI with the object pointer in ESI, where this build loads
+// the actor pool before the pushes and keeps the actor in ESI; a named offset local, the object lookup
+// first and the existing actor getter all measure 137 or worse.
 // MiniMax A (11-13): no new form, no lower score (137; the fast check reads 117): the actor address as the
 // folded sum of the pool pointer and the masked index compiles to the same bytes; the actor and object
 // pointers still take the other way round (ours actor in ESI and object in EDI, retail actor in EDI and
@@ -1707,6 +1711,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// score 238 (was 238): no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
+// +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
+// +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
+// xmm1 and multiplies the direction's y first where retail multiplies the x first.
 // MiniMax C (11-14): no new form, no lower score (238): with the side test written as a flag
 // (bool left = <dot> > 0.0f) every stack home lines up with retail (the direction at +0x1c/+0x20, the
 // radius at +0x14, the length in the dead origin slot at +0x54) but it scores 239, because the flag stays
