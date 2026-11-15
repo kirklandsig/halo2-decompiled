@@ -2053,6 +2053,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // Round 121 (m3 lane 9, fast), at 9: the update test split into nested ifs (graph index first, then both ids) 9 (same
 // code); a named `period` local for the definition's +0x20c read in each engine-overlay arm 133; the function channel's
 // byte read into a `long value` 92. No other untried natural form found for the header SIB pair or the three reloads.
+// Round 125 (m3 lane 9, fast), at 9: the forward speed as its k term then `+=` the j and i terms 9 (the sum then k first,
+// j/i swapped, the i term still forward-first; a += split either way); linear_velocity declared first 9; the four
+// top-level pointers `*const` 9; the final overlay loop testing NONE with `continue` 9; the forward speed written
+// straight into the fraction call (no `speed` local) 9 (all but the first the same code).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2967,6 +2971,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // plain `inline` 10 (same code here, but our inliner then expands 0xf5d70 at every site, as the forced form did:
 // 0xf1950 175 and 0xf5ee0 113 unmatch, 0xf6d10 821; retail expands it only here). Every other torque/loop-offset reference
 // change named above is listed with its score and none moves the pair; the packer's order between them is the open cause.
+// Round 125 (m3 lane 9, fast), at 10: the whole contact loop as an inline helper (state, torque, braking, sine, cosine)
+// 561 (641 bytes: not inlined), forced inline 24 (the slots unchanged, the second wrap's tail worse); the wrap helper's
+// period before the advance 10; the gear read at each use in the nested if 176 (byte compare, late movsx); the rotation
+// declared first in the loop body 10; the steer helper's parameters in fill order (rotation, sine, cosine, state,
+// contact) 10.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
