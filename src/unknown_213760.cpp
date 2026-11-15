@@ -1707,6 +1707,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P480 m3: Native by-value query/resize/write copy constructions, subsets 1/2/4/3/5/6/7,
 // then all four I/O boundaries on failure-only count flow: 43/43/35/36/32/32/32/39. NOT kept:
 // one-point gains to 32 fail the bar; original handles, helpers and complete body restored.
+// M3 lane 11 r100 (fast): on the 33 body, the header-read arm as `else if (cache_file_header_read(index))` with
+// `valid = true` 103 (that arm then has retail's `mov esi, 1` compares; the zero-store arm shifts the rest); with the
+// write success as a flag set by its own test (count scoped in the write block) 7 (round 53's plateau: left the write's
+// handle load and the checksum register EDX); on that a write-handle local 114 (917 B: write exact, the close loses
+// `mov ecx, eax` and the loop padding shrinks); write and resize handle locals 6 (round 56's form: resize EAX, header
+// address ECX, close copy EDX, each where retail has ECX/EDX/ECX; checksum then EAX as retail); on the 6 form the
+// write handle copied from the resize handle local 139 (917 B); on the 7 form write and close handle locals 114 (917 B;
+// aligned against retail only the close call's `mov ecx, eax` copy and two loop paddings differ: the copy appears when the
+// close argument is a scratch temporary one register after the test load, as in the 7 form). All match-only forms; the
+// 33 body is unchanged.
 // @retail 0x213970
 void function_213970(void)
 {

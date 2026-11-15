@@ -620,7 +620,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
-// score 184 (was 246; earlier 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
+// score 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
 // ruling): `inline` on 0x188790's definition, 113 alone and 49 with the ternary (build/r170/held-0x18cbc0.patch in the m3-lane6
 // worktree); round 170's line at the end of this note has the forms.
 // MiniMax E (11-10): no new form, no lower score (246); the literal 1 is still pooled in EBX, so the frame stays 0x84 against retail's 0x80 (a byte flag field 324, word bitfields 246 and the flag-0 bitfield test 324 all score the same or worse).
@@ -815,6 +815,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // the address of the owner field, which keeps the address out of the load; still different: the frame is 0x84
 // against retail's 0x80, the literal 1 is still pooled in EBX (retail tests with immediates and materialises it
 // only for the shift), and the audibility byte and the flag stores still take other registers.
+// M3 lane 14 r94 (fast with 0x188790, both as before; base 184, aligned 82, register-masked 48): the clear helper's flag set
+// through a byte view of the flags word 277 (1038 bytes: a load/or/store, not retail's `or byte ptr [edi], 2`). Reading: retail
+// keeps the object pointer in EBX because its caller treats 0x188790 as clobbering ECX and xmm0 (xmm0 re-zeroed after each call),
+// so the literal 1 never gets a register; ours keeps the object in ECX and the zero in xmm2 across those calls. At the end
+// retail shares the last `mov [edi+3], al` between the forced `audible = 1` and the outer `else audible = 0` (load/and/store,
+// laid out before the join); ours emits the else as `and byte ptr [edi+3], 0xf0` after the `ret`. Tried: the forced block as
+// `flags |= 1; audible = 1;` 183 (only the `or` moves up, as retail); the type-1 test inverted with `audible = 0` first 193.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

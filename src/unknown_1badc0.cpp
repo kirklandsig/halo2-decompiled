@@ -13,6 +13,12 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax D (11-14): no new form, no lower score (171): round 66's three order changes were measured again on this
+// tree - the copy source changed to local_1 (175), the result set before the output store (238), the clearance moved
+// into its use block (242) and all three together (232) - so every one of them is worse than the body below and the
+// body stands; what still differs is that retail computes the centre-minus-actor and the centre-minus-point
+// differences in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor
+// difference first.
 // MiniMax H (11-13): no new form, no lower score (171): the permuter's 41 tries in 311 s found nothing below 171,
 // and the difference still stands where retail computes the centre-minus-actor and the centre-minus-point differences
 // in the prologue and the point-minus-actor difference at its use, while ours forms the point-minus-actor difference first.

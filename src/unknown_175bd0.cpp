@@ -1882,6 +1882,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax E (11-14): no new form, no lower score (128): reading the location index into a local of its own makes the
+// head match retail's bytes but measures 124, a gain of four on a function still above 30, so it is not kept; reading
+// the zone byte from the cluster field instead of a copy makes the zone block match retail's bytes but measures 161,
+// since the definition reload and the alignment pad leave two extra instructions before the switch dispatch; the
+// particle system still takes EDI where retail keeps it in ESI, and the frame is still 0x40 against retail's 0x44.
 // MiniMax H (11-14): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 and the
 // spawn record still sits two frame slots lower than retail's, and the particle system still takes EDI where retail
 // keeps it in ESI; the header's zone helper, whose zone block then matches retail's byte for byte, measures 165 on
@@ -2452,6 +2457,9 @@ event_done:
 // MiniMax D (11-14): no new form, no lower score (63): the head still reads the object's index through the
 // folded address where retail adds the record base into the scaled index first and reads it back, and the
 // index is still cached across 0xbadc0 where retail reloads it; 0xbadc0's body is in another file.
+// MiniMax S (11-14): no new form, no lower score (63): the head's load stays folded into the datum address
+// because the base-plus-scaled-index pointer is formed by a helper in another file, so the add that precedes
+// the load in retail cannot be produced here; the body was re-measured and did not move.
 // score 63 (was 63): unchanged this round: retail adds the record base into the scaled index before its
 // first load and keeps the object's index in EAX across the validity call, where ours reads the field
 // before the add and caches the index in ESI; the validity callee's body is in another file, so the
@@ -3066,6 +3074,8 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // order alone 29; the record order alone 40. 0x189060, 0x107980, 0x166cd1, 0xf6670, 0x105dd0 and 0x1039a0 match in all
 // three, 0xceee0 (97) and 0xbf600 (50) are unchanged. The first difference is still the decal call's two register
 // arguments, BLOCKED-BY 0x17e670 (contributor).
+// M3 lane 10 r104: no trial. The first difference (+0x24f) is still the decal call's two register arguments into
+// 0x17e670 (contributor, unmatched), and the sound arms still need the held 0x189060 order (BLOCKED-BY 0xbf600's call).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3277,6 +3287,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax E (11-14): no new form, no lower score (93, was 93): retail keeps the particle system in ESI and the next
+// index in EDI, spills the definition pointer and reads the location mode at each call; this build gives the system
+// EDI and the next index ESI and caches the mode, so the frame is 0x4c against retail's 0x54. The per-call mode form
+// measures 108 here and drops the matched caller 0x176f60, which lives in another file.
 // MiniMax H (11-14), NOT kept (coordinator: a 2-point gain on a function still above 30 is under the keep bar; code
 // back to main, 93): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
 // measures 91 at 337 bytes with the matched caller 0x176f60 still matching; the same order with the

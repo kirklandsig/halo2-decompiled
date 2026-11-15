@@ -683,6 +683,9 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // match retail byte for byte, so the inlining is a whole-program decision of the LTCG group that the
 // other call sites in src/unknown_050690.cpp, src/unknown_1c25a0.cpp and src/unknown_29f5b0.cpp fix.
 // MiniMax G (11-14): no new form, no lower score (165): BLOCKED-BY src/unknown_175bd0.cpp, which needs "/Ob1" to keep 0x1765e0 out of line (with that flag this function scores 60).
+// MiniMax H (11-14): no new form, no lower score (165): retail calls 0x1765e0 out of line with the promoted
+// register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's 0x48, and
+// retail's parameter list differs from the declaration here, which the call sites in other files fix.
 // score 165 (was 165): unchanged this round: retail calls 0x1765e0 out of line with the promoted
 // register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's
 // 0x48; retail's own parameter list differs from the declaration here (the forward vector is third and
