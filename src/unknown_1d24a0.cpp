@@ -105,6 +105,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax H (11-14): no new form, no lower score (902): this round re-walked retail's listing block by
+// block against the source; the conditions, fields, constants and callee arguments agree, so what is
+// left opens with the frame and the entry's register roles, and the loop head's shape is settled in the
+// callee 0xbadc0's own file; the body is unchanged.
 // MiniMax E (11-14): no new form, no lower score (902): the frame is still 0x1f0 against retail's 0x1d4, so every
 // stack home differs; retail pushes EBX, forms the element pointer with `shl eax,3; add esi,eax` and keeps the
 // object index in EDI across the call to 0xbadc0, whose own file is off-limits here, so the loop head's shape and

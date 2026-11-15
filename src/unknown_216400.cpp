@@ -475,6 +475,14 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // the bool folds) (the last four repeat earlier rounds' forms); the result as `count != 4096 ? true : false` 32; a template
 // bounded-list type with a bool `add` member 151 (643 bytes), with the pointer `new_element` member 145 (651 bytes).
 // Permuter on this body (fast, anneal, 600 s): 84 tries, best 20. Pointer helper restored.
+// Round 101 (m3 lane 11, fast with the file's functions, unknown_216b60.cpp's and 0x215790, all others MATCH): a bool `add`
+// member of the list type defined in unknown_216b60.cpp (this-call, LTCG inlines it) with `result = count != 4096` and
+// memcpy into `entries[count++]` 32 (setne CL, count EAX, list EDX, the outside pairs rotated as every bool form); that
+// member in 0x216990's shape (false preset, `slot = count++`, aggregate copy, `result = true`) 54 (654 bytes, the bool
+// folds); the pointer helper with `index = count; count = index + 1; &entries[index]` 49 (lea for the new count, no
+// copy, 4 bytes short before the NULL test); a bool helper handing the slot back through a pointer out-parameter 32; a
+// `full = count == 4096` flag returned negated 32 (sete CL). Note: 0x216990 (src/unknown_215b40.cpp) appends to a table of
+// the same 0x40004-byte shape (count + 4096 records of 64 bytes) with the same `count != 0x1000` test. Pointer helper restored.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

@@ -1012,6 +1012,13 @@ struct s_device_machine_view
 // bool computed ahead of the machine test 129 (664 bytes). On the lane S form: the type/index test as an early `break`
 // with the rest unnested 2 (same code); the byte as `(byte)group_flags & 3` 2 (same code); a word mask carrier 14 (655
 // bytes). Lane S form restored.
+// M3 lane 1 r104 (fast; the compile-only screen is exact here): a file-local `__forceinline` getter with a NULL-default
+// result variable and direct masks 122 (656 B); the both-bits test in a `__forceinline` helper taking the device, called
+// after the machine test, 127 (657 B: the pointer shares EAX with retail's `mov ax, [eax+2]`, but the index stays live
+// across the machine test and the table base takes a pushed ESI); the machine flags declared ahead of the group pointer
+// and assigned after it 122; the group pointer with a masked `byte`/`dword` bits local read after the machine test
+// 115/117 (retail's `lea eax`, then `mov al, [eax+2]; and al, 3` or the movzx). Screens only: no inner `break`, a byte
+// or short copy of the word for one of the two tests, a bool for bit 0: all the pushed ESI.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1230,6 +1237,12 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax R (11-14, run 65): no new form, no lower score (121): the retail disassembly of 0x107ab0 shows no
+// prologue at all - ecx is the motion pointer, the five floats sit at [esp+4], [esp+8], [esp+0xc], [esp+0x10] and
+// [esp+0x14], the initial velocity arrives in xmm6 and the function returns with ret 0x14; this build pushes all
+// six floats and returns with ret 0x18, and the two matched callers (0x108600 and 0x108670) set xmm6 and push
+// only five floats. The split between xmm6 and the stack is the callee's own convention and the six-float
+// signature may not change here, so the clamp's xmm5/xmm7/xmm2 homes follow from it and the body stands.
 // MiniMax A (11-14): no new form, no lower score (121): retail takes the initial velocity in xmm6 with five stack
 // floats and returns with ret 0x14, while this build passes it on the stack and returns with ret 0x18, and the
 // six-float signature may not change; the clamp's register homes follow from that difference.
@@ -1939,6 +1952,25 @@ bool function_0b6760(s_index_pair const *pair);
 // which the position arm's 0x11eed0 sets its arguments up (retail takes the definition pointer into EDX and reads
 // the 0xc4 and 0xc0 terms early). The gain rests on the one-use rate local (coordinator 11-11: match-only): dropping
 // that one element alone gives 380, so this change stands or falls as a whole.
+// MiniMax I (11-14): no new form, no lower score (250): the 58 lead reproduces on this body (no volatile, the result after
+// the definition read, the 0xb3 byte as `<= 0`, the acceleration and the speed as one product added into a running value,
+// and the rate read into a local just before the power 0x11eed0 call) with retail's 1495 bytes and retail's prologue (the
+// index in esi, index * 12 in ebx, the device in ebp, the definition in edx, the result byte at +0xf); dropping its one-use
+// rate local gives 380 and no two-use spelling reproduces that allocation (the rate local before the delay test 250 with
+// the running-value products and 268 with them named, the function-level two-use local 281, that one with the delay test too
+// 381, the rate local alone on this body 256, the products as running sums 354, the volatile dropped 249, the result after
+// the definition read 247); `byte result` gives 245 and `byte result` with the reordered result and `<= 0` 245, both under
+// the eight-point gate, and a 300 s permuter run found nothing below 250. What is left of the 58 sits at the two channel-1
+// 0xb6760 calls, where retail has the channel pointer in esi and the state in ebx and ours has them in ecx and eax: retail
+// inlined 0xb6760 at the channel-0 sites and our /Ob1 leaf is no inline candidate, so that part is blocked by the flags.
+// MiniMax C (11-14): no new form, no lower score (250): retail's power arm passes the global game rate as the 0x11eed0 time step
+// (this source already does) and retail's prologue keeps the index in ESI and index * 12 in EBX where this build uses EDI and ESI;
+// dropping the volatile scores 386, a two-use rate local with the result declared after the definition 268, the 0x100 update as an
+// if/else 279 and the speed products named 332, so the body stands.
+// MiniMax C (11-15): no new form, no lower score (250): retail reads the saved definition pointer after the animation-state test
+// (its cmp word ptr [ebp+0x12a],-1 comes first) where this build reads it before, so declaring the saved definition after the
+// animation-state block is the natural lead; it measures 258, so the order stands. The prologue's index in EDI/ESI against
+// retail's ESI/EBX and the result byte at [esp+0xf] (ours in DL) are unchanged.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.

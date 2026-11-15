@@ -574,10 +574,22 @@ union s_185be7
 // known-false edge of the `local_3[11]` latch into the bit-4 clear arm (its own `[edi + 0x1c]` load); ours hoists the
 // load and keeps `~4` in ESI. No retail code or data takes 0x4ed284's address (58 plain memory operands), yet retail
 // re-reads it after the stores through arg_5.
+// MiniMax G (11-14): no new form, no lower score (590): retail loads the settings global into ECX after the first
+// register save and gives EBX to NONE, this build loads it into EBX before the saves and gives ECX to NONE, and the
+// root global is stored after the second save here and after the first in retail, so every later use of the root and
+// of NONE lands in the other register; the forms tried for that are in the notes below and none lowers the score.
 // MiniMax B (11-14, run 75): no new form, no lower score (590); the body is left as it was. What still differs: retail keeps the root
 // global in ECX and gives EBX to NONE, this build keeps the root global in EBX and gives ECX to NONE, and retail stores the first local
 // after `push ebp` while this build stores it before, so every later use of the root and of NONE lands in the other register; the
 // remaining register pressure comes from retail's out-of-line calls, which this build inlines.
+// m3 lane 11 r102 (plain; the fast check builds this function differently): retail treats 0x24590 like a callee LTCG cannot
+// see into (a /GL- file's): right after it retail remakes its XMM6 zero and later reloads the root global at the flag test,
+// the same way it treats the `_CIpow` call. Retail 0x24590 itself is pure x87, ours is LTCG-visible, and `inline` on it
+// was closed in round 109; a lead for the next round (its build model is the user's decision, not a source form). Forms:
+// local_2 zeroed by `= {0}` in place of its memset 1050 (3830 B); the two scratch arrays zeroed by `= {0}` 1001 (3798 B);
+// the controlled unit index named once for its four uses after the turn clamps 666; the root global held in a named local
+// for its two uses 590 (other code: two scheduling lines swap; the root stays in EBX); the arg_4 table selection as an
+// if/else 1012 (3795 B). Same code: the two scratch arrays declared at the top, the angle record declared before them.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

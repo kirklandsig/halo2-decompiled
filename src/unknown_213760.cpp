@@ -1717,6 +1717,19 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // aligned against retail only the close call's `mov ecx, eax` copy and two loop paddings differ: the copy appears when the
 // close argument is a scratch temporary one register after the test load, as in the 7 form). All match-only forms; the
 // 33 body is unchanged.
+// m3 lane 8 r168 (fast with 0x213800, 0x2149c0; on round 53's 7 form, rebuilt at 7): the header-string clears through a nested
+// one-byte clear helper 7 (same code); the checksum read as `file->unknown04 + 0x144` 7 (same code); `if (0x213800 call) valid =
+// a == b; else valid = false;` 15; the write's handle as an explicit `s_file_handle(*handle)` temporary 114 (917 B, the write-local
+// code), with the close's handle that way too 114; diagnostic dead local ahead of the 0x213800 header 7 (same code). Relative to the
+// 7 form the write-local and temporary forms are one register step behind from the write on (close copy coalesced, checksum EDX ->
+// ECX); retail is level with the 7 form at the close and one step ahead of it at the checksum (EAX). Body unchanged.
+// m3 lane 15 r85 (fast with 0x2138f0, 0x213800 and 0x2149c0, all MATCH; control 33, masked 14/10). Re-measured round 56's
+// 7 form (the count scoped in the write block with `if (bytes_written == 0x800) written = true;`, `else if
+// (cache_file_header_read(index))` with `valid = true`): 7, left the write's handle loaded after the flags zero and the
+// checksum load in EDX (retail EAX). New, all the same code as their base: on the 7 form `valid = true;` written only in
+// the range test's else 7, the write header declared at the top of the size-mismatch block 7, the path buffer declared
+// once above the loop 7; on main the write header at the top of the size-mismatch block 33 and the path buffer above the
+// loop 33.
 // @retail 0x213970
 void function_213970(void)
 {
