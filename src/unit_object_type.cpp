@@ -7340,6 +7340,17 @@ public:
 // declaration of 0x106030 (diagnostic, reverted at once) leaves it inlined (498). Ours keeps
 // weapon->definition_index and the pool data pointer in frame slots across the slot loop because the inlined
 // 0x106030 writes no memory; retail's call to it forces the reloads it shows.
+// MiniMax E (11-14): no new form, no lower score (492): the pool read for the two header lookups still compiles to
+// `mov eax,[0x4f4eac]; mov ecx,[eax + 0x44]` where retail loads the pool into ECX and reuses that register for the
+// data pointer (`mov ecx,[0x4e0300]; mov ecx,[ecx + 0x44]`), so retail's first lookup is `mov edx,[ecx + eax + 8]`
+// (the data as the base) and ours is `mov ebp,[eax + ecx + 8]` (the offset as the base). Worse: the pool and the data
+// in locals (the file's matched pattern) 500 (the data then takes EBP and EBP is pushed, retail keeps the data in
+// ECX); the data as a local of g_4e0300->data 500; the headers array in a local 500; the pool local used at both
+// lookups 492 (no change); the data local for the unit only and the macro for the weapon 507; empty/loaded declared
+// before the other flags 492 (no change). Still differs: the pool register, the base/index order of the first
+// lookup, the unit in EBP (retail keeps it in EDX and stores it), the weapon definition in a frame slot (retail keeps
+// it in ESI), the empty flag in a frame byte (retail keeps it in DL), the slot loop's induction registers and the
+// frame slot layout.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -9081,6 +9092,18 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax E (11-14): 493 -> 456 (2204 bytes vs retail 2229): the unit and the parent unit read through one pool
+// local (objects = g_4e0300 with its data pointer in data, the file's matched pattern), the material local typed
+// c_type_47f957 (its copies are word moves, as retail's) and the range read from the weapon definition at each use
+// (the frame is 0x17c as retail's; with a range local it is 0x180). The prologue now loads the unit index from the
+// stack first and keeps the pool in EDI with the unit in EBX, as retail does. Still differs: the tag table is in ECX
+// and the data pointer in ESI (retail: ESI and ECX), the definition is stored before the weapon index test (retail
+// stores it after), the -1 is materialised late (retail holds it in EBP and compares `cmp cx, bp`), and the
+// definition and unit sit in slots 0x50/0x58 (retail: the definition alone in 0x58). Worse: the pool local at every
+// lookup (543), the weapon index through the existing function_cbd50 (514) or as `= NONE; if` (473, 534), the NONE
+// locals declared before the weapon index (502, 537), the pool local without the data pointer (474), the tag table
+// as a local alone (487), the material class alone (487).
+// score 456 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
@@ -9131,6 +9154,9 @@ struct s_unit_melee_collision
 // retail still places the 0xcfc90 arm inline after 0xa9260, ours moves it to the end); the seat group byte as `byte`
 // 386 (same code); the parent index assigned after its two NONE tests 389. Without the class, the aim mix and the moved
 // declaration (only the 0xcbd50 call, range at each use and the seat macro) 538.
+// MiniMax E (11-15), NOT kept: 456 (was 493) spelled UNIT_GET out by hand (the pool's data pointer, & 0xffff,
+// * 12 + 8) instead of the existing accessor, wrapped the material index in a class, and read the range field
+// three times instead of the named local. Code back to main, notes kept.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
