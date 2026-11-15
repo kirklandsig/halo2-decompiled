@@ -1012,6 +1012,13 @@ struct s_device_machine_view
 // bool computed ahead of the machine test 129 (664 bytes). On the lane S form: the type/index test as an early `break`
 // with the rest unnested 2 (same code); the byte as `(byte)group_flags & 3` 2 (same code); a word mask carrier 14 (655
 // bytes). Lane S form restored.
+// M3 lane 1 r104 (fast; the compile-only screen is exact here): a file-local `__forceinline` getter with a NULL-default
+// result variable and direct masks 122 (656 B); the both-bits test in a `__forceinline` helper taking the device, called
+// after the machine test, 127 (657 B: the pointer shares EAX with retail's `mov ax, [eax+2]`, but the index stays live
+// across the machine test and the table base takes a pushed ESI); the machine flags declared ahead of the group pointer
+// and assigned after it 122; the group pointer with a masked `byte`/`dword` bits local read after the machine test
+// 115/117 (retail's `lea eax`, then `mov al, [eax+2]; and al, 3` or the movzx). Screens only: no inner `break`, a byte
+// or short copy of the word for one of the two tests, a bool for bit 0: all the pushed ESI.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
