@@ -142,6 +142,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // loads are not the open cause; the pointer is computed straight into EAX (the returned result) and the frame goes to ESI,
 // where retail reads the frame through the frame reference into EAX and computes the pointer in EBX. Stopped after two: the
 // result/pointer spellings are enumerated in rounds 80, 87 and 177 above.
+// Round 105 (m3 lane 10, fast; volatile-free forms): the test inverted with an early `return arguments` and `return NULL`
+// at the end 90 (277 bytes, no spill); the same with the count and type tests as two early returns 95 (266); the first
+// allocation written through the frame reference (0x208310's count form) with the result copy after it 95 (266), with
+// 0x207cf0's size local 95 (266); the failing test assigning `result = arguments` in its arm and the evaluation in the
+// else arm 90 (277: two epilogues, the pointer kept in EDX and copied to EAX at the return, frame reference in EAX).
+// Reading: retail needs the result (EAX) and the pointer (spilled) as two interfering values; every copy form here
+// coalesces them or defers the copy to the return.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

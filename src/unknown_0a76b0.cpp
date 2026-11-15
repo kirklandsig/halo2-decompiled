@@ -1125,6 +1125,13 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // P495: Corresponding blend products named in all rows: row-local aim/velocity/both 92/139/142;
 // full aim/velocity/both-aim-first/both-velocity-first phases 92/139/139/92; immutable complement on last 92.
 // NOT kept: ties or regressions; original vector homes, full arithmetic and body restored.
+// P505: Actual left-normalization magnitude/bool/byte/long fallback outcomes, conditional statement then complete
+// vector selection: 142/142/142/142/241/241/241/241. NOT kept: Every outcome regresses; native saved
+// projectile/type and shared vector homes remain unresolved. Both exact controls survive. Original complete
+// executable body restored.
+// P511: Complete terminal placement success/failure outcomes in bool/byte/short/long:
+// 92/92/92/92/92/92/92/92. NOT kept: all canonicalize without recovering saved projectile/type
+// and shared-vector homes. Original complete body and all call tuples restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1395,6 +1402,20 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // untried code-changing form is left for the exit order (rounds 21, 75, 153 and 156 above). New (counted): the notice as a
 // post-check after `done:` gated by a `no_grenades` flag set in the grenade test 112 (989 B: VC threads the flag, so the
 // grenade test still jumps straight to the notice, the block order stays ours, and 0x14de90 then inlines twice).
+// Round 102 (m3 lane 11, fast): what places the shared exit. With the notice body removed (diagnostic, 329) the exit follows
+// the success path and the immediate throw does not claim it; with the notice jumping to the exit it always follows the
+// notice, also with three more tests in the notice (86) or a store after its call (31), so neither its frequency nor its
+// last block decides it. New forms: the notice after `return result;`, entered by a goto and ending in its own `return
+// result;` 45 (958 B: that return folds to `xor al, al`, and the exit then follows the immediate throw); the immediate throw
+// and that notice both ending in `return result;` 74 (956 B: the exit now follows the success path and all ten failure jumps
+// reach it, as in retail, but both returns fold); that with `result = true` before the active-bit store 42 (960 B: the
+// success tail and exit are then byte-for-byte retail's: `mov eax, [ebx + 4]; or; mov byte [result], 1; mov [ebx + 4], eax`);
+// that with the entry lookup through the file's `objects` pool copy 39 (960 B; every remaining line is the two folded
+// returns, retail reads the result byte there, and the 4-byte shift they cause); the grenade test through a file-local inline
+// predicate 238 (946 B). Diagnostic: the result held with `animate` in one two-byte local aggregate still folds (48). So
+// retail's immediate and notice exits are late copies of the one shared exit, and our build gives that exit to the notice.
+// Re-measured, same code: the whole tail structured with no gotos (19), round 156's notice after the return left by `goto
+// done` (19).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2744,6 +2765,9 @@ __forceinline char unit_action_round(real value)
 // one `goto` to the single exit (the switch's default and mode-else fall out as `name == NONE` under `if (name != NONE)`,
 // the animation failure is the goto) 329 (1224 B), the score and length of lane 14 r83's goto-free single exit (threading
 // copies the 0xe9780 fallback block into the mode-1 path). No unlisted form for the seven causes the masked diff shows.
+// P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
+// 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
+// not recovered; original body restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

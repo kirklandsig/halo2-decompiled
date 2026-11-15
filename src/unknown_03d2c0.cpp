@@ -292,6 +292,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // found test 77 (same code); `initialize` declared first 79 (first difference +0x19); the walk's best index stored before its
 // age 79; the walk's first index declared ahead of the oldest age 91; the negative-age test as `0.0f > age` 77 (same code); the
 // record pool read once into a function-scope local used for all six pool accesses 77 (same code).
+// P509: Ordinary inline visibility at allocation/scan/state-output/update providers,
+// four isolated, three update pairs and all four: 77/77/77/77/77/77/77/77.
+// NOT kept: no cached-hit/merge/trailing-return equality; every declaration and body restored.
 // m3 lane 15 r85 (fast with 0x3db00, 0x3dd10 and 0x3d2c0, all MATCH; control 77, register- and stack-masked aligned 20).
 // Retail's own code shows the found path skips the merge test while the allocation-success path tests the allocated index
 // again (`cmp esi, -1; mov cl, 1; je`), so the merge test is on a copy of the allocation test's variable. Grid on lane 14

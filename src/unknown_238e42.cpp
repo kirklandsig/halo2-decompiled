@@ -888,6 +888,12 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax R (11-14, run 65): no new form, no lower score (90): the whole difference is still the colouring of the
+// two values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the
+// requested rank into ecx, so the removal call needs no copy, while this build keeps the pointer in ecx and the
+// rank in eax and copies the pointer into eax before the call, two bytes that shift every later jump. The
+// callee reads its member from eax (`mov ebx, eax`), so the colouring follows from that callee's own declaration,
+// which lives in src/online_teams.cpp, a file this lane may not edit; the body stands.
 // MiniMax H (11-14): no new form, no lower score (90): retail reloads the selected identity pointer into eax and keeps
 // the requested rank in ecx, so the removal call into the matched callee 0xac050 needs no copy, while this build keeps
 // the pointer in ecx and the rank in eax and copies the pointer into eax before the call; the two extra bytes are the
@@ -1230,6 +1236,10 @@ bool __stdcall function_2399da(long controller_index)
 // MiniMax A (11-14): no new form, no lower score (90); the identity pointer and the requested rank still take the
 // two registers the other way round, so ours copies the identity into eax before the removal call, and that copy
 // costs the two bytes that move every later jump.
+// M3 lane 10 r106 (fast with 0xac050/0xac360/0x2399da): the requested rank copied into a local at function entry 90; the
+// may-change flag as `(flags & 0x800) != 0` 90; the permission compare as `(long)member.dwPrivileges < own_rank` 91; the
+// rank read once through its own address at the dispatch 90, and through its address at each of the four uses 90 (all
+// but the third the same code): taking the parameter's address does not move it off the colouring tie.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

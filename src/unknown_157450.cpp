@@ -491,6 +491,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 0xc (129), the same with an early engine-index read (129), and an early engine local only moves the index and the
 // engine load above the stores (32). Left: the mask's word load and word spill, its one reload into ECX ahead of the
 // first jne, the playing teams in EDX and the engine index read at the head of the change block.
+// MiniMax E (11-15): no new form, no lower score (32): the word mask read through the pointer still gives retail's head and loop (77) but not its tail, the mask read off the field rematerialises it (129), and a one-use team-bit carrier (dword team_bit = 1 << team; present_teams |= team_bit;) is retail's loop and reaches 29 - not kept, it is a one-use local and 3 points is under the bar (MiniMax D's 11-14 form, dropped by the coordinator); what is left is the old mask's word load and word spill (retail's `mov cx` and a word store against our zero-extended ECX and a dword store), its one reload into ECX ahead of the first jne, the playing teams in EDX and the engine index read at the head of the change block.
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
 // D's form, not kept: score 29 (was 32): the old team mask is still zero-extended to a dword when it is loaded and spilled as a dword, where retail loads and spills a word; its reload into ECX ahead of the first jne also still differs.
 // MiniMax D (11-14), NOT kept (coordinator: the gain is a one-use `dword team_bit` local, kept only with a
@@ -809,6 +810,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // globals local on the word mask 77, on word and plain 63; the mask store as `(word)(old_team_mask | present_teams)` (the
 // uncast OR's code) on main 32, word 77, word and plain 63; the playing bit from the team local on main 45 (383 bytes).
 // P460: Original indexed added-team set in char/byte/short/word storage, dword then word saved mask: 82/82/83/83/77/77/78/78. NOT kept: native saved-word/shared-reload graph remains; original body restored.
+// Round 83 (m3 lane 2, fast): both saved masks as word 59; the engine test evaluated into a bool ahead of the two
+// field stores (retail loads the engine index first in that block) 110 (399 B); a 600 s permuter run on this body
+// (54 variants) nothing below 32; the saved playing mask as long 32 (same code); the two accumulators zeroed by one
+// chained assignment after their declarations 32 (same code).
+// P498: Saved-to-published mask accumulator, dword/word, compound/explicit OR and changed-region/unchanged-exit forms. Dword forms shorten to 381/390; word forms recover the entry and native length but miss the shared post-loop reload. Inherited local qualification is preserved.
+// Scores 100/100/100/100/77/77/77/77. NOT kept: no eligible exact native-frame/extent repair; original complete body restored.
 // @retail 0x158140
 void function_158140(void)
 {

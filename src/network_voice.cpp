@@ -1464,6 +1464,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // parameter and the cursor `const` 94 (same code). Re-measured: a named bit inside the membership helper 94 (MiniMax
 // S in 0x55c40 note); the identity helper called inside the product 165 (the in-loop flag). Listing of the listed
 // flag-first form (93): the channels argument becomes a stack argument loaded into EBP and the flag still takes BL.
+// MiniMax S (11-14): no new form, no lower score (94): the identity flag still takes bl where retail takes al, and
+// that moves the kept mask, the value load and the accumulate with it; every spelling of the flag (function scope,
+// declared first, wide, word, char) compiles to the same code.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1813,6 +1816,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // T105: Serializer channel/recipient moves and payload-return subsets 1..7:
 // 185/181/216/60/185/181/216; complete move pipeline 202. NOT kept: no
 // native zero/bit/size equality; copy forms lose the caller; original body restored.
+// M3 lane 14 r95 (fast with 0x56380, 0x53b00, 0x564c0): retail's EAX zero is a live variable up to the capacity-fail
+// exit (no literal zero reuses it, so the mask word takes ECX after the shift, the kept temporary EBX and capacity stays
+// in memory). New: direct `return NONE` for both failures with the length assigned to the result as the last statement
+// of the capacity block 154 (454 B, queue in EAX, ret 0x10, result in memory; 0x56380 73); has-player and the clamp as one
+// positive test `has && (player < 0 ? 0 : player > 15 ? 15 : player) == player` with `else result = NONE;` 169 (471 B);
+// the shared has-player helper as `((1 << player) & mask) != 0` 60 (same code, its users unchanged); the kept mask typed
+// word without casts 60 (same code); the player bit declared after the clamp 60 (same code). Re-measured: round 71's
+// NONE-then-0 result 151 (445 B, 0x56380 13).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2127,6 +2138,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // MiniMax H (11-13), NOT kept (coordinator): 85 -> 74 came from two new __forceinline twins of voice_port_flag1/2
 // (voice_port_flag1_inlined / voice_port_flag2_inlined) called at the inner loop's tests: new _inline twins of
 // existing functions are not kept (noinline ruling, 10-30).
+// MiniMax S (11-14): no new form, no lower score (85): reading the mode once into a local and comparing it with
+// 1, 2 and 3 gives 104 (retail keeps the mode in ecx and materialises the active test), so the two mode helpers
+// stay; what is left is retail's inner loop calling the port flag getter twice where this build calls the
+// out-of-line copy, and retail's remote mask in esi.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3645,6 +3660,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // MiniMax A (11-13): no new form, no lower score (139): a hoisted packet cursor (`byte *packet = data + 2`, advanced by
 // the packet size) scores 164 and a local copy of the channel compiles to the same bytes as the baseline, so retail's
 // split (the channel in ebp from the entry, the member spilled to the stack) stays out of reach here.
+// MiniMax D (11-14): no new form, no lower score (139): retail builds the route in the channel argument's own
+// slot, which only frees if the channel is copied to a register at entry, and its cursor is an absolute pointer
+// while the count is re-read from the data argument each pass; capturing the count in a local scores 166 and
+// recomputing the cursor from the counter at the loop's end scores 167, both worse than the 139 baseline.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).
@@ -3914,6 +3933,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // T107: Ordinary inline call metadata on settings/forwarding-route/XHV-query providers,
 // seven subsets 139 each, complete native packet cursor 164. NOT kept: no gain;
 // original provider declarations, independent call boundaries and full body restored.
+// M3 lane 14 r95 (fast with 0x564c0): retail's cursor starts with `add edi, 2` (an immediate beside the ECX = 2 that
+// size and consumed share), the shape a strength-reduced index product gives. New: consumed typed dword 139 (same code);
+// consumed typed short 161 (480 B, the packet rebuilt per iteration); the packet at `data + 2 + i * packet_size` 165 (478
+// B: it is strength-reduced into an EDI cursor, but the start shares ECX in the preheader and the member keeps EBP); a
+// `packets = data + 2` base ahead of the loop with `packets + i * packet_size` 166; the stride computed at the loop top
+// 160 (476 B). Re-measured: the packet cursor beside the count 164.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

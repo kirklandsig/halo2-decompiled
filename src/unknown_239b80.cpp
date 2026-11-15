@@ -616,6 +616,17 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // then standard float overloads: 161/161/161/161/161/161/161/161.
 // NOT kept: extra frame word and count/departure/produced-length homes
 // unchanged; original numeric APIs, predicate and complete body restored.
+// m3 lane 4 r199 (fast with the file's functions; 0x239d50 matched throughout; control 161). Retail read in full: one dword
+// hull counter at F+0x10, top-tested (`mov ebx, [F+0x10]; cmp bx, word [count]`), `indices[(short)hull_count] = current`
+// then the increment stored back, all three pass exits and the compaction's `j < i` exit into one epilogue returning BX,
+// the departure flag a byte in the indices home, `if (!left_start) left_start = differ(next, first)` (its y test with the
+// fxch), the closure positive (both coordinates `fld eps; fcompi; jbe head`, no fxch), the heading zeroed and the flag
+// cleared before the lowest scan, current reloaded from the count home after the classifier call. As plain C (one hull
+// counter in `while ((short)hull_count < count)`, `return hull_count;` at the three exits, that departure and closure, bool
+// flag and heading before the lowest scan): 262 (731 B: points EBP, count ESI, the pass test moves); current declared
+// before the call 262 (same code); the closure as `!points2d_differ(...)` 269 (747 B); a long flag 290; the heading and
+// flag after the lowest scan 289; the departure as `left_start = left_start || differ(next, first)` 262 (same code).
+// On this body: the three gotos as `return hull_count;` with the positive closure 170 (763 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -810,6 +821,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // retail takes ECX. The count stays a short in retail (the alias branch loads word ptr [ebp+8] and the
 // guard compares ax with word ptr [ebp+8]), so this is the count's lifetime inside the body and not its
 // width; the declaration that fixes its width lives in src/unknown_17d9a0.cpp, which is not mine to edit.
+// MiniMax I (11-15): no new form, no lower score (129): retail loads the count's four-byte home and keeps the low word
+// in CX for the loop guard, so the previous-side bool is spilled to esp+0xd, while this build loads the sixteen-bit home
+// and keeps the bool in CL; the home is read as a dword only when the parameter is a thirty-two-bit type, and that width
+// is fixed by the declaration in src/unknown_17d9a0.cpp, which is not this lane's file.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.
@@ -1118,6 +1133,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // short and a 32-bit count would also change that contributor's caller. The inside arm's copy written per member 129,
 // `previous = &points[i]` at the loop end 129 (same code each); the crossing point built in a point2f initializer and
 // stored whole 255 (899 bytes). Body unchanged at 129.
+// MiniMax G (11-14): no new form, no lower score (129): the count's width is still the first difference - retail reads
+// the argument as a dword home (`mov ecx, dword ptr [ebp + 8]; movsx edi, cx`) where this declaration's `short count`
+// is read as a word home - and that width is declared by the caller in src/unknown_17d9a0.cpp, so it cannot be changed
+// from this lane; the permuter gain recorded in the lines above needed `volatile` reads, so it stays discarded.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

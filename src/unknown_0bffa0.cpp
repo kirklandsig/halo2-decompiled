@@ -1284,6 +1284,15 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // of `center` 290 (same code); the scale computed before the centre projection 597 (2780 B).
 // M3 lane 7 r161: no unlisted natural form found (the first difference is the memset's `lea edi` scheduled inside the
 // bounds copy; the rest is the listed float operand order, the normalize sum and the projection rows).
+// m3 lane 8 r168 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): in light_projection_point_ab each row's sum order
+// moves with the order the three components are scaled: the scale statements as vk, vj,
+// vi (match-only, a statement order) 281 at retail's 2840 bytes; the rows then use retail's register pattern but hold other
+// components (ours fj vj + fk vk + fi vi, retail fj vj + fi vi + fk vk), and the point loads become i, j, then k where retail
+// loads j, k, then i. Grid of read order by scale order (36 forms): reads ijk or ikj with scales kji 281/281, jik 286/286, kij
+// 290/289, jki 297/297, ikj 299/298; reads beginning with j or k 479-532 (2814-2815 B). Also: the scale test `1.0f !=
+// matrix->scale` 479 (2815 B; one phase step, like a dead local), with +1..+7 dead locals 505-510; dead locals on main +1..+7
+// 479/480/480/484/483/483/479; the result products `transformed.i * scale` 290 and the scaling as `vi = scale * vi` 290 (same code);
+// the reference by if/else 574 and by a ternary copy 643 (re-measured). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

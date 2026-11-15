@@ -579,6 +579,15 @@ struct s_1af5c6
 // the ignore index's load (retail ahead of the first ray subtraction) and the 1-byte `and eax, 0xffff` (retail ECX).
 // Stopped there: rounds 86 and 216 place the remaining sites in 0x1c8df0's inlined body, and lane 14 r73 shows matched
 // 0x1b2770 lost once 0x1c8df0 inlines, so its noinline stays (BLOCKED-BY 0x1c8df0's call-site inlining).
+// Round 101 (m3 lane 11, fast, which now builds this function as the full check does, with the file's functions,
+// 0x1af810, 0x1b2770 and 0x1c8df0): the query's miss flag and fraction local in 0x1c8df0's form (`missed = true` / `missed =
+// false; fraction = field_4`, then `local_14 < 1.0f` and `local_14 * fraction < 1.0f`) 19 (the product then loads the
+// distance first; a flag set in a test plus a one-use field copy, not kept); the product test alone as `local_14 * field_4
+// < 1.0f` 20 (same code); the hit arm first with the miss return after it 54; the actor flag read after the cluster test 59
+// (573 bytes); the cluster index as a `short` with the query result in its own long 21 (the table read becomes `mov ax`).
+// Diagnostic (not kept): the ignore index's address taken 136 (frame 0x84). Left as before: the mask temp (EAX, retail ECX),
+// the ignore index's load (retail at the head of the block after the mask, as an IR load the scheduler hoists; ours right
+// before its push) and the distance's home (+0x10, retail +0x14).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

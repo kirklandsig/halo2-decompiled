@@ -516,6 +516,13 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // the section in EBX where retail keeps the BSP in EBX and the section in its stack home, the range,
 // plane and instance homes are rotated and the 0x16e1b0 output homes and the vertex joins still
 // differ; BLOCKED-BY 0x11e800 (its v0/v1/v2 registers) and by 0x16e1b0, both in other files.
+// MiniMax C (11-14): no new form, no lower score (172): retail holds the BSP global in EBX and keeps the section in its stack
+// home, this build keeps the BSP in EBP, and retail's third point component is stored at [esp+0x34]; the permuter's 315 seconds
+// (six tries) found nothing below 166: BLOCKED-BY 0x11e800.
+// MiniMax C (11-15): no new form, no lower score (172): retail zeroes its result byte next to the section's dword home
+// ([esp+0x13] against [esp+0x14]) before the type branch, this build keeps the result in a register, and declaring the result
+// above the branch so the zeroing lands in the prologue measures 197, so the body stands. The BSP global still takes EBX in retail
+// and EBP here, and the section pointer still takes retail's stack home against this build's EDX.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
@@ -698,6 +705,11 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // zero flag's frame slot is exchanged with the global's; the only spelling left is a declaration
 // order change (the bsp assignment before the point copy), which the rules ask to be reported
 // rather than made.
+// m3 lane 6 r181 (fast, control 172 = plain; aligned/register-masked 99/54): the vertex loop as `valid && vertex < 3` with
+// a plain assignment 273 (675 B: the loop is no longer unrolled); same code as the control: the vertex flag declared at
+// function scope beside the result and reset per triangle, the reference and surface selections as if/else statements.
+// Re-measured: the byte result declared first with `definition = NULL` at its declaration 185 (726 B, aligned 97/54; now
+// `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

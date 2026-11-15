@@ -285,6 +285,11 @@ long g_55e6c0;
 // lead's code); the offset declared after the width and height stores 31; the offset declared just before the level
 // loop 147 (493 bytes). Retail loads the count and hoists its compare above the kind store, then loads the height into
 // EAX after it; ours loads the height (EDX) first and the count into EAX after the kind store.
+// Round 105 (m3 lane 10, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the count
+// parameter renamed to sort after the height 29 (same code: the swap is not a name tie); the call's count read through
+// `*(long const volatile *)&count` 152 (487 bytes: the count goes to EBX at the top); the height stored after the data
+// pointer 30; the three zero stores (+0x7c, +8, +0xc) ahead of the clamp 35 (the swap stays); the upper bound as its own
+// store with the lower clamp a ternary in the else arm 152 (495 bytes, unmerged).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
