@@ -1363,6 +1363,23 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax R (11-15): no new form, no lower score (400). The frame is 0x114 against retail's 0x10c, and the homes are
+// measured from ebp: the source radius sits at -0xe4 against retail's -0xe0, the expanded radius at -0xd8 against
+// -0xdc, the source pointer at -0xdc against -0xe4, the node table pointer at -0xe8 against -0xe0, the origin at
+// -0x10c and -0x108 against retail's -0x108 and -0x104, the sector at -0x100 against -0xf8, the next index at -0x104
+// against -0x100, the found byte at -0x10e against -0x10a, the copied-last byte at -0x10d against -0x109, the two
+// selection indexes at -0xcc and -0xc4 against -0xa4 and -0xac and the step pointer at -0xc8 against -0x94; only
+// the count argument agrees, at -0xf4. Retail holds the global's count in edx, the zero in ebx, the count argument in
+// si, the step pointer in ecx and the node table pointer in edi, and it keeps the edge in ebx; ours holds the zero in
+// edx, the global's count in esi, the count argument in bx, the step pointer in edi and the node table pointer in ebx,
+// and keeps the edge in a stack slot. Dropped forms: writing the second side flag as !side at both use points, which
+// makes the frame 0x10c like retail's and puts the complement in bl with sete bl as in retail but frees a slot that
+// moves the other homes and raises the score to 434 (403 differing instructions and 31 bytes short); the edge value
+// declared outside the loop (400, unchanged); the previous-point pointer written into the corner call (459). A
+// permuter run over this body (48 tries in 302 s) found nothing better.
+// score 400 (was 400): the frame is 0x114 against retail's 0x10c, the registers holding the count, the zero and the
+// step pointer are swapped with retail's, and the frame homes of the radius pair, the origin, the flags and the edge
+// differ.
 // MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
 // source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
 // +0x34, and retail keeps the count in ebx where this build holds it in esi.
