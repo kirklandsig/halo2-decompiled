@@ -190,7 +190,7 @@ static inline long sound_effect_new(s_sound_effect_definition *definition)
 }
 
 /* starts a sound without an effect */
-static __forceinline long sound_start(s_sound_play_state *state, long tag_index)
+static inline long sound_start(s_sound_play_state *state, long tag_index)
 {
 	long result = NONE;
 	long listener_index;
@@ -528,7 +528,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax B (11-14): no new form, no lower score (181): retail's entry is push ecx, push ebx, push ebp with the state in EBX and ECX left alone, where this build takes the state in EDI and reserves eight bytes of frame; both take the state in EAX and the tag in the first stack slot, and the request convention is set by the caller 0x189fe0 in another lane's file: BLOCKED-BY 0x189fe0.
 // MiniMax A (11-13): no new form, no lower score (181): the entry takes its state in eax here and on the stack there, and the
 // argument order of the callee 0x189fe0 is fixed in another lane's file (BLOCKED-BY 0x189fe0).
-#undef sound_effect_delete
+// Not kept (MiniMax R, 11-15 batch 277): the 94 form (sound_start __forceinline and the sound_effect_delete
+// redirect lifted for this function) changes 0x189fe0's register use under /GL: its callers then pass the request
+// in EDX where retail uses EAX, and ten matched functions are lost (0x1890c0, 0x189340, 0x1895f0, 0x189650,
+// 0x1896c0, 0x189710, 0x189760, 0x189a50, 0x18bb80, 0xfcea0). The body stays at 181.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -567,7 +570,6 @@ long function_21d110(s_sound_play_state *state, long tag_index)
 	}
 	return function_125f70(tag_index, (s_looping_detail_request *)state, NULL);
 }
-#define sound_effect_delete function_21dcf1
 
 PRIVATE __forceinline long function_21d2c1(s_sound_effect_definition *arg_0)
 {
