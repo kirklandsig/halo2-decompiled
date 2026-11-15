@@ -520,6 +520,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // local_19 - local_26; local_26 = -local_26;` 381 (a statement order, not kept); the output step as an if/else
 // increment 389 (6 instructions longer); the group record pointer formed right after the group's bitmap set 429 (1576
 // bytes); the scan's best test written `local_24 < local_21` 382 (same code).
+// P537: Original visited-point bitmap outcome as raw dword mask, positive byte/short/long,
+// complementary bool/byte/short/long: eight 382s at 1596 bytes. NOT kept: no exact
+// truth/home recovery; original bitmaps, metrics, selected homes and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

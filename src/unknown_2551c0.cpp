@@ -877,6 +877,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // radius sum named at the radius read (`reach`, used by both tests, no radius or size local) 190 (953 B: the size read and
 // the 0x1e4a50 call move); the final side test as `local_11 + local_13 > ...` 17 and as `local_14 - local_11 < local_13 +
 // local_11` 17 (same code each: the lateral reload keeps XMM3, the maximum XMM2). Body unchanged at 87.
+// P534: Independently immutable original length/radius/lateral producers, six individual/pair
+// subsets, complete geometry with immutable target handle, then target handle alone: eight 87
+// at 963 bytes. Complete geometry-only const control also 87, excluded as listed. NOT kept:
+// unit-call scratch and scalar/query homes remain; original complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

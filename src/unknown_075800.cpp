@@ -1480,6 +1480,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // as the first switch's first label 143. Body unchanged.
 // P521: Single-terminal primary connection cases 5/6/7 after 4, 5/6/7 after 8, 5/6 after 9:
 // 195/195/193/195/195/192/195/195. NOT kept: no native delayed-save/outlined-handler match; original complete body restored.
+// P535: ESI-consuming primary cases 8/24 after each connection case, six independent then two paired adjacencies; reduced control 196, full 143. Best six-point preview lead is below the keep gate; delayed ESI save and terminal expansion remain.
+// 194/193/193/196/195/195/193/190. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
