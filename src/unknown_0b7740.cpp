@@ -1054,6 +1054,14 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // On round 179's 169 lead (re-measured 169, masked 37): what is left is the entry (retail loads input_matrices into EDX first
 // and copies it to EDI for the early exits, pushes EBX only before the +0xb3 test, forms the header with `lea [ecx + eax*4]`
 // and reuses the first test's object for +0xb3, where the lead re-derives the table lookup per test) and the fourth epilogue.
+// m3 lane 11 r102 (fast with 0xbfe60/0xbfe20/0xbdb60/0x137800, all matched throughout): the extra frame slot is `orientations`:
+// retail holds it in ESI from the `xor esi, esi` after the mask copy through the overlay test's two calls to the final loop,
+// where ours gives it a frame home because ESI holds the object's flags dword from the bit-30 test across the sample loop to
+// the clear (retail loads the flags into EDX ahead of the mask copy and loads them again for the clear, so nothing in its
+// loop keeps them). Forms: orientations declared before matrices 240 (other code: only the zero stores swap); `sample`
+// declared ahead of the mask copy 240 (other code); node_count computed after the mask copy 240 (other code); sample and
+// both zero pointers ahead of the mask copy 239 (a declaration move, one point); final_matrices set after the mask copy 282
+// (822 B). Same code: `sample` written through its own address.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

@@ -345,6 +345,13 @@ void function_2232a0(void)
 // MiniMax A (11-12, run 62): no new form, no lower score (90); a pretested `for` over the view count grows the
 // body to 589 bytes (150), and the tail is the 0x2b5d0 stub's inline body where retail calls the real function
 // (BLOCKED-BY src/stubs/lane_k.cpp).
+// m3 lane 11 r102 (fast, 0x223240 and 0x2232a0 MATCH each time): re-measured lane 8 r165's pretested `for` 168, with the view
+// count after the loop 117, plus the loop-top NULL 108 (the loop is then retail's but for the source in EDX against EAX and the
+// found arm's second `xor eax, eax`, the inlined 0x16f3a0 getter's own default, whose two missing bytes shift the tail). New:
+// the pretested loop as `while` with the increment at its end 117; the pretested `for` with the loop-top NULL and the found
+// arm first (`if (local_1 < 4) { if (g_4686c4 != NONE) ... } else local_1 = NONE;`) 109; the found arm through
+// `&g_4e9bd4[local_1].state` (the getter's own spelling) 79; the do-while with the loop-top NULL and the found arm as
+// `g_4686c4 == NONE ? 0 : ...` 122; the pretested `for` with the loop-top NULL and that conditional 108.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
