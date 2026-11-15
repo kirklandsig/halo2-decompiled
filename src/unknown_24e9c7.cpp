@@ -79,6 +79,11 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax S (11-15): no new form, no lower score (125, was 125): the file's /O2 flag measures 279, so it keeps /O1, and a
+// permuter run over this body (86 tries) stays at the starting score; a second run with a new seed reaches 121 only by making
+// the height volatile, which is not kept; retail computes the two across products right after the size and spills the second to
+// [ebp-8], which this build sinks into the side computation, so the result, kind and bitmap homes stay eight bytes above
+// retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.
 // score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax G (11-14): no new form, no lower score (125, was 125): retail's early across-product spill at [ebp-8] still has no counterpart here, so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5; the extra room comes from retail's scratch chain of summed values below the marker copy, which this build keeps in registers, and no form listed in the earlier rounds' notes produces that chain.
 // MiniMax B (11-12): no new form, no lower score (125, was 125): retail computes the two across products early and

@@ -711,6 +711,10 @@ void function_1a6d80(void)
 // the valid store as `? true : false` 15 (106 bytes). Unused locals between the table reads and the call 6 (dropped).
 // Round 107 (m3 lane 10, fast): `long group = owner->unknown004;` before the handler read with only the node-list read
 // through it 6, with only the count read through it 6 (both merge with the other read: the same code as the 6 form).
+// Round 128 (m3 lane 12, fast; a one-file LTCG harness of this file reproduces 6): the count output stored from a second
+// read of the table entry 59 (124 bytes); the count stored before the call and the call given `*count` 12; `long type = id;`
+// for the handler and both table reads 6 (same code); `__assume(node_count >= 0)` before the call, `__assume(valid && count)`
+// at the top 6/6 (diagnostics: no code-less allocation step; harness `__assume(id >= 0)` and `__assume(nodes != NULL)` 6/6).
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

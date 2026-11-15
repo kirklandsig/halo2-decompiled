@@ -510,6 +510,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // subsets then the shared difference producer: eight 702 at 3473 bytes.
 // NOT kept: frame remains 0x8c versus 0x88; native query/planar-point home sharing
 // does not recover. Original complete executable source restored.
+// P534: Immutable complete planar target/side-point/radial-displacement producers, seven subsets,
+// then all with immutable pre-blend snapshot: eight 702 at 3473 bytes. NOT kept: frame remains
+// 0x8c versus 0x88; native query/target home sharing does not recover. Original full body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -1092,6 +1092,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // and reads 209 (691 bytes); the signature case written ahead of the body case on this base 34 (same code); no default
 // arm 218 (695 bytes, a re-measure of the listed form); the scratch clamp as `MIN(remaining, size)` 35 (re-measure); the body
 // case's seek, read and signature update as three early `break` tests 34 (same code).
+// M3 lane 15 r90 (fast with the file's 20 functions; base 34, the no-total-local form re-measured 88): the signature and body
+// positions renamed to sort first (`a_position`) 34; `buffer` and `size` declared at function scope 34; the body block's
+// position declared (unassigned) ahead of `buffer` and `size` 34 (all three the same code: names and declaration order do not
+// move the size/position ESI/EDI pair); the shared job-buffer helper storing its two outputs before the owner and external
+// stores 34, but matched 0x2adb10 goes to 26 (not kept); the caller's body pointer in a two-use local 161 (689 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

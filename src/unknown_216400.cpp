@@ -489,6 +489,13 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // with its out-index (`*index = count - 1` after the copy, the caller's index unused) 54 (654 bytes, the bool folds), the
 // same with `result = count != 4096` 51. Retail 0x216990 shows the same `lea (count + 1); shl; store; lea dest` sequence
 // as this append. Pointer helper restored.
+// Round 166 (m3 lane 7, fast with 0x216400 0x216d70 0x216e50): the bool append re-measured 51; a dummy file-static update
+// (diagnostic) at function entry, the loop top, just before the append, the diagnostic arm's end, after XFindClose and after
+// the append on that form 215/171/63/44/46/59, the append block itself bool CL, count EAX, list EDX in every one (its
+// allocation is local to the block, not the outside rotation). The append written in the caller as `if (count == 4096)
+// break;` then memcpy into `entries[count++]` 54 (654 bytes), as `if (count != 4096) memcpy else break` 54; a generic bool
+// append over (count pointer, maximum, element base, element size, element) 51; a bool append taking the list and entry by
+// reference with an aggregate copy 57 (656 bytes); a bool append copying through the pointer helper 60 (668 bytes).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
