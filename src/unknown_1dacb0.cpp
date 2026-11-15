@@ -1728,6 +1728,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 828/1016/1016/1016/1016/1016/927/927/927. NOT kept: inner byte ties; other domains shorten away from retail,
 // and inner short/long plus middle domains also lose matched shared users. Native candidate/output packing
 // and late EBP zero remain. Original helper domains and complete body restored.
+// m3 lane 9 r124 (fast, 0x1dc790 matched throughout): one to seven unused locals ahead of `result` (diagnostic
+// phase scan) 828 at every count; the lookup's result pointer (`named`) declared at block scope 828; the per-pass lookup
+// nested under `if (weapon_type_entry)` with `while (weapon_type_entry && result.index == NONE)` 828; the
+// second request keyed on `iterator.graph` alone 962 (2791 B); the entry pointer initialised to NULL 828.
+// Retail's second request copies the found mode into EBP once (an inline-argument copy of the mode alone; the other
+// two found keys are read from their homes), the sign that retail's mode output was treated as escaping.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

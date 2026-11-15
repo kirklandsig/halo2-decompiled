@@ -1945,6 +1945,15 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // second vertex kept as a pointer in EDI (retail keeps the `%` result in EDX), and the reconstruction's two `out[axis]` stores
 // not merged (retail copies the zero into XMM0 and shares one store). Also: `radius * radius` at its use on this body 612 (2895
 // bytes); the clamp as `point_count < 8 ? point_count : 8` 606 (same code).
+// m3 lane 9 r124 (fast with 0x120790/0x16a440/0xc2d00/0x17a380/0x2469b0, all unchanged). LEAD (7 points, under the
+// keep bar): retail's inlined 0x120790 copies share one `out[axis]` store (`movaps xmm0, xmm2; jmp` to one movss), so
+// 0x120790's tail as one assignment `out[axis] = fabs(plane[axis]) < k_real_epsilon ? 0.f : <solve>;` keeps 0x120790
+// matched and gives 600 here through the existing solve helper, 599 (2884 B, plain-confirmed, 0x17dd80 453 unchanged)
+// with the plane solve written in the ternary (the if/else with the solve written out loses 0x120790, 9). Both restored.
+// On the one-store 0x120790: the next index named at the loop top 619 (2904 B); the second vertex pointer named first 591
+// (2855 B); `radius * radius` at its use 608; next index plus the square at its use 573; vertex pointer plus the square
+// 552 (2867 B). Left on it: retail reads the axis with `movsx edi, word` again for the second point (ours keeps it in
+// BX across both reconstructions), starts the `%` at the loop top, and stores the nearest FLT_MAX before the projection.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
