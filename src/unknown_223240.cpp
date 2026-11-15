@@ -75,7 +75,9 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
-// MiniMax G (11-14): score 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
+// arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
+// main at 79): score 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax E (11-14): no new form, no lower score (90 in this lane's measurement set; the earlier note records 79 under
 // its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
 // src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
@@ -375,26 +377,27 @@ void function_2234e0(void)
 	else
 		local_3 = 0;
 	long view_count = local_2 + 1;
-	while (local_0 < local_2)
+	do
 	{
-		byte const *local_5 = 0;
+		byte const *local_5;
 		for (++local_1; local_1 < 4; ++local_1)
 		{
 			if (local_player_exists(local_1))
 				break;
 		}
 		if (local_1 >= 4)
-			local_1 = NONE;
-		else
 		{
 			local_5 = 0;
-			if (g_4686c4 != NONE)
-				local_5 = g_4e9c8c[local_1].field_0;
+			local_1 = NONE;
 		}
+		else if (g_4686c4 != NONE)
+			local_5 = g_4e9c8c[local_1].field_0;
+		else
+			local_5 = 0;
 		function_223080(0, local_0, local_1, (s_223080 *)&g_47f0f8[local_0 + 1],
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
-	}
+	} while (local_0 < local_2);
 	function_2232a1(&g_47f0f8[view_count]);
 	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }
