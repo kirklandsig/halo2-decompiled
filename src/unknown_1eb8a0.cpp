@@ -563,6 +563,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P516: Shared two-use eager ramp-profile outputs, rise/fall/remainder result forms, full then half products:
 // fast 614/614/614/611/613/613/613/609; final form plain 617 (2888 B), caller matched.
 // NOT kept: five-point full-build gain is below eight; original coefficients, body and helper graph restored.
+// P519: existing complete setters at working sample/normalized workspace/activation
+// origin, graphs 1/2/4/3/5/6/7: 622/656/709/656/709/715/715;
+// independent initial output setter 670. NOT kept: no exact publication
+// match; original sample/direction homes, arithmetic and full body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

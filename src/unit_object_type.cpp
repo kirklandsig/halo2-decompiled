@@ -5328,6 +5328,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // MiniMax S (11-14): no new form, no lower score (169): the cross products' SSE load order and copies and the x87
 // forward term are unchanged; the earlier rounds' forms (the cross product helper, the staged one, the view angles,
 // the double scales and the scale statement orders) all land at 169.
+// P519: plain output-component loop 181; existing axes/full-transform
+// reconstruction 291/169; in-place axes/full transform 290/169;
+// independent axis outcomes 188; complete limit result 185; basis memmove 174.
+// NOT kept: no exact reconstruction/result/transfer match; original body restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -7756,6 +7760,10 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // requested zoom initialized before its test 290; complete rate producers 244;
 // sound aggregate 244; both last-level divisors named 244; full-scope sound request 278.
 // NOT kept: held outcome shortens to 1448/1470 bytes; other forms tie or regress.
+// P519: existing current-weapon provider 274; object getter at entry/zoom/all
+// acquisitions 244/244/244; contiguous word-setter loop 423;
+// packed control flags 506; dword bit-vector construction 473; double sound scale 273.
+// NOT kept: native frame/flag transfer unresolved; no exact storage/provider match.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
