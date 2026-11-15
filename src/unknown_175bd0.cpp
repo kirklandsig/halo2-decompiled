@@ -2104,7 +2104,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // `multiplied()` as the argument 179 (572 bytes, aligned 88), with a named multiplied 234 (488 bytes: the helper stays out of line;
 // 0x178eb0 13, 0x179020 11); colours read at the call 135 / 235 (out of line); parameters (effect, system, spawn) 179; (spawn,
 // system, effect) 179. Body unchanged.
-// MiniMax C (11-09): score 128 (was 128): the early colour home is still missing and the frame is
+// MiniMax C (11-09): earlier at 128 (was 128): the early colour home is still missing and the frame is
 // 0x40 against retail's 0x44. Untouched this round.
 // Round 161 (m3 lane 6, fast with 0x178eb0/0x179020/0x178bc0, all matched): matched 0x174a30's shape (colour locals read
 // before the spawn record, a named definition from 0x1751d0, both queries in the call's argument list) 187 (568 bytes);
@@ -2185,6 +2185,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // node conjunction/complementary disjunction, zone complement and paired negative
 // query producers 173/183/171/204. NOT kept: all regress/lengthen; first form loses both
 // exact callers. Original full body restored; early color/frame/query homes remain.
+// Round 84 (m3 lane 2, fast with 0x178eb0/0x179020, matched unless given): `&effect->location` held in an `s_location *`
+// local for the cluster test, set_location and both zone tests 142 at retail's 552 bytes (the definition then stays in
+// EDI from the loop's mode read to the placement switch, as retail; entry registers and frame unchanged); on it both
+// colours read into locals after set_location ahead of the spawn stores 178 (568 B), after the spawn stores 178 (568 B).
+// On the current body: the spawn stores as unknown, scale, location 124 (0x178eb0 4, 0x179020 6); the type-query
+// block's braces removed 128 (same code); both colours read into locals as the first statement 198 (572 B).
 // M3 lane 5 r183 (fast with 0x178eb0/0x179020, both matched throughout): lane 11 r97's early-colour lead (colours read
 // after the spawn stores, both queries in the colour call, location_point_in_zone_inline) re-measured 184 (568 B); on it:
 // the colour block through a forceinline helper taking the system by const reference 184, through a forceinline helper
@@ -3320,6 +3326,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // (the latter also drops the caller), the particle cursor moved out of the block gives 103, the next index read at
 // the end gives 107, the system declared before the effect gives 113 and the type query's locals lifted to the
 // function scope gives 91.
+// score 93 (was 93; 91 recorded before): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
 // Earlier at 91 (was 93; MiniMax H's block-scope form, not kept): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
 // it in ESI, so the homes of the two pointers, of the definition and of the cached mode sit at other offsets than
 // retail's; retail spills the definition and reads the mode at each call, which needs the per-call form that drops
@@ -3569,7 +3576,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // helper shared with 0x178c80, taking the spawn record (cursor store, type queries, colour call), six forms (parameter orders
 // system/effect/spawn, effect/system/spawn, spawn/system/effect; colours early or at the call; multiplied named or as the argument):
 // 185 each at 258 bytes (the helper stays out of line here; 0x176f60 25). Body unchanged.
-// MiniMax C (11-09): score 93 (was 93): the system pointer and the next index swap ESI and EDI
+// MiniMax C (11-09): earlier at 93 (was 93): the system pointer and the next index swap ESI and EDI
 // (retail keeps the system in ESI and the next index in EDI), retail's frame is 0x54 against our
 // 0x4c and it spills the definition pointer early. Untouched this round.
 // Round 161 (m3 lane 6, fast with 0x176f60/0x178bc0, both matched throughout), all on the spawn-record cursor with a long
@@ -3635,6 +3642,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 132/124/123/129/162; complete node conjunction/complementary disjunction and negative
 // query producers 113/138/112. NOT kept: all regress and lengthen; native frame,
 // definition spill and system/successor/color homes remain. Original full body restored.
+// Round 84 (m3 lane 2, fast with 0x176f60, matched unless given; this note's first line read 91, the baseline full check
+// measures 93): effect and particle system as `&((T *)pool->data)[index & 0xffff]` 93, the definition pointer const 93,
+// the location matrix as `transform4x3f const *` 93 (all same code); both colours read at the function top ahead of the
+// definition test 108 (0x176f60 25); the const definition with the mode read per call 108 (0x176f60 25).
 // M3 lane 5 r183 (fast with 0x176f60, matched unless given): mode read per call re-measured 108 (0x176f60 25); on the
 // spawn-record cursor with a long cached mode (cursor, mode, colour B, colour A; re-measured 87, 337 B): dead-local phase
 // scan n = 1..7 87 each (diagnostic, same code); the particle-location pointer declared at the loop body's top 87 (same

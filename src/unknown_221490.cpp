@@ -1052,6 +1052,11 @@ extern "C" void _ReadWriteBarrier(void);
 // memset 41.
 // Also round 163: the filter declared ahead of the I3DL2 parameters (barriers kept) 21; the helper's product as
 // `2000.0f * log10(gain)` 21 (plain; 0x220fd0 and 0x220e00 stay matched).
+// Round 94 (m3 lane 13, fast with 0x220e00, which stays matched): the three float stores right after the memset, ahead
+// of both volumes, 93 (672 bytes); between the two volumes 67 (672 bytes); right after the memset with both barriers
+// removed 91 (672 bytes); the two direct volumes pinned again at the call site, `PIN(volume(gain), -6400, 0)`, 255 (758
+// bytes); the I3DL2 settings filled by a static inline helper taking (globals, voice, decibels, parameters), no
+// barriers, 724 (kept out of line, 133 bytes).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

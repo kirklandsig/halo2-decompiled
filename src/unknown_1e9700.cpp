@@ -77,6 +77,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 
 // MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
 // MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
+// MiniMax E (11-15): no new form, no lower score (106): the old maximum read as a nested if instead of the conditional expression 111 (the maximum stays in EAX against retail's ECX); retail keeps the enable byte in AL and the maximum in ECX, loads the counter's word with `xor eax,eax; mov ax,[...]` against our zero-extended load, increments `word ptr [eax+edx+0x16]` where we compute the row pointer first, and re-reads the enable byte into CL after the counter store where our build keeps it in DL across that store.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
@@ -261,6 +262,7 @@ struct s_object_damage_view
 };
 
 // MiniMax H (11-14): no new form, no lower score (353): re-read the diff and the earlier rounds' thirteen trials; the frame stays 0x48 against retail's 0x50 and the three homes stay rotated, and every earlier trial (rounding in place, result lifetimes, short selections, direct duplicate skips, the history cursor) measured above 353.
+// MiniMax E (11-15): no new form, no lower score (353): the three homes stay rotated (ours victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c against retail's killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c), which only a change of the declaration order would turn round, and the history cursor stays biased +4.
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax H (11-12): no new form, no lower score (353): the history entries read through a named record
 // pointer (player_index, time and amount off one pointer) compile to the same bytes as the indexed form, and

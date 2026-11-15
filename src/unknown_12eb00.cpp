@@ -174,6 +174,12 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // previous-index store and used for the copy and blend 178 (1198 bytes); the two pin tests as nested ifs 11 (same code);
 // the pins written bound-first (`lo > x ? lo : hi < x ? hi : x`) 15.
 // Also round 163: the result as `short` 306 (1177 bytes); its increment as `local_1 = local_1 + 1` 11 (same code).
+// Round 94 (m3 lane 13, fast; both builds end `ret 8`): no result counter, a walking output pointer with the previous
+// index and the result as its difference from the output 316 (1222 bytes); in the blend, only the accumulator's offset
+// written out (`local_0[k][0] + j`) 11 (same code), only the entry's 11 (same code), only the destination's 113 (1206
+// bytes); the sample count read into a named bound before the accumulation loop 13. Diagnostic: the result renamed
+// `Added`, `_added` or `zz_added` 11 each (same code: the tie with the cluster cursor, a compiler IV, does not follow
+// names).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {
