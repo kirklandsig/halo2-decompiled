@@ -725,6 +725,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // with dot3f(&global, &axis) 173 (same code); that with the tail as `cos((real)(time * 0.001)) * cos(time * 0.0006f) +
 // (real)sin((real)(time * 0.005))` 158 (880 B: the tail is retail's x87 sequence, its float store +0x14 for +0x18), with the
 // projection before cross3f 163 (880 B). Body unchanged.
+// M3 lane 16 r119 (fast with 0x118140, 0x117c80, 0x30bf0, all matched; control 117; both sides end in a plain `ret`, the
+// convention is component EAX/output EBX in both): a `dword *seed` for the random state taken at entry and used by both
+// draws 136; cosine computed before sine as two statements 118; the rotation pair through sinf/cosf 117 (other code); the
+// definition lookup after the time product 160; the cross product as axis x old with the rows adding it 134 (881 B).
+// Same code: cosf for the opening oscillation, the record in its own local first, the axis drawn before sine/cosine.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -848,6 +853,10 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax S (11-14): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where ours calls them
+// (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in
+// EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side
+// loop and the outer vertex calls stand as they are.
 // MiniMax C (11-01): no new form, no lower score.
 // score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail

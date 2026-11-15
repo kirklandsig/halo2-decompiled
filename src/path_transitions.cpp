@@ -932,6 +932,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 295/295 (the actor load still comes first and pathfinding still arrives in EDX); the volatile result left uninitialized
 // and set false on case 1/6's failure path and after the switch 372 (1292 B). Same code as the base: `__assume(parent_point
 // != NULL)` at case 5's top, `__assume(state->pathfinding != NULL)` at case 2's top.
+// M3 lane 8 r167 (fast with 0x270d90 and 0x270400; control 218, register-masked 23): retail treats the actor index like
+// `out` (loaded at entry, EAX, so pathfinding moves to EBX and case 5's `cmp eax, -1` is scheduled at the case's top),
+// then reloads it from its slot in case 2. Tried: a local copy of the actor index at the top used at all three uses 219
+// (coalesced with the parameter); the actor test in a named bool at case 5's top 218; one vertices pointer local for case
+// 5's direction and position 218; the actor test as an outer if around the 0x270400 call 218; the surface pointer
+// declared ahead of the start-out pointer 218 (all four same code).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

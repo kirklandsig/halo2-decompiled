@@ -1830,6 +1830,7 @@ struct s_summary_player_sort_entry
 // MiniMax A (11-12): no new form, no lower score (339): retail holds the session pointer in ecx and the state word in edx
 // where ours holds them in ebx and ecx, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state
 // needs /arch:SSE, which this file's flags do not set.
+// MiniMax S (11-14): no new form, no lower score (339): retail holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

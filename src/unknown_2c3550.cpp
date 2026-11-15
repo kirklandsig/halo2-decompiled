@@ -601,6 +601,14 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
+// score lines below are merged into this one (m3 lane 11 r102).
+// MiniMax R (11-14, run 65): no new form, no lower score (675): the retail disassembly of 0x2c41b0 confirms the
+// prologue's shape - the path pointer is taken into ebx after the pushes, the success result is kept in the stack
+// byte at [esp+0x13] and the source radius is loaded before the 0.2f constant - where this build takes the path
+// pointer into eax before the pushes and keeps the result in a dword, so the obstacle, search and step homes that
+// follow differ from the first step block onwards. The frame 0x1f88 and the length agree with retail, the
+// permutation search over this body never beat its baseline, and no new form was found this round; the body stands.
 // MiniMax H (11-14): no new form, no lower score (675): the frame 0x1f88 and the length agree with retail, but the
 // prologue's homes do not: retail takes the path pointer into ebx after the pushes and keeps the success result in the
 // stack byte at [esp+0x13], where this build takes the path pointer into eax before the pushes and keeps the result in
@@ -614,7 +622,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and the
 // path pointer and the obstacle, search and step homes differ.
 // MiniMax G (11-10): no new form, no lower score (675).
-// score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
+// Earlier at 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
 // pathfinding read after the radius block; no new form, no lower score.
 // MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
@@ -795,7 +803,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // MiniMax H (11-13): no new form, no lower score (675); the frame agrees at 0x1f8c, but retail keeps the state
 // in EDX and the object index in ESI where ours keeps the count in EBP and the state in EDI, and the out
 // parameter's short type is still blocked by the declaration and the caller in path.cpp.
-// score 675 (was 675): retail's result is a stack byte, NONE sits in EBX and the step loop computes start and start_node
+// Earlier at 675 (was 675): retail's result is a stack byte, NONE sits in EBX and the step loop computes start and start_node
 // before the input pointer; register homes and the transform loops' short indices differ.
 // M3 lane 3 r225 (fast agrees with plain at 675; aligned [exact, stack-masked, register-masked] base [602, 524, 471]): bool result
 // 754 [610, 531, 458]; with first_output declared at entry (retail zeroes [esp+0x68] there and stores the word count into it at
@@ -835,6 +843,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // MiniMax A (11-14): no new form, no lower score (675); retail keeps its result in a stack byte and its pathfinding
 // pointer in ebx where ours keeps the result as a word and spills the pathfinding, and the homes of the flags and
 // of the type byte differ, so the two bodies stay laid out differently from the first instruction.
+// m3 lane 11 r102 (fast, 0x270930 MATCH throughout): `bool result` re-measured 754 (NONE then takes EBX as in retail, but
+// our build loads a zero into EDI and compares the out pointers and the cache against it, where retail tests each register
+// against itself and keeps the flag pointer in EDI; retail's first_output is a short zeroed at entry with a dword store and
+// rewritten with word stores). On bool result: the state-point add through the existing obstacle_list_add 795 (3006 B);
+// `flags` declared before `actor` 754; maximum_height declared before `actor` 754; the failure path's flag loop index as
+// short 752. On this body: that add through obstacle_list_add with first_output declared at the top 732. Diagnostic: the
+// add through a clean non-volatile inline copy of 0x2c0d00 725 (2966 B), so that inlining alone is not the cause.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

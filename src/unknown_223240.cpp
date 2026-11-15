@@ -75,6 +75,9 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
+// arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
+// main at 79): score 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // MiniMax E (11-14): no new form, no lower score (90 in this lane's measurement set; the earlier note records 79 under
 // its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
 // src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
@@ -345,6 +348,13 @@ void function_2232a0(void)
 // MiniMax A (11-12, run 62): no new form, no lower score (90); a pretested `for` over the view count grows the
 // body to 589 bytes (150), and the tail is the 0x2b5d0 stub's inline body where retail calls the real function
 // (BLOCKED-BY src/stubs/lane_k.cpp).
+// m3 lane 11 r102 (fast, 0x223240 and 0x2232a0 MATCH each time): re-measured lane 8 r165's pretested `for` 168, with the view
+// count after the loop 117, plus the loop-top NULL 108 (the loop is then retail's but for the source in EDX against EAX and the
+// found arm's second `xor eax, eax`, the inlined 0x16f3a0 getter's own default, whose two missing bytes shift the tail). New:
+// the pretested loop as `while` with the increment at its end 117; the pretested `for` with the loop-top NULL and the found
+// arm first (`if (local_1 < 4) { if (g_4686c4 != NONE) ... } else local_1 = NONE;`) 109; the found arm through
+// `&g_4e9bd4[local_1].state` (the getter's own spelling) 79; the do-while with the loop-top NULL and the found arm as
+// `g_4686c4 == NONE ? 0 : ...` 122; the pretested `for` with the loop-top NULL and that conditional 108.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

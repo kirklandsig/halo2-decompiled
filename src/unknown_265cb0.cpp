@@ -797,6 +797,10 @@ real function_30bf0(vector3f *vector);
 // declared at the endpoint block's top 84, the seats array declared at the facing block's top 84 (all same code), so
 // lexical scope does not pick the partner. Also same code: the settings pointer typed `byte const *` 84, the squared
 // distance `real const` 84.
+// P503: Existing cross/difference/squared-length force-inline declarations in seven sets, then all plus basis dot:
+// 84/84/84/84/84/84/84/84. NOT kept: All eight tie 84 at 1310 bytes, every calibrated file/provider/caller
+// measurement is unchanged, and no native scalar home, range ingress or cross-product schedule is recovered. All
+// experimental declarations removed. Original complete executable body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2541,6 +2545,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // dropped for `((byte *)actor)` at its 30 uses 168 (same code); the other actor as `other = NULL; if (index != NONE) other =
 // actor_get(index);` 382 (block layout moves); the prop flag through the `prop` local instead of the second prop_get 655
 // (2845 B: retail fetches it again); the players threshold typed short without the two casts 168 (same code).
+// P503: Actual actor/vehicle/unit provider references in seven sets, then readonly vehicle/unit providers:
+// 168/168/168/168/168/168/168/168. NOT kept: All eight tie 168 at 2880 bytes; iterator base/index encoding, player
+// table register, direction SIMD retention and scoring merge are unchanged. Reference-only allocation forms lack
+// byte equality. Original complete executable body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
