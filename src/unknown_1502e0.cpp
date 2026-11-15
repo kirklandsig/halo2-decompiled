@@ -922,7 +922,9 @@ struct s_tail_transfer_traits
 	s_tail_unit_state weapons[3];
 	byte grenades[2];
 };
-
+// MiniMax I (11-15): score 3 (was 144): the players are walked with the existing 16-byte s_player_iterator (player_queries.h),
+// the two slot fields are read as shorts and the third weapon keeps its NONE preset; left: the three object lookups address
+// [data + offset + 8] where retail has [offset + data + 8].
 // score 144 (was 144; 153 before): the third weapon comes from the selection paths without a NONE preset and the no-seat
 // slot lookups go through a pool copy, so retail's object-table reloads appear; from the selection loop on the
 // traits pointer still comes back in EBP where retail keeps it in EAX, and the counter sits at +0x1c against
@@ -1100,6 +1102,12 @@ struct s_tail_transfer_traits
 // counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
 // `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
 // cbe60 before the loop 161 (802 B). Body unchanged.
+// NOT kept (coordinator review, MiniMax I 11-15): 144 -> 3 rested on forms kept only with a byte match: each
+// weapon read through a second tail_object_get of the same unit (first_again, second_again), the pool global re-
+// read into second_objects, current_weapon/other_weapon locals holding NONE until set and then copied, other
+// initialised to NONE, and the player iterator typed s_player_iterator with its data member's address cast back to
+// s_record_pool_iterator *. A lead: the remaining 3 points may come from a natural spelling of the same double
+// lookup (an accessor written twice in the source).
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
