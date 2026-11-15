@@ -1492,6 +1492,7 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax E (11-15): no new form, no lower score (164): the two depletion queries still merge into one lookup where retail re-derives the second one, and retail's depleted flag still lives in bl with a third stack slot.
 // MiniMax B (11-12): no new form, no lower score (164); the permuter (57 tries, run with the 0xcbd50 context
 // because retail inlines that callee) finds nothing better than the baseline, and retail keeps the pool data
 // pointer in EBP, the unit index in ECX and the depleted flag in BL where ours keeps the data pointer in EDI
@@ -3923,6 +3924,7 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax E (11-15): no new form, no lower score (12): the definition and control stack homes are still swapped (ours 0x1c and 0x20, retail 0x20 and 0x1c), and the two flag bytes are still cleared after the set test where retail clears esp+0x11 then esp+0x10.
 // MiniMax S (11-15): no new form, no lower score (12); the permuter's reduced image scores 202 against the full image's 12, so it cannot search this body.
 // MiniMax S (11-14): no new form, no lower score (12): the definition and the control still take each other's stack homes (retail keeps the control at +0x1c and the definition at +0x20) and the two flag bytes are still cleared after the set test where retail clears them in the entry block; declaring the definition before the control gives 20, moving the two flags ahead of the lookup rebuilds the function at 682 bytes and takes the neighbouring 0x112070 to 3418, and the permuter (15 tries) found no candidate, so the body stands.
 // MiniMax A (11-12): no new form, no lower score (12); the definition and the control still take each
