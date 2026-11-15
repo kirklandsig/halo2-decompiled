@@ -4028,6 +4028,7 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
+// MiniMax C (11-15): no new form, no lower score (101): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (101); retail still expands 0x16f3a0 where ours keeps the call, which is a caller-side decision in a file I may not edit.
 // MiniMax H (11-11): no new form, no lower score (101); the body is unchanged, because the lookup of the
 // object type is still expanded where retail calls it out of line and the depth pair that would keep it
@@ -4663,6 +4664,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax C (11-15): no new form, no lower score (535): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (535); retail still expands 0x1420f0 and 0x11c120, which carry noinline declarations on main.
 // MiniMax C (11-14): no new form, no lower score (535): the frame is still 0x134 against retail's 0xe8 and
 // 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line; keeping them out of line

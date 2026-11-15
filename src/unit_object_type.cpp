@@ -7991,6 +7991,8 @@ struct s_unit_turn_state_view
 	word unknown7 : 1;
 };
 
+// MiniMax C (11-15): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
+// 0x11f0d0 differently): the body stands as found.
 // MiniMax G (11-14): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
 // 0x11f0d0 differently): the moved flag still sits in a register where retail keeps it in a stack byte, the state and
 // aim pointers still take the other register roles, and the two divisions by the stored step still share one
