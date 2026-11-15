@@ -858,6 +858,10 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // the XMM2/XMM3 swap never), and on the adjusted-in-length form 17 at n = 0..3 with groups retail's and 0x14/0x18 still
 // swapped; the tag table in a function-scope pointer 235 (972 B; round 179's 76 lead does not carry over); the biped
 // definition in a named pointer 17 (same code). Body unchanged at 87.
+// P500: Existing unit/properties/location/side/animation/callback ordinary-inline contracts, six individual and
+// two complete graphs: 87/87/87/87/87/87/87/87. NOT kept: All eight tie 87 at native frame and extent; the unit
+// argument and subsequent scalar/query homes do not move. Every declaration restored. Original complete executable
+// body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

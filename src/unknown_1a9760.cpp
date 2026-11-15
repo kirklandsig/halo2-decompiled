@@ -228,6 +228,10 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // schedule); on that, the flag store ahead of the copy 4. Source forms: `facing` as a value copy of unknown290 227 (1016
 // bytes); unit as `local_2.x / local_4` per component 4; each row as `(position - offset) + half step` 204 (1007 bytes);
 // the prop record typed with its short unknown00 field 4; the half step as the double `0.5` 219 (985 bytes).
+// Round 101 (m3 lane 11, fast): the else arm's `local_2 = local_3` as memcpy (local_3 address-taken) 4 (same code);
+// the degenerate test in double without the float cast 5 (the constant becomes a qword); the direction copy after
+// the rows 4 (same code); an `unsigned long` component counter on this base 4 (same code); a 600 s annealing
+// permuter run (seed 101): 57 tries, none below 4. Restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

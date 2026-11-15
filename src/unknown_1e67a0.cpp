@@ -1109,6 +1109,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // products (ours loads axis.j/axis.k and multiplies by the vector's registers, retail copies v.j/v.k and multiplies by the axis
 // from memory); its body sits in src/unknown_1eb8a0.cpp, where every listed body form loses matched 0x1ecf50 or raises another
 // user, and the rest (side dots, flag byte, exits) is the listed commutative-operand and flag group.
+// m3 lane 4 r199: reviewed (listing re-read against retail), no code-changing trial found. The first difference (+0x1f3) and the 7-byte gap
+// are the inlined rotate_direction's four products (ours loads axis.j/axis.k and multiplies by the vector's registers, 5-byte
+// `movss` where retail copies the register with a 3-byte `movaps` and multiplies from memory); its body sits in
+// src/unknown_1eb8a0.cpp, an Avoid file again this round. The rest (initial_cross's schedule, the side-dot order, the
+// moved-away flag byte, both exits' load-all-then-store copies with ESI as the third register) is the listed group: member
+// copy, memcpy (same code), memmove (99, adds calls), the by-value setter, the joined exit and the flag and dot forms above.
+// Same code (fast): the five flag statements as `b ? (flags |= 1) : (flags &= ~1);` expressions; the animation test through
+// the typed channel fields (`channels[0].graph_tag_index`, `channels[0].animation_id.index`).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

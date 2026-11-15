@@ -179,6 +179,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // Round 162 (m3 lane 8, fast with 0x2008fc 0x200891; control 14): each corner copied from the running position and then
 // offset (0x24ecae's idiom) 181 (921 bytes); the pulse pointer computed before the bitmap entry pointer 14 (identical).
 // A compile-only build without /GL does not reproduce the draw block (the pulse helper's return register differs).
+// Round 122 (m3 lane 9, fast with 0x2008fc 0x200891; control 14): 0-7 unused locals at the top 14 at every phase; the draw
+// pulse, bitmap entry and sequence entry pointers each as pointers to const 14/14/14; the corner array declared at function
+// scope 14 (all same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

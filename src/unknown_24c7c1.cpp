@@ -556,6 +556,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
+// keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
+// packs the predicates at -0x14/-0xd/-2 and spills `left` as a dword at -0x50; the only spelling that produces
+// retail's word store is an invented two-short aggregate whose other half the function never touches, which review
+// rejects, and the best keepable form (const short left) measures 109, a gain of five, under the keep bar. The
+// body stands.
 // MiniMax B (11-14): no new form, no lower score (115): retail keeps the view at -0x44, the font at -0x50, the line
 // height at -0x14, the player at -0x40, the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at
 // -0x3c, while this build puts the view at -0x30, the font at -0x4c, the line height at -0x18, the player at -0x3c and

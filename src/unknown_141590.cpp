@@ -1277,6 +1277,9 @@ void function_143250(
 // the two early returns as nested `order > 2` / `order > 3` blocks (one exit) 1333, only the first nested 1333;
 // `result[0]` stored after the nine band-one matrix stores 1333; the nine rotation locals in one declaration 1333 (all the
 // same code). Body unchanged.
+// P500: Current-polynomial actual 3x3/5x5/7x7 matrix lifetimes, seven subsets, then all entry declarations:
+// 1420/1420/1333/1420/1420/1435/1420/1420. NOT kept: No native spill-home/frame recovery: all tie or regress and
+// separate workspaces shorten away from retail. Original complete executable body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
