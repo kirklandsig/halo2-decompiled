@@ -1018,6 +1018,8 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // matched). In retail's graph the cycle holding function_1c4040 has 145 members and is first reached at 0x1ca290
 // (src/ai.cpp) in link order; most members sit in src/bipeds.cpp, src/damage.cpp, src/unknown_0b8ca0.cpp and
 // src/unknown_0b7740.cpp.
+// Round 127 (m3 lane 12): no body form can move the one difference (0x1c4040's convention, see its note); measured with
+// the walk trials there (1 in each).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1263,6 +1265,25 @@ struct s_1c4040
 // m3 lane 7 r159 (fast): the parameters as (active, attempt) at the definition, both declarations and both calls 11
 // (active in CL, attempt in EDX); 0x1c3f30 defined after this function 8; 0x146bf0 defined first in
 // src/unknown_146a20.cpp 8; 0x1c3770 defined after this function 8; this function moved to the end of its file 8.
+// Round 127 (m3 lane 12): lane 7 r127's walk model rerun on today's tree no longer makes this function custom with its P9 set.
+// Over the 69 first-mention moves in files open to machine 3 (src/damage.cpp, src/unit_object_type.cpp and src/projectiles.cpp
+// hold contributor code), the only single move that makes it custom is 0x146bf0 first in src/unknown_278f00.cpp, and every
+// pair (4692) and every triple with that move (2300) also flips 0x1c3770 (matched) and 0x1d1540. Measured (fast): the custom
+// body (array store without its cast, fixed island through g_51e9a4) with 0x146bf0 before 0x1c3770 in src/unknown_278f00.cpp
+// 34 (538 B, still DL; 0x1d1540 215, eight matched lost: 0xb8890, 0xe16b0, 0x1c35f0, 0x1c3770, 0x1c39c0, 0x278f00, 0xf0fd0,
+// 0x1c54b0). Retail's first cycle member in link order, 0x1ca290 (src/ai.cpp), enters through 0x290250 -> 0x2902b0 -> 0xb7b40
+// -> 0x146bf0; ours has no edges past 0x290250 there and enters through 0xdc4a0 (src/bipeds.cpp). In the model, retail's edges
+// for 0x290250 and 0x2902b0 (with or without 0xb7b40) make this function custom but also 0x1d1540, and flip matched 0xb7290,
+// 0xb8600, 0xd6800, 0xdae60 and 0x1ca290; with 0xb8540 and 0xb7430 added it is default again. BLOCKED-BY 0x2902b0 and
+// 0xb7b40 (their bodies), or a walk entry through contributor code.
+// Measured (fast) on today's tree: 0xb7b40's draft enabled with the custom body 17 (still DL, nothing listed lost); that with
+// 0x146bf0 before 0x1c3770 in src/unknown_278f00.cpp 34 (still DL, the same eight lost).
+// The custom body with 0x146bf0 before 0x1c3770 in src/unknown_278f00.cpp and 0x146da0 declared first among
+// src/unknown_146a20.cpp's havok declarations: 17 in the custom regime with retail's AL/ECX, 0x146bf0 and 0x1c51c0 MATCH; the
+// one real difference left here is the 0x1c3770 call, custom in that walk (`mov eax, edi`, retail `push edi`), and the same
+// eight are lost. 0x1c3770 stays default only if one of its callers is built before it, as retail's walk has it (0x1c3770 ->
+// 0x1d1260 -> 0x278f00); from the free files the walk reaches 0x1c3770 ahead of 0x278f00 only through 0xdbc80's callee
+// order (src/damage.cpp, contributor code: round 127's P4). BLOCKED-BY 0xdbc80.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1634,7 +1655,6 @@ hkBool c_contact_rule_filter::accepts(void const *query, s_contact_body_view con
 
 long function_183c60(long object_index, long node_index);
 void havok_component_rigid_body_linear_velocity_change(long index, s_havok_component *component, vector3f const *change);
-void havok_component_rigid_body_linear_velocity_add(long index, s_havok_component *component, vector3f const *change);
 void havok_component_rigid_body_point_impulse_apply(long index, s_havok_component *component, point3f const *point, vector3f const *change);
 
 struct s_contact_scale_definition
@@ -1655,7 +1675,7 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
  contact_vector_set(out, (*value)(0), (*value)(1), (*value)(2));
 }
 
-// score 3 (was 3): retail tests the loop count against zero at the loop entry and
+// score 1 (was 3): retail tests the loop count against zero at the loop entry and
 // ours compares it with the index register; retail sets up the register arguments of
 // the 0x1d10b0 call with ecx first and ours with edx first, an order that follows
 // the callee's declared parameter order in src/unknown_1cec30.cpp (not editable here).
@@ -1752,6 +1772,14 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // barrier in 0x1d1160 in place of the self-copy 106 (864 B, no reload; 0x1d1160 5). Patch: build/r83/lead-0x1c4c50.patch
 // in the m3-lane2 worktree. What retail's 0x1d1160 source had that LTCG counted as a write through velocity is the open
 // question.
+// Round 127 (m3 lane 12, plain over both files): 0x1d10b0 as a member of s_havok_component (`component->
+// rigid_body_linear_velocity_add(index, &b)`, kept: retail sets up ECX (the index) before EDX (the component), the order
+// a member's `this` declared first gives, and its siblings 0x1d08e0/0x1d0b20/0x1d0bb0/0x1d0c00 are members; 0x1d10b0 stays
+// matched) 1. Only the entry `cmp eax, ebx` is left. Permuter on it (600 s, 61 variants) nothing below 1.
+// On it (fast): the two changes and the index as one local record {a, b, index} with a plain `for` and no mirror 106 (864 B);
+// as {index, a, b} 126 (864 B); as {count, a, b, index} (retail's frame from +0x14 is count, a, b, index, indices) 106 (864 B).
+// The last with `inline` on 0x1d1160's definition 106 (864 B, 0x1d1160 still matched).
+// Register- and offset-masked, each leaves one difference: retail's index reload after the 0x1d1160 call.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
@@ -1828,7 +1856,7 @@ selected:
      else if (change_a)
       havok_component_rigid_body_linear_velocity_change(index, component, &a);
      if (change_b && !TEST_FIELD_BIT(component->flag1))
-      havok_component_rigid_body_linear_velocity_add(index, component, &b);
+      component->rigid_body_linear_velocity_add(index, &b);
      if (havok_component_main_rigid_body_index_get(component) == index)
      {
       *result_object = component->object_index;
