@@ -1557,6 +1557,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
+// MiniMax D (11-15): no new form, no lower score (566): the frame is still 0xf8 against retail's 0xfc and the definition pointer
+// still sits at frame+0x0c where retail has it at frame+0x08, so the argument slots after the prologue pair with the wrong rows;
+// the 1.0f constant is loaded before the biped index store here and after it there, and the body is 2816 bytes against retail's
+// 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
+// in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
 // score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,

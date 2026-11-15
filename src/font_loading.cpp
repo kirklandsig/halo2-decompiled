@@ -505,8 +505,18 @@ static inline long font_character_pixel(long alpha, long color)
 	return (((alpha << 1) | ((byte)alpha & 1)) << 12) | color;
 }
 
+/* the same pixel, from an alpha held in a full register */
+static inline long font_character_pixel_full(long alpha, long color)
+{
+	return (((alpha << 1) | (alpha & 1)) << 12) | color;
+}
+
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax D (11-15): score 45 (was 59): the two decode sites of the type 3 class now take the alpha in a
+// full register, so the parity is masked in thirty-two bits (xor ecx, ecx; mov cl, al; and ecx, 1) as
+// retail does; still differs in the type 2 decode site, the literal word's loads, the type 3 run (add eax, 2)
+// and the switch case 1 order, and the body is four bytes longer than retail's.
 // MiniMax G (11-14): no new form, no lower score (59): the alpha parity is still masked in sixteen
 // bits (and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and
 // ecx, 1), the literal word is still built from two byte loads and a multiply (movzx eax, byte [edi+1];
@@ -842,8 +852,8 @@ long function_122610(long size, void const *pixels, void *destination)
 			{
 				if (output)
 				{
-					*output++ = (word)font_character_pixel((code >> 3) & 7, color);
-					*output++ = (word)font_character_pixel(*source & 7, color);
+					*output++ = (word)font_character_pixel_full((code >> 3) & 7, color);
+					*output++ = (word)font_character_pixel_full(*source & 7, color);
 				}
 				count += run;
 			}
