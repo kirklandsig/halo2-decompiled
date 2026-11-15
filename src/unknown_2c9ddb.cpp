@@ -287,6 +287,9 @@ extern long g_55c154;
 // retail calls 0x13fac0 out of line (its own file, src/unicode_strings.cpp, is not this round's), and
 // the default/existing choice is still spilled to a byte slot where retail branches on the selected
 // index itself.
+// MiniMax S (11-15): no new form, no lower score (61): retail branches on the selected index itself, with one 0x212bc0
+// call in each arm and the name copy called out of line, where ours uses a single call site with a spilled byte and expands
+// the copy in place.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

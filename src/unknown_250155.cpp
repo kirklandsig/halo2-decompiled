@@ -1578,6 +1578,9 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // three qsort calls written out with pointer `<` fills in both branches 149; the qsort calls written out with branch one's index
 // fill 163 (420 bytes); pointer `<` fill in branch two only 132 (443 bytes); pointer `<` fill in branch one with branch two's
 // index fill 137 (442 bytes).
+// MiniMax S (11-15): no new form, no lower score (83): retail fills the unused tail of the index array with one
+// `rep stosd` of 16 minus the index count elements and keeps the mode in EBX and the counter in EDI, while ours moves the
+// mode to the stack and swaps the item_count and index_count homes whatever the declaration order.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
