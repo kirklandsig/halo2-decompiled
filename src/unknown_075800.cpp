@@ -961,6 +961,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax I (11-15): no new form, no lower score (143); retail's parameter order is (message type, message, address) and the declaration here is frozen, so the address cannot take the stacked home that retail's convention needs while the case-18 body stays out of line.
 // score 143 (was 143; 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier 143 (was 153).
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
