@@ -1232,6 +1232,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax C (11-15): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, this build still sets the total to two and the channel pointer before the compare that retail does after it, and the inner channel blocks are still not unrolled.
 // MiniMax G (11-14): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in
 // al, retail sets the total to two and the channel pointer after the flag's compare where this build sets them
 // before it, and the inner channel blocks are still not unrolled.
@@ -1520,6 +1521,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax R (11-15): no new form, no lower score (60): the entry size as `include_mask ? 13 : 11` 147 and as
+// `11 + 2 * (include_mask != 0)` 146 both move the mask byte into a register before the compare where retail compares it
+// against a zero register; the size computed at function entry 163; the size declared before the clamped copy and the
+// player bit declared inside the capacity block 60 (the same code); the membership test written directly against the
+// queue's mask word 154 (it loses the helper's setne and test). The player bit in EBX against retail's EBP and the
+// entry size in EBP against retail's EBX stand, and with them the zero result cannot stay in EAX, so the capacity-fail
+// exit keeps its own epilogue (460 bytes against retail's 449).
 // MiniMax R (11-14): no lower score (60): retail's entry size comes from a compare and setne on the include_mask byte, a
 // value whose range it does not know, where this build zero-extends it - with a bool parameter MSVC always knows the
 // range is 0 or 1, so retail's form needs the parameter declared as a byte, a signature change this lane may not make.
@@ -1975,6 +1983,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax C (11-15): no new form, no lower score (85): the availability bytes are still read into locals for the muted test and the mode helpers are still parameterised on them, so the second byte still loads lazily inside the muted test where retail loads both before it and keeps the remote mask in esi.
 // MiniMax G (11-14): no new form, no lower score (85): the availability bytes read into locals for the muted test
 // and the mode helpers parameterised on them leave the second byte loading lazily inside the muted test, where
 // retail loads both before it and keeps the remote mask in esi.
@@ -3662,6 +3671,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax C (11-15): no new form, no lower score (139): the member still takes ebp where retail keeps the channel from entry and spills the member, and the cursor and route homes still differ.
 // MiniMax G (11-13): no new form, no lower score (139): the member takes ebp where retail keeps
 // the channel from entry and spills the member, and the cursor and route homes differ.
 // MiniMax B (11-13): no new form, no lower score (139): the channel in a local (139), the cursor advanced on its own (180) and both together (180) leave the difference - retail keeps the channel in ebp from the entry and the data pointer in edi, ours keeps the data pointer in ebp.
@@ -3947,6 +3957,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // B: it is strength-reduced into an EDI cursor, but the start shares ECX in the preheader and the member keeps EBP); a
 // `packets = data + 2` base ahead of the loop with `packets + i * packet_size` 166; the stride computed at the loop top
 // 160 (476 B). Re-measured: the packet cursor beside the count 164.
+// M3 lane 2 r86 (fast with 0x564c0, matched throughout): re-measured the packet cursor beside the count 164 (478 B: EDI
+// cursor, ESI stride, EBX relay then members, all as retail; only EBP differs, ours the member, retail the channel with
+// the member in a frame slot). On it: the member declared at function scope 164; the NONE and kind tests split 164; the
+// member fetched after the kind and members tests 147 (EBP still the member; alignment only); the cursor started as
+// `&data[2]` 164 (still `add edi, ecx`); the member assigned inside its NONE test 164.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

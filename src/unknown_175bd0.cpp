@@ -1882,6 +1882,7 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax I (11-15): no new form kept: reading colour B into a local ahead of the spawn stores measures 187 (was 128), so the body stands.
 // score 128 (was 128): frame 0x40 versus 0x44 (colour A packed into the dead `unknown` home), the system kept in EDI
 // through the type queries where retail reloads it from its home for the colour call (so colour B misses EDI), and the
 // zone block's scheduling.
@@ -2203,6 +2204,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // MiniMax G (11-14): no new form, no lower score (128): retail's frame is 0x44 with colour A spilled to frame+0x00 and
 // the spawn record at frame+0x04, while ours keeps the spawn at frame+0x00 and colour A in a register; reading colour A
 // into a local declared before the spawn (this round) gives 187 at 572 bytes, so the body stands.
+// M3 lane 15 r89 (fast with 0x178eb0/0x179020/0x178bc0, matched throughout; control 128): the system's definition named and
+// the type looked up from it (0x174a30's matched spelling) 128; the location matrix at function scope 128 (same code); 0x178bc0's
+// result passed straight to 0x175270 162 (552 B; the node flag is then evaluated before the 0x178bc0 call, retail after); both
+// queries as the colour call's arguments with one `s_location *` for the cluster test, set_location and both zone tests 146
+// (552 B); 0x174a30's whole colour pattern (colours read before the spawn stores, definition named, queries as arguments) 187 (568 B).
+// MiniMax S (11-15): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system
+// in ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it reads the location mode from the
+// definition again for each call.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2482,6 +2491,12 @@ event_done:
 // MiniMax S (11-14): no new form, no lower score (63): the head's load stays folded into the datum address
 // because the base-plus-scaled-index pointer is formed by a helper in another file, so the add that precedes
 // the load in retail cannot be produced here; the body was re-measured and did not move.
+// MiniMax S (11-15): no new form, no lower score (63): retail still adds the record base into the scaled index
+// before its first load and still reloads the object's index from the effect after the 0xbadc0 validity call, where
+// this build caches the index in esi across the call and reads the field before the add; the head's load still folds
+// into the datum address where retail forms the pointer. This round the object index named in a local of its own
+// gives the same code (63) and reading the object index before the definition lookup gives 78, so both were
+// restored; 0xbadc0 and 0xbaf80 live in src/unknown_0bad50.cpp: BLOCKED-BY 0xbadc0, 0xbaf80.
 // score 63 (was 63): unchanged this round: retail adds the record base into the scaled index before its
 // first load and keeps the object's index in EAX across the validity call, where ours reads the field
 // before the add and caches the index in ESI; the validity callee's body is in another file, so the
@@ -3312,6 +3327,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
 // score 93 (was 93): the system takes EDI and the next index ESI where retail has ESI and EDI (colour B and the type
 // object rotate with them), the frame is 0x4c against 0x54 and the location mode is cached where retail spills the
 // definition and reads the mode at each call.
@@ -3327,7 +3343,7 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // (the latter also drops the caller), the particle cursor moved out of the block gives 103, the next index read at
 // the end gives 107, the system declared before the effect gives 113 and the type query's locals lifted to the
 // function scope gives 91.
-// score 93 (was 93; 91 recorded before): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
+// Earlier at 93 (was 93; 91 recorded before): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
 // Earlier at 91 (was 93; MiniMax H's block-scope form, not kept): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
 // it in ESI, so the homes of the two pointers, of the definition and of the cached mode sit at other offsets than
 // retail's; retail spills the definition and reads the mode at each call, which needs the per-call form that drops
@@ -3659,6 +3675,13 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // retail's 0x54 frame comes from the definition pointer it spills at frame+0x00 and reads the mode from on every call
 // of the location cursor, the per-call form in the lines above measuring 108; a 300 s permuter run (5 tries) stays at
 // 92 differing instructions.
+// M3 lane 15 r89 (fast with 0x176f60, matched throughout; control 93): the system's definition named and the type looked up
+// from it (0x174a30's spelling) 93; the matrix declared at the definition-test block's scope 93; both colour locals `dword const`
+// 93; the cached mode as a `long` 92 (337 B); that with the block's locals in the order colours, mode, particle cursor 92 (337 B).
+// MiniMax S (11-15): no new form, no lower score (93): retail's frame is 0x54 against our 0x4c, it keeps the particle system in
+// ESI and its successor in EDI where ours has them the other way round until the colour call, it spills colour A to a frame
+// home of its own instead of re-reading the effect, and it reads the location mode from the definition again for each call;
+// the form that reads the mode per call reaches retail's frame but flips the entry parameter placement.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

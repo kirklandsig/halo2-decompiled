@@ -431,6 +431,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // repeated dispatch, body acquisition, results and caller-compatible convention restored.
 // P535: Terminal case-11 upper-level admission/exclusion in bool/byte/short/long at its original producer; header-first/type/body allocation remains.
 // 96/96/96/96/96/96/96/96. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 1 r107 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0] (long type 89 [0]); its locals declared in
+// the 24 form's order (o, a, r, h, t) but assigned in another order: h, r, o, a, t 94 [13], with a long type 93 [13], with a char
+// type 94 [13]; h, o, r, a, t 21 [13]; r, h, o, a, t 96 [13]. Each equals the grid's declaration-order form with the same
+// evaluation order (declarations alone move nothing). Retail's entry implies headers, rigid body, object index, type (EBP is a
+// temporary for the rigid-body array because EAX/ECX/EDX all hold live values when it is loaded), but whenever the header load
+// comes first LTCG passes the component on the stack and the index in EAX, and the caller is lost.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -849,10 +849,12 @@ void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_ha
 	}
 }
 
+/* a member: its one caller (0x1c4c50) sets up the index (ECX) before the component (EDX), as for a member
+   whose `this` comes first */
 // @retail 0x1d10b0
-void havok_component_rigid_body_linear_velocity_add(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
+void s_havok_component::rigid_body_linear_velocity_add(long rigid_body_index, vector3f const *velocity)
 {
-	hkRigidBody *rigid_body = havok_component_rigid_body_get(rigid_body_index, component);
+	hkRigidBody *rigid_body = havok_component_rigid_body_get(rigid_body_index, this);
 	hkVector4 impulse;
 	real mass;
 
@@ -949,6 +951,10 @@ void function_1d1540(s_havok_component *component);
 // on the stack, and the parameter list may not be changed here; the frame is still 0x84 against retail's
 // 0x88, the entry copy is still rep movsd where retail uses four movaps, and that convention is decided
 // across the call cycle whose bodies are in other files.
+// score 65 (was 65): MiniMax R (11-15): no new form, no lower score; retail takes the transform in EAX, the index
+// in ECX and the component in EBX (frame 0x5c) where this build pushes the index and the component (frame 0x50), and
+// LTCG picks that split across the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other
+// files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430 drafts.
 // score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
 // than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
 // slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
@@ -1172,6 +1178,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // component), the matrix in EAX and the index in ECX, while this build takes the index and the component on
 // the stack; the frame is still 0x50 against retail's 0x5c and every store offset follows from that, and
 // the convention is the one 0x1d0cf0's own list sets across the call cycle in other files.
+// score 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
+// instruction, and the frame (0x50 against retail's 0x5c) and the component's travel (on the stack where retail keeps
+// it in EBX) follow 0x1d0cf0's convention, which is set across the call cycle in other files: BLOCKED-BY 0x1d0cf0.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both

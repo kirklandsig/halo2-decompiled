@@ -1473,6 +1473,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P511: Primary case 11 before 10/14/22/23/24/6/7, then before 14 with default-owned terminal 18:
 // 195/196/196/196/196/196/195/196 fast (control 196; full 143). NOT kept: one-point best; early ESI save remains.
 // Original complete classifiers, every case interior, lookup and handler tuple restored.
+// M3 lane 5 r186 (all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 143): cases 18 and 11
+// after 24 in the first switch with the three connection cases in a late switch 221 (473 B, 0x7afd0 5); the late 18
+// test written in the first switch's default arm 143 (r121's harness form, plain); case 11 after case 7 148 (positional);
+// explicit empty `return` cases for 1, 15, 16, 17, 19, 20, 21 after case 7 143 (jump table data only); `default: break;`
+// as the first switch's first label 143. Body unchanged.
 // P521: Single-terminal primary connection cases 5/6/7 after 4, 5/6/7 after 8, 5/6 after 9:
 // 195/195/193/195/195/192/195/195. NOT kept: no native delayed-save/outlined-handler match; original complete body restored.
 // P535: ESI-consuming primary cases 8/24 after each connection case, six independent then two paired adjacencies; reduced control 196, full 143. Best six-point preview lead is below the keep gate; delayed ESI save and terminal expansion remain.

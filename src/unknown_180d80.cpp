@@ -107,6 +107,16 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax S (11-15): no new form, no lower score (93): the three field sums spelled as a load and an accumulate
+// give 290 (the body then loses 21 bytes and every row moves), the same sums spelled the other way round compile to
+// the same code, the luminance red, blue, green gives 91, a gain under the review threshold, and the vertex cursor
+// declared in the outer scope gives 496; all were restored.
+// What still differs: retail loads the fifth argument into eax before the register saves and keeps it there, ours
+// loads it into ecx after the saves; the count loop tests the word and zero-extends it, ours sign-extends; the count
+// sum and the vertex cursor take the opposite stack slots; retail's transform rows multiply the x term as up.i*z,
+// y*left.i and forward.i*x, ours left.i*y, z*up.i and forward.i*x; retail calls 0x17cfa0 with the first index in eax
+// and the definition index in ecx where ours passes them the other way round (that callee is in
+// src/unknown_17d2a0.cpp); the global and float-pool addresses differ by the whole-image layout.
 // MiniMax C (11-15): no new form, no lower score (93): the body stands as found.
 // MiniMax D (11-14): no new form, no lower score (93): retail loads the fifth argument into eax before the
 // register saves and calls 0x17cfa0 with the first index in eax, ours loads the strip record into ecx after

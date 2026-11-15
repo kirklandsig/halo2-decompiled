@@ -726,6 +726,11 @@ extern point2f *g_468778;
 // the first arm the field_15 store after the two negated components 379; the request's unknown6 store ahead of the
 // direction copy 375, field_12 set ahead of the submit call 375, the second prediction's field_15 store after its copy
 // 375 (other code each). Same code (not counted): the view fetched ahead of the state. Body unchanged.
+// M3 lane 7 r165 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
+// aligned 263): the first arm's negated facing as `-local_8->i` / `-local_8->j` 390; the planar copy for the 0.866 test as
+// `*(point2f *)&local_9` 384; the facing pointer declared inside the `!function_110ab0` block 378; the actor's facing through
+// a named pointer for its six reads 375 (aligned 265); the actor's position through a named pointer for its six reads 377.
+// Body unchanged.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -908,6 +913,9 @@ static __forceinline long real_to_long(real value);
 // retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
 // in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
 // differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
+// score 382 (was 382): MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
+// velocity block (retail keeps the view in EAX and forms the facing pointer late with `lea esi, [eax + 0x2c]`) and from
+// 0x25d740 being expanded here where retail keeps it out of line, and that body is in src/ai.cpp: BLOCKED-BY that file.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose

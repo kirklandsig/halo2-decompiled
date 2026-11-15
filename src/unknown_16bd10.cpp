@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 149 (was 331): 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
+// score 126 (was 149; 149 was 331): 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
 // timer, animation case and field-of-view tail), following the plane length's hoisted left.k load (retail left.j); that
 // costs the animation case a zero copy and the field-of-view tail its reuse of the target test's register (the 4 extra
 // bytes). Also left: the distance dot's operand loads, the yaw rotation's product/negation order, and the pan arm's
@@ -1120,6 +1120,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 475/425/426/459/474/495/428/473. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
 // P522: Real angle/sine/cosine API domains, seven subsets then immutable complete yaw graph:
 // 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery; original complete body and helpers restored.
+// M3 lane 4 r202 (fast with 0x16c6f0/0x13cb40/0x23d090, all MATCH; plain for the kept form): kept, 149 -> 126 at
+// retail's 1696 bytes: the field-of-view test written `0.0f != camera->field_of_view_target` (the tail's registers become
+// retail's). Also: the plane-length test as `0.0f != length_squared` 148 (on 126: 125), the timer as `0.0f != time_scale
+// ?` 126, both 125; the plane length before plane.d 404 (1704 B); the normal copied component by component 430 (1672 B);
+// the t test as `== 0.0f` with the arms swapped 159; on 126: the distance clamp as `0.0f < distance` 126, the distance
+// dot's arguments swapped 126. Left: the plane length's left.k preload (retail left.j) and the zero in XMM1 in the plane
+// arm, the timer and the distance block.
 // P524: Actual camera point-type/tick/object/pan-time storage, masks 1/2/4/8/3/12/15, unsigned point type:
 // 149/149/149/149/149/149/149/150. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
 // P526: Actual observer flags unsigned-int/long, object index int/full-width-long, output mode byte/char/signed-char fields, coherent complete output metadata:
@@ -1288,7 +1295,7 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 	camera->active = false;
 	if (function_13cb40())
 	{
-		if (camera->field_of_view_target != 0.0f)
+		if (0.0f != camera->field_of_view_target)
 		{
 			if (camera->field_of_view_time >= camera->field_of_view_duration)
 			{

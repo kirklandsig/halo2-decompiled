@@ -1383,6 +1383,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // inheritance loop's `i = 0` of the inlined 0x1ddd00 (whose out-of-line body keeps i in EBP and stores the offset from it):
 // here it is materialised before the fifth kind and serves that kind's NULL tests and both zero stores. Round 227's census
 // still holds: no other untried natural loop, return, declaration or helper form is left.
+// m3 lane 12 r127 (fast, both twins, with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddd00, 0x1ddc70, 0x1ddb90, 0x1dd560, 0x2963f0,
+// 0x1236f0, 0x1ce180 and 0x1cb230; control 828): the siblings' flag loop with no per-pass candidate (`if (named) result =
+// named->animation_id;`) 917 (2825 B; matched 0x1cb230 then 42); that with the early `return result;` for the block 1018
+// (2791 B; 0x1cb230 42); that with this body's iterator store order 917 (0x1cb230 42); the do-while with no candidate and
+// `if (named) result = ...` 1020 (2791 B); 0x1dd9d0 in its own `if (result.index != NONE)` ahead of the output stores, the
+// requests after them 990 (2825 B). Retail's frame (listing): result at F+0xc, the three outputs at F+0/+4/+8, the iterator
+// from F+0x10, the per-pass candidate in found_mode's dead home F+0x44 (found_mode itself lives in EBP from entry).
 // P521: Optional mode/class/type scalar memcpy domains 1/2/4/3/5/6/7, then complete memmove:
 // 828/828/828/828/828/828/828/1059. NOT kept: no exact native output/candidate/zero-carrier recovery; original complete body restored.
 // P534: Early optional mode/class/type output-presence Boolean subsets, then complete
@@ -1738,6 +1745,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 828/1016/1016/1016/1016/1016/927/927/927. NOT kept: inner byte ties; other domains shorten away from retail,
 // and inner short/long plus middle domains also lose matched shared users. Native candidate/output packing
 // and late EBP zero remain. Original helper domains and complete body restored.
+// m3 lane 12 r127 (fast, both twins, with 0x1dc790, 0x1dc8c0, 0x1dd9d0, 0x1ddd00, 0x1ddc70, 0x1ddb90, 0x1dd560, 0x2963f0,
+// 0x1236f0, 0x1ce180 and 0x1cb230; control 828): the siblings' flag loop with no per-pass candidate (`if (named) result =
+// named->animation_id;`) 917 (2825 B; matched 0x1cb230 then 42); that with the early `return result;` for the block 1018
+// (2791 B; 0x1cb230 42); that with this body's iterator store order 917 (0x1cb230 42); the do-while with no candidate and
+// `if (named) result = ...` 1020 (2791 B); 0x1dd9d0 in its own `if (result.index != NONE)` ahead of the output stores, the
+// requests after them 990 (2825 B). Retail's frame (listing): result at F+0xc, the three outputs at F+0/+4/+8, the iterator
+// from F+0x10, the per-pass candidate in found_mode's dead home F+0x44 (found_mode itself lives in EBP from entry).
 // m3 lane 9 r124 (fast, 0x1dc790 matched throughout): one to seven unused locals ahead of `result` (diagnostic
 // phase scan) 828 at every count; the lookup's result pointer (`named`) declared at block scope 828; the per-pass lookup
 // nested under `if (weapon_type_entry)` with `while (weapon_type_entry && result.index == NONE)` 828; the

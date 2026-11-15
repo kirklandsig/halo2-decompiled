@@ -10,6 +10,7 @@
 #include "props.h"
 #include "unknown_0259d0.h"
 #include "unknown_11cc90.h"
+#include "unknown_124f90.h"
 #include <string.h>
 #include <math.h>
 #include <float.h>
@@ -1369,7 +1370,9 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
-// score 137 (was 137): no new form and no lower score; retail still computes the actor offset in EDX before
+// score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
+// named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
+// callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
 // the frame pushes and keeps the actor pointer in EDI with the object pointer in ESI, where this build loads
 // the actor pool before the pushes and keeps the actor in ESI; a named offset local, the object lookup
 // first and the existing actor getter all measure 137 or worse.
@@ -1409,7 +1412,7 @@ real function_50650(real cosine);
 // first; the same function is declared in four other files, so the order is reported and left alone, and the
 // permuter's six tries over the reduced image (with --allow-mismatch, since the reduced score 335 differs
 // from the full 135) found nothing below the baseline.
-// score 137 (was 137): frame 0x1c agrees; actor/object homes, velocity preload and final minimum remain (caller-inclusive fast 137).
+// Earlier at 137: frame 0x1c agrees; actor/object homes, velocity preload and final minimum remain (caller-inclusive fast 137).
 // Earlier: frame 0x1c agrees; two excess bytes, actor/object roles (EDI/ESI), the hoisted velocity j load,
 // the first clamp's x87 order and the epilogue pops' place in the final minimum remain.
 // Independent facing/velocity scopes 331; late turning minimum 350; branch-defined following
@@ -1513,10 +1516,8 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
     if (next_direction && radius * 2.0f > distance)
     {
         real minimum = *(real *)(settings + 0x58);
-        double dot = (double)desired->j * next_direction->j + (double)desired->i * next_direction->i;
-        if (dot < -1.0) dot = -1.0;
-        else if (dot > 1.0) dot = 1.0;
-        real angle = function_50650((real)dot) * 0.31830987334251404f;
+        real angle = function_50650((real)PIN_126660((double)desired->j * next_direction->j +
+            (double)desired->i * next_direction->i, -1.0, 1.0)) * 0.31830987334251404f;
         real fraction = 1.0f - (angle > 1.0f ? 1.0f : angle);
         real scale = (1.0f - minimum) * fraction * fraction + minimum;
         turning_scale = (1.0f - scale) * distance / (radius * 2.0f) + scale;
