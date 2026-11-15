@@ -240,6 +240,10 @@ void juggernaut_set(long player_index, bool juggernaut)
 // declared at function scope 20; the player pointer declared at function scope 20; `waiting` as `function_15d770(i) ?
 // true : function_15db30(i)` 20 (all the same code); count assigned after the iterator setup 22 (re-measured: only the
 // xor moves). A 693 s permuter run (seed 2001, 44 tries) found 17 only with an unsigned count (wrong modulo) and volatiles.
+// Round 184 (m3 lane 6, fast): the modulo draw through an inline helper taking the seed and count 20; the candidate test
+// as an inline predicate of the player and the waiting flag 20, the predicate computing waiting itself from the index and
+// the player 20; the draw split into a named choice and a named chosen index 20 (all the same code); the waiting test as an
+// if with the flags test nested and the unit test in an else-if, each storing 69 (245 bytes, the stores do not merge).
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

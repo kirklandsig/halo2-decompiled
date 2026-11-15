@@ -1599,6 +1599,10 @@ void function_2422d0(long slot)
 // getter's argument 7; loop 3's result store ahead of the 0x2422d0 call 9; a short slot with `NONE == ...` 7.
 // Round 200 (m3 lane 4, fast): a 609 s permuter run (seed 2002, 66 tries) none below 7; the slot table as `dword` 7, the
 // others list as `dword` 7, the slot as `int` 7, the object index as `int` 7 (all the same code).
+// Round 184 (m3 lane 6, fast): the slot test through an inline predicate taking the object 79 (the no-slot-local code);
+// the accepted store indexed by a second getter lookup 141 (331 bytes); the rejected store reading the team entry again
+// 50 (the pair flips to retail's, but the entry reloads after the call); a team entry pointer for the index and the
+// getter 7; the object as a reference 7 (same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {

@@ -217,7 +217,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
-// score 117 (was 117): earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
+// score 117 (was 117): M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
+// the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
+// 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
+// registers are not a rotation carried from the head); the pass element passed straight into a by-value inline accessor
+// for its +4 tag, no binding, 121 (no dead lea, pass definition still EDX); diagnostic: the element passed as an unused
+// first argument of the definition lookup, evaluated after the tag load, 121 (the unused argument is removed with its lea).
+// Earlier first line 117 (was 117). The tag index masked as a 32-bit value inside the
 // subscript reproduces retail's `and edx, 0xffff` but moves the base global from EDI into ECX and raises the score
 // to 152, so the original is kept; the tag lookup still masks the index with a word load where
 // retail masks the 32-bit value, and the fallback EDX, the stage/pass homes and the unfused element

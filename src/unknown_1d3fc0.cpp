@@ -441,6 +441,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // P513: Original-site matrix axis admission/exclusion outcomes, bool/byte/short/long:
 // 185/185/185/185/148/148/148/154. NOT kept: no exact reciprocal/late-k or projection repair; original
 // live flag observation, four-use normalizer, shared products and complete body restored.
+// M3 lane 16 r122 (fast, 0x1c4a80 matched each time): round 150's lead rebuilt (the normalizer's squared length named
+// through the existing dot3f, the projection's k row reading local_1[0].forward.k) 2 at 922 bytes, only the dot's i term
+// (ours copies up.i, retail forward.i); an 1800 s fast annealing permuter run on it (seed 122): 75 tries, none below 2. On
+// the lead: a const forward pointee 2, `vector3f *const up` 2, `up =` from the third normalization's returned pointer 2
+// (same code each). On the kept body the normalizer's squared length through the existing length_sq3f 153. Body unchanged.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

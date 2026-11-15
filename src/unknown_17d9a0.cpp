@@ -493,10 +493,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // MiniMax A (11-14): no new form, no lower score (793 on the reduced image): the frame is 0x21d8 against retail's
 // 0x21dc, and the entry register roles differ - retail takes the object pointer in edx and the table global in ecx,
 // while this build reads the second argument into ecx and a global into edx - so every later home sits one slot off.
-// score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // MiniMax E (11-11): no new form, no lower score (535 on the full build, 834 on the reduced image):
 // the frame is still 0x21d8 against retail's 0x21dc and the locals still sit in other stack homes.
 // w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
@@ -882,6 +882,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // each use 673 (3615 B); `real tolerance = projection->radius * 0.05f;` for the two tests 746 (3679 B); the face-plane
 // helper reading `mesh->planes[index & 0x7fff]` at each use 783, copying the plane and negating it in place 770. Retail's
 // bounds loop is unrolled with unconditional stores, as the ternaries give.
+// M3 lane 15 r89 (plain; fast 834): the private rotate helper reading its input into three scalars and writing each row
+// straight to the output 628 (3551 B); that with the offset computed into the matrix position, rotated in place and the start
+// added with `+=` 672 (3535 B); the angle clamp as if/else-if statements 535 (same code); one `plane` pointer for both edge
+// distances 568 (3631 B); a matrix3x3 basis with all four rotations through the existing function_2477b1 577 (3616 B).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -1641,21 +1641,23 @@ static __forceinline void query_restore_pending()
         }
 }
 
-#pragma optimize("g", off)
 static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *arg_0)
 {
     s_player_slot_flags *local_0 = NULL;
     if (arg_0) local_0 = arg_0;
     return local_0;
 }
-#pragma optimize("", on)
+// MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
+// the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
+// the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
+// changes nothing.
 // score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
 // Earlier 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax S (11-15): no new form, no lower score (703).
-// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// Earlier 703 (was 703), merged from a second score line: earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
 // static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
 // branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
@@ -2007,6 +2009,12 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // request guard as `properties_used > 0 && records_used > 0` 712 (2894 B); the team comparison's operands swapped
 // 705; the value-group pointer declared after the two flags 703 (same code); the change test's two identity
 // comparisons swapped 789 (2926 B). The slot test's cmovne still needs /arch:SSE (a file-flag decision).
+// M3 lane 11 r105 (fast; control 703): the `#pragma optimize("g", off)` / `("", on)` pair around function_74aa1
+// dropped 703 (identical code, kept: a pragma retail does not show); on that: the two disconnected-arm timestamp clears
+// chained 703; the write section's three counters declared one per line, buffers first 703; the write request test
+// as `properties > 0 && records > 0` 721; the first variant loop's player pointer 703 (re-measure, same code); the
+// request delay test as `delay < now - last` 703. Every positional line after the users loop is still off by retail's
+// cmovne (a file-flag question, see above).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
