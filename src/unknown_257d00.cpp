@@ -1600,6 +1600,9 @@ void function_b7360(long object_index);
 // cs global later, while the cs lookup is the first statement here; the two initializers swapped measure 487 and the
 // output pointer declared first gives the same code, so the prologue is left as it is, and the table-first lookups in
 // cases 7 and 13, case 10's clear after the selector load and case 5's store order are the differences that remain.
+// MiniMax I (11-15): score 261 (was 270): the 1/19 arm sets field_3 |= 0x40 before it copies the point into the output, so the
+// flag byte is stored before the point copy where retail stores it after; the body stays 1848 bytes long and the other
+// functions in this file keep their scores.
 // score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
@@ -2122,8 +2125,8 @@ short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			}
 			break;
 		}
-		*(s_type_c3b527 *)((byte *)local_2 + 8) = cs_point_get(local_1->unknown28)->point;
 		local_2->field_3 |= 0x40;
+		*(s_type_c3b527 *)((byte *)local_2 + 8) = cs_point_get(local_1->unknown28)->point;
 		success = true;
 		break;
 	case 4:
