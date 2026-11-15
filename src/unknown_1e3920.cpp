@@ -1243,6 +1243,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // P502: Exclusive three-way cleanup choice, four producers at cleanup-local and entry scopes:
 // 289/290/264/290/289/290/264/290. NOT kept: all regress; native sentinel/squad/query homes and direct cleanup
 // comparisons remain unresolved. Original body/helper restored.
+// M3 lane 7 r163 (fast with the eight matched callees and the three callers, all MATCH): 1-7 unused locals 252 each;
+// lane 9's flag loop re-measured 298 (1258 bytes), with the unit arm first 236 (1263), with the palette count read at
+// each use 345 (1264), both 340 (1272); the squad bit as `bool flag = false; if (squad) flag = ...;` 253, on the flag
+// loop with the unit arm first 232.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

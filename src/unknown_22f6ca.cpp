@@ -178,6 +178,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // pane block after the flag 66; the model's animation start without braces 23; the text result typed as 0x22f9bf's return
 // type 23. Diagnostic: the model's value0a store ahead of the animation start 11 at 414 bytes (the model stays in EAX, no
 // EDI save or screen copy; the resets stay swapped), but retail stores after the call.
+// Round 164 (m3 lane 7, fast): widgets and the flag given descriptive names 23, counters named index/child_index 23, the
+// model result typed as the model widget (cast at the call) 23, the model animation start through the qualified base
+// member 23 (all same code); the shared counter declared inside the pane block ahead of the flag 66.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
