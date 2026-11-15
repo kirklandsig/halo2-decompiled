@@ -852,6 +852,12 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // g_4e3b44;`, read once for the biped radius) 76: the timing call's lea temporaries and the request stores take retail's
 // registers (the 0x110ab0 argument still ECX); with lane 17's unit local before the test as well (written as a comma
 // expression, a diagnostic) 45, first difference +0x5b, so the two do not add (lane 17's form alone was 42).
+// M3 lane 13 r93 (fast; caveat on 0x110ab0): lane 17's match-only 17 form rebuilt 17 (slots: sum 0x10, length 0x14, index
+// and timing distance 0x18, adjusted 0x1c; retail 0x14, 0x18, 0x1c, 0x18). On it: dead-local phase scans (n = 0..7,
+// removed) at the top and in the side block 17/17/17/17/21/21/31/31 each (only lateral/dot operand rows move; the slots and
+// the XMM2/XMM3 swap never), and on the adjusted-in-length form 17 at n = 0..3 with groups retail's and 0x14/0x18 still
+// swapped; the tag table in a function-scope pointer 235 (972 B; round 179's 76 lead does not carry over); the biped
+// definition in a named pointer 17 (same code). Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -1825,6 +1825,13 @@ struct s_actor_looking_structure_view
 // changes); the specification's vector stored before its type 31; `result = true` before the specification stores 25.
 // Re-measured: the pathfinding pointer by if/else 207 (the listed ternary's code); the fraction declared after the rotate 136
 // (927 bytes, the listed form's code).
+// M3 lane 13 r93 (fast; control 23): dead-local phase scans (`long dead_k = k;`, n = 0..7, removed): at the function top, in
+// the loop body and ahead of the loop 23/33/23/23/23/23/23/23 each (only n = 1 moves the selected-direction dot, never the
+// rotation or score rows); in the rotate helper 23 at every n (0x296e60 303 -> 293 at 1437 B for n >= 1); so the operand
+// order here is not a symbol-count phase. The round-91 lead rebuilt (helper dot `(j + i) + k`, score `(i + k) + j`) 13, with
+// 0x296e60 303 -> 311 (1460 B), so the shared helper change is not keepable; left at 13: the dot's accumulator (XMM2 for
+// XMM0), the j row's XMM5/XMM6 and the score's inner pair k, i (retail i, k); scans on it 13 (top n = 1 23). The trace's
+// first byte as the named bool of the sector-trace record needs a cast (the real signature takes the path record).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
