@@ -555,6 +555,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // the rate read through the global 15 (same code: the re-read folds into the pointer); the 0x1e5380 result renamed to
 // sort ahead of the other locals 15 (same code: not a name tie); on the named pointer, the ticks declared bare at the
 // function top 91, the cooldown product with the settings factor first 91.
+// Round 201 (m3 lane 4, fast with 0x110ab0): the elapsed test negated, `!(elapsed * rate < local_4)` 17; one, two and
+// three initialised dead locals at the top 15/15/15 (diagnostic: not a symbol-count phase); local_6 declared bare at the
+// top 15, local_4 declared bare at the top 15 (same code); the elapsed difference without the (real) cast 15 (same
+// code); the node range test as `> 0 && < 3` 40.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

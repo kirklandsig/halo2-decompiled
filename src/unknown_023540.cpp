@@ -3875,6 +3875,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // zero declared at the negative-low test 1163; `small = true;` ahead of the two scalings 12 (the flag store moves
 // first); the exponent search as `for (exponent = 0; ...; exponent++);` 883 (4928 B, re-measured; the while form
 // stays). Body unchanged.
+// Round 201 (m3 lane 4, fast): `whole = fraction = 255` 11; the packed bytes shifted without the `(dword)` casts 9; the
+// shifted input word renamed to sort ahead of `input` 9; the two ORs written constant first 9 (same code each); on the
+// no-shifted-local form (939) one, two and three dead locals at the top 939/939/939 (the selector block does not follow
+// symbol count). Retail copies both register values before destroying them (`mov eax, ebx; shl`, `mov al, cl; neg`); our
+// forms give one or the other. The one-file LTCG harness of this file builds 4628 B (not usable). Mode zero's extra
+// texture test as `(long)configuration == NONE` 9 (same code).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
