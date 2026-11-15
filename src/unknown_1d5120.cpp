@@ -309,6 +309,9 @@ void function_1d56f0(s_havok_component *component)
 // transform with four movaps and takes the component in EBX without saving it (index in ECX moved to ESI); ours copies with
 // `rep movsd`, which needs ESI/EDI/ECX, and loads the component from [ebp + 0xc]. That body (set copy, m_fixed first) is the
 // listed lead that costs matched 0x1d1b60 and 0x115b10. Still BLOCKED-BY 0x1d0cf0.
+// M3 lane 3 r245 (measured, not kept): the count (EAX in retail) declared ahead of the rate, (..., count, rate, result), with the
+// declaration and the one call in 0xe0c70 (src/bipeds.cpp), whose retail call setup loads the rate pointer into EAX before the
+// count: 77 here (same code); 0xe0c70's gain from it needs a second object lookup at the call (see its note).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
