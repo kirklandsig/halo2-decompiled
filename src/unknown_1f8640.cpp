@@ -797,6 +797,10 @@ struct s_1f8a70_actor
 // and 7) comes only from lane 1 r99's flag form, which is kept only with a match. Retail's failure-path reload of
 // route_found, the materialised `node != NONE` and the case 7 store order are each listed above with their scores.
 // Body unchanged at 182.
+// M3 lane 15 r88 (fast, control 182): the tail as `if (route_found) {...} else 0x1f8750;` with one `result = route_found;`
+// after it 326 (1680 B); the failing arm returning route_found itself with the success stores after it 437 (1640 B, the first
+// exit folds); the destination-node test in a named bool 182 (same code: folded); the route admission as an if/else into a
+// `valid` bool 182 (same code); case 6's 0x20 test inverted with route_mode = 1 in the else 326 (1616 B).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

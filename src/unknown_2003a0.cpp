@@ -2976,6 +2976,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // P512: Successful-trigger count at the threshold test, nested/merged positive/negative
 // admission, long then short count: 50/50/50/50/50/50/50/50. NOT kept: first-event index reload and actor-loop
 // alignment remain; original wrapped scan, threshold expression and full body restored.
+// M3 lane 15 r88 (fast, control 50): the second half's group index named for its NONE test and the table index 50 (same
+// code); its guard reading +0x62 as a word 52 (580 B); descriptive names for the first half's event, delay and task 50;
+// the threshold, count and trigger-list declarations reversed 50; the follow-up event ternary with its arms swapped 54.
+// The first follow-up still reloads the index from its home.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

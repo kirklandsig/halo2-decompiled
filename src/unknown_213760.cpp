@@ -1730,6 +1730,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // the range test's else 7, the write header declared at the top of the size-mismatch block 7, the path buffer declared
 // once above the loop 7; on main the write header at the top of the size-mismatch block 33 and the path buffer above the
 // loop 33.
+// M3 lane 15 r88 (fast; control 33; round 56's 7 form rebuilt at 7: left the write's handle loaded after the flags zero
+// and the checksum load in EDX). On the 7 form: the header check as `if (0x213800 call) valid = a == b; else valid =
+// false;` 15 (the header clears then zero AL and the call result is tested with `test al, al`); `written` declared
+// before the resize call 7; the resize handle through `file` 7; the write header declared at the loop body's top 7; the
+// open given `&g_557c90[index].handle` with every other use through `file` 7 (same code each). Body unchanged at 33.
 // @retail 0x213970
 void function_213970(void)
 {
