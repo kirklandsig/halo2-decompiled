@@ -505,12 +505,6 @@ static inline long font_character_pixel(long alpha, long color)
 	return (((alpha << 1) | ((byte)alpha & 1)) << 12) | color;
 }
 
-/* the same pixel, from an alpha held in a full register */
-static inline long font_character_pixel_full(long alpha, long color)
-{
-	return (((alpha << 1) | (alpha & 1)) << 12) | color;
-}
-
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
 // MiniMax D (11-15): score 45 (was 59): the two decode sites of the type 3 class now take the alpha in a
@@ -829,6 +823,10 @@ static inline long font_character_pixel_full(long alpha, long color)
 // expansion: 97/96/96/96/97/96/96/96. NOT kept: All eight regress despite four-byte shortening; native parity,
 // literal assembly and run-two transport are not recovered. All calibrated file and matched-caller controls stay
 // unchanged. Original complete executable body restored.
+// MiniMax D (11-15), NOT kept: 45 (was 59) added font_character_pixel_full, a twin of the existing
+// font_character_pixel without the (byte) cast on the low alpha bit, used at this function's two pixel stores
+// only. A twin helper picked by score is not kept; if retail differs, change the shared helper and keep its other
+// callers matched. Code back to main, notes kept.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
@@ -852,8 +850,8 @@ long function_122610(long size, void const *pixels, void *destination)
 			{
 				if (output)
 				{
-					*output++ = (word)font_character_pixel_full((code >> 3) & 7, color);
-					*output++ = (word)font_character_pixel_full(*source & 7, color);
+					*output++ = (word)font_character_pixel((code >> 3) & 7, color);
+					*output++ = (word)font_character_pixel(*source & 7, color);
 				}
 				count += run;
 			}
