@@ -8519,6 +8519,10 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    delay and stun, the timer +0x2bc, its death direction, the player and
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
+// MiniMax E (11-14): the shake's minimum (the definition's +0x5c) named as a local and read twice: 116 -> 62 (1602 bytes,
+// retail's length); the stun block then follows retail's instructions; left is the shake's own load order (retail reloads
+// the definition's +0x58 for its division), the owner and damage store orders and the 0xc98a0 call's register roles.
+// score 62 (was 116; earlier 129, 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // score 116 (was 129; earlier 383, 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // score 129 (was 383; earlier 399): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
@@ -8715,8 +8719,9 @@ void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 
 		if (range > report->distance)
 		{
+			real minimum = *(real *)(definition + 0x5c);
 			real shake = (range - report->distance) / range *
-				(*(real *)(definition + 0x60) - *(real *)(definition + 0x5c)) + *(real *)(definition + 0x5c);
+				(*(real *)(definition + 0x60) - minimum) + minimum;
 
 			function_1c9e10(unit_index, &report->direction, shake);
 		}
