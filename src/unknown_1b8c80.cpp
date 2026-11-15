@@ -1479,6 +1479,14 @@ void function_1f86a0(long actor_index);
 // in the loop: BLOCKED-BY 0xbaf40. The permuter's only lower form (122) swaps joint_decline's two arguments, and
 // the callee reads its first parameter as the actor index (retail puts the actor index in EAX at that call), so the
 // swap is not kept.
+// MiniMax B (11-14): no new form, no lower score (134); the frame is still 0x10 against retail's 0x14 - retail
+// spills the masked flags byte to a stack slot and keeps the loop entry in EBX, ours keeps the mask in BL and
+// spills the entry - and ours still takes the incoming actor index in ECX and loads the tag table base late; the
+// open cause is the memory summary of the root call 0xbaf40, whose file (src/unknown_0bad50.cpp) is on the avoid
+// list, so this lane may not change it.
+// MiniMax I (11-15): no new form, no lower score (134): retail keeps the loop entry in EBX and spills the masked flags
+// byte to F+3, ours keeps the mask in BL and reloads the entry from F+0; the source order of the two is the same, so the
+// frame difference (0x10 against 0x14) follows from that allocation alone, and no spelling of the mask moves it.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the

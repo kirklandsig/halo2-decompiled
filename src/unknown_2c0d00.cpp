@@ -487,6 +487,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // [esp+0x12]); ours ends each inflation path with `sete bl; jmp` and keeps the remaining arms in source order.
 // MiniMax I (11-14): no new form, no lower score (926): the frame is still twelve bytes larger than retail's (0x2cb4
 // against 0x2cac), and the locals are still cleared at the frame's later offsets where retail clears them earlier.
+// P506: Input priority defaults before actor lookup, ignore/block/range subsets 1/2/4/3/5/6/7 and
+// guarded all: 918/918/958/907/958/979/973/973 reduced (control 926, full 920). NOT kept: native
+// later input reads/frame not recovered; original complete body restored.
+// M3 lane 15 r86: no new form run. The leads in the listing are the second `straight = 1` store on the actor NONE path,
+// the type byte re-read at its three later uses, the shared inflation/skip tail and the actor/unit/self-unit registers.
+// The note above already lists each of them with its score (rounds 84, 89, 94 and 225). No existing accessor for the type
+// byte exists to give its re-reads naturally. Body unchanged at 920.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1825,6 +1832,13 @@ long function_1fa7f0(void);
 // M3 lane 14 r94 (fast, file all MATCH but 0x2c0c40/0x2c1d90/0x2c0d60 as before; base 400, aligned 350, fully masked 103): no new
 // form run. Every lead from the listing (edge in EBX with its second 0xffff store at the scan hit, the other-side flag in BL,
 // the count read from [ebp+0xc] with NONE in ESI, the source radius out of EBX) is already listed above with its score.
+// P506: Actual corner-pair swap/iterator/reverse/rotate/range/ordinary/reverse-copy/rotate-copy
+// ordering: 461/461/450/445/481/436/459/458 reduced (control 400). NOT kept: six recover frame
+// 0x10c but miss native conditional-copy shape and score; extra-pair forms grow to 0x11c. Original
+// body restored.
+// M3 lane 15 r86 (fast with the file and 0x270930, all as before): the delta block's three statements in z, y, x order 400
+// (different code: z then takes XMM0 as in retail, but its square is still taken in a copy; register-masked 258 -> 272);
+// the delta as three real locals declared x, y, z or z, y, x 400 (same code). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

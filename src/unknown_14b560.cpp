@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
+// region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
+// walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
 // score 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
 // and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
 // record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
@@ -1632,6 +1635,11 @@ static inline s_players_globals *players_globals_14f2e0()
 // of the test: a forceinline helper taking both output pointers that holds the mode test, the NONE stores and the
 // 0x14f040 call 43; a pointer local to the third-person output taken ahead of the test and used for its store and the
 // call 43 (both fold to the inside-the-block code, `mov`).
+// M3 lane 8 r167 (fast; control 5, the outputs moved into the mode block 43 at 1031 bytes, `mov eax, 0xffffffff`): on
+// that form the kept unit in its own state-block local with the spawned unit declared in the mode block 43; the reuse flag
+// declared ahead of the outputs at the top of the mode block 56; `long unit_index` declared ahead of the result 43; the
+// reuse flag declared beside the result at the function top 81; on the current body the kept unit in its own state-block
+// local 5 (same code). The two failure exits as `return false` 273 (1018 bytes, the round 78 form again).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2519,6 +2527,10 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax H (11-14): no new form, no lower score (701): retail's locals run from +0x10 to +0x83, with the
+// two request homes at +0x44..+0x83 and the small homes at +0x14..+0x43, so retail holds two request
+// workspaces and eight bytes more of small homes than this build's one workspace and +0x2c; the body is
+// unchanged.
 // MiniMax C (11-11): no new form, no lower score (701); the first 0x151b80 call is still expanded here where retail calls it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files that this lane may not edit.
 // MiniMax E (11-11): no new form, no lower score (701): the frame is still 0x4c against retail's
 // 0x74, and the two calls this build expands are still expanded here.
@@ -3067,6 +3079,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax H (11-14): no new form, no lower score (103): retail's listing loads the flag's global
+// (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
+// while this build loads the globals pointer first and takes the field's address with a lea, so the
+// two loads come in the other order from the first instruction on; the body is unchanged.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image

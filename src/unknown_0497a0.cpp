@@ -388,6 +388,13 @@
 // origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
 // NOT kept: frame/basis/wave residence remains unmatched and all regress;
 // original complete body and helpers restored.
+// M3 lane 1 r104 (fast): s0's sum with the cos 7.75y term first 536, its product with sin x first 536 (same code each);
+// sin x, cos 7.8y and cos 7.75y as named doubles ahead of s0 in retail's evaluation order 534 (2622 B; our x87 order is
+// unchanged apart from the two popped values), all four factors named with the 8.2x sine last 536; s1 computed before the
+// first cross 536 (s1 is still substituted into its use after s0).
+// P501: Standard whole-record history/point/input transfer boundaries, seven subsets, then complete fallback
+// publications: 743/679/726/734/753/688/720/732. NOT kept: All regress and fail native frame/extent and rounded
+// wave residence; original copy graph restored. Original complete executable body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -690,6 +697,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
 // definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
 // slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
+// MiniMax D (11-14, run 90): no new form, no lower score (233): the frame is 0xa8 bytes against retail's 0xac and
+// the first-edge Y, the half-width, the cursor and the colour homes differ; the helper this body calls at 0x131e50
+// has its declaration fixed in another file, which this lane may not change; re-measured at 233 (2592 bytes, against
+// retail's 2596). BLOCKED-BY 0x131e50's declaration.
 // score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes

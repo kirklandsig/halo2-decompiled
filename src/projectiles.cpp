@@ -411,6 +411,13 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // MiniMax I (11-10): no new form, no lower score (3); letting the axis local's address escape puts retail's flag order back but squares the components in i, j, k order instead of retail's k, j, i (14), spelling the magnitude in i, j, k order (14) or naming the squares (14) does not change that, and the copy-in written component by component gives 63.
 // MiniMax H (11-04): no new form, no lower score; retail keeps the rotating-flag OR and store ahead of the first axis load and ours hoists that load above the flag store.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax C (11-14): no new form, no lower score (3): the three differences are still one schedule - retail completes the rotating
+// flag's OR and store before the angle duplicate and the first axis load, this build hoists that load above the OR and sinks the
+// store below the duplicate; the frame, the 290-byte length and every other instruction agree.
+// MiniMax C (11-15): no new form, no lower score (3): the copy of the axis is split on both sides - the first component's load
+// comes early and its store after the sine, the other two load after the sine - so the only question is where the flag's OR and
+// store sit around the angle duplicate, and the schedule follows the first component's load rather than the source order of the
+// statements (the flag before the angle 10, the axis copy between the sine and the cosine 3, after both 21): the body stands.
 // score 3 (was 3): this round: the rate computed after the flag write scores 10, and the axis stored
 // after both trigonometry calls scores 21 with a shorter body (283 bytes); both were reverted.
 // score 3 (was 3): retail completes the rotating-flag OR and store before the angle duplicate and
@@ -845,6 +852,13 @@ void function_fd740(point3f const *point, byte const *effects, long index, short
 /* the same for what a projectile hit: ignoring distance for multiplayer
    objects the network owns. The three sounds come first (the stack
    arguments) and the three effects after them (ecx, edx and edi in retail) */
+// MiniMax C (11-15): no new form, no lower score (69): retail's own layout is decoded - eax takes the projectile index, ecx, edx
+// and edi take the three effect out-pointers, and the stack slots 1..7 take the point, the definition, the index, the element
+// index and the three sound out-pointers; the NONE block is grouped (effect0, effect1, effect2, sound0, sound1, sound2) and the
+// 0x1883e0 call interleaves the sounds and the effects. Declaring the parameters in that order and grouping the NONE block takes
+// this function to 66, but the caller's setup then grows (0xfaa60 1234), so the form is reverted. What is left here is the
+// register choice for the four register arguments (ours takes the projectile index in ecx and effect0 in eax where retail takes
+// them in eax and ecx) and the projectile lookup, which this build sinks below the game-state test where retail keeps it above.
 // @retail 0xfd7d0
 void function_fd7d0(long object_index, point3f const *point, byte const *effects,
 	long index, long element_index, long *sound0, long *sound1, long *sound2, long *effect0,
@@ -974,6 +988,9 @@ real function_30bf0(vector3f *v);
 // MiniMax I (11-10): no new form, no lower score (232); the two pointer parameters are still enregistred in EDI and EDX where retail loads each at its use, and the frame, the rounded horizontal root and the two separate divisions still differ.
 // MiniMax H (11-04): no new form, no lower score; the difference the earlier rounds describe is still there.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax C (11-14): no new form, no lower score (232): the frame is 0x28 against retail's 0x30 and the whole allocation of the
+// SSE registers differs from the first instruction, so the distance, the root and the clamp cannot be rescheduled from this file:
+// the convention of the callee 0xe7020 and the callers' usage are the parts left to decide.
 // score 232 (was 232): the convention now agrees with retail (target EAX, origin ECX, direction
 // ESI, the rest on the stack, `ret 0x2c`): the forced-speed and time-scale pointers are each read
 // once through their addresses, which keeps them on the stack as retail reads them at their uses
@@ -1313,6 +1330,9 @@ extern vector3f *g_4687ac;
 // MiniMax I (11-10): no new form, no lower score (163); the frame stays 0x40 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's.
 // MiniMax H (11-04): no new form, no lower score; the three ray queries have to inline 0x16a040, whose defining file is not this lane's.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax C (11-14): no new form, no lower score (163): the simultaneous endpoints give retail's 757/756 bytes, but the frame is
+// 0x48 against retail's 0x34 and the endpoint and query homes still differ; the shared input differences ride on the same
+// contributor, so no spelling of this body alone reaches retail.
 // score 163 (was 163): simultaneous offset endpoints recover 757/756 bytes; frame 0x48
 // versus 0x34 and endpoint/query homes still differ. Shared input differences 220;
 // radius at use 224; both 233; simultaneous endpoints 163 plain (kept); endpoints with
@@ -1773,6 +1793,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 // pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax R (11-10): no new form, no lower score (296): retail expands 0xfbfd0 inline after the 0xfbd40 call and holds index * 12 in EBP, a body the rules forbid writing out by hand, so the pool and tag homes, the speed update's schedule and the seat-bit tests stand.
 // MiniMax D (11-10): no new form, no lower score (296).
+// MiniMax C (11-14): no new form, no lower score (296): retail expands 0xfbfd0 after the 0xfbd40 call (the pool and the tag
+// re-read and the final speed), this build calls it, so the body is 66 bytes short and everything after the call is shifted;
+// writing that body out here would copy another function's code: BLOCKED-BY 0xfbfd0.
 // score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
 // higher, so measure this with a big caller such as 0xfaa60 in the check).
 // Round 2 of #1061: statement-by-statement walk against retail: no behaviour difference (every
@@ -2011,6 +2034,9 @@ real function_17c900(short function_type, real input);
 // call take the index in eax and pass the point's address; a declaration may not change.
 // MiniMax R (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP and ESI at a different point, so the rotation's register homes still differ.
 // MiniMax D (11-10): no new form, no lower score (348): the aim point's stack home is [esp+0x24] in retail against [esp+0x28] here, and retail pushes EBP/ESI after the lookup where ours pushes EBX/EBP/ESI before it.
+// MiniMax C (11-14): no new form, no lower score (348): the frame is retail's 0x30 and the body is four bytes long, with the
+// index in EAX where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the shared
+// normalizer's own callers constrain that helper, so it cannot be spelled differently here.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
@@ -2631,6 +2657,16 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // the range check's call twice (0xf97b4 and 0xf97ca, one per arm of the average_speed test), so its code has six
 // sites for the same five statements as ours (actions 1, 2, 1, 1 at collision_count == 10, 2). A local inline copy
 // at the first use 1040, at both 1055 (4750 bytes), so all five stay calls to 0xfaa30.
+// MiniMax D (MM-DD) round: score 947 (was 947): no form found that lowers the lockstep score by the review bar, so the
+// body is unchanged (the line above's 946 is this same body read in an earlier build context; the plain and the fast
+// check here both read 947). Read from retail: the frame is 0x118 against our 0x110, the prologue keeps the projectile
+// index in EDI and the projectile in EBP (ours: the index in EBX, the definition in ESI, the projectile in EBP), and the
+// range check's 0xfaa30 call is emitted twice (0xf97b4 after the division, 0xf97ca in the zero arm) with the fraction
+// left in xmm0 across the call. Our /Ob1 build calls 0xfaa30 at all five uses; retail inlines it at two (the 1.0 test
+// before the loop and the predicted case at the end). Trial (fast, base 947): `inline` on 0xfaa30's definition in this
+// file (0xfaa30 itself still matches, its out-of-line copy survives) inlines it at all five uses and takes 0xf8eb0 to
+// 1093 (4790 bytes, frame 0x114); reverted. The two per-arm calls and the two inlined uses are compiler-level, not
+// reachable from this source without writing 0xfaa30's body out by hand.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -3035,6 +3071,15 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // MiniMax S (11-10): no new form, no lower score (1190); the frame is 0x220 against retail's 0x218, the velocity argument arrives on the stack where retail takes it in eax and keeps it in a callee-saved register, and the collision, effect and sound homes still differ. The sound and effect records start at the same address as retail's, so the eight extra frame bytes sit in the small scalar homes; the velocity pointer is kept in esi on both sides, but only retail's callers hand it over in eax.
 // MiniMax G (11-12): no new form tried this round, no lower score (1196): the frame is still 0x220 against
 // retail's 0x218 and the velocity argument still arrives on the stack instead of in eax.
+// MiniMax C (11-14): no new form, no lower score (1196): the frame is 0x220 against retail's 0x218, the velocity arrives on the
+// stack where retail takes it in eax, and the callee 0xfd7d0 still takes its projectile index in eax and three of its six
+// out-pointers in ecx, edx and edi; that split is the callee's own convention, which is not this lane's file.
+// MiniMax C (11-15): no new form, no lower score (1196): retail's 0xfd7d0 is decoded now - eax takes the projectile index, ecx,
+// edx and edi take the three effect out-pointers and the stack slots 1..7 take the point, the definition, the index, the element
+// index and the three sound out-pointers - and the callee is in this file, so the split is ours to give. Declaring 0xfd7d0 in that
+// order (point, effects, index, element_index, sound0, object_index, effect0, effect1, effect2, sound1, sound2) with the grouped
+// NONE block takes 0xfd7d0 from 69 to 66, but this function's call setup then grows (1234 at 4868 bytes against retail's 4828),
+// so it is reverted.
 // score 1196 (was 1220): the frame is 0x220 against retail's 0x218, the velocity arrives on the stack where retail
 // takes it in eax, and 0xfd7d0's register arguments (retail takes the projectile index in eax and three of the six
 // out-pointers in ecx, edx and edi) still differ; that split is the compiler's choice for the callee.

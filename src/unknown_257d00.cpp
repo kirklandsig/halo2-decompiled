@@ -2039,6 +2039,10 @@ void function_b7360(long object_index);
 // payloads, masks 1/2/4/3/5/6/7: 410/390/343/342/423/392/422; point flag 277.
 // NOT kept: all regress; most payload forms grow past 1848 bytes. Original callback
 // and includes restored; native pool/actor/output homes and retained reference remain.
+// M3 lane 7 r162 (fast with 0x259e70, 0x259ec0, 0x25ab50 matched): the 1/19 arm in a block with a `long reference` local
+// for the check and the copy 272; the actor through actor_get(arg_0) at each use, no actor local 519 (1900 bytes); the 1/19
+// reference local with the actor looked up first 487 (1852); reference locals at the 1/19 arm and case 5 461 (1852); both
+// with the actor first 460 (1852). The actor-first order alone re-measured 487 (retail's pool load order, arg_0 still ESI).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2463,6 +2467,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
+// MiniMax I (11-15): no new form, no lower score (479): case 2's publication of the turn vector still copies the twelve
+// bytes at +0x4d8 as one dword and two floats where retail copies three dwords through `lea ecx, [ebx+0x424]`; with the
+// aggregate copy the body is 2396 bytes like retail's, but the whole layout moves and the score rises to 610, so the
+// component copy stays.
 // score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.

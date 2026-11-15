@@ -1599,6 +1599,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // T108: Ordinary inline metadata at existing iterator-new/iterator-next/seat-scan/slot-submit providers, four isolated, three pairs and all:
 // 32/181/32/32/32/181/181/181. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// P509: Contiguous native flag-writer orders 3056/0365/3065/5603/6503/5630/6530/3560:
+// 32/32/32/32/32/32/32/32. NOT kept: no iterator/leave/request-home equality;
+// original flag stores and full body restored at the native frame and length.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2928,6 +2931,9 @@ struct s_scenario_scripting_view
 // complete in-place coordinate products with scalar/first/full/explicit sums:
 // 104/136/98/128/127/129/125/154. NOT kept: all regress and lengthen away from
 // retail; original magnitude producer, short traversal and complete search restored.
+// P502: Binary enum outcomes at actor/data/lower/upper/source/metric/commit/loop boundaries:
+// 80/80/80/80/80/80/80/80. NOT kept: all tie; actor/counter/selector allocation and early scripting-data
+// observation remain. Original body/helper restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

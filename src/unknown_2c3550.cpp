@@ -603,6 +603,12 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
 // score lines below are merged into this one (m3 lane 11 r102).
+// MiniMax R (11-14, run 65): no new form, no lower score (675): the retail disassembly of 0x2c41b0 confirms the
+// prologue's shape - the path pointer is taken into ebx after the pushes, the success result is kept in the stack
+// byte at [esp+0x13] and the source radius is loaded before the 0.2f constant - where this build takes the path
+// pointer into eax before the pushes and keeps the result in a dword, so the obstacle, search and step homes that
+// follow differ from the first step block onwards. The frame 0x1f88 and the length agree with retail, the
+// permutation search over this body never beat its baseline, and no new form was found this round; the body stands.
 // MiniMax H (11-14): no new form, no lower score (675): the frame 0x1f88 and the length agree with retail, but the
 // prologue's homes do not: retail takes the path pointer into ebx after the pushes and keeps the success result in the
 // stack byte at [esp+0x13], where this build takes the path pointer into eax before the pushes and keeps the result in

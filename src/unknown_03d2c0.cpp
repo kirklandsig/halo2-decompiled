@@ -292,6 +292,31 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // found test 77 (same code); `initialize` declared first 79 (first difference +0x19); the walk's best index stored before its
 // age 79; the walk's first index declared ahead of the oldest age 91; the negative-age test as `0.0f > age` 77 (same code); the
 // record pool read once into a function-scope local used for all six pool accesses 77 (same code).
+// P509: Ordinary inline visibility at allocation/scan/state-output/update providers,
+// four isolated, three update pairs and all four: 77/77/77/77/77/77/77/77.
+// NOT kept: no cached-hit/merge/trailing-return equality; every declaration and body restored.
+// m3 lane 15 r85 (fast with 0x3db00, 0x3dd10 and 0x3d2c0, all MATCH; control 77, register- and stack-masked aligned 20).
+// Retail's own code shows the found path skips the merge test while the allocation-success path tests the allocated index
+// again (`cmp esi, -1; mov cl, 1; je`), so the merge test is on a copy of the allocation test's variable. Grid on lane 14
+// r84's base (`long result = NONE;`, the found test only setting result, `if (result == NONE) { allocation; walk ... }`),
+// walk exit x initialize x merge variable: no exit 101/101, 99/146, 101/134; main's exit 83 (re-measured)/137, 83/137,
+// 111/165; `cache_index = result;` closing the walk 101/104, 99/141, 85/141; that copy then `if (cache_index == NONE) return
+// result;` 83/79 for each initialize form (initialize as `= true`, `if (result != NONE)`, `if (cache_index != NONE)`; merge
+// on result/cache_index). Best structure: the copy closing the walk, `if (cache_index != NONE) initialize = true;` and the
+// merge on result, 85 (504 B, masked 12): the walk's NONE test, its unfolded `mov eax, esi` return and the merge test on ESI
+// are retail's; left: the join reloads result into EAX ahead of `je` (the found path brings it in EAX) where retail reloads it
+// into ESI after, and result stays in ESI across 0x3dd10 so the two epilogues merge. On that form: returning cache_index 146,
+// storing it into the object 148, both 161, the record from cache_index 147, all three 151. Also new: the object's cache
+// index read straight into the returned variable with the allocation in its own local (`allocated`), exits as main 148,
+// `if (cache_index != NONE) initialize = true;` 168, with `else return` 153, inside the walk arm 152 (the found path then
+// skips the test as retail, but the index is stored at its read); main with `cache_index = result;` after the walk and the
+// merge on cache_index: the exit tested on result or cache_index, returning either, 79 in all four, no exit 104.
+// On the listed 9 form (initialize set in both arms of the allocation test): re-measured 9 (519 B; left the found path's jump
+// into the reload ahead of the merge test, the merge reload/test order and the walk's folded `or eax, -1`); new on it,
+// `cache_index = result;` closing the walk with the test on cache_index, returning result or cache_index, 9/9 (same code),
+// the copy without the else-return 85; with the merge on cache_index 156/87/87/100. On lane 14 r84's `result = NONE` base
+// with the 9 form's arms: 9's walk exit 86 (re-measured), copy then test 86, copy alone 100, `if (result != NONE)
+// initialize = true;` alone 100; merge on cache_index 159/86/100/170.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

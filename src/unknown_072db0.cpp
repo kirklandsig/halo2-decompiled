@@ -1642,6 +1642,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax S (11-15): no new form, no lower score (703).
 // score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
 // static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
@@ -1990,6 +1991,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // P496: Shared read/write builder records/properties/buffers outputs in seven subsets, then all at connected admission:
 // 703/703/703/703/703/703/703/703. NOT kept: no exact native storage/producer recovery; initial user cursor/home, slot expansion and later request/completion homes remain.
 // Original complete executable body restored.
+// Round 83 (m3 lane 2, fast): the team flag's comparison moved after the identity-change block 797 (2926 B); the
+// request guard as `properties_used > 0 && records_used > 0` 712 (2894 B); the team comparison's operands swapped
+// 705; the value-group pointer declared after the two flags 703 (same code); the change test's two identity
+// comparisons swapped 789 (2926 B). The slot test's cmovne still needs /arch:SSE (a file-flag decision).
 // @retail 0x74aa0
 void function_074aa0(void)
 {
