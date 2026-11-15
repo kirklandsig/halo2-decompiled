@@ -586,6 +586,10 @@ s_1a8a10 g_4453c0[] =
 // the transform src/unknown_0de080.cpp writes with dot_product2d; the inline_depth(0) pragma keeps any helper out of line
 // here. Diagnostic (not keepable): the pragma dropped, the three callees declared noinline, both sums through dot_product2d
 // with a perpendicular local 214 (592 bytes; the function's own convention changes, arg_0 no longer in EBX; 0x1a8c30 49).
+// Round 122 (m3 lane 9, fast; control 17): 0-7 unused locals at the top change nothing here: i in a scalar with j read in
+// place in both sums 31/31/29/29/29/29/29/29, the frame-transform form 31 at every phase, the identifier/index/score order
+// 15 at every phase. On that order the array stores [0],[1],[2],[3] 16, [2],[3],[0],[1] 18, [3],[1],[2],[0] 19,
+// [1],[0],[3],[2] 16; the actor pointer to const 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

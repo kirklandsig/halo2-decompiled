@@ -385,6 +385,9 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
+// factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
+// 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
 // score 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
 // MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
 // third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and

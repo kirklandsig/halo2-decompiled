@@ -174,6 +174,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // Round 157 (m3 lane 7, fast): the model loop walking a definition pointer (incremented in the call) 150 (421 bytes);
 // the text loop walking one 46 (419 bytes); 0x22fa5b's parent parameter typed as the screen class, as 0x22f9bf's, 23 (same
 // code). Stopped there: round 51's 15 counter combinations and round 86's diagnostics cover the counter and loop spellings.
+// Round 122 (m3 lane 9, fast; control 23): 0-7 unused locals at the top 23 at every phase; the shared counter declared in the
+// pane block after the flag 66; the model's animation start without braces 23; the text result typed as 0x22f9bf's return
+// type 23. Diagnostic: the model's value0a store ahead of the animation start 11 at 414 bytes (the model stays in EAX, no
+// EDI save or screen copy; the resets stay swapped), but retail stores after the call.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

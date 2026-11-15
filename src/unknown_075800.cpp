@@ -1454,6 +1454,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // code each); that member helper on this two-switch body 176 (453 B); the in-band types 1, 15, 16, 17, 19, 20, 21 as empty
 // `break` labels beside 18 in the late switch 126 (same code). The address stays a register argument whenever the lookups
 // take it directly or through a call; only an inlined use across a call (the late 0x94420) stacks it.
+// P499: Complete classifier with former terminal case 18 before primary cases 2/3/4/8/9/10/12/13:
+// 216/216/216/216/216/218/218/218. NOT kept: All regress against reduced control 196, shorten to 420 versus native
+// 444, and lose the correct incoming allocation; full baseline 143 stays authoritative. Original complete
+// executable body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -713,6 +713,13 @@ extern point2f *g_468778;
 // prop_node_view / prop_node_state 375 (same code). The actor looked up before 0x1e4f90 crossed with constant exits,
 // local_2 declared first and the prop pointer at function scope: 413 (1555 bytes), 408 (1550), 413, 408, 393, 398, 393,
 // 398 (the constant-exit four at 1549 bytes); every actor-first form keeps arg_0 in EBX and the prop in memory.
+// m3 lane 15 r85 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
+// register-masked 106). Re-measured lane 11 r100's actor-first, constant-exit form 393 (masked 113: arg_0, actor, settings,
+// arg_1 and prop sit in EBX/EDI/ESI/EBP/arg_1's home where retail has EDI/EBP/[esp + 0x10]/ESI/EBX). New: the prop arm
+// tested as `else if (local_0->prop_index != NONE)` in place of `else if (local_3)` 370 (1549 B, but masked 118: a
+// positional drop only, five points, not kept); that on the 393 form 393; that with the prop's NULL default dropped 392
+// (1550 B), on the 393 form 391; the actor looked up inside the block after the slot tests 408 (1558 B), with the prop-index
+// test 427 (1570 B). The tail's `lea R, [slot + 0x2d]` field pointer is the same code in both builds (ESI here, EBP in retail).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -891,6 +898,10 @@ static __forceinline long real_to_long(real value);
 // MiniMax H (11-14): no new form, no lower score (382): the frame and the length agree, but the early false exit's
 // place, the object and magnitude homes and the query scalar homes still differ, and any early return form here
 // folds the result byte away and shrinks the frame to 0x54, which reads 508.
+// MiniMax C (11-14): no new form, no lower score (382): the frame and the length agree (1904 bytes against
+// retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
+// in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
+// differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose

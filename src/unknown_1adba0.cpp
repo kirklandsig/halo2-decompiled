@@ -550,6 +550,11 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // node pointer `const` 15 (same code); the override's state and flag tests as nested ifs 15 (same code); the
 // unknown225 test ahead of the prop-index test 31; the cooldown product as a call result then `*=` the field 78 (417
 // bytes). Re-measured: the elapsed compare written `local_4 <= elapsed * rate` 15 (same code).
+// Round 105 (m3 lane 10, fast with 0x110ab0): a named game-time pointer with the ticks declared bare ahead of it 91
+// (415 bytes: result EBX and NONE EBP as retail, pointer EDI and ticks EBP); the named pointer for the ticks only with
+// the rate read through the global 15 (same code: the re-read folds into the pointer); the 0x1e5380 result renamed to
+// sort ahead of the other locals 15 (same code: not a name tie); on the named pointer, the ticks declared bare at the
+// function top 91, the cooldown product with the settings factor first 91.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

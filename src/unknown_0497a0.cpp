@@ -388,6 +388,13 @@
 // origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
 // NOT kept: frame/basis/wave residence remains unmatched and all regress;
 // original complete body and helpers restored.
+// M3 lane 1 r104 (fast): s0's sum with the cos 7.75y term first 536, its product with sin x first 536 (same code each);
+// sin x, cos 7.8y and cos 7.75y as named doubles ahead of s0 in retail's evaluation order 534 (2622 B; our x87 order is
+// unchanged apart from the two popped values), all four factors named with the 8.2x sine last 536; s1 computed before the
+// first cross 536 (s1 is still substituted into its use after s0).
+// P501: Standard whole-record history/point/input transfer boundaries, seven subsets, then complete fallback
+// publications: 743/679/726/734/753/688/720/732. NOT kept: All regress and fail native frame/extent and rounded
+// wave residence; original copy graph restored. Original complete executable body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

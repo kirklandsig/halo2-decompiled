@@ -431,6 +431,10 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax R (11-14): no new form, no lower score (412): retail's entry is `sub esp, 0xa0; push ebx; mov ebx, eax`
+// with the actor index arriving in EAX, where ours reserves 0xa4 and reads the argument from the stack; the request
+// convention is fixed by the callee 0x2641c0, whose noinline declaration is in src/unknown_265cb0.cpp, another lane's
+// file: BLOCKED-BY 0x2641c0.
 // MiniMax G (11-10): no new form, no lower score (412).
 // MiniMax S (11-10): no lower score (412): a plain long for the maximum gives 428 (worse) and is reverted; retail still takes the actor index in EAX where ours loads it from the stack, and the frame is 0xa4 against retail's 0xa0.
 // MiniMax R (11-05): no new form, no lower score; retail takes the actor index in EAX and pushes ebx/ebp/esi
@@ -1201,6 +1205,7 @@ real function_296600(long actor_index, long prop_ref_index);
 // The actor through the existing actor_get 90 (same code, kept: it replaces the written-out lookup).
 // MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
 // pointer still lives in edi where retail keeps it in ebx.
+// MiniMax S (11-14): no new form, no lower score (91): the actor pointer still lives in EDI where retail keeps it in EBX, and retail's `sete` for !current still sits between the first call's pushes.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

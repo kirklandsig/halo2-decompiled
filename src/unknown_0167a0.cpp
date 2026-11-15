@@ -269,6 +269,13 @@ PRIVATE inline byte const *material_parameters(long tag)
 // (`((byte **)state)[5] = ((byte **)((byte **)state)[4])[1] + first * 10`) 5 (+0x1a7); the entry reference bound to
 // `((byte **)state)[5]` 5 (+0x19e); the direct store with both index sums operand-swapped together 5 (+0x1a7); the direct
 // store with long packed/next carriers in the restore block 5 (+0x1a7). Body unchanged.
+// Round 101 (m3 lane 11, fast with the file's 30 functions; the direct entry store with the word read back from the field,
+// 5 at +0x1a7, as the base: only `second` loads into ESI right after the entry lea, where retail loads it after the chain
+// and pass bases): the word read through a `word const *` 5; `third + (next & 0x1ff)` in the pass index 5; `10 * first`
+// for the entry 5; the tables published without the local reassignment 5; fresh block-scoped word locals for the restore
+// block's packed and next 5 (all five the same code as that base). Diagnostic (not kept): `second` read through a volatile
+// view of the parameter there still loads right after the lea, so its early load is the allocator's placement of the
+// ESI reload, not a scheduling move past the store. Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

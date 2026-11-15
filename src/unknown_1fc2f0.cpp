@@ -201,6 +201,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax I (11-14): no new form, no lower score (32): retail's rate chains and tick products run j, i, k while its velocity stores and deltas run i, j, k and the squared length sums (k + j) + i; our deltas j, i, k keep retail's chains but the stores and the sum follow the delta order, and deltas i, j, k give retail's stores and sum but move the chains to i, j (79), so one source order cannot give both.
 // MiniMax B (11-13): no new form, no lower score (32): retail's tick products run j, i, k while its velocity stores run i, j, k, and the inlined scaled-difference helper keeps the two together (the deltas written i, j, k give retail's stores and its (k + j) + i sum but move the products to i, j, k, 79); the deltas in the order k, i, j measure 30 and the copy-then-subtract form 29, but both are statement orders picked by score and were reverted by the coordinator on 11-09, and the permuter (fast, 7 tries in 390 s) found nothing below the 32 differing instructions of the reduced image, so the body is the original one.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
@@ -710,6 +711,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // found nothing below 32 but the listed 29 through a volatile read of the rate (not used); the rate read at its use 32,
 // the tick field read at its use 32, both 32, `predicted` declared with the other vectors 32, the length test written
 // `length_squared < limit * limit` 32 (all the same code).
+// M3 lane 3 r243 (fast with 0x1fc660, matched throughout; base 32 [register-masked aligned 9]): the deltas assigned i,
+// j, k re-measured 79 [16] (the stores, deltas and the (k + j) + i sum then follow retail, but the chains and tick
+// products run i, j, k). On that form: the tick scale converted at the top as a named real 85; the correction through
+// the existing vector3f_add_scaled straight into the output 99 (348 B); the call taking `tracked` directly 107 (352
+// B); the limit computed before the squared length 64 [18]; the rate local dropped (the global passed to
+// vector3f_add_scaled) 79 (same code). On the body: the limit computed right after the rate and tick reads 85. Body
+// unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -605,6 +605,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // (1626 bytes, not inlined), the same helper forceinline 234 (1902 bytes, frame 0x50: the tint then shares a slot);
 // the second UV set declared before the first with geometry after 194, geometry and both sets declared at the top with
 // the tint 194, `packed` declared at the top 194 (all three the same code).
+// m3 lane 15 r85 (fast; control 194, register- and stack-masked aligned 61). The final call settles the homes: LTCG passes
+// the last argument (geometry) in EBX at +0x30, uv_a +0x40 in both builds, retail tint +0x50 / uv_b +0x60, ours uv_b +0x50 /
+// tint +0x60 (the else arm's pivot and seed colour share geometry's slot in both). New: the clamp as a pointer loop
+// (`for (real *component = &tint.alpha; component <= &tint.blue; ++component)`) 518 (1892 B); uv_a and uv_b declared
+// separately 194 (same code); the aspect defaults declared separately 194 (same code); the alpha product held in a local and
+// stored just before the clamp 219; the 0x180 block's products written `tint.red*seed_color.red*2.0f` 197.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
