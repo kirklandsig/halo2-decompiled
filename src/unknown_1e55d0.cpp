@@ -242,6 +242,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // `x <= 32768.0f` 319 (same code); `*(long *)(state + 4)` at each use instead of object_index 339 at 1192; object_get()
 // for the two tail lookups 319 (same code). The move/input registers stay BLOCKED-BY 0x1ec690 (stub in
 // src/stubs/bipeds.cpp); M400's matrix default looks like an initialiser that rigid_body_matrix_get overwrites.
+// Round 244 (m3 lane 3, fast): the 0x1ec690 stub (its only caller is this function) declared __cdecl, caller-pops as
+// retail's callee is, 328 (1180 bytes; input stays EBX, output EDI: the stub's ECX argument is not what picks them);
+// 0xb7430's matching body enabled with its stub removed (diagnostic, restored) 319: 0x1c4a80 stays inlined here, so its
+// inlining is not from 0xb7430 being a stub. The velocity block on its own object-index read and a second
+// `*(long *)(state + 4)` read for the position move (retail reads [state+4] once per inlined helper) 319: the tail then
+// has retail's re-read and its lea/object/flags registers, but the count does not move; on it the input flag in shift
+// form 330, the shape match as `compound ? a || b : a` 345 (1204 bytes), both 348. All restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

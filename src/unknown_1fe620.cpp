@@ -219,6 +219,12 @@ static __forceinline long real_to_long(real value);
 // copy (retail loads all three words before storing, a copy through 0x210850's `out` pointer: 0x210850 inlined, which
 // its /Ob1 file blocks; a pointer to the whole local would be reverted even with a match), a second copy's order,
 // the output rows' order and XMM numbering, and two x87 product orders. Nothing kept (match-only composite).
+// Round 244 (m3 lane 3, fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0): the timer draw's product with the
+// tick count first 373 (same code); the pi/4 cap as a conditional assignment 373 (same code); the +0x38 rate product
+// as `+0x38 * (rate * ticks)` 378; the prop state compared with `(short)1` 373 (same code); the 0x70e flag set from
+// the 0x1fdce0 result inside `if (flag)` 456 (1856 bytes). Retail forwards the seed from the sign test through all
+// three range draws in EAX and stores it once (so the bound loads are scheduled ahead of the draws, holding +0x14/+0x18
+// on the x87 stack); ours stores and reloads it per draw. All restored.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
