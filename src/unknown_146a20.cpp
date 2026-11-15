@@ -430,6 +430,12 @@ bool g_47f05b;
 // reload of the backing pointer on the successful arm are still missing; the shared constructor bodies they
 // follow are outside this queue, so the body stands.
 // A later round, unchanged at 34: the abstract allocator's dead vtable store and the reload of the backing
+// MiniMax B (11-14): no new form, no lower score (34); retail keeps the abstract allocator's vtable store
+// (mov [eax], 0x453760) where this build drops it as a dead store, and that store comes from the shared
+// constructor in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY); the pool's placement is
+// read from g_479888 on both sides, so the rest is retail's reload of the block with a lea for the pool against
+// this build's load and add at the join.
+// score 34 (was 34): unchanged this round: the abstract allocator's dead vtable store and the reload of the backing
 // pointer on the successful arm are still missing; the shared constructor bodies they follow are in another file.
 // Another round, unchanged at 34: the abstract allocator's vtable store and the backing pointer's reload
 // on the successful arm are still missing; both come from the shared constructors in include/unknown_146a20.h,

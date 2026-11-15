@@ -2731,6 +2731,11 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // reduced 198/204/198/204/198/204/198/204 against control 197 (868 bytes; full 17/865).
 // NOT kept: reduced scores and byte-writer length regress; all one-use results, include and body restored.
 // MiniMax C (11-11), NOT kept (coordinator 11-11): 17 -> 15 only from 0x219070's result in a one-use short local passed to sound_playback_set_chunk (match-only form); body at 17.
+// MiniMax B (11-14): no new form, no lower score (17); the sound set index is still sign extended
+// (`movsx ebp, ax`) where retail copies the dword, because 0x218f50 and 0x218f10 return short in
+// src/unknown_218ac0.cpp; declaring them long here leaves both calls unresolved (the linker puts the
+// return type in the name: LNK2001 on `long __fastcall function_218f50(...)`), and the delayed start
+// still stores the flag byte before the start time.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
