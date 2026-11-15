@@ -792,6 +792,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // inline accessor returning `&watcher->players` 32 (all four the same code as the swap-order base). Reading: the key sum
 // is canonical for every spelling; only the operand ranks move it, and none of these moves `collection` below the
 // hoisted inverse base. Restored to main's order.
+// M3 lane 16 r121 (fast with 0x84e90/0x84c90/0x83c90/0x69260): the else arm from the slot search on as a forceinline
+// helper given `&watcher->players` as its collection parameter 28 (same code: the argument is substituted); the second
+// loop's collection as a reference 28 (same code); one function-scope counter for the three loops 28 (same code); the
+// loop-top player as `&collection->players[i]` 267 (1064 bytes); an occupant pointer `&collection->players[i]` at the loop
+// top for the occupied key 278 (1092 bytes).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

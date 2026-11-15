@@ -456,6 +456,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (0xb61d0 2: its retail sets the walk before the counter, so the helper's order is right). Natural body with
 // `__assume(start >= 0)` inside the guard 28 [6]; with `count + start <= length` 28 [6]; the length taken before the
 // sign tests 50 (92 bytes) [35].
+// M3 lane 2 r85 (fast with 0xb5f10/0xb61d0; [0xb5f10]): the scan helper walking a local declared after the counter with
+// the named length and `start += (long)string` after the clamp 40 [match] (diagnostic: start stays in ECX, walk EDI; 0xb61d0
+// 2); the walk local declared before the counter on the current body 21 (same code, 0xb61d0 matched); on the current body:
+// the count tested before the start 27 [match]; `if (++count > 0x200)` 21 (same code); `length - count >= start` 35 [35].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

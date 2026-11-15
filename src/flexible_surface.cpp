@@ -730,6 +730,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draws 136; cosine computed before sine as two statements 118; the rotation pair through sinf/cosf 117 (other code); the
 // definition lookup after the time product 160; the cross product as axis x old with the rows adding it 134 (881 B).
 // Same code: cosf for the opening oscillation, the record in its own local first, the axis drawn before sine/cosine.
+// M3 lane 11 r103 (fast with 0x118140, 0x117c80, 0x30bf0, all matched each time; both sides end in a plain `ret`):
+// cross3f_staged for cross3f 117 (same code); the rows through the existing vector3f_scale and vector3f_add_scaled
+// (old by cosine, then the axis by the projection, then the cross by -sine) 193 (914 B). Diagnostics with a file-local
+// rotation (written-out helper bodies, match-only): an in-place scalar rotation on the global with the existing sine and
+// cosine 183 (852 B); the path-rotate spelling (cross and result vectors, aggregate copy back) 182 (905 B); a rotation
+// taking the angle, sine and cosine computed inside after the axis draw, 145 (880 B). Body unchanged.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -853,6 +859,9 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax E (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls
+// them, both in src/unknown_01cf50.cpp, and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against
+// our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
 // MiniMax S (11-14): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where ours calls them
 // (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in
 // EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side

@@ -1600,6 +1600,9 @@ void function_b7360(long object_index);
 // cs global later, while the cs lookup is the first statement here; the two initializers swapped measure 487 and the
 // output pointer declared first gives the same code, so the prologue is left as it is, and the table-first lookups in
 // cases 7 and 13, case 10's clear after the selector load and case 5's store order are the differences that remain.
+// MiniMax I (11-15): score 261 (was 270): the 1/19 arm sets field_3 |= 0x40 before it copies the point into the output, so the
+// flag byte is stored before the point copy where retail stores it after; the body stays 1848 bytes long and the other
+// functions in this file keep their scores.
 // score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
@@ -2047,6 +2050,8 @@ void function_b7360(long object_index);
 // completion graph: 310/348/410/430/465/469/469/469. Earlier countdown placements used
 // the shorter completion graph. NOT kept: no exact source-order match; original
 // dispatch, point-reference observations and complete callback restored.
+// MiniMax I (11-15), NOT kept: 261 (was 270) moved the point store below the flag set (field_3 |= 0x40), a
+// statement order picked by score; kept only with a byte match. Code back to main, notes kept.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2454,6 +2459,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// score 479 (was 479): m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
+// / `return 0;` 483 (re-measured on this base); one `turn_facing` pointer for case 2's copy and publish (same code); case
+// 2's aggregate copy, case 4's facing reads and case 18's and case 21's targets held across 0x25ab50, together 636
+// (re-measured), with the plain returns 640; case 2 + case 4 only 639; cases 18 + 21 only 619. Each still gives the
+// actor EDI and the state EBX (retail: actor EBX, state EDI, the state re-read from its argument slot after calls that
+// take EDI, and that slot reused for case 18's first target and case 20's nearest distance).
 // MiniMax C (11-14): no new form, no lower score (479 in the full build, 474 in the reduced one): the two
 // floats read from [actor+0x6d4] and [actor+0x6d8] go into [esp+0x10] and [esp+0x14] in ours through
 // eax/ecx with the store before the lea of the destination, in retail through ecx/edx with the lea first;
@@ -2471,6 +2482,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
+// Earlier 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax I (11-15): no new form, no lower score (479): case 2's publication of the turn vector still copies the twelve
 // bytes at +0x4d8 as one dword and two floats where retail copies three dwords through `lea ecx, [ebx+0x424]`; with the
 // aggregate copy the body is 2396 bytes like retail's, but the whole layout moves and the score rises to 610, so the

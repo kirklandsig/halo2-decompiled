@@ -139,7 +139,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1391): earlier 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1375 (was 1375): earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -583,6 +583,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1410/1427/1375/1380/1436/1388/1397/1417. NOT kept: All retain frame 0x5d0 versus native 0x58c. t03/t04 gains
 // 16/11 add one absent library call (15 versus 14), and t06 gains only three. All transfer contracts rejected;
 // original helpers and body restored. Original complete executable body restored.
+// m3 lane 14 r96 (fast = full 1375, 0x2056e0 stays matched): the final loop's inactive-impact skip as a nested if block
+// in place of `continue` 1375 (same code); local_4/local_5 named linear_velocity/angular_velocity 1375 (same code: the
+// names do not swap their homes, retail has local_4 below local_5, ours the reverse); the final loop's member count read
+// through local_81 (`*(short *)(local_81 + 2)`) 1391 (6211 B); the havok component index read at each use after the
+// 0x81 flag test (no local_20) 1460 (6259 B); the steering product's first two factors swapped 1375 (same code). Retail's
+// final loop reads the pool's data pointer at each use (count, member, search), forms the list pointer only inside the
+// found-duplicate search, and reaches that search by `jg` with the countdown as the fall-through.
 // P511: Explicit actual steering-range/dominant-force/dead-zone/compression/mass-floor/mass-range/impulse-cap/friction-slope results:
 // 1394/1375/1375/1375/1366/1394/1409/1416. NOT kept: best 1366 grows to 6243 versus native 6238,
 // with excess frame unchanged; other results tie or regress. Original complete body and all helpers restored.

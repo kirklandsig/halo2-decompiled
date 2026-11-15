@@ -1072,6 +1072,11 @@ struct s_string_buffer
 // the 2 test used twice, the values loaded under a seven-mode chain led by it, then `if (timed)` time else `%d` 115 (478
 // bytes: the bool is materialised with `sete`, never threaded); the chain through an inline helper returning the row
 // pointer or NULL, tested for NULL 112 (452 bytes: this file does not inline it).
+// Round 125 (m3 lane 9, plain; fast scores the reduced image, 65/70 for the first two): the six-mode chain with a
+// `== 2` term (known false in the else) 50 (481 bytes: the term folds, 9 in line); the six-mode chain in descending
+// order 55 (481: source order kept, the last term 1 in line); the 9 term as `== 9 && != 2` 50 (folded); the chain
+// under a leading `!= 2` 50 (folded); a 1-9 range excluding 5 and 6 107 (470 bytes). VC keeps the chain's source order
+// and folds every implied term before layout, so none places the 9 test past the return.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {
