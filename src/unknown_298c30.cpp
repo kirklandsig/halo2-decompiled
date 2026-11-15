@@ -108,6 +108,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // the normalizer's two products follow the source order (x then y, as here) and swapping them moves the x product into
 // the copy register for 384, so the difference is the register choice alone; the entry schedule, the normalized XY and
 // magnitude homes and the candidate width are the rest.
+// MiniMax I (11-15): no new form, no lower score (382): a permutation search over this body (4 tries in 327 s) found nothing
+// better than its own baseline, and writing the far arm's difference vector as two statements measures 382 again (same code);
+// what is left in the near arm is that retail keeps the loop distance on the x87 stack for its compare (`fst` of the magnitude,
+// then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
+// float, and the body is still 40 bytes shorter than retail's.
 // score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
