@@ -6544,11 +6544,6 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // edx against retail's eax, the marker position copy rotating eax/ecx/edx, the flag byte test using al against cl, the
 // material word from cx against dx, the zone stored as a dword against retail's word, the model count test and the two
 // 0x188180 call setups (that material parameter's 16-bit type is in files this lane may not edit).
-// score 64 (was 80; earlier 138, 168, 154): the frame is retail's 0x94 (the foot marker in its own block, the down vector copied
-// after the point offset, and the count test as count - 1 >= 0) and the down vector's copy now matches retail's movss pair
-// by pair; what is left is register choice — the contact point load lands in edx against retail's eax, the marker position
-// copy rotates eax/ecx/edx, the flag byte test uses al against retail's cl, the material word comes from cx against retail's
-// dx, and the zone is stored as a dword against retail's word.
 // score 80 (was 138; earlier 168, 154): the frame is retail's 0x94 now (the foot marker in its own block, the down vector copied
 // after the point offset through vector3f_assign, and the count test as count - 1 >= 0); what is left is register choice — the
 // contact point load lands in edx against retail's eax, the marker position copy rotates eax/ecx/edx, the flag byte test uses al
