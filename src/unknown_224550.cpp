@@ -616,6 +616,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // tint declared at the very top 194 (same code); the clamp's component pointer taken right after the tint's declaration
 // 194 (same code); `blend` declared after the pack call 498 (1953 B); the second set's unit defaults copied from the
 // first set's 347 (1955 B). Body unchanged.
+// P516: Reference-returning integer sequence maxima, long/short and both argument boundaries:
+// 425/425/409/409; with lower-first bounded-index minimum 462/462/460/460.
+// NOT kept: regressed frame/extent and no tint/UV repair; original includes, clamps and callback restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -2980,6 +2980,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // code); its guard reading +0x62 as a word 52 (580 B); descriptive names for the first half's event, delay and task 50;
 // the threshold, count and trigger-list declarations reversed 50; the follow-up event ternary with its arms swapped 54.
 // The first follow-up still reloads the index from its home.
+// P514: Actual pending/delay/stored-event/index lvalue bindings, mutable then readonly:
+// eight 50 at 579 bytes. NOT kept: field/parameter aliases do not recover the first-event
+// EBP copy or actor-loop alignment; original complete body and all input observations restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

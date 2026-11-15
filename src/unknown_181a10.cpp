@@ -912,6 +912,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // under the component/kind test 238 (same code); the classifier comparing its own copy (`limited != value`, one data read)
 // 320 (1243 B); the fraction test as `fraction <= distance` 304 (1243 B); `valid` declared at the top 263 (1246 B); `hit`
 // declared ahead of the origin copy, assigned after it, 238 (same code). Body unchanged.
+// P516: Binary-enumeration result domains at carried validity/root/key/distance producers,
+// positive then complementary encoding: 284/248/238/238/249/248/238/238.
+// NOT kept: no gain or frame recovery; original byte result, guards, observations and collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

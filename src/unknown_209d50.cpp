@@ -149,6 +149,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // else arm 90 (277: two epilogues, the pointer kept in EDX and copied to EAX at the return, frame reference in EAX).
 // Reading: retail needs the result (EAX) and the pointer (spilled) as two interfering values; every copy form here
 // coalesces them or defers the copy to the return.
+// Round 125 (m3 lane 9, fast; volatile-free forms only): the expression pool read once into a local for the
+// initialisation block, with `result = NULL` first in the arm 83 (277 bytes); a const result copy with `return NULL`
+// in the arm 90; the element as `arguments + argument_index` with `result = NULL` first 83; the result copy declared
+// just before the initialisation test with `result = NULL` first in the arm 83; the element passed straight to the
+// call 95 (266 bytes). Every volatile-free form still gives the result and the pointer one register.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

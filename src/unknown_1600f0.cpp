@@ -1210,6 +1210,13 @@ PRIVATE inline long score_string_list_1608e0()
 	}
 	return result;
 }
+// MiniMax I (11-15): no new form, no lower score (679): the player's offset written as its own local compiles to
+//   the same bytes as the expression, so the register roles are not reachable from the source here. What still
+//   differs: retail scales the player index into ebx before the remaining pushes (mov ebx, [esp+0x7a4]; and ebx,
+//   0xffff; imul ebx, ebx, 0x21c) and adds the unit base later, where this build does the whole chain in edi
+//   after the pushes; our frame is 0x798 against retail's 0x79c and the homes differ (our scores pointer at
+//   [esp+0x50] and the display at [esp+0x70], retail's at [esp+0x34] and [esp+0x74]), so every stack reference
+//   in the body is off.
 // MiniMax H (11-14): no new form, no lower score (679): retail scales the player index into EBX before the
 // remaining pushes (mov ebx, [esp+0x7a4]; and ebx, 0xffff; imul ebx, ebx, 0x21c) and adds the unit base later,
 // while this build does the whole chain in EDI after the pushes; writing the offset as its own local

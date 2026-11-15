@@ -512,6 +512,13 @@ struct s_ai_scene_assignment
 // Round 195 (m3 lane 4, fast, on the int copy): the leaf copy through memcpy 12; the recursion's assignment pointer as
 // `assignments + *assignment_count` 12; a long copy in place of the int copy 12 (the same movsx); `0.0f < local_7` 12;
 // `(*assignment_count)++` 12 (all the same code).
+// Round 200 (m3 lane 4, fast): re-measured, the direct maximum with a long next-role local for the flag and the recursion
+// 59 at 347 bytes (round 14's form): the head is retail's through the scorer call (maximum `mov esi, dword`, the role not
+// enregistered), then the stores read the role with a movsx from its slot and the recursion adds 1 to it, where retail
+// loads the role dword into ECX once for the movsx and the recursion's `inc ecx`. New: that local for the recursion only
+// 116 (364 bytes, it lives across the loop); a short next-role local for both 91, for the recursion only 74 (352 bytes);
+// a long maximum parameter with a short copy for the compares and the parameter passed on 59 (350 bytes, propagated); the
+// int copy compared without the `(short)` casts 53 (347 bytes: int compares, the role still reloaded first).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

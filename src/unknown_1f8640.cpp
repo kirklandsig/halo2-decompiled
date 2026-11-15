@@ -801,6 +801,9 @@ struct s_1f8a70_actor
 // after it 326 (1680 B); the failing arm returning route_found itself with the success stores after it 437 (1640 B, the first
 // exit folds); the destination-node test in a named bool 182 (same code: folded); the route admission as an if/else into a
 // `valid` bool 182 (same code); case 6's 0x20 test inverted with route_mode = 1 in the else 326 (1616 B).
+// P515: Independent inner/outer binary-enumeration results, positive/complementary and complete pairs:
+// 307/376/432/448/467/486/542/553. NOT kept: no native failure-reload or dispatch equality;
+// original two-result flow, cases, unit temporary and full executable body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

@@ -671,6 +671,12 @@ static inline bool teams_enabled_19e1c0()
 // player-name bodies are one block (the second jumps into the first), and its `text[0]` store takes an immediate after the
 // buffer's `lea esi`; retail's first body stores it from the zero result register (si) ahead of the lea, so its two bodies
 // differ and never cross-jump. Retail also keeps `remaining` in EBP and the token on the stack, where ours keeps the token.
+// M3 lane 2 r85 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B): the
+// name/team clamps spelled differently per case (second `remaining < result`, fourth `result >= remaining`) on the
+// volatile result 466 (1485 B), on the plain result 542 (1314 B: fewer tails merge, but the two player cases still share
+// their post-call code and token stays in EDI); all four spelled differently (`>`, `<`, `>=`, `<=`) plain 509 (1349 B),
+// volatile 466 (1485 B); the plain result with `token` read through `word const *const *` to itself at every use 691 (the
+// reference folds: token still EDI, the same code). Retail's tails differ only by its per-compare token reloads.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

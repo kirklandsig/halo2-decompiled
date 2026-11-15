@@ -1735,6 +1735,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // false;` 15 (the header clears then zero AL and the call result is tested with `test al, al`); `written` declared
 // before the resize call 7; the resize handle through `file` 7; the write header declared at the loop body's top 7; the
 // open given `&g_557c90[index].handle` with every other use through `file` 7 (same code each). Body unchanged at 33.
+// P516: Independent completed header-read result, bool/byte/short/long, reused by validity and admission:
+// 191/191/191/191 (frame 0x1140); independent checker result 116/116/115/116 (946 B).
+// NOT kept: all regress; original progressive validity, count homes, waits and full body restored.
 // @retail 0x213970
 void function_213970(void)
 {
