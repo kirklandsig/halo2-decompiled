@@ -1813,6 +1813,14 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // T105: Serializer channel/recipient moves and payload-return subsets 1..7:
 // 185/181/216/60/185/181/216; complete move pipeline 202. NOT kept: no
 // native zero/bit/size equality; copy forms lose the caller; original body restored.
+// M3 lane 14 r95 (fast with 0x56380, 0x53b00, 0x564c0): retail's EAX zero is a live variable up to the capacity-fail
+// exit (no literal zero reuses it, so the mask word takes ECX after the shift, the kept temporary EBX and capacity stays
+// in memory). New: direct `return NONE` for both failures with the length assigned to the result as the last statement
+// of the capacity block 154 (454 B, queue in EAX, ret 0x10, result in memory; 0x56380 73); has-player and the clamp as one
+// positive test `has && (player < 0 ? 0 : player > 15 ? 15 : player) == player` with `else result = NONE;` 169 (471 B);
+// the shared has-player helper as `((1 << player) & mask) != 0` 60 (same code, its users unchanged); the kept mask typed
+// word without casts 60 (same code); the player bit declared after the clamp 60 (same code). Re-measured: round 71's
+// NONE-then-0 result 151 (445 B, 0x56380 13).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3914,6 +3922,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // T107: Ordinary inline call metadata on settings/forwarding-route/XHV-query providers,
 // seven subsets 139 each, complete native packet cursor 164. NOT kept: no gain;
 // original provider declarations, independent call boundaries and full body restored.
+// M3 lane 14 r95 (fast with 0x564c0): retail's cursor starts with `add edi, 2` (an immediate beside the ECX = 2 that
+// size and consumed share), the shape a strength-reduced index product gives. New: consumed typed dword 139 (same code);
+// consumed typed short 161 (480 B, the packet rebuilt per iteration); the packet at `data + 2 + i * packet_size` 165 (478
+// B: it is strength-reduced into an EDI cursor, but the start shares ECX in the preheader and the member keeps EBP); a
+// `packets = data + 2` base ahead of the loop with `packets + i * packet_size` 166; the stride computed at the loop top
+// 160 (476 B). Re-measured: the packet cursor beside the count 164.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
