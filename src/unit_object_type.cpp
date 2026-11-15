@@ -841,6 +841,10 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // both 9 (92 bytes, narrow shift); with byte_flags_set for the +0x10a clear too 9; the mask spelled `(1 << 0)` with the
 // word setter 10. None kept (the 9s rest on a narrowing bool cast, the 10s gain 3). Still BLOCKED-BY 0xe4bd0 (src/bipeds.cpp
 // held this round) and 0xe5930: the only differences left at 10 are the tail call and the argument register.
+// Round 246 (m3 lane 3, fast with 0xe4bd0, 91 throughout): the +0x33e clear as a byte subscript `((byte *)unit)[offset] &= ~4`
+// 23 (100 bytes); that with the +0x10a clear as a byte subscript too 23; the byte subscript with `!unit->type` 12 (92 bytes, gain
+// below four, not kept); the type test inverted with an early return 13; `(1u << unit->type) & 1u` 13. Still BLOCKED-BY
+// 0xe4bd0 (EAX convention and tail call), itself BLOCKED-BY 0xe5930 (contributor file): our link expands 0xe5930 there.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -3597,6 +3601,7 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 
 /* whether the object's root, simulated by Havok and not keyframed, has
    something in the way (0x168f40 from its main rigid body's position) */
+// score 12 (was 12): the root index sits in EDI and the rigid body's element offset in EBP, retail the other way round.
 // MiniMax G (11-13): no lower score (12): the body is retail's length and the only difference is the pair of saved
 // registers - the root index sits in edi here and in ebp in retail, with the rigid body's byte offset in the other.
 // This round tried six more forms (the result local first, the NONE constant written as -1, a while loop for the root
@@ -3619,7 +3624,7 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // retail's registers breaks the sixteen-bit semantics of the index.
 // MiniMax G (11-12): no new form tried this round, no lower score (12): the root index and the rigid-body offset
 // are still in the opposite registers from retail, and the short index that would swap them changes the width test.
-// score 12 (was 12): root and rigid-body offset saved registers differ (a short index gives
+// Earlier (12, was 12): root and rigid-body offset saved registers differ (a short index gives
 // retail's registers but tests at 16 bits before extending: 3 aligned differences, 293 bytes);
 // entry result 89; native short body index 12 at 293 bytes; root cursor/seed 110/96;
 // parent while, existing keyframe method and point first 12; point value copy 46;
@@ -3672,6 +3677,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // test and the lookup 87 (293 bytes); one combined index/m_fixed/keyframed test with the keyframed method called on the
 // component (0x1c4b00's form) 12; `bool result;` declared first and set false where it was 12; the query result as a
 // conditional expression 27.
+// Round 246 (m3 lane 3, fast, 12 throughout unless noted): the rigid-body index as a dword 12; the walk reading the parent
+// into a named local before the root assignment 12; `bool result = false;` between the walk and the header 12; the walk
+// over the parameter itself with the call given a copy of the original index 26 (the function then loses `ret 4`); the
+// position as a const point reference 12.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {

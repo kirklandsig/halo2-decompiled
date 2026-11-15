@@ -1954,6 +1954,14 @@ bool function_17afd0(long effect_index, long value);
 // default. New: T with the owner as a ternary 12 (same code); T with `draw = view_pass ? same_view : !same_view` 101 (508
 // bytes); P with that 140 (512 bytes); P with attached computed ahead of same_view 102 (490 bytes); P with the
 // availability's clear between the second definition call and the owner lookup 141 (510 bytes). All match-only; body kept.
+// M3 lane 3 r246 (fast; base 47): the camera test reading the view global (view local elsewhere) 110 at 500 bytes, re-measured:
+// it gives retail's view reload after 0x17afd0 and keeps the base's homes (NONE/owner in EBP, availability in BL, same_view
+// in its stack byte), so the rest is one instruction out of step (the early `xor bl, bl`) plus the 2-byte neg/sbb/inc; on
+// it: the availability as one `view != NONE && !query` with no early clear 113 (498 bytes; NONE takes EBX, owner ESI, the
+// availability AL, same_view BL); the early clear moved after the view read 121 (496 bytes); false after the view read and
+// set by `if (view != NONE && !query)` 138 (510 bytes, availability spilled); the early clear kept with that set 142 (510
+// bytes); that with same_view true and cleared by one test 145 (513 bytes). Only the early clear with the arithmetic set
+// keeps retail's homes in our build.
 // P515: Independent availability/same-view/attachment/draw binary enumerations, positive then complementary:
 // 129/143/120/110/122/147/120/112. NOT kept: no native result-home equality; original
 // snapshots, query gates, traversal and complete executable body restored.

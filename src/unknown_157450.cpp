@@ -4819,6 +4819,8 @@ bool function_158eb0()
 // the loop and that extra temporary alone gives retail's setup. On main's order in the harness: the iterator data
 // through a named pool pointer 5, the iterator stores reordered 7, result declared before the count 7, `!= false`
 // on the iterator call 5, `(bool)` on the flag read 5, `count++` 5, `/ 2 >= 1` 7, `return count != 1 && result;` 11.
+// Round 247 (m3 lane 3, fast): the count declared after the iterator setup 10; the test as `<= 0` with `continue` 67; an
+// options pointer local in the loop for the flag read 5; `flag == false ? 0 : 1` 5; the iterator named `players` 5.
 // @retail 0x158f50
 bool function_158f50()
 {
