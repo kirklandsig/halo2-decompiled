@@ -1614,6 +1614,10 @@ long function_2197f0(real gain);
 // T108: Single common return with one completed/rejected-phase exit at disabled/same-ambience/composite/simple/hold/absent-current/rejected-same-attack/rejected-current-attack boundaries:
 // 94/94/94/94/94/94/94/94. NOT kept: no qualifying native-shape gain or equality; original complete source
 // and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// M3 lane 5 r183 (fast with 0x1251e0, MATCH in each): the fade-in-local lead re-measured 87 (684 B, match-only); on it
+// `real remaining = ambience_fade - elapsed;`, `real held = elapsed - hold;` and the product named before the sum 87
+// each (same code: one-use names are forward-substituted); on the kept body arm 3 written interpolation first 107
+// (687 B); the four `s_decibels(0ul)` zeros as `s_decibels(0.0f)` 187 (707 B).
 // @retail 0x127010
 long function_127010(short class_index)
 {
