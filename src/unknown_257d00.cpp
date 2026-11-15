@@ -2467,6 +2467,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
+// MiniMax I (11-15): no new form, no lower score (479): case 2's publication of the turn vector still copies the twelve
+// bytes at +0x4d8 as one dword and two floats where retail copies three dwords through `lea ecx, [ebx+0x424]`; with the
+// aggregate copy the body is 2396 bytes like retail's, but the whole layout moves and the score rises to 610, so the
+// component copy stays.
 // score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.

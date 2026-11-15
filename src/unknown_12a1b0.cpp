@@ -446,6 +446,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // M3 lane 7 r161 (fast with 0x11bed0/0x11be90/0x14a280/0x1d48f0/0x125920/0x1e1500/0x1697c0/0x17c0e0/0x16bc00): round 88's
 // index walk (0x21cf80's spelling) as a guarded do-while 161 (281 B), the same code as the while walk. 0x11bed0 is
 // expanded only at our two hottest sites (here and 0x1d48f0); no unlisted caller or callee form found. BLOCKED-BY 0x11bed0.
+// MiniMax S (11-14): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while
+// retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
+// not edit, so the call boundary and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1673,6 +1676,9 @@ struct s_looping_detail_request
 // audible arm's `source->audible = sound->source.audible` 110 (same code); the player arm's four spatial stores
 // through one `s_sound_position *spatial` 110 (same code); a true `__assume(sound->source.audible != 1)` at the top
 // of the player block 110 (same code: an assumption is no conditional level for the call site). The query stays inlined.
+// MiniMax S (11-14): no new form, no lower score (110): the acquisition schedule and the first-player query (expanded
+// here, called in retail) are unchanged; the earlier rounds' result, workspace, copy and payload forms land at 110 or
+// worse, and the call boundary of that query is the whole difference.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2724,6 +2730,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // call in a static inline helper taking track value, scale and gain by value 471 (frame stays 0x4b4: the values stay in
 // registers, so that is not where retail's integer snapshots come from); diagnostic, reverted: `#pragma inline_depth(0)`
 // around the 0x221810 call 555 (1874 B; it stops every inline in the body).
+// MiniMax S (11-14): no new form, no lower score (339): the frame is still 0x4b4 against retail's 0x4bc and the
+// early scalar, primary and last-chunk homes still differ; the forms listed below score 339 or more, and the
+// bool-flag form that reached 321 was not kept (coordinator).
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -3175,6 +3184,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // inside the definition guard 722 (2492 B, 136 fast; entry exact to +0x68); + `created = true` before the creation call
 // 722 (140). Left on the chain: the creation compare order, source in EDX copied to ESI, the energy loop's padding, state
 // in EBX before the track loop, the track loop's register roles (track EBP, NONE ESI), the start arm's shared tail.
+// MiniMax S (11-14): no new form, no lower score (597): the track loop's registers still differ - retail holds the
+// state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track
+// definition in ebp; the forms listed below score 590 or more.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
