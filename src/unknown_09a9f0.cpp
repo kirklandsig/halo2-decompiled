@@ -1179,6 +1179,10 @@ bool c_projectile_type::v8(long a, long b)
 // from a forceinline taking the object 36 (189 bytes); the index reference bound at the function's top, before the
 // call, 12, with the word read 5. In the mask listings the group data reuses ESI after the flags (retail: after the
 // object). Diagnostic, compile-only: /G5, /G6, /G7 and /GB all keep `movzx eax, ax` for the word read.
+// Round 246 (m3 lane 3, fast; the mask alone re-measured 12), all with the full-width mask: the entry assigned to the
+// object local (diagnostic) 12; the group row as a `long *` indexed `(index & 0xffff) * 3` with the value at [1] 12; the
+// group data base in a local 12; `real &` references for both state fields 12; the volatile definition copy between the
+// object and the flags 51. The entry always takes ESI; the mask hands it the flags' ESI, the word read the object's.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

@@ -2043,6 +2043,12 @@ void function_b7360(long object_index);
 // for the check and the copy 272; the actor through actor_get(arg_0) at each use, no actor local 519 (1900 bytes); the 1/19
 // reference local with the actor looked up first 487 (1852); reference locals at the 1/19 arm and case 5 461 (1852); both
 // with the actor first 460 (1852). The actor-first order alone re-measured 487 (retail's pool load order, arg_0 still ESI).
+// M3 lane 3 r246 (fast with 0x259e70, 0x259ec0, 0x25ab50 matched): case 5's point pointer computed after the 0xcccd0 call 275;
+// the 1/19 reference read once into a `long reference` (block-scoped arm) for the test and the point 272; the 1/19 point
+// through a block-scoped const point pointer 272; case 5's two failures as `local_14 == NULL` and the 0x25ab50 test in
+// separate ifs 270 (same code); the tail as `short result = 2;` set to 0 on success 642 (1692 bytes). Retail's reload of
+// +0x28 after 0x25ab50 at both sites looks like a reload in place of a spill: all four saved registers are held there
+// (actor EBX, cs EDI, arg_0 EBP, output ESI), where ours evicts arg_0 from ESI to keep the reference.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

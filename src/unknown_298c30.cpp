@@ -451,6 +451,15 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // same code); both 391; the wrapped angle renamed to sort before the distance (the pair's slots do not move) 382; retail's
 // store order with the angle element read at each use 389 (1691 bytes, aligned 228); the element at each use alone 381
 // (aligned 278, re-measured).
+// M3 lane 3 r246 (fast with 0x29a190 and 0x298c30, both matched unless noted; difflib ratio of the two listings in brackets,
+// base 0.621): the candidate count `short` re-measured 520 at 1638 bytes (0x29a190 684; ours then returns `ret 0x18` and
+// leaves EBX unused) [0.282]; the candidate entry through a named pointer in the near arm 434 (1649) [0.612], in 0x2992ba 419
+// (1662) [0.600], in both 462 (1619) [0.591]; the near arm's `y * cos` named right after each cosine, ahead of the sine and
+// the field_4 store, 349 (1693) [0.619]: positional only, the product stays on x87 (retail's is SSE from the spilled float
+// cosine) and the form is match-only, not kept; the outer counter declared ahead of the count 382 (same code); the count
+// declared at the function's top 433 (0x29a190 3); the inner counter `long` 411 (1671), `short` 382 (same code); the wrapped
+// angle as `>= 0.0f ? x - 2pi : x + 2pi` 382 (same code, re-measured). The 40 missing bytes are the near arm's: retail
+// rounds both trig values to float slots there and takes the y rows in SSE.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
