@@ -6641,6 +6641,9 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // 88, both 81 at 686 bytes. Left at 81: eax/ecx/edx rotations at the marker index, the point copies, the flag test, the material
 // word, both 0x188180 call setups and the model lookup; the probe offset's constant loaded first in retail (`0.0328f + probe.z`
 // 136, same code); the `down` loads interleaved with the pushes in retail.
+// NOT kept (coordinator review, MiniMax I 11-15): 80 -> 64 with down retyped point3f, vector3f_assign expanded
+// into three field stores and a cast back to vector3f const * (an existing helper written out by hand and a
+// direction typed as a point; reverted).
 // @retail 0xe4d90
 void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marker)
 {
@@ -6687,7 +6690,7 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 
 			if (count - 1 >= 0)
 			{
-				point3f down;
+				vector3f down;
 				s_biped_ground_collision collision;
 				long i;
 
@@ -6701,10 +6704,8 @@ void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marke
 					}
 				}
 				vector3f_add_scaled((vector3f const *)&point, g_4687b0, 0.1f, (vector3f *)&point);
-				down.x = g_4687bc->i;
-				down.y = g_4687bc->j;
-				down.z = g_4687bc->k;
-				if (function_1697c0(0x84000d, &point, (vector3f const *)&down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
+				vector3f_assign(&down, g_4687bc->i, g_4687bc->j, g_4687bc->k);
+				if (function_1697c0(0x84000d, &point, &down, NONE, NONE, (s_collision_result_1697c0 *)&collision))
 				{
 					function_188180(&point, g_4687b0, definition->object.footstep_effects.tag_index, arg_159e6d, type,
 						definition->object.impact_sound_size, c_type_47f957(collision.unknown24), (long)g_4687bc, (s_location *)((byte *)biped + 0x28), scale);
