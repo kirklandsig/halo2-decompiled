@@ -1341,6 +1341,10 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // lookup's index read as `*(long const *)&iterator.index` 24, the same read for the 0x126df0 call 24 (the iterator is fully
 // promoted, so 0x151b80's second-read lever has no load to split); a const element local 24 (same code); diagnostics: the
 // call given `iterator.first` 80 (228 B), the index as the fade-out argument 62 (187 B).
+// M3 lane 7 r165 (fast with 0x126df0, 0x12a810, 0x21bd00, 0x21b870 and 0x21a250; control 24): in the shared next helper,
+// the count's increment folded into the test as `count++ > 0` 45 (211 B; 0x21b870 29, 0x21bd00 57); the index tested
+// ahead of the count 27 (the two tests swap, the tie stays; 0x21b870 4, 0x21bd00 4); the two tests nested 24 and
+// `++iterator->count` 24 (same code); this function declared `__stdcall` 24 (same code). Helpers and body restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

@@ -570,6 +570,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P521: Explicit real-root boundaries at raw activation/combined activation/remaining displacement/settling
 // sample, then activation pair/raw-remaining/combined-sample/all: 622/622/622/622/683/622/622/676.
 // NOT kept: no exact root/precision or native home repair; complete original body restored.
+// M3 lane 7 r165 (plain with the matched caller 0x1eb6f0, MATCH in each; --fast builds this body at 614 under a caveat):
+// the existing length_sq3f for the first activation length 683 (2894 B), for the second 683 (2894 B), for the output
+// distance 622 (same code), for the settle length 622 (same code), at all four 682 (2893 B). Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

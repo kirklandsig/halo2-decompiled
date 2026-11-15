@@ -1019,6 +1019,11 @@ struct s_device_machine_view
 // and assigned after it 122; the group pointer with a masked `byte`/`dword` bits local read after the machine test
 // 115/117 (retail's `lea eax`, then `mov al, [eax+2]; and al, 3` or the movzx). Screens only: no inner `break`, a byte
 // or short copy of the word for one of the two tests, a bool for bit 0: all the pushed ESI.
+// M3 lane 7 r165 (fast with 0x107870 and 0x1071e0, both matched; control 2): a file-local inline flag test taking the group
+// index and a bit number, called for bits 0 and 1, 174 (654 B, first difference +0xd); the lane S word read through a
+// `word const *` to the group's flags 116 (655 B); the group pointer formed at the top of the case (ahead of the position
+// test) with direct masks 167 (661 B), with the lane S word and mask 170 (663 B); the machine flags read at the top of the
+// case on the lane S form 135 (657 B). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
