@@ -67,6 +67,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// score 319 (was 319): no new form and no lower score; the aligned 0x94 frame still agrees, but the move
+// pointer is in EDI here and in EBX in retail while the physics pointer trades it with it, and that swap is
+// settled by the stub for 0x1ec690 (src/stubs/bipeds.cpp).
+// MiniMax R (11-14): no new form, no lower score (319): retail keeps the output pointer in EBX and the input
+// pointer in EDI, ours keeps the input in EBX and the output in EDI, and that swap decides the register of
+// every later address field; the state, input and output pointers each taken through their parameters, the two
+// late state reads through the parameter and the input without its const qualifier all compile to the same
+// bytes, and a 300-second permuter run (3 tries) found no better form.
 // MiniMax D (11-14): no new form, no lower score (319): the rate as a named local (one load instead of three) reaches 320, and the move/input registers still trade EBX and EDI, which the case-3 callee 0x1ec690's stub convention settles (BLOCKED-BY 0x1ec690).
 // MiniMax C (11-14): no new form, no lower score (319): retail's prologue takes the state pointer in EAX
 // and puts it in EBX, zeroes [EBX], then takes [ebp+0xc] into EDI; ours takes [ebp+0xc] into EBX and the
@@ -242,6 +250,13 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // `x <= 32768.0f` 319 (same code); `*(long *)(state + 4)` at each use instead of object_index 339 at 1192; object_get()
 // for the two tail lookups 319 (same code). The move/input registers stay BLOCKED-BY 0x1ec690 (stub in
 // src/stubs/bipeds.cpp); M400's matrix default looks like an initialiser that rigid_body_matrix_get overwrites.
+// Round 244 (m3 lane 3, fast): the 0x1ec690 stub (its only caller is this function) declared __cdecl, caller-pops as
+// retail's callee is, 328 (1180 bytes; input stays EBX, output EDI: the stub's ECX argument is not what picks them);
+// 0xb7430's matching body enabled with its stub removed (diagnostic, restored) 319: 0x1c4a80 stays inlined here, so its
+// inlining is not from 0xb7430 being a stub. The velocity block on its own object-index read and a second
+// `*(long *)(state + 4)` read for the position move (retail reads [state+4] once per inlined helper) 319: the tail then
+// has retail's re-read and its lea/object/flags registers, but the count does not move; on it the input flag in shift
+// form 330, the shape match as `compound ? a || b : a` 345 (1204 bytes), both 348. All restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

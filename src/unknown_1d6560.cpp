@@ -413,6 +413,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // callee then takes the component in ECX and the index in EAX, so the caller's setup swaps EAX/ECX; with the declarations in
 // retail's load order (headers, rigid body, object_index, type) 95 at 256 B [171, 711 B]. Retail loads the header data first
 // into EDX, the body array into EBP and moves the index ECX -> ESI before `mov ecx, [eax + 8]`; no one-read form keeps that.
+// M3 lane 16 r119 (fast with the caller 0x1d5bf0 and the file's matched functions; caller in brackets; the current two-read
+// body is 268 B with its jump tables, retail 256): the main switch's type read indexed by `(word)object_index` 99 at 264 B
+// [0]; the kind-7 read so indexed 96 [13]; case 7's kind test as `kind == 6 ? 8 : flags & 8 ? 7 : 6` 96 (other code) [0];
+// the rigid body declared before object_index 100 at 264 B [13]; object_index as a `word` read once with both type reads
+// unmasked 100 at 260 B [208]. Same code: the kind-7 switch with `default: return 1;`.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -2254,6 +2254,14 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P495: Actual track-storage/tag cursors and readonly track receiver, seven subsets, then readonly parent:
 // 389/519/479/426/389/519/426/426 reduced, control 479/1908; single track cursor plain 465/1923.
 // NOT kept: ordinary regression from 305; native frame and playback/range/ring homes remain. Full body restored.
+// M3 lane 14 r95 (plain with 0x21b940, 0x1269f0, 0x125920, 0x126660, all MATCH): in every form the second pitch-range loop
+// hoists the datum index and track index (one use each, in the creation call) into EBX/EBP and keeps &sounds[i] in EDI
+// with the active bit spilled, where retail holds NONE, track_definition and the active bit there and indexes sounds[i] at
+// each use. New: the two arrays, the mask, the iterator and its current index declared at the update block's top (chained
+// fills) 305 (same code); 0x21b940's bounds spelling with the one-use step written into the approach call 418 (the approach
+// add still flips, lower bound still first); one `long i` shared by both pitch-range loops 305 (same code); a count in both
+// for-inits with the iterator set up ahead of the fills 361 (count alone re-measured 365: the fill's NONE stays in EDX and
+// the iterator count goes to memory); the gains array declared ahead of the sounds array 305 (same code).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
