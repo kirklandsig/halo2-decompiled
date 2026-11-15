@@ -791,6 +791,10 @@ real function_30bf0(vector3f *vector);
 // offsets masked 18): no trial run. The masked residue is the result's home and the two seat-loop cross products' operand
 // loads (2 bytes); a grep of this note for each lead (world-up copy or pointer, typed forward, seat pointer, count width,
 // facing flag, range, plane, clip, out-of-range, mode tests, maxima) finds every natural form already listed.
+// P503: Existing cross/difference/squared-length force-inline declarations in seven sets, then all plus basis dot:
+// 84/84/84/84/84/84/84/84. NOT kept: All eight tie 84 at 1310 bytes, every calibrated file/provider/caller
+// measurement is unchanged, and no native scalar home, range ingress or cross-product schedule is recovered. All
+// experimental declarations removed. Original complete executable body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2529,6 +2533,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Also on 378 (same code, 378): the vehicle test as `!(vehicle_type == 0 || vehicle_type == 1 || vehicle_type == 4)`; the
 // players iterator declared ahead of the vehicle lookup. Every free register choice up to the vehicle test's `xor ecx, ecx` is
 // retail's; the first one after it (the iterator's table pointer) and those inside the players loop are one rotation step on.
+// P503: Actual actor/vehicle/unit provider references in seven sets, then readonly vehicle/unit providers:
+// 168/168/168/168/168/168/168/168. NOT kept: All eight tie 168 at 2880 bytes; iterator base/index encoding, player
+// table register, direction SIMD retention and scoring merge are unchanged. Reference-only allocation forms lack
+// byte equality. Original complete executable body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

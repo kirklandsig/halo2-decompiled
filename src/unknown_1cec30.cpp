@@ -2553,6 +2553,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // both forced and shared behind the existing length boundary: 91/91/91/91/91/91/91/91.
 // NOT kept: no early velocity j/k or property-zero repair; original complete body,
 // private magnitude helper and declarations restored.
+// P503: Actual material table signed-short/dword storage and bounded word/dword cardinality, independent then
+// paired: 300/91/419/166/430/354/419/166. NOT kept: Unsigned table alone ties 91; other forms regress to
+// 300/419/166/430/354/419/166, disturb the exact contact prefix and grow away from native length. Native early
+// velocity j/k loads and property-zero EDI remain absent. Original complete executable body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

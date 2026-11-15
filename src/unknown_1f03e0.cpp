@@ -1391,6 +1391,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // vector) 275. Same code (234): the second rotation row with its terms the other way round (`facing.i * input.j + facing.j *
 // input.i`) in the ground arm or the direct arm (retail computes that product first in both, but VC orders the sum itself);
 // the flying arm's two zero tests as `!function_30bf0(&left)`.
+// P503: Independent general initial/fallback, history and paired basis copies, memcpy then memmove:
+// 234/554/234/546/232/339/234/614. NOT kept: The native-sized memcpy copies tie 234; history memcpy gains only two
+// at 3050 bytes, and all overlap-safe copies regress. No native damping or raw/bounded home recovery. Original
+// complete executable body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

@@ -1713,7 +1713,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // third iterator output still takes the dead `found_mode` argument slot instead of a frame slot, so retail's result
 // shorts sit at +0xc/+0xe where ours sit at +0x8/+0xa, and retail's EBP zero carrier in the second resource request
 // is still missing.
-// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// P503: Existing resource truth parameters byte/short/long, independently at each expansion layer:
+// 828/1016/1016/1016/1016/1016/927/927/927. NOT kept: inner byte ties; other domains shorten away from retail,
+// and inner short/long plus middle domains also lose matched shared users. Native candidate/output packing
+// and late EBP zero remain. Original helper domains and complete body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
