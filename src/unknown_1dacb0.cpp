@@ -1712,6 +1712,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // MiniMax G (11-14): no new form, no lower score (828): re-measured in the batch; the frame agrees at 0x2c, but the
 // third iterator output still takes the dead `found_mode` argument slot instead of a frame slot, so retail's result
 // shorts sit at +0xc/+0xe where ours sit at +0x8/+0xa, and retail's EBP zero carrier in the second resource request
+// is still missing.  The opening compare also still takes the other way round (ours loads the compared argument into
+// ecx and holds -1 in edx, retail the other way round); the iterator fields initialised in retail's store order score
+// 828 again and the compare written as `!= NONE` in a block scores 1040, so both stay reverted.
 // is still missing.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // @retail 0x1dbc80

@@ -2182,6 +2182,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // node conjunction/complementary disjunction, zone complement and paired negative
 // query producers 173/183/171/204. NOT kept: all regress/lengthen; first form loses both
 // exact callers. Original full body restored; early color/frame/query homes remain.
+// MiniMax G (11-14): no new form, no lower score (128): retail's frame is 0x44 with colour A spilled to frame+0x00 and
+// the spawn record at frame+0x04, while ours keeps the spawn at frame+0x00 and colour A in a register; reading colour A
+// into a local declared before the spawn (this round) gives 187 at 572 bytes, so the body stands.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3614,6 +3617,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 132/124/123/129/162; complete node conjunction/complementary disjunction and negative
 // query producers 113/138/112. NOT kept: all regress and lengthen; native frame,
 // definition spill and system/successor/color homes remain. Original full body restored.
+// MiniMax G (11-14): no new form, no lower score (93): swapping the two DATUM statements gives 114 at 345 bytes; retail
+// keeps the system in ESI and its successor in EDI (ours the other way round), which is what puts colour B in the frame
+// slot and colour A in a register here while retail spills colour A to frame+0x0c and holds colour B in EDI, and
+// retail's 0x54 frame comes from the definition pointer it spills at frame+0x00 and reads the mode from on every call
+// of the location cursor, the per-call form in the lines above measuring 108; a 300 s permuter run (5 tries) stays at
+// 92 differing instructions.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
