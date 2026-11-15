@@ -1812,6 +1812,9 @@ void function_150820(dword *bits, bool local_only)
 // in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and both bodies are 210 bytes. The rotation starts at
 // the entry block: retail reuses edx (the pool data pointer's register) for the unit index and leaves ecx free for the policy byte, this build reuses
 // ecx (the table's register) and takes the policy byte in al; no declaration order, hand width or result form moves it.
+// P533: Player ordinal ingress dword/int/unsigned-int/word, Boolean then byte return:
+// 43/43/43/84/43/43/43/84. NOT kept: no byte match; full-width mask and native
+// saved player/hand roles remain. Original complete body and sole outside declaration restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

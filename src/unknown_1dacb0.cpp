@@ -1741,6 +1741,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // second request keyed on `iterator.graph` alone 962 (2791 B); the entry pointer initialised to NULL 828.
 // Retail's second request copies the found mode into EBP once (an inline-argument copy of the mode alone; the other
 // two found keys are read from their homes), the sign that retail's mode output was treated as escaping.
+// P533: Consistent own-input mode/class/type key-home reads, seven subsets,
+// then set-key home: 828/828/828/828/828/828/828/977. NOT kept: no byte match
+// or native candidate/output-home and late-zero repair; original complete body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
