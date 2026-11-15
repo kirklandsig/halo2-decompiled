@@ -590,6 +590,10 @@ struct s_text_line_measurement
 // seven bool subsets then all byte: 111/134/116/115/108/119/123/123.
 // NOT kept: no native advance copy or early width-load recovery; original
 // flags, lazy reads, arithmetic groups and complete body restored at 77.
+// P504: Original-site immutable kerning/offset/advance/all-metric producers, cache flags, header pointer binding,
+// header pointee and incoming scale: 77/77/77/77/77/77/77/77. NOT kept: All eight tie 77 at 415 bytes. Native
+// independent advance copy and early running-width load are unchanged. Original producer and input mutability
+// restored; all calibrated file/provider measurements unchanged. Original complete executable body restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

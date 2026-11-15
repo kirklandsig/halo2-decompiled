@@ -501,6 +501,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // seven const subsets then all mutable: 382/382/382/382/382/382/382/382.
 // NOT kept: selected/default and bitmap/pass homes unchanged; original
 // field expressions, metrics, traversals and complete body restored.
+// P504: Independent first/second input transfers inside squared and length metrics, memcpy then memmove at each
+// existing ingress: 427/498/421/479/555/557/551/516. NOT kept: All eight regress; squared copies disturb the
+// native frame/default graph, length copies also enlarge code. No qualifying byte equality. Original pointer input
+// observations and helper arithmetic restored. Original complete executable body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

@@ -428,6 +428,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // m3 lane 1 r103: reviewed, no trial run. Retail's shape is main's single `index` (`index = entry->next` gives the EBX successor
 // and the `mov esi, ebx` back-edge copy) once the guest mask is hoisted into AL; every loop, successor, result, test and helper
 // form for the hoist is listed above, and none outside the note was found.
+// P504: Existing offline predicate scalar-reference/scalar-pointer/player-pointer/player-reference and exclusion
+// byte-value/byte-reference/byte-pointer/player-reference contracts: 43/43/43/43/43/43/43/43. NOT kept: All eight
+// tie 43 at 127 bytes; no native early-save, independent successor, mask or failure-exit recovery. Both matched
+// callers and all calibrated file controls retain their measurements. Existing helper contracts restored. Original
+// complete executable body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

@@ -599,6 +599,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // conditional contribution/destination sum, short then char palette:
 // 775/775/698/775/778/778/637/778. NOT kept: no byte equality; original
 // input capture, helpers, palette and full body restored at 607.
+// P504: Independent immutable destination/source pointer bindings at scalar, merge, four-channel and
+// normalized-publication helper boundaries: 607/607/607/607/607/607/607/607. NOT kept: All eight tie 607 at 3832
+// bytes. Provider-return/NONE, palette/selected-record and zero/SIMD carriers remain unchanged. Original pointer
+// contracts, alias-safe input captures and complete helpers restored. Original complete executable body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
