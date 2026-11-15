@@ -502,7 +502,13 @@ struct s_text_line_measurement
 	long index;
 };
 
-// score 77 (was 77): round 116 (m3 lane 9, fast): kerning/offset/advance declared at function scope 77, the loop as
+// score 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
+// advance += kerning; advance += width; width = advance;`) 77; `advance += offset + kerning; width += advance; count++;`
+// 77; with the test reading the advance product written out again (diagnostic) 77, still no copy; 1-7 dead long locals at
+// the top 77 each (no phase effect); 0x13f700's `real x = position->x + advance + offset + kerning;` named before the
+// can_break block, test `x + width` 75 (the width loads early into XMM4 as retail because the offset holds XMM3, but the
+// sum runs ahead of the can_break branch and there is still no advance copy; a one-use part moved ahead, not kept).
+// Earlier first line: round 116 (m3 lane 9, fast): kerning/offset/advance declared at function scope 77, the loop as
 // `while (!done)` 77 (both same code); re-measured (listed dimensions combined, same code): `advance = raw; advance =
 // scale * advance;` 77, all three metrics raw first and then `x = scale * x` 77. The cause stays the advance copy
 // (`movaps xmm3, xmm0`) that gives the width XMM4. No untried natural form is left.

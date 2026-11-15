@@ -890,6 +890,9 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
+// MiniMax S (11-15): score 237 (was 252): the squad entry index taken as a word (its low sixteen bits, the same ones the
+// mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
+// other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
 // score 252 (was 252): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
 // ECX), retail's one shared spill slot for the squad pointer, the squad bit and the actor, and the unit arm's place remain.
 // M3 lane 8 r159 (fast; masked aligned 115 at 253): kept, the squad bit as `bool flag = squad && ((bits >> 10) & 1);`
@@ -1255,7 +1258,7 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 		byte *definition = g_4e3b44[character_index & 0xffff].bytes;
 		long unit_index = NONE, perception_index = NONE;
 		byte *flags = (byte *)function_1e4990(character_index);
-		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (squad_index & 0xffff) * 0x74;
+		byte *squad = squad_index == NONE ? NULL : *(byte **)((byte *)g_4e0350 + 0x164) + (word)squad_index * 0x74;
 		if (substitute && squad && squad_index != NONE)
 			while (*(long *)(definition + 0x28) != NONE)
 			{
@@ -1869,13 +1872,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
+// options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax D (11-15): no new form, no lower score (251): naming the object-pool global in a local does not make it live in a
 // register, because the compiler reads the global again after any call it cannot prove pure (the opaque callee in another
 // file the notes above name): the local after the weapon options measures 278 (the copy is spilled to a stack slot and the
 // frame grows to 0x18), the local first measures 283 (the load moves above the actor), the local holding the header array
 // measures 301 (both loads move to the top), and the local used in the first block only compiles to the same 251 code.
-// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
-// options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax G (11-14): no new form, no lower score (251): the actor, options and pool registers rotate against retail and that rides on the opaque callee 0x1e53e0 in another file.
 // M3 lane 8 r159 (fast): the halved rounds as `rounds[0] *= 0.5f;` 251 (same code). Re-measured: the loop's weapon in a
 // named `long weapon` 251 (same code; round 126's weapon entry), the raised probability as `4.0f * probability` 251 (same
@@ -2164,6 +2167,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P518: Complete lazy slot-pair present/missing results, bool/byte/short/long:
 // 251/251/251/251/251/251/251/251. NOT kept: no exact actor/options/pool residence;
 // original gates, lazy queries, observations and complete body restored.
+// M3 lane 11 r105 (fast with 0x1e5240/0x1e5280/0x1e53e0/0x1e04a0/0x1e5380/0x2758b0/0x1e3b60; control 251): `inline` on
+// 0x1e5280 251 (same code; 0x1ca2d0 inlines it, 243 -> 295); `inline` on 0x1e5280 and 0x1e53e0 together 277 (0x2758b0 21 ->
+// 113); the delay test as `0.0f != field` 289 (1199 B); the fraction bounds as `0.0f < field` 251 (same code); the clump index
+// read once into a named local for the tail 251 (same code). Diagnostic (flags, reverted at once): src/unknown_0259a0.cpp
+// without /GL- and its body `inline` 306: the random state then rides in EBX from before 0x259a0 through 0x259d0 as retail,
+// but the pool global is still reloaded at each lookup. Body unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

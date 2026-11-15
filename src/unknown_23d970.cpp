@@ -994,6 +994,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // delay update ahead of the timer update 108 (1261); `advance ||` tested first in the final condition 362 (1247); the
 // timer-3 block's modes[3] store first 48. Same code (not counted): the gamepad choice as if/else (0x23e400's form), the
 // else arm's products cosine-first. Body unchanged.
+// M3 lane 9 r126 (`--fast 0x23de50 0x1f0870`, control 45): no `right` local, the first product written into command->up
+// and crossed in place by the aliasing-safe cross3f_staged 252 (1291 B), by function_1f087b 251 (1290 B: right is stored
+// and reloaded, not forwarded); `right` declared ahead of previous_up 45 (same code), that with cross3f_staged for the
+// second product 217 (1270 B); `direction` declared ahead of previous_up with cross3f_staged 217. Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
