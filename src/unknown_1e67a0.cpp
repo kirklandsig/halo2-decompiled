@@ -1117,12 +1117,23 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // copy, memcpy (same code), memmove (99, adds calls), the by-value setter, the joined exit and the flag and dot forms above.
 // Same code (fast): the five flag statements as `b ? (flags |= 1) : (flags &= ~1);` expressions; the animation test through
 // the typed channel fields (`channels[0].graph_tag_index`, `channels[0].animation_id.index`).
+// M3 lane 15 r88 (plain, control 114): `c` and `turning` as two nested ifs 114 (same code); initial_cross's j and k rows
+// with their products' operands swapped (b first) 114 (identical listing: the compiler orders the operands itself); the
+// sampled vector and angle declared at the function top 114; no rotation local (the angle product written in both trig
+// calls) 144 (1382 B: the rate is re-read after the sine and the rotation loads all go first); the old cross from the
+// `forward` parameter 264 (1391 B).
 // P513: Complete animation readiness/exclusion outcomes at the original gate, bool/byte/short/long:
 // 144/144/144/144/144/144/144/144. NOT kept: native-length forms regress and miss rotation j/k ownership;
 // original initialization, admission, helpers, arithmetic and complete body restored.
 // P515: Independent moved-away/angle/turn/snap binary enumerations, positive then complementary:
 // 118/144/144/140/118/144/144/140. NOT kept: no native rotation/side/output equality;
 // original guard observations, shared rotation, arithmetic and complete body restored.
+// M3 lane 11 r105 (fast with 0x1ecf50/0xe3910/0xd0080/0x1ff360/0x24590/0x1cd6c0; control 114, 0x1ecf50 MATCH, 0xe3910 79,
+// 0xd0080 58, 0x1ff360 77): rotate_direction's body (src/unknown_1eb8a0.cpp, open this round), all restored: the rows stored
+// k, j, i 161 (0x1ecf50 128, 0xe3910 124, 0xd0080 71, 0x1ff360 57); the projection as `(1.0f - cosine) * dot` 114 (same code
+// for every user); the rows written scalar-first (`cosine * v`, `sine * cross`) 114 (same code); the vector's components read
+// into three locals first 192 (0x1ecf50 231, every user worse); the dot grouped (k + j) + i 109 (0x1ecf50 6, 0xe3910 85,
+// 0xd0080 59; the (j + k) + i code).
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

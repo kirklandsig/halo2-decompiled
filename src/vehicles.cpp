@@ -758,6 +758,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // the entry convention changes); the gear test from the entry magnitude (no recompute) 256 (1090); 1-7 unused locals
 // inside vehicle_normalize2d 126 each (diagnostic: the normalizes' y operand order does not move); the turn bound as
 // `steer * (0.0f > steer ? rates[1] : rates[0])` 126 (same code).
+// P530: Existing 2D normalizer returns success/failure in bool/byte/short/long,
+// with all three callers owning their fallback copies: 126/126/126/126/126/126/126/126.
+// NOT kept: no native velocity/unity repair; original helper, three calls and complete body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3387,6 +3390,18 @@ real g_47ff30 = 2.5f;
 // P518: Completed post-normalization usable/fallback outcomes in bool/byte/short/long:
 // 721/721/721/721/721/721/721/721. NOT kept: branch-produced result transport needs equality;
 // original length, fallback, mass observations and complete body restored.
+// P526: Immutable one-time tick factor; absolute/scaled/complete friction stages mutable then immutable; complete immutable stages with tick factor:
+// 672/672/672/672/672/672/672/672. NOT kept: no byte-equal native frame/friction-stage recovery; original helper and runtime static restored.
+// Original complete executable source restored.
+// P528: Complete cosine-bank/sine-bank/commanded-torque product parts, seven subsets
+// then complete immutable parts: 674/672/672/672/674/672/672/672. NOT kept: no native
+// frame repair or gain; original row expressions, all helpers and complete body restored.
+// P530: Actual early acceleration/boost/speed-limit/mass scalar lexical homes, two
+// identities each: 672/672/672/672/672/672/672/672. NOT kept: no exact
+// frame/slot repair; original complete body and all scalar identities restored.
+// P532: Joint final force/torque mass traversals over their actual two-output table,
+// vector/index/cursor/component producers with ordinary for/while: 688/688/711/711/747/747/716/716.
+// NOT kept: no native frame/transport equality; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4542,6 +4557,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // retail), member rows 182 (856), pointer and helper rows 218 (867), helper rows 259 (920); with the left cross in each
 // arm 362/548. Left: retail's cosine gets one SSE load in each arm before the join (ours ties sine and cosine), and the
 // homes and the x87 row order go with it.
+// P530: Current double-angle/native-fallback case orders 1/D/2, 2/1/D,
+// 2/D/1, D/1/2, D/2/1 and entry cosine/sine/both result declarations:
+// 118/118/118/118/118/118/118/118. NOT kept: no byte-equal projection,
+// trig-slot or return repair; original complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

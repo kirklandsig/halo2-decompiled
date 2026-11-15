@@ -225,6 +225,11 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // member store, 6 at every n (diagnostic: neither spot is a symbol-count tie); the `index` parameter renamed 6 (same code);
 // the vertex pointer formed from a byte offset of `this` 6, from the array address as an integer 6 (same code, diagnostics);
 // the point stored through the existing void vector3f_assign 6 (same code).
+// M3 lane 8 r171 (fast with 0x1ee4d0/0x1ee500): the side test written `index == edge->surfaces[1]` 7 (cmp flips); the
+// radius assigned in the body after the member stores (a no-argument base constructor) 9 (its store moves after the
+// vtable, the index is still loaded first); the w store ahead of the point set 14 (stores keep source order); the
+// surface pointer formed ahead of the member stores 22 (the entry loads the radius first as retail, but the surfaces
+// load moves above the stores); the surface pointer formed between the index and value stores 20.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
