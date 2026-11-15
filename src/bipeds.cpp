@@ -1570,6 +1570,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
 // in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
+// score 203 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // MiniMax S (11-15): no new form, no lower score (566): retail's frame is still 0xfc against this build's 0xf8 - the
 // dword it is short of is the gravity argument's, and the inline accessor that would supply it is a new function in
 // this call graph, which flips the matched 0x54590 - and retail's definition pointer sits at the top of the frame
@@ -1900,6 +1901,21 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // complete backward copy: 636/655/587/678/644/667/688/688. NOT kept: All regress; velocity-only recovers native
 // extent but misses entry scheduling, while other transfers shrink away from native length and do not recover
 // gravity/material/airborne homes. Original complete executable body restored.
+// M3 lane 5 r187 (plain; --fast agrees here). KEPT 566 -> 434 (2828 B, frame 0xfc as retail): the 0x1e5bb0 gravity
+// argument through the inline physics_gravity_get() in include/unknown_1eb550.h, also used by 0xe3380 (2, unchanged): lane 13
+// r74's held form, whose only loss, 0x54590, is unmatched on main now. KEPT 434 -> 430: 0x1cd510 returning the animation id
+// by value inside the 0x1e67f0 arguments (retail makes no constructor stores, passes the slot in EAX and reads `[eax]`;
+// 0x1cd510 still matches). KEPT 430 -> 203: case 6's planar distance as `real length = (real)sqrt(dx * dx + dy * dy);
+// distance = length > 0.0f ? length : 0.0f;` (retail's x87 temp in airborne's slot, then the select); without the by-value
+// return this body is 357 (2840 B). Not kept: the walking speed as the 0xdfa60 result then `*= 1.0f - a * b` 611 (2812 B);
+// on 203, the squares as `dy * dy + dx * dx` 203 and dx/dy as a vector2f through magnitude2d 203 (same code: ours still
+// squares dy first and keeps dx, retail squares dx in place); `distance = distance > 0.0f ? distance : 0.0f` 430 (on 430);
+// `material` renamed 203 (same slot, diagnostic); a file-local inline tick getter in case 1 (and 0xe01d0's turn angle and
+// limit) 203 (same code; 0xe01d0 600); a file-local inline getter for the tag globals' +0x134 block in the walking speed 603
+// (retail's ESI preload ahead of 0xdfa60 appears, but the product then takes the call result first and adds a movaps),
+// with the product's factors swapped 603, with the call first 603. Left at 203: the dword homes (definition +0x60 for
+// retail's +4, material +4 for +0x8c, position and facing), the walking speed's ESI preload, case 1's division scheduled
+// first in retail, case 6's x87 squares, and 0x183670's EAX/ECX components (its definition is in src/unknown_181a10.cpp).
 // P529: Actual returned-position pointer at initialization/grab/animation consumers,
 // seven phase subsets then the immutable complete receiver: 645/623/639/635/642/639/643/643.
 // NOT kept: native frame 0xfc recovers but every score regresses; original complete
@@ -1983,7 +1999,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	function_1e5bb0(output, &biped->physics_mode, state, speed_scale, biped->havok_component_index, arg_159e6d,
 		&definition->biped.physics, 9, field_bit_test(biped->flags_c0, 6), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
 		field_bit_test(*animation_flags, 2), field_bit_test(biped->flags_c0, 8), function_e4050(arg_159e6d),
-		field_bit_test(biped->flags_348, 1), biped->unknown39d != 0, g_51e9c4->unknown0, boost, &biped->control, &position,
+		field_bit_test(biped->flags_348, 1), biped->unknown39d != 0, physics_gravity_get(), boost, &biped->control, &position,
 		&biped->forward, &biped->up, &biped->facing_goal, &facing, &velocity, material);
 	switch (biped->physics_mode)
 	{
@@ -2029,11 +2045,9 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 					function_e5d50(arg_159e6d, biped->unknown390, &biped->unknown444, &point);
 					dx = nearest_b.x - nearest_a.x;
 					dy = nearest_b.y - nearest_a.y;
-					distance = (real)sqrt(dx * dx + dy * dy);
-					if (!(distance > 0.0f))
-					{
-						distance = 0.0f;
-					}
+					real length = (real)sqrt(dx * dx + dy * dy);
+
+					distance = length > 0.0f ? length : 0.0f;
 					moved = true;
 				}
 				header = &((s_biped_header *)g_4e0300->data)[biped->unknown390 & 0xffff];
@@ -2072,13 +2086,11 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	{
 		state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 		point3f body;
-		c_type_709360 current;
 
 		function_e59e0(arg_159e6d, &velocity, &position);
 		havok_component_rigid_body_position_get(0, component, &body);
-		((s_animation_state *)state)->current_animation_get(&current);
-		function_1e67f0((s_type_94656b *)output,
-			(s_character_physics_component *)&velocity, current, &body, &position, (point3f *)&velocity);
+		function_1e67f0((s_type_94656b *)output, (s_character_physics_component *)&velocity,
+			((s_animation_state *)state)->current_animation_get(), &body, &position, (point3f *)&velocity);
 		break;
 	}
 	default:
@@ -5953,7 +5965,7 @@ void __stdcall function_e3380(long arg_159e6d)
 				falling = true;
 				flight.i = vehicle->linear_velocity.i * 2.0f;
 				flight.j = vehicle->linear_velocity.j * 2.0f;
-				flight.k = vehicle->linear_velocity.k * 2.0f - g_51e9c4->unknown0 * 2.0f;
+				flight.k = vehicle->linear_velocity.k * 2.0f - physics_gravity_get() * 2.0f;
 				if (function_30bf0(&flight) > 0.0f)
 				{
 					vector3f normal;
