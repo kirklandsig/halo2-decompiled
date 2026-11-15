@@ -4118,6 +4118,14 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax S (11-14): no new form, no lower score (62): the final fade through the existing 0xc6b90 getter still
+// matches retail byte for byte on the reduced image, but the full build promotes the two output locals into registers
+// and drops their dead zero stores, so the plain check gives 70 and the body stands: BLOCKED-BY 0xc6b90 (its body has
+// to hold the two zero stores itself for the full build to keep them).
+// MiniMax S (11-14): no new form, no lower score (62): the final fade through the existing 0xc6b90 getter (property
+// 0x11000088, its two outputs zeroed) matches retail byte for byte on the reduced image, but the full build promotes
+// those two output locals into registers and drops their dead zero stores, so the plain check gives 70: BLOCKED-BY
+// 0xc6b90 (its body has to hold the two zero stores itself for the full build to keep them).
 // score 62 (was 177): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial

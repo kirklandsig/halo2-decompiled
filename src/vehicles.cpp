@@ -533,6 +533,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax S (11-14): no new form, no lower score (126): the frame, the length and the layout are retail's, and what is
+// left is register colouring alone (the velocity copy's i in ECX where retail has EAX, the 1.0 constant in xmm2 against
+// retail's xmm3, the throttle load in xmm3 against xmm2, and the two normalise blocks). The velocity copy written x
+// first gives retail's registers but stores and squares y first (130), the copy as two scalar locals moves the stack
+// homes (153), and the permuter's 25 tries found only 125 with a volatile cast, a constant local and reordered
+// statements, none of which the rules allow, so the body stands.
 // MiniMax B (11-13): no new form, no lower score (126): the velocity copy still takes x in ECX and y in EAX where retail takes
 // x in EAX and y in ECX, the entry magnitude's schedule (retail adds i*i + j*j before squaring k, so its 1.0 lands in XMM3) and
 // the reversing atan2's operand order remain; the known leads (the planar velocity copy with y-first squares 122, the blend rows
