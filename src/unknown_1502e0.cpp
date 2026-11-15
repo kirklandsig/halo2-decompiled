@@ -1618,6 +1618,18 @@ void function_150820(dword *bits, bool local_only)
 // field read at the test and the 0xcd7b0 argument) 43 (same code); a guard return for a NONE unit index 80 (199
 // bytes); the weapon as a NONE preset set under `if (slot != NONE)` with one test after 43 (same code); the first two
 // together 47.
+// MiniMax G (11-14): no new form, no lower score (43): the difference is still only the register rotation - retail keeps
+// the player in esi, the hand in edi, the unit index in edx, the policy byte in cl and the scaled object index in ecx,
+// this build keeps them in edi, esi, ecx, al and eax - and both bodies are 210 bytes with the same instruction sequence.
+// New this round: the object lookup written as a four-byte entry array, ((long *)g_4e0300->data)[(player->unit_index &
+// 0xffff) * 3 + 2], keeps the native AND32 mask and the scaled index but still puts the pool in edx and the scaled index
+// in eax (43, 210 bytes); the shared player getter as an array index of the player table (43, same code); a pool copy
+// declared first for the lookup (43, same code); a unit-index local for the test, the lookup and the call (43, same code);
+// the hand as a conditional, a bool copy of the policy byte, a byte modes array and the modes array declared early (43
+// each). F393's word ordinal is the only form that recovers every retail role - player esi, unit index edx, hand edi,
+// policy byte cl, scaled index ecx - but it replaces the native mov eax, edx; and eax, 0xffff with movzx eax, dx, so the
+// body is 206 bytes and scores 64; the 32-bit mask and the word ordinal cannot be combined, as the cast folds the mask
+// away. The permuter ran 26 tries over 308 s (0.08 tries/s) and reported nothing better than the baseline 43.
 // MiniMax E (11-14): no new form, no lower score (43): the length still matches retail's 210 bytes and every
 // difference is the same pairwise register rotation (retail: player esi, hand edi, unit index edx, primary cl,
 // sete al; ours: player edi, hand esi, unit index ecx, primary al, sete dl); the permuter ran 625 s over six tries
