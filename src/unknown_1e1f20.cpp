@@ -608,6 +608,14 @@ void swarm_leader_detach(long actor_index);
 // instead of being materialised and re-derived after the callback; the iterator compare reloads the
 // actor pointer instead of comparing against the cached one; and the second parameter becomes a
 // Boolean before the 0x203ed0 call where retail pushes the raw value.
+// MiniMax D (11-15): 216 (was 236): the definition bit is now tested through a named flag after a separate
+// null check, so the tested bit is kept in a byte slot and the branch reads it from there, as retail does.
+// What still differs: the prologue loads the record pool into EAX and keeps the scaled index in EBX (retail
+// loads the pool into ECX and the index into EAX and leaves the actor pointer unspilled in EBP) and this
+// build spills the actor pointer to a stack slot retail has not; the memory-entry walk keeps its countdown
+// in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte offset in
+// EDX and the countdown in a stack slot); and the body is 22 bytes short of retail's 980 because retail
+// expands 0x26ed40 into it (src/unknown_26e370.cpp).
 // score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
@@ -944,7 +952,10 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		function_1e1250(actor_index);
 	}
 	byte *definition = (byte *)function_1e4990(actor_get(actor_index)->unknown054);
-	if (definition && ((*(dword *)definition >> 3) & 1))
+	bool definition_bit = false;
+	if (definition)
+		definition_bit = ((*(dword *)definition >> 3) & 1) != 0;
+	if (definition_bit)
 	{
 		byte *counts = (byte *)g_5047f4;
 		--*(short *)(counts + 6);
