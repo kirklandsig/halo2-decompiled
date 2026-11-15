@@ -2450,6 +2450,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// score 479 (was 479): m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
+// / `return 0;` 483 (re-measured on this base); one `turn_facing` pointer for case 2's copy and publish (same code); case
+// 2's aggregate copy, case 4's facing reads and case 18's and case 21's targets held across 0x25ab50, together 636
+// (re-measured), with the plain returns 640; case 2 + case 4 only 639; cases 18 + 21 only 619. Each still gives the
+// actor EDI and the state EBX (retail: actor EBX, state EDI, the state re-read from its argument slot after calls that
+// take EDI, and that slot reused for case 18's first target and case 20's nearest distance).
 // MiniMax C (11-14): no new form, no lower score (479 in the full build, 474 in the reduced one): the two
 // floats read from [actor+0x6d4] and [actor+0x6d8] go into [esp+0x10] and [esp+0x14] in ours through
 // eax/ecx with the store before the lea of the destination, in retail through ecx/edx with the lea first;
@@ -2467,7 +2473,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax S (11-11): no new form, no lower score (479; 474 when only this function's own units are in the
 // reduced image); our body is longer than retail's (eight bytes in that image), so the jump table lands later
 // and every branch after it differs.
-// score 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
+// Earlier 479 (was 479): earlier 477, 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // earlier 610, 469; fast with 0x110ab0 listed. Case 1 now tests `!(d > 1.f)`, retail's compare
 // MiniMax R (11-10): no new form, no lower score.
 // Earlier 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare

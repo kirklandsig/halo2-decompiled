@@ -4956,6 +4956,12 @@ void __stdcall function_cc810(long vehicle_index)
 /* plans a motion over a distance from a velocity: accelerate, coast and
    decelerate (by the acceleration) without passing the speed limit when
    one is given; negative distances are planned mirrored */
+// score 162 (was 162; earlier 167): m3 lane 16 r120 (all restored): the first stop test grouped `(stop_time * 0.5f *
+// velocity) * 0.5f + distance` 189, fully grouped `((stop_time * 0.5f) * velocity) * 0.5f` 206 (the whole test moves to
+// x87); the acceleration/deceleration stores after the speed limit with no `negative` local and the coast reading
+// motion->acceleration 167; the stop position `(velocity * 0.5f) * stop_time + distance` 180; the done flag in a `byte`
+// 209; the stop time as `inverse * fabs`, the stop position distance-first and the moving root's operands swapped all
+// the same code; `#pragma optimize("p", on)` around the body (the one diagnostic) 286.
 // MiniMax D (11-14): no new form, no lower score (162): the one-use discriminant is still evaluated on the x87 stack, which is what needs the eight-byte frame, where retail computes it in SSE and stores it for the fsqrt; the (double) cast on the sqrt argument, a named float local, the same local at function scope and a float sqrt all score 162.
 // MiniMax G (11-13): no new form tried this round, no lower score (162): the one-use discriminant
 // is still evaluated on the x87 stack where retail keeps it in SSE, so the frame stays eight
@@ -4977,7 +4983,7 @@ void __stdcall function_cc810(long vehicle_index)
 // cast on the sqrt argument, the file's flags line without /Gr and the same line with /fp:strict all score 162 and
 // leave the discriminant on the x87 double stack; /Od rewrites the body (1343 bytes, 932), which shows the flags
 // line is applied, so the widening comes from the expression tree and not from the build settings.
-// score 162 (was 162; earlier 167): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
+// Earlier 162 (was 162; earlier 167): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Retail keeps no local frame (its spills go in dead argument slots, ours reserves 8 bytes), computes the
 // quadratic's discriminant b*b - a*stop_position*4 in SSE and stores only for the fsqrt (ours chains it on the
 // x87 stack through spills of a and b, which is what needs the frame), and keeps stop_time*0.5*velocity*0.5
@@ -6659,22 +6665,32 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
+// score 298 (was 300; earlier 333): m3 lane 16 r120: both hand buffers `bool hands[4]` (0xcd7b0 writes modes[0..3], and
+// every other caller declares `bool modes[4]`; `[2]` overran) 298, kept: the frame homes are retail's (unit 0x14, weapon
+// 0x18, buffer 0x1c; aligned 233 -> 142). On 298: `hand = 0; if (mode == 5 || mode == 6 || mode == 7) hand = 1;` 278
+// (1052 B, retail's weapon EDI / mode BX; a value set before a test, the direct form scores 298: not kept); every `goto
+// done` as a return 318 and the two getters fed from `unit` 334 (both lose MATCH 0xc4820, 0xccab0, 0xcce00: the callers'
+// stack convention); mode 6's own readiness test dropped 304 (on 300), mode 4's 307, both 312; the second
+// `ready = true;` dropped 299; the two flag tests through one named bool, or assigned to `ready`, same code. Still
+// differing: retail stores both weapon flag-test bools into the shared ready/buffer byte (`and cl,1; mov [esp+0x64],cl;
+// jne`) and merges mode 4's and mode 6's request tails (0xcd2f0), so only mode 2's hand index is threaded; ours threads
+// modes 4 and 6 and lays out a second epilogue for mode 6's failure, which splits `result` into two homes.
 // MiniMax G (11-14): no new form, no lower score (300): the weapon index and the mode still take EBX and EDI where
 // retail keeps them in EDI and BX, the two weapon flag tests are still not stored in the readiness byte as retail
 // stores them, and the frame order (ours: hands 0x14, unit 0x18, weapon 0x1c; retail: unit 0x14, weapon 0x18,
 // hands 0x1c) still differs; the forms that fix one of those are in the notes below and none lowers the score.
-// MiniMax A (11-14): score 272 (was 280): the two weapon flag tests and the readiness flag now live in the first byte of the
+// MiniMax A (11-14): 272 (was 280): the two weapon flag tests and the readiness flag now live in the first byte of the
 // four-byte hand-modes buffer that 0xcd7b0 fills, so the flag values are stored into that byte as retail stores them
 // (`and cl,1` into the buffer) and the buffer is four bytes wide, as 0xcd7b0 writes four; the mode 3/4 buffer is four bytes
 // too, which puts the unit pointer at 0x14 and the weapon pointer at 0x18 as in retail. What still differs: retail keeps the
 // readiness byte at 0x13 and the buffer at 0x64, ours keeps them at 0x64 and 0x10, and the branch targets and the tail differ.
-// MiniMax A (11-14): score 280 (was 300): the hand index is set to 0 and then to 1 in the mode 5-7 test, which gives retail's
+// MiniMax A (11-14): 280 (was 300): the hand index is set to 0 and then to 1 in the mode 5-7 test, which gives retail's
 // register homes (weapon EDI, mode BX) and retail's length (1052 bytes); what still differs is retail's flag-7 bit materialised
 // with `and cl,1` and stored in the ready byte, retail's frame order (unit 0x14, weapon 0x18, hands 0x1c), the mode-2 path's
 // `xor esi,esi` and the duplicated epilogue.
 // Earlier 280 (was 333): the single exit with `default: __assume(0)` gave the stack convention.
 // MiniMax D (11-14): no new form, no lower score (300): the frame 0x50 and the single exit with the stack convention agree, but the weapon and mode still take EBX and EDI the other way round, and the two weapon flag tests are still not stored in the ready byte as in retail.
-// score 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
+// Earlier 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
 // (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; current frame 0x50
 // agrees (earlier 0x54); weapon/mode in EBX/EDI versus EDI/EBX,
 // and the two weapon flag tests are not stored in the ready byte as in retail.
@@ -6753,7 +6769,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 
 			if (second_index != NONE && (!function_101640(weapon_index) || !function_101640(second_index)))
 			{
-				bool hands[2];
+				bool hands[4];
 
 				if (!function_cd7b0(unit_index, second_index, hands) || !hands[1] || !function_cd4e0(unit_index, 1, true))
 				{
@@ -6814,7 +6830,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	{
 		goto done;
 	}
-	bool hands[2];
+	bool hands[4];
 	if (!function_cd7b0(unit_index, weapon_index, hands) || !hands[hand])
 	{
 		goto done;
@@ -6886,6 +6902,23 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// score 242 (was 250; earlier 254): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
+// normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
+// accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
+// changed); facing as the planar copy `*(point2f const *)&unit->forward` (retail's four dword moves) 242 at 1104 B; the
+// ragdoll ticks stored to +0x1f5 and then clamped there `> 1 ? : 1`, +0x1f5 typed char (retail's two stores and movsx/jg;
+// 0xc58f0 already reads it as char) 253 alone, 234 with the facing copy (retail's length): HELD (needs the owner's OK,
+// build/r120/held-c98a0.patch): the char type is a declaration also read by the contributor's 0xcaa60 (its bytes
+// unchanged); the body is the 242 form until then. Not kept, measured on the 234 form:
+// byte_flags_set for the side bit (same code); 0x10f690's output in its own `duration` local 241, with `!(time >= 0.0f)`
+// 241 (that block then byte-identical, 1104 B); UNIT_ANIMATION(unit)->unknown6c[0] (same code); `default: __assume(0)` on
+// the duration form 247; TEST_FIELD_BIT on the bit-1 test 240, with the duration form 252; both tests through
+// TEST_FIELD_BIT 248 (re-measured); the side chain's last arm as if/else (same code); the getter fed from `unit` 251; a
+// file-static named-result bit-test helper (src/bipeds.cpp's field_bit_test shape) for both tests 233 (`shr; test`, still
+// no stored byte; a new helper, not kept). Still differing: retail stores both definition-flag bools to dead frame bytes
+// (`and cl,1; mov [esp+x],cl; jcc`: matched functions get that from a bool with two definitions, or an inline helper's
+// `bool result = false; if (...) result = bit;`), which also hoists `mov ecx, 2` and keeps unit_index in ESI for the
+// tail; retail's second weapon lookup is not merged with the first; the inline normalizer's x multiply is `scale * x`.
 // MiniMax D (11-14): no new form, no lower score (250): the first difference is still at +0x9, the zero constant rides
 // in xmm0 here and in xmm2 in retail, and retail's scale block multiplies the x component in place and the y component
 // into a fresh register; the one-use bool test that reached 209 is kept only with a byte match and the coordinator
@@ -6915,7 +6948,7 @@ done:
 // __assume and the duration forms were measured again on the committed convention and none of them reached the 250
 // baseline, and the permuter (300 s, 7 tries) found 243 against a 244 reduced-image baseline, below the eight-point bar,
 // so the body is the committed one.
-// B's form, not kept: score 209 (was 250): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
+// B's form, not kept: 209 (was 250): Frame 0x24 agrees; retail takes the direction in ECX (round 82: now ours too) and keeps
 // the unit pointer in EBX, the definition on the stack. Round 5 of #1049: retail's epilogue clears AL (`xor al,
 // al` on every path, including the early return), so the function returns bool false (256 -> 254). The
 // convention is coupled to 0xd6800's: declaring this function after 0xbd020 (forward declarations) WITHOUT
@@ -6957,7 +6990,7 @@ done:
 // successful-turn/final-identity library point copies 250/250; point-role names,
 // entry side workspace and byte turn result 250 each. NOT kept: ties or regressions;
 // native zero SIMD carrier, dead flag stores and state home remain.
-// score 250 (was 254): frame 0x24 agrees; native zero, dead flag stores, state home and facing tail differ.
+// Earlier 250 (was 254): frame 0x24 agrees; native zero, dead flag stores, state home and facing tail differ.
 // P494: complete existing inline normalizer 242, immutable length 250, named squared sum 250,
 // both squared components 251, complete turn result 225, duration ticks named 250,
 // paired duration bounds 250, state receiver name 250. NOT kept: normalizer plain 242
@@ -6978,24 +7011,15 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		toward = *direction;
 		facing.x = unit->forward.i;
 		facing.y = unit->forward.j;
-		real length = (real)sqrt(toward.x * toward.x + toward.y * toward.y);
-
-		if (!(0.0001f > (real)fabs(length)) && length > 0.0f)
+		if (normalize2d_fast((vector2f *)&toward) > 0.0f && normalize2d(&facing) > 0.0f)
 		{
-			real scale = 1.0f / length;
-
-			toward.x = scale * toward.x;
-			toward.y = toward.y * scale;
-			if (normalize2d(&facing) > 0.0f)
+			angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
+			if (!((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
 			{
-				angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
-				if (!((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
+				if (function_e70b0(unit_index).value == NONE)
 				{
-					if (function_e70b0(unit_index).value == NONE)
-					{
-						facing = toward;
-						turn = true;
-					}
+					facing = toward;
+					turn = true;
 				}
 			}
 		}
@@ -7038,20 +7062,8 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	}
 	if (type >= 3)
 	{
-		s_unit *holder = UNIT_GET(unit_index);
-		long first_index = NONE;
-		long second_index = NONE;
-		short current_weapon = holder->current_weapon_index;
-		short next_weapon = holder->next_weapon_index;
-
-		if (current_weapon != NONE)
-		{
-			first_index = holder->weapon_object_indices[current_weapon];
-		}
-		if (next_weapon != NONE)
-		{
-			second_index = holder->weapon_object_indices[next_weapon];
-		}
+		long first_index = function_cbd50(unit_index, UNIT_GET(unit_index)->current_weapon_index);
+		long second_index = function_cbd50(unit_index, UNIT_GET(unit_index)->next_weapon_index);
 
 		if (flag && type != 6 && (first_index == NONE || !function_101240(first_index)) &&
 			(second_index == NONE || !function_101240(second_index)))

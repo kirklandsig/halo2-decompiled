@@ -1642,7 +1642,11 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
-// score 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
+// SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
+// variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
+// Earlier 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax G (11-12): no new form, no lower score (703); the frame agrees (0xc0); the slot helper is the
 // static __forceinline function_74aa1 in this file (src/unknown_072db0.cpp:1588), whose null test is a
 // branch here against retail's cmovne, and the users cursor still rides in EBX where retail keeps it in
