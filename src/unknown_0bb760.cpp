@@ -446,6 +446,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax E (11-15): no new form, no lower score (84): the blend's stack slot and the choices pointer's slot are still the other way round, and the 1.0 load still comes before the zero xorps where retail loads it after.
 // MiniMax S (11-15): no new form, no lower score (84).
 // MiniMax S (11-14): no new form, no lower score (84): the permuter's search over this body (60 tries, 610 s) found nothing below the baseline's 84; the first scan still leaves on != where retail leaves on a signed jl, the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot, and the clamp entry's constant order and the not-found path's own copy of the one still differ.
 // MiniMax A (11-13): no new form, no lower score (84); with the inverse computed inside the found branch (the
