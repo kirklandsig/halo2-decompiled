@@ -4406,28 +4406,6 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// MiniMax H (11-13): no new form, no lower score (305): the three boolean stack homes are still rotated (the
-// result byte at +0xa where retail keeps it at +0xb), and the same timeout spill as 0x5e3f0 needs 0x769a0, whose
-// definition is in another file.
-// MiniMax G (11-12): no new form, no lower score (305); the same timeout spill as 0x5e3f0 sits here and
-// needs 0x769a0, whose definition is in src/unknown_075870.cpp; what is left in this file is the
-// rotation of the three boolean stack homes (the result byte at +0xa where retail keeps it at +0xb).
-// MiniMax S (11-11): no new form, no lower score (305); the frames agree (0xd8 with the same two pushes) but our
-// body is one byte longer than retail's (1265 against 1264), and the result byte still lives at esp+0xa where
-// retail keeps it at esp+0xb.
-// MiniMax R (11-10): no new form, no lower score (305); the three flag bytes keep their homes a rotation apart
-// from retail's (retail: the peer block's better flag at esp+0x9, the same flag sharing the identity test's slot at
-// esp+0xa, the result at esp+0xb; ours: the same flag at esp+0x9, the result at esp+0xa, better at esp+0xb), and the
-// two peer flags written as bytes instead of bools measure the same code (305), so the body stands.
-// MiniMax S (11-10): no new form, no lower score (305): retail stores the session's value10 into [esp+0x1c] before the 0x769a0 call, which needs that callee to take its unread owner parameter, and retail calls 0x62c20 the second time as (local, map, remote) where ours passes the map in the other place; both need a file this lane may not edit.
-// MiniMax D (11-10): no new form, no lower score (305).
-// MiniMax h (11-05): the result byte home is +0xa in ours and +0xb in retail, where the better flag shares +0xa with the identity-equal flag; exchanging the better and same declarations gives 305, spelling out the better decision gives 314 and the same decision 306, and the shared acknowledgement block sits after the reason-5 exit in ours but at the end of retail's.
-// MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
-// MiniMax B (11-13): no new form, no lower score (305): the boolean homes stay a rotation from retail's (the
-// acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
-// bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
-// back where this build folds it to a constant.
-// MiniMax I (11-14): no new form, no lower score (305): the frame 0xd8 and the body length agree with retail's, but the three boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail reads the acceptance byte back where this build folds it to a constant, and the 0x769a0 and 0x62c20 call setups need files this lane may not edit.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
@@ -4589,6 +4567,33 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // body length agrees, but the flag results are kept in registers and al where retail keeps them in stack bytes
 // (the byte at esp+0xb, this build at esp+0xa), and retail stores the session's value10 into a slot before its
 // 0x769a0 call, whose unread owner parameter the callee in another file does not take.
+// MiniMax H (11-13): no new form, no lower score (305): the three boolean stack homes are still rotated (the
+// result byte at +0xa where retail keeps it at +0xb), and the same timeout spill as 0x5e3f0 needs 0x769a0, whose
+// definition is in another file.
+// MiniMax G (11-12): no new form, no lower score (305); the same timeout spill as 0x5e3f0 sits here and
+// needs 0x769a0, whose definition is in src/unknown_075870.cpp; what is left in this file is the
+// rotation of the three boolean stack homes (the result byte at +0xa where retail keeps it at +0xb).
+// MiniMax S (11-11): no new form, no lower score (305); the frames agree (0xd8 with the same two pushes) but our
+// body is one byte longer than retail's (1265 against 1264), and the result byte still lives at esp+0xa where
+// retail keeps it at esp+0xb.
+// MiniMax R (11-10): no new form, no lower score (305); the three flag bytes keep their homes a rotation apart
+// from retail's (retail: the peer block's better flag at esp+0x9, the same flag sharing the identity test's slot at
+// esp+0xa, the result at esp+0xb; ours: the same flag at esp+0x9, the result at esp+0xa, better at esp+0xb), and the
+// two peer flags written as bytes instead of bools measure the same code (305), so the body stands.
+// MiniMax S (11-10): no new form, no lower score (305): retail stores the session's value10 into [esp+0x1c] before the 0x769a0 call, which needs that callee to take its unread owner parameter, and retail calls 0x62c20 the second time as (local, map, remote) where ours passes the map in the other place; both need a file this lane may not edit.
+// MiniMax D (11-10): no new form, no lower score (305).
+// MiniMax h (11-05): the result byte home is +0xa in ours and +0xb in retail, where the better flag shares +0xa with the identity-equal flag; exchanging the better and same declarations gives 305, spelling out the better decision gives 314 and the same decision 306, and the shared acknowledgement block sits after the reason-5 exit in ours but at the end of retail's.
+// MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
+// MiniMax B (11-13): no new form, no lower score (305): the boolean homes stay a rotation from retail's (the
+// acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
+// bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
+// back where this build folds it to a constant.
+// MiniMax I (11-14): no new form, no lower score (305): the frame 0xd8 and the body length agree with retail's, but the three boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail reads the acceptance byte back where this build folds it to a constant, and the 0x769a0 and 0x62c20 call setups need files this lane may not edit.
+// M3 lane 3 r242 (fast, base 305; retail's two reason-2 exits are one block, `state <= 2` jumping into the `state > 8`
+// fall-through): the valid range as one `state > 2 && state <= 8` test with the exit as its else 366 (1264 B, the shared exit
+// laid out after the body); the reason-3 test as one `&&` 305 (same code); the channel-state test as one `&&` 305 (same code);
+// the timed-out arm with one identity copy and `*reason = identity_equal ? 4 : 6` 320 (1234 B); the `state > 8` test inverted
+// with the exit as its else 367 (1269 B). Body unchanged.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

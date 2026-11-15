@@ -149,6 +149,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-14): no new form, no lower score (110, was 110): the first 0x221810 lookup is still expanded in this
+// body where retail calls it out of line, and the 0x21d110 call still takes the play state by pointer on the stack
+// where retail passes it in a register; both are decided outside this file. The request is still copied field by field
+// where retail copies the whole request and patches the flags after.
 // MiniMax D (11-14): no new form, no lower score (110): our build still expands the first 0x221810 lookup inline where
 // retail calls it out of line (that helper's inline-ness is set in src/unknown_221490.cpp), and the 0x21d110 call still
 // takes the play state by pointer on the stack where retail passes the state in a register (that callee's declaration is
@@ -377,6 +381,12 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // inline-ness is set in src/unknown_221490.cpp, a file this lane may not edit) and the 0x21d110 call still takes the state by pointer on the
 // stack where retail passes it in a register (that callee's declaration is in another file).
 // MiniMax A (11-11): no new form, no lower score (110); our build still expands the first 0x221810 lookup inline where retail calls it out of line (that helpers inline-ness is set in another file and was ruled off limits), and the 0x21d110 call still takes the state by pointer on the stack and the tag index in the register where retail passes the state in the register and the tag index on the stack (that callees declaration is in another file).
+// M3 lane 13 r92 (fast with the ten matched callers, 0x221810 and 0x21d110; control 110): the priority read from the request
+// and stored before the location copy 106 (472 bytes, as MiniMax D/G found); on it, the end test as `(flags & 0x100) ||
+// ((flags >> 11) & 1) || !audible` 106 (same code: still `test ch, 9`), the variant read from the request at each use 106,
+// the object/source/platform stores ahead of the flag store 106, the marker size in an if/else 131 (474 bytes). The gains do
+// not stack; no caller lost in any form. Retail's 0x221810 has a stack argument (`ret 4`) and is called at every site, so it
+// behaves like a function LTCG never expands; ours is expanded at the first site here only.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

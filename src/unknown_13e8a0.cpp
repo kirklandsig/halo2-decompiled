@@ -586,6 +586,10 @@ struct s_text_line_measurement
 // be hoisted; retail gives XMM3 to a second copy of the advance (`movaps xmm3, xmm0`) and the width XMM4. With the product at
 // both uses the width does load early (the scale is still live), but the update reuses the test's product in place, so there
 // is still one advance range. No untried natural form found.
+// P492: Original two flags produced by token/setting/break-index tests,
+// seven bool subsets then all byte: 111/134/116/115/108/119/123/123.
+// NOT kept: no native advance copy or early width-load recovery; original
+// flags, lazy reads, arithmetic groups and complete body restored at 77.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

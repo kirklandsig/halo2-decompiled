@@ -370,7 +370,7 @@ real function_30bf0(vector3f *vector);
 // MiniMax B (11-11): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's
 // first load and the two products still differ, and the range is still loaded into XMM2 for XMM0; the body is 1310 bytes
 // against retail's 1308.
-// score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
 // MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
@@ -787,6 +787,10 @@ real function_30bf0(vector3f *vector);
 // test and the first cross then reads fwd.k/fwd.j through it, not through the object); side/up and a/b declared at the seat
 // loop body's top 84 (same code); both together 96 (1308 B). Diagnostics, reverted: the seat loop never entered 189 (1314 B);
 // the forward-early form with the clip amount and the squared distance as one scalar 93 (1308 B). Body unchanged.
+// m3 lane 8 r166 (fast with the file and its neighbours, control 84; aligned 57, registers masked 54, registers and stack
+// offsets masked 18): no trial run. The masked residue is the result's home and the two seat-loop cross products' operand
+// loads (2 bytes); a grep of this note for each lead (world-up copy or pointer, typed forward, seat pointer, count width,
+// facing flag, range, plane, clip, out-of-range, mode tests, maxima) finds every natural form already listed.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2059,7 +2063,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
 // [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
 // retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
-// score 168 (was 168): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
+// score 168 (was 168; m3 lane 8 r166 at the end): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
 // block's established/visible layout. Round 64, fast, masked aligned in brackets (start 194 [66]): the block entered on
@@ -2514,6 +2518,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 376 [87]. Diagnostics, reverted: n = 0..7 unused long locals at the top 168 each (the base/index order and the table
 // register do not follow the symbol count); the recipe with the scoring block removed still loads the table pointer into
 // ECX with NONE in EAX, so that choice is local to the iterator start. Body unchanged.
+// m3 lane 8 r166 (fast with the file, 0x25c9d0, 0x26d370, 0x25d810, 0x26be00/0x26be30, 0x25d740 and the 15 users of 0x1c8150/
+// 0x1c8180): re-measured round 65's recipe (ai_player_get/ai_player_index_get, `inline` on 0x1c8180, a __forceinline
+// object_get_forward declaration) 383 and with round 86's other-object pointer 378 (both at 2880 B, every other listed
+// function matched): on 378 every line up to the players iterator start is retail's but the inlined 0x26be00's `[eax + ecx +
+// 0x58]` and the jump targets the one-byte shift moves; at the iterator start ours loads the table pointer into ECX and
+// schedules `or eax, -1` and `lea esi` ahead of its store, retail loads it into EAX, stores it and then reuses EAX for NONE.
+// Diagnostic (reverted at once): on 378 the relative normalize called through a global function pointer with direction's
+// address stored 525 (2921 B): the iterator still takes ECX, so that register does not follow the direction residence.
+// Also on 378 (same code, 378): the vehicle test as `!(vehicle_type == 0 || vehicle_type == 1 || vehicle_type == 4)`; the
+// players iterator declared ahead of the vehicle lookup. Every free register choice up to the vehicle test's `xor ecx, ecx` is
+// retail's; the first one after it (the iterator's table pointer) and those inside the players loop are one rotation step on.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

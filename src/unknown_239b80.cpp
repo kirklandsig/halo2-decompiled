@@ -612,6 +612,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (short)hull_count` 215, memcpy for the compaction 234 (755 B, the copy inlined); the lowest-point scan as an inline helper
 // returning the index (current from its result) 216 (791 B), forced inline with current declared first 244; as plain
 // `static inline` it is not inlined (680 B, 343).
+// P492: Float root/angle/equality-absolute API subsets 1/2/4/3/5/6/7,
+// then standard float overloads: 161/161/161/161/161/161/161/161.
+// NOT kept: extra frame word and count/departure/produced-length homes
+// unchanged; original numeric APIs, predicate and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -769,6 +773,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and keeps
+// it in CX, and that parameter's type is declared in another file this lane may not edit; the zero constant still takes
+// xmm4 where retail creates it in xmm2, and the previous side byte still sits at [esp+0xd] where retail has it at
+// [esp+0xc]; the count guard in front of the loop (92) is not taken, as it repeats the loop's own i < count test.
 // MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and
 // sign-extends the low word, where this declaration's short count is read as a word home, and that parameter's type is
 // declared in src/unknown_17d9a0.cpp, which this lane may not edit; retail also keeps the previous side in memory where

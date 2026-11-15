@@ -501,6 +501,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // explicit `(i + k) + j` here is honoured and is retail's grouping); rows as `(a + b) - c`, either operand first, 178
 // (157/105/103); retail-ordered operands (axis-first cross terms and rows) 178; the cross product in a named vector3f 214
 // (1707 B, 193/128/61).
+// M3 lane 12 r123 (fast with 0x29b990, matched each time): the single-exit normalizer re-measured 171 (first +0x84); on it the
+// rotation helper's cosine before its sine 173, its cross terms ahead of the projection 171 (same code), the result copy ahead
+// of the two angle stores 177, both turn limits as conditional expressions 244 (1715 B). Retail keeps the rotation's sine at
+// +0x10, its cosine in arg_3's dead home and the final pitch in arg_4's; ours gives the two dead homes to sine and cosine.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
