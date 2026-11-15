@@ -1916,6 +1916,10 @@ bool __stdcall function_110ab0(long unit_index)
 // in ESI, writes the true default at the entry and re-derives the unit in both seat queries, while this build
 // loads the global into EAX and the data into EDX, so the frame's slots stay one dword off retail's.
 // score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
+// m3 lane 5 r185 (fast with 0x10ff40/0x111650, controls 12/557): the definition without `__stdcall` 445 (same code: LTCG
+// keeps the stack convention from the body); the 0xc7070 result held in a named bool 445 (same code); depleted typed char
+// 445 (same code); the 0x600008d group as `interruptible || requested == 0xc000043 || requested == 0xd000042` 445 (other
+// code, same count); depleted typed short 469 (1809 B).
 // MiniMax E (11-11): no new form, no lower score (445); the frame's slots sit at retail's offsets one dword off
 // and retail keeps its frame pointer and the early pointer where ours does not.
 // MiniMax S (11-11): no new form, no lower score (445); retail's frame is 0xc against our 8, it keeps the pool pointer in ECX and the pool data in ESI where ours loads the global into EAX and the data into EDX, it forms the control pointer as base+offset where ours stores the bare offset, and it writes the true default at the entry where ours starts from the switch; the entry default is the known lead but it costs the matched caller 0x10ff40 its score.
@@ -2394,6 +2398,14 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // MiniMax A (11-14): no new form, no lower score (776): the frame is still 0xcc against retail's 0xd4 and
 // retail's prologue still holds the lookup chain this build lacks (the definition's model tag at +0x38 and
 // that tag's bytes), so every stack home sits below retail's.
+// m3 lane 5 r185 (fast with 0x10ff40/0x111650/0x1103a0; call lists compared): the overlay id as `c_type_709360 const &`
+// 837 (3403 bytes by accident: frame 0xc8, calls unchanged); that in a `for` loop 884 (3346 B); the ratios through a
+// `real const *` to unit+0x288 indexed per iteration 847 (3391 B), with the const reference id 862 (3379 B); `short i`
+// 776 (same code); the id test as `control->overlays[i].index != NONE` with the id copied inside, as a `for` 873 (3337 B:
+// the first 0x11df30 is then inlined as retail, but channel_play is still expanded in the loop) and as the do-loop 842
+// (3389 B, call list unchanged); with `control->overlays[i]` passed straight to channel_play (no id local) as a `for`
+// 884 (3346 B: first 0x11df30 inlined, channel_play still expanded) and as the do-loop 837 (3403 B, calls unchanged).
+// The two inline decisions still do not move together.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
 // retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the
