@@ -18,6 +18,12 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax R (11-14): no new form, no lower score (174): retail's mode test reads the flags with the five-byte
+// `mov eax, [flags]` form and shifts them in EAX, where this build reads them into EDX and shifts them there, so
+// every later offset drifts; the mode sits at [esp+0xc] and the extent at [esp+0x14] where ours keeps them at
+// [esp+8] and [esp+0x10], retail's maximum height is a full dword where ours sign-extends a short, and the size
+// still stays in a register across the two rounding calls where retail reloads it from the lowest slot, which
+// needs the xmm clobber set of 0x48e70 in another lane's file: BLOCKED-BY 0x48e70.
 // MiniMax I (11-11): no new form, no lower score (174); the mode flag still loads the flags into EDX where retail
 // uses EAX, the size still stays in a register across the two rounding calls where retail reloads it from its
 // slot, and the frame's slots still run from the mode up where retail's start with the size.
