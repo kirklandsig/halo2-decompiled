@@ -1980,8 +1980,11 @@ long g_4858b8;
 // form is retail's 91 bytes with the flags expression written twice and no local, but
 // the full LTCG build still reserves a 4-byte home slot (`push ecx`/`pop ecx`), shifting
 // the three stack arguments, and schedules the last `or` into esi (35 differences).
-// `const`, one local, the duplicated expression, `!= 0` and moving the definition to the
-// end of the file all leave the full code unchanged. Enabling it costs five functions:
+// `const`, one local, the duplicated expression, `!= 0`, moving the definition to the
+// end of the file, and reordering the parameters to (color, depth, stencil, flags)
+// through every declaration, the selected_source_pass.h header and all nine call sites
+// all leave the full code identical (the mangled name changes; the `push ecx` does not).
+// The pad is tied to the `function_14ac0()` call, as the 0x44370 note records. Enabling it costs five functions:
 // 0x13c20, 0x31c80, 0x335e0 and 0x133790 (matched -> todo) and 0x14ac0 (0 -> near),
 // with 0x44370 85 -> 89; game 10,622 -> 10,617. The clear stub convention is not the
 // cause; the slot is a whole-program home decision, not a body error.
