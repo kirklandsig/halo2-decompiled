@@ -315,6 +315,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P559: Existing builder cosine/sine value/reference/pointer receiver pairs: 335/334/342/342/342/342/342/342.
 // NOT kept: unmatched input ownership and temporary/reference forms; frame 0x90 agrees but native
 // axis/square/sine residence remains unresolved; original builder contract and entire source restored.
+// P562: Actual squared-axis declaration orders ikj/jik/jki/kij/kji and complete
+// scalar lexical groups: 344/334/334/344/344/334/334/334. NOT kept: no equality or native
+// coefficient residence; current frame 0x90 agrees. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

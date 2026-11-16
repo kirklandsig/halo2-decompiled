@@ -1752,6 +1752,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // NOT kept: all regress; original comparisons, asynchronous calls/waits,
 // progressive validity and failure-only count initialization restored.
 // NOT kept (coordinator screen, MiniMax C 11-16): a goto the function on main does not have (kept only with a byte match): `goto validation_done;`; the body is main's again.
+// P562: Whole dependency validity as valid/invalid bit sets in dword/long/word/byte:
+// 175/175/182/274/293/293/298/292. NOT kept: no exact native byte-table/stack-home
+// recovery; original validity bytes, all I/O and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {
