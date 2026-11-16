@@ -2053,7 +2053,7 @@ real function_17c900(short function_type, real input);
 // normalizer's own callers constrain that helper, so it cannot be spelled differently here.
 // MiniMax I (11-15): no new form, no lower score (348): the frame is retail's 0x30 but the index stays in a register where retail keeps it on the stack, the aim point's stack home is [esp+0x28] here against [esp+0x24] in retail, and the normalization and the rotation are scheduled in another order.
 // MiniMax S (11-15): no new form, no lower score (348): the frame is retail's 0x30 and the body is four bytes long, with the index in EAX where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the shared normalizer's own callers constrain that helper, so it cannot be spelled differently here.
-// score 328 (was 348): Frame 0x30 recovered; the salt now comes from the index at its two uses and the point is stored at each of the three exits, so retail's output schedule agrees; index EAX/output-stack contract and the rotation's register homes remain, four bytes long.
+// score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
 // shared target pointer 382; point/direction role names 382; shared cross 382; shared point differences 383;
@@ -2191,7 +2191,7 @@ real function_17c900(short function_type, real input);
 // register homes.
 // MiniMax A (11-13): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation differs, and
 // the body is four bytes longer than retail's.
-// MiniMax C (11-15): score 328 (was 348): the salt is taken from the projectile index at its two uses instead of from a
+// MiniMax C (11-15), on its not-kept 328 form (below; main stays 348): the salt is taken from the projectile index at its two uses instead of from a
 // local at the entry, and the drift and wander arms store the point into the output and return, which gives retail's
 // three output stores; the caller's inlined copy of this body rises from 947 to 982, and the index/output contract and
 // the rotation's register homes remain.
