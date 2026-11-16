@@ -18,7 +18,8 @@ int __fastcall function_142a60(transform4x3f const *arg_0, transform4x3f const *
 
 PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 {
- real local_0 = (real)sqrt(dot3f(arg_0, arg_0));
+ real j_squared = arg_0->j * arg_0->j;
+ real local_0 = (real)sqrt(arg_0->i * arg_0->i + j_squared + arg_0->k * arg_0->k);
  if (!(fabs(local_0) < 0.0001f))
  {
   real local_1 = 1.0f / local_0;
@@ -468,6 +469,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // pointer: kept only with a match). The length_sq3f form alone 153 (fast).
 // P563: Four-use private magnitude forward/backward reductions, real/double accumulation and default/explicit operators:
 // 244/309/309/373/483/539/539/595. NOT kept: native late forward-k product and magnitude/projection scheduling remain; original private helper and entire body restored.
+// MiniMax S (11-16), NOT kept: 110 -> 11 came from reading the projection's k term as local_1[0].forward.k where
+// the body has the alias forward (the same storage, returned by 0x1d3fc1). That re-read through another name is a
+// match-only form; without it the same body measures 153, so the score shape is the re-read alone. dot3f in
+// 0x1d3fc1 did not help. Body back to main.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
@@ -510,7 +515,7 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
     real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;
-    up->k -= local_1[0].forward.k * local_10;
+    up->k -= forward->k * local_10;
     function_1d3fc1(up);
     cross3f(up, forward, &local_1[0].left);
     function_1d3fc1(&local_1[0].left);
