@@ -2701,6 +2701,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax I (11-16): no new form, no lower score (17): the first difference is still 0x219070's result - the set
+// index is sign-extended here where retail copies the dword, and the call takes two arguments where retail passes
+// one; 0x219070's and 0x218f50's declarations live in another file this lane may not edit.
 // MiniMax E (11-15): no new form, no lower score (17): the set index is still sign-extended where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both live in other files.
 // MiniMax H (11-14): no new form, no lower score (17).
 // MiniMax H (11-12): no new form, no lower score (17); the first difference is still 0x219070's result, and the one-use short local that lowers it to 15 stays a match-only form.

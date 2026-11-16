@@ -1402,6 +1402,10 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// MiniMax I (11-16): no new form, no lower score (110): retail calls the first-player query 0x14dde0 out of
+// line where this build expands it, and retail's audible arm holds the offset in a stack temporary that is copied
+// into the request after the 0x21bfb0 call where this build writes the request's storage directly; the query's
+// declaration lives in another file this lane may not edit.
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // instead of retail's temporary/copy, and the first-player query still expands.
 // MiniMax E (11-14): no new form, no lower score (110, was 110): retail calls the first-player query out of line
@@ -1971,6 +1975,10 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax I (11-16): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 - this
+// file's view of the detail request stops at 0x90 where retail's play state is 0xa0 - and retail still keeps the
+// playback pointer in EDI where ours keeps it in a stack slot; extending the request's view to 0x9c gives 301, a
+// gain of four that the keep bar drops, and to 0xa0 it overshoots the frame by four bytes.
 // MiniMax D (11-15): no new form, no lower score (305): the pitch bounds read through a pointer to the pair (as retail does, `lea ..+8` with the lower short at +0 and the upper at +2) measures 305 on its own, and the parenthesised pitch sum that adds the playing pitch before the lower bound (retail's order) measures 418 in the plain build and 478 in the reduced one, because naming the pair flips the gain approach's add and shifts every later row; both are reverted and the body stands.
 // MiniMax C (11-14): no new form, no lower score (305): the detail request's view still stops at 0x8e bytes; extending it to 0x9c gives retail's frame of 0x128 and scores 301, under the keep bar, and to retail's 0xa0 bytes it is four bytes over again.
 // MiniMax H (11-14): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128, the
@@ -2946,6 +2954,10 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// MiniMax I (11-16): no new form, no lower score (597): the track loop's register roles are still this build's -
+// retail holds the state in EBX, NONE in ESI and the track in EBP where this build holds NONE in EBX, the index
+// in ESI and the track definition in EBP - and the entry still hoists the flags byte into BL where retail masks it
+// with 1 after the pushes; the forms listed below score 590 or more.
 // MiniMax C (11-14): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes, and the track loop's register roles are still this build's; the form that reads `alternate` inside the definition guard measures 615 and is not kept.
 // MiniMax S (11-11): no new form, no lower score (597); the entry still hoists the flags byte into BL where retail masks it with 1 after the pushes, and the known remaining deltas are the creation compare's order, the source copy from EDX into ESI, the gains clear in retail's store form and the track loop's register roles; reading `alternate` inside the definition guard reproduces retail's entry but measures 615.
 // MiniMax H (11-14): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail
