@@ -122,6 +122,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // inverted (not-force flag test first) 218; force and update set inside an `initialized && valid` if/else with the clamp in
 // both arms 218 (829 B); the hidden-object flag in a named bool 218; `initialized` read into a local for the force test 218.
 // On the kept order, `update` declared bare and set false in the not-force arm 222.
+// Round 169 (m3 lane 7, fast with 0x3d2c0, control 21): `update` as char 21; `update` declared bare at the top and set
+// false after force 21 (same code each); the initialized flag named for the force test and the tail's test 212 (829 B);
+// the masked object index named 21 (same code); the update-time test moved to just after the force arm 240. Probe stores
+// of 0, 1, -1, 2 on the update-first form (diagnostic, reverted) leave the timestamps in EDI/ESI (194, 834 B).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

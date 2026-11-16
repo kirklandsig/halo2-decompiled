@@ -4,7 +4,9 @@
 #include "placed_shape_312800.h"
 #include "unknown_1cec30.h"
 
-// score 2 (was 2): the bounds pointer store and receiver load are reversed.
+// score 0 (was 2): matched with the body state set through a reference and the shape read
+// through the base class.
+// Before, 2 (was 2): the bounds pointer store and receiver load are reversed.
 // Native persistent pointer field as void, const void, bounds and const bounds 2 each;
 // each with the existing clear forced inline 2. Original field type and helper restored.
 // the receiver load precedes the bounds-field store;
@@ -19,7 +21,8 @@ placed_shape_312800::placed_shape_312800(description_315ba0 const *description)
 {
 	bounds.clear_312800();
 	list.field_0 = description->field_0;
-	body.field_8 = (long)&bounds;
-	field_54 = ((shape_312800 *)body.shape)->slot_5();
+	body_30b3a0 &state = body;
+	state.field_8 = (long)&bounds;
+	field_54 = ((shape_312800 *)((class_30b340 *)this)->body.shape)->slot_5();
 	((hkTransform &)transform).set((hkTransform const &)description->transform);
 }

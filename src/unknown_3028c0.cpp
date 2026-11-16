@@ -95,7 +95,11 @@ public:
 	void function_3028c0(input_3028c0 const *input_, long arg_1, long arg_2);
 };
 
-// score 42 (was 42): header/argument registers and early zero carrier still differ.
+// score 0 (was 42): matched with the cell array bound by a constant reference
+// (retail forms its address early in its own register), the scale splatted
+// first in each product, both differences taken before either product, and the
+// three clears made just before the call.
+// Before, 42 (was 42): header/argument registers and early zero carrier still differ.
 // Earlier allocation: the walk's last field is cleared before the direction
 // the walk's last field is cleared before the direction
 // is built, the direction and the segment's start are multiplied with the
@@ -138,16 +142,19 @@ void walker_3028c0::function_3028c0(input_3028c0 const *input_, long arg_1, long
 	inverse_cell_size = 1.0f / grid->origin.m128_f32[3];
 	float const scale = grid->origin.m128_f32[3] * 1.52587890625e-05f;
 	walk.scale = scale;
-	walk.field_30 = 0;
-	walk.direction = _mm_mul_ps(input_->direction, splat_3028c0(scale));
+	walk.direction = _mm_mul_ps(splat_3028c0(scale), input_->direction);
+	char const *const &cells = grid->cells;
 	walk.length = sum_3028c0(input_->direction) * 3.0f;
 	segment_3028c0 segment;
 	__m128 const origin = grid->origin;
+	segment.start = _mm_sub_ps(input_->start, origin);
+	segment.end = _mm_sub_ps(input_->end, origin);
+	segment.start = _mm_mul_ps(splat_3028c0(scale), segment.start);
+	segment.end = _mm_mul_ps(splat_3028c0(scale), segment.end);
 	walk.field_2c = 0;
 	walk.field_24 = 0;
-	segment.start = _mm_mul_ps(_mm_sub_ps(input_->start, origin), splat_3028c0(scale));
-	segment.end = _mm_mul_ps(splat_3028c0(scale), _mm_sub_ps(input_->end, origin));
-	((class_301a60 *)this)->function_301a60(&walk, grid->cells, &segment);
+	walk.field_30 = 0;
+	((class_301a60 *)this)->function_301a60(&walk, cells, &segment);
 }
 
 class class_3029d0_owner

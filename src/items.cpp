@@ -579,7 +579,8 @@ struct s_item_collision_bsp
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
 // MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
-// score 198 (was 200; full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
+// score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
+// Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
 // the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
 // row 0x58, section 0xc8 + 0x70 and matrix products (up.k, left.j, forward.i order) 0x10d0c2..0x10d19f; distance sum z,y,x then -d
@@ -797,6 +798,10 @@ struct s_item_collision_bsp
 // MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
 // changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
 // [esp+0xac] after the two pushes). Body back to main.
+// P578: Actual surface/section/material signed ordinal memcpy acquisitions, seven subsets,
+// then paired plane-index field transfers: 198/198/198/198/198/198/198/198. NOT kept: no exact acquisition/frame-home
+// recovery; original complete body, plane interface, observations and arithmetic restored.
+// MiniMax C (11-16): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order; the marker's y is the one read, as retail does.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1706,6 +1711,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax R (11-16): no new form, no lower score (140): the release scale's two factors swapped in the source leave the
+// bytes unchanged (the compiler picks the operand order), retail clears the release flag with one byte read-modify-write
+// where this build splits it into a load, an and and a store, retail keeps two copies of the release impulse (the flag-5
+// path computing the first two components and the flag-6 path its own) where the shared helper here gives one copy that
+// both paths jump to, and the returned byte still sits at esp+0xe where retail keeps it at esp+0xf. This round's battery
+// on the flag clear (the byte-bitfield view, a byte pointer local, the plain assignment and the inverted mask) leaves all
+// four at 140 with the same bytes: this build always splits the byte mask into a load, an and and a store.
 // MiniMax H (11-11): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the damage data block and the position local still sit twelve bytes below retail's.
 // MiniMax A (11-06, run 52): no new form, no lower score (140) - retail keeps the two release
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
@@ -2060,6 +2072,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
 // shared impulse producer, damping statements and complete body restored.
 // P540: Eight coordinated contact-provider orders at its definition and both callers, 140 each. NOT kept: no return-byte/release/event-home recovery; original contracts, calls, helper and entire body restored.
+// MiniMax C (11-16): no new form, no lower score (140): retail still clears the release flag with one byte read-modify-write where this build splits it into a load, an and and a store, and retail still keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

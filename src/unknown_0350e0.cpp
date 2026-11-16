@@ -70,6 +70,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 }
 
 // MiniMax R (11-16): no new form, no lower score (334): the body is retail's 1779 bytes; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with the squares in xmm1, xmm4 and xmm6, while this build keeps the axis in xmm4, xmm5 and xmm6 and publishes the nine entries from xmm0, xmm1 and xmm2, and the frame stays 0x98 against retail's 0x90.
+// MiniMax S (11-16): score 334 (was 334): no new form; the frame 0x90 agrees but the length is 1781 against
+// retail's 1779, and the trig prologue still loads the three axis squares into different registers than retail
+// and forms the cross terms before the sine and cosine instead of retail's order, so the body is offset from
+// the start.
 // score 334 (was 334): round 80 at the end of this note (334 was 343). Earlier 343 (was 356): round 103 below.
 // MiniMax I (11-15): no new form, no lower score (334): retail's rotation helper still keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6 and forms the cross products first; the frame stays 0x98 against retail's 0x90.
 // Earlier 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
@@ -4262,6 +4266,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
 // alpha/kind and final fade scratch homes remain.
+// MiniMax E (11-16): no new form, no lower score (51); only the frame differs, 0x18 against retail's 0x1c, and
+// retail's two dead getter stores; reading the fade once reproduces retail's tail instructions but leaves the frame
+// and measures 62, so that body was reverted.
 // MiniMax S (11-14): no new form, no lower score (62): the final fade through the existing 0xc6b90 getter still
 // matches retail byte for byte on the reduced image, but the full build promotes the two output locals into registers
 // and drops their dead zero stores, so the plain check gives 70 and the body stands: BLOCKED-BY 0xc6b90 (its body has

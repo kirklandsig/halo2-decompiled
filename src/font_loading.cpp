@@ -839,6 +839,9 @@ static inline long font_character_pixel(long alpha, long color)
 // parity/literal/run-register repair; original indexed fills and complete body restored.
 // MiniMax E (11-16): no new form, no lower score (59): dropping the byte cast from the shared pixel helper widens the alpha's parity to thirty-two bits as retail does and makes the two type 3 pixel sites match, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX, which shifts the whole body (203); the twin helper at the two type 3 sites (45) is not kept.
 // MiniMax E (11-15): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits (mov cl, al; and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); the twin helper without the byte cast measures 45 but a twin of a shared helper is not kept.
+// P576: Long-result helper static forced/ordinary and external ordinary/forced expansion: original byte parity 59/59/59/59;
+// full-width parity 203/203/203/203. Earlier expansion contracts used the word-result graph.
+// NOT kept: no byte equality; original helper, decoder, alias-sensitive reloads and frame restored. Parity/literal/run-two gaps remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

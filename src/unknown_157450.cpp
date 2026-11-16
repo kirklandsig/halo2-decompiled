@@ -827,6 +827,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // difference +0x60): retail's present update is a spilled plain local (OR into the reloaded register, stored at once), its
 // old mask a spilled word register variable reloaded once into ECX, with globals kept in EBP across the loop; every plain
 // present form here rematerialises globals and gives present a register instead.
+// P575: Per-team added-bit decisions, positive/complementary bool/long with dword/word saved mask:
+// 32/32/32/32/77/77/77/77. NOT kept: native saved-word entry and shared post-loop reload remain;
+// original complete body, observations, indexed callbacks and local qualifier restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5841,6 +5844,12 @@ void __stdcall function_d6bc0(long object_index);
 // a timer pointer `&entries[i].value04` from the loop top for the zero test, the delay store, the countdown and the `= 1`
 // reset 173 (858 B); one scoped to the zero test and delay store 29 (same code); one for the countdown and its reset 29 (same
 // code); an entry pointer for the countdown block 205 (869 B).
+// Round 111 (m3 lane 1, fast with 0x15c150 and the six callees, all matched; base 29; label form re-measured 7, with the
+// field test 172 at 858 B: timer EBX, `entries` EDI from the loop top): on the label + field-test form, a timer pointer
+// `&entries[i].value04` declared after the loop-top index read and used from the zero test on 194 (869 B); declared ahead
+// of the 0x15a090 call 209 (852 B); after the index read with the object block's `= 1` store through it too 178 (857 B);
+// no loop-top index local (the field read at each use) 172, on the kept body 167 (863 B); `entries` as a const pointer
+// parameter 172 (same code).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

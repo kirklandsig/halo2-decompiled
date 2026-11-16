@@ -2429,6 +2429,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // 137, the components in a separate vector 136, the shared scaler with the components read before the branch 91.
 // MiniMax C (11-01): no lower score; the hoisted speed products and the velocity scaled with the mixed order give the same code.
 // MiniMax E (11-11): no new form, no lower score (91): the aligned frame agrees and the contact loop and the normal block are retail's; what is left is the normal's hoisting around the x87 length computation, inside the inlined header helper component_surface_length, whose header is not mine.
+// MiniMax S (11-16): score 91 (was 91): no new form; the aligned frame 0x34 agrees and the contact loop and the
+// normal block are retail's, but the velocity normalisation still scales the j and k components from memory
+// where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them in place, and the i component
+// still ends up in xmm1 where retail keeps it in xmm4; reading the three components into locals ahead of the
+// branch moves the material loop's accumulation order instead (159), so the body stands.
 // score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
@@ -2619,6 +2624,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // original full body, normalizer, property helpers and headers restored.
 // P563: Shared then private magnitude reductions; real/default, real/explicit, double/default, double/explicit at each boundary:
 // 142/169/142/169/400/442/400/442. NOT kept: native early velocity j/k loads and property-zero residence remain; original helper, header and full body restored.
+// P578: Scalar memcpy at contact bound/first and second signed body indices/contact flags/
+// surface ordinal/material word/separate speed-property flags/each array receiver:
+// 91/91/91/91/91/113/91/304. NOT kept: no native early velocity j/k or property-zero equality; original
+// complete body, shared helpers, inputs and all observations restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

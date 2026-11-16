@@ -1312,6 +1312,16 @@ PRIVATE __forceinline void reset_vehicle_contact(s_vehicle_contact *contact)
 	contact->compression = 0.0f;
 }
 
+// score 3: the only difference is where the inlined reset's `xorps xmm0` sits.
+// Retail has it after `imul eax, eax, 0x4c` and before `imul ecx, ecx, 0xd8`;
+// ours schedules it before `mov ecx, eax`. Same 222 bytes, same instructions.
+// Probed: swapping the contact/definition declarations 11; zeroing between the
+// reset copies 5, zeroing first 19; `(real)0`, a local zero, and a file-scope
+// zero constant all tie at 3.
+// Flag sweep (17 sets): the current `/O2 /Ob1 /arch:SSE /Gr` is best at 3;
+// `/Ox`, `/Ot`, `/Ob2`, `/Oy`, `/Oi`, `/Oi-`, `/GX`, `/GX-`, `/arch:SSE2`
+// tie at 3; `/Oy-` 80, `/Ob0` 103, `/O1` and `/Os` 108, `/Od` 247; `/Gd`
+// and `/Gz` fail. Not a source-order or flag difference.
 // @retail 0x207ab0
 void function_207ab0(long index, s_vehicle_physics_state *state, s_vehicle_contact_result const *result)
 {
@@ -2110,6 +2120,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // function channel declared with the overlay channel at the block top 552 (1943 B, its constructor moves). Matched
 // 0xeeb80 keeps its scaled index across calls too and is data-first like retail, so the CSE of the index is not the SIB
 // lever.
+// Round 100 (m3 lane 13, fast), at 9: both vehicle lookups through one pool copy (used twice, not propagated) 484 (2004
+// bytes: the copy stays in a register and the second lookup skips the global reload); the second lookup alone through
+// its own pool copy (the per-lookup idiom of 0xe8de0) 13 (only the cross flips; SIB, reloads and sum stay); the vehicle
+// pointer refreshed after the velocity call and tested through it 500 (1993 bytes); the kind loop bounded with `!=` 10;
+// the final overlay loop with its own for-scoped counter (the kind loop keeping the shared one) 13.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
