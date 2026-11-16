@@ -1006,6 +1006,8 @@ union solver_pointer_phase_31c940
 };
 // Review cleanup: ordinary score 2397 (was 1675); no volatile or goto tuning.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
+// Retail directly tests for friction opcode 8 after the second normal pair;
+// the structured implementation below still returns through generic dispatch.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
