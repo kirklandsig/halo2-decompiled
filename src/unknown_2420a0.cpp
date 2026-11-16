@@ -1607,6 +1607,10 @@ void function_2422d0(long slot)
 // bytes); a `short` count 80 (284 bytes; the swap stays); result and count assigned after the memset 7 (same code); the
 // arrays declared slot table first, count before result 9. Re-measured: no slot local 79 (count then takes EBX and the
 // team walker a stack slot). The index/object pair stays EDI/EBP against retail's EBP/EDI in every form.
+// Round 129 (m3 lane 9, fast): a per-iteration team array base (`teams = ...->teams`, then `teams[i]`) 7; the reject arm
+// in retail's store order (`others[count] = index; result = false; count++;`) 7; a `byte` result 18 (289 bytes); a
+// `register` object pointer 7; the object looked up from the team entry first and the index read from the entry after
+// the slot read 7 (all the 7s the same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {

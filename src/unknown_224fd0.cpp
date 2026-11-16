@@ -79,6 +79,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
+// still hoist and spill the sine products where retail keeps them in registers, and the jump table
+// still sits four bytes earlier than retail's.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax G (11-05): the rotation helper with retail's statement order gives 342, with forward.i moved ahead of the cross products and the products re-associated 228, and with scalar locals for the squares and the sine products 342/418/510; the case bodies' scheduling and the four-byte table placement stay unmatched; no new form, no lower score.
 // MiniMax S (11-06): moving the shared tail's two outputs out of the rotation helper into the caller scores 352 against the baseline's 244 in the fast check; no lower score, the helper and the body stay.
@@ -303,6 +306,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // sine/cosine as `real const` parameters 219; ij/ik/jk declared at the helper's top 219; the diagonal terms written
 // square first 219 (a repeat of round 76). Retail's first case follows the helper's statement order nearly one for one
 // (k^2, k*s, i^2, j*s, s*i, forward.i, then ij as (j*C)*i); ours hoists the three sine products first.
+// P567: Ordinary inline metadata at existing cache/scalar/perpendicular/composition
+// providers, four isolated, three pairs and all: eight 219. NOT kept: unchanged
+// native square/sine/cosine spills and table placement; all declarations and bodies restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

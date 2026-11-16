@@ -468,6 +468,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // [match] (same code); `if (++count > 0x200)` with `start += (long)string` after the clamp 40 [match]; one combined guard with the
 // length call and `start +=` after the clamp 40 [match]; the increment folded into the compare (`start + count++ <= length`) 31
 // [6]; `result = true` before the copy with `start + string` at the copy 38 (102 bytes) [6].
+// M3 lane 2 r90 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the length bound to a `long const &`
+// 21 [match] (same code); the source as a `char const *const &` to `(char const *)string + start` after the compare 32 [6]
+// (start arrives in EDX); the count used through a `long &` 27 [39] (237-byte caller); the start used through a `long const &`
+// 26 [25]; the early source as `&string[start]` with the compare as `count + start` 21 [match].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -514,6 +514,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // inclusive/exclusive 8/11; `register` on the index, exclusive 11; the flags test as `(flags & 1) == 0`, exclusive 11. The
 // state pointer after the scan takes EBP in both builds: retail gives EBP to the index (its zero also serving the guard and
 // the NULL store, the first extended index a separate `xor eax, eax` after the guard), ours to the count.
+// Round 125 (m3 lane 16, fast; control 8): the exclusive bound with the element as a reference (`s_vehicle_seat_definition
+// &candidate = tag->seats[i];`) 11; the scan in a forced-inline helper that takes the object index and looks the object and tag
+// up again 151 (557 bytes: the lookups are not merged); the exclusive bound against `long const &seat_count = tag->seat_count;`
+// 11; the seats pointer as a reference in the loop 11; the whole tag as a const reference (`tag.` at every use, exclusive) 11.
+// Reading: in every exclusive form the first extended index's zero (EAX) is placed ahead of the guard, so the guard compare and
+// the NULL store take it; retail places that `xor eax, eax` after the guard, leaving the index's own zero (EBP) for both.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -801,6 +807,11 @@ extern "C" void _ReadWriteBarrier(void);
 // 52/57 (215/218 bytes); the actor looked up at each use with no actor local, no barrier, 77 (229 bytes); the flags test
 // as `(state->flags & 4) == 4` 6 and the busy test as `NONE == actor->unknown26c` 6 (same code). No existing helper
 // reads the 0x26c index or writes this arm's fields, so no existing inline call is there to stand in for the barrier.
+// Round 125 (m3 lane 16, fast; control 6): without the barrier, a second actor lookup for the NONE block's stores 46 (212
+// bytes); the state as a const reference with the barrier 6 (same code); the actor as a reference without the barrier 44
+// (208); the busy actor as an early `actor->unknown450 = ...; return;` with the rest unnested, without/with the barrier
+// 46/14 (212/209). Matched callbacks with retail's exact entry (the slot loaded between the data-base load and the mask:
+// 0x1b4490, 0x1b7860, 0x1c10f0) all use the slot on every path; here it is used only under the 0x26c test.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1519,6 +1530,10 @@ void function_1f86a0(long actor_index);
 // MiniMax I (11-15): no new form, no lower score (134): retail keeps the loop entry in EBX and spills the masked flags
 // byte to F+3, ours keeps the mask in BL and reloads the entry from F+0; the source order of the two is the same, so the
 // frame difference (0x10 against 0x14) follows from that allocation alone, and no spelling of the mask moves it.
+// MiniMax D (11-16): no new form, no lower score (134): the mask byte as a short gives 253 (it is then stored as a
+// dword at F+0x18), so retail's 0x14 frame is reached only when the byte itself is spilled at F+3 - that is what
+// keeps our mask in BL and our loop entry in memory where retail keeps the entry in EBX; no form of this body
+// moves the byte out of BL.
 // score 134 (was 134): MiniMax R (11-15): no new form, no lower score; the frame is still 0x10 against retail's 0x14
 // and retail still takes the object pool base in the prologue where this build reads it in the middle of the opening,
 // and the lookup's memory summary belongs to 0xbaf40, whose body is in src/unknown_0bad50.cpp: BLOCKED-BY that file.

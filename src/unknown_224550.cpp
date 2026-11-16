@@ -629,6 +629,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 194 and as four if/else-if statements 194 (both the same code); the UV encoder (function_x0ec080) `__forceinline` 194, with
 // sprite_flip `__forceinline` too 194 (same code); the four 16-byte locals declared at the top in the order uv_b, uv_a,
 // geometry, tint 194 (same code). The tint (+0x60, retail +0x50) and the second set (+0x50, retail +0x60) keep their homes.
+// P567: Standard ordered lower/upper/paired-aspect test providers, subsets 1/2/4/3/5/6/7,
+// then complete opposite relations: 493/490/617/482/608/621/634/634. NOT kept: no byte
+// match or native tint/secondary-UV/blend home repair; original complete body and captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

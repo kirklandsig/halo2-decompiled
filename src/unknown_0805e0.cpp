@@ -455,6 +455,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // early returns and a successor local 49, in a guarded do-while with result and break 43; the nested ifs in `while
 // (!result && index != NONE)` with a successor local stepped at the end 37 (player on the stack, ret 8, `mov al, 1; test
 // al, al` not threaded; callers 27/15). Original body restored.
+// MiniMax R (11-16): no new form, no lower score (43): retail keeps the index in esi scaled in place with the
+// successor in ebx and the entry's flags in ecx, while this build keeps the index and the successor in ecx and reads
+// the flags into eax.
 // P529: Existing offline-identity predicate returns its original comparison as
 // char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
 // NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit

@@ -1338,6 +1338,16 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // third is retail's plus its inner `test eax, eax; je`), JGS 76 (368 B), JSF 3 (only the third loop's offset zeroed before
 // its guard), JSW 3 (the same), JTG 44 (368 B). So a guard + nonzero-count for in the third position costs one zero use
 // and leaves loops 1 and 2 exact; its redundant inner test is the only difference there.
+// M3 lane 4 r205 (fast with 0x13a532, 0x1393f3; SSS = three guarded do-whiles as 0x13a532): SSS with loop 1's offset named
+// local_8/a_offset/z_offset/local_0/offset 118 each (names do not break the tie); SSS with the later loops' offset and count
+// typed dword/dword, dword/long, long/dword, int/int, or loop 1's dword/dword, 118 each (the zero is shared across types);
+// the four masks zeroed by one chained assignment, local_3 first 5 (store order) or local_6 first 1 (same code), on SSS 122/118;
+// SSS with a `>= 1` guard on loop 1/2/3 120/119/119 (`cmp eax, 1`); `!(count <= 0)` on loop 3 118. Diagnostic (not kept): SSS
+// with one mask left uninitialised gives retail's three loops exactly (the guard's `cmp eax, ebx`, loop 1's offset in EBX,
+// loops 2 and 3 `test` then `xor ebx, ebx`) less the store: retail is SSS with one zero-constant use fewer than ours.
+// Also r205: loop 1's draw call through a file-local bool wrapper (inline or forceinline) on SSS 118/118, on the current body 1.
+// Also r205: the definition as a const reference on SSS 118, on the current body 1; loop 1's element through a
+// `byte const &` on SSS 118.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

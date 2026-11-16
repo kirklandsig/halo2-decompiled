@@ -789,6 +789,13 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // MiniMax C (11-15): no new form, no lower score (348): retail's destructive graph-base reloads and its final
 // return-byte normalization are still the whole difference, and this body only calls the graph lookup that owns the
 // name record (src/unknown_1dacb0.cpp), which this lane may not edit, so the local spellings cannot move them.
+// P558: Deep fallback negative-continuation masks 8..14, then all five query predicates at mask 31:
+// 362/433/396/533/375/431/394/532. NOT kept: no native graph/base or return equality; original complete
+// fallback chain, query snapshots, byte status, request producer and full body restored.
+// P570: Provisional fallback truth before ordered queries, terminal failure clears it,
+// original success merges afterward; byte/char/signed-char/bool/word/short/long/dword:
+// 643/643/643/643/643/643/643/643. NOT kept: matching lookup prefix and request graph/base
+// homes regress; original success stores, shared request call and complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

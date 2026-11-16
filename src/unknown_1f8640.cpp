@@ -817,6 +817,19 @@ struct s_1f8a70_actor
 // phases 380/395/339/214; backward counterparts 383/421/381/231.
 // NOT kept: all regress and shorten away from retail; original copies,
 // cases, two results and returned-unit temporary restored.
+// M3 lane 11 r108 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; control 182): the 0xe70b0
+// result named in its block with route_found declared just before the mode switch 199 (the state homes at +0x10 and is
+// compared from the frame; retail compares through the returned pointer, so retail's is the call's temporary); the
+// admission as an or of two and-chains 182 (same code); the admission stored in route_found itself (`if (route == 0)
+// route_found = radius || node; else route_found = route > 0 && route <= 2; if (route_found) switch ...`) 182 (same
+// code); the three early `return true` paths as `result = true` arms of an else-if chain with the route path returning
+// route_found itself 430 (1680 bytes: the first arm keeps retail's BL, but the true exits then go through BL too);
+// route_found initialised false at its declaration with no store at `failed:` 182 (same code). Reading of the listing:
+// retail's first arm keeps `result` in BL (two defs reach its return) while both route exits return the frame byte
+// (`mov al, [esp + 0x12]`), so retail's route path returns route_found itself and some other path still assigns result.
+// P558: Actual unit-value/route-result phase union, bool/byte/short/word outcomes in both member orders:
+// 400/400/398/398/303/303/303/303. NOT kept: unmatched phase overlay and unit capture; original
+// returned-unit temporary, independent two-result flow and complete body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

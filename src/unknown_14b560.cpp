@@ -786,6 +786,7 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax E (11-16): no new form, no lower score (43): the datum iterator's data pointer still takes ebx where retail takes edi, and that register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
 // MiniMax I (11-16): no new form, no lower score (43): the difference still opens inside the root walk, whose
 // body is the out-of-line 0xbaf40 in src/unknown_0bad50.cpp - the datum iterator's data pointer takes EBX here
 // where retail takes EDI - and that file and include/data_iterator.h are outside this lane's queue.
@@ -1246,6 +1247,9 @@ bool function_14ed80(void)
 // read at each use, `third` declared just before the bound test 68 (149 bytes: first EDX and the global ESI as retail,
 // third in ECX and the third-person output moved to a register; 0x14f0f0 40), after the player 52 (third ESI, global EDI),
 // before the remap 64 (153 bytes).
+// M3 lane 8 r173 (fast with 0x14f0f0 and 0x14f2e0): `long third = first;` 8 (same code); the clamp's maximum computed before the
+// index read in its arm 8 (same code); the representation as `representations + index` with third read first 9 (re-measured
+// on the full build; listed from the harness); the bound test as `count > index` 9; the clamp as `maximum < index` 10.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -2550,6 +2554,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax E (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this build inlines 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
 // MiniMax I (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 - retail
 // holds two request homes and eight bytes more of small homes than this build's one request home - and the
 // 0xccd20 and 0x151b80 calls this build expands are still expanded here; giving the 0x16 request its own
@@ -3111,6 +3116,7 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax E (11-16): no new form, no lower score (103): our build keeps the players-globals pointer in edi across both loops where retail keeps it in esi and reloads it late, and retail inlines the status test that this build calls out of line; that callee lives in src/unknown_13bf00.cpp, and the stubs 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20.
 // MiniMax I (11-16): no new form, no lower score (103 on the full build, 193 on the reduced one): the globals
 // pointer still ends up in EDI where retail keeps it in ESI, and the two loops still swap the datum and unit
 // registers with it; the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may not

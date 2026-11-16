@@ -598,6 +598,11 @@ struct s_1af5c6
 // `!flag && field != NONE` test 29 (the mask temp moves to ECX as retail's, but the flag byte goes to BL, as round 95's
 // copy); the product test as an if with returns 20 (same code); the leaf index named and the cluster chosen by a ternary
 // 20 (same code). Diagnostic (listed form): the distance renamed `distance` 20. Still BLOCKED-BY 0x1c8df0's call-site inlining.
+// Round 188 (m3 lane 5, fast with the file's functions, 0x1af810, 0x1b2770 and 0x1c8df0; control 20): the second lookup indexed
+// by the prop node's field with the object index assigned after it 20 (same code); the ignore index chosen by one combined
+// if/else (`!flag && field != NONE`) 123 (585 bytes); the 0x1e3b00 arm first (`(short)arg_3 != 0`) 39; the source record's
+// NONE store after the point copy 23; 0x2640c0 given the prop node's field directly 39. Still BLOCKED-BY 0x1c8df0's call-site
+// inlining (src/unknown_1c8df0.cpp is another lane's file this round).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
