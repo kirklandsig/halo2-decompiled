@@ -178,7 +178,13 @@ public:
 
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
-// score 149 (was 250): the tolerance is copied once into a constant and both
+// score 101 (was 149): each of the three edge groups is a block with its own `edge`
+// and `lengths` (retail keeps the third group's edge in a different slot from the
+// first two, so they are separate variables), and the first group's last sum has
+// its terms in retail's order. Left: the 0x20/0x30 slots are swapped, the two
+// constants sit in each other's slots, and the term order of the other eight sums
+// (a single-expression sum is reordered by the compiler whatever the source order).
+// Before, 149 (was 250): the tolerance is copied once into a constant and both
 // face tests take its address (the compiler then reuses the vector as retail
 // does), the absolute axes are filled in index order, and the parallel
 // separation is declared before its limit. Stack homes of the axes and two
@@ -263,62 +269,72 @@ answer_306580 class_306580::function_306580()
 	vector_306580 squares_z;
 	squares_z.set(axes[2].m128_f32[2], axes[1].m128_f32[2], axes[0].m128_f32[2]);
 	squares_z.value = _mm_mul_ps(squares_z.value, squares_z.value);
-	__m128 lengths;
-	__m128 edge;
 
 	// the first box's x axis across each of the second's
-	((box_305b30 const *)this)->function_305b30(&edge, 1, 2);
-	reach.set(a[2].m128_f32[2] * first_extents.m128_f32[1] + a[2].m128_f32[1] * first_extents.m128_f32[2] + a[1].m128_f32[0] * second_extents.m128_f32[0] + a[0].m128_f32[0] * second_extents.m128_f32[1],
-		a[1].m128_f32[2] * first_extents.m128_f32[1] + a[1].m128_f32[1] * first_extents.m128_f32[2] + a[2].m128_f32[0] * second_extents.m128_f32[0] + a[0].m128_f32[0] * second_extents.m128_f32[2],
-		a[0].m128_f32[2] * first_extents.m128_f32[1] + a[0].m128_f32[1] * first_extents.m128_f32[2] + a[1].m128_f32[0] * second_extents.m128_f32[2] + a[2].m128_f32[0] * second_extents.m128_f32[1]);
-	lengths = _mm_add_ps(squares_z.value, squares_y.value);
-	function_305940((float *)&lengths);
-	edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
-	exceeds_306580(&edge, &tolerance, &separated);
-	if (separated)
 	{
-		return answer_306580(false);
+		__m128 edge;
+		__m128 lengths;
+		((box_305b30 const *)this)->function_305b30(&edge, 1, 2);
+		reach.set(a[2].m128_f32[2] * first_extents.m128_f32[1] + a[2].m128_f32[1] * first_extents.m128_f32[2] + a[1].m128_f32[0] * second_extents.m128_f32[0] + a[0].m128_f32[0] * second_extents.m128_f32[1],
+			a[1].m128_f32[2] * first_extents.m128_f32[1] + a[1].m128_f32[1] * first_extents.m128_f32[2] + a[2].m128_f32[0] * second_extents.m128_f32[0] + a[0].m128_f32[0] * second_extents.m128_f32[2],
+			a[2].m128_f32[0] * second_extents.m128_f32[1] + a[1].m128_f32[0] * second_extents.m128_f32[2] + a[0].m128_f32[2] * first_extents.m128_f32[1] + a[0].m128_f32[1] * first_extents.m128_f32[2]);
+		lengths = _mm_add_ps(squares_z.value, squares_y.value);
+		function_305940((float *)&lengths);
+		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
+		exceeds_306580(&edge, &tolerance, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
+		edges[0][0] = edge.m128_f32[0];
+		edges[1][0] = edge.m128_f32[1];
+		edges[2][0] = edge.m128_f32[2];
 	}
-	function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
-	edges[0][0] = edge.m128_f32[0];
-	edges[1][0] = edge.m128_f32[1];
-	edges[2][0] = edge.m128_f32[2];
 
 	// the first box's y axis across each of the second's
-	((box_305b30 const *)this)->function_305b30(&edge, 2, 0);
-	reach.set(a[1].m128_f32[1] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[1] * second_extents.m128_f32[1] + a[2].m128_f32[2] * first_extents.m128_f32[0],
-		a[0].m128_f32[1] * second_extents.m128_f32[2] + a[2].m128_f32[1] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[2] + a[1].m128_f32[2] * first_extents.m128_f32[0],
-		a[1].m128_f32[1] * second_extents.m128_f32[2] + a[0].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[2] * first_extents.m128_f32[0] + a[2].m128_f32[1] * second_extents.m128_f32[1]);
-	lengths = _mm_add_ps(squares_z.value, squares_x.value);
-	function_305940((float *)&lengths);
-	edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
-	exceeds_306580(&edge, &tolerance, &separated);
-	if (separated)
 	{
-		return answer_306580(false);
+		__m128 edge;
+		__m128 lengths;
+		((box_305b30 const *)this)->function_305b30(&edge, 2, 0);
+		reach.set(a[1].m128_f32[1] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[1] * second_extents.m128_f32[1] + a[2].m128_f32[2] * first_extents.m128_f32[0],
+			a[0].m128_f32[1] * second_extents.m128_f32[2] + a[2].m128_f32[1] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[2] + a[1].m128_f32[2] * first_extents.m128_f32[0],
+			a[1].m128_f32[1] * second_extents.m128_f32[2] + a[0].m128_f32[0] * first_extents.m128_f32[2] + a[0].m128_f32[2] * first_extents.m128_f32[0] + a[2].m128_f32[1] * second_extents.m128_f32[1]);
+		lengths = _mm_add_ps(squares_z.value, squares_x.value);
+		function_305940((float *)&lengths);
+		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
+		exceeds_306580(&edge, &tolerance, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
+		edges[0][1] = edge.m128_f32[0];
+		edges[1][1] = edge.m128_f32[1];
+		edges[2][1] = edge.m128_f32[2];
 	}
-	function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
-	edges[0][1] = edge.m128_f32[0];
-	edges[1][1] = edge.m128_f32[1];
-	edges[2][1] = edge.m128_f32[2];
 
 	// the first box's z axis across each of the second's
-	((box_305b30 const *)this)->function_305b30(&edge, 0, 1);
-	reach.set(a[1].m128_f32[2] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[2] * second_extents.m128_f32[1] + a[2].m128_f32[1] * first_extents.m128_f32[0],
-		a[0].m128_f32[2] * second_extents.m128_f32[2] + a[2].m128_f32[2] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[1] + a[1].m128_f32[1] * first_extents.m128_f32[0],
-		a[1].m128_f32[2] * second_extents.m128_f32[2] + a[0].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[1] * first_extents.m128_f32[0] + a[2].m128_f32[2] * second_extents.m128_f32[1]);
-	lengths = _mm_add_ps(squares_y.value, squares_x.value);
-	function_305940((float *)&lengths);
-	edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
-	function_305900(&edge, &tolerance, &separated);
-	if (separated)
 	{
-		return answer_306580(false);
+		__m128 edge;
+		__m128 lengths;
+		((box_305b30 const *)this)->function_305b30(&edge, 0, 1);
+		reach.set(a[1].m128_f32[2] * second_extents.m128_f32[0] + a[2].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[2] * second_extents.m128_f32[1] + a[2].m128_f32[1] * first_extents.m128_f32[0],
+			a[0].m128_f32[2] * second_extents.m128_f32[2] + a[2].m128_f32[2] * second_extents.m128_f32[0] + a[1].m128_f32[0] * first_extents.m128_f32[1] + a[1].m128_f32[1] * first_extents.m128_f32[0],
+			a[1].m128_f32[2] * second_extents.m128_f32[2] + a[0].m128_f32[0] * first_extents.m128_f32[1] + a[0].m128_f32[1] * first_extents.m128_f32[0] + a[2].m128_f32[2] * second_extents.m128_f32[1]);
+		lengths = _mm_add_ps(squares_y.value, squares_x.value);
+		function_305940((float *)&lengths);
+		edge = _mm_mul_ps(lengths, _mm_sub_ps(edge, reach.value));
+		function_305900(&edge, &tolerance, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
+		edges[0][2] = edge.m128_f32[0];
+		edges[1][2] = edge.m128_f32[1];
+		edges[2][2] = edge.m128_f32[2];
 	}
-	function_305990(&edge, &parallel_separation, &lengths, &parallel_limit);
-	edges[0][2] = edge.m128_f32[0];
-	edges[1][2] = edge.m128_f32[1];
-	edges[2][2] = edge.m128_f32[2];
 	return answer_306580(true);
 }
 
