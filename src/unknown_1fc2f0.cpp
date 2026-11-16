@@ -201,6 +201,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax C (11-16): no new form, no lower score (32): the correction through the existing vector3f_add_scaled straight
+// into the output 97 (348 bytes) and the deltas i, j, k (79 in the earlier rounds: retail's velocity stores and its
+// (k + j) + i sum, but the rate chains and tick products then run i, j, k) leave the chain order tied to the component
+// the first delta reads, so retail's j, i, k chains with its i, j, k deltas still have no source form in this file.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax I (11-14): no new form, no lower score (32): retail's rate chains and tick products run j, i, k while its velocity stores and deltas run i, j, k and the squared length sums (k + j) + i; our deltas j, i, k keep retail's chains but the stores and the sum follow the delta order, and deltas i, j, k give retail's stores and sum but move the chains to i, j (79), so one source order cannot give both.
