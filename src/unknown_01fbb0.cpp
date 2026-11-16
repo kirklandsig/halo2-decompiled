@@ -123,6 +123,9 @@ PRIVATE inline void timed_effect_point_fallback(point3f *point)
         *point = *g_468720;
 }
 
+// MiniMax E (11-16): matches retail byte for byte (score 0, was 19): the eight interpolation
+// destinations each get their own named pointer local, and this build then stores each
+// interpolated value before it loads the next pair of inputs, as retail does.
 // score 19 (was 454): same size and instructions; retail stores each interpolated value
 // before it loads the next pair of inputs, where ours loads one input ahead of the store.
 // @retail 0x1fd20
@@ -139,9 +142,13 @@ s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
             ? (real)PIN((g_4858a0 - globals->unknownd0) / (globals->unknownd4 - globals->unknownd0), 0.0, 1.0)
             : 1.0f;
 
-        timed_effect_interpolate(globals->unknownb0, globals->unknownb4, fraction0, &globals->unknown04);
-        timed_effect_interpolate_clamped(globals->unknownc0, globals->unknownc4, fraction1, &globals->unknown10);
-        timed_effect_interpolate_clamped(globals->unknownc8, globals->unknowncc, fraction1, &globals->unknown14);
+        real *result04 = &globals->unknown04;
+        real *result10 = &globals->unknown10;
+        real *result14 = &globals->unknown14;
+
+        timed_effect_interpolate(globals->unknownb0, globals->unknownb4, fraction0, result04);
+        timed_effect_interpolate_clamped(globals->unknownc0, globals->unknownc4, fraction1, result10);
+        timed_effect_interpolate_clamped(globals->unknownc8, globals->unknowncc, fraction1, result14);
 
         timed_effect_point_fallback(&globals->unknown18);
 
@@ -204,11 +211,17 @@ s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
         real fraction4 = 0.0f;
         if (globals->unknown128 != globals->unknown124)
             fraction4 = (real)PIN((g_4858a0 - globals->unknown124) / (globals->unknown128 - globals->unknown124), 0.0, 1.0);
-        timed_effect_interpolate(globals->unknownfc, globals->unknown100, fraction4, &globals->unknown4c);
-        timed_effect_interpolate(globals->unknown104, globals->unknown108, fraction4, &globals->unknown50[0]);
-        timed_effect_interpolate(globals->unknown10c, globals->unknown110, fraction4, &globals->unknown50[1]);
-        timed_effect_interpolate(globals->unknown114, globals->unknown118, fraction4, &globals->unknown50[2]);
-        timed_effect_interpolate(globals->unknown11c, globals->unknown120, fraction4, &globals->unknown50[3]);
+        real *result4c = &globals->unknown4c;
+        real *result50_0 = &globals->unknown50[0];
+        real *result50_1 = &globals->unknown50[1];
+        real *result50_2 = &globals->unknown50[2];
+        real *result50_3 = &globals->unknown50[3];
+
+        timed_effect_interpolate(globals->unknownfc, globals->unknown100, fraction4, result4c);
+        timed_effect_interpolate(globals->unknown104, globals->unknown108, fraction4, result50_0);
+        timed_effect_interpolate(globals->unknown10c, globals->unknown110, fraction4, result50_1);
+        timed_effect_interpolate(globals->unknown114, globals->unknown118, fraction4, result50_2);
+        timed_effect_interpolate(globals->unknown11c, globals->unknown120, fraction4, result50_3);
 
         for (long i = 0; i < 4; i++)
         {
