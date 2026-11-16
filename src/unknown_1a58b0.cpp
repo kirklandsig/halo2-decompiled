@@ -715,6 +715,11 @@ void function_1a6d80(void)
 // read of the table entry 59 (124 bytes); the count stored before the call and the call given `*count` 12; `long type = id;`
 // for the handler and both table reads 6 (same code); `__assume(node_count >= 0)` before the call, `__assume(valid && count)`
 // at the top 6/6 (diagnostics: no code-less allocation step; harness `__assume(id >= 0)` and `__assume(nodes != NULL)` 6/6).
+// M3 lane 4 r204 (fast with 0x1a71f0, 0x1a77a0, 0x1a78a0, 0x1a79e0): the node count typed `char` 6 (same code); a named
+// `short` node index with the list address written out at the call and at the return 21 (104 B), the index `long` 12
+// (the table's index load takes ECX and the list moves after `push esi`); the handler index read before the actor lookup
+// 28 (`id` becomes a register argument: 0x1a77a0 50, 0x1a78a0 73, 0x1a79e0 53); the count read first, then a named
+// `short` node index and the list from it 6 (same code).
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
