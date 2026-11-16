@@ -1297,6 +1297,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
 // `field_x50962e != NONE` test 258 (all same code but the label form).
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
