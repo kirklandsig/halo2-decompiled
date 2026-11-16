@@ -3818,9 +3818,19 @@ void function_129100(s_voice_position_batch *batch, vector3f **buffers, vector3f
 	}
 }
 
-struct s_animation_state;
 struct s_animation_ref;
-void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
+
+struct s_animation_state
+{
+	byte unknown00[4];
+	char a;
+	char b;
+	word c;
+
+	void function_2192b0(s_animation_ref *ref, byte value);
+	void function_219310(s_animation_ref *ref, short value);
+};
+
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
 // score 24 (was 24): the loop is a for statement whose increment reloads the pool and advances the index, the
@@ -4049,7 +4059,7 @@ void function_1282d0(void)
 					{
 						if (!(bool)((*(word *)((byte *)function_221810(definition->promotion_index) + 0xa) >> 5) & 1) &&
 							(short)function_2193d0((s_animation_state *)range, (s_animation_ref *)definition) == NONE)
-							function_219310((s_animation_state *)range, (s_animation_ref *)definition, sound->permutation_index);
+							((s_animation_state *)range)->function_219310((s_animation_ref *)definition, sound->permutation_index);
 						function_127320(sound_index, 0xe);
 					}
 					break;
