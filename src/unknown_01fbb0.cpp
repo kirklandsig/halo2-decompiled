@@ -125,6 +125,9 @@ PRIVATE inline void timed_effect_point_fallback(point3f *point)
 
 // score 19 (was 454): same size and instructions; retail stores each interpolated value
 // before it loads the next pair of inputs, where ours loads one input ahead of the store.
+// Interpolation/clamped/both field-reference inputs 255/382/385; scalar
+// interpolation/clamped/both results 255/19/255; overlap-safe fallback copy
+// 354, library fallback copy 19. Original helpers and complete body restored.
 // @retail 0x1fd20
 s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
 {

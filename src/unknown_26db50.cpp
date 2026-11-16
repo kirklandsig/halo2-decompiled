@@ -945,6 +945,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // whole-object direction/world transfers, then both component-range forms: 127/142/246/134/246/140/246/134.
 // NOT kept: no native rotation/publication improvement; original full body and headers
 // restored. Native 0xd8 frame/1089-byte extent retained; rotation SIMD roles and marker timing remain.
+// Elevation output/axis/paired/range cursors 71/45/71/189; trace
+// origin/direction/output cursors 45/77/77; collision output cursor 71.
+// NOT kept: ties or regressions; original indexed elevation and full body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
