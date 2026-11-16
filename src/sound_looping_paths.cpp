@@ -561,6 +561,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P559: Declared sound/choice level vectors, paired storage and existing whole-copy/scale/default producers:
 // 846/846/846/938/916/850/925/868. NOT kept: unmatched record/producer shape; native entry zero/query/count
 // homes unresolved; original records, helpers and complete body restored.
+// P561: Original negative duplicate-search flag in char/signed-char/byte/short/word/int/long/dword:
+// 846/846/846/915/915/846/846/846 at 3327/3327 bytes. NOT kept: no native entry zero/count/query
+// residence or exact bytes; original bool flag, helpers and complete executable body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -1139,6 +1139,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P541: Existing profile/animation-matrix automatic, ordinary and forced expansion declarations:
 // 126/684/126/779/126/684/779/1272. NOT kept: ties or forced expansion grows frame/extent; direction-j preload and length/zero homes remain.
 // Original complete executable source and existing helper contracts restored.
+// P561: Complete entry time-state active/inactive outcome in bool/byte/short/long:
+// eight 395 at 1700/1696 bytes. NOT kept: all regress and grow beyond native extent;
+// original command stores, time observations, projection and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

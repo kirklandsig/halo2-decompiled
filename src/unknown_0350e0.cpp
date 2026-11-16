@@ -4443,6 +4443,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // P559: Actual paired final-query output record, fade/active orders with aggregate/field/value/memset
 // defaults: 70/70/70/70/70/70/70/70. NOT kept: unmatched grouped outputs; no native final-query scratch/frame
 // equality; original direct fade and complete body restored.
+// P561: Initial query byte outputs owned by each switch case, paired/either output,
+// case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
+// NOT kept: no native frame word or final scratch recovery; original common
+// byte outputs, final direct fade path and complete executable body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
