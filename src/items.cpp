@@ -791,6 +791,9 @@ struct s_item_collision_bsp
 // shared signed ordinal 207 (receiver/selector revisited after query-width repair).
 // NOT kept: fallback copies gain only two/four and the receiver only six, below
 // eight above 30; original complete body, observations and calls restored.
+// P564: Actual instance-table base captures or two-step advanced receivers, mutable/readonly
+// and existing/direct matrix consumers: 201/288/201/288/192/192/192/192. NOT kept: six-point best below
+// threshold; base/direct forms also raise controls. Original instance reads, plane math and body restored.
 // MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
 // changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
 // [esp+0xac] after the two pushes). Body back to main.
@@ -1221,6 +1224,7 @@ struct s_item_flags_view_10b850
 // sits 0x28 higher; the marker's address and the block copy's source are at the same distance from the entry stack pointer
 // in both, so the forty spare bytes lie below the homes and the rest of the gap is in the block bodies, which this round
 // did not move.
+// MiniMax E (11-16): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, retail keeps the two entry flags in stack bytes where this build holds them in registers, and the item walk still differs.
 // score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
 // the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
 // before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
@@ -1479,6 +1483,10 @@ struct s_item_flags_view_10b850
 // P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
 // unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
 // frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
+// P571: Actual flow-magnitude nonzero/zero decision at its consumer, bool/byte/short/long:
+// 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
+// point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
+// complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

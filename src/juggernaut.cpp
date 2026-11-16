@@ -247,6 +247,9 @@ void juggernaut_set(long player_index, bool juggernaut)
 // Round 128 (m3 lane 9, fast): the exclusion test ahead of the bit test 29; the bit test's operands swapped (`(1 << index)
 // & players`) 20; the candidate test's `||` operands swapped (flags first) 76 (249 bytes); the candidate stored from
 // `iterator.index` 20; an `int` count 20 (all the 20s the same code).
+// Round 129 (m3 lane 9, fast): a const player pointer 20; the bit mask cast to `word` 62; the bit test through
+// TEST_FIELD_BIT 20; 0x15db30 with early returns in place of its result local 20 (0x15db30 itself 24 at 60 bytes, so not
+// usable); count renamed candidate_count 20. Diagnostic: without the 0x15db30 call count takes EDI and the pointer EBP.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

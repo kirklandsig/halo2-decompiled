@@ -476,6 +476,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 
 // score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
+// MiniMax R (11-16): no new form, no lower score (218): retail copies the pathfinding root into EBX and takes the actor value from a stack slot at the entry, where this build keeps the root in EAX and reads the actor in the case body, so the vertex loads and the cross product's float schedule follow that allocation.
 // MiniMax R (11-15): no new form, no lower score (218): the entry still hands the pathfinding root over in the register the compiler picks instead of saving it in ebx, and the actor index is still not read into eax before the dispatch; the paired-edge block still keeps the vector's j and k in the other two xmm registers (retail: xmm3 = j, xmm4 = k and the 1.0f in xmm6; here xmm3 = k, xmm4 = j and the constant in xmm7); ten new spellings of the root local, the actor local, the case-5 statement order and the projection operand order all scored 218 or worse.
 // MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding
 // argument into EBX and reads the actor index into EAX there, while this build keeps the pathfinding in EAX and
@@ -971,6 +972,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // corners 287 (1284 bytes: actor_index loaded at entry, pathfinding again arriving in EDX); on that, the surface as a
 // reference 287. A scan of matched retail entries found the `mov ebx, eax` + stack-argument load into EAX only where the
 // argument is used in the entry block itself (0x270930, 0x105a80, 0x10f430, 0x20d220).
+// P565: Actual two-edge difference/normalization tables, long/dword/short/word/byte/char for,
+// then long/short while: 369/369/367/367/371/371/369/367. NOT kept: intermediate grouping and
+// changed lifetime do not match native ingress/frame; six forms raise caller 286 to 313.
+// Original helpers and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

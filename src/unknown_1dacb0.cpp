@@ -1090,6 +1090,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
 // score 828 (was 828; m3 lane 8 r164 and r166 at the end): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// m3 lane 3 r250 (fast with 0x1dd560/0x1dd9d0, control 828; masked = registers and stack offsets masked, aligned):
+// ours homes iterator_mode in found_mode's argument slot where retail homes the per-pass candidate there. The candidate
+// dropped with `result = named ? named->animation_id : c_type_709360();` 978; the same as if/else 977 (retail's 2825 B,
+// masked 102 against 72); the weapon_class NONE test as `if (weapon_class != NONE) { ... }` 1040 (lane 14 r43's single exit,
+// re-measured); 0x1dc790's matched loop shape (iterate ahead of `while (!found && entry)`, iterate again in the else arm)
+// with the early return kept 995 (2825 B and retail's 1011 instructions, masked 86); that loop with the if/else result 998.
 // NOT kept (coordinator review, MiniMax G 11-13): 828 -> 807 came from grouping the three resolved outputs into one
 // `long resolved[3]` array (an aggregate grouping locals: kept only with a byte match); the three named locals stay.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,

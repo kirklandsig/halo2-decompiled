@@ -621,6 +621,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P556: Actual escaped velocity/query/impact object references, then contact relative-velocity/
 // normal-force/accumulated-force/lever-arm/torque field lvalues: 1375/1391/1375/1379/1429/1379/1431/1398.
 // NOT kept: no native frame recovery or equality; complete body, input captures and existing kernels retained.
+// Round 112 (m3 lane 10; fast on the reduced image, whose control reads 1392 at frame 0x5cc): the magnitude helper with
+// double-promoted products through the pointer, no snapshot copy, 1596 (6006 bytes, frame 0x590: each component is loaded
+// once, `fld st(0); fmul st(1)`); with float products through the pointer 1637 plain (5974 bytes, frame 0x590): every
+// magnitude is then retail's own `movss [esp+X], xmm; fld [X]; fmul [X]` from the vector's home (the first at retail's
+// 0x80/0x7c/0x78), so retail has no snapshot copy; the stack disp32/disp8 use counts then agree (133/199 against
+// 133/192), so the 264 missing bytes are block layout and contact-record addressing, not the frame (lead for a
+// rewrite on that basis). The helper taking its vector by value 1392 (same code as the copy); the two contact arrays
+// declared at the top 1392 (same code); the impact direction through the float normalizer in place of the
+// double-accumulating one 1454 (6307 bytes, frame 0x5dc). All restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
