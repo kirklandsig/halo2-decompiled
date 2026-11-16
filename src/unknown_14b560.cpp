@@ -1243,6 +1243,9 @@ bool function_14ed80(void)
 // read at each use, `third` declared just before the bound test 68 (149 bytes: first EDX and the global ESI as retail,
 // third in ECX and the third-person output moved to a register; 0x14f0f0 40), after the player 52 (third ESI, global EDI),
 // before the remap 64 (153 bytes).
+// M3 lane 8 r173 (fast with 0x14f0f0 and 0x14f2e0): `long third = first;` 8 (same code); the clamp's maximum computed before the
+// index read in its arm 8 (same code); the representation as `representations + index` with third read first 9 (re-measured
+// on the full build; listed from the harness); the bound test as `count > index` 9; the clamp as `maximum < index` 10.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
