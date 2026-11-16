@@ -78,6 +78,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
 // MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
 // MiniMax E (11-15): no new form, no lower score (106): the old maximum read as a nested if instead of the conditional expression 111 (the maximum stays in EAX against retail's ECX); retail keeps the enable byte in AL and the maximum in ECX, loads the counter's word with `xor eax,eax; mov ax,[...]` against our zero-extended load, increments `word ptr [eax+edx+0x16]` where we compute the row pointer first, and re-reads the enable byte into CL after the counter store where our build keeps it in DL across that store.
+// MiniMax D (11-16): no new form, no lower score (106): this round re-read the retail diff against ours and the
+// remaining delta is still the three homes and the counter read: retail keeps the old maximum in ECX and tests it with
+// `cmp cx, ax`, loads the 15-bit counter with retail's `xor eax, eax; mov ax, [mem]` idiom where this build zero
+// extends the word into EAX, increments `word ptr [eax + edx + 0x16]` and only then forms the row pointer where this
+// build forms the row first, and re-reads the enable byte after the store where this build keeps it in DL across that
+// store; the counter's type and the enable byte's home are in include/globals.h and the reload's aliasing in
+// src/unknown_1967d0.cpp: BLOCKED-BY both.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the

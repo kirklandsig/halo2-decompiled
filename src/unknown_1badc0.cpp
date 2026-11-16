@@ -39,6 +39,11 @@ real normalize2d(point2f *arg_0);
 // MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
 // the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
 // reordering of the three difference blocks regresses (219, 219, 221, 231, 231) and the squared length's sum order makes no difference.
+// MiniMax D (11-16): no new form, no lower score (171): the length (1025) and the frame agree, and every block, field
+// offset, constant and call argument still checks out against retail; what is left is the register colouring of the
+// vector block (retail sums the two squares into XMM2 and divides by XMM2 where this build sums into XMM3 and divides
+// by XMM3) and the opening (retail takes arg_2's y through the local at esp+0x2c after the centre copy where this
+// build subtracts the actor's y first), which is the allocation and scheduling the earlier rounds already tried.
 // score 171 (was 171): MiniMax R (11-15): no new form, no lower score; a 300 s permuter run over the reduced image
 // searched 41 variants and left the baseline where it was, and the only known better form (130) rests on three
 // statement moves picked by score and on `inline` for 0x30c60, whose body is in src/unknown_030290.cpp:

@@ -927,6 +927,11 @@ static __forceinline long real_to_long(real value);
 // retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
 // in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
 // differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
+// MiniMax D (11-16): no new form, no lower score (382): the frame and the 1904-byte length agree and the early false
+// exit's place is right, but retail keeps the view pointer in EAX and forms the facing pointer late with
+// `lea esi, [eax + 0x2c]` where this build forms it in ESI from the view call, and the helper retail keeps out of line
+// (0x25d740) is expanded here: BLOCKED-BY src/ai.cpp; the two early-exit forms fold the result byte away and read 508
+// and 495, so the shared exit with the result byte in its stack slot stays as it is.
 // score 382 (was 382): MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
 // velocity block (retail keeps the view in EAX and forms the facing pointer late with `lea esi, [eax + 0x2c]`) and from
 // 0x25d740 being expanded here where retail keeps it out of line, and that body is in src/ai.cpp: BLOCKED-BY that file.

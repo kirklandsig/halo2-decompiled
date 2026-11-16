@@ -1382,6 +1382,13 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax D (11-16): no new form, no lower score (120): this round read the retail diff against ours again and the
+// remaining delta is the prologue and the two pointers: retail masks and scales the actor index into EDX before it
+// pushes and forms the actor with `lea edi, [edx + esi]` (actor in EDI, object in ESI) where this build loads the pool
+// first, keeps the scaled index in ESI and forms the actor with `add esi, edi` (actor in ESI, object in EDI); the two
+// 1.0 entry stores are still the other way round (ours +0x10 then +0x1c, retail +0x1c then +0x10) and the length is
+// 1326 against retail's 1324; retail's own call site takes the object index first and the same function is declared
+// in four other files: BLOCKED-BY those declarations.
 // score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
@@ -1765,6 +1772,12 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax D (11-16): no new form, no lower score (238): this round compared the two bodies side by side and the delta
+// is still the frame's slot map and the colouring of the vector block: this build keeps the two squared components at
+// +0x28/+0x2c, the normalizer's length at +0x14 and the flag byte at +0x54, where retail keeps the components at
+// +0x1c/+0x20, the length in the dead argument slot at +0x54 and the flag byte later; the products after that are
+// coloured xmm2/xmm5/xmm6/xmm7 against retail's xmm1/xmm3/xmm4/xmm6/xmm7, and the length is 1182 against retail's
+// 1173.
 // score 238 (was 238): no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
 // +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
 // +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
