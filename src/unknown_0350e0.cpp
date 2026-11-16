@@ -1830,6 +1830,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // body is tuned against the callee this one calls, so the pair cannot be moved apart from this file.
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
+// MiniMax E (11-16): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the shared helper 0x2e9e0's frame is 0x90 against retail's 0x94, and none of the earlier rounds' cross-term orders fixes the schedule.
 // MiniMax E (11-15): no new form, no lower score (193): cases 1 to 4 still differ in the dot and offset schedule - retail groups the case-1 sums and computes the case-2 and case-4 offsets through dot3f and vector3d_from_points3d where ours differs.
 // MiniMax B (11-13): no new form, no lower score (193): retail's four cases still compute their cross products with their own temporaries (its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before the jump table), so the bodies would have to be respelled one case at a time.
 // MiniMax H (11-12): no new form, no lower score (193); the three cross terms' order and the place of the case 1
@@ -3089,6 +3090,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax E (11-16): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and 0x31590's own body is matched, so its argument register preference is fixed.
 // MiniMax H (11-12): no new form, no lower score (113); the frame is still 0x9c against retail's 0xa0 - retail spills
 // the input list and reloads it at the loop top and keeps the total on the stack, the index in EBX and the cursor in
 // EBP, where ours holds the total in EBP.
@@ -3416,6 +3418,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax E (11-16): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
 // MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
 // MiniMax G (11-12): no new form, no lower score (317); both builds spill the counter and the entries
