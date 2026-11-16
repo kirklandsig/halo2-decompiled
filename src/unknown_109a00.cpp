@@ -702,6 +702,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // 11); the component test as a two-case switch (diagnostic) 8 (same code); the field-spelled dot with its arguments swapped,
 // dot3f(forward, up) 10 (the i product turns retail's, the j and k products flip); the active store at the head of both
 // arms of the valid test 104 (928 B, `ret 4`: the convention flips, our tail stays).
+// M3 lane 14 r101 (fast with 0xb7060, MATCH each; base 8): guard gotos to a label after the success return, re-measured on
+// this base 172 (the failure block pops before its stores as retail but is laid out inline behind the body test); the dot as
+// dot3f(&entry->transform.forward, up) 14, dot3f(&entry->transform.up, forward) 10 (the i product turns retail's, the cross's
+// two `up.i` products flip), dot3f(up, &entry->transform.forward) 14; the 10-form with cross3f for cross3f_staged 24.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

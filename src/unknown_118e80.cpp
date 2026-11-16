@@ -220,6 +220,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax E (11-16): no new form, no lower score (218): BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp) - that callee's named double local and double parameter give this function its 8-byte stack parity under LTCG, so the frame stays 0x78 against retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
 // MiniMax E (11-15): no form kept, the body is the original one again; the reduced image (--fast, one
 // address) prefers the speed scale read twice from the definition (222 -> 213), one basis vector shared
 // between the first 0x11d180's left output and the later calls' forward output (213 -> 197) and the
@@ -1130,6 +1131,7 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax E (11-16): no new form, no lower score (92): the frame is 0x1f0 as in retail and the first 200 aligned rows match; the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition (src/unknown_1c25a0.cpp) and in its declarations, which live in files this lane may not edit. Still BLOCKED-BY 0x1c4b00.
 // MiniMax I (11-16): no new form, no lower score (92): the first 200 aligned rows match and the tail still
 // diverges where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this
 // build keeps it in al; that shape needs 0x1c4b00's last parameter to be a bool, and its definition and its

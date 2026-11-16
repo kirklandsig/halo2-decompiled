@@ -882,6 +882,12 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // stored first 15; a separate created pointer storing the character first 15; the iterator and prediction declared
 // at function scope with that start 14 (same code); `break` on a match then `if (prediction) return false;` 14 (same
 // code). The mask still takes EBP and the font EBX.
+// Round 187 (m3 lane 6, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each). Diagnostics with the scan
+// written out in the body (no inline helper, so not keepable without a match): plain 14; with a function-scope mask
+// local declared first 14; with the bitmap and count read into locals before the inner loop 16; with `long` font
+// copies at the compare and the store 14 (the inlined helper's loop depth is not what colours the font first). A
+// `long const &` to the font's field used for the header call, the compare and the store 14. The font takes EBX
+// and the mask EBP in every form.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

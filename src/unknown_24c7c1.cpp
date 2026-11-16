@@ -770,6 +770,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // inside the loop block 114 (same code).
 // MiniMax S (11-15): no new form, no lower score (114): retail keeps the timer message as a byte at -0xf and the left
 // coordinate as a word at -0x3c where ours stores a dword, and the frame homes of the row counter and the flash scalar differ.
+// MiniMax D (11-16): no new form, no lower score (115 in the fast check): retail keeps the view pointer at [ebp-0x44]
+// where this build keeps it at [ebp-0x3c], and retail's three message flags are bytes at -0xf, -0xe and -0xd while this
+// build gives the timer flag a long and the others bytes at -0x14, -0xd and -2; making the timer flag a bool so the
+// three pack measures 191 (as the round above it found), so the frame is left as it is.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

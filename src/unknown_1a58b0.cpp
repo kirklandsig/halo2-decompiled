@@ -637,98 +637,16 @@ void function_1a6d80(void)
 	}
 }
 
-// score 6 (was 6): the two output pointers are loaded one after the other here and both before the
-// first store in retail, and the word is written after the stack is restored in retail.
-// Nested count assignment/return count expression/full return expression 6/6/6;
-// comma output statement/indexed and offset returns 6/6/6;
-// const node-list pointer/handler local 6/6.
-// Count at each use 53; table value snapshot 27; validity from a false-default test 52;
-// success/failure output arms 15/15; native group snapshot 26; word count 6; true-default test 79.
-// Round 88: call result local with the count stored first 6 (retail's ECX/EDX pointer registers,
-// but the count store comes first); count stored before the call 12; handler index read in the
-// call 26; output pointer locals 6; forceinline output setter 6.
-// Round 55: table entry pointer local 28 (104 bytes); call result local stored in order 6; short
-// handler index 7; handler index read after the table reads 20; count read before the node list 6.
-// Round 49: actor lookup at both table reads 27; group local without the actor local 14 (103 bytes);
-// result pointer declared first and set after the count 6; char count 6; group local after the actor
-// local 14 (103 bytes); table index read into a local before the node list 6. Diagnostics: the valid
-// pointer takes EDX with the count store removed or a NULL return; with the count stored first the count
-// pointer loads first into EDX and the valid pointer into ECX (retail's registers, wrong store order).
-// Round 85: count output before the call 6; both output pointers after it 6; count output before and valid
-// output after it 6; output references after it 6; valid store scope 6; count store scope 6; const output
-// parameters 6; indexed valid output 6; count value named after the call 6. Opening body restored.
-// Round 79 (fast): a return local set between the two stores 6, before the call 6; output references at the top 6;
-// a named call result with a count output local 6, with both output locals 6; the valid store as an if/else 15 (106 bytes).
-// Round 86 (fast): k identity locals on the node list, k = 1..8, 6 each (these registers do not follow symbol numbering);
-// an output-setting helper with reference or pointer parameters, the call result first or third, forceinline or inline,
-// or the whole tail in a helper returning the list, 6 each; output parameters char/byte with short/word/unsigned short 6 each;
-// the call result stored last 6 (count pointer EDX and valid pointer ECX as retail, stores reversed); the list returned from a
-// second table read 59 (126 bytes). Retail's registers need the count pointer loaded before the valid store.
-// Round 67 (m3 lane 14, fast): a const copy of the count pointer, of the valid pointer, or of both at the
-// top 6/6/6 (same code); the count stored through a read of its own parameter's address 6; the call
-// result compared `!= false` 15 (106 bytes); the permuter (600 s, 65 tries) nothing below 6. Reading: ours
-// gives the count pointer EAX, free once the valid store has used AL, so its load waits for that store;
-// retail's EDX choice means EAX was taken (the return value) when the count pointer was allocated.
-// Round 140 (lane 8, fast): `__stdcall` on the definition 6; the two output parameters renamed so the
-// count pointer sorts first or last 6/6 (no name tie); the valid store embedded in the count store
-// (`*count = (*valid = ..., node_count)`) 6; reference output parameters, the three callers passing the
-// locals, 6; the count read first and the node list as `g_4f0a60 + index` 6 (all same code). A
-// compile-only build (no LTCG: the callee's count in EDI, fastcall arguments) gives retail's tail (valid
-// ECX, count EDX, both loaded before the stores), so the tie follows the LTCG convention around 0x1a71f0.
-// Round 173 (m3 lane 4, fast): a prototype of this function ahead of 0x1a71f0's definition 6; 0x1a71f0 defined after this
-// function (prototype in its place) 6; a `long` node count cast to short at the call and the store 10; a const node count 6;
-// the node count declared first and assigned after the node list 6 (all 6s the same code).
-// Round 137 (lane 7, fast; a one-file LTCG harness of this file reproduces 6): 0x1a71f0's parameters as (id, list, count)
-// 6, as (id, count, list) 6 (0x1a71f0 stays matched; no retail evidence); a count-pointer copy taken after the call before
-// the valid store 6; `count[0]` 6; a force-inline output setter taking (valid, count, result, count value) 6. Harness
-// reading: the first-loaded output pointer takes EDX and the second ECX, and the count pointer takes EAX once the result
-// is stored; with the call result kept live past both stores (diagnostic) valid EDX, count ECX 19 (110 bytes). Retail's
-// valid ECX / count EDX with the valid store first needs the count pointer loaded first; every copy or reference of the
-// parameter is folded back to its use (6).
-// Round 162 (m3 lane 5, fast): the count pointer read through its own parameter's address after the call and before the valid
-// store 6, with the valid store through its own address too 6, the address taken before the call 6 (all folded to the same code,
-// and 0x1a77a0 then scores 20); `static` on the definition 6; `inline` on 0x1a71f0's definition 6; the valid store as constant
-// stores in an if/else on the call 15. Retail 0x1a71f0 writes eax, ecx and edx, so its clobbers do not explain the tie.
-// Round 152 (m3 lane 7, fast; round 137's harness, exact at 6): the tail is a scratch-register rotation phase. One dead load
-// (harness diagnostic) between the table reads and the call gives retail's tail exactly; two give ours; one at the top, after
-// the actor lookup or after the handler read leaves ours. So retail has one more code-less allocation step there. Forms: an
-// inline helper (id, type, short *count) returning the list 15 (retail's tail, but id becomes a register argument, ret 8, and
-// 0x1a77a0 50, 0x1a78a0 73, 0x1a79e0 53); the entry copied as an aggregate 27 (102 bytes); the node index named 6; the call's
-// count argument re-read from the table 6; its list argument re-indexed 12. Harness: a short type local 15 (same tail and
-// convention as the helper), a long type local 27, an entry reference 28, a row pointer 29, a short handler index 7, the
-// handler read after the table 20, between the reads 18, and casts, copies and declaration orders 6 each.
-// Round 117 (m3 lane 12, fast): an inline helper (actor index, type) returning the table entry 43 (113 bytes: `id`
-// becomes a register argument, ret 8, and 0x1a77a0 50, 0x1a78a0 73, 0x1a79e0 53), with the handler index and the
-// entry's list and count read in main's order 29 (104 bytes, the same convention change); an inline getter of the
-// actor's group (the lookup inside) into a short local 14 (103 bytes, as round 49's group local), called at both table
-// reads 27 (convention change), returning long into a long local 26 (101 bytes: the tail is then exactly retail's, the
-// head folds the actor address into the group load); `long group = owner->unknown004;` before the handler read 26 (the
-// same code), after it 27 (the pool load moves to ESI, so ECX is free when `id` is first loaded and `id` becomes a
-// register argument). Retail's tail needs one more value ahead of the table reads; its head needs the group read after
-// the handler read with ECX taken by the pool load.
-// Round 91 (m3 lane 14, fast): parameters (id, owner_index, valid, count), (id, valid, owner_index, count) and
-// (id, valid, count, owner_index) with the three calls 6/6/6; the node list as `g_4f0a60 + index` alone 6 (same code);
-// the valid store as `? true : false` 15 (106 bytes). Unused locals between the table reads and the call 6 (dropped).
-// Round 107 (m3 lane 10, fast): `long group = owner->unknown004;` before the handler read with only the node-list read
-// through it 6, with only the count read through it 6 (both merge with the other read: the same code as the 6 form).
-// Round 128 (m3 lane 12, fast; a one-file LTCG harness of this file reproduces 6): the count output stored from a second
-// read of the table entry 59 (124 bytes); the count stored before the call and the call given `*count` 12; `long type = id;`
-// for the handler and both table reads 6 (same code); `__assume(node_count >= 0)` before the call, `__assume(valid && count)`
-// at the top 6/6 (diagnostics: no code-less allocation step; harness `__assume(id >= 0)` and `__assume(nodes != NULL)` 6/6).
-// M3 lane 4 r204 (fast with 0x1a71f0, 0x1a77a0, 0x1a78a0, 0x1a79e0): the node count typed `char` 6 (same code); a named
-// `short` node index with the list address written out at the call and at the return 21 (104 B), the index `long` 12
-// (the table's index load takes ECX and the list moves after `push esi`); the handler index read before the actor lookup
-// 28 (`id` becomes a register argument: 0x1a77a0 50, 0x1a78a0 73, 0x1a79e0 53); the count read first, then a named
-// `short` node index and the list from it 6 (same code).
+// the nodes of a handler's actions for the owner's actor type: whether the handler took them, and how many
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
 	s_actor_view *owner = actor_get(owner_index);
-	long local_2 = g_46eeb8[id]->index;
+	s_slot_handler const &handler = *g_46eeb8[id];
 	s_action_node **nodes = &g_4f0a60[g_4f2cc0[id][owner->unknown004].index];
 	short node_count = g_4f2cc0[id][owner->unknown004].count;
 
-	*valid = function_1a71f0(node_count, (short)local_2, nodes);
+	*valid = function_1a71f0(node_count, handler.index, nodes);
 	*count = node_count;
 	return nodes;
 }

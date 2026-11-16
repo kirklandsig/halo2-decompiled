@@ -693,6 +693,10 @@ void function_245400(s_source_245400 const *source, long index,
 // moved after the second's, the sign-bit compare's operands swapped and arg_2 renamed through a matrix alias
 // local, which are kept only with a match. The cast alone is a 4-point gain, under the 8-point bar above 30. Body
 // back to main.
+// P571: Actual edge-scale nonunit/unit decision at its transform consumer, bool/byte/short/long:
+// 228/228/228/228/228/228/228/228. NOT kept: all regress and shorten to 763/783 bytes without native
+// frame/table/side-home recovery. Original scale comparison, row arithmetic, point transform and complete
+// body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -555,6 +555,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // On the kept 858 form (fast): the choice count as a long 965 (3268 B); the audible update with the `or` arm first
 // (`if (!target->audible)`) 858 (still one merged word RMW); the query count used directly at its three uses 913; the
 // fade time named once at both step sites 884 (3330 B); the decibel helper as a single-exit result 881 (above).
+// M3 lane 15 r92 (fast, control 846): the clusters array renamed (diagnostic: names do not move the array homes) 846
+// (same code); the query count read directly with a long choice count 965 (3264 B: the prologue's ESI zero and the
+// indices/clusters/portals homes become retail's +0x1f0/+0x3f0/+0x2f0, the count moves to +0x14 and the gains to
+// +0xf0); that with each choice filled through `&choices[choice_count++]` 972 (3287 B); the same pointer with the short
+// counts 967 (3275 B); the target count declared above the targets array 846 (same code).
 // P557: Bounded accepted-choice cap <2/<=1 with short/long query and choice domains:
 // 846/919/964/965/846/919/964/965. NOT kept: no equality or native entry/count/query-home repair;
 // original counters, equality cap, helpers and complete body restored.
