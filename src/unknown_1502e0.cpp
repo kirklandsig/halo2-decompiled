@@ -1236,13 +1236,14 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax S (11-16): no new form, no lower score (144): the tag table still stays enregistered (EBX) through the first loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are still not retail's; the counted-phase forms and the permuter tried before all leave the same code.
 // MiniMax S (11-15): no new form, no lower score (215): the tag table still stays enregistered (EBX) through the first
 // loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are
 // still not retail's; the counted-phase forms tried this round (the bit-3 tests in a second loop after the lookups,
 // the pending lookup ahead of the held one, the weapon's own flags read once ahead of the slot loop, the mode clears
 // chained) all regress or leave the same code, and the grouping that moves the tag table's home is not a form the
 // review keeps.
-// score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// score 144 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
 // m3 lane 5 r185 (fast with 0xcd7b0/0xcbd50/0x151aa0/0x151940, control 215): the bit-3 tests in a second loop after the
 // lookups 293 (1008 B); held and pending as one `long weapons[2][2]` 215 (same code); the pending lookup ahead of the
 // held one 207 (the pool pointer then takes EDI as retail, but retail reads the held slot first, so the order is against
@@ -1655,6 +1656,7 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax S (11-16): no new form, no lower score (43): the whole difference is still the one register rotation - retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and the two bodies are 210 bytes with the same instruction sequence; the hand's width, the declaration order and the hand test's spelling all leave the rotation where it is.
 // MiniMax S (11-15): no new form, no lower score (43): the whole difference is still the one register rotation -
 // retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in edi,
 // esi and ecx - and the two bodies are 210 bytes with the same instruction sequence; the hand test writes its result

@@ -1594,6 +1594,7 @@ struct s_camera_clip_reference_16ebf0
 // retail keeps the cluster reference in al and materialises the cluster address, while ours keeps it
 // in cl and folds the address into the load.
 
+// MiniMax S (11-16): no new form, no lower score (87): the clip block still folds the cluster address where retail materialises it, the plane sum still adds the i*x term where retail adds the j*y term first, and the interpolation's two products still land in the other order; the interpolation's addend order, a false-first narrow default (105) and a plane-value accumulator all leave the same code, and the shared cross helper's text is in a header this lane may not edit.
 // MiniMax G (11-05): no new form, no lower score. The clip block still loads the cluster
 // reference with a folded address where retail materialises it (mov edi,[esi+0xa0]; add
 // eax,edi; mov al,[eax+0x70]), so the block is one instruction short and the code after the
