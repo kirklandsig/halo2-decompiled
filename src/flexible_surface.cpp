@@ -768,6 +768,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // P537: Actual normalization return/absolute-magnitude producers, real/double/const-real/
 // const-double: 117/118/117/118/117/118/117/118 at 880 bytes. NOT kept: no exact
 // result or frame recovery; original call/test, shared products and complete body restored.
+// P569: Existing shared cross: mutable/immutable product parts 117/117; component accumulator 117;
+// mutable/immutable component results 117/117; entry product declarations 117;
+// reused component result/accumulator 117/117. NOT kept: all tie; original helper/body restored.
+// Frame 0x28 versus native 0x20 and direction/cross/seed homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

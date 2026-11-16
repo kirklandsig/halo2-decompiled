@@ -741,7 +741,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // argument setup and the shared quaternion helper's sum order remain.
 // MiniMax R (11-14): no lower score (331): in the case-2 length the dot hoists the left vector's k component before the copy and
 // sums in xmm0, where retail hoists j and sums in xmm1; the term order of the shared dot3f does not move it (all six orders
-// score 331, and that header is not this lane's to edit) and the self-dot spelling gives the same squared length at 329.
+// Earlier 331, and that header is not this lane's to edit) and the self-dot spelling gives the same squared length at 329.
 // Earlier at 331 (was 331; 331 before): m3 lane 8 r164 and m3 lane 2 r79 notes at the end; round 95 (m3 lane 11) before it; round 112 (m3 lane 12) before that. Earlier at 331 (was 385; 385 was 236 before the timer fix): round 63 (end of note) re-applied round 57's lead with shared helpers.
 // MiniMax H (11-11): no new form, no lower score (331); retail keeps the point case's normal in XMM3/4/5 with the zero in
 // XMM0 and ends case 2 with a read-modify-write `or [ebp], 0x40`, while ours splits the flag updates and keeps the zero in XMM1.
@@ -1153,6 +1153,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // forward dword/word/int/unsigned traversal: 400/399/450/450/400/450/400/400.
 // NOT kept: staged vector storage regresses and grows beyond native extent;
 // direction-j preload and persistent length/zero homes remain. Original full body restored.
+// P569: Existing shared dot: product parts 396; accumulator 399; pair sum 399;
+// immutable parts/pair 396/399; double accumulator 490; pair/final product 400; return local 394.
+// NOT kept: all regress and grow past 1696 bytes. Original helper/body restored;
+// direction-j preload and length/zero homes remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
