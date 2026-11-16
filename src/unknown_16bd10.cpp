@@ -1160,6 +1160,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P571: Final policy enabled/disabled result at its original producer, bool/byte/short/long:
 // 395/395/395/395/395/395/395/395. NOT kept: all regress and grow to 1700/1696 bytes; direction-j preload
 // and length/zero homes remain. Original policy query, projection and complete body restored.
+// P574: Original-site point-distance cap admission, positive/complementary
+// bool/byte/short/long: 395/395/395/395/395/395/395/395. NOT kept: no native direction-j
+// preload or length/zero-home recovery; original comparison and full body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -3994,6 +3994,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // member fetched after the kind and members tests 147 (EBP still the member; alignment only); the cursor started as
 // `&data[2]` 164 (still `add edi, ecx`); the member assigned inside its NONE test 164.
 // MiniMax D (11-15): no new form, no lower score (139): the packet cursor form (164) still keeps the member in ebp where retail keeps the channel and puts the member in a frame slot, and a channel copy in a local of its own gives the same bytes; the indexed form stays at 139.
+// P574: Original per-packet byte-budget admission, positive/complementary
+// bool/byte/short/long: 139/139/139/139/139/139/139/139. NOT kept: no exact native channel,
+// cursor/member or route-home recovery; original budget test and full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -462,6 +462,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
 // NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit
 // repair; original private predicate and complete executable source restored.
+// P574: Independent final name-occupancy admission, positive/complementary
+// bool/byte/short/long: 43/43/43/43/43/43/43/43. NOT kept: no exact early ESI,
+// EBX successor or AL mask recovery; original eligibility and full body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
