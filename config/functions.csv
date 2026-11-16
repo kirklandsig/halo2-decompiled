@@ -12854,7 +12854,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00318a80,11,third:havok,speed,a16 pad,,,,src/lane_a_contact_manager.cpp,matched
 00318a90,255,third:havok,speed,a16 pad ebp,,,00315d20 00318320,src/unknown_318a90.cpp,near
 00318b90,24,third:havok,speed,a16 pad,,,,src/unknown_318b90.cpp,matched
-00318bb0,88,third:havok,speed,a16 pad,,,,src/unknown_318b90.cpp,todo
+00318bb0,88,third:havok,speed,a16 pad,,,,src/unknown_318b90.cpp,matched
 00318c10,581,third:havok,speed,a16 pad ebp,,,0030d2b0 00315d20 00318320 0031be80,src/unknown_318c10.cpp,todo
 00318e60,166,third:havok,speed,a16 pad,,,0030ca30 00315d90 003183b0 0031bc90,src/unknown_318b90.cpp,matched
 00318f10,23,third:havok,speed,a16 pad,,,,src/unknown_318f10.cpp,matched
