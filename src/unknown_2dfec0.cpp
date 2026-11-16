@@ -31,7 +31,7 @@ entry_2dfec0 *sorted_2dfec0::first_not_below(entry_2dfec0 *begin, entry_2dfec0 *
 
 // sorts the entries from low to high (both included) by key
 // @retail 0x2dff20
-void __cdecl function_2dff20(entry_2dfec0 *entries, int low, int high, long context)
+void __cdecl function_2dff20(entry_2dfec0 *entries, int low, int high, sorted_2dfec0 order)
 {
 	int j = high;
 	int i = low;
@@ -60,11 +60,11 @@ void __cdecl function_2dff20(entry_2dfec0 *entries, int low, int high, long cont
 	} while (i <= j);
 	if (low < j)
 	{
-		function_2dff20(entries, low, j, context);
+		function_2dff20(entries, low, j, order);
 	}
 	if (i < high)
 	{
-		function_2dff20(entries, i, high, context);
+		function_2dff20(entries, i, high, order);
 	}
 }
 

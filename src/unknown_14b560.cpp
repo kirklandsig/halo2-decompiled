@@ -1238,6 +1238,11 @@ bool function_14ed80(void)
 // Round 106 (m3 lane 1, fast): the index read first and the clamp as an if/else-if against the count read at each use 53;
 // no player local (the getter at both reads) 51 in the full build (as the harness). Diagnostics: without the remap 73,
 // without the bound test 81, the outputs stored without their NULL tests 24: the named globals local takes EDX in each.
+// Round 185 (m3 lane 6, fast): the globals local declared before the outputs and the player 50 (still EDX, loaded at the
+// top); the two representation fields as a two-field aggregate copied whole 22 (retail's dead `add` goes); with the globals
+// read at each use, `third` declared just before the bound test 68 (149 bytes: first EDX and the global ESI as retail,
+// third in ECX and the third-person output moved to a register; 0x14f0f0 40), after the player 52 (third ESI, global EDI),
+// before the remap 64 (153 bytes).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {

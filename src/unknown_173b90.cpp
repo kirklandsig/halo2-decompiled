@@ -1979,6 +1979,13 @@ bool function_17afd0(long effect_index, long value);
 // a test fails; available = false, then true) and read g_4b9ed8 again at each use in place of the view local.
 // Test-set flags and score-picked re-reads are kept only with a byte match; the form is a lead for a match. Code
 // back to main, notes kept.
+// M3 lane 11 r106 (fast, base 47): camera test reading the view global (view local elsewhere) 110 (500 B; only the early
+// `xor bl, bl` and the arithmetic set differ, the rest is retail shifted); that with the set as `if (view != NONE &&
+// !query) available = true;` and the early clear 142 (510 B: NONE moves to EBX, owner ESI, view EBP, availability spilled);
+// with `query(view) == 0 ? true : false` 110 (same code); the availability as an if/else (no early clear) 115, with the
+// branchy test in the if/else 113 (498 B; availability AL, cleared in the else block, so not live across the query);
+// lead form re-measured 12 (owner, then `same_view = true`, `available = false`, set, one clearing test); its true default
+// declared before the early clear 24, after the availability set 145 (513 B), with the clear after the owner as well 141.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

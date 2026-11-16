@@ -1027,6 +1027,8 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // src/unknown_0b7740.cpp.
 // Round 127 (m3 lane 12): no body form can move the one difference (0x1c4040's convention, see its note); measured with
 // the walk trials there (1 in each).
+// M3 lane 10 r110: measured in each of 0x1c4040's walk trials (fast): MATCH with the src/damage.cpp set (six matched lost) and
+// with the 0x1c2a10-first set (eight lost); 1 in the others.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1291,6 +1293,20 @@ struct s_1c4040
 // eight are lost. 0x1c3770 stays default only if one of its callers is built before it, as retail's walk has it (0x1c3770 ->
 // 0x1d1260 -> 0x278f00); from the free files the walk reaches 0x1c3770 ahead of 0x278f00 only through 0xdbc80's callee
 // order (src/damage.cpp, contributor code: round 127's P4). BLOCKED-BY 0xdbc80.
+// M3 lane 10 r110 (fast over 61 cycle members; 0xdbc80 is now an open function of ours): the custom body with 0x146bf0 before
+// 0x1c3770 in src/unknown_278f00.cpp, 0x146da0 first among src/unknown_146a20.cpp's havok declarations and 0x1c3770 declared
+// before havok_component_node_states_get in src/damage.cpp (0xdbc80 then reaches 0x1c3770 first): this function, 0x1c51c0 and
+// 0x146bf0 MATCH, 0x1c3770 default as retail, but 0x1d1540 goes custom (215) and its callers 0xb8890 15, 0xe16b0 114, 0xf0fd0
+// 27, 0x1c35f0 40, 0x1c3770 21 and 0x1c39c0 41 are lost; the src/damage.cpp move alone with the custom body gives the same.
+// Reading (DFS model: a function keeps the default convention when a descendant calls it): every path from 0x1d1540 back to an
+// unvisited caller runs 0x1c4040 -> 0xb8540 -> 0x109400 -> 0xe4c10 -> ..., and 0xb8540's body is disabled (stub), so that set
+// leaves 0x1d1540 custom: BLOCKED-BY 0xb8540. Also measured: that set plus 0x1d1540 declared first among 0x1c3770's callees here
+// 17 (default regime; 0x1d1540 back at 97, 0x278f00 lost 185); the set without the src/damage.cpp move plus
+// `void function_1c2a10(void);` ahead of the includes of src/unknown_1c2690.cpp 17 (0x1d1540 97, 0x146bf0 and 0x1c51c0 MATCH,
+// but 0x1c3770 custom: lost 0x278f00 85, 0x1c54b0 89, 0x1c39c0 41, 0x1c3770 41, 0xb7290 34, 0xe16b0 10, 0x1c38a0 5, 0xb8600
+// 1); that with 0x1c35f0 declared before 0x278f00 here 17 (same); both on the full set 0 (same losses as the full set);
+// 0xb8540's draft enabled (stub removed) alone 25 and with the full set 34 (0xb8540 matches; 28 matched lost each, 0x278f00
+// 185). All restored.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {

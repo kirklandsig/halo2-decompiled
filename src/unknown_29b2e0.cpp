@@ -529,9 +529,18 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // declarations with the else arm copying only the vector 360 (1723 B). Same code on the lead: the angles declared at the
 // top of the function; the normalizer's locals renamed (magnitude, inverse); local_11/local_12 renamed (aim_pitch,
 // target_pitch); rows with the projection term first.
+// M3 lane 2 r88 (fast with 0x29b990, MATCH each time; control 176): the keepable half of the r83 lead, the single-exit
+// normalizer alone, re-measured 171 (first +0x84; a gain of 5, under the bar). On it the remaining slot differences are the
+// normalizer roots and the inlined angle's acos result at +0x10 (retail +0xc with the acos argument and the yaw), and in the
+// rotations the final pitch at +0x10 with sine/cosine in the two dead parameter homes (retail: pitch in arg_4's home, sine +0x10,
+// cosine arg_3's home). New on it: rotation rows with the projection term first in the i and k rows 171; the second
+// normalization's failure test as `!` 198 (1718 B); the half-pi limit as if/else 171; the else arm's zeros chained 174; the
+// two angle declarations moved up to the lookups 171.
 // P538: Unrounded planar-root/rotation-sine/rotation-cosine API producers, subsets
 // 1/2/4/3/5/6/7 then complete immutable: 263/179/179/263/263/177/264/264.
 // NOT kept: all regress; combined root/trig forms lose the matched sibling (24); original helpers and full body restored.
+// MiniMax E (11-15): no new form, no lower score (176): the normalizer's length taken from its return value instead of the
+// out-parameter measures 263 at 1719 bytes, and retail keeps that length in a register where ours holds an address-taken local.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
