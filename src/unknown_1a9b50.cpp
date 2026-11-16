@@ -745,6 +745,9 @@ extern point2f *g_468778;
 // declarations in that order, measures 413 (1555 bytes) again - the actor pointer then takes edi and is spilled at
 // [esp + 0x20] and the frame grows to 0x44, where retail holds the actor in ebp, the slot in esi and the prop pointer
 // in ebx, and keeps the settings only in its home. The frame, the length and the carriers are the whole difference.
+// P575: Near-distance/prediction admission, positive/complementary bool/byte/short/long:
+// 377/377/377/377/377/377/377/377. NOT kept: no exact actor/prop/prediction-home repair;
+// original comparisons, receivers, lookups, vector operations and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

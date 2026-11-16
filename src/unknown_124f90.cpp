@@ -1654,6 +1654,9 @@ long function_2197f0(real gain);
 // division-before-compare shape, but every field is then addressed from sound_class plus the scaled index); the reciprocal through a one-caller
 // inline `return 1.0f / value;` helper 94 (same code: the division is still turned into `inverse * time`); the second fade-out
 // test as `elapsed < hold + fade_out` 94; the clamp test as `time * inverse < 1.0f` 94 (same code each). Body unchanged.
+// P575: Previous-release lower-bound decision in positive/complementary bool/byte/short/long
+// storage 94/94/94/94/94/94/94/94. NOT kept: no exact gain-join or elapsed/reciprocal repair;
+// original complete body, arithmetic and unordered clamp selections restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3461,6 +3464,9 @@ static inline short sound_voice_find_available_channel(char type)
 // fast annealing permuter run (seed 122, the four callees as context): 195 tries, best 13, only with a `volatile` voice
 // pointer and constant locals (not allowed). On the kept body the first bit update from `voice->channel_index` 96 (same
 // code). Body unchanged.
+// P575: Actual API status-idle/playing admissions in bool/byte/short/long
+// storage 127/127/127/127/96/96/96/96. NOT kept: no native frame/result/exit recovery;
+// original status test, byte result, search helper and complete body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

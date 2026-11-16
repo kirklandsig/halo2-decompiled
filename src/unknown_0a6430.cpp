@@ -123,6 +123,9 @@ PRIVATE byte *update_object_0a6430(long index)
 // object read before `count = 0` 14 (same code); the 0x200 lookup through OBJECT_DATUM_GET with the typed definition
 // index 14; the 0x100 compare state byte first 15; the model lookup as a tag-array element 14 (same code); the 0x200
 // lookup through a header pointer 14.
+// P575: Independent positive/complementary region-count, model-presence, entry-count and tail-count
+// decisions on the shared-count-provider body 14/14/14/14/14/14/14/14. NOT kept: no exact repair
+// of the state-pointer register or final pool/index schedule; original complete body restored.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
