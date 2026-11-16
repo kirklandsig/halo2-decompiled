@@ -3055,6 +3055,12 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // index 17, with request priority captured first 17; the index chosen into a named value then copied to the index
 // with one NONE test after 16; entry_index reassigned from the named fallback and copied to the index 17, with the
 // priority captured after the fallback block 85 (252 bytes). The roles stay index EBX, NONE EBP, priority ESI.
+// Round 110 (m3 lane 1, fast): the default fill storing the flags first 17; combinations the list has only singly: the
+// request record at function scope with the extra arms inverted 29; entry_index reassigned with 0x1147e0's order (the
+// lookup without an early return, then `entry_index != NONE && 0x114520`) 22; the request priority as long with the
+// default fill storing the object index first 16; the index set by `if (entry_index != NONE) index = entry_index; else
+// if ((index = lookup) == NONE) return false;` 16. Retail's ranks (NONE 6 uses, then the index, then the priority) are a
+// plain variable's; ours discounts the constant, so the lead is still a NONE-valued variable in Bungie's code.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
