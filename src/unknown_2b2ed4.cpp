@@ -270,6 +270,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // MiniMax S (11-15): no new form, no lower score (316): our friend scan keeps the shift-by-10 arm next to the join and needs
 // an extra jump, while retail lays the shift-by-12 arm inline and moves the other arm out of line; the five buffer homes stay a
 // rotation apart from retail's. A 33-try permuter (reduced image) found no variant below the baseline.
+// MiniMax D (11-16): no new form, no lower score (316 in the fast check; ours is 2342 bytes against retail's 2345): the
+// five string buffers keep their homes a rotation apart from retail's (display_name -0x8cc, title -0x6cc, layout -0x4cc,
+// suffix -0x458, message -0x258 in retail), the switch's shift arm stays out of line, and the suffix address is
+// re-derived after every 0x230134 call in retail, which this lane may not change because that callee is another file.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

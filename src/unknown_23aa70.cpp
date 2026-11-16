@@ -123,6 +123,9 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // Round 90 (m3 lane 15): no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
 // entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670 (contributor
 // code); held patch unchanged.
+// Round 188 (m3 lane 5, fast): no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair
+// (ours the entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`, and the palette
+// loads that follow). BLOCKED-BY 0x17e670 (contributor code); held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

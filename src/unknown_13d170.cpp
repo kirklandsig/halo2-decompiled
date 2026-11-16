@@ -179,6 +179,10 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// score 201 (was 201): MiniMax I (11-16, round 2): no new form, no lower score: clamping the second age as well
+// (`MAX(physical->time - best.time, 0)`) measures 209, worse - the clamp restores retail's mask, but the age lands in
+// EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead
+// of loading it into EAX; the 194 form in the notes below is a seven-point gain under the bar. Body unchanged.
 // score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax R (11-15): score 194 (was 201): the default arm matches retail instruction for instruction now (both ages
 // clamped with cmp/sbb/and, the two products in the same registers), but the case 0 and case 1 blocks still sit after
@@ -710,6 +714,9 @@ struct s_physical_block_iterator
 // ages clamped `MAX(x, 0)` with the comparison written `candidate->pages * best_age < best.pages * age` 209 (1228 B, as the
 // listed symmetric clamp). Case 0 stays threaded into the take test on every form. Body unchanged.
 // MiniMax R (11-16), NOT kept: 194 (was 201), a 7-point gain, under the 8-point bar for a function above 30.
+// P567: Standard logical disjunction/conjunction/both, relational providers and their
+// disjunction/conjunction/both/complementary-retention boundaries: 213/209/252/362/369/358/400/423.
+// NOT kept: no native policy-result, clamp or placement equality; original complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

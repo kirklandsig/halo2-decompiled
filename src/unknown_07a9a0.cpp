@@ -971,6 +971,9 @@ bool balance_teams_by_count(long player_count, const long *parties, long team_co
 bool balance_teams_can_add(long player_count, const long *parties, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long minimum, long maximum, bool use_parties, long maximum_imbalance);
 
+struct s_session_summary;
+long session_summary_get_machine_highest_value(s_session_summary *summary, long machine_index);
+
 struct s_ratings_summary
 {
 	long machine_count;
@@ -1051,11 +1054,16 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax E (11-16): no new form, no lower score (964): retail's session arrives in eax with a 0xb4 frame against our 0xd4, and that convention is fixed by the caller in a file this lane may not edit.
 // MiniMax C (11-16): no new form, no lower score (766): retail takes the session in EAX and the output pointer on the
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
+// it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
+// in EAX); 2684 bytes against retail's 2828, the top 0x192e60 still inlined and 0x631f0 still a call (retail the reverse).
+// Earlier 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
 // MiniMax H (11-12): no new form, no lower score (766): the frame is still 0xd4 against retail's 0xb4, the session still comes in on the stack where retail passes it in eax with the output pointer on the stack, and the opening lookup is still expanded here while retail calls the matched 0x192e60 out of line.
@@ -1457,6 +1465,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // retail). Re-measured: the opening test as one inline admission predicate 948 (2956 B, M370's form). Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (766): retail's session arrives in EAX with a 0xb4 frame against our
 // 0xd4, and that convention is fixed by the caller in a file I may not edit.
+// m3 lane 5 r188 (fast with 0x73530, 0x192e60, 0x63220, 0x631f0, 0x6fa60, 0x1931a0, 0x1934f0, all matched throughout but
+// 0x73530; control 766, 0x73530 8): the write-only machine-id copy declared inside the group loop 766 (same code, frame
+// still 0xd4); the player loop's group-highest scan through the existing 0x631f0 (retail inlines it there) 964 at 2684
+// bytes, 0x73530 MATCH (the session arrives in EAX, but the top 0x192e60 still inlines and 0x631f0 stays a call; not kept:
+// a rise here; diff saved as build/r188/lead-0x73530-631f0-call.patch; applied by the coordinator 11-16, see the 964 line); that with `long histogram[16]` 984 (2640 bytes,
+// frame 0xb4, 0x73530 MATCH); that with the loop's variant through 0x192e60 1011 (2620 bytes, 0x73530 MATCH, the top call
+// still inlined); the player's group named before the written-out scan 766 (same code). Body unchanged.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1500,9 +1515,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				function_1934f0(&g_551ae8[variant_index])) rating_variant = &g_551ae8[variant_index];
 			if (variant_index)
 			{
-				long highest = NONE;
-				for (long j = 0; j < summary->player_count; j++)
-					if (summary->groups[j] == summary->groups[i] && highest <= summary->first[j]) highest = summary->first[j];
+				long highest = session_summary_get_machine_highest_value((s_session_summary *)summary, summary->groups[i]);
 				if (highest != NONE)
 				{
 					long lower = highest;

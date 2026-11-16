@@ -714,6 +714,13 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // `voice_index++` 3 (same code as the helper form); `register` on the inner counter 3. Diagnostic (reverted, not a source
 // form): a compiler memory barrier after the second store matches in the fast check, so retail behaves as if a scheduling
 // fence sits there that holds `inc esi` but not `inc edi`.
+// M3 lane 8 r173 (fast): all ten stores in a forceinline helper taking the voice pointer and the type 3 (same code); the voice
+// set from `&g_4e6378[voice_index]` with the stores from unknown0a on in a forceinline helper taking the index, called with
+// `voice_index++`, 3 (`inc edi` and `inc esi` both after the second store); the first two stores in a forceinline helper
+// taking (voice index, type) ahead of `&g_4e6378[voice_index++]` for the rest 3 (the same: `inc edi` follows the second
+// store). Diagnostics: round 185's helper by index re-measured 3 (as listed); that helper given `voice_index - 1` after a
+// post-increment 150 (599 bytes, the voice is recomputed). Every re-derivation through the index register holds `inc edi`
+// below the fence with `inc esi`; retail's fence holds only `inc esi`.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1312,6 +1319,10 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 94 (was 94): MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
+// by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
+// local used for the inverse and for the 0.001f test measures 101, and the one-use local form in the notes below (87)
+// is a seven-point gain under the bar; the rest is the XMM colours and the fade-out load order. Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (94): the call boundaries agree with retail's (0x221810), and what is left is the XMM allocation and the division - this build substitutes the reciprocal where retail keeps a real division.
 // MiniMax S (11-15): no new form, no lower score (94).
 // score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
@@ -2701,6 +2712,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// score 17 (was 17): MiniMax I (11-16, round 2): no new form, no lower score: the first difference is still
+// 0x219070's call shape, whose declaration lives in another file, and the delayed start still stores the flag byte
+// before the start time; MSVC does not hoist stores, so both follow from that callee's declaration. Body unchanged.
 // MiniMax I (11-16): no new form, no lower score (17): the first difference is still 0x219070's result - the set
 // index is sign-extended here where retail copies the dword, and the call takes two arguments where retail passes
 // one; 0x219070's and 0x218f50's declarations live in another file this lane may not edit.
@@ -3098,6 +3112,10 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
+// before reading the voice index and loads two globals ahead of it, where retail reads the index first and keeps the
+// outcome in AL; our frame is 0xc against retail's 8, both with the saved ebx, so one local is spilled that retail
+// keeps in a register. Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (96): the call boundaries agree with retail's (0x127320, 0x12a5d0 and the two outside helpers), so what is left is the result byte, which sits in a stack slot here where retail keeps it in AL at the entry and in BL on the failure path.
 // MiniMax S (11-15): no new form, no lower score (96).
 // MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
@@ -4088,6 +4106,10 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
+// score 101 (was 101): MiniMax I (11-16, round 2): no new form, no lower score: the 0x221810 lookup that retail calls
+// out of line is still expanded through the inlined caller, and keeping the call out of line needs the inline-depth
+// pair the rules drop (the notes below measure 4 with it); the call boundaries otherwise agree with retail's. Body
+// unchanged.
 // MiniMax E (11-15): no new form, no lower score (101): the call boundaries agree with retail's except that 0x221810 is expanded here where retail calls it out of line, and its definition is in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
 // MiniMax C (11-15): no new form, no lower score (101): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (101); retail still expands 0x16f3a0 where ours keeps the call, which is a caller-side decision in a file I may not edit.
@@ -4739,6 +4761,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// score 535 (was 535): MiniMax I (11-16, round 2): no new form, no lower score: our frame is 0x134 against retail's
+// 0xe8, so 0x4c bytes of locals are ours alone, and our null test of the global comes before the register saves where
+// retail's comes after; the rest of the rows follow from that frame. Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (535): the call boundaries agree with retail's (0x155760 twice, 0xcaf60, 0x11d6a0, 0x11d950, 0xba1d0, 0x11bed0 and 0x220790), so what is left is the frame (0x130 against retail's 0xe8) and the native rotation, environment and listener-index homes. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120, which have to stay out of line and live in other files.
 // MiniMax C (11-15): no new form, no lower score (535): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (535); retail still expands 0x1420f0 and 0x11c120, which carry noinline declarations on main.

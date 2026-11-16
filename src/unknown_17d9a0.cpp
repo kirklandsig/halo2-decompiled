@@ -493,6 +493,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax S (11-16): no new form, no lower score (535 plain, 834 on the reduced image): the frame 0x21dc and the
+// 3647-byte length agree and the first difference is still the tag spill at +0x41; the group pass as a flagged block
+// with its own remaining count is 534 and the first loop's face read into a one-use local is 524, but both rest on forms
+// the review drops, so the tag, count and plane homes stay where they are.
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // MiniMax A (11-14): no new form, no lower score (793 on the reduced image): the frame is 0x21d8 against retail's
 // 0x21dc, and the entry register roles differ - retail takes the object pointer in edx and the table global in ecx,
@@ -895,6 +899,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Also: the group pass as `if (flags) { short remaining = secondary_count; while (remaining > 0) {...} }` (no separate
 // count test) 534 (the `remaining` store then sits before the `jle` as retail's; the only change); the first loop as a
 // plain `for (...; i++)` with `faces[i]` 548; `definition` declared ahead of the two arrays 535.
+// P568: Standard bitwise range identity dword/long/word/byte 793/793/793/752;
+// explicit equality predicates 729/729/729/729. NOT kept: no native tag/count/plane
+// home or rotation-spill recovery; original helpers and input-before-output captures restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

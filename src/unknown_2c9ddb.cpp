@@ -55,6 +55,7 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax S (11-16): no new form, no lower score (61): the two-arm form with one 0x212bc0 call in each arm still flips the frame (174), and re-reading the entry's variant after the load instead of keeping the default/existing choice in a byte keeps a value across the call and scores 154; the branch on the selected index itself and retail's out-of-line 0x13fac0 copy still differ.
 // MiniMax A (11-05): no new form, no lower score; the second half's redundant selected re-read dropped 150, and retail's two 0x212bc0 call sites and its out-of-line 0x13fac0 copy still need another lane's file.
 // MiniMax H (11-04): no new form, no lower score; the two 0x212bc0 arms with a copy in each (174) and the selection read as a long after the call (77) are worse than the one call site with the classification spill, and retail's out-of-line 0x13fac0 copy is inlined into our build, which lives in another lane's file.
 // MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation

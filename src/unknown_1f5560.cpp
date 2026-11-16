@@ -875,6 +875,7 @@ real normalize2d(point2f *v);
 // set, and the trajectory call still uses our callee's shorter convention (ours passes ten stack operands
 // and EDX and returns with ret 0x28, retail eleven and ret 0x2c), which is 0xfa1a0's own body in a
 // contributor's file.
+// MiniMax D (11-16): no new form and no lower score (135): retail still caches the trajectory result in DL across the force test (`mov dl, al`, `mov al, byte ptr [esp + 0x60]`, `test al, al`, `mov byte ptr [esp + 0x5c], dl`) where this build stores AL to its home at once, so the request, the facing stores and the returned flag stay off by that register turnover; retail's unit-request path returns the request's value straight in AL, so its result has two assignments and not three - returning `function_e6900(...)` directly from that branch drops the third assignment but scores 182 (919 bytes) because the exits are then split differently, and is restored.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -1139,6 +1140,13 @@ real normalize2d(point2f *v);
 // eligibility and first/fallback planar predicates: 257/282/168/172/169/185/175/163.
 // NOT kept: none recovers native DL/independent-return transport; vertical maximum
 // reaches 935 bytes but regresses. Original complete body and all providers restored.
+// P560: Sole common return with an uninitialized outcome, false/valid invalid assignment,
+// declared at entry/after speed/before force/before valid admission: eight 208 at 907/935.
+// NOT kept: common result takes BL, invalid zero still folds and length moves away; original
+// independent trajectory/request/invalid returns, all call tuples and complete body restored.
+// P573: Original-site forced type-mask admission, accepted/rejected outcomes in
+// bool/byte/short/long: eight 135. NOT kept: no native DL/independent-return repair;
+// original mask observations, validity/type producers and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1489,6 +1497,12 @@ real function_50650(real cosine);
 // (retail holds the actor in EDI and the object in ESI), so the prologue is one byte shorter and every later row pairs
 // with the wrong row; the actor written as the scaled offset first and the offset held in its own local both compile to
 // the same code.
+// MiniMax D (11-16): no new form, no lower score (120 in the fast check; ours is 1326 bytes against retail's 1324):
+// retail masks the actor index and multiplies it into edx before it loads the pool, then forms the actor with
+// lea edi,[edx+esi] and keeps the object in esi, while this build loads the pool first, holds the actor in esi and the
+// object in edi, so the prologue is two bytes longer and every later row pairs with the wrong row; the offset-first
+// expression, the scaled offset in a local of its own and the actor getter all compile to the same code, and the
+// velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, which this lane may not edit.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1911,6 +1925,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the baseline and none below it, and the direction swap (239), the swap with the shared origin local (289) and the
 // swapped operands (291) still measure worse, so the body stands; the parameter order retail uses is the one the note
 // below reports and is left alone.
+// MiniMax D (11-16): no new form, no lower score (238 in the fast check): the parameter order retail's own call site
+// uses (the actor in ecx, the object in eax, the target in edx and the tag type as the first stack argument) is the one
+// the note below reports; the declaration is shared with four other files, so it stays as it is, and the direction swap,
+// the swap with the shared origin local and the swapped operands still measure worse than the 238 they start from.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

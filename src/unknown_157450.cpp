@@ -482,6 +482,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax S (11-16): no new form, no lower score (32): the permuter over the four sources of the reduced image (3000 s, 60 tries) found nothing below the baseline, a bit local shared by the two accumulators scores 45 because the compiler folds the shift into the first use, and the only form below the baseline is a single-use bit local at 29, which the review drops as a one-use local; retail's changed block still stores the two masks before its not/and and reads the engine index at the head of the block.
 // MiniMax S (11-16): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, it is still read from memory at each use where retail keeps it in ECX across the tail, the present accumulator's update still lands in ESI where retail keeps it in EBX, and the engine index is still read after the stores where retail reads it at the head of the change block; the word mask alone scores 77, the non-volatile accumulator alone 102 and the two together 63.
 // MiniMax I (11-15): no new form, no lower score (32): the width-cast form MiniMax D measured (24) and the volatile word (24)
 // were not retried, and the one-use team-bit carrier that reached 29 stays dropped as a one-use local under the bar; what
@@ -5835,6 +5836,11 @@ void __stdcall function_d6bc0(long object_index);
 // EAX for the `= 1` store, where retail reloads it into EDI); that with the countdown's three index reads on the
 // loop-top local 207 (878 B); case 1 as `if (bit) break; goto countdown;` 21; the reset counter's arms swapped
 // (`if (reset) = 0; else ++`) 14, with the field test 172. On the kept body the field-test guard 167 (863 B).
+// M3 lane 8 r173 (fast with 0x15c150, matched each time; base 29): on the kept body, the function as a `__stdcall` member of
+// the existing c_engine_equipment (its first member is the entries array; the 0x15c150 call through it) 29 (byte-identical);
+// a timer pointer `&entries[i].value04` from the loop top for the zero test, the delay store, the countdown and the `= 1`
+// reset 173 (858 B); one scoped to the zero test and delay store 29 (same code); one for the countdown and its reset 29 (same
+// code); an entry pointer for the countdown block 205 (869 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

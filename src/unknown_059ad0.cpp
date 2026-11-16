@@ -3567,6 +3567,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // ECX, so that argument is dead there) and the channel index in EAX - while our declaration of that callee takes two
 // parameters, so ours loads the observer into ECX, pushes it and calls; that parameter list lives in
 // include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit.
+// MiniMax E (11-16): no new form, no lower score (101): the call boundaries agree with retail's (ten calls in the
+// same order) and the frame agrees (0x3c), but retail calls the matched 0x769a0 with three arguments - the
+// observer on the stack (push edx, the session's observer at +8), the session's value10 in ECX (the callee
+// overwrites ECX, so that argument is dead there) and the channel index in EAX - while our declaration of that
+// callee takes two parameters, so ours loads the observer into ECX, pushes it and calls; that parameter list
+// lives in include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -4429,6 +4435,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // are missing here too; that parameter list lives in include/unknown_075870.h and src/unknown_075870.cpp, which this
 // lane may not edit.
 // MiniMax E (11-15): no new form, no lower score (305): the call boundaries agree with retail's (twenty-one calls in the same order), so what is left is the rotation of the three boolean stack homes and the timeout spill, which needs 0x769a0's unread owner parameter in another file. BLOCKED-BY 0x769a0.
+// MiniMax E (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean
+// homes stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and the 0x769a0 call misses
+// retail's third argument for the same reason as in 0x5e3f0; that parameter list lives in
+// include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

@@ -490,6 +490,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
+// MiniMax R (11-16): no new form, no lower score (172): retail pushes EBX first and keeps the BSP root in EBX with the section in its own home, where this build keeps the BSP in EBP and the section in EBX, and the frame's slot order follows that allocation; the permuter's six tries reach no variant under 172.
 // MiniMax D (11-14): no new form, no lower score (172): the frame 0x58 agrees, but the BSP global still sits in ebp where retail keeps it in ebx, and the prologue still pushes two registers where retail pushes three.
 // MiniMax G (11-13): no new form, no lower score (172): the BSP global sits in ebp where retail
 // keeps it in ebx, the prologue's push order and the frame's slot heights differ, and the 0x11e800
@@ -712,6 +713,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // function scope beside the result and reset per triangle, the reference and surface selections as if/else statements.
 // Re-measured: the byte result declared first with `definition = NULL` at its declaration 185 (726 B, aligned 97/54; now
 // `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
+// MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
