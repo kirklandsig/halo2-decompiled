@@ -561,6 +561,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // (retail's order; aligned 213 -> 156, masked 57) 676; flip + order 673; all three 708. Left: local_8 at +0x7c with the
 // 0x1f9760 output/local_14/local_25 slot at +0x70 (retail the other way round); the normaliser's squares k, j, i (retail
 // i, k, j); the post-0x1f8510 block's order; the per-arm y and the flip conversion (ours 6 lines short in the steering block).
+// P556: Actual object/configuration/input/query-output/position/response/radial/final-output
+// lvalue receivers 679/679/683/679/682/704/693/766. NOT kept: no native spill/home equality;
+// original executable body, all producer helpers and both final publications restored.
+// P558: Actual collision-query output workspace, six complete flag/flag/vector field orders then both
+// flag-pair orders with the vector independent: 730/730/730/730/730/730/713/713. NOT kept: unmatched
+// output grouping; original independent outputs, all helpers and entire body restored.
+// P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
+// shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
+// NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

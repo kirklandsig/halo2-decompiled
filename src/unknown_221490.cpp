@@ -1061,6 +1061,12 @@ extern "C" void _ReadWriteBarrier(void);
 // that without the second barrier 31; the second barrier after the room pair, ahead of the two HF levels 27; the
 // attenuation call right after the memset, ahead of both volumes 105 (671 bytes); the room pair chained HF first
 // (`lRoomHF = lRoom = PIN(...)`) 21 (same code).
+// Round 130 (m3 lane 12, fast): a platform type name for the parameters (real build; compile-only before) 21; the helper's zero
+// test as `!gain` 21 (same code; 0x220fd0 builds 194 in the reduced image as before); the voice as a const pointer 21,
+// globals and voice both const 21. Diagnostic: with both barriers removed, the stretch between them (three float
+// stores to the HF levels) as a forceinline helper taking the parameters, globals, voice and decibels 28, the same as
+// no barriers (the lDirectHF store still sinks to the call and decibels still takes ECX), so an inlined body's edge
+// is no fence here; re-measured, no barriers 28.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

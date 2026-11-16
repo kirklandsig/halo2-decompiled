@@ -184,6 +184,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // code); the destination record taken with the increment (`&output[local_1++]`) for the copy and the blend 188 (1183
 // bytes); the destination record named ahead of the previous-index store, the increment kept at the end 14; the
 // cluster's index read into a named local at the loop top 11 (same code).
+// Round 130 (m3 lane 12, fast; ours ends `ret 8` like retail): the cluster record's address with the index product
+// first 11; that address as an array subscript of the cluster table 11; the palette lookup helper `__forceinline` 11;
+// the weight as `real const` 11; the inner byte step as `sizeof(real)` 11 (all same code). Our three tied homes have
+// five references each in the final code, as in retail.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

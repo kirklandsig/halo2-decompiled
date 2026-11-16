@@ -371,6 +371,11 @@ void c_window_channel::v9()
 // return with the type cleared after the builder 12; the pending request read through a const reference for the
 // builder's arguments and the load 10; the new request declared ahead of the type test with the load result straight to
 // set_next 28. Still BLOCKED-BY 0x149f49 (round 100's member-builder lead).
+// Round 188 (m3 lane 5, fast with the file's 54 functions, which stay matched; ours `mov eax, ecx` after the builder,
+// retail `lea eax, [ebp - 0x20]`): the new request declared at function scope ahead of the plain type test 13; the load
+// given the request through the builder's message type 3; the load and set_next in their own block after the builder 3;
+// every channel access through a named copy of `this` 3; the load procedure argument read as the field's raw dword 3. The
+// member-builder lead still needs 43 of the 110 builder calls changed in the held 0x2b10a3 files, so it stays HELD.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

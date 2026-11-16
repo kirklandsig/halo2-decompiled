@@ -948,6 +948,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Elevation output/axis/paired/range cursors 71/45/71/189; trace
 // origin/direction/output cursors 45/77/77; collision output cursor 71.
 // NOT kept: ties or regressions; original indexed elevation and full body restored.
+// P556: Actual trace-point destination lvalues 71; collision-point/marker/world/owner/
+// entry-direction/sector/count lvalues 45/45/45/45/47/45/45. NOT kept: no equality or gain;
+// original executable body and shared rotation retained. Native rotation SIMD ownership and marker timing remain.
+// P558: Current half-axis graph with all three actual direction/trace/world workspace identities, eight
+// behavioral naming sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
+// equality; original complete executable body and shared rotation restored.
+// P560: Actual angle/sine/cosine lexical identities on the retained half-axis graph, eight
+// behavioral sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
+// equality; original complete executable body and shared rotation restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

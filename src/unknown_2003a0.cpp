@@ -2998,6 +2998,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // this function, frame 0x18 at 575 bytes): the pending arm as `if (pending != NONE && delay <= 0) {...} else if (pending == NONE)
 // {...}` 50; the follow-up test as `NONE != local_2` without the casts 50; the follow-up event copied into a short before the
 // 0x202e90 call 50 (folded); `long const squad_index = arg_1;` for the lookup and both first-half calls 50 (copy-propagated).
+// Round 110 (m3 lane 1, fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, 0x203330 and 0x204d30): the second half's
+// definition pointer through the existing getter 0x203330 (its body is that ternary; it inlines) 50 (same code); the whole
+// first half (lock test, pending arms, follow-up) as a forceinline helper taking the event, the squad index and the squad
+// 50 (its parameter copies fold); the pending arms swapped (`== NONE` query arm first, the take arm as `else if (delay <=
+// 0)`) 145 (578 B, the layout changes); the actor iteration as `for (function_204d30(...); next != NULL; )` 50; the
+// follow-up trigger index as an if/else 50 (both same code).
 // P545: Standard input/lock/pending/delay/task/trigger sentinel operations, short
 // threshold and mapped-event addition: 203/188/187/172/209/133/120/96.
 // NOT kept: extra operation calls, altered frame/extent and the first-event EBP
