@@ -745,10 +745,32 @@ void function_d5560(bool skip_existing)
 struct s_scenario_object_bits
 {
 	dword bits[0xa2];
+
+	void clear()
+	{
+		memset(bits, 0, sizeof(bits));
+	}
 };
 
 /* makes the scenario's objects that belong on a new structure bsp and
    don't exist yet */
+// score 184 (was 203; fast build): walked statement by statement against retail, no behaviour
+// difference left: every field offset, test direction, callee and argument order agrees (retail's
+// 0xd57da-0xd5857 is function_d5910(datum, false) inlined, with its name_index test folded into the
+// 0xd57a4 test before it). What changed is the form: the clear is a member of the bits struct,
+// because a plain memset of a local this large makes VC realign the frame (`and esp, -8`; retail's
+// prologue at 0xd5640 has none; same as 0x221a70); the block and palette come from the file's
+// function_x71bcc9/function_x6e4ccb (retail loads size, datums offset, palette offset in that order
+// at 0xd573d-0xd5745; written out by hand: 198); the `(char)` cast on g_4686c4 is gone (same code,
+// retail's byte load at 0xd581b comes from the plain `1 << g_4686c4`). Left: retail keeps -1 in ebx
+// the whole function (0xd5668, 0xd57c3, 0xd5837, 0xd5857 re-make it after the bool in bl) and the
+// loop's type in [esp+0x10] (0xd5712, 0xd587c); ours puts type in ebx and uses -1 as an immediate.
+// Retail also stores the iterator's object at [esp+0x28] (0xd56b9, 0xd5708), a slot in front of the
+// iterator; a struct { s_placement_object *object; s_type_f1af8e iterator; } gives 171 and a
+// 0x2e8 frame, but it is a stack-layout-only local, so not kept. Calling function_d5910(datum, false)
+// instead of the written-out body stays out of line (call, `push 0`; 258, 494 bytes) where retail
+// inlines it, so the body stays. Tried: type declared per loop (184, same), memset as an
+// initializer or a zeroing loop (still realigns).
 // @retail 0xd5640
 void function_d5640()
 {
@@ -758,7 +780,7 @@ void function_d5640()
 	long bit_count = 0;
 	long type;
 
-	memset(&existing, 0, sizeof(existing));
+	existing.clear();
 	for (type = 0; type < k_object_type_count; type++)
 	{
 		s_object_type_placement_view *definition = OBJECT_TYPE_PLACEMENT(type);
@@ -796,9 +818,9 @@ void function_d5640()
 		if (definition->scenario_datums_offset == NONE || definition->scenario_palette_offset == NONE)
 			continue;
 
-		long size = definition->scenario_datum_size;
-		s_scenario_block *block = (s_scenario_block *)((byte *)scenario + definition->scenario_datums_offset);
-		s_scenario_block *palette = (s_scenario_block *)((byte *)scenario + definition->scenario_palette_offset);
+		long size;
+		s_scenario_block *block = function_x71bcc9(scenario, type, &size);
+		s_scenario_block *palette = function_x6e4ccb(scenario, type);
 		long first_bit = first_bits[type];
 
 		function_bf380();
@@ -823,7 +845,7 @@ void function_d5640()
 				continue;
 			if (datum->bsp_policy == 2)
 			{
-				if (!(datum->bsp_mask & (1 << (char)g_4686c4)))
+				if (!(datum->bsp_mask & (1 << g_4686c4)))
 					continue;
 			}
 			else

@@ -666,6 +666,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // (same code); the unit, definition and model lookups moved to the 0x1d90e0 call inside the loop 191 (577 bytes: not
 // hoisted back out); the three entry tests as nested ifs 2; the pair-name tests split into two nested ifs 2. A 600 s
 // fast annealing permuter run (seed 86, 63 tries) found none below 2.
+// Round 129 (m3 lane 12, fast), at 2: `graph` declared inside the node-count block 2; the two markers in one
+// declaration 2; the weight test as `0.0f < weight` 2; the clear's word count named 2; the arms' graph through
+// TAG_BYTES(state->graph_tag_index) 2 (all the same code). Retail's back-edge table load reads as a real in-loop load
+// (the table global treated as possibly written by a loop callee, as the iterator re-read after 0xb8d30 also shows),
+// where ours reloads a hoisted invariant: the lever is still the callees' side-effect summaries.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1795,6 +1800,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // MiniMax S (11-14): no lower score (164): the depletion queries keep the && form - the if-form for both queries
 // gives 330 and the conditional-clear form 345 - and retail's depleted flag in bl with a third stack slot is not
 // reproduced by any of the four spellings tried here.
+// P533: Guard-owned first signed-count comparison bool/byte/short/long, then second:
+// 328/328/328/328/327/327/327/327. NOT kept: no exact SETLE/default recovery;
+// original complete body restored, pool/state/count joins and return normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -3043,6 +3051,10 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // lookup assigned inside the NONE test's condition with one return 16; the entry parameter filled by a ternary and used
 // as the index 16. Diagnostics: 1 to 7 unused locals 16 each, the index renamed to sort after request_priority 16 (the
 // roles follow neither the symbol count nor the names).
+// Round 129 (m3 lane 12, fast): the fallback lookup in its own named `short fallback` tested and then copied into the
+// index 17, with request priority captured first 17; the index chosen into a named value then copied to the index
+// with one NONE test after 16; entry_index reassigned from the named fallback and copied to the index 17, with the
+// priority captured after the fallback block 85 (252 bytes). The roles stay index EBX, NONE EBP, priority ESI.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

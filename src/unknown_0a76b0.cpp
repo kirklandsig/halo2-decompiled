@@ -1134,6 +1134,9 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // P511: Complete terminal placement success/failure outcomes in bool/byte/short/long:
 // 92/92/92/92/92/92/92/92. NOT kept: all canonicalize without recovering saved projectile/type
 // and shared-vector homes. Original complete body and all call tuples restored.
+// P541: Actual parent-velocity output validity, available/missing bool/byte/short/long call results:
+// 92/92/92/92/92/92/92/92. NOT kept: one-use output-validity outcomes require equality; saved index/type and shared vector homes remain.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2730,7 +2733,7 @@ __forceinline char unit_action_round(real value)
 // actions->melee_name with no local 235 (same code each); the channel declared with the top locals 301.
 // b5Q walk (11-06, fast): every block checked against retail 0xe9a20-0xe9ec1 (entry/hand getter, the 0x1b bit and the melee_name
 // switch, mode 2 and mode 1 selection, the e9780 fallbacks, the damage/end/total ticks, the lunge arm, the 0x7f/0xff tail):
-// fields, offsets, constants (1.0, 0.0, 0.9, 2.0, 1/30), condition directions, callees and arguments agree. One precision fix:
+// fields, offsets, constants (1.0, 0.0, 0.9, 2.0, 1/30), condition directions, callees and arguments agree. One change to retail's evaluation order:
 // the total ticks are (frame_count * 0.033333335f) rounded to float, then * the field (retail 0xe9d61-0xe9d6d: cvtsi2ss,
 // mulss k, cvtsi2ss field, mulss); the single expression compiled as (field * frames) * k (235 -> 234). Left (no
 // behaviour difference): register homes, the result byte at [esp+0x12] vs duplicated returns, the divide from memory.

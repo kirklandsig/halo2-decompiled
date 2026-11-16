@@ -4346,7 +4346,8 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
+// score 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
+// pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
 // Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
@@ -4523,6 +4524,20 @@ struct s_128ca0
 // homes and pin joins remain. Original endpoint expression and full body restored.
 // N397: Complete native pitch, processed-gain and both submission-gain home identities 222/222/222/222/222/222/222/222.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// b6U (11-06) statement-by-statement walk against retail (0x128ca0-0x1290be), fast build: no behaviour difference found.
+// Checked: the two memsets and the two stores (0x128cfc-0x128d18, local_3 clear is 4 + 0x2c + 4 + 0x444 bytes);
+// pitch (0x128d1a-0x128d58, upper - lower scaled, plus playback pitch, plus lower); gain sum (0x128d58-0x128d83,
+// location + (playback gain + argument)); 0x1251e0 and 0x12a1b0 arguments (0x128d89-0x128dab); permutation and
+// pitch-bound lookups (0x128dbd-0x128e13); promotion term (0x128e23-0x128e9b: 0x12a9d0 result in st0, spilled and
+// reloaded); bit 9 test (0x128ea3-0x128ead); both pins (-64 / 0.0 from 0x44a0b4 / 0x45dbd8; 0x128ebb-0x128efc and
+// 0x128f86-0x128fcb); 0x21f8a0 / 0x21f720 / 0x129f20 argument registers; synch count update (0x128f4c-0x128f6e);
+// bit 6, bit 3 and next_permutation tests (0x128fec-0x129031); 0x1286b0 arguments (0x12905a-0x129077, the voice's
+// sound_index read unmasked); the stream bit (0x129093-0x1290b5). 0x21fa80 (edi = &local_3) left as it was.
+// Change: the next-chunk test is one condition (retail 0x12903e-0x129058: chunk word, chunk count - 1 compare, then
+// chunk + 1 against 0xffff in one chain) instead of a NONE default overridden under a test; same behaviour, 167 -> 158.
+// Tried: the in-body inline_depth(0) pair removed 270 (promotion lookup then inlines); a named local for chunk + 1 166.
+// Not kept (score-only, no behaviour change): reading the pitch bounds through &pitch_lower 164 (retail 0x128d2e forms
+// that pair pointer with lea +8); flag6 stored as a byte (retail 0x12908f is `or byte [esi+4], 0x40`, ours stores the word; not tried, a narrowing cast).
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4600,12 +4615,9 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 		}
 		if (!TEST_FIELD_BIT(local_1->flag3))
 		{
-			short local_16 = NONE;
-			if (local_8 && local_1->chunk_index < *(short *)((byte const *)local_8 + 0xe) - 1)
-				local_16 = local_1->chunk_index + 1;
-			if (local_16 != NONE)
+			if (local_8 && local_1->chunk_index < *(short *)((byte const *)local_8 + 0xe) - 1 && local_1->chunk_index + 1 != NONE)
 			{
-				sound_playback_set_chunk(local_0->sound_index, local_1->definition_index, local_1->pitch_range_index, local_1->permutation_index, local_16);
+				sound_playback_set_chunk(local_0->sound_index, local_1->definition_index, local_1->pitch_range_index, local_1->permutation_index, local_1->chunk_index + 1);
 				function_125e60((s_looping_track_sound *)local_1);
 				local_1->flag3 = true;
 			}

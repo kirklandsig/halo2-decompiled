@@ -511,6 +511,21 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
 // restored, native inverse homes and the second-transform X/Z spill remain.
 // MiniMax D (11-06): no new form, no lower score.
+// b6S (11-06, fast build 195, 985 bytes vs retail 955): statement-by-statement walk against retail, no behaviour difference
+// found. Checked: a/camera/scale defaults (cmove 0x30838 loads the pointer stored at 0x468788, the other two are addresses
+// 0x30854/0x3085d); b = a + d with the displaced sums (0x30872-0x30884); both transforms' scale tests at 0x30866/0x30935
+// and rows; perspective flag test 0x30988 (je 0x30b48 = orthographic: both factors 1.0, zero test skipped); `|tb.z| < eps` retransform
+// of a - d (0x30a15 jbe, 0x30a26-0x30a3d) and the re-test of tb.z after it (0x30b2d-0x30b3d); `|ta.z| < eps` keeps the 0 default
+// from [esp+4] (0x30b1c/0x30b27) and `|tb.z| < eps` the one from [esp+8] (0x30b3d/0x30b58); both factors tested against 0 with
+// `jnp` = equal only (0x30b61-0x30b6a, so NaN passes, as `!=` does); dx/dy = tb*fb - ta*fa (0x30b79-0x30b8d); negate = 0 - scale*d
+// (0x30b93-0x30bae); outputs stored before the success test (0x30bb9-0x30bbd), then `dx != 0 || dy != 0` -> 1 (0x30bcd) else 0
+// (0x30be2); factor-zero path stores 0 to both outputs, returns 0 (0x30bd9). Stack args scale/perspective/negate = [esp+0x34/38/3c]
+// (ret 0xc); callers 0x4f7e0 (0x4f951-0x4f969) and 0x4ff50 (0x500e3-0x500fb) push 1, 1, scale and use only al.
+// Operand order only (not behaviour; adds commute exactly): retail sums b as d.i + a.x, a.y + d.j, d.k + a.z (0x30872-0x30884);
+// the source has them the other way round. Writing retail's order gives 195 and the same code (the compiler picks the load order),
+// not kept. transform_point (outside this edit) sums right, up, forward; retail sums x*[camera+4] + z*[camera+0x1c] first,
+// then y*[camera+0x10] (0x308cc-0x308f2); an earlier round measured that order as 195 with the same code. Frame is still
+// 0x30 vs retail 0x2c (retail packs inv_a, inv_b, b, ta, tb into 11 slots; its a - d point reuses b's y/z slots 0x30a49/0x30a4f).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

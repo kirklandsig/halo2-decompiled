@@ -872,6 +872,11 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // index takes ESI across the call, the font EBX, the mask EBP); without the search loop 173, where the font takes ESI
 // and the character EDI. Reading: the hoisted bitmap pointer and count are coloured first (ESI, EDI), then the font
 // (EBX), the mask last (EBP); retail colours the mask before the font, as if its mask were a cross-block value.
+// Round 108 (m3 lane 1, fast with 0x13eeb0, which matched in each): the new prediction through a typed pool accessor
+// macro 14; a long copy of the font declared in the not-found branch for the test and the store 14, copies of both
+// parameters there 14; the wrapper type made non-POD by an empty inline destructor (diagnostic, header restored) 14;
+// the search as a do/while that stops on a match, then `if (prediction) return false;` 14 (all the same code). Retail
+// 0x13d950 for comparison: its pointer parameter takes EBP at entry and the mask EBX (shared with the iterator index).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
