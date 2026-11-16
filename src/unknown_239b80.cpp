@@ -682,6 +682,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P551: Standalone complete lowest-point replacement/retention outcomes in
 // bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no exact frame/count-home repair;
 // original body restored. Candidate decisions, all lazy observations and compaction unchanged.
+// P583: Inclusive final-ordinal lowest/pass/candidate bounds, seven subsets, then
+// one immutable shared final ordinal: 279/260/260/248/238/249/238/266. NOT kept: no exact native bound/frame
+// recovery; original signed loops, observations and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

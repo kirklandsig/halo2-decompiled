@@ -2026,7 +2026,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax E (11-05): no new form, no lower score.
 // At 307: extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
 // reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
-// score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
+// Earlier header detail: does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
 // retail's layout: the original body is restored.
 // Lane 14 r57 (plain, from 305): the range gain through the existing decibels_add 432 (1939 bytes); track_definition
 // renamed 305 (no slot moves); the two arrays declared at the update block's top 419 (and they would be filled
@@ -2354,6 +2354,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // values, their subsets and immutable full bounds: 469/502/518/458/468/503/522/522 reduced
 // (control 479, full 305). NOT kept: repeated native input observations and the
 // conditional upper-bound load do not match; original complete body restored.
+// P583: Actual paired created/replacement handle presence outcomes, positive/
+// complementary bool/byte/short/long: 479/479/479/479/479/479/479/479 (reduced control 479; full 305). NOT kept: no exact native
+// NONE/playback/frame recovery; original handle tests, request and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

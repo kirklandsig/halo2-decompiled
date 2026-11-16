@@ -630,6 +630,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // rewrite on that basis). The helper taking its vector by value 1392 (same code as the copy); the two contact arrays
 // declared at the top 1392 (same code); the impact direction through the float normalizer in place of the
 // double-accumulating one 1454 (6307 bytes, frame 0x5dc). All restored.
+// P583: Advance-before-admission signed point/contact/query-initialization ordinals,
+// seven subsets, then both collected-prefix searches: 1375/1375/1375/1375/1375/1375/1375/1375. NOT kept: no exact
+// native frame/indexed-contact recovery; original loops, helpers and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
