@@ -622,6 +622,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // m3 lane 10 r109 (fast, control 194): the pivot as two reals 295 (1971 bytes); the second set's extents computed y first
 // (retail computes `by` ahead of `bx`) 208; the first set's two reciprocals declared before the second set's extents 194
 // (same code); the flip computed ahead of the extents 249; the blended reciprocals without the two one-use locals 322.
+// M3 lane 14 r100 (fast; base 194): in the real build (earlier only in a harness) the clamp indexed as `(&tint.alpha)[channel]`
+// 194 and as four if/else-if statements 194 (both the same code); the UV encoder (function_x0ec080) `__forceinline` 194, with
+// sprite_flip `__forceinline` too 194 (same code); the four 16-byte locals declared at the top in the order uv_b, uv_a,
+// geometry, tint 194 (same code). The tint (+0x60, retail +0x50) and the second set (+0x50, retail +0x60) keep their homes.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -696,6 +696,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // harness-only before). A 600 s permuter run from this body: 70 tries, best 8. Compile-only (/O2 /arch:SSE /Gr reproduces
 // the tail and the dot): a `real` return of the last normalize, the body in `do { } while (0)` and a forced-inline bool
 // helper for the whole body under `if (!helper())` keep our tail; only the listed bool return gives retail's.
+// M3 lane 14 r100 (fast with 0xb7060; base 8): a dead store at the join after the valid block (diagnostic, `body_index =
+// NONE;` before the return) 8 (same code: it is gone before the jump is threaded, so only code that stays, as the bool
+// return's `mov al, 1`, keeps the join); the three body getters through a named body-entry pointer 147 (head flips, 0xb7060
+// 11); the component test as a two-case switch (diagnostic) 8 (same code); the field-spelled dot with its arguments swapped,
+// dot3f(forward, up) 10 (the i product turns retail's, the j and k products flip); the active store at the head of both
+// arms of the valid test 104 (928 B, `ret 4`: the convention flips, our tail stays).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
