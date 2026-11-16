@@ -21,20 +21,14 @@ public:
 };
 
 // where `value` sits in the cell's list of boxes, or -1
-inline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
+__forceinline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
 {
 	long const count = cell->boxes.size;
-	if (count <= 0)
+	for (long index = 0; index < count; index++)
 	{
-		return -1;
-	}
-	unsigned short const *data = cell->boxes.data;
-	unsigned short const *end = data + count;
-	for (unsigned short const *entry = data; entry < end; entry++)
-	{
-		if (*entry == value)
+		if (cell->boxes.data[index] == value)
 		{
-			return entry - data;
+			return index;
 		}
 	}
 	return -1;
@@ -57,8 +51,9 @@ __forceinline void mark_holding_x_2e24b0(class_2e1090 *sweep, int count, int low
 		{
 			cell_2e1090 *cell = &sweep->cells[slot - 1];
 			flip_bit_2e1090(bits, cell->box);
+			int remaining = cell->boxes.size - 1;
 			unsigned short *held = cell->boxes.data;
-			for (int remaining = cell->boxes.size - 1; remaining >= 0; remaining--)
+			for (; remaining >= 0; remaining--)
 			{
 				flip_bit_2e1090(bits, *held);
 				held++;
@@ -194,7 +189,10 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	}
 }
 
-// score 77 (was 106): the quantizing (two-level helper, its steps as separate
+// score 49 (was 106): the y/z test reads the box's lower word first
+// (apart_yz_2e1090; 75 reading it last, every other user unchanged), and the
+// held count is read before the held list (77 the other way). Earlier: the
+// quantizing (two-level helper, its steps as separate
 // statements), the appends, the bit setter and the y/z test (in-place
 // statements) now match retail's code. Still: in the grid cell's walk ours
 // reloads the cell pointer into edx where retail uses ecx, and in the pair
@@ -232,7 +230,14 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 312 (was 328): remaining index/receiver slots, scan loads and tail
+// score 160 (was 312): the moved box's grid test is kept in a flag set only
+// when cells are used (folded into one condition, 261), the moved box's old
+// index is named inside the cell walk (222 computed in the call), and
+// the cell lookup reads the list's count first and
+// returns its index from inside the loop, as both of retail's lookups do (a
+// pointer walk 312; the count and data both held 390; a guarded loop 372),
+// and the held count is read before the held list (263 the other way).
+// Before: 312 (was 328): remaining index/receiver slots, scan loads and tail
 // differ. Earlier 328 at retail length retained the in-place y/z test; its
 // count, index, receiver and array slots differed, the second x walk saved
 // the receiver instead of the word index, and the scan kept its box in a
@@ -292,7 +297,12 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 		{
 			((cell_2e1090 *)((char *)cells + (box.owner & ~1)))->box = (unsigned short)index;
 		}
-		if (cells_used && (box.owner & 1) == 0)
+		bool in_cells = false;
+		if (cells_used)
+		{
+			in_cells = (box.owner & 1) == 0;
+		}
+		if (in_cells)
 		{
 			// the grid cells holding the moved box hold it under its new index
 			unsigned short const x_low_slot = box.slots[4];
@@ -305,8 +315,9 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 			int const last = (axes[0].data[box.slots[5]].value >> shift) - 1;
 			for (int m = first; m <= last; m++)
 			{
+				unsigned short const moved = (unsigned short)(count - 1);
 				cell_2e1090 &cell = cells[m];
-				long const position = find_box_2e29b0(&cell, (unsigned short)(count - 1));
+				long const position = find_box_2e29b0(&cell, moved);
 				cell.boxes.data[position] = (unsigned short)index;
 			}
 		}

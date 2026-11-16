@@ -17,12 +17,6 @@
 
 
 
-// the three-axis sweep's pair report for many boxes at once (claimed, #638)
-// @stub 0x2e2f70
-void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long count, pairs_2e1090 *pairs, pair_change_2e2f70 change)
-{
-}
-
 // handlers of the pair table (0x2e5d50) not decompiled yet
 
 

@@ -610,6 +610,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax C (11-15): no new form kept, no lower score (34, was 34): the entry total still lands in EAX where retail has
+// it in EDX; dropping the named total puts the sum in EDX as retail but reorders the header case's loads and scores 88,
+// and the total's operand orders, a parenthesised sub-sum, a two-statement total and a constant-first total all stay
+// at 34. The dispatch still hoists body_size into ESI where retail reuses the switch register ECX, so the signature
+// position still folds into ESI where retail has `lea esi, [ecx + edx]`, and the body's size and position stay in ESI
+// and EDI where retail has them in EDI and ESI. The signature position's operand orders and spellings (body first, two
+// statements, a sub-sum) are all the same code.
 // MiniMax G (11-14): no new form kept, no lower score (34): the C form (the total inlined into the fild, the file
 // handle read into a local) scores 28, but that local is one-use - the same 28 form the 11-09 notes record as not
 // kept - and without it the same body scores 88. Still differs: the entry total lands in eax where retail keeps it
