@@ -1575,6 +1575,9 @@ static __forceinline bool view_needs_join_buffer(short type)
 // P568: Existing type classifier case returns/order/both 183/183/183; false/true
 // default results 199/214; mixed direct exits 199/214; ordinary inline metadata 183.
 // NOT kept: no transition-argument, embedded-table address or cold-branch repair; original helper restored.
+// P570: Complete timer admission at its producer, positive readiness then waiting complement,
+// bool/byte/short/long: 183/183/183/183/183/183/183/183. NOT kept: no transition-scratch,
+// cold-branch or table-address recovery; original complete body restored.
 // @retail 0x6a040
 long function_6a040(c_class_6a600 *world, c_simulation_view *view)
 {
@@ -1868,6 +1871,9 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // P568: In-place state classification by conditional store/value 56/56; standard equality
 // arithmetic 67, inequality arithmetic 64, equality/inequality conditional 64/64,
 // bound equality arithmetic 91, bound inequality conditional 96. NOT kept: no native state/mode or spill recovery.
+// P570: Standard saved-address acquisition, object forward/backward and byte forward/backward,
+// 59/59/59/59; restoration counterparts 51/61/51/61. NOT kept: native mode/state
+// schedule and overwritten subtraction remain; original six-byte transfers and complete body restored.
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {
@@ -2038,6 +2044,9 @@ void function_195a40(void);
 // P568: Actual mode-field reference before/between clears, then without the boundary,
 // field pointer with/without it and direct reads: 23/23/23/23/23/23; distribution
 // initialized from the range 33; named range predicate 45. NOT kept: no exact pointer-load recovery.
+// P570: Entry disable observation supplies both flag clears, bool/byte/short/long,
+// separate then chained: 3/3/20/19/3/3/20/19. NOT kept: no exact pre-clear pointer-load recovery;
+// wider guard homes lengthen. Original complete body and inherited boundary restored.
 // @retail 0x67ee0
 void function_67ee0(void)
 {
