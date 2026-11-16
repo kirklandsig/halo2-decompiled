@@ -177,9 +177,7 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 					else
 					{
 						cell_2e1090 *cell = (cell_2e1090 *)((char *)sweep->cells + (other->owner & ~1));
-						long const position = find_box_2e29b0(cell, (unsigned short)index);
-						cell->boxes.size--;
-						cell->boxes.data[position] = cell->boxes.data[cell->boxes.size];
+						cell->boxes.remove_at(find_box_2e29b0(cell, (unsigned short)index));
 					}
 				}
 			}
@@ -227,10 +225,24 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 	}
 }
 
+// takes the box's endpoints out of each axis and moves the other boxes'
+// endpoint indices back
+__forceinline void drop_endpoints_2e29b0(class_2e1090 *sweep, element_2e1090 *data, unsigned long count, element_2e1090 &box)
+{
+	((array_2dffa0 *)&sweep->axes[0])->remove_two(box.slots[4], box.slots[5]);
+	((array_2dffa0 *)&sweep->axes[1])->remove_two(box.slots[0], box.slots[2]);
+	((array_2dffa0 *)&sweep->axes[2])->remove_two(box.slots[1], box.slots[3]);
+	((quantized_boxes_2dfcc0 *)sweep)->function_2dfdc0((quantized_box_2dfcc0 *)data, count, box.slots);
+}
+
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 160 (was 312): the moved box's grid test is kept in a flag set only
+// score 130 (was 160): the grid test is one condition, the element array is
+// read before the endpoints are dropped (a helper takes it), and the cell's box
+// is removed at the index a lookup returns. this and the box pointer still take
+// each other's registers.
+// Before, 160 (was 312): the moved box's grid test is kept in a flag set only
 // when cells are used (folded into one condition, 261), the moved box's old
 // index is named inside the cell walk (222 computed in the call), and
 // the cell lookup reads the list's count first and
@@ -274,10 +286,7 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 		report_removed_2e29b0(this, owner, index, bits, box, pairs);
 	}
 
-	((array_2dffa0 *)&axes[0])->remove_two(box.slots[4], box.slots[5]);
-	((array_2dffa0 *)&axes[1])->remove_two(box.slots[0], box.slots[2]);
-	((array_2dffa0 *)&axes[2])->remove_two(box.slots[1], box.slots[3]);
-	((quantized_boxes_2dfcc0 *)this)->function_2dfdc0((quantized_box_2dfcc0 *)elements.data, count, box.slots);
+	drop_endpoints_2e29b0(this, elements.data, count, box);
 
 	// the last box moves into the freed place
 	if (index < count - 1)
@@ -297,12 +306,7 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 		{
 			((cell_2e1090 *)((char *)cells + (box.owner & ~1)))->box = (unsigned short)index;
 		}
-		bool in_cells = false;
-		if (cells_used)
-		{
-			in_cells = (box.owner & 1) == 0;
-		}
-		if (in_cells)
+		if (cells_used && (box.owner & 1) == 0)
 		{
 			// the grid cells holding the moved box hold it under its new index
 			unsigned short const x_low_slot = box.slots[4];
