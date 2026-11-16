@@ -2500,7 +2500,7 @@ class _Helper:
                 if w not in params and w not in KEYWORDS}
 
 
-def _literal_type(e):
+def _number_type(e):
     """The type of a number literal as the compiler reads it, or None: 0.5f real, 0.5 double,
     1u and 0x80000000 (too big for long) dword, other integers long."""
     m = re.fullmatch(r'(?:\d+\.\d*|\.\d+|\d+(?=[eE]))(?:[eE][-+]?\d+)?(?P<f>[fF])?|(?P<i>0[xX][0-9a-fA-F]+|\d+)'
@@ -2530,7 +2530,7 @@ def _arith_type(expr, types, context):
         if e[0] in '-+~' and not e.startswith(('--', '++')):
             t = _arith_type(e[1:], types, context)
             return 'long' if t in ('short', 'word', 'char', 'byte', 'bool', 'int') else t
-        lit = _literal_type(e)
+        lit = _number_type(e)
         if lit:
             return lit
         t = expr_type(e, types, context)
@@ -2904,7 +2904,7 @@ def _expand(body, h, context, types):
                         break
                     lookup[p] = a
                 else:
-                    if not (_literal_type(a.lstrip('-')) or (a in types and a not in volatile
+                    if not (_number_type(a.lstrip('-')) or (a in types and a not in volatile
                                                              and not re.search(r'(?<!&)&\s*%s\b' % a, body))):
                         ok = False
                         break
