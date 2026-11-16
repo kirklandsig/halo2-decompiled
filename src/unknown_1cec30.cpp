@@ -2601,6 +2601,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // residence not recovered; original complete body and all shared helpers restored.
 // P540: Complete scalar-SSE velocity/speed accumulation, output products and weighted speed, 257/375/268/292/454/309/355/436.
 // NOT kept: larger frame and loss of the exact sample provider; original complete source restored.
+// P551: Complete backward normal-initial/normal-fallback/velocity-initial/sample-fallback
+// object transfers, then corresponding uninitialized transfers: 438/376/232/136/449/376/242/136.
+// NOT kept: no native early velocity j/k or property-zero recovery;
+// original full body, normalizer, property helpers and headers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

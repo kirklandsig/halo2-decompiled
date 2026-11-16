@@ -941,6 +941,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // fused trace/elevation with indexed collision: 77/45/45/71/77/42/203/202.
 // Kept only half-axis traversal, 71 -> 45 plain; native frame/extent and all matches retained.
 // NOT kept: collision combination adds only three; other forms tie or regress.
+// P551: Standard backward whole-object direction/world transfers, uninitialized
+// whole-object direction/world transfers, then both component-range forms: 127/142/246/134/246/140/246/134.
+// NOT kept: no native rotation/publication improvement; original full body and headers
+// restored. Native 0xd8 frame/1089-byte extent retained; rotation SIMD roles and marker timing remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

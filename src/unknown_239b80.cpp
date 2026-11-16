@@ -679,6 +679,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // then all with the existing successor ordinal retained across passes: eight at 144.
 // NOT kept: extra frame word, count/departure/produced-length homes and loop head remain.
 // Original complete body and declaration scopes restored.
+// P551: Standalone complete lowest-point replacement/retention outcomes in
+// bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no exact frame/count-home repair;
+// original body restored. Candidate decisions, all lazy observations and compaction unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
