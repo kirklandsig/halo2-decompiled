@@ -1119,6 +1119,10 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax I (11-16): no new form, no lower score (92): the first 200 aligned rows match and the tail still
+// diverges where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this
+// build keeps it in al; that shape needs 0x1c4b00's last parameter to be a bool, and its definition and its
+// declarations live in files this lane may not edit. Still BLOCKED-BY 0x1c4b00.
 // MiniMax C (11-15): no new form, no lower score (92): retail's 0x119020 pushes the force as a full dword
 // (push 1) before its 0x1c4b00 call, so the two other call sites in this file compile against the long
 // parameter and the bool form cannot be taken in this file alone.

@@ -674,11 +674,19 @@ real function_c8880(long unit_index, short field_240);
 static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 {
     long absolute = function_16bc00(data, index == NONE ? 0 : (index & 0xffff) + 1);
-    if (absolute == NONE)
-        return NONE;
-    return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
+    long result = NONE;
+    if (absolute != NONE)
+        result = (*(short *)(data->data + data->size * absolute) << 16) | absolute;
+    return result;
 }
 
+// MiniMax I (11-16): score 38 (was 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
+// body lives in the cluster loop's found branch and the loop leaves it with a break, so the function has no goto
+// that the body on main does not have; the frame and the slots are retail's (0xb4, the result byte at [esp+0x13],
+// the link iterator at [esp+0x40], the player index at [esp+0x14]) and the pool step helper latches its result;
+// left: the definition pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short
+// where retail passes it in a full register, the angle's pi/4 is added after the dot product where retail adds it
+// before, and the pool step's packed handle is built in edx where retail builds it in ecx.
 // MiniMax I (11-15): score 38 (was 165): the pool step helper latches its result, the cluster bit table's base is read once before
 // the first query and the body lives in the cluster loop's found branch, the range's zero is the model-NONE arm and the angle's
 // atan2 takes its arguments as reals (so the compiler expands it as fpatan and the frame is retail's 0xb4); left: the definition
@@ -701,7 +709,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // every later offset shifts with the frame order; the alignment follows the two callers' call chain, whose files
 // this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (165): the byte flag's stack slot is still esp+0x13 against retail's esp+0xf, and the branch after the pool lookup still goes elsewhere.
-// score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
+// score 38 (was 165): earlier 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
 // retail keeps it at [esp+0x40], so the first difference is at +0x1a and every later offset shifts with the
@@ -952,77 +960,80 @@ bool function_bba80(long object_index)
             index = *(long *)((byte *)OBJECT_GET(index) + 0x14);
         }
         s_object_header_view *header = OBJECT_HEADER_GET(root);
-        dword flags = *(dword *)((byte *)header->object + 4);
-        if (!(((byte *)header)[2] & 1) || !(bool)((flags >> 8) & 1) || (bool)((flags >> 18) & 1))
+        byte *root_object = (byte *)header->object;
+        if (!(((byte *)header)[2] & 1) || !(bool)((*(dword *)(root_object + 4) >> 8) & 1) ||
+            (bool)((*(dword *)(root_object + 4) >> 18) & 1))
             goto done;
+        byte const *options = (byte const *)g_4e6948;
         s_object_link_iterator links;
         short cluster = function_b8a80(root, &links);
         while (cluster != NONE)
         {
-            if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
-                break;
-            cluster = function_b8b20(&links);
-        }
-        if (cluster == NONE)
-            goto done;
-
-        byte *object = (byte *)OBJECT_GET(object_index);
-        s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
-        long model_index = definition->model_tag_index;
-        real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
-        real range_squared = 0.0f;
-        if (model_index != NONE)
-        {
-            real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
-            if (range > 0.0f)
+            if (bit_vector_test((dword const *)(options + 0x1138), cluster))
             {
-                range *= 1.2f;
-                range_squared = range * range;
-            }
-            else
-                range_squared = 1600.0f;
-        }
-        s_record_pool *players = g_4e8c24;
-        long player_index = object_query_next_ab(players, NONE);
-        while (player_index != NONE)
-        {
-            byte *player = players->data + (player_index & 0xffff) * 0x21c;
-            long unit_index = *(long *)(player + 0x2c);
-            if (unit_index != NONE)
-            {
-                point3f position;
-                function_caf60(unit_index, &position);
-                point3f *centre = (point3f *)(object + 0x30);
-                vector3f offset;
-                offset.i = centre->x - position.x;
-                offset.j = centre->y - position.y;
-                offset.k = centre->z - position.z;
-                real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
-                byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
-                real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
-                if (zoom > 0.0001f)
-                    distance_squared /= zoom * zoom;
-                if (distance_squared < radius_squared)
+                byte *object = (byte *)OBJECT_GET(object_index);
+                s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+                long model_index = definition->model_tag_index;
+                real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
+                real range_squared;
+                if (model_index != NONE)
                 {
-                    result = true;
-                    goto done;
-                }
-                if (distance_squared < range_squared)
-                {
-                    offset.i = centre->x - position.x;
-                    offset.j = centre->y - position.y;
-                    offset.k = centre->z - position.z;
-                    vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
-                    if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos(atan2((double)*(real *)(object + 0x3c), (double)function_30bf0(&offset)) + 0.7853981852531433f))
+                    real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
+                    if (range > 0.0f)
                     {
-                        result = true;
-                        goto done;
+                        range *= 1.2f;
+                        range_squared = range * range;
                     }
+                    else
+                        range_squared = 1600.0f;
                 }
+                else
+                    range_squared = 0.0f;
+                s_record_pool *players = g_4e8c24;
+                long player_index = object_query_next_ab(players, NONE);
+                while (player_index != NONE)
+                {
+                    byte *player = players->data + (player_index & 0xffff) * 0x21c;
+                    long unit_index = *(long *)(player + 0x2c);
+                    if (unit_index != NONE)
+                    {
+                        point3f position;
+                        function_caf60(unit_index, &position);
+                        point3f *centre = (point3f *)(object + 0x30);
+                        vector3f offset;
+                        offset.i = centre->x - position.x;
+                        offset.j = centre->y - position.y;
+                        offset.k = centre->z - position.z;
+                        real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+                        byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
+                        real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
+                        if (zoom > 0.0001f)
+                            distance_squared /= zoom * zoom;
+                        if (distance_squared < radius_squared)
+                        {
+                            result = true;
+                            goto done;
+                        }
+                        if (distance_squared < range_squared)
+                        {
+                            offset.i = centre->x - position.x;
+                            offset.j = centre->y - position.y;
+                            offset.k = centre->z - position.z;
+                            vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
+                            if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
+                                cos(atan2(*(real *)(object + 0x3c), function_30bf0(&offset)) + 0.7853981852531433f))
+                            {
+                                result = true;
+                                goto done;
+                            }
+                        }
+                    }
+                    players = g_4e8c24;
+                    player_index = object_query_next_ab(players, player_index);
+                }
+                break;
             }
-            players = g_4e8c24;
-            player_index = object_query_next_ab(players, player_index);
+            cluster = function_b8b20(&links);
         }
     }
 done:
@@ -1995,6 +2006,10 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-16): no new form, no lower score (285); the bit-7 test of the object word written in retail's
+// shift form (">> 7" and "& 1") compiles to the same sign test as the mask, so the body is unchanged: the first
+// difference is still the ancestry loop's jump to our own epilogue at +0x76 where retail jumps to its shared one at
+// 0xb987a, and retail still inlines the marker pointer's helper, which needs 0xb8bd0's file flag.
 // MiniMax H (11-14): no new form, no lower score (285); the two state bits of the object word were written as
 // shifts (">> 7" and ">> 8" instead of the masks 0x80 and 0x100), which is the form retail uses, but the score stayed
 // 285 and the body stayed four bytes longer than retail's 1236, so the shift form was reverted; the first difference is
