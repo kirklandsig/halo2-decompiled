@@ -1392,6 +1392,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // from F+0x10, the per-pass candidate in found_mode's dead home F+0x44 (found_mode itself lives in EBP from entry).
 // P521: Optional mode/class/type scalar memcpy domains 1/2/4/3/5/6/7, then complete memmove:
 // 828/828/828/828/828/828/828/1059. NOT kept: no exact native output/candidate/zero-carrier recovery; original complete body restored.
+// P534: Early optional mode/class/type output-presence Boolean subsets, then complete
+// byte presence: 1025/1025/1025/1046/1046/1046/1068/1068. NOT kept: candidate/output/result homes and late
+// zero remain, and early presence grows the native frame/extent. Original complete body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1755,6 +1758,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // second request keyed on `iterator.graph` alone 962 (2791 B); the entry pointer initialised to NULL 828.
 // Retail's second request copies the found mode into EBP once (an inline-argument copy of the mode alone; the other
 // two found keys are read from their homes), the sign that retail's mode output was treated as escaping.
+// P533: Consistent own-input mode/class/type key-home reads, seven subsets,
+// then set-key home: 828/828/828/828/828/828/828/977. NOT kept: no byte match
+// or native candidate/output-home and late-zero repair; original complete body restored.
 // M3 lane 11 r106 (fast with 0x1dc790 and 0x1dc8c0 matched; base 828): the three found outputs stored type, class, mode
 // 829; the iterator declared after the three outputs 828 (same code); the early exit returning a fresh `c_type_709360()`
 // with `result` declared after it 988 at retail's 2825 bytes (the early exit then gets its own epilogue writing through

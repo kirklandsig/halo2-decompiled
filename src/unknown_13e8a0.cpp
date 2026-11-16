@@ -502,6 +502,14 @@ struct s_text_line_measurement
 	long index;
 };
 
+// MiniMax C (11-15): score 65 (was 77): the new running width is summed once after the can_break block and before the
+// test (`real next_width = advance + offset + kerning + width;`) and stored in the update arm ahead of the count's
+// increment, which is the order retail stores them in. The advance is still live across that sum, so the update
+// accumulates in a copy of the advance (retail's `movaps xmm3, xmm0`) and the running width loads early into XMM4
+// as retail does; the earlier spelling that named the same sum before the can_break block scored 68, and the sum
+// named inside the update arm never produces the copy (77). Still open: the XMM0/XMM3 colouring (ours gives XMM0
+// to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps in
+// the update arm while ours run ahead of the test. The new width is read once, in the update arm.
 // score 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
 // advance += kerning; advance += width; width = advance;`) 77; `advance += offset + kerning; width += advance; count++;`
 // 77; with the test reading the advance product written out again (diagnostic) 77, still no copy; 1-7 dead long locals at
@@ -609,6 +617,20 @@ struct s_text_line_measurement
 // before `count++` 77 (masked 7: the update arm's adds, `inc eax` and the width-then-count stores are retail's; the early
 // width load into XMM4 and the advance copy still missing); the header's two metrics read into shorts before the kerning
 // call 77 (same code).
+// P537: Original-site break-admission truth in positive/complementary bool/byte/short/long:
+// eight 77s at 415 bytes. NOT kept: native independent advance copy and early width load
+// unchanged; original field observation, flag writes, float trees and full body restored.
+// Round 129 (m3 lane 12, fast): the bound test with the sum on the left (`!(sum < bounds->x1) && count`) 77 (same
+// code: x1 still loads first); the header's advance and offsets typed as short fields (no casts; 0x13f700 and
+// 0x13f0e0 still match) 77; the three metrics through an inline `pixels * scale` helper 77; `real right =
+// position->x + advance;` named after the metrics and used in the test 74 (the width then loads early into XMM4, but
+// the advance gets no copy; a one-use part, not kept). Diagnostics: without the width restore 101 (394 bytes), without
+// the width's zero initialiser 53; neither gives the advance copy. Retail's colouring gives the bound XMM0 ahead of the
+// advance (whose update-path value then needs the XMM3 copy); ours colours the advance XMM0 and the width XMM3. Also:
+// the test and the update sharing a parenthesized `(advance + offset + kerning)` 83 (computed once, no copy).
+// NOT kept (coordinator review, MiniMax C 11-15): 77 -> 65 rested on a one-use local computed ahead of the test
+// (real next_width = advance + offset + kerning + width; then width = next_width in the else arm), a form kept
+// only with a byte match.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

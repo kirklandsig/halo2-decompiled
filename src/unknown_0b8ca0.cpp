@@ -1821,6 +1821,14 @@ done:
 // on it a `short` type local 27, the definition read as a short array ([6], [7], [5]) 27, the datum as
 // `&placements[index * size]` 27 (all the 27 form's code); one function-scope `type` assigned in the force path and the
 // placement block, on main's body 17 and on the 27 form 27 (both the same code).
+// Round 108 (m3 lane 1, fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 bytes: retail's code but for the
+// `mov esi, eax` copy; type ESI, definition ECX). One pointer variable for the definition that is then assigned the
+// datum (long offsets and size, palette added at the call) 32: the definition takes EAX as retail's does, but the
+// product is built in the index's register (`movsx eax, si`, index pushed before the imul), the size goes to EBX and no
+// copy is needed; the product written size first 32 (same code); with a long index declared after the definition 26,
+// after the palette offset 26 (size EAX and `imul eax, edi` as retail, the definition back in ECX); one variable for
+// the definition, the placements and the datum (`data += index * size`) 27 (the 27 form's code). Lead: retail looks like
+// the definition preferring EAX (as when it shares the datum's variable) while the size is the product's destination.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

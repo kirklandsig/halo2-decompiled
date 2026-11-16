@@ -289,6 +289,16 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // product written axis first 219; the three cross sums written product first 219; sine and cosine declared together
 // and assigned in two statements 219 (all the same code). The four-byte table shift is a one-byte shorter case-body
 // schedule here: retail's code ends one byte later and pads to the table with a three-byte `lea ecx, [ecx]`.
+// b6C (11-06) statement-by-statement walk against retail 0x224fd0, no behaviour difference found (score 219 fast, unchanged): the span index is a signed idiv of the zero-extended
+// word (0x224fe8 cdq, 0x224fe9 idiv [edi+0x80]) into an 8-byte span (0x225014); the cache mask 0xf80f, the 173ba0 argument order (0x225005-0x22501f) and the field_44 update (0x225025-0x22502d)
+// agree; the angle is rounded to float (0x225035 mulss, 0x22503d movss) and sine then cosine are each rounded to float (0x225050 fsin, 0x225052 fstp dword, 0x225060 fcos, 0x225062 fstp dword);
+// the property order is angle 0x50, then 0x20, 0x30, 0x40 stored at +0x10/+0x14/+0x18 (0x22503d, 0x22507a, 0x22508e, 0x2250ae); the first switch has no range check (0x2250b4) and the
+// second does (0x2252a9 cmp eax, 4; 0x22532f ja); cases 0/1/3 take the g_4687ac axis and 2/4 the g_4687b0 axis in both rotation bodies, every one of the nine rotation terms and its
+// operand pairing (ij, ik, jk, sine products, (1-x^2)*cos+x^2) equals the draft's, the rows scale by x/y/z (0x2252bd-0x22530b); case 0 negates the 0x485624 vector as 0-x (0x225353-0x22536e) and copies the
+// 0x485630 up vector; cases 1/2 and 3/4 take their crosses from the same operands (0x225410-0x22546a, 0x22547a-0x225531); the composition arguments (0x22553d lea edx, 0x225541 call) and the three
+// vertex rows 0x101ac0/ad0/ae0 (0x2255a6, 0x22560a, 0x225675), the NONE test (0x225688) and color order (0x225694-0x2256a3), the span count/first loads (0x2256a8, 0x2256ac) and draw with 5
+// (0x2256c0) all agree. Shared-helper check: the row scaling is vector3f_scale (normalize3d.h) written out, and calling it gives the same 219 / 1836 bytes (fast) but needs a new #include, so it is not kept;
+// no shared helper exists for the negation, the rotation (draw_rotation is private, like 0x350e0's rotation_from_axis) or sin/cos. No new double local, no in-body pragma, no new include.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

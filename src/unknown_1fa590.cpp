@@ -510,6 +510,17 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
 }
 
 // MiniMax S (11-06): no new form, no lower score: the idle arm still pairs and adds its products in a different order from retail's, and the sine, the cosine and the axis keep different homes; the body is still 15 bytes longer than retail.
+// Statement-by-statement walk against retail (b6E, 11-06; every score here is a fast check, 221 as committed, the
+// full build 214): no logic or structure difference found. Active arm (0x1faa38-0x1fac9a): up and forward copies from
+// state+0x100 and +0xf4, c7840 call with {-pi, pi, -pi, pi} and settings+0x88/+0x8c, angle stored as a float at
+// 0x1faae7 and reloaded for both fcos (0x1faaf7) and fsin (0x1fab4e), cos and sin rounded to float (fstp at
+// 0x1fab40 and 0x1fab6d), dot summed j, k, i, then Rodrigues terms (a + b) - c, projection summed k, j, i, the
+// zero-length reset at 0x1fac5d and the final angle == 0 clear at 0x1fac87 all agree in order and direction.
+// Idle arm (0x1facad-0x1faea6): both crosses, the zero reset to g_4687a8/g_4687ac, the two reloads of state+0x28
+// (0x1fad9c, 0x1fadaf), base scaled by cos, axis scaled after the trig, up = axis * sin + base, projection and
+// the three normalisations agree too. Remaining difference is scheduling only (retail loads axis.j and axis.k
+// before fcos and reloads the angle for fsin; ours dups it with `fld st(0)`). Also tried: cross3f before the
+// trig 235 (1161 bytes, the retail size), cross3f between sin and dot 223, cross3f after cos+dot and before sin 221.
 // score 214 (was 214): frame 0x28 agrees; angle/trig homes, the x87 angle copy (ours `fld st(0)`, retail reloads
 // the angle from its home for fsin in both arms) and projection/product scheduling remain. Earlier, 214 from 251:
 // trig homes and projection registers differ;
