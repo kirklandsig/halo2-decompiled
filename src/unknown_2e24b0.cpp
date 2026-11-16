@@ -189,7 +189,9 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	}
 }
 
-// score 75 (was 106; 77 with the held list read before its count): the
+// score 49 (was 106): the y/z test reads the box's lower word first
+// (apart_yz_2e1090; 75 reading it last, every other user unchanged), and the
+// held count is read before the held list (77 the other way). Earlier: the
 // quantizing (two-level helper, its steps as separate
 // statements), the appends, the bit setter and the y/z test (in-place
 // statements) now match retail's code. Still: in the grid cell's walk ours
