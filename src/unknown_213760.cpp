@@ -1158,10 +1158,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
 // against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
 // is the same function in the reduced map and is not a source difference.
-// MiniMax C (11-15): the function now scores 7 (was 33): frame 0x1144 and extent agree; the write call
+// MiniMax C (11-15), on its not-kept 7 form (a new goto, screen-reverted; main stays 33): frame 0x1144 and extent agree; the write call
 // still loads the handle after the flags zero (ours builds the zero in EAX where retail already has the
 // handle in EAX and builds the zero in ECX) and the checksum compare still takes EDX where retail takes EAX.
-// score 7 (was 33): frame 0x1144 and extent agree; the write call's handle-first setup and the checksum register remain.
+// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
