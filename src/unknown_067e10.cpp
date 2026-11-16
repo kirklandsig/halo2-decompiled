@@ -1578,6 +1578,9 @@ static __forceinline bool view_needs_join_buffer(short type)
 // P570: Complete timer admission at its producer, positive readiness then waiting complement,
 // bool/byte/short/long: 183/183/183/183/183/183/183/183. NOT kept: no transition-scratch,
 // cold-branch or table-address recovery; original complete body restored.
+// P573: Final player-coverage admission at its producer, positive bool/byte/short/long
+// 188/188/192/193; missing-player complements 188/188/194/193. NOT kept: added
+// result materialization grows code; transition scratch/table base/cold tails remain. Original body restored.
 // @retail 0x6a040
 long function_6a040(c_class_6a600 *world, c_simulation_view *view)
 {
@@ -1874,6 +1877,9 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // P570: Standard saved-address acquisition, object forward/backward and byte forward/backward,
 // 59/59/59/59; restoration counterparts 51/61/51/61. NOT kept: native mode/state
 // schedule and overwritten subtraction remain; original six-byte transfers and complete body restored.
+// P573: Immutable saved mode/owner/distribution/local/address/preservation captures:
+// 34/34/34/34/34/34; signed-byte/word preservation 34/51. NOT kept: native state-first,
+// overwritten subtraction and SETNE/LEA remain; word grows. Original complete body restored.
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {
@@ -2047,6 +2053,9 @@ void function_195a40(void);
 // P570: Entry disable observation supplies both flag clears, bool/byte/short/long,
 // separate then chained: 3/3/20/19/3/3/20/19. NOT kept: no exact pre-clear pointer-load recovery;
 // wider guard homes lengthen. Original complete body and inherited boundary restored.
+// P573: Mode carriers signed byte/short, unsigned byte/short/long: 23/23/24/24/5;
+// explicit distribution arms, nested range, complementary range arms: 33/3/33.
+// NOT kept: width forms alter comparisons/call allocation; result arms grow; native pre-clear pointer load remains.
 // @retail 0x67ee0
 void function_67ee0(void)
 {

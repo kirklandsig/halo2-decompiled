@@ -403,6 +403,9 @@ static inline void quaternion_transform_vector(
 // cosine half takes xmm4 and the sine product xmm5, retail the reverse); s computed in the body before the copy and
 // passed in 308 (frame 0x18); plain halves with the original helper 267; plain halves, scalar crosses and s first in
 // the helper 248. Original body and helper restored.
+// P573: Original-site basis-validation success/repair outcomes, bool/byte/short/long:
+// eight 246 (1312 bytes, frame 0x1c). NOT kept: frame 0x24 and separate quaternion/cross
+// spills remain absent; original complete body, geometry helpers and repair calls restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

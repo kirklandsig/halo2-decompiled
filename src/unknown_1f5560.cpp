@@ -1144,6 +1144,9 @@ real normalize2d(point2f *v);
 // declared at entry/after speed/before force/before valid admission: eight 208 at 907/935.
 // NOT kept: common result takes BL, invalid zero still folds and length moves away; original
 // independent trajectory/request/invalid returns, all call tuples and complete body restored.
+// P573: Original-site forced type-mask admission, accepted/rejected outcomes in
+// bool/byte/short/long: eight 135. NOT kept: no native DL/independent-return repair;
+// original mask observations, validity/type producers and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
