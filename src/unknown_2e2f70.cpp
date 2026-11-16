@@ -58,11 +58,12 @@ __forceinline void report_pair_2e2f70(class_2e1090 *sweep, pair_2e1090 &pair, lo
 	}
 }
 
-// score 126 (was 272): retail stores each overlap test's result although it
+// score 122 (was 272): retail stores each overlap test's result although it
 // never reads it again, which the one result declared before the loop gives;
 // the pair, its first box set once per box, gives retail's frame and slots;
 // the endpoint pointer stays in edi once it steps after the append, the walk
-// rereads the axis, and the cell's search returns from inside its loop.
+// rereads the axis, the cell's search returns from inside its loop, and the
+// sort's last index is computed before its order is pushed.
 // Still: ecx and edx are taken the other way round through the reports, and
 // the first test loads the box's lower words first. A result per loop
 // (50 placements), the owner as a plain local, the test's statements in six
@@ -74,7 +75,8 @@ void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long coun
 	sorted_2dfec0 order = {};
 	if (count > 1)
 	{
-		function_2dff20((entry_2dfec0 *)endpoints, 0, count - 1, order);
+		long const last = count - 1;
+		function_2dff20((entry_2dfec0 *)endpoints, 0, last, order);
 	}
 	longs_2e1ab0 open(0x100);
 	long cursor = 1;
