@@ -2987,6 +2987,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // this function, frame 0x18 at 575 bytes): the pending arm as `if (pending != NONE && delay <= 0) {...} else if (pending == NONE)
 // {...}` 50; the follow-up test as `NONE != local_2` without the casts 50; the follow-up event copied into a short before the
 // 0x202e90 call 50 (folded); `long const squad_index = arg_1;` for the lookup and both first-half calls 50 (copy-propagated).
+// P545: Standard input/lock/pending/delay/task/trigger sentinel operations, short
+// threshold and mapped-event addition: 203/188/187/172/209/133/120/96.
+// NOT kept: extra operation calls, altered frame/extent and the first-event EBP
+// reload remain. Original whole body, word domains and wrapped scan restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
