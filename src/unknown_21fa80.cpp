@@ -73,7 +73,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
-// score 544 (was 544): earlier 545.
+// score 534 (was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
+// /Op file still calls the CRT for them, and this build's frame is 0x22c against retail's 0x224.
+// MiniMax R (11-16): the level's square root taken in double, as retail's inline fsqrt keeps the extended
+// precision before the float store, lowers the full-build score by ten; exp and log10 stay library calls.
 // MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
 // Full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
@@ -455,7 +458,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 				real amplitude=channel_linear_gain(levels[i]);
 				energy+=amplitude*amplitude;
 			}
-			real amplitude=(real)sqrt(energy);
+			real amplitude=(real)sqrt((double)energy);
 			real bounded=amplitude<0.0f?0.0f:amplitude>1.0f?1.0f:amplitude;
 			// retail multiplies the log10 (fyl2x, 0x21fe2f) by 20 straight from the x87 stack (0x21fe31), so
 			// the logarithm is taken as a double: the float overload would round it first

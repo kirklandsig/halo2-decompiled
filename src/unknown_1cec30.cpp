@@ -2400,6 +2400,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax R (11-16): no new form, no lower score (91): the whole remaining difference is the velocity
+// normalisation, where retail hoists the velocity's j and k into xmm2/xmm3 ahead of the length branch and
+// scales them in place, and the shared header helper (not mine to change) does not; forms tried here: the
+// shared normaliser of unknown_0259d0.h for the velocity 175, the components in named locals after the
+// normalisation 99, the velocity copied before the normalisation 211.
 // MiniMax H (11-12): no new form, no lower score (91): the whole difference is the velocity normalisation,
 // where retail keeps j and k in xmm2/xmm3 across the length branch and scales them in place while this build
 // reloads all three components in each arm and keeps the scale in the destination; the final set's component
