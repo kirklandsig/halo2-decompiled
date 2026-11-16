@@ -2019,6 +2019,16 @@ void function_83000(s_simulation_world_owner *watcher);
 void function_195a40(void);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax C (11-16): score 3 (was 7): naming the game-options pointer splits
+// retail's prologue exactly, but it also moves the world pointer into EAX for
+// the function_68c00 call, so the call stops matching; with the mode read
+// through the global the whole call matches retail instruction for instruction
+// and only the pointer load's place before the two flag stores is left.
+// MiniMax C (11-16): score 7 (was 3): naming the game-options pointer and
+// holding the barrier between the two flag stores and the mode read gives
+// retail's whole prologue and its function_68c00 call setup; what is left is
+// the place of the world load, which comes before the mode comparison here
+// and after it in retail.
 // score 3: only the place of the mode read against the flag stores is left.
 // The two flags are adjacent bytes; this body's bool stores come out as two
 // byte writes. A `*(volatile bool *)&g_4cf771` cast on each forces retail's
