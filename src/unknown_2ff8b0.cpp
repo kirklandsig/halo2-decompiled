@@ -117,7 +117,9 @@ ELEMENTS_2D91D0(keys_300290, long);
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
-// score 234 (was 466): each case continues the loop itself instead of breaking
+// score 216 (was 234): cases 0x60..0x63 read the byte before stepping and
+// storing, as in 0x300290.
+// Before, 234 (was 466): each case continues the loop itself instead of breaking
 // to a shared step (the compiler merges the copies where retail has its step),
 // and the second bound test of cases 0x23..0x25 reads its bounds again.
 // Before, 466 (was 466): Frame 0x3c versus 0x38; the two-child case takes
@@ -414,9 +416,12 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = node[1];
+		{
+			long const byte = node[1];
 			node += 2;
+			copy.values[op - 0x60] = byte;
 			break;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
