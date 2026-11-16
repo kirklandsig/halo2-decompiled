@@ -710,6 +710,9 @@ struct s_physical_block_iterator
 // ages clamped `MAX(x, 0)` with the comparison written `candidate->pages * best_age < best.pages * age` 209 (1228 B, as the
 // listed symmetric clamp). Case 0 stays threaded into the take test on every form. Body unchanged.
 // MiniMax R (11-16), NOT kept: 194 (was 201), a 7-point gain, under the 8-point bar for a function above 30.
+// P567: Standard logical disjunction/conjunction/both, relational providers and their
+// disjunction/conjunction/both/complementary-retention boundaries: 213/209/252/362/369/358/400/423.
+// NOT kept: no native policy-result, clamp or placement equality; original complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
