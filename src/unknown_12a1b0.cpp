@@ -2624,7 +2624,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // MiniMax H (11-14): no new form, no lower score (339): the frame is still 0x4b4 against retail's 0x4bc, the
 // stack slots are still not a shifted copy of each other, and the inlined 0x221810 and 0x12a420 stay as they are;
 // the permuter's search over the body (35 tries, 305 s) found no variant below the baseline.
-// score 321 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
+// score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
 // locals in a different order and the gap cannot be closed by padding;
