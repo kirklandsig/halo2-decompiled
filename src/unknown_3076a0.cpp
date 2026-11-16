@@ -211,7 +211,10 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 		_mm_mul_ps(_mm_shuffle_ps(t2, t3, 0x88), z));
 }
 
-// score 316 (was 316): retail computes the newest normal's three splats once,
+// score 254 (was 316): the newest normal is copied once and both rotations are
+// constant results (second before first, as retail finishes it); the corners
+// handed to 0x307720 are copied only inside the branch that needs them.
+// Before, 316 (was 316): retail computes the newest normal's three splats once,
 // spills them and shares them between the two rotations, and keeps the count
 // in edi; sharing the splats here scores 322 to 326.
 // Shared inverse inline 478; by-value normal 317; first rotation first 155
@@ -242,8 +245,9 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	}
 	contacts_307840 const *contacts = *this->contacts;
 	contact_307840 const *newest = &contacts->data[contacts->size - count];
-	__m128 second = rotate_inverse_307840(second_transform, newest->normal);
-	__m128 first = _mm_xor_ps(rotate_inverse_307840(first_transform, newest->normal), *(__m128 const *)g_4124a0);
+	__m128 const normal = newest->normal;
+	__m128 const second = rotate_inverse_307840(second_transform, normal);
+	__m128 const first = _mm_xor_ps(rotate_inverse_307840(first_transform, normal), *(__m128 const *)g_4124a0);
 	__m128 first_size = _mm_and_ps(first, *(__m128 const *)g_455940);
 	__m128 second_size = _mm_and_ps(second, *(__m128 const *)g_455940);
 	int first_axis;
@@ -314,11 +318,12 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 		int const first_edge_1 = g_4135c0[first_axis + 2];
 		int const second_edge_0 = g_4135c0[second_axis + 1];
 		int const second_edge_1 = g_4135c0[second_axis + 2];
-		second = _mm_xor_ps(second, *(__m128 const *)g_4124a0);
-		function_307720(table, first_edge_0, second_edge_0, first_edge_1, second_edge_1, &first, &second, distance);
-		function_307720(table, first_edge_0, second_edge_1, first_edge_1, second_edge_0, &first, &second, distance);
-		function_307720(table, first_edge_1, second_edge_0, first_edge_0, second_edge_1, &first, &second, distance);
-		function_307720(table, first_edge_1, second_edge_1, first_edge_0, second_edge_0, &first, &second, distance);
+		__m128 first_corner = first;
+		__m128 second_corner = _mm_xor_ps(second, *(__m128 const *)g_4124a0);
+		function_307720(table, first_edge_0, second_edge_0, first_edge_1, second_edge_1, &first_corner, &second_corner, distance);
+		function_307720(table, first_edge_0, second_edge_1, first_edge_1, second_edge_0, &first_corner, &second_corner, distance);
+		function_307720(table, first_edge_1, second_edge_0, first_edge_0, second_edge_1, &first_corner, &second_corner, distance);
+		function_307720(table, first_edge_1, second_edge_1, first_edge_0, second_edge_0, &first_corner, &second_corner, distance);
 	}
 	((pair_305790 *)this)->function_305790((manifold_305790 *)table, first_mask, second_mask);
 }
