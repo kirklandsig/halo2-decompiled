@@ -555,6 +555,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // On the kept 858 form (fast): the choice count as a long 965 (3268 B); the audible update with the `or` arm first
 // (`if (!target->audible)`) 858 (still one merged word RMW); the query count used directly at its three uses 913; the
 // fade time named once at both step sites 884 (3330 B); the decibel helper as a single-exit result 881 (above).
+// P557: Bounded accepted-choice cap <2/<=1 with short/long query and choice domains:
+// 846/919/964/965/846/919/964/965. NOT kept: no equality or native entry/count/query-home repair;
+// original counters, equality cap, helpers and complete body restored.
+// P559: Declared sound/choice level vectors, paired storage and existing whole-copy/scale/default producers:
+// 846/846/846/938/916/850/925/868. NOT kept: unmatched record/producer shape; native entry zero/query/count
+// homes unresolved; original records, helpers and complete body restored.
+// P561: Original negative duplicate-search flag in char/signed-char/byte/short/word/int/long/dword:
+// 846/846/846/915/915/846/846/846 at 3327/3327 bytes. NOT kept: no native entry zero/count/query
+// residence or exact bytes; original bool flag, helpers and complete executable body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

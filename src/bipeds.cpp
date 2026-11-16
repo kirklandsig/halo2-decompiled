@@ -1578,7 +1578,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
 // in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
-// score 203 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
+// score 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
+// walking-speed preload and planar square transport remain. Earlier 585, 588 with frame 0xf8: position, ground,
 // MiniMax S (11-15): no new form, no lower score (566): retail's frame is still 0xfc against this build's 0xf8 - the
 // dword it is short of is the gravity argument's, and the inline accessor that would supply it is a new function in
 // this call graph, which flips the matched 0x54590 - and retail's definition pointer sits at the top of the frame
@@ -1586,7 +1587,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // passes seventeen values where retail passes twenty-one, and the speed-scale block still computes `1.0f - a*b`
 // before the helper's multiply where ours multiplies first. The ground-body receiver, nearest-contact output and
 // discarded query-output forms all give 566 or regress, so the body stands.
-// score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
+// Earlier score 566 (was 566): earlier 585, 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // earlier 588; frame 0xf8 versus 0xfc (the gravity argument's early frame dword); position, ground,
 // MiniMax B (11-14): no new form, no lower score (566); retail's frame is 0xfc against our 0xf8 (one dword more) and its
 // definition pointer sits at the top of the frame where ours sits mid-frame, so every stack home after the prologue is four
@@ -1928,6 +1929,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // seven phase subsets then the immutable complete receiver: 645/623/639/635/642/639/643/643.
 // NOT kept: native frame 0xfc recovers but every score regresses; original complete
 // body restored, gravity/material/airborne/animation homes remain.
+// P561: Existing entry tag/animation/state/component pointer spill names, four isolated,
+// three pairs and the complete graph: eight 203. NOT kept: pure renames do not
+// recover native pointer/material homes or schedule; original full body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4862,6 +4866,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // direct/captured inputs, repeated/cached scale and unity/nonunity-first arms:
 // 404/360/404/360/404/360/404/360. NOT kept: native matrix/origin/property
 // homes do not recover; original helper and complete executable body restored.
+// P561: Existing pivot-helper scalar capture orders xzy/yxz/yzx/zxy/zyx
+// 344/343/348/346/344; pivot/scaled/coordinate scalar names 336/336/336.
+// NOT kept: no native matrix/origin/property-home recovery or exact bytes;
+// original alias-safe helper and complete executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

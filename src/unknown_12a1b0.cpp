@@ -1716,6 +1716,10 @@ struct s_looping_detail_request
 // tail written in both arms 159 (537 bytes); retail's audible arm (offset in a temporary copied into the request after the
 // 0x21bfb0 call, result set last) 134 (534 bytes); that with `player` declared at function scope 134. The query's ten other
 // call sites are all matched (six call it, four inline it), so its own body cannot move.
+// P562: Actual count/remainder/selected-player declarations at function entry,
+// six orders and two full lexical graphs: 110/110/110/110/110/110/110/110. NOT kept:
+// every form ties; original declarations, producers and whole body restored.
+// Frame 0xc agrees; native detail transport and first-player call remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2332,6 +2336,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // (1939 bytes). Retail's gain store reads gains[i] into a stack temporary and the result through a second one (an
 // aggregate operand by value and an aggregate result), and 0x219f80 returns its level in EAX; 0x219f80 is a contributor's,
 // so its return type was not changed.
+// P562: Shared gain/update playing and playback lookups, complete clamp-bound
+// values, their subsets and immutable full bounds: 469/502/518/458/468/503/522/522 reduced
+// (control 479, full 305). NOT kept: repeated native input observations and the
+// conditional upper-bound load do not match; original complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3261,6 +3269,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // [ebp+0xc4..], and the source pointer goes straight to ESI where retail copies it from EDX); on that form `distance`
 // declared before `maximum` 615, `created = true` before the creation call 615, both 615 (the same code); `track_alternate`
 // as one direct expression in place of the preset-then-clear form 662 (2503 bytes), on today's body 614 (2519 bytes).
+// P562: Initial result from false-default/state-admission or true-default/state-
+// rejection, bool/byte/short/long: 791/770/768/787/791/770/768/787 reduced (control 694,
+// full 597). NOT kept: no equality or native true/flags recovery; original
+// initial state test, completion polarity and whole body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

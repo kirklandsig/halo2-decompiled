@@ -618,6 +618,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // residual subtraction, repeated add/scale and first/second normalization tails:
 // 1453/1419/1408/1393/1592/1712/1476/1398. NOT kept: no native frame/extent
 // recovery; full control 1375, reduced 1392. Original kernels and complete body restored.
+// P556: Actual escaped velocity/query/impact object references, then contact relative-velocity/
+// normal-force/accumulated-force/lever-arm/torque field lvalues: 1375/1391/1375/1379/1429/1379/1431/1398.
+// NOT kept: no native frame recovery or equality; complete body, input captures and existing kernels retained.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
