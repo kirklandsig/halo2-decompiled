@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax S (11-16): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, where this build adds the cosine term first and retail adds the projection term first; the permuter over the whole image (the reduced image scores 245 here) reported nothing below the baseline of 13 before it was stopped, and the rows follow the shared rotate helper's own text in another file: BLOCKED-BY 0x170d70.
 // MiniMax D (11-14): no new form, no lower score (13): the thirteen differences are all in the j and k rows
 // of the inlined rotation, whose text is the shared rotate_vector_170d70 helper's in src/unknown_170d70.cpp,
 // a file this lane may not edit.
@@ -789,6 +790,10 @@ struct s_player_axes_153d10
 // first product 4/10/8): one paren flips fk*uj and fk*ui to up first, two flip every product but uk*fi; the first product
 // wrapped twice with 1/2/3 around the k row's last product 2/2/6, with one around any other product 2, but always either
 // fj*uk or uk*fi stays wrong (they share up.k); 1 or 2 parens around any single operand change nothing (2).
+// M3 lane 4 r204 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the i row's first forward.j and this
+// product's forward.i read through the forward pointer 2 (same code); the k row's first forward.i through it 2 (same code);
+// every forward read of the cross through the forward pointer 12; the j row as `forward->k * up->i - up->k * forward->i`
+// 34 (first difference +0x13); every up read of the cross through the up pointer 28.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

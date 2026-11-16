@@ -877,6 +877,11 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // parameters there 14; the wrapper type made non-POD by an empty inline destructor (diagnostic, header restored) 14;
 // the search as a do/while that stops on a match, then `if (prediction) return false;` 14 (all the same code). Retail
 // 0x13d950 for comparison: its pointer parameter takes EBP at entry and the mask EBX (shared with the iterator index).
+// Round 107 (m3 lane 11, fast with 0x13eeb0, which matched in each), combinations of single forms listed above:
+// 0x13d950's iterator start (datum index NONE too) with the character compared first 17; that start with the character
+// stored first 15; a separate created pointer storing the character first 15; the iterator and prediction declared
+// at function scope with that start 14 (same code); `break` on a match then `if (prediction) return false;` 14 (same
+// code). The mask still takes EBP and the font EBX.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

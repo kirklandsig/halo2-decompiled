@@ -1232,6 +1232,12 @@ extern long *g_51e9cc;
 // on a block-scoped sum 10 (all the same code); height_change given 0.0f before the dd8e0 call 361 (1490 bytes). Diagnostic,
 // value-wrong: the 0xb9b90 call dropped from the speed test leaves the crouch add field first (289), so that unmatched
 // callee's register summary is not what flips the pair.
+// M3 lane 7 r167 (compile-only screen of the generated unit, which reproduces the crouch pair; fast where noted): a
+// crouch local declared with the block's locals, assigned the sum and then pinned 10 (fast); the clamp through PIN_126660,
+// the speed test as one unnamed `i*i + k*k + j*j` sum, crouch_change declared uninitialised at function scope, the speed
+// sum as one `real const`: field first each. Diagnostics (not keepable): a `volatile` change, or any second use of the
+// change in the join block (a `> 5.0f` test, `* 2.0f`), loads the change first as retail; a second use right after
+// 0xe30c0 does not.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -5954,6 +5960,14 @@ real magnitude3d(vector3f const *v);
 // inside `if (!falling)` before the joined test 53; the type chosen ahead of the actor test 242 (862 bytes). The actor
 // stays in ECX across 0x24590 in every per-arm form, as rounds 98 and 101 found. magnitude3d's seven callers that rose in
 // round 101 hold the same baseline scores (542, 749, 947, 590, 375, 902, 920), so the `inline` lead is still blocked.
+// M3 lane 7 r167 (fast): per-arm calls 20; with `inline` on magnitude3d's definition MATCH, but seven callers rise again
+// (0xf8eb0 947->1030, 0xd1e10 542->596, 0x185be0 590->942, 0x1aa0d0 375->402, 0x1d24a0 902->935, 0x2c0d60 920->963,
+// 0xf6d10 749->759; four of them leave retail's length), so retail's callers disagree about 0x24590's register summary.
+// Diagnostic (a file-local copy of an existing helper, not keepable): the per-arm calls through a same-file `inline` copy
+// of magnitude3d's body MATCH (the copy stays out of line and the link folds it with magnitude3d into 0x24590's one body,
+// while this caller sees no register summary); the single call through it 2; an `inline` prototype of magnitude3d in
+// this file alone 20. Lead: retail had two identical bodies folded into 0x24590 (r167 lead-e3380-icf.patch); keeping
+// it needs a ruling on such a copy.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

@@ -1136,6 +1136,14 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 0xd0080 59; the (j + k) + i code).
 // P542: Standard contiguous sampled-velocity transforms, real/double and both binders, direct/consumed-sample publication: 216/216/255/255/230/230/268/268.
 // NOT kept: all regress, with nonnative extent or enlarged frame. Original whole body and includes restored; rotation j/k, side-dot and eager exit loads remain.
+// M3 lane 3 r249 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH unless noted; base 114): the turning exit's flag set before
+// the forward copy 107 (1384 B: `or [edi+0x14], 0x20` in memory where retail loads, ors and stores in EBX between the copy's
+// loads and stores; a statement order by score, under the keep bar); the existing cross3f in place of the file's identical
+// initial_cross 114 (same code); both exits through the existing vector3f_assign 171 (1383 B: SSE loads where retail copies
+// through ESI/EDX/EAX). rotate_direction (src/unknown_1eb8a0.cpp, ours): its dot folded into the projection,
+// `projected = dot3f(vector, axis) * (1.0f - cosine)`, 94 at retail's 1382 B (first difference still +0x1f3; 0xd0080 58 -> 36)
+// but 0x1ecf50 loses its match (91) and 0xe3910 rises 79 -> 144: lead, not kept; the projection after the cross rows 154
+// (0x1ecf50 160, as the listed crosses-first form). Both files restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
