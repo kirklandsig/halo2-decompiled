@@ -1168,6 +1168,18 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // Round 262: Existing library lower/upper selection at fraction only 318/318;
 // phase only 323/323; all four phase/fraction order combinations 337 each.
 // Original conditional clamps, identifier scopes, byte result and all query contracts restored.
+// Walk (b6F, 11-06, fast build 210 before and after; comments only): compared with retail statement by statement, no
+// behaviour difference found. Checked: prior-loop truth from the channel-0 graph entry flag (0x1cd0ba-0x1cd0e0);
+// lookup argument order and the id/found/names slots (0x1cd114); transition_find argument order and the blend mask by
+// flags&1, e6800 and state_flags>>10 (0x1cd162-0x1cd1b9); the 0x200 path clearing unknown6e (0x1cd1c1); the early
+// exit when no transition id and blend (0x1cd1c5); the fraction chain, 0.0001/0.0/1.0 constants confirmed in the XBE
+// (0x1cd1d8-0x1cd272); the blend-id lookup only without 0x100 (0x1cd28b-0x1cd2a6); channel_start arguments
+// (0x1cd2cd); transition channel set(0x15, ..., 3) and frame 0 (0x1cd324-0x1cd331); loop flag copy (0x1cd336);
+// offset compute guarded by the combined unflagged byte (0x1cd34f); frame placement guarded by 0x20/0x40 and
+// fraction > 0 (0x1cd36f-0x1cd3a3); flags 0x10 (0x1cd3b0/0x1cd3b6); blend channel set(0x3c0, ..., 0) and
+// unknown80 = 0 (0x1cd3e2-0x1cd3ee); flags &= ~1 (0x1cd3f6); name compare before the store, request guard and
+// the three loop clears (0x1cd3fa-0x1cd4b9); state_flags & 4 fallback (0x1cd4ce). No hand-expanded helper bodies
+// (channel_loop_clear, channel_valid, PIN are used), no in-body pragma, no new include, helper or double local.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

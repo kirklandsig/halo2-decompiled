@@ -459,6 +459,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // casts on the bit-fields 510 (2288 B: the three tests fold into one mask test); that with the existing 0x1e8d50 for the
 // entry 494. Most of the 118 is call/jump displacement drift between the getter (one byte short) and case 4's child loop
 // (one byte long); BLOCKED-BY 0xd0590 (held order in build/r159/held-1e7ab0.patch).
+// MiniMax D (11-15): no new form, no lower score (118): retail's 0xd0590 takes the iterator in ECX and the object index in
+// EDX, and our call sets the two up in the other order (ours EDX then ECX, retail ECX then EDX); the entry lookup still
+// loads the table global into EAX where retail loads it into ECX (one byte short) and case 4's child loop still tests the
+// child's seat bit with `test cl, 1` where retail uses `test al, 1` (one byte long), so every jump target between those
+// two points is off by one, and case 4 still holds the parent in ECX where retail holds it in ESI. The form that puts the
+// parent in ESI reads it before the 0x13cb40 call and measures 115, under the retention margin, and the forms that move
+// the child's seat product or the seat-flag copies into EAX change the length or the reads.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

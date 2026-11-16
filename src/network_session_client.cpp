@@ -1189,8 +1189,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // with the destination declared in the branch, and MATCH with no destination pointer (`memcpy(identities[count], ...);
 // count++;`), the three callers matching. The full build loses the frame alignment without the `standard` marker's
 // address escape (288, 638 B), and with the marker tools/build.py's escape for a method is written as a plain member
-// pointer, which does not convert from a `__stdcall` member (C2440): BLOCKED-BY tools/build.py (`_escape` drops the
-// method's calling convention).
+// pointer, which does not convert from a `__stdcall` member (C2440). Coordinator 11-16: with tools/build.py's escape
+// naming the convention, the held patch with the `standard` marker builds in the full check and gives 195 (711 B,
+// retail's frame: `and esp, -8`, 0x154): the state stays in EBX and the count is spilled (`[esp+0xc]`), where retail
+// keeps the state in ESI and the count in EBX; the three callers stay matched. The fast check's MATCH is a
+// reduced-image result only (the reduced image gives 212 with the marker). Not kept; this body stays at 9.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

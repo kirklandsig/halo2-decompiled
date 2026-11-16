@@ -104,7 +104,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // only with a one-use absolute-index local and a score-picked declaration order, and the one-use-free form scores 98
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
 // reads the type once.
-// score 96 (was 96; m3 lane 8 r166 at the end): no local frame; retail reads the type once before the kind test (one type read shared by
+// score 96 (was 96; m3 lane 8 r166 and r172 near the end): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
 // preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
@@ -437,6 +437,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // evaluation order (declarations alone move nothing). Retail's entry implies headers, rigid body, object index, type (EBP is a
 // temporary for the rigid-body array because EAX/ECX/EDX all hold live values when it is loaded), but whenever the header load
 // comes first LTCG passes the component on the stack and the index in EAX, and the caller is lost.
+// M3 lane 8 r172 (fast, caller 0x1d5bf0 in brackets): the function as a member of a component-derived aggregate (`this` =
+// the component, the caller calling through a static_cast, as 0x1d6630 is) on the current body 96 [0] (same code); on round
+// 60's 24 form 24 at 256 B [0] (same code as the free form); that with headers declared first 83 [2] (the component still
+// moves to EDX); with no object_index local (both lookups from this->object_index) 101 [0]; the 21 form (o,h,r,a,t) 21 [13].
+// The member form changes neither the colouring nor the incoming pair of any of these bodies. Body unchanged at 96.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
