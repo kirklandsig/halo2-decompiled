@@ -697,6 +697,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // through the root object, the range's zero is the model-NONE arm and the angle's sum is the float one
 // retail adds; the frame and its slots are retail's now (`and esp, -8`, 0xb4 bytes, the result byte at
 // [esp+0x13], the link iterator at [esp+0x40], the player index at [esp+0x14]).
+// MiniMax C (11-16): no new form, no lower score (165): the byte flag's stack slot is still [esp+0x13] against retail's [esp+0xf], the link iterator still at [esp+0x30] against retail's [esp+0x40], and the frame is still ours at 0xac where retail realigns to eight bytes with 0xb4; that alignment comes from the two callers' call chain, whose files this lane may not edit.
 // MiniMax B (11-13): no new form, no lower score (165): the permuter cannot search this function on the reduced
 // image (248 differences there against the full image's 165), and the earlier 71-point form rested on match-only
 // forms, so the body stands as it is.
@@ -2013,6 +2014,7 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax C (11-16): no new form, no lower score (285): the head is retail's to +0x76, where the ancestry loop jumps to this build's own epilogue and retail jumps to its shared one; the body is still four bytes longer than retail's 1236.
 // MiniMax I (11-16): no new form, no lower score (285); the bit-7 test of the object word written in retail's
 // shift form (">> 7" and "& 1") compiles to the same sign test as the mask, so the body is unchanged: the first
 // difference is still the ancestry loop's jump to our own epilogue at +0x76 where retail jumps to its shared one at

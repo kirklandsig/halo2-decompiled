@@ -635,6 +635,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax C (11-16): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80, so the extra four bytes are not in the case-0 cluster local, the object index local or the marker name local (dropping each of them leaves the frame at 0x84 and the score at 184); what is left is the pooled literal 1 in EBX, the four-byte gap between case 3's compress source and the 0x17b2d0 out-parameter where retail shares one slot, and the audibility byte's store.
 // MiniMax I (11-15): no new form, no lower score (184): the only lever left is the held chain - `inline` on 0x188790's
 // definition, which lives in src/unknown_1887d0.cpp and not in this lane's file (113 alone, 49 with the ternary this body
 // already keeps), and the steps after it rest on match-only forms; the body stands.
