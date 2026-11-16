@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax E (11-16): no new form, no lower score (13): the thirteen differences are still the j and k rows of the inlined rotation, where retail adds the projection term first and this build adds the cosine term first; that text is the shared rotate_vector_170d70 helper's own, in src/unknown_170d70.cpp, which this lane may not edit, and a copy of it written for this caller is a same-behaviour twin that builds to the same bytes (13); writing the three rows out in the caller scores 59 and computing them into locals first scores 84, so the body stands.
 // MiniMax S (11-16): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, where this build adds the cosine term first and retail adds the projection term first; the permuter over the whole image (the reduced image scores 245 here) reported nothing below the baseline of 13 before it was stopped, and the rows follow the shared rotate helper's own text in another file: BLOCKED-BY 0x170d70.
 // MiniMax D (11-14): no new form, no lower score (13): the thirteen differences are all in the j and k rows
 // of the inlined rotation, whose text is the shared rotate_vector_170d70 helper's in src/unknown_170d70.cpp,

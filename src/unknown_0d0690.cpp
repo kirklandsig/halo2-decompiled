@@ -1387,6 +1387,7 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
 // MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
 // (0x117c80 and 0x13b390 four times), but the frame is still 0x2c against retail's 0x28, the selection
@@ -1810,6 +1811,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
 // MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.
 // MiniMax I (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the 0xd37f0 call
 // still hands its block and query over in the other order; the callee's own file is not this lane's.
@@ -2335,6 +2337,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax E (11-16): no new form, no lower score (542): the frame is 0x90 as in retail and the call boundaries agree with retail's; what is left is the status, mesh, colour and sample homes and the expansion of the 0x30bf0 call, whose definition is in another file.
 // MiniMax E (11-15): no new form, no lower score (542): the call boundaries agree with retail's except that 0x30bf0 is expanded here where retail calls it out of line, and its definition is in another file. What is left in this file is the status, mesh, colour and sample homes.
 // MiniMax I (11-15): no new form, no lower score (542): the frame is retail's 0x90, but the status, mesh, colour and sample
 // homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it; that
