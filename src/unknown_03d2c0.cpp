@@ -378,6 +378,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // brings the result in EAX, so the merge block preloads EAX (retail reloads ESI after the test) and the init tail keeps the
 // result in ESI across 0x3dd10, so one epilogue serves every path where retail has the reloading main epilogue plus the walk
 // exit's `mov eax, esi` copy.
+// P565: Cached/returned/scanned index signed/unsigned eight-byte homes, then full
+// domains: 167/168/171/167/168/171/252/252. NOT kept: no native merge/trailing-return
+// equality and narrow indices in retail; original complete body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -1734,6 +1734,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // and record leaves EBP; 0x3db00 lost, 8; 0xd4080 503); `-0.75f < direction0.k` 529; `1.4f *` leading scale0 529;
 // the first luminance's `* 2.0f` last 529; direction2 through a `turned` local negated and rotated into the record (0xd4080's
 // form) 580 (2172 B; 0x3db00 lost, 8; 0xd4080 508). Body unchanged.
+// P572: Existing curve-mapper range-byte admission, positive/complementary
+// bool/byte/short/long: 529/529/529/529/529/529/529/529. NOT kept: no native
+// frame/result or block/query-home recovery. Original mapper, four curve calls,
+// observation boundaries and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

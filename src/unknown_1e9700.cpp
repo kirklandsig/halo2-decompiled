@@ -609,6 +609,8 @@ struct s_object_damage_view
 // threshold)) {...}` 353 (same code). Re-measured (listed): the selection amount in a local under the time test 454 (1578 B).
 // Lead: retail's fallback-fail edges reach the `killer != NONE` test (0x1ea227, not threaded), ours skip the killer block
 // directly; retail reloads killer from its home at both merges.
+// P563: Terminal self/other-player comparison results in byte/short/long/dword storage:
+// 365/370/369/369/365/370/369/369. NOT kept: native scalar homes and biased history cursor remain; original comparison, observations, providers and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -544,6 +544,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // P537: Original visited-point bitmap outcome as raw dword mask, positive byte/short/long,
 // complementary bool/byte/short/long: eight 382s at 1596 bytes. NOT kept: no exact
 // truth/home recovery; original bitmaps, metrics, selected homes and complete body restored.
+// P566: Actual selected group/point/terminal signed eight-byte storage, subsets
+// 1/2/4/3/5/6/7, then all plus nearest result: 483/505/473/526/454/495/523/561.
+// NOT kept: native narrow selection homes remain unrecovered; wider storage
+// changes frame/extent and regresses. Original signed producers and full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

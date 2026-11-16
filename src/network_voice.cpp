@@ -1858,6 +1858,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // with `include_mask ? 13 : 11` (134; head retail's through the has-player test): the player bit declared after the clamp
 // 134 (same code); the first cursor byte stored in each include_mask arm 178 (475 B), with the late bit 178; include_mask
 // declared `byte` in the definition 134 (same code); `capacity = capacity - 2` 134 (same code).
+// P568: Standard bounded-return lower/upper/upper-lower/lower-upper validation
+// 213/213/210/210; lower/upper/both comparison providers 208/207/218;
+// invalid-clamp equality producer 222. NOT kept: no native independent zero or bit/size recovery; original clamp restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

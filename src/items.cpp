@@ -791,6 +791,9 @@ struct s_item_collision_bsp
 // shared signed ordinal 207 (receiver/selector revisited after query-width repair).
 // NOT kept: fallback copies gain only two/four and the receiver only six, below
 // eight above 30; original complete body, observations and calls restored.
+// P564: Actual instance-table base captures or two-step advanced receivers, mutable/readonly
+// and existing/direct matrix consumers: 201/288/201/288/192/192/192/192. NOT kept: six-point best below
+// threshold; base/direct forms also raise controls. Original instance reads, plane math and body restored.
 // MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
 // changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
 // [esp+0xac] after the two pushes). Body back to main.
@@ -1479,6 +1482,10 @@ struct s_item_flags_view_10b850
 // P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
 // unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
 // frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
+// P571: Actual flow-magnitude nonzero/zero decision at its consumer, bool/byte/short/long:
+// 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
+// point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
+// complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

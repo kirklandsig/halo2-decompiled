@@ -971,6 +971,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // corners 287 (1284 bytes: actor_index loaded at entry, pathfinding again arriving in EDX); on that, the surface as a
 // reference 287. A scan of matched retail entries found the `mov ebx, eax` + stack-argument load into EAX only where the
 // argument is used in the entry block itself (0x270930, 0x105a80, 0x10f430, 0x20d220).
+// P565: Actual two-edge difference/normalization tables, long/dword/short/word/byte/char for,
+// then long/short while: 369/369/367/367/371/371/369/367. NOT kept: intermediate grouping and
+// changed lifetime do not match native ingress/frame; six forms raise caller 286 to 313.
+// Original helpers and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -1606,6 +1606,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // busy full-byte byte/signed-char/char/bool fields 29/29/29/29. The 29 forms recover
 // handle-before-scaling (first +0x255), but NOT kept: three-count gain and no equality.
 // Original 12-byte row, comparator, requests, slot stores and complete body restored.
+// P570: Twice-consumed iterator handle at walk entry or after ownership admission, before
+// capacity admission, long/dword/const-long/const-dword: 32/32/32/32/32/32/32/32.
+// NOT kept: no handle-before-scaling, departure-selector or request/slot-home recovery;
+// original observations, publication, requests and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2946,6 +2950,10 @@ struct s_scenario_scripting_view
 // actor/counter/selector or guarded-data repair; original shared header and full search restored.
 // P540: Shared difference/squared-length forced/automatic lowering, 80/140/80/90/80/140/90/193.
 // NOT kept: no exact native storage recovery; original complete source restored.
+// P572: Existing resolver/commit ordinary, inline and forced-inline declaration pairs,
+// eight nonoriginal pairs: 80/126/80/80/126/80/80/126. NOT kept: ordinary/inline forms
+// retain the actor/counter/selector homes; forced commit expansion grows to 399/367 bytes.
+// Original declarations, helper bodies and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -746,6 +746,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // retail's, leaving the rate/tick chains i, j against retail's j, i and one movaps fewer (retail parks dj in XMM2 and
 // dk in XMM3 for the correction); the same in-place form with the deltas j, i, k 57 (369 bytes). Diagnostic: deltas
 // i, j, k with the squares summed by hand k, j, i 79 (the sum order is not the cause). All restored.
+// P564: Complete lazy correction admission set by its test, bool/byte/short/long then
+// complementary defaults, direct tracked argument: 99/99/99/99/99/99/99/99. NOT kept: no exact
+// native entry/store recovery; original parameter storage, prediction and entire body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
