@@ -223,6 +223,12 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
+// only adds a local holding a constant, which is on the reverted list, and one point is under the bar anyway; an
+// annealed run (19 tries) found nothing below the 334 of the baseline in either image.
+// Still differs: the gate byte is read with the base and the index in one operand where retail adds the index to
+// the base first and reads the byte from it (0x247985-0x247987), and the flag byte and the settings sit in the
+// frame's later slots where retail keeps them at +0x1b and +0x1c.
 // MiniMax G (11-14): no new form, no lower score (334): the effect datum's address still folds into the scaled index in
 // the flag byte's load and in the definition pointer's load, where retail keeps the address in a register; the flag
 // byte's and the definition pointer's frame homes still differ.
