@@ -3711,6 +3711,12 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // into a named local before the root assignment 12; `bool result = false;` between the walk and the header 12; the walk
 // over the parameter itself with the call given a copy of the original index 26 (the function then loses `ret 4`); the
 // position as a const point reference 12.
+// Round 130 (m3 lane 12, fast, 12 throughout; same pair): the rigid-body index declared ahead of the component and
+// assigned after it 12; the walk as a while whose parent read goes through the root (`UNIT_GET(root_index)`) 12;
+// `register` on the root 12; the unit pool in a local read by both the walk and the header 12; the walk's index as a
+// `dword` 12; re-measured (listed): the component index assigned in the test 12. Diagnostic: the fixed test and the
+// position read (translation through real_point3d_set) as two forceinline helpers taking the index and component 36
+// (303 bytes), same pair.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
