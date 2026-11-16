@@ -721,6 +721,11 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // store). Diagnostics: round 185's helper by index re-measured 3 (as listed); that helper given `voice_index - 1` after a
 // post-increment 150 (599 bytes, the voice is recomputed). Every re-derivation through the index register holds `inc edi`
 // below the fence with `inc esi`; retail's fence holds only `inc esi`.
+// Round 111 (m3 lane 1, fast): the stores from unknown0a on in a plain static helper (no inline keyword, so only the
+// link-time inliner expands it) taking the voice 3; all ten stores in such a helper taking (voice, type) 3; one taking
+// (voice index, type), called with `voice_index++`, 186 (504 bytes: kept out of line); the voice, both counters and the
+// index declared C-style at the block top 3. Diagnostic (reverted at once): the later stores through an integer-cast copy
+// of the voice pointer 3 (the cast folds; no alias edge from the first two stores).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -4024,6 +4029,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // named long range index before the pointer 78, the class-flag test as bit 21 of a dword bit-field at +8 80 (`shr eax, 0x15`);
 // on the 6 form, the loop end as `data_datum_index(sounds, data_find_index(sounds = g_4e637c, next))` (the reload after
 // the ternary through the one pool local) 82 (pool ESI, index EBP), the same with the range above the mode 49.
+// Round 111 (m3 lane 1, fast; range in case 0 re-measured 78): the class-flag word narrowed before the mask
+// (`(byte)(word >> 5) & 1`) 78; the flags word in a named word local before the test 78; the test as `!(word & 0x20)`
+// 72 (folds to `test byte ptr [eax + 0xa], 0x20`; every register retail's, as with the byte read); the definition
+// as a `s_animation_ref *` local for both pitch-range calls (0x219070's spelling) 78; 0x2193d0 returning short
+// (definition and declarations) 78, on the 24 form 24 (0x2193d0 itself 5 at 90 bytes, restored). The flag is the
+// bit 5 of the word at +0xa of 0x221810's record, which 0x2193d0/0x219310 test themselves after their own inlined lookup.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
