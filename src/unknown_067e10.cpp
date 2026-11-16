@@ -1581,6 +1581,10 @@ static __forceinline bool view_needs_join_buffer(short type)
 // P573: Final player-coverage admission at its producer, positive bool/byte/short/long
 // 188/188/192/193; missing-player complements 188/188/194/193. NOT kept: added
 // result materialization grows code; transition scratch/table base/cold tails remain. Original body restored.
+// P585: Existing inline failure-state helper, named message record, aggregate/scalar zeroing,
+// entry message lifetime, message/result names and separate iterator fields:
+// 183/183/177/177/184/183/183/183. NOT kept: six-point zeroing gains fail the eight-point gate;
+// zeroing also shrinks the native 0x18 frame to 0x14. Original entire executable body restored.
 // @retail 0x6a040
 long function_6a040(c_class_6a600 *world, c_simulation_view *view)
 {
@@ -1871,6 +1875,10 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // P573: Immutable saved mode/owner/distribution/local/address/preservation captures:
 // 34/34/34/34/34/34; signed-byte/word preservation 34/51. NOT kept: native state-first,
 // overwritten subtraction and SETNE/LEA remain; word grows. Original complete body restored.
+// P585: Overlap-safe library transfers at address save/restore, scalar save/restore,
+// preservation byte, owner/distribution captures, complete input and complete transfer graphs:
+// 56/51/81/81/80/79/121/133. NOT kept: no native state/mode recovery; original six-byte
+// transfer, scalar snapshots, calls and full body restored.
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {

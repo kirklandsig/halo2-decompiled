@@ -1952,6 +1952,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P581: Rounded speed/boost/planar-length promoted receiver storage, seven subsets and
 // immutable planar receiver: 613/659/432/587/611/681/606/606. NOT kept: no exact native tag/material/animation homes
 // and walking/planar schedule; original real producers, shared helpers and complete body restored.
+// P585: Scalar lexical homes on the repaired 0xfc frame: airborne/speed/boost/turning/
+// movement/distance/paired size/all, eight 203. Earlier scalar-name checks used the
+// older 0xf8 frame. NOT kept: no tag/material/animation-home or schedule change; body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

@@ -1492,6 +1492,10 @@ struct s_item_flags_view_10b850
 // 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
 // point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
 // complete body restored.
+// P585: Existing carrier-query result on the corrected single-position-flag graph, false/true
+// defaults, positive/complementary exhaustive bool, then false-default char/byte/short/long:
+// 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
+// misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

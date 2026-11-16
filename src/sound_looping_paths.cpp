@@ -572,6 +572,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P582: Original-site scalar memcpy at completed query count/paired query indices/existing
 // candidate, seven subsets, then complete scalar memmove: 846/846/846/846/846/846/846/1144. NOT kept: no exact native entry-zero,
 // count/query/primary-home recovery; original scalar producers, helpers and complete body restored.
+// P585: Immutable existing range/fraction/blend/current/delta/active gain/inactive step,
+// then the complete scalar graph: eight 846 at 3327/3327. NOT kept: no entry-zero,
+// count/primary/query-home change; original scalar declarations and entire body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
