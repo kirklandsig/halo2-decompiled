@@ -6853,6 +6853,12 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // NOT kept: native physical order is 0/2/5/7; leading case 7 reverses the two
 // request homes. Mode/weapon, dead flag stores and readiness join still differ.
 // Original complete switch and body restored; four exact callers survive every trial.
+// P550: Complete initial admission including validation in bool/byte/short/long: four 290
+// at 1064 bytes; integrated nonzero request headers at modes four/six/one/seven
+// 295/296/295/333. Complete admission through existing readiness, expression/branch,
+// 290/290 at 1064. NOT kept: admission grows away from native 1052; new one-use
+// outcomes also require equality. Header gains are below eight. Original body restored;
+// native dead flag bytes and shared readiness completion remain.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7126,6 +7132,10 @@ done:
 // complete paired-normalization success/failure in bool/byte/short/long: eight 491
 // at 1272 bytes. NOT kept: completion grows away from native 1112; every original
 // helper contract, comparison and complete body restored. Facing/flag/state homes remain.
+// P550: Complete point transfers through standard backward copies at direction/facing/turn/identity
+// boundaries 266/257/255/253; uninitialized copies at those boundaries 266/257/247/253.
+// NOT kept: all regress; several enlarge frame/extent. Original body and headers restored;
+// native facing GPR transfers, first-scale ownership, flag bytes and state home remain.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8278,6 +8288,10 @@ struct s_unit_turn_state_view
 // at 1670 bytes (calibrated caller/provider control 268/1669). NOT kept: gain two,
 // extent grows and one-use predicates need equality; frame 0x80 and early saves remain.
 // Original admission, retained false result, staged products and complete body restored.
+// P550: Complete paired zero-rate outcomes in bool/byte/short/long 268/268/268/268; backward
+// vector transfers at snapshots/targets/neutral velocities/flat snapshots 408/424/406/325.
+// NOT kept: ties or regressions; native frame 0x7c, deferred saves, moved/rate homes
+// and separate step divisions remain. Original entire body and headers restored.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
