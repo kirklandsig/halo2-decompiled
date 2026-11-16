@@ -582,6 +582,8 @@ struct s_object_damage_view
 // set by an if (retail's shape for both bytes; a flag set by an if, match-only) 344; the selected record's player index
 // named in the selected block 400 (1596 B); consider_team as `reported_player == NONE || !function_1df560(...)` 353
 // (same code); friendly computed before self 350 (1544 B); self and friendly passed as call arguments 359 (1535 B).
+// P542: Complete absent-source/query and unavailable-mode/team result definitions, queried or exhaustive arms, bool/byte: 396/396/397/397/353/351/353/351.
+// NOT kept: at most two points; one-use/test-defined results miss equality. Original complete body restored; scalar homes and amount-biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
