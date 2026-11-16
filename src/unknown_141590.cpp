@@ -118,6 +118,11 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
+// full image (the reduced image agrees with the full one here). Still differs: the compiler's term
+// orders in the three transforms (retail adds cross*2w first in every i row, cross + q*dot then v*s in the up j/k
+// rows and sums the dot as i,k,j in the forward row and k,j,i in the left row) and retail's second store of 2w to
+// a slot nothing reads; the source forms tried do not decide the association.
 // score 205 (was 200; fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
