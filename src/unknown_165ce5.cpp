@@ -1382,6 +1382,19 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
+// start): all four spring defaults and overrides (0x166dbb-0x166e87), the five-term idle-motion test, the idle
+// counters (0x1674b3-0x167597), the overlay logic (0x1671d8-0x167307), the fmod frame (0x167353-0x1673ab), the tail
+// (0x1675df-0x167602) and every callee argument agree. One BEHAVIOUR FIX kept: the idle-blend spring call passed
+// (speed 9, acceleration 6); retail loads xmm5 = 6.0 (0x1673b9, the fifth argument as in the four calls above it) and
+// stores 9.0 at [esp + 8] (0x1673df, 0x1673e7), so it is (6.0, 9.0) now (220 -> 220: the pool constants were swapped
+// with each other, the positional score cannot see it). Not behaviour, not kept: the yaw is x / rate in retail
+// (0x166f2b divss) but ours multiplies by the shared reciprocal (an fp rounding difference that follows from the
+// missing rate reload, see rounds 8/68/82); the pitch (-1 / rate) * y is bit-identical either way. `(real)fmod(..)
+// * 30.0f` compiles the same with and without the cast (220 both), left as is. Retail's zoomed/scoped bytes at
+// [ebp - 2]/[ebp - 1] hold the positive sense of ours (no_zoom/no_scope) and the else-arm `cmp [ebp - 2], 0; je`
+// (0x1672cb) is implied by the outer test: the same behaviour, positive form 385 (older rounds), so not kept.
+// `volatile` look locals 475 (not allowed without a match). No new include, helper or double local.
 // Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
 // -0x18/-0x1c against retail's -0x1c/-0x18) declared in the other order, with the two
@@ -1968,7 +1981,7 @@ overlay:
 					}
 				}
 
-				function_11eed0(&weapon->indices.unknownc, &weapon->indices.unknown10, 0.0f, g_510c54->rate, 9.0f, 6.0f, false, 0.0f, 1.0f);
+				function_11eed0(&weapon->indices.unknownc, &weapon->indices.unknown10, 0.0f, g_510c54->rate, 6.0f, 9.0f, false, 0.0f, 1.0f);
 				if (weapon->indices.unknownc == 1.0f)
 				{
 					weapon->indices.unknown10 = 0.0f;

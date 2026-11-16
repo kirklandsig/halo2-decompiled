@@ -922,6 +922,37 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // MiniMax E (11-06): no lower score; retail takes the position pointer as its third parameter (EDX)
 // and pops six stack arguments, so retail's declaration has nine parameters against our seven; the
 // call sites are in another file and the parameter order may not change, so this cannot be reached here.
+// b6O (11-06) walk against retail, block by block, all scores fast build with 0x24550 in the image (BASE 547, 2122 bytes):
+// block 1 (0x22cf0-0x22d18, count from the structure bsp and the override flag), the count == 1 copy (0x22d26-0x22d95),
+// the override copies (0x234b6-0x234ec) and the fallback call (0x234ef-0x23537: direction (0, 0, -1), colour (0, 1, 0)):
+// same fields, directions, constants and arguments as the draft. Nearest scan (0x22da0-0x22f6b): z*z + x*x + y*y,
+// strict `distance < closest`, 1048576.0f start, matches. Opposite scan (0x22f6f-0x232e0): delta = position - first
+// (z, y, x subtracted then read), projection (z*dk + y*dj) + x*di tested `<= 0.0f` (retail's `comiss 0, p; jb skip` at
+// 0x23010), distance (z*z + y*y) + x*x, strict `<`: matches. Blend (0x23440-0x234b3): (second - first) * fraction +
+// first per component, fraction `<= 0` copies first (0x2330c), `>= 1.0f` copies second (0x2337d): matches. No behaviour
+// difference found in the arithmetic or the branches.
+// Tried, not kept (same behaviour, retail's shape): both scans count an index (`i`, with `nearest` and `opposite` as
+// indices) instead of walking sample pointers: retail keeps the nearest index in EDI and tests `i != nearest` as
+// `cmp eax, edi` (0x22fd0, 0x23250), and turns `opposite` into a pointer only after the scan (0x232e9 imul), where the
+// old pointer scans made VC divide the pointer difference by 0xdc (a magic multiply); `second` is a pointer that is NULL
+// for opposite == NONE and tested again before the call, which is retail's `cmp esi, -1; je` followed by `add esi, ecx;
+// je` (0x232e4-0x232f3), the position pointer now arrives in EDX as retail's caller sets it (0x239a1) where the old body
+// had it in EAX; and the entries field is read at each use (retail reloads it at 0x22db5, 0x22f0d and 0x22f6f, caches it
+// only for the second scan at 0x22faa and reads it again at 0x2322a). Scores: old body 547; index shape written out 639
+// (2057 bytes); with the nearest distance as the existing distance_sq3f (0x24550, its body was written out in the draft)
+// 583 (2085 bytes; the scan is then byte for byte retail's); delta through vector3d_from_points3d 583 (same
+// code). In the full build on r803 that body also moves the caller 0x23690 330 -> 354, and with this batch's
+// unknown_01cf50.cpp changes it costs the matched 0x41640 (the link-time coin flip), so the pointer body stays; the shape is
+// retail's, and the old body scores lower only by accident.
+// Also tried: scan 2's distance through distance_sq3f with samples read through a local after the first scan
+// 458 (2070 bytes, Round 130's body): it adds x*x before y*y (z*z + x*x + y*y), but retail adds (z*z + y*y) + x*x
+// (0x23021-0x2303a), a rounding difference, so it is not retail's evaluation order; scan 2 through offset =
+// vector3d_from_points3d + dot3f with the distance written k, j, i 652 (2033 bytes), with a samples local after scan 1
+// used by the scan, `first` and `second` 671, by the scan alone 582 (1995 bytes; no gain), by the scan and `second` 671; a
+// vector3f offset in scan 2 639 (same code as scalars). Still missing: the 0x2c frame (retail homes offset.x at +0x24, a
+// dead store at 0x23013 each pass, and delta.k at +0x38), nearest kept in EDI in the unrolled part, one pass counter
+// at +0x18, and the hoisted entries pointer in scan 2; dot3f/length_sq3f are not used for the projection and distance
+// because their sums run i, j, k where retail's run k, j, i.
 // score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).

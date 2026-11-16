@@ -1481,6 +1481,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // as the first switch's first label 143. Body unchanged.
 // P521: Single-terminal primary connection cases 5/6/7 after 4, 5/6/7 after 8, 5/6 after 9:
 // 195/195/193/195/195/192/195/195. NOT kept: no native delayed-save/outlined-handler match; original complete body restored.
+// Round 123 (m3 lane 16, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94220, 0x94270, 0x942d0, 0x94420; control 143):
+// an unused message size parameter after the type (the caller passes its decoded size) 143 (same code: dropped by the
+// link); case 24 moved into the late switch ahead of 18 265 (500 B, 0x7afd0 3: 0x945f0 and 0x94420 both inline); case 10
+// (the address's one EDI use, 0x94220) moved there instead 187 (464 B); `default: return;` with 1, 15-21 and 18 as `break`
+// labels ahead of the late 18 test 213 (424 B, 0x7afd0 3: all labels thread into the jump table, 0x94420 stops inlining);
+// the three connection cases moved into the late switch after 18 222 (470 B, 0x7afd0 3). Our early ESI save follows from
+// `ja` reaching the late test (the only path of unknown type), which is also what keeps that site hot enough to inline.
 // P535: ESI-consuming primary cases 8/24 after each connection case, six independent then two paired adjacencies; reduced control 196, full 143. Best six-point preview lead is below the keep gate; delayed ESI save and terminal expansion remain.
 // 194/193/193/196/195/195/193/190. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
 // @retail 0x938e0

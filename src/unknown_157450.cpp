@@ -5828,6 +5828,12 @@ void __stdcall function_d6bc0(long object_index);
 // (same code each); case 0's distance through the file's engine_distance_squared 38; re-measured the switch guard on
 // entries[i].index 167 (863 B). A one-file LTCG harness of this file (+ damage.cpp) does not reproduce (227 at 871 B:
 // 0x15f060's XMM3/EDI convention needs other files).
+// Round 203 (m3 lane 4, fast with 0x15c150 and the six callees, all matched each time; base 29): on the label form
+// (7): the index local declared `long const` 7 (same code); the schedule test on entries[i].index 172 (858 B; there
+// case 1 takes AL as retail, so the whole gap is `entries` in EDI from the loop top and the timer in EBX, reloaded into
+// EAX for the `= 1` store, where retail reloads it into EDI); that with the countdown's three index reads on the
+// loop-top local 207 (878 B); case 1 as `if (bit) break; goto countdown;` 21; the reset counter's arms swapped
+// (`if (reset) = 0; else ++`) 14, with the field test 172. On the kept body the field-test guard 167 (863 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -601,6 +601,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // copy after the owner's three stores 7 (the global load then waits for those stores: it may alias); the owner in
 // declaration order (player, object, team) 5. The reduced (--fast) image hoists the g_47d8e0 load above the
 // definition store (not address-taken there), so judge this body only with the plain check.
+// M3 lane 13 r98 (plain): the +0x1c/+0x20/+0x22 stores through an inline location-reset helper (leaf, cluster,
+// bsp) 3 (same code); `short bsp_index = g_4686c4;` right after the +0x7c copy 3 (same code); the +0x7c copy moved
+// down beside the +0x7e store 16 (the bsp load then hoists above the definition store); the location as an
+// initialised `s_location` local copied in 46 (119 bytes). Diagnostics: one to seven unused `long` locals 3 each
+// (no phase effect); the body through a mirror of the event type without the +4 byte/dword overlay 3 (same code).
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -2409,6 +2414,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // the count and elements read through a pointer to the pair 228; the shared actor stun-bounds inline (see 0xd9110) forced 228 with
 // the entry local and 3 without. Lead: a natural form that gives `object` one more use (or `info` one fewer) on the inline-guard
 // body should match; build/r114/lead-d8cb0.patch has that body.
+// M3 lane 13 r98 (fast, plain where noted): an inline guard taking (info, accumulator) that reads the entry only after
+// the info test 2 (fast and plain; retail's [eax + edx + 4] with no convention change, only the entry load still below
+// the je; a one-caller helper, not kept; build/r98/lead-d8cb0-guard.patch); on it the entry read into a local before the
+// info test 228 (the flip: definition in EAX, info EBP), early returns 2, a result flag 2, returning the inner condition 2,
+// `__forceinline` 2. The r114 guard called with `accumulator->field_4_2` for info 227 (857 B, the field reloaded; object
+// back in EBP, definition still EAX), plus definition read once through its address 222; the whole region-kill block as
+// a `__forceinline` helper 228. Every form that reads the entry before the info test flips the allocation.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

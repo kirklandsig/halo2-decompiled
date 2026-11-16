@@ -78,7 +78,7 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Retail keeps three byte flags in the first three bytes of its frame (the ready byte, the reset byte and
 // the result byte); the reset flag as a byte shrinks our frame to 0x3e0 and gives 445, and the record
 // field 0x35c with a byte flag (441) and the mode-7 arm split into two ifs on that form (427) are worse.
-// score 426 (was 439): the two session-state tests now call the existing c_class_58d20::function_058d20
+// Earlier, at 426 (was 439): the two session-state tests now call the existing c_class_58d20::function_058d20
 // (0x58d20), which gives retail's dead state stores; 1593 bytes against 1589, frame 0x3e8 versus 0x3e4, both
 // dead stores share one slot (retail 0x20/0x18), and 0x5b080 is still inlined here.
 // Earlier at 439: retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
@@ -287,6 +287,34 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 398: Final result produced by primary/secondary admission, bool/byte/short/long:
 // 470/484/468/469/475/477/469/447. NOT kept: result/admission coupling does not match; original
 // final result, method-call boundaries and complete body restored.
+// score 402 (was 426, fast build; 1589 bytes, retail length; first difference +0x6c). b6P walk of the
+// whole body against retail, block by block, found one behaviour difference and four structure points:
+// - BEHAVIOUR (fixed, score 426 unchanged): the call to 0x71ff0 passed the ratings record plus 4. Retail
+//   passes the record itself (0x71cb6 lea ecx,[esp+0x94] after one push is the record base, the same base
+//   0x718dd gives 0x7e210); 0x71ff0 reads count at +0xc and the identity rows at +0x14, and the record's
+//   own count is field_c (0x71b57, 0x71c97), so +4 made it read the wrong count and shifted every row.
+// - Retail's ready byte [esp+0x11] is the 0x72140 result (0x71b14) and is stored at each failing test
+//   (0x71964 the match result, then 0x71978, 0x71996, 0x719df, 0x71a24, 0x71a4b, 0x71a63); the draft kept
+//   the inverse flag and no stores. Now `transition` is assigned at each of those tests; with the reset flag
+//   a bool this is 419 against 426, an evaluation-order and structure change, not a behaviour change.
+// - The balance flag is a bool (retail keeps no flag: it tests AL straight after 0x91fc0 at 0x71bc3 and
+//   0x71c65), not a short: 420 against 426.
+//   The old `short` was a score-only type; the same note recorded 'bool 420' as no gain.
+// - The two live-state tests call the existing session_state_is_live() (include/unknown_058dd0.h, already
+//   included here; first use in this file): 412 against 419 written out. The call at 0x71ac2 stays out of
+//   line here while retail expands it; the one at 0x71a8e is inlined.
+// - Retail tests !surface (0x718a9) and !data (0x718c2) separately and repeats the mode-7 arm (0x718b1,
+//   0x718c8) rather than one `||`: separate ifs give 402 against 412.
+// Retail quirk, not reproducible as a fix: the late result byte [esp+0x13] is written only at 0x718bb, 0x718d2
+// and 0x71d18 and read at 0x71d54, so a pass that sets neither mode 7 nor the transition returns an unset byte
+// (the draft's `local_3 = false` start value is a separate byte [esp+0xf], 0x71754). The same split shows in our
+// build at the previous base. Still different: frame 0x3e4 agrees now but retail calls 0x5b080 (0x717fa) where ours
+// inlines get_data_4a00, the two dead state stores (retail 0x71780/0x717c1 at +0x20/+0x18, ours share one slot),
+// local_14's seven zero stores sit before the player-count test in retail (0x71849-0x71861; declaring it earlier
+// changes nothing), and the call at 0x71ac2. Tried and kept out: nested else-if chain instead of gotos 402 (same
+// code); start time read into a local before the clock 420 (before these changes, unchanged); reset flag declared
+// after the ready flag 402; long reset flag 427 against bool 419 (before the helper); the 0x75870/0x75890 helpers (earlier rounds)
+// 468-512.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
@@ -313,8 +341,8 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		byte *local_9 = local_2->get_data_4a00();
 		long local_10 = time_now() - arg_0->unknowna68;
 		byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
-		long local_12 = false;
-		bool wait_for_transition = true;
+		bool local_12 = false;
+		bool transition = false;
 		long local_15[16];
 		s_71730 local_16;
 		if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
@@ -324,7 +352,13 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		}
 		long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
 		s_session_property_value local_14 = {0};
-		if (!local_8 || !local_9)
+		if (!local_8)
+		{
+			arg_0->mode = 7;
+			local_3 = true;
+			goto local_28;
+		}
+		if (!local_9)
 		{
 			arg_0->mode = 7;
 			local_3 = true;
@@ -339,9 +373,19 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			(local_10 > g_network_configuration.value1c0[9] * 1000 ||
 			 *(long *)(local_11 + 0x10) > g_network_configuration.value1c0[8]))
 			*(long *)(local_11 + 8) = 2;
-		if (!network_session_players_match(local_1, local_2) || local_16.field_360 ||
-			local_2->player_count != *(long *)(local_9 + 0x184))
+		transition = network_session_players_match(local_1, local_2);
+		if (!transition)
 			goto local_29;
+		if (local_16.field_360)
+		{
+			transition = false;
+			goto local_29;
+		}
+		if (local_2->player_count != *(long *)(local_9 + 0x184))
+		{
+			transition = false;
+			goto local_29;
+		}
 		{
 			long local_18 = *(long *)(local_9 + 0x184);
 			long local_19 = 0;
@@ -349,23 +393,31 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 				if (network_session_find_player(local_2, (const dword *)(local_9 + 0x188 + local_20 * 12)) != NONE)
 					local_19++;
 			if (local_19 != local_18)
+			{
+				transition = false;
 				goto local_29;
+			}
 			long local_21 = function_1931d0(local_8, local_2->player_count);
 			if (local_21 == 0x7fffffff || local_21 > local_17)
 			{
+				transition = false;
 				session_property_value_set_kind3(&local_14, (local_21 - local_17) / 1000);
 				goto local_29;
 			}
 			if (function_1934b0(local_8) && local_16.field_358 > function_193400(local_8))
+			{
+				transition = false;
 				goto local_29;
+			}
 			dword local_22;
 			if (!network_session_members_ready(local_2, &local_22))
 			{
+				transition = false;
 				memset(&local_14, 0, sizeof(local_14));
 				local_14.kind = 4;
 				goto local_29;
 			}
-			if (!(local_2->state > 2 && local_2->state <= 8 && local_2->flag49e8))
+			if (!(session_state_is_live(local_2) && local_2->flag49e8))
 			{
 				s_session_id local_23;
 				function_73ae0((unsigned __int64 *)&local_23);
@@ -373,13 +425,13 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			}
 			if (*(long *)(local_11 + 8) != 1)
 				*(long *)(local_11 + 8) = 1;
-			wait_for_transition = !function_72140(arg_0);
-			if (wait_for_transition)
+			transition = function_72140(arg_0);
+			if (!transition)
 				goto local_30;
 			if (function_1934b0(local_8))
 			{
 				long local_24;
-				short local_25 = false;
+				bool local_25 = false;
 				if (balance_teams_by_count(local_16.field_c, local_16.field_194,
 					function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
 					function_1933d0(local_8), function_1933a0(local_8), true, &local_24) &&
@@ -399,7 +451,7 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 				}
 				if (!local_25)
 				{
-					wait_for_transition = true;
+					transition = false;
 					local_12 = true;
 					goto local_30;
 				}
@@ -409,11 +461,11 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 				for (long local_26 = 0; local_26 < local_16.field_c; local_26++)
 					local_15[local_26] = local_26;
 			}
-			function_71ff0(arg_0, local_7, (const s_match_player_list *)((byte *)&local_16 + 4), local_15);
+			function_71ff0(arg_0, local_7, (const s_match_player_list *)&local_16, local_15);
 			goto local_31;
 		}
 	local_29:
-		if (local_2->state > 2 && local_2->state <= 8 && local_2->flag49e8)
+		if (session_state_is_live(local_2) && local_2->flag49e8)
 			local_12 = true;
 		goto local_30;
 	local_28:
@@ -431,7 +483,7 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 				network_session_host_set_data49cc(local_2, (const dword *)&local_14);
 			}
 		}
-		if (!wait_for_transition)
+		if (transition)
 		{
 	local_31:
 			network_session_set_mode(local_1, 12);
