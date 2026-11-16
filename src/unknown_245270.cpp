@@ -280,13 +280,21 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
+// matrix is taken in a named local inside the transform block, and the side bits are extracted with
+// an unsigned shift so retail's shr/and survives instead of our sar/xor fold; still differs: the
+// frame is 0x24 against retail's 0x2c, retail keeps the source in ESI and reloads the matrix into
+// EDX at the use point. The permuter (300s) only found 205, by swapping the third and fifth
+// arguments of the call to 0x244de0 (retail's push order differs because retail's declaration of
+// 0x245540 has its matrix and source the other way round); a one point gain, dropped. Declaring the
+// plane table after the point difference scores 207 again and a mask-test side bit scores 208.
+// score 214 (was 214; earlier noted 209 (was 209), 214 since B6G's j-row fix): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax G (11-05): no new form, no lower score; declaring the plane table after the point
 // difference scores 203 in the reduced and in the full build (a gain of six, below the keep
 // threshold, so the body is restored); the source receiver, the frame and the stack homes still
 // differ: BLOCKED-BY the caller 0x245aa0 (src/unknown_245850.cpp).
 // MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // MiniMax S (11-06): no new form, no lower score: reading the second material index before the first only gained one instruction (209 to 208, below the keep threshold) and was restored; retail still reads the two element material indices in the other order, keeps the source in ESI and frames 0x2c against our 0x24.
-// score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
 // home and the side bytes still differ.
@@ -677,6 +685,14 @@ void function_245400(s_source_245400 const *source, long index,
 // order (forward*x + up*z) + left*y + position, the call arguments (0x24580c-0x245841). Struct fields are now typed as retail reads them
 // (word material codes at 0x245558/0x245568, short surface indices at 0x24554d/0x24555d, plane table at source+0xc): the casts go, same bytes.
 // No new include, helper or double; callers 0x245aa0 and callees 0x245400, 0x244de0 stay MATCH.
+// M3 lane 7 r167 (fast; caller 0x245aa0 MATCH each time): dead-local phase scan 1-7 at the top 214 each; the material
+// test written second-first 214; the facing tests constant-first 214; the scale test as `1.f != arg_2->scale` 213;
+// the side and plane-index compares swapped 214.
+// MiniMax I (11-16), NOT kept: 206 (main 214) came from four changes: the arrays' sign bits as (bool)((unsigned
+// long)local_2 >> 15) (same values: local_2 is the sign-extended short) 210 alone, plus the first material's loads
+// moved after the second's, the sign-bit compare's operands swapped and arg_2 renamed through a matrix alias
+// local, which are kept only with a match. The cast alone is a 4-point gain, under the 8-point bar above 30. Body
+// back to main.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -803,6 +803,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // the collection preheader code); the swap guarded by nested `slot != NONE` / `slot != i` tests 28; `updates` copied
 // into a const local used by every record 28; the swap's count increment as its own statement (re-measured on this
 // base) 28.
+// Round 107 (m3 lane 11, fast with 0x84e90/0x84c90/0x83c90/0x69260, all MATCH): no loop-top player pointer (its
+// fields read at each use in the test and the compare) 32 (the preheader cursor goes back to EDX, the key keeps ours);
+// the player pointer declared inside the first arm only, the test reading the field 32; the occupied record's type
+// stored after its key copy 39; a named occupant pointer before the update (round 56's form, re-measured) 45; the two
+// arms swapped under the negated test 28 (same code); `source` and `player` declared above the session-mask
+// `continue` 251. Reading: a key product that does not dominate (no loop-top player) still keeps our grouping.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

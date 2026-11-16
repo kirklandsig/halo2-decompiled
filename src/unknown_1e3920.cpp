@@ -1256,6 +1256,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // `bool flag = false; if (squad) flag = ...;` 238; the guard testing the squad index before the squad pointer 237 (same
 // code); the flags pointer `byte const *` 237 (same code); the unit arm under its own `if (!(*flags & 1))` after the
 // perception arm 305 (1254 bytes); the definition pointer `byte const *` 237 (same code). Body unchanged.
+// P557: Actual three-output query workspace in six field orders, then Boolean output pair with
+// probability second/first: 273/273/273/273/273/273/270/269. NOT kept: unmatched local grouping;
+// original independent outputs/defaults, sentinel/cleanup graph and complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2179,6 +2182,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // read once into a named local for the tail 251 (same code). Diagnostic (flags, reverted at once): src/unknown_0259a0.cpp
 // without /GL- and its body `inline` 306: the random state then rides in EBX from before 0x259a0 through 0x259d0 as retail,
 // but the pool global is still reloaded at each lookup. Body unchanged.
+// P547: Complete complementary grenade-retention admission in bool/char/signed char/byte/
+// short/word/long/dword: eight at 251/1216. NOT kept: native actor/options/pool retention
+// remains; original lazy tests, queries, random draws, stores and complete body restored.
+// P560: Existing equipment queries return found/missing status and publish the actual
+// weapon output only on success, pointer/reference outputs and both formal orders: eight
+// 293 at 1230/1216 bytes. NOT kept: actor/options/pool residence regresses; original private
+// queries, signed slots, lazy observations and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

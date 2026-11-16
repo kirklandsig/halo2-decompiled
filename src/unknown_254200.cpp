@@ -212,6 +212,9 @@ void function_254200(void)
 // Round 98 (m3 lane 14, single-address fast, control 4): the bitmap choice as an if/else 4; the third vertex's x sum
 // written size first 4; the colour helper's 4f call in member form 4; the two dimension locals as `int` 4 (all the same
 // code); the two cached render-state stores after their SetRenderState calls 10.
+// Round 91 (m3 lane 15, single-address fast): through the XDK's IDirect3DDevice8_ wrappers with a NULL device: the four
+// vertex 4f calls 10 (the pair unchanged; the colour helper's three spill slots permuted), the four 2s calls 4,
+// Begin/End 4, the two SetRenderState calls 4, the colour helper's 4f call 4, every stream call 10.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -529,6 +532,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 257; the third and fourth texture calls through the D3DDevice:: member form like the first two 2 (same code). In this function
 // and 0x254490 retail emits the post-call reload pair in ascending register order whichever values they hold (here
 // xmm0 = lower first, there xmm0 = the depth constant first); ours emits xmm1 first in both.
+// Round 168 (m3 lane 7, fast; 0x254200 matched, 0x254490 4 throughout): the colour getter after 0x1cf50 7; the alpha
+// byte computed ahead of the texture-stage reset block 94 (2256 bytes), ahead of the third block's SRCBLEND/DESTBLEND
+// pair 87; the second quad's colour as a const colour aggregate through the existing colour helper 254 (2273 bytes); the
+// second block's SRCBLEND/DESTBLEND pair ahead of its 0x14390 call 12. Same code (2): the lower coordinate's product
+// commuted in all four uses, the lower coordinate as `arg_1 * -0.5f + 0.5f`, the else arm as a separate test after an
+// early return, the guard inverted with the success block in the else, the point pointers declared ahead of the size.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

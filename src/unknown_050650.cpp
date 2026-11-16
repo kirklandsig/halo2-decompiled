@@ -855,6 +855,35 @@ struct s_collision_result_buffer_1697c0
 // rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
 // sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
 // vector declared before best_fraction 300.
+// P548: Complete rotation-axis native/immutable vector, scalar/immutable scalar,
+// aggregate/immutable aggregate, existing setter and library captures:
+// 406/406/335/335/335/335/346/406. NOT kept: all regress and every form raises
+// the other rotation user (23 -> 210/233/234); three also lose the exact caller.
+// Original shared helper and entire sampler restored; native scratch/axis homes remain.
+// P550: Complete best-hit promotion in bool/byte/short/long 299/299/299/299; backward transfers
+// at pitch fallback/candidate/winner/both final outputs 350/348/352/359. NOT kept: no qualifying
+// native scratch/home repair; original full body, helper graph and headers restored.
+// Frame-bottom magnitude/random/sine scratch, axis/result homes and rotations remain.
+// P552: Standard forward and uninitialized component transfers at pitch fallback, sample acquisition,
+// best-hit retention and both final publications.
+// Fast scores 349/350/352/348/349/350/352/348. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Existing rotation scalar receivers, reference/pointer-axis, reference/reference-axis,
+// value/pointer-axis/vector-output, reference/value-axis, value/component-output,
+// vector/component-output, reference/reference-axis-components, value/reference-axis-components:
+// 305/305/339/335/339/293/295/304. NOT kept: scalar contracts lack native call evidence and every sibling score rises
+// (23 -> 142/142/243/232/243/33/34/231); original shared helper and complete sampler restored.
+// P556: Actual ray/result/candidate/axis/best-vector/final-output/fraction/best-fraction
+// lvalue receivers: 299/305/339/305/307/352/306/299. NOT kept: no native scratch/home equality;
+// original complete sampler and every shared helper retained.
+// P558: Existing normalizer with separate input/output pointer/pointer, reference/pointer,
+// pointer/reference and reference/reference contracts, both formal orders:
+// 295/295/295/295/295/295/295/295. NOT kept: no native scratch/home equality; original private helper,
+// in-place calls and entire sampler restored.
+// P560: Existing private normalizer with explicit scalar magnitude output, vector/scalar
+// pointer/reference domains and both formal orders: eight 295 at 1448/1423 bytes. NOT kept:
+// four-point reduction is below eight and length grows away; root/axis homes recover but zero/scale
+// SIMD, trig transfer and rotation allocation still differ.
+// Original magnitude return, all three consumers and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -959,6 +988,21 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
+// MiniMax E (11-16): 166 (was 257): the player test of cases 1 and 6 is written with retail's polarity (the
+// == NONE test first, its je branch calling 0xcaf60, as retail's bytes show at 0x296b25 and 0x296c39), which
+// keeps the two 0xcafc0 blocks apart as in retail; the two flags are then cleared in retail's order (the
+// returned flag first, `point_valid = result = false`, so the prologue stores F+2 before F+3) and the two
+// trailing case exits clear the returned flag before leaving, which gives retail's byte homes (the returned
+// flag at F+2, the point-valid byte at F+3) and brings the body to 1428 bytes against retail's 1444. Left:
+// retail keeps case 1's and case 2's byte-identical 0xcafc0 calls apart where this build tail-merges them
+// into one, so the jump table sits earlier and every branch target differs. The forms this round that were
+// not kept: case 6's player test with the other polarity (177), the point-valid store moved to the aim label
+// (367), the shared point-valid store for cases 3/5/6 with cases 1 and 2 skipping it (366, and it cost the
+// matched callers 0x297660, 0x297a50 and 0x2980d0 their match).
+// MiniMax C (11-16): no new form, no lower score (257 plain, 341 on the reduced image): the frame agrees (0x8c) and
+// what is left is the byte homes of the result and the point-valid flag plus the direction chain's fall-through
+// predecessor, where retail enters case 2's remembered 0x1e3b00 block and ours falls into the merged 0xcafc0 block;
+// the reduced image scores higher because the helper it calls is laid out differently in that build.
 // score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
 // fall-through predecessor (retail: case 2's remembered 0x1e3b00 block; ours: the merged 0xcafc0 block).
 // Round 176 (m3 lane 5, plain): case 1's object index local renamed 257 (same code: the merge is
@@ -1298,6 +1342,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // `field_x50962e != NONE` test 258 (all same code but the label form).
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
+// MiniMax E (11-16), NOT kept: 335 (was 341), a 6-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1525,6 +1570,12 @@ done:
 // actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
 // and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
 // MiniMax R (11-15): no new form, no lower score (9): retail still loads the pool pointer into edx and the masked, scaled index into eax, while this build loads the pool pointer into eax and folds the index into esi.
+// MiniMax C (11-16): score 9 (was 9): no new form, no lower score; only the prologue differs: retail loads the
+// pool pointer into edx and keeps the masked, scaled actor offset in eax (`mov eax, ecx; and eax, 0xffff;
+// imul eax, eax, 0x888; lea esi, [eax + edx]`) where this build loads the pool pointer into eax, folds the
+// offset into esi and finishes with an add, so this build also ends with an extra int3; twenty-five
+// spellings of the lookup and a 51-try permuter run all build the same prologue, so the register choice is
+// not steerable from this function.
 // score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
 // so the reduced image does not distort this one; the lookup's spelling does not change the code
 // (see below), and the prologue's register choice is not steerable from the source.
@@ -1598,6 +1649,9 @@ done:
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
 // MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
+// MiniMax S (11-15): no new form, no lower score (9): the actor offset is still built in esi with an add where
+// retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
+// compiles to the same prologue, so the register choice is not steerable from this function.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -2026,6 +2080,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax E (11-15): no new form, no lower score (442): the call boundaries agree with retail's except that 0x1fdd90 is expanded here where retail calls it out of line, and its definition is in another file. BLOCKED-BY 0x1fdd90.
 // MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
 // cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
 // keeps the actor table in a register; the forms for the frame and the carriers are in the notes below and none of them
@@ -2041,6 +2096,13 @@ struct s_actor_looking_turn_request
 // MiniMax S (11-14): no new form, no lower score (442): the two getters that hand back the view and the object
 // are shared with many other functions of this file, so their spelling - which decides whether the base and the
 // scaled index stay apart - was left alone and the body was re-measured unchanged.
+// MiniMax C (11-16): no new form, no lower score (442 plain, 548 on the reduced image): the frame is 0xcc against
+// retail's 0xc8 and the blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines
+// it, and only /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not
+// make.
+// MiniMax E (11-16): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
+// blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines it, and only
+// /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

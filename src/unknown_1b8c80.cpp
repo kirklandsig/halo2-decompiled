@@ -324,6 +324,14 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // seat index named at the loop top for all three calls 104 (358 bytes); a 1800 s fast annealing permuter run (seed 122, the
 // eight callers and callees as context, base the c8200 test nested under the 0x1b8d80 test, 3, same code): 152 tries, none
 // below 3. Restored.
+// Round 89 (m3 lane 2, fast with 0x1b8eb0/0x11b0c0/0x11ade0): the occupant's team as `long` 5 (a long
+// compare); the occupied-vehicle test looking the object up at each use 3 (same code); the unoccupied arm
+// nested under the reservation test with the unit, then the vehicle, in named locals before the 0xc8200 call 4
+// (the reload goes to EDX); the reservation mask tested before the object type 8; the unoccupied arm first,
+// closed by `continue`, the team test unnested 49. Diagnostic: a probe global store before the return 72
+// (409 bytes; the reload stays ECX). Reading: 0x1b8d80 takes the seat in BX, so EBX holds the seat from the
+// 0xc8f60 call on; retail's reload into EAX with the seat load scheduled before the dereference looks like
+// the unit's ECX being reserved before the object is set up, with the unit load later sunk below it. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {

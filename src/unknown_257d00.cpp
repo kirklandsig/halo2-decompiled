@@ -2472,6 +2472,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
 // score 479 (was 479): m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // / `return 0;` 483 (re-measured on this base); one `turn_facing` pointer for case 2's copy and publish (same code); case
 // 2's aggregate copy, case 4's facing reads and case 18's and case 21's targets held across 0x25ab50, together 636

@@ -38,6 +38,12 @@ void function_2b10a3(dword const *appearance, c_class_2b0b5e *widget, long type)
 void function_2b0a14(s_widget_view_2b0a *widget, short index);
 void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 
+// score 55: the `s_widget_item items[4]` construction differs. Ours inlines the
+// `flags = 0` constructor into a zeroing loop; retail calls the array-constructor
+// helper 0x20670 with (constructor 0x2b0149, 4, 0x74, &items). Marking the
+// constructor `__declspec(noinline)` gives 53, but the compiler still emits a
+// per-element loop rather than the helper call. The helper choice is the front
+// end's, not reachable from the constructor or array spelling.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {

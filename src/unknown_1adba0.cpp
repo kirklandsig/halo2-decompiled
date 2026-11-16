@@ -564,6 +564,11 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // (same code); the prop state named ahead of the range test 15 (same code: LTCG sinks the pure 0x25d690 call below the
 // test); the range test as `== 1 || == 2` 41. Re-measured, the named game-time pointer 91: result EBX and NONE EBP as
 // retail, but the pointer EDI and ticks EBP, the node block in EAX and the EBX push deferred to the 0x1e5380 call.
+// Round 111 (m3 lane 10, fast with 0x110ab0, control 15): the unit test merged into the node condition with the unit index passed
+// directly 41; the repeated `state == 1 && override flag` test through one force-inline predicate 15 (same code); that predicate
+// with the named game-time pointer 91 (415 bytes); the node state fetched once ahead of the range test 15 (same code); the rate
+// read into a local after the timestamp 97. Re-measured: the named game-time pointer 91 (result EBX and NONE EBP as retail, but the
+// pointer EDI, ticks EBP and the EBX push moved down to the 0x1e5380 call).
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

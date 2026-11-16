@@ -578,6 +578,7 @@ struct s_item_collision_bsp
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
+// MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
 // score 198 (was 200; full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
 // the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
@@ -783,6 +784,16 @@ struct s_item_collision_bsp
 // accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
 // 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
+// P544: current baseline already sign-extends both plane-query indices correctly;
+// instance-address scheduling, transformed-plane registers and spin/speed homes remain.
+// Whole plane/marker-axis/fallback-axis/both-axis memmove 336/247/196/264;
+// whole-object forward copies 342/240/194/263; shared instance receiver 192,
+// shared signed ordinal 207 (receiver/selector revisited after query-width repair).
+// NOT kept: fallback copies gain only two/four and the receiver only six, below
+// eight above 30; original complete body, observations and calls restored.
+// MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
+// changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
+// [esp+0xac] after the two pushes). Body back to main.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1231,6 +1242,9 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
+// [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
+// against 0x12c); a named bool for the bits measures the same 824.
 // MiniMax E (11-15): no new form, no lower score (824): the frame is still 0x154 bytes against retail's 0x12c, so every stack home sits 0x28 further out, and retail keeps the two entry flags in stack slots where this build holds them in registers.
 // MiniMax G (11-13): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c,
 // the entry's flag byte differs (retail shifts the value and stores the parity byte where this
@@ -1710,6 +1724,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // where retail clears it with one byte read-modify-write - neither the raw byte mask nor the byte-bitfield view
 // (s_item_flags_view_10b850) makes this build emit the memory form; dropping the spin local so that the returned byte
 // could sit at esp+0xf costs eighteen bytes of body length (874 against 892) and raises the score to 190, so the body stands.
+// MiniMax S (11-16): no new form, no lower score (140): the release byte is still cleared by a load, an and and a store where retail
+// clears it with one byte read-modify-write, and the return bytes, the event-point homes and the location-call setup remain; that call
+// setup follows the allocation callee 0xba300's own convention (retail takes the object in ecx and the location in eax), whose body is
+// in another file: BLOCKED-BY 0xba300; the permuter (annealing, 420 s, 15 tries) found no variant below 140.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,

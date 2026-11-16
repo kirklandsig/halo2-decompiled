@@ -1603,6 +1603,10 @@ void function_2422d0(long slot)
 // the accepted store indexed by a second getter lookup 141 (331 bytes); the rejected store reading the team entry again
 // 50 (the pair flips to retail's, but the entry reloads after the call); a team entry pointer for the index and the
 // getter 7; the object as a reference 7 (same code).
+// Round 128 (m3 lane 9, fast): the reject store and the increment as two statements 7; a `short` loop counter 92 (288
+// bytes); a `short` count 80 (284 bytes; the swap stays); result and count assigned after the memset 7 (same code); the
+// arrays declared slot table first, count before result 9. Re-measured: no slot local 79 (count then takes EBX and the
+// team walker a stack slot). The index/object pair stays EDI/EBP against retail's EBP/EDI in every form.
 // @retail 0x2423f0
 bool function_2423f0()
 {

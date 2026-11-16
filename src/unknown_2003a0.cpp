@@ -2719,7 +2719,18 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
-// score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
+// MiniMax D (11-16): no lower score (29): retail reloads the squad index from its stack home in the second half's
+// 0x290e20 call (mov edx, [esp+0x30]) and keeps the EBP copy alive up to the first 0x1fb8a0 call, while this build
+// drops the copy there and reloads the home instead; where the copy's live range ends is the whole difference, and
+// the two extra bytes shift every later jump target. Casting that call's argument (a long cast, dropping the short
+// cast) and writing the flag argument as 0 or 1 all leave the reload in place at 29.
+// MiniMax D (11-16): score 29 (was 50): the trigger index local_12 is held as int and local_13 as long, so the second half
+// builds the index in EAX and narrows it for its test; retail builds it in EDI and tests the low half. Left: the first
+// 0x1fb8a0 call still reloads the squad index from its stack home where retail keeps the EBP copy, so the body is 580
+// bytes against retail's 578. Also measured this round and left out: local_13 as int (35), local_12 as short with
+// local_13 as int (35), local_13 taken from the trigger pointer (local_6 + 0x6e) at 60 with 578 bytes, the trigger index
+// as word (35) and the casts on the first half's arguments (50 each).
+// score 29 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop.
 // MiniMax D (11-11): no lower score (50): copying the squad index into a local and using the parameter directly at the call
@@ -2987,6 +2998,16 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // this function, frame 0x18 at 575 bytes): the pending arm as `if (pending != NONE && delay <= 0) {...} else if (pending == NONE)
 // {...}` 50; the follow-up test as `NONE != local_2` without the casts 50; the follow-up event copied into a short before the
 // 0x202e90 call 50 (folded); `long const squad_index = arg_1;` for the lookup and both first-half calls 50 (copy-propagated).
+// Round 110 (m3 lane 1, fast with 0x202e90, 0x1fb8a0, 0x290cd0, 0x290e20, 0x203330 and 0x204d30): the second half's
+// definition pointer through the existing getter 0x203330 (its body is that ternary; it inlines) 50 (same code); the whole
+// first half (lock test, pending arms, follow-up) as a forceinline helper taking the event, the squad index and the squad
+// 50 (its parameter copies fold); the pending arms swapped (`== NONE` query arm first, the take arm as `else if (delay <=
+// 0)`) 145 (578 B, the layout changes); the actor iteration as `for (function_204d30(...); next != NULL; )` 50; the
+// follow-up trigger index as an if/else 50 (both same code).
+// P545: Standard input/lock/pending/delay/task/trigger sentinel operations, short
+// threshold and mapped-event addition: 203/188/187/172/209/133/120/96.
+// NOT kept: extra operation calls, altered frame/extent and the first-event EBP
+// reload remain. Original whole body, word domains and wrapped scan restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3050,8 +3071,8 @@ void function_202be0(long arg_0, long arg_1)
                     local_7++;
                     if ((short)local_7 >= (short)local_8)
                     {
-                        short local_12 = *(short *)(local_6 + 2);
-                        short local_13 = local_12 == 0 ? (short)NONE : (short)(local_12 + 0x6e);
+                        int local_12 = *(short *)(local_6 + 2);
+                        long local_13 = local_12 == 0 ? (short)NONE : (short)(local_12 + 0x6e);
                         s_squad_actor_iterator local_14;
                         local_1[0x60] = true;
                         function_204d30(&local_14, arg_1);

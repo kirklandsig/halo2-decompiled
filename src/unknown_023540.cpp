@@ -2655,6 +2655,12 @@ dword __cdecl function_131fc0(real alpha);
 // source set (140 on a single-function image, 196 on the queue's image of 562 sources, where the
 // first difference is at +0x15); the difference itself is unchanged by the image.
 // MiniMax C (11-15): no new form, no lower score (140).
+// MiniMax S (11-15): no new form, no lower score (140): the two writes of the chosen default into the parameter's
+// own home are still missing and the preserve_alpha load is still hoisted above the `simple` branch, because the
+// callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
+// MiniMax C (11-16): no new form tried this round, no lower score (140): the body's length matches retail's (1729
+// bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
+// them; the score also moves with the reduced image's source set, as the note above records.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2942,6 +2948,11 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // loads the offset through that address (lea eax, [eax + edx*4] and then a load through eax), where this build
 // loads the entry into edx and adds it (mov edx, [eax + edx*4] and lea eax, [ecx + edx*4]); retail also takes the
 // level's -1 with a lea (lea edx, [eax - 1]) where this build decrements the register.
+// MiniMax S (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build
+// inlines both copies of 0x235a0 while retail inlines the first one and calls the second, so the body after that
+// point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
+// MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
+// MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3071,6 +3082,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax D (11-15): no new form, no lower score (54): the scheduler still places each x87 coordinate chain one slot
 // earlier among the SSE ones than retail (the first difference at +0x527), and the corner rows in the other orders give
 // 54 or worse.
+// MiniMax I (11-15): no new form, no lower score (54): the body is retail's length and the first difference is at +0x527, where this build places each x87 coordinate chain one slot ahead of retail's in both corner sets; what is left is the inlined rotation's schedule.
+// MiniMax R (11-16): no new form, no lower score (54): the body is still retail's length and the scheduler still places the
+// x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527); the corner rows in the
+// other orders give 54 or worse, and the permuter (13 tries in 339 s, annealing) found no variant under 54.
 // score 54 (was 54): earlier 54, 94. Both trig pairs through the float library cosf/sinf (was (real)cos/(real)sin) 54 (94
 // before; frame, bounds block, both trig sequences and every home retail's). Left: inside both corner sets
 // the scheduler places the x87 coordinate chains one slot earlier among the SSE ones than retail does
@@ -3295,6 +3310,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax S (11-14): no new form, no lower score (54): the scheduler still places the x87 coordinate chains one
 // slot earlier among the SSE ones than retail (first difference +0x527), and the corner rows in the other orders
 // give 54 or worse.
+// MiniMax C (11-16): no new form tried this round, no lower score (54): the block's own order of the loads and its call setup still differ
+// MiniMax C (11-16): from retail in the ways the notes above record, and no form of this file's own moves them.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3897,6 +3914,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // two named for its two uses in modes zero and one 832 (4840 B); both selectors `long const` 9 (same code); const selectors
 // with no shifted local 939; the selectors from one if/else on small with no shifted local 952. Re-measured: no shifted
 // local 939 (shift retail's, but small loads into AL after fraction's move to EBP where retail loads CL first).
+// Round 111 (m3 lane 10, fast, control 9): the byte clamp ahead of the two selectors 975 (4840 bytes). On the no-shifted-local
+// form (re-measured 939: shift retail's, small loaded into AL after fraction's move, no copy) with alpha before input (re-measured
+// 19: small AL copied to CL for the neg, alpha in ECX, where retail loads small into CL first and copies it to AL): both selectors
+// ahead of `fixed` 959; small typed byte 19; both selectors typed dword 19; the byte clamp between the alpha and input selectors
+// 973 (4832 bytes).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
