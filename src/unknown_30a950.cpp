@@ -112,7 +112,10 @@ struct new_faces_30ae70
 
 // adds a vertex at the position, and a fan of new faces from it over the
 // horizon; the object starts with the pool the faces come from
-// score 4 (was 59): the apex pointer slot is stored before the vertex writes,
+// score 0 (was 4): matched with the vertex written through a reference, the
+// apex pointer taken after the writes, and the face list and both calls in their
+// own block.
+// Before, 4 (was 59): the apex pointer slot is stored before the vertex writes,
 // rather than after the stack array size is cleared; the remaining code agrees.
 // Earlier at 59: retail keeps the object in ecx across the call to the
 // pool and reloads it for neither call, ours copies the object into esi and
@@ -140,11 +143,13 @@ struct new_faces_30ae70
 int class_30a810::function_30ae70(long count, edge_30aac0 *horizon, __m128 const *position)
 {
 	int index = vertex_count++;
-	vertex_30ac50 *apex = &vertices[index];
-	vertex_30ac50 &vertex = *apex;
+	vertex_30ac50 &vertex = vertices[index];
 	vertex.position = *position;
 	vertex.horizon_edge = 0;
-	new_faces_30ae70 new_faces;
-	((pool_30a950 *)this)->function_30a950((list_30a950 *)&new_faces, count);
-	return function_30ac50((face_list_30ac50 const *)&new_faces, (void const *)count, horizon, &apex);
+	vertex_30ac50 const *apex = &vertex;
+	{
+		new_faces_30ae70 new_faces;
+		((pool_30a950 *)this)->function_30a950((list_30a950 *)&new_faces, count);
+		return function_30ac50((face_list_30ac50 const *)&new_faces, (void const *)count, horizon, &apex);
+	}
 }
