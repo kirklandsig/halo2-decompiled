@@ -2896,6 +2896,7 @@ struct s_unit_event
 // shared 0xdb110 call exactly (`push 0; push 0; jmp` into `push; call; test al, al; jne`), not kept (a flag set in the arms); the
 // second arm as a nested ternary ending `: false` 513 (same code). Retail spills a constant 1 into the region argument's dead
 // home ([esp + 0x58]) for the region-state shift and later holds 1 in ESI (`or word ptr [x + 0x352], si`, the state compare).
+// MiniMax D (11-16): no new form, no lower score (513).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
