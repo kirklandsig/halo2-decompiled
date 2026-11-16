@@ -134,6 +134,11 @@ union s_6ec80
 // assignment, plain indexing) 5 (same code), that with the mask scoped 225; with the mask scoped: the 0x49c8 read by
 // hand plus both block pointers cleared and set players first 192 (the two pointers' homes and EBX/EDI then both swap),
 // only the two assignments players first 225 (974 B), only the two NULL initialisations swapped 225.
+// M3 lane 14 r100 (fast with 0x6ec10/0x5b120; base 5): re-measured the scoped mask 225 (local_2 then has no register
+// at all, read from its home at each test; players takes EBX, NONE EDI, the zero ECX; the short/data and name/second_id
+// homes swap). On the scoped mask: the name and data pointer declarations swapped 225; `value_49c8` declared at its NONE
+// store 225; first_id, second_id and players declared at their first stores 225; an unsigned counter 226; a char counter
+// 247 (981 B). Declarations and initialisers do not move this allocation; only where the zero is written does.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

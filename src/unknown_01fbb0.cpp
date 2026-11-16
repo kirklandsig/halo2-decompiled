@@ -124,6 +124,11 @@ PRIVATE inline void timed_effect_point_fallback(point3f *point)
 }
 
 // Matches retail: destination references keep each store before the next input loads.
+// (Codex P555, 11-16: each output's reference declared just before its call.) Earlier 19 (was 454): same size and
+// instructions; retail stores each interpolated value before it loads the next pair of inputs, where ours loaded one
+// input ahead of the store.
+// MiniMax E (11-16), NOT kept: the eight outputs through one-use pointer locals declared together ahead of the calls
+// measured 19 in the merge check (its run reported a match the merge did not reproduce).
 // @retail 0x1fd20
 s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
 {

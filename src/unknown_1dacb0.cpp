@@ -1459,6 +1459,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax S (11-15): no new form kept, no lower score (828): the request's urgent flag held in a named local that only
+// carries a constant drops the score to 801 (2791 bytes) and makes the first resource request match retail instruction
+// for instruction, but a local holding nothing but a constant is not a shape retail's source can have, so it is not
+// kept; the same flag taken from the found entry pointer (983), from the weapon class (1011) or from the result index
+// (3574, reading a value never set) are worse.  The second request's mode copied into a named local and the mode read
+// through its own address both give 828 (same code), the per-pass candidate declared at function scope gives 926 (2825
+// bytes), and the permuter's best (774) swaps the lookup's key and size arguments, so it is not kept either.  The frame
+// still gives iterator_mode the dead found_mode slot (F+0x44) where retail puts the per-pass candidate and keeps
+// iterator_mode at F+0x00, so retail's result shorts sit at F+0xc and F+0xe while ours sit at F+0x08 and F+0x0a, and
+// retail's EBP zero carrier in the second request is still missing.
 // MiniMax D (11-15): no new form, no lower score (828): the first difference is still the NONE compare, where retail loads
 // the compared argument into edx and keeps the computed -1 in ecx while this build loads the argument into ecx and keeps
 // -1 in edx; that rides on the frame homes, where retail's result sits four bytes higher than ours and retail's third

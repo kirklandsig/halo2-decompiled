@@ -1194,6 +1194,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // retail's frame: `and esp, -8`, 0x154): the state stays in EBX and the count is spilled (`[esp+0xc]`), where retail
 // keeps the state in ESI and the count in EBX; the three callers stay matched. The fast check's MATCH is a
 // reduced-image result only (the reduced image gives 212 with the marker). Not kept; this body stays at 9.
+// M3 lane 4 r204 (fast with 0x6fcc0, 0x6f940, 0x6fa60): identities as `XUID identities[16]` (no align declaration; the frame
+// still self-aligns with the marker) filled by `identities[count] = *(XUID const *)&current->players[i].user_id; count++;`
+// 195 (the state takes EBX at +0xd, the count is spilled), the same with `identities[count++] = ...` 195; on that form an
+// unsigned `dword` player index 192 (721 B); a byte array filled by `memcpy(identities + count * 12, ...)` (0x6fa60's
+// matched spelling) 195; the indexed form with the else arm, the call's arguments and the final store through a typed
+// view of the state (`entry_count`, `entries`, `part`, `unknown104`) 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
