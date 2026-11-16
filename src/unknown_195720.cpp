@@ -104,6 +104,10 @@ bool function_1946f0(s_bitstream *stream)
 // M3 lane 5 r187 (fast): a data local inside the clear's `count > 0` block 2; the mask as a `long` local in a braced mask block 2;
 // the index as `saved` then `byte_index /= 8` 2; a data local after the mask block, before the count, used only by the clear 2;
 // the same local after the count 2. Both LEAs stay data-first in each.
+// Round 186 (m3 lane 6, fast): the member form (`s_bitstream::function_194710(bool)`, every call `stream->function_194710(true)`,
+// all callers still matched) 2 (same code); the mask as `(byte)~(~0u << (saved % 8))` 4; the index renamed to sort first or
+// after the count 2/2; the mask under the clear's `count >= 0` test (the bound test folded into it) 40. Diagnostic: constant
+// stores (1, 0, -1, 4) to a scratch global after the pop leave both LEAs data-first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

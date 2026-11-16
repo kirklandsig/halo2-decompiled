@@ -1054,7 +1054,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
-// score 964 (was 766): coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
+// MiniMax C (11-16): no new form, no lower score (766): retail takes the session in EAX and the output pointer on the
+// stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
+// out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
+// files.
+// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
 // it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
 // in EAX); 2684 bytes against retail's 2828, the top 0x192e60 still inlined and 0x631f0 still a call (retail the reverse).
 // Earlier 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack

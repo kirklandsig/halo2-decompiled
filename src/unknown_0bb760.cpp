@@ -517,6 +517,13 @@ void function_3dd10(long object_index, bool force);
 // sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the choices pointer in the other slot, and
 // the first scan's `!=` exits still differ from retail's signed `<` loop, which unrolls by four in every
 // spelling measured so far; the body stands.
+// MiniMax C (11-16): score 84 (was 84): no new form, no lower score; at retail's 1034 bytes the first
+// difference is still the 1.0f load before the zeroing before the first clamp (retail's clamp entry is
+// xorps, movss, comiss), the blend still sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the
+// choices pointer in the other slot, and the first scan's `!=` exits still differ from retail's signed `<`
+// loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
+// found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
+// but a changed prologue) all score worse, so the body stands.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator

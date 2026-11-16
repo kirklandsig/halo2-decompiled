@@ -458,6 +458,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P466: Index/variant/peer/primary identities and their independent read-only
 // bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
 // NOT kept: unchanged full-image helper order and EBP save; original body restored.
+// P547: Uninitialized native primary/peer, index and variant declaration phases, seven subsets
+// then complete reverse declaration order: eight reduced 0s; full reverse-order graph 33/138.
+// NOT kept: reversed pure helpers and extra EBP remain in the full image; original body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1660,6 +1663,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
 // the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
 // changes nothing.
+// MiniMax R (11-16): no new form, no lower score (703): the frame agrees at 0xc0, but the slot helper's null test is still a branch where retail uses a conditional move, and the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18.
 // score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the

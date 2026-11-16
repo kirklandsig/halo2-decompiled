@@ -523,6 +523,30 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P534: Immutable complete planar target/side-point/radial-displacement producers, seven subsets,
 // then all with immutable pre-blend snapshot: eight 702 at 3473 bytes. NOT kept: frame remains
 // 0x8c versus 0x88; native query/target home sharing does not recover. Original full body restored.
+// P548: Independent configuration, normalized-input/magnitude, heading/default, planar-input,
+// scalar-control, radial-workspace, pre-blend and velocity-residual declaration phases:
+// eight 679 at 3479 bytes. NOT kept: no native spill/home recovery on the shared query/target
+// storage graph. Every initializer and complete original executable source restored.
+// P550: Complete final latch outcome in bool/byte/short/long 679/679/679/679; backward transfers
+// at heading/paired defaults/normalized input/pre-blend snapshot 779/818/726/770. NOT kept:
+// no qualifying native spill/home repair; original full body and headers restored.
+// Configuration, query/position/target homes and normalization/steering allocation remain.
+// P552: Uninitialized component transfers at heading, paired defaults, normalized input, history,
+// working directions, saved steering, final outputs and the complete graph.
+// Fast scores 779/759/726/810/724/770/743/833. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Scalar correction in-place pointer/reference, separate pointer/reference,
+// returned output pointer/reference and wider already-rounded return: seven 679s;
+// complete residual vector with a plain correction loop 795. NOT kept: no native
+// spill/home repair; original helper, all three correction calls and full body restored.
+// P556: Actual object/configuration/input/query-output/position/response/radial/final-output
+// lvalue receivers 679/679/683/679/682/704/693/766. NOT kept: no native spill/home equality;
+// original executable body, all producer helpers and both final publications restored.
+// P558: Actual collision-query output workspace, six complete flag/flag/vector field orders then both
+// flag-pair orders with the vector independent: 730/730/730/730/730/730/713/713. NOT kept: unmatched
+// output grouping; original independent outputs, all helpers and entire body restored.
+// P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
+// shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
+// NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax I (11-16): no new form, no lower score (43): the difference still opens inside the root walk, whose
+// body is the out-of-line 0xbaf40 in src/unknown_0bad50.cpp - the datum iterator's data pointer takes EBX here
+// where retail takes EDI - and that file and include/data_iterator.h are outside this lane's queue.
 // MiniMax C (11-15): the parent walk as a NONE-rooted do-while and as a current-rooted while: 109 each
 // (was 43), no lower score; the walk's shape only moves the allocator's choice (the datum pointer lands in
 // EBX, then in EBP), while retail keeps it in EDI and the unit index in EBX.
@@ -1243,6 +1246,9 @@ bool function_14ed80(void)
 // read at each use, `third` declared just before the bound test 68 (149 bytes: first EDX and the global ESI as retail,
 // third in ECX and the third-person output moved to a register; 0x14f0f0 40), after the player 52 (third ESI, global EDI),
 // before the remap 64 (153 bytes).
+// M3 lane 8 r173 (fast with 0x14f0f0 and 0x14f2e0): `long third = first;` 8 (same code); the clamp's maximum computed before the
+// index read in its arm 8 (same code); the representation as `representations + index` with third read first 9 (re-measured
+// on the full build; listed from the harness); the bound test as `count > index` 9; the clamp as `maximum < index` 10.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -2547,6 +2553,10 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax I (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 - retail
+// holds two request homes and eight bytes more of small homes than this build's one request home - and the
+// 0xccd20 and 0x151b80 calls this build expands are still expanded here; giving the 0x16 request its own
+// workspace measures 804 at 2842 bytes, so the single workspace stands.
 // MiniMax C (11-15): no new form, no lower score (701): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (701): retail's locals run from +0x10 to +0x83, with the
 // two request homes at +0x44..+0x83 and the small homes at +0x14..+0x43, so retail holds two request
@@ -3104,6 +3114,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax I (11-16): no new form, no lower score (103 on the full build, 193 on the reduced one): the globals
+// pointer still ends up in EDI where retail keeps it in ESI, and the two loops still swap the datum and unit
+// registers with it; the status test retail inlines comes from src/unknown_13bf00.cpp, which this lane may not
+// edit.
 // MiniMax C (11-15): no new form, no lower score (103): the body stands as found.
 // MiniMax H (11-14): no new form, no lower score (103): retail's listing loads the flag's global
 // (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,

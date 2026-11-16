@@ -886,6 +886,15 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // straight to the output 628 (3551 B); that with the offset computed into the matrix position, rotated in place and the start
 // added with `+=` 672 (3535 B); the angle clamp as if/else-if statements 535 (same code); one `plane` pointer for both edge
 // distances 568 (3631 B); a matrix3x3 basis with all four rotations through the existing function_2477b1 577 (3616 B).
+// M3 lane 14 r100 (plain each; base 535): `face_count` declared before `secondary_count` 535 (the two opening stores then run
+// in retail's order, face count first; only their homes differ); on that, the first loop's face read into a one-use local
+// ahead of the call (`long face = faces[i++];`, lane 17 r39's form) 524 (the first loop is then retail's but for the homes:
+// `inc esi` among the pushes; one-use local, so match-only); `selected_plane` declared before `selected_face` 535;
+// `first_plane` declared at the group loop's top 535; `group_count` declared beside `remaining` and zeroed in the loop 535.
+// Declarations and scopes do not move the homes (tag 0xb4/retail 0x94, first plane 0x30/0x44, group count 0xc/0x14).
+// Also: the group pass as `if (flags) { short remaining = secondary_count; while (remaining > 0) {...} }` (no separate
+// count test) 534 (the `remaining` store then sits before the `jle` as retail's; the only change); the first loop as a
+// plain `for (...; i++)` with `faces[i]` 548; `definition` declared ahead of the two arrays 535.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

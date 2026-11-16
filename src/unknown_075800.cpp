@@ -962,6 +962,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
 // MiniMax I (11-15): no new form, no lower score (143); retail's parameter order is (message type, message, address) and the declaration here is frozen, so the address cannot take the stacked home that retail's convention needs while the case-18 body stays out of line.
+// MiniMax C (11-16): no new form, no lower score (143 plain, 196 on the reduced image): retail's dispatcher takes the
+// message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while the declaration here
+// is a thiscall member with the address, the type and the message, and a declaration never changes, so the entry
+// registers cannot be reached from this file.
+// MiniMax E (11-16): no new form, no lower score (143): retail's dispatcher takes the message type in EAX, the
+// message in ECX, the receiver in EDX and the address on the stack, while the declaration here is a thiscall
+// member with the address, the type and the message, and a declaration never changes, so the entry registers
+// cannot be reached from this file - and the only caller (src/unknown_07b330.cpp) passes them in this file's
+// order, so the order cannot be changed here either; case 11 sits in the first switch after case 24.
 // score 143 (was 143; 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier 143 (was 153).
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).

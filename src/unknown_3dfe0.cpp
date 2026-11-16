@@ -118,6 +118,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // home store and no reload in the force arm): both timestamp NONE tests compared as signed longs 218; force declared bare
 // ahead of update and assigned after the false store 218; force as `!(initialized && valid)` 218; the elapsed clamp ahead
 // of force 239 (816 B); the object as `byte *const` 218.
+// m3 lane 16 r124 (fast with 0x3d2c0 and 0xd1850, control 21; update-first re-measured 218): on update-first, the force arm
+// inverted (not-force flag test first) 218; force and update set inside an `initialized && valid` if/else with the clamp in
+// both arms 218 (829 B); the hidden-object flag in a named bool 218; `initialized` read into a local for the force test 218.
+// On the kept order, `update` declared bare and set false in the not-force arm 222.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

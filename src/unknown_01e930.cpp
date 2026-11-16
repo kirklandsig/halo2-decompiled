@@ -618,6 +618,13 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // T105: Finite pump budget, long/dword/short/byte with positive/nonzero
 // guards: 272/272/272/284/272/272/272/284. NOT kept: native ordinal/frame
 // equality absent; original retry, clock producers and complete body restored.
+// M3 lane 13 r99 (fast, in a file of its own with /arch:SSE from M3 lane 1 r99's 150 lead, this file's other functions
+// MATCH throughout): the texture format as a named local used for the texture, the bitmap format and 0x1358c0 150
+// (same code: retail's EBP-held 10 and EDX-held 3 are not a propagated local); the existing function_155e50() called at
+// entry in place of the inline memory-status helper 356 (LTCG keeps it a call, frame 0x34); the surround bins declared
+// before the volumes 150 (same code); the elapsed clock declared at the top with the start 150 (same code); the copy
+// flags stored before the movie size 152. Diagnostic: the same file built /O1 464 (an EBP frame), so /O2 stays. Retail's
+// two dead zero stores at entry fall on the memory-status block's +0x18 dword. Not moved (kept only with a match).
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

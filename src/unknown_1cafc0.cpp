@@ -782,6 +782,16 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
 // then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
 // destructive graph/base or lazy-reload repair; original complete body and declarations restored.
+// P545: Standard typed name forward/backward copies, primary/alternate hidden-result
+// forward/backward copies and name representation forward/backward copies:
+// 586/587/611/612/591/592/586/587. NOT kept: native graph/base reloads and byte
+// return remain; query copies disturb the agreeing prefix. Original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (348): retail's destructive graph-base reloads and its final
+// return-byte normalization are still the whole difference, and this body only calls the graph lookup that owns the
+// name record (src/unknown_1dacb0.cpp), which this lane may not edit, so the local spellings cannot move them.
+// P558: Deep fallback negative-continuation masks 8..14, then all five query predicates at mask 31:
+// 362/433/396/533/375/431/394/532. NOT kept: no native graph/base or return equality; original complete
+// fallback chain, query snapshots, byte status, request producer and full body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1028,6 +1038,14 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax E (11-15): no form kept. The permuter's best variant (195, same in both images) swaps the first and
+// fourth arguments of the transition channel's set() call, which would put the animation set name into the
+// channel's graph tag index instead of the state's graph tag index that retail loads from [edi+0x68] at
+// 0x1cd312 and passes at 0x1cd324, and it adds a local that holds only a constant; both are on the reverted
+// list, so the original call stands. Still differs: the two id slots are swapped (retail keeps the transition id
+// at frame+0x04/0x06 with its -1 stores in the block and the animation id at frame+0x08/0x0a with its -1 stores
+// at the entry), the blend-query byte's residency, and the set() call's fourth argument (retail keeps the set
+// name in ebp, ours reloads it from a stack slot).
 // MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a

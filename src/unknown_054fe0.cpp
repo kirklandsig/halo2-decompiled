@@ -1727,6 +1727,15 @@ struct s_summary_player_sort_entry
 // MiniMax E (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8; retail's three extra homes (the member index, the membership block pointer and &session->value18) would each need a named one-use local or a pointer to a field used once, which are on the reverted list, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
 // MiniMax R (11-15): no new form, no lower score (339): retail still holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne needs the /arch:SSE flag this file does not set.
 // MiniMax I (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax C (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8 and the session
+// pointer and the state word take ebx and ecx where retail keeps them in ecx and edx; retail's cmovne for the state
+// needs /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it,
+// so the membership pointer and the member index never get the frame homes retail gives them.
+// MiniMax E (11-16): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8 and the
+// type, membership and member-index homes and the saved registers still differ; retail writes the state with a
+// conditional move (cmovne esi, dword ptr [0x527334] at 0x64fac), which needs /arch:SSE, and this file's @flags
+// line does not set it, and retail inlines 0x5a680 where this build calls it, so the membership pointer and the
+// member index never get retail's frame homes.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
 // code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
