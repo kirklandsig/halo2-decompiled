@@ -1204,6 +1204,10 @@ bool c_projectile_type::v8(long a, long b)
 // device type 12; the 0x800 block as guard returns 47 (188 bytes); a pointer to the state's power field 12; the object
 // looked up after the a5e70 call 18 (retail's homes: object ESI, flags EDI, the mask kept; only the head moves after the
 // call, so the object loses the tie only while its range spans the call); permuter (1800 s, 167 tries) none below 12.
+// Round 124 (m3 lane 16, fast; control 5), all with the full-width mask: 0xa3fd0's idiom (a `long group` value local, the
+// masked address written at the compare and at the store) 15; that local with the group value read once into a named local
+// used twice 24; flags declared before the object 12; the 0x400 test and compare nested 12; a `long group` local with an
+// entry pointer 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
