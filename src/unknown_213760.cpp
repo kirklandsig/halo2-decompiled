@@ -1747,6 +1747,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // array again 81; `done` declared ahead of the expected size 33 (same code); `valid` declared at the top of the loop body
 // 33 (same code). Retail loads the write's handle (`mov eax, [ebp]`) before any of the call's pushes and zeroes the flags
 // in ECX; ours zeroes the flags in EAX first and loads the handle after them.
+// NOT kept (coordinator screen, MiniMax C 11-16): a goto the function on main does not have (kept only with a byte match): `goto validation_done;`; the body is main's again.
 // @retail 0x213970
 void function_213970(void)
 {
@@ -1780,50 +1781,52 @@ void function_213970(void)
                 bool resized;
                 function_1a1310(*handle, expected_size, 0, 6, &resized, &done);
                 cache_wait_for_completion(&done);
+                dword bytes_written;
                 if (resized)
                 {
                     s_cache_header empty_header;
                     cache_header_initialize_strings(&empty_header);
-                    dword bytes_written;
                     function_1a1050(*handle, &empty_header, 0x800, 0, s_file_write_flags(0), 0, 6, &bytes_written, &done);
                     cache_wait_for_completion(&done);
-                    if (bytes_written == 0x800)
-                        goto validation_done;
                 }
-                if (handle->handle != INVALID_HANDLE_VALUE)
+                else
+                    bytes_written = 0;
+                if (bytes_written != 0x800 && handle->handle != INVALID_HANDLE_VALUE)
                 {
                     function_1a1550(*handle, 0, 6, &done);
                     cache_wait_for_completion(&done);
                     handle->handle = INVALID_HANDLE_VALUE;
                 }
             }
-            else if (cache_file_header_read(index))
+            else
             {
-                valid = true;
-                if (index >= 1 && index <= 1)
+                valid = cache_file_header_read(index);
+                if (valid)
                 {
-                    s_cache_header header;
-                    cache_header_initialize_strings(&header);
-                    valid = function_213800((char const *)file + 0x24, &header);
-                    if (valid)
-                        valid = *(long *)((byte *)file + 0x148) == *(long *)((byte *)&header + 0x144);
-                    if (valid && index != 0 && index != 1)
+                    if (index >= 1 && index <= 1)
                     {
-                        for (long type = 0; type < 3; type++)
+                        s_cache_header header;
+                        cache_header_initialize_strings(&header);
+                        valid = function_213800((char const *)file + 0x24, &header);
+                        if (valid)
+                            valid = *(long *)((byte *)file + 0x148) == *(long *)((byte *)&header + 0x144);
+                        if (valid && index != 0 && index != 1)
                         {
-                            if (*((byte *)file + 0x178 + type))
+                            for (long type = 0; type < 3; type++)
                             {
-                                FILETIME const *current = (FILETIME const *)((byte *)cache_file_from_type(type) + 0x17c);
-                                FILETIME const *stored = (FILETIME const *)((byte *)file + 0x184 + type * 8);
-                                valid = valid_types[type];
-                                if (valid)
-                                    valid = CompareFileTime(current, stored) == 0;
+                                if (*((byte *)file + 0x178 + type))
+                                {
+                                    FILETIME const *current = (FILETIME const *)((byte *)cache_file_from_type(type) + 0x17c);
+                                    FILETIME const *stored = (FILETIME const *)((byte *)file + 0x184 + type * 8);
+                                    valid = valid_types[type];
+                                    if (valid)
+                                        valid = CompareFileTime(current, stored) == 0;
+                                }
                             }
                         }
                     }
                 }
             }
-        validation_done:;
         }
         if (!valid)
         {
