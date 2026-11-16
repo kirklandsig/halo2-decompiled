@@ -817,6 +817,9 @@ struct s_1f8a70_actor
 // phases 380/395/339/214; backward counterparts 383/421/381/231.
 // NOT kept: all regress and shorten away from retail; original copies,
 // cases, two results and returned-unit temporary restored.
+// P558: Actual unit-value/route-result phase union, bool/byte/short/word outcomes in both member orders:
+// 400/400/398/398/303/303/303/303. NOT kept: unmatched phase overlay and unit capture; original
+// returned-unit temporary, independent two-result flow and complete body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

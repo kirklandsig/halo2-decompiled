@@ -875,6 +875,10 @@ struct s_collision_result_buffer_1697c0
 // P556: Actual ray/result/candidate/axis/best-vector/final-output/fraction/best-fraction
 // lvalue receivers: 299/305/339/305/307/352/306/299. NOT kept: no native scratch/home equality;
 // original complete sampler and every shared helper retained.
+// P558: Existing normalizer with separate input/output pointer/pointer, reference/pointer,
+// pointer/reference and reference/reference contracts, both formal orders:
+// 295/295/295/295/295/295/295/295. NOT kept: no native scratch/home equality; original private helper,
+// in-place calls and entire sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
