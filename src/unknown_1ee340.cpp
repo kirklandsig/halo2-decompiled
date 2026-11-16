@@ -267,6 +267,13 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax C (11-16): no new form, no lower score (192): the call to the matched 0x23a220 already gives the point in
+// EBX and the points in EDX as retail does, so the parameter order is no longer the blocker; what is left is retail
+// pushing the count as a dword (push edx, the count it already holds) where ours truncates it to a word first (xor
+// eax, eax; mov ax, word ptr [esi + 0x14]; push eax), so that count is a 32-bit type in retail and is declared short
+// in src/unknown_239b80.cpp and in the declarations of src/unknown_170d70.cpp, src/unknown_184440.cpp and this file,
+// which this lane may not edit; the frame map follows from it (retail's polygon at +0x50 in a 0x90 frame where ours
+// is at +0x44 in a 0x84 frame, retail spilling the direction and the ray start that we keep in registers).
 // score 192 (was 192): no new form and no lower score; the frame is still 0x84 against retail's 0x90 with the
 // origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points
 // before the point: BLOCKED-BY 0x23a220 (src/unknown_239b80.cpp).

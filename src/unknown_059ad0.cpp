@@ -3561,6 +3561,11 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // announcement and identity loads still take other registers than retail's, and the permuter's 37 tries in 307 s found
 // nothing below its own baseline.
 // MiniMax B (11-13): no new form, no lower score (101); still BLOCKED-BY 0x769a0 in another file, whose unread owner parameter decides the call's register home.
+// MiniMax C (11-16): no new form, no lower score (101): retail calls the matched 0x769a0 with three arguments - the
+// observer on the stack (push edx, the session's observer at +8), the session's value10 in ECX (the callee overwrites
+// ECX, so that argument is dead there) and the channel index in EAX - while our declaration of that callee takes two
+// parameters, so ours loads the observer into ECX, pushes it and calls; that parameter list lives in
+// include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -4416,6 +4421,12 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax C (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean homes
+// stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and retail's call to the matched 0x769a0
+// passes three arguments - the observer on the stack (push eax), the session's value10 in EDX (dead at the callee) and
+// the channel index in EAX - where our declaration of that callee takes two, so the extra load and the spill it causes
+// are missing here too; that parameter list lives in include/unknown_075870.h and src/unknown_075870.cpp, which this
+// lane may not edit.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
