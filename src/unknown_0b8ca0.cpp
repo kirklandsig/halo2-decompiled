@@ -1829,6 +1829,11 @@ done:
 // after the palette offset 26 (size EAX and `imul eax, edi` as retail, the definition back in ECX); one variable for
 // the definition, the placements and the datum (`data += index * size`) 27 (the 27 form's code). Lead: retail looks like
 // the definition preferring EAX (as when it shares the datum's variable) while the size is the product's destination.
+// Round 107 (m3 lane 11, fast with 0xbf0f0/0xbf090): one table-entry pointer that is first the name entry and then
+// the definition (so the definition would start in the name's EAX) 17 on main's body and 27 on the 27 form (both the
+// same code as their bases: the reuse does not tie the homes). On the 27 form: the type and definition read above the
+// NONE test 30; the placements' scenario read from the global again 34; the placements read folded into the datum
+// with the offset read before the size 27 (same code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
