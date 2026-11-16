@@ -893,6 +893,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
 // entry index is taken as a word as in retail, but the -1 sentinel is still held in edi where retail keeps it in esi, and the
 // successor and query homes still sit at other frame offsets, so the blocks after the first call are laid out differently.
+// MiniMax R (11-16): no new form, no lower score (237): the -1 sentinel still loses esi here - this build gives the squad index edi
+// (with `or edi, 0xffffffff`) where retail keeps it in esi - and the squad's address is still built with a movzx and an imul into ecx
+// where retail masks eax and multiplies it there; the frame and the length (1272 bytes) agree.
 // score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.

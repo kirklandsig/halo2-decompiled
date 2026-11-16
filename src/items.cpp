@@ -1711,6 +1711,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax R (11-16): no new form, no lower score (140): the release scale's two factors swapped in the source leave the
+// bytes unchanged (the compiler picks the operand order), retail clears the release flag with one byte read-modify-write
+// where this build splits it into a load, an and and a store, retail keeps two copies of the release impulse (the flag-5
+// path computing the first two components and the flag-6 path its own) where the shared helper here gives one copy that
+// both paths jump to, and the returned byte still sits at esp+0xe where retail keeps it at esp+0xf. This round's battery
+// on the flag clear (the byte-bitfield view, a byte pointer local, the plain assignment and the inverted mask) leaves all
+// four at 140 with the same bytes: this build always splits the byte mask into a load, an and and a store.
 // MiniMax H (11-11): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the damage data block and the position local still sit twelve bytes below retail's.
 // MiniMax A (11-06, run 52): no new form, no lower score (140) - retail keeps the two release
 // impulse paths apart with the flag clear at a different point in each, so splitting ours that way
