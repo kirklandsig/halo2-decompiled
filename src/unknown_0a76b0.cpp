@@ -865,6 +865,7 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax C (11-16): no new form, no lower score (92): the frame is still a permutation of retail's - the grenade tag and the seat index sit 0xc below retail's homes and the shared block-vector slot 0xc above them - and the body is still four bytes longer than retail's 1699; the declaration order does not reach those homes.
 // MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
 // build, so the source stands.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
@@ -2630,6 +2631,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
+// compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
+// `goto done`s, which the rules drop. Body unchanged.
 // MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
@@ -2810,6 +2815,9 @@ __forceinline char unit_action_round(real value)
 // P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
 // 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
 // not recovered; original body restored.
+// MiniMax R (11-16): no new form, no lower score (234): the body is the 1197-byte form (the earlier 101 form was a
+// register pooling and was dropped), and the first difference at +0x9 is in the prologue's saved registers, with the
+// name, the type and the current pointer still landing in other registers than retail's.
 // m3 lane 9 r124 (fast with 0xe9ed0/0xea090/0xe9780, all matched throughout; diagnostics, all restored): retail never
 // constant-folds the result, even on the success path (`mov byte [esp+0x12], 1` ... `mov al, [esp+0x12]` after the
 // 0x7f/0xff stores), as if the byte lived in memory; the result declared volatile (forbidden, diagnostic only) gives the one

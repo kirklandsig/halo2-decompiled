@@ -1497,6 +1497,7 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax C (11-16): no new form, no lower score (164): the entry lookup and the two slot reads still fold the index into the address where retail holds index times twelve in edx and the pool's data in ebp, the three flag bytes still sit at +0x0e/+0x0f where retail has them at +0x11/+0x12/+0x13, and the prologue still pushes three registers against retail's four.
 // MiniMax I (11-16): no new form, no lower score (164): the entry lookup and the two slot reads still fold the
 // index into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
 // against our three), and the three flag bytes still sit at +0x0e/+0x0f where retail has them at
@@ -1513,6 +1514,7 @@ long function_cbd50(long unit_index, short weapon_index);
 // twelve in EDX and the pool's data in EBP, the prologue still pushes three registers where retail pushes
 // four, and the three flag bytes still sit at +0x0e/+0x0f and the overlay word at +0x10 where retail has the
 // flags at +0x11/+0x12/+0x13 and the overlay in the dead argument slot at +0x14, so the body stands.
+// MiniMax R (11-16): no new form, no lower score (164): the entry lookup still folds the index into the address where retail holds the index times twelve in EDX and the pool's data in EBP, and the prologue still pushes three registers against retail's four.
 // score 164 (was 164):
 // MiniMax I (11-14): no new form, no lower score (164): the entry lookup and the two slot reads keep the index
 // folded into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
@@ -1929,6 +1931,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax C (11-16): no new form, no lower score (445): the frame is still eight bytes against retail's 0xc and the pool's global and data are still loaded into eax and edx where retail keeps them in ecx and esi; tried the interruptible and the depleted flags as longs (495 and 457) and the result as a long (550), and none of them reaches retail's frame.
 // MiniMax I (11-16): no new form, no lower score (445): our frame is still 8 bytes against retail's 0xc and the
 // pool's global and data are still loaded into EAX and EDX where retail keeps them in ECX and ESI, so every stack
 // home sits one dword below retail's; the frame cannot be widened without a local the body never reads.
@@ -1944,6 +1947,7 @@ bool __stdcall function_110ab0(long unit_index)
 // MiniMax R (11-15): no new form, no lower score (445): re-measured at retail's 1793 bytes; the frame's
 // slots still sit at retail's offsets one dword off, retail still keeps its frame pointer and the early
 // pointer where ours does not, and our frame is still eight bytes against retail's 0xc, so the body stands.
+// MiniMax R (11-16): no new form, no lower score (445): the body is retail's 1793 bytes; retail keeps the object table and the mode index in EBP and ESI where ours uses EAX and EDX, and our two flag bytes sit at +0x1c where retail has them at +0x12 and +0x13.
 // score 445 (was 445): earlier 445 (was 453): retail keeps the result byte in the first argument's dead slot and re-derives the unit in both seat
 // m3 lane 5 r185 (fast with 0x10ff40/0x111650, controls 12/557): the definition without `__stdcall` 445 (same code: LTCG
 // keeps the stack convention from the body); the 0xc7070 result held in a named bool 445 (same code); depleted typed char
@@ -2422,6 +2426,7 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax C (11-16): no new form, no lower score (776): the first difference is still the frame - 0xcc against retail's 0xd4 - so every stack home sits eight bytes below retail's; the unit and the state are still in the opposite registers and the first angle conversion is still expanded here where retail calls out of line.
 // MiniMax I (11-16): no new form, no lower score (776): the first difference is still the frame - 0xcc against
 // retail's 0xd4 - so every stack home sits eight bytes below retail's; the locals the body declares account for
 // only 0xcc, and the eight missing bytes would have to come from a local the body never reads.
@@ -2444,6 +2449,7 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // MiniMax R (11-15): no new form, no lower score (776): re-measured; the frame is still 0xcc against
 // retail's 0xd4, the first angle expansion still differs and retail's prologue still holds the lookup chain
 // ours does not have, so the body stands.
+// MiniMax R (11-16): no new form, no lower score (776): the body is 15 bytes longer than retail's 3403 and the frame is 0xd4 against retail's 0xcc, so every slot sits eight bytes off; retail's first angle is expanded out of line where ours computes it in place.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // MiniMax D (11-11): no new form, no lower score (776); the frame is still 0xcc against retail's 0xd4, and
 // retail's prologue still holds the lookup chain ours does not have: the unit's definition index, then the
@@ -3964,6 +3970,7 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax C (11-16): no new form, no lower score (12): the definition and control stack homes are still swapped (ours +0x1c and +0x20, retail +0x20 and +0x1c) and the two flag bytes are still cleared after the set test where retail clears esp+0x11 then esp+0x10; exchanging the two declarations, the definition before the control and the overlay before the animation all leave the homes where they are (20 to 23).
 // MiniMax E (11-15): no new form, no lower score (12): the definition and control stack homes are still swapped (ours 0x1c and 0x20, retail 0x20 and 0x1c), and the two flag bytes are still cleared after the set test where retail clears esp+0x11 then esp+0x10.
 // MiniMax S (11-15): no new form, no lower score (12); the permuter's reduced image scores 202 against the full image's 12, so it cannot search this body.
 // MiniMax S (11-14): no new form, no lower score (12): the definition and the control still take each other's stack homes (retail keeps the control at +0x1c and the definition at +0x20) and the two flag bytes are still cleared after the set test where retail clears them in the entry block; declaring the definition before the control gives 20, moving the two flags ahead of the lookup rebuilds the function at 682 bytes and takes the neighbouring 0x112070 to 3418, and the permuter (15 tries) found no candidate, so the body stands.
@@ -3990,6 +3997,7 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // do not move), the two flags before the animation lookup 204 and the same with the animation's NONE
 // still first 205 (the animation then needs a home and the frame grows to 682 bytes), and the lookup
 // written as a ternary with the flags before it 207 (681 bytes) are all worse than the kept 12.
+// MiniMax R (11-16): no new form, no lower score (12): the animation still takes a four-byte home at +0x14, so the set, control and mode homes sit four bytes above retail's, and the two flag bytes are still cleared after the lookup's branch where retail clears them before it (retail +0x11, then +0x10).
 // score 12 (was 12): earlier 12 (was 44): earlier BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38, lifted in lane 16 r97. Measured from
 // MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
 // difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result

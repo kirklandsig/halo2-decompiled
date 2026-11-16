@@ -499,6 +499,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // row i 224 (frame 0x114). Helper restored.
 // MiniMax E (11-15): no new form, no lower score (173): the helper rewritten to retail's row formula with the arguments
 // swapped scores 216 with the frame still at 0x11c, and the permuter over the body found nothing lower in twenty minutes.
+// P572: Launch-mode admission at the heading/rotation boundary, positive then
+// complementary bool/byte/short/long: 274/274/274/173/276/276/276/276. NOT kept:
+// all tie or regress; seven forms lose the matched caller and emitter. Original
+// full request, ordinary pooled reads, helpers, random draws and complete body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -113,6 +113,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // what is left in the near arm is that retail keeps the loop distance on the x87 stack for its compare (`fst` of the magnitude,
 // then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
 // float, and the body is still 40 bytes shorter than retail's.
+// MiniMax R (11-16): no new form, no lower score (382): the first sum still lands in xmm3 where retail keeps it in xmm0, retail keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4, and the inner cursor, the wrapped angle and the candidate width still take other homes.
 // score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
 // frame 0x64 as retail's, 1692 bytes against retail's 1732.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
@@ -631,6 +632,7 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
+// MiniMax R (11-16): no new form, no lower score (569): the body is still 39 bytes shorter than retail's, the three trace results still take the homes +0xf4 and +0xd0 against retail's +0xd0 and +0xf4, and the radius still comes from one read where retail re-reads the parameter nine times.
 // score 569 (was 569): m3 lane 16 r120 (fast control 569, 0x29a190 MATCH; all restored): the three trace results declared
 // at first use (the third inside the sweep loop) and declared in the order local_13, local_12, local_14: same code (their
 // +0xf4/+0xd0 homes stay swapped against retail's +0xd0/+0xf4). Diagnostic, reverted at once: the radius read through a
@@ -1053,6 +1055,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // dword`); that sum written into the sin/cos arguments 808 (3402 B). Lead: retail reloads the radius after 0x2108a0/0x210770 though
 // neither of them nor their callees 0x1427f0/0x210d10 touches XMM5 in either build, so retail's link-time compile treated one of
 // them as clobbering the XMM registers; no source form here reproduces that.
+// M3 lane 15 r92 (fast with 0x29a190 MATCH, control 569): each sweep scale declared just before its two products
+// (retail computes scale, products, scale, products) 729 (3317 B); the two trace distances named before the sweep arms
+// (retail holds them in XMM6/XMM7 from there) 569 (same code); the first offset point through one call with
+// `field_0 ? arg_6 : -arg_6` 886 (3286 B); the early exit as `return local_0;` 569 (same code; retail places that exit
+// after the main epilogue); the names local_12 and local_13 swapped 569 (same code: the +0xd0/+0xf4 homes do not follow
+// the names); diagnostic, the radius read once through its own address 569 (same code). Retail loads the radius inside
+// the first arm where ours hoists it into XMM5 at entry (+0x14).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

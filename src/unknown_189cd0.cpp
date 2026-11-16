@@ -205,6 +205,11 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // duration local 11 (same code); `positioned` started false and set under the spatialization test 146 (536 bytes); the class
 // index through the existing sound_definition_get 11 (same code); the request's object index from the parameter 11 (same
 // code); the slot pointer declared before the sound index 11 (same code).
+// M3 lane 2 r90 (plain): a late local declared at the function's top, assigned one read through the reference before
+// 0x189340 and used for the call, the started test and the dispatch 85 (523 bytes); the reference as a `long const volatile &`
+// variable 11 (same code); no pointer local, the started test reading `*(long const volatile *)&object_index` 11 (same code);
+// the pointer declared in the arm just before the started test 11 (same code); the reference read for 0x1892a0's object
+// argument instead, the started test plain 85 (524 bytes). The listing on main differs from retail only in that test.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

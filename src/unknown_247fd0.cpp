@@ -223,6 +223,8 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
+// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
 // only adds a local holding a constant, which is on the reverted list, and one point is under the bar anyway; an
 // annealed run (19 tries) found nothing below the 334 of the baseline in either image.
@@ -232,8 +234,6 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // MiniMax G (11-14): no new form, no lower score (334): the effect datum's address still folds into the scaled index in
 // the flag byte's load and in the definition pointer's load, where retail keeps the address in a register; the flag
 // byte's and the definition pointer's frame homes still differ.
-// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
-// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
 // M3 lane 8 r159 (fast with 0x247fd0 and 0x248cc0, both stay matched): kept, the probe direction through the existing
 // vector3f_assign (0.f, 0.f, -1.f) 334 and the 3-bit draw through the existing random_index(&seed, 5) 334 (same code each;
 // they replace those helpers' bodies written out). The scale step as three `*=` 334 (same code); re-measured on main, the
@@ -761,6 +761,16 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // domains, then unsigned effect identity: 334/334/334/334/334/334/334/334.
 // NOT kept: no exact native address/home repair; separate effect-base additions,
 // gate/settings homes and escaped blend/getter allocation remain. Full body restored.
+// Round 125 (m3 lane 16, fast with 0x247fd0 and 0x248cc0, both stay matched; control 334): the effect index, allocated
+// index, definition and gate flag named effect_index/particle_index/definition/hidden 334 (same code: names do not move the
+// flag's +0x1f slot); the gate's record as `s_effect_datum const &` 334 (same code); the child loop's rate as `real const &`
+// 334; the blend's two endpoints as `point3f const &` 337; the gate as one `local_0 != NONE && (flag = ...)` test 334.
+// Diagnostic (compiler setting, reverted at once; the state the note above names): `optimize("", off)` then `optimize("gy",
+// on)` around this function, `optimize("", on)` after, 334 with the same code, so dropping the speed preference does not
+// unfold the addressing either.
+// P565: Effect/allocation/child ordinal/child handle/tag/event/flags eight-byte
+// logical storage, each then all: 445/450/378/338/356/354/357/540. NOT kept: native values
+// are narrow and no split-address/home equality; original complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
