@@ -32,9 +32,10 @@ static inline long sequence_window_first(s_sequence_window const *window)
 static inline long sequence_window_index(s_sequence_window const *window, long sequence)
 {
 	long index = NONE;
-	if (sequence > window->oldest && sequence <= window->newest)
+	long oldest = window->oldest;
+	if (sequence > oldest && sequence <= window->newest)
 	{
-		long offset = sequence - window->oldest - 1;
+		long offset = sequence - oldest - 1;
 		index = (offset + sequence_window_first(window)) % window->capacity;
 	}
 	return index;
@@ -834,7 +835,13 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // but scores 89: the count folds oldest into its `sub` and the loop reloads it instead of keeping it in ebx, and the
 // pointer form keeps oldest in ebx while the offset is reduced. No spelling gives both.
 // MiniMax S (11-14): no new form, no lower score (60): this build still strength-reduces next - oldest - 1 into a second counter in ESI where retail keeps the next sequence in ESI and recomputes the offset in EAX on every pass, and it still compares the offset against the cached newest where retail re-reads the newest at the per-step test; the member form through &m_message_window reproduces retail's loop body but scores 89 (the count folds oldest into its subtraction and the loop reloads it instead of holding it in EBX), while the pointer form keeps oldest in EBX and reduces the offset, so no spelling of the window gives both.
-// score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
+// MiniMax C (11-15): score 44 (was 60): the count spelled as the window's newest minus its oldest and the index helper
+// taking the window's oldest into a local of its own stop the strength reduction of next - oldest - 1, so the offset is
+// recomputed in eax on every pass and the newest is re-read at the per-step test as retail does; what still differs is the
+// loop head's registers (ours keeps the oldest in esi and the next sequence in ecx and copies the bound into ebx, retail
+// keeps the next sequence in esi and the oldest in ebx) and the count, which retail computes from its own loads of newest
+// and oldest before the bound is loaded.
+// score 44 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.
 // MiniMax H (11-12): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi where retail keeps the next sequence in esi and recomputes the offset in eax on every pass.
@@ -1011,26 +1018,28 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
 	long type = 0;
-	if (!get_next_send(&type, sequence, size, time) && sequence_window_count(&m_message_window))
+	if (!get_next_send(&type, sequence, size, time))
 	{
 		s_sequence_window *window = &m_message_window;
-		long newest = window->newest;
-		for (long next = m_next_sequence + 1; next < newest; next++)
+		if (window->newest - window->oldest)
 		{
-			s_reliable_message *message;
-			long index = sequence_window_index(window, next);
-			message = 0;
-			if (index != NONE)
-				message = &m_messages[index];
-			word flags = message->flags;
-			if ((flags & 1) && !(flags & 2))
+			for (long next = m_next_sequence + 1; next < m_message_window.newest; next++)
 			{
-				*sequence = next;
-				*size = message->size;
-				*time = message->unknown08;
-				message->flags |= 2;
-				type = 4;
-				break;
+				s_reliable_message *message;
+				long index = sequence_window_index(window, next);
+				message = 0;
+				if (index != NONE)
+					message = &m_messages[index];
+				word flags = message->flags;
+				if ((flags & 1) && !(flags & 2))
+				{
+					*sequence = next;
+					*size = message->size;
+					*time = message->unknown08;
+					message->flags |= 2;
+					type = 4;
+					break;
+				}
 			}
 		}
 	}

@@ -782,6 +782,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
 // then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
 // destructive graph/base or lazy-reload repair; original complete body and declarations restored.
+// MiniMax C (11-15): no new form, no lower score (348): retail's destructive graph-base reloads and its final
+// return-byte normalization are still the whole difference, and this body only calls the graph lookup that owns the
+// name record (src/unknown_1dacb0.cpp), which this lane may not edit, so the local spellings cannot move them.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

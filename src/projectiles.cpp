@@ -1130,6 +1130,9 @@ real function_30bf0(vector3f *v);
 // as an unsigned long; not kept (volatile without a match).
 // MiniMax A (11-13): no new form, no lower score (232): our frame is 0x28 against retail's 0x30 and the SSE register allocation
 // differs from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7).
+// MiniMax C (11-15): no new form, no lower score (232): the forced-speed and time-scale parameters are read through a
+// pointer to themselves here, which the rules only allow with a match; reading them directly measures 255 and loses
+// 0xfa6a0 (34), so the pointer reads stay.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1893,6 +1896,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 // Entry frame/slot/tag homes and speed-update expansion remain.
 // MiniMax A (11-13): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls it, so the
 // body is 66 bytes short of retail's (BLOCKED-BY 0xfbfd0).
+// MiniMax C (11-15): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after
+// the 0xfbd40 call and keeps index * 12 in ebp, and that expansion is the one body this lane may not write out, so
+// the 66 missing bytes and the pool, tag and seat-bit homes behind them stand.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2047,7 +2053,7 @@ real function_17c900(short function_type, real input);
 // normalizer's own callers constrain that helper, so it cannot be spelled differently here.
 // MiniMax I (11-15): no new form, no lower score (348): the frame is retail's 0x30 but the index stays in a register where retail keeps it on the stack, the aim point's stack home is [esp+0x28] here against [esp+0x24] in retail, and the normalization and the rotation are scheduled in another order.
 // MiniMax S (11-15): no new form, no lower score (348): the frame is retail's 0x30 and the body is four bytes long, with the index in EAX where retail keeps it on the stack and the normalization and the rotation scheduled in another order; the shared normalizer's own callers constrain that helper, so it cannot be spelled differently here.
-// score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
+// score 328 (was 348): Frame 0x30 recovered; the salt now comes from the index at its two uses and the point is stored at each of the three exits, so retail's output schedule agrees; index EAX/output-stack contract and the rotation's register homes remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
 // shared target pointer 382; point/direction role names 382; shared cross 382; shared point differences 383;
@@ -2185,10 +2191,13 @@ real function_17c900(short function_type, real input);
 // register homes.
 // MiniMax A (11-13): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation differs, and
 // the body is four bytes longer than retail's.
+// MiniMax C (11-15): score 328 (was 348): the salt is taken from the projectile index at its two uses instead of from a
+// local at the entry, and the drift and wander arms store the point into the output and return, which gives retail's
+// three output stores; the caller's inlined copy of this body rises from 947 to 982, and the index/output contract and
+// the rotation's register homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
-	long salt = projectile_index >> 16;
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
 	point3f *center = (point3f *)((byte *)projectile + 0x30);
@@ -2241,9 +2250,10 @@ void function_f87f0(long projectile_index, point3f *aim_point)
 		real cosine = (real)cos(angle);
 		real along = dot * (1.0f - cosine);
 
-		real_point3d_set(&arg_0e6828, (to_target.i * along + axis.i * cosine - (axis.j * to_target.k - axis.k * to_target.j) * sine) * amount + arg_0e6828.x,
+		real_point3d_set(aim_point, (to_target.i * along + axis.i * cosine - (axis.j * to_target.k - axis.k * to_target.j) * sine) * amount + arg_0e6828.x,
 			(to_target.j * along + axis.j * cosine - (axis.k * to_target.i - to_target.k * axis.i) * sine) * amount + arg_0e6828.y,
 			(to_target.k * along + axis.k * cosine - (to_target.j * axis.i - axis.j * to_target.i) * sine) * amount + arg_0e6828.z);
+		return;
 	}
 	else if (!TEST_FIELD_BIT(definition->flag_bits.unknown7))
 	{
@@ -2263,15 +2273,16 @@ void function_f87f0(long projectile_index, point3f *aim_point)
 		else
 			amount = 0.0f;
 
-		real time_a = (real)((g_510c54->game_time + salt * 3) & 0xffff) * g_510c54->rate;
-		real time_b = (real)((g_510c54->game_time + salt * 7) & 0xffff) * g_510c54->rate;
+		real time_a = (real)((g_510c54->game_time + (projectile_index >> 16) * 3) & 0xffff) * g_510c54->rate;
+		real time_b = (real)((g_510c54->game_time + (projectile_index >> 16) * 7) & 0xffff) * g_510c54->rate;
 		real yaw = function_17c900(10, time_b * (1.0f / 3.0f)) * 6.2831855f;
 		real pitch = 3.1415927f - function_17c900(10, time_a * (1.0f / 3.0f)) * 1.5707964f;
 		real cosine_pitch = (real)cos(pitch);
 
-		real_point3d_set(&arg_0e6828, (real)cos(yaw) * cosine_pitch * amount + arg_0e6828.x,
+		real_point3d_set(aim_point, (real)cos(yaw) * cosine_pitch * amount + arg_0e6828.x,
 			(real)sin(yaw) * cosine_pitch * amount + arg_0e6828.y,
 			(real)sin(pitch) * amount + arg_0e6828.z);
+		return;
 	}
 	*aim_point = arg_0e6828;
 }
