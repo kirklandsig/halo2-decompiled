@@ -1451,6 +1451,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // through 0x63220 924 (2916 B: 0x63220 inlines here, the top 0x192e60 and 0x193250 still inline, the capacity switch stays a
 // call); plus grouped capacity labels 1001 (2952 B); the 924 form with `long histogram[16]` 901 (2888 B, frame 0xb4 as
 // retail). Re-measured: the opening test as one inline admission predicate 948 (2956 B, M370's form). Body unchanged.
+// MiniMax E (11-15): no new form, no lower score (766): retail's session arrives in EAX with a 0xb4 frame against our
+// 0xd4, and that convention is fixed by the caller in a file I may not edit.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
