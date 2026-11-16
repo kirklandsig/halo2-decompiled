@@ -1142,6 +1142,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P561: Complete entry time-state active/inactive outcome in bool/byte/short/long:
 // eight 395 at 1700/1696 bytes. NOT kept: all regress and grow beyond native extent;
 // original command stores, time observations, projection and complete body restored.
+// P564: Zero-seeded complete mixed-input length reduction, forward/backward, real/double accumulation,
+// default/explicit operations: 251/473/481/509/527/544/566/578. NOT kept: native direction-j preload and
+// persistent length/zero homes remain; all regress and grow extent. Original shared dot and full body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

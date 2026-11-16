@@ -790,6 +790,9 @@ struct s_item_collision_bsp
 // shared signed ordinal 207 (receiver/selector revisited after query-width repair).
 // NOT kept: fallback copies gain only two/four and the receiver only six, below
 // eight above 30; original complete body, observations and calls restored.
+// P564: Actual instance-table base captures or two-step advanced receivers, mutable/readonly
+// and existing/direct matrix consumers: 201/288/201/288/192/192/192/192. NOT kept: six-point best below
+// threshold; base/direct forms also raise controls. Original instance reads, plane math and body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
