@@ -988,6 +988,17 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
+// MiniMax E (11-16): 166 (was 257): the player test of cases 1 and 6 is written with retail's polarity (the
+// == NONE test first, its je branch calling 0xcaf60, as retail's bytes show at 0x296b25 and 0x296c39), which
+// keeps the two 0xcafc0 blocks apart as in retail; the two flags are then cleared in retail's order (the
+// returned flag first, `point_valid = result = false`, so the prologue stores F+2 before F+3) and the two
+// trailing case exits clear the returned flag before leaving, which gives retail's byte homes (the returned
+// flag at F+2, the point-valid byte at F+3) and brings the body to 1428 bytes against retail's 1444. Left:
+// retail keeps case 1's and case 2's byte-identical 0xcafc0 calls apart where this build tail-merges them
+// into one, so the jump table sits earlier and every branch target differs. The forms this round that were
+// not kept: case 6's player test with the other polarity (177), the point-valid store moved to the aim label
+// (367), the shared point-valid store for cases 3/5/6 with cases 1 and 2 skipping it (366, and it cost the
+// matched callers 0x297660, 0x297a50 and 0x2980d0 their match).
 // MiniMax C (11-16): no new form, no lower score (257 plain, 341 on the reduced image): the frame agrees (0x8c) and
 // what is left is the byte homes of the result and the point-valid flag plus the direction chain's fall-through
 // predecessor, where retail enters case 2's remembered 0x1e3b00 block and ours falls into the merged 0xcafc0 block;
@@ -1331,6 +1342,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // `field_x50962e != NONE` test 258 (all same code but the label form).
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
+// MiniMax E (11-16), NOT kept: 335 (was 341), a 6-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -2088,6 +2100,9 @@ struct s_actor_looking_turn_request
 // retail's 0xc8 and the blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines
 // it, and only /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not
 // make.
+// MiniMax E (11-16): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
+// blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines it, and only
+// /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn
