@@ -9542,6 +9542,14 @@ extern bool g_485a74;
 // What is left is 0x14b60's register argument (retail `mov eax, flags`; ours pushes it to the stub) and the jump-table
 // bytes it shifts: BLOCKED-BY 0x14b60. `inline` here makes every caller inline it at every pass (retail stops after
 // five or six per caller), so it stays out of line.
+// Alignment model (r802): with the real 0x14b60, 0x44370's frame is `sub esp,8`
+// (retail `push ecx`, 4), so 0x14b60 needs its own 4-byte pad before calling
+// 0x14ac0 and 0x14ac0's frame grows 0x30 -> 0x34; the five demotions follow. The
+// 4-byte difference is 0x44370's entry alignment: retail inlines 0x44370 into the
+// passes (five or six per caller) while this build keeps it out of line, so the
+// out-of-line callee sees a different stack. `inline` over-inlines every caller
+// (above), so reproducing the per-caller inlining pattern is the prerequisite,
+// not a local frame tweak.
 // @retail 0x44370
 bool __stdcall function_44370(long mode)
 {
