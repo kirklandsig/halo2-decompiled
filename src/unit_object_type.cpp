@@ -2997,6 +2997,7 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// MiniMax I (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack at each use, while this build loads the globals pointer into EAX before the pushes and hoists the unit index into EBX, and the call's register arguments follow the 0x188180 helper's own body in another file: BLOCKED-BY 0x188180.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
 // score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax C (11-15): no new form, no lower score (97): the body is retail's length and the first difference is still
@@ -4671,6 +4672,7 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax I (11-16): no new form, no lower score (4): the body is retail's length and the frame agrees, and only the four instructions that set up the random_vector_in_cone call differ - this build forms the forward, result and seed operands while retail spills the sampled speed first and forms them after - and that order is the cone helper's own convention in a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax S (11-16): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - this build forms the forward, result and seed operands while retail spills the sampled speed first - and that order is the cone helper's own convention in a file this lane may not edit: BLOCKED-BY 0x146320.
 // MiniMax C (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - this build forms the forward, spill, seed and result operands while retail spills the sampled speed first and then forms the forward, result and seed ones - and that order is the cone helper's own convention in src/unknown_146240.cpp, which this lane may not edit; the eight source shapes tried before all give these four bytes, and the permuter (300 s, 5 tries) found nothing below its baseline of 4: BLOCKED-BY 0x146320.
 // MiniMax D (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone
@@ -6852,6 +6854,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
+// MiniMax I (11-16): no new form, no lower score (298): the weapon index and the mode still take ebx and edi where retail keeps them in edi and bx, the two weapon flag tests are still not stored in the readiness byte as retail stores them, and the shared readiness completion and the dead flag bytes still differ; the permuter over 300 s made ten tries and reached 277 against its baseline of 295 differing instructions (the check's 298), but that variant adds a local holding only the constant 6 and swaps the arguments of the two calls, which changes the behaviour and is not kept.
 // score 298 (was 300; earlier 333): m3 lane 16 r120: both hand buffers `bool hands[4]` (0xcd7b0 writes modes[0..3], and
 // every other caller declares `bool modes[4]`; `[2]` overran) 298, kept: the frame homes are retail's (unit 0x14, weapon
 // 0x18, buffer 0x1c; aligned 233 -> 142). On 298: `hand = 0; if (mode == 5 || mode == 6 || mode == 7) hand = 1;` 278
@@ -7116,6 +7119,7 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
+// MiniMax I (11-16): no new form, no lower score (242): the body is retail's length and the first difference is still at +0x51; what is left is retail's native facing GPR transfers, the first-scale ownership, the dead flag-byte stores and the state pointer's home; the permuter over 300 s made nine tries and reached 229 against its baseline of 242 differing instructions (the check's 242), but that variant adds a local holding only a constant, a flag set by one test and tested by the next and a swapped call argument, so it is not kept; the two forms written by hand here - the ternary written as an if/else, and the two tests of the same condition in the other order - measure 242 and 243.
 // score 242 (was 250; earlier 254): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
@@ -8319,6 +8323,7 @@ struct s_unit_turn_state_view
    is in state 1 at +0x1bc), within its aim and look limits when they are
    on (0xc7840); records the aim's turn speeds (+0x243, +0x1f8); whether
    either moved */
+// MiniMax I (11-16): no new form, no lower score (268 in the full image; the reduced check of this file's five functions reports 299): the moved flag still sits in a register for the whole function where retail keeps it in a stack byte, and the two divisions by the stored step still share one reciprocal where retail divides twice by it; that step helper lives in another file.
 // MiniMax H (11-14): no new form, no lower score (395): re-measured with the plain build (1660 bytes, as retail, first difference at +0x2); the flag home still moves and the shared step's single reciprocal is still where retail does not have it, and that step helper lives in another file.
 // MiniMax B (11-13): no new form, no lower score (395): re-measured with the plain build (1660 bytes, as retail, first difference at +0x2); what is left is the moved flag home and the single reciprocal of the shared step.
 // MiniMax H (11-12): no new form, no lower score (395 in the plain build, 453 in the reduced one, which builds
