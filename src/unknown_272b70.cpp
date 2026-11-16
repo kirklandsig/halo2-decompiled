@@ -2950,6 +2950,10 @@ struct s_scenario_scripting_view
 // actor/counter/selector or guarded-data repair; original shared header and full search restored.
 // P540: Shared difference/squared-length forced/automatic lowering, 80/140/80/90/80/140/90/193.
 // NOT kept: no exact native storage recovery; original complete source restored.
+// P572: Existing resolver/commit ordinary, inline and forced-inline declaration pairs,
+// eight nonoriginal pairs: 80/126/80/80/126/80/80/126. NOT kept: ordinary/inline forms
+// retain the actor/counter/selector homes; forced commit expansion grows to 399/367 bytes.
+// Original declarations, helper bodies and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
