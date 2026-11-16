@@ -291,6 +291,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // inside the test 131 (the sky lookup's registers swap), with the scenario's sky block read through the shared tag-array type
 // in the sky helper 131 (a real build; earlier rounds only screened it compile-only), with the sky index passed straight from
 // the global 121 (same code), with the light entry typed as reals (`entry[4]`, `entry + 1`) 121 (same code).
+// Round 124 (m3 lane 16, fast): colour first with `cos(pitch) * cos(yaw)` 121, `cos(pitch) * sin(yaw)` 183 (833 bytes), both
+// 183, the blend as `strength / (power * (i + 2))` 127, `(2.0f + (real)i)` 121. 0x131c20 declared (result, a, b, flags, t) or
+// (result, a, b, t, flags) at its definition, every declaration and all six calls: 28 here (the ECX/EDI pair is retail's;
+// 0x131c20, 0x131d60, 0xc0c80 stay matched) but 0xbe8e0 89 -> 171 (its loop head shifts), not kept; with colour first 119, only
+// the post-call add left. On that: the collision sentinel stored after `result = 2` 121, at the top of the sky branch 156, before
+// the collision call 177. Diagnostics: a store through `record` at entry or at the top of the sky branch gives the in-place add;
+// a second store into the collision buffer and dead reads of `point` or `record` do not.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
