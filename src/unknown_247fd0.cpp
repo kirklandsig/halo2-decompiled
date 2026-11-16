@@ -751,6 +751,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // last) 334/334/334 (same code); collision first with the in-loop particle_object_for_tag 371 (1696 B). This function
 // is on a link-time call cycle (through 0x246e60, 0x247070, 0x188180, 0x175bd0's file, 0x175270, 0x248970 and 0x247470),
 // but its only call into the cycle is its last one, which already has retail's register convention.
+// P546: Full-width effect/allocation/child-ordinal/child-handle/tag/event/flags
+// domains, then unsigned effect identity: 334/334/334/334/334/334/334/334.
+// NOT kept: no exact native address/home repair; separate effect-base additions,
+// gate/settings homes and escaped blend/getter allocation remain. Full body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

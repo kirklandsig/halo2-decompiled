@@ -1437,6 +1437,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // P532: Independent full-width held/pending/inventory handles in dword/unsigned-int,
 // then full flag words in long/int: 215/215/215/215/215/215/218/218. NOT kept:
 // no native player/pool/tag or frame repair; original complete body restored.
+// P546: Direct and branch-defined clear admissions at initial pair, final second,
+// final first and final pending outputs: 215/215/227/215/276/235/215/230. NOT kept:
+// no exact result-lifetime repair; native player/pool retention, lazy tag-table
+// acquisition and frame 0x18 versus 0x1c remain. Original full body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

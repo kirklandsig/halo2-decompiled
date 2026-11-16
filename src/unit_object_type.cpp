@@ -6844,6 +6844,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // 318/318/330/295/338/326/331/328. NOT kept: mode-six 295 gains only three; native mode/weapon registers, dead flag stores and shared readiness completion remain unresolved.
 // Original complete executable source and existing helper contracts restored.
 // MiniMax D (11-15): no new form, no lower score (298): the weapon index and the mode still take ebx and edi where retail keeps them in edi and bx, and the two weapon flag tests are still not stored in the readiness byte as retail stores them.
+// P546: Complete aggregate-zero requests at the four original sites, then value-initialized
+// requests at those sites: 295/296/295/333/318/310/353/335. NOT kept: best gain three
+// is below the gate; value initialization grows the extent. Native mode/weapon
+// ownership, dead flag stores and shared readiness completion remain.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7109,6 +7113,10 @@ done:
 // NOT kept: all regress, several grow the frame or extent; native flag-byte
 // stores, state home and shared facing tail remain. Original complete body restored.
 // MiniMax D (11-15): no new form, no lower score (242): the planar copy of the unit's forward gives retail's four dword moves but leaves the body twelve bytes short, and the scale block still multiplies the y component in place where retail keeps the scale in a register.
+// P546: Toward scope, late escaped flag, independent side/value outputs, action result,
+// full duration eligibility, conditional side store and standard tick clamp:
+// 242/266/240/242/252/248/280/258. NOT kept: two-point side lead is below the gate;
+// other forms tie/regress. Native flag-byte stores, state home and facing join remain.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8152,7 +8160,8 @@ struct s_unit_turn_state_view
 	word unknown7 : 1;
 };
 
-// score 277 (was 395): m3 lane 10 r109 (plain, every trial): kept, together: the single exit (`moved` set in the
+// score 268 (was 277): Codex P546: the three basis cross products through the existing cross3f_staged (unchanged extent).
+// Earlier 277 (was 395): m3 lane 10 r109 (plain, every trial): kept, together: the single exit (`moved` set in the
 // not-all-close arm, one `return moved;`; alone 419: retail's frame byte for `moved`, reloaded on the all-close path),
 // both frames' cross products through the existing cross3f (alone 396; with the single exit 386, the cross products then
 // take retail's schedule), the definition read through the typed unit fields (386, same code), the aim speed's zero test
@@ -8251,6 +8260,11 @@ struct s_unit_turn_state_view
 // P541: Complete moved result from six closeness tests, conditional value, reused unchanged result, explicit final arms, byte/short/long results and exhaustive outer producers:
 // 412/414/418/414/414/420/422/432. NOT kept: native frame/save/result homes and step divisions remain unresolved.
 // Original complete executable source and existing helper contracts restored.
+// P546: Share conditional result, standard bounds, common frame, immutable snapshots,
+// snapshot/target/neutral CRT copies and complete staged basis products:
+// fast 254/434/254/254/254/254/254/240 (unchanged reduced 254, callee-context caveat).
+// Staged basis plain 268, kept: native first-product and look-axis multiply ownership;
+// frame/extent unchanged. Independent aim/left previews 246/248; old up-only form tied.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -8283,7 +8297,7 @@ bool __stdcall function_c60c0(long unit_index)
 			frame.scale = 1.0f;
 			function_b9fc0(unit_index, &frame.forward, &frame.up);
 			frame.position = *g_468788;
-			cross3f(&frame.up, &frame.forward, &frame.left);
+			cross3f_staged(&frame.up, &frame.forward, &frame.left);
 			function_c7840(&frame, &unit->unknown168, &unit->unknown15c, g_510c54->rate, &unit->unknown174,
 				(real const *)(state + 4), arg_3097c5_2, pitch_rate);
 		}
@@ -8331,8 +8345,8 @@ bool __stdcall function_c60c0(long unit_index)
 			function_b9fc0(unit_index, &frame.forward, &frame.up);
 			frame.forward = unit->unknown168;
 			frame.position = *g_468788;
-			cross3f(&frame.up, &frame.forward, &frame.left);
-			cross3f(&frame.forward, &frame.left, &frame.up);
+			cross3f_staged(&frame.up, &frame.forward, &frame.left);
+			cross3f_staged(&frame.forward, &frame.left, &frame.up);
 			function_c7840(&frame, (vector3f *)&unit->unknown18c, &unit->unknown180, g_510c54->rate, &unit->unknown198,
 				(real const *)(state + 0x14), look_yaw_rate, look_pitch_rate);
 		}
