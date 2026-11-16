@@ -413,6 +413,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
 // score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
 // entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the

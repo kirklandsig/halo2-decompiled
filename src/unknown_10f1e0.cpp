@@ -671,6 +671,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // TAG_BYTES(state->graph_tag_index) 2 (all the same code). Retail's back-edge table load reads as a real in-loop load
 // (the table global treated as possibly written by a loop callee, as the iterator re-read after 0xb8d30 also shows),
 // where ours reloads a hoisted invariant: the lever is still the callees' side-effect summaries.
+// Round 169 (m3 lane 7, fast): the state's +0x70 and +0x74 reads named at the loop top for both arms 98; only the +0x70
+// read named 41 (545 B); the two markers as one two-element array 2 (same code); `found` as a long 81 (546 B); the target
+// name declared bare at the loop top 2 (same code). Probe stores of 0, 1, -1, 2, 4 through the nodes pointer (diagnostic,
+// reverted) leave the table first; no loop callee is opaque (all matched C or the naked 0x142a60).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -3090,6 +3094,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // default fill storing the object index first 16; the index set by `if (entry_index != NONE) index = entry_index; else
 // if ((index = lookup) == NONE) return false;` 16. Retail's ranks (NONE 6 uses, then the index, then the priority) are a
 // plain variable's; ours discounts the constant, so the lead is still a NONE-valued variable in Bungie's code.
+// Round 169 (m3 lane 7, fast): entry_index tested in place of the index copy 16 (same code); the index declared bare
+// and set by `if (entry_index != NONE) index = entry_index; else { lookup; NONE test }` 16; a result flag for the request
+// path only 96 (223 B); a result flag for both failures (the lookup un-nested, `index != NONE && 0x114520`) 57 (249 B:
+// index ESI and priority EBP as retail, the result's zero takes EBX and NONE falls to EAX, so retail's NONE ranks like a
+// function-long variable, not a discounted constant); the extra pointer as a typed local named at entry 16 (copy-propagated).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

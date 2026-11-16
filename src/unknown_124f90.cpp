@@ -721,6 +721,11 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // store). Diagnostics: round 185's helper by index re-measured 3 (as listed); that helper given `voice_index - 1` after a
 // post-increment 150 (599 bytes, the voice is recomputed). Every re-derivation through the index register holds `inc edi`
 // below the fence with `inc esi`; retail's fence holds only `inc esi`.
+// Round 111 (m3 lane 1, fast): the stores from unknown0a on in a plain static helper (no inline keyword, so only the
+// link-time inliner expands it) taking the voice 3; all ten stores in such a helper taking (voice, type) 3; one taking
+// (voice index, type), called with `voice_index++`, 186 (504 bytes: kept out of line); the voice, both counters and the
+// index declared C-style at the block top 3. Diagnostic (reverted at once): the later stores through an integer-cast copy
+// of the voice pointer 3 (the cast folds; no alias edge from the first two stores).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1327,6 +1332,9 @@ long function_2197f0(real gain);
 // MiniMax S (11-15): no new form, no lower score (94).
 // score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
 // and arm 1's product order and XMM colours (fade_out multiplied from memory before the reciprocal, elapsed in XMM2).
+// MiniMax E (11-16): no new form, no lower score (94); the elapsed difference stays in XMM2 where retail keeps it in
+// XMM3, the first arm still multiplies the fade-out time before the reciprocal, and the arm-3/arm-4 join still carries
+// the gain in XMM0 where retail re-reads its home.
 // MiniMax B (11-12): no new form, no lower score (94); a fade-in local with the scaled local reaches 87, but each holds a
 // value used once, so the body stays as it is; the division written out of the branch scores 160 and the product inlined 94.
 // MiniMax G (11-11): no new form, no lower score (94): the arm-1 clamp's divisor re-spelled through the class 99 and a
@@ -2786,6 +2794,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // src/unknown_218ac0.cpp; declaring them long here leaves both calls unresolved (the linker puts the
 // return type in the name: LNK2001 on `long __fastcall function_218f50(...)`), and the delayed start
 // still stores the flag byte before the start time.
+// MiniMax E (11-16): no new form, no lower score (17); the set index is still sign-extended where retail copies the
+// dword and 0x219070 is still called with two arguments where retail passes one; both are that callee's declaration in
+// another file (BLOCKED-BY 0x219070 and 0x218f50), and the chunk index is still pushed before that call.
 // MiniMax R (11-15): no new form, no lower score (17): the sound set index is still sign-extended where
 // retail copies the dword and 0x219070 is still called with two arguments where retail passes one; both are
 // fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
@@ -3128,6 +3139,9 @@ static inline short sound_voice_find_available_channel(char type)
 // register plan, and the shared exit with the byte in its slot stays closest.
 // score 96 (was 96): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
 // (false across the failure calls), and the block layout that follows from it; the closest form (15) is match-only.
+// MiniMax E (11-16): no new form, no lower score (96); the result still lives in a stack byte where retail keeps it in
+// AL at the entry and BL across the failure calls, and the frame is 0xc against retail's 8; the closest form (15) needs
+// a redundant store and a goto into an arm.
 // MiniMax B (11-12): no new form, no lower score (96); a bool result gives 113 at retail's length, the success path
 // returning early 133 and the failure path returning false with two other exits 135, so the shared exit with the result
 // byte in its stack slot stays closest.
@@ -4030,6 +4044,12 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // named long range index before the pointer 78, the class-flag test as bit 21 of a dword bit-field at +8 80 (`shr eax, 0x15`);
 // on the 6 form, the loop end as `data_datum_index(sounds, data_find_index(sounds = g_4e637c, next))` (the reload after
 // the ternary through the one pool local) 82 (pool ESI, index EBP), the same with the range above the mode 49.
+// Round 111 (m3 lane 1, fast; range in case 0 re-measured 78): the class-flag word narrowed before the mask
+// (`(byte)(word >> 5) & 1`) 78; the flags word in a named word local before the test 78; the test as `!(word & 0x20)`
+// 72 (folds to `test byte ptr [eax + 0xa], 0x20`; every register retail's, as with the byte read); the definition
+// as a `s_animation_ref *` local for both pitch-range calls (0x219070's spelling) 78; 0x2193d0 returning short
+// (definition and declarations) 78, on the 24 form 24 (0x2193d0 itself 5 at 90 bytes, restored). The flag is the
+// bit 5 of the word at +0xa of 0x221810's record, which 0x2193d0/0x219310 test themselves after their own inlined lookup.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4135,6 +4155,9 @@ vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vec
 // score 101 (was 101): unchanged this round: the class lookup 0x221810 is still expanded where retail calls it
 // out of line, which shifts the rest of the listing; 0x221810 lives in src/unknown_221490.cpp, which this lane
 // may not edit, and the depth pair that would keep it out of line is ruled out.
+// MiniMax E (11-16): no new form, no lower score (101); the class lookup 0x221810 is still expanded where retail calls
+// it out of line, which shifts the rest of the listing; that function lives in src/unknown_221490.cpp, which this lane
+// may not edit, so the function stays BLOCKED-BY 0x221810.
 // score 101 (was 101): BLOCKED-BY 0x221810: LTCG inlines the class lookup function_221810 that retail calls out of line, which
 // shifts the rest of the listing; with the call kept out of line (a #pragma inline_depth(0) pair around
 // it inside the body, which DECOMPILING.md rules out) the score is 4: the no-distance path's flag set
@@ -4777,6 +4800,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // 0x16f3a0, 0x1420f0 and 0x11c120 are still expanded where retail calls them out of line; keeping them out of line
 // needs declarations in other files, which this lane may not edit.
 // score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// MiniMax E (11-16): no new form, no lower score (535); the frame is 0x130 against retail's 0xe8 and the native
+// rotation, environment and listener-index homes stay ours; the fallback reverb's constant lives in another file and
+// the three callees have to stay out of line.
 // MiniMax B (11-11): no new form, no lower score (535); the body is unchanged, and the forms listed above are exhausted.
 // MiniMax C (11-11): no new form, no lower score (535); our frame is 0x134 against retail's 0xe8, the fallback reverb constant's linkage lives in another file, and every form tried here lengthens the body and regresses.
 // MiniMax E (11-11): no new form, no lower score (535); the frame is still 0x134 against retail's 0xe8 because the

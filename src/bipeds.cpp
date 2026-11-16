@@ -1592,6 +1592,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
 // in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
+// MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
+// the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
+// facing homes stay four bytes out of retail's, so the body stands.
 // score 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
 // walking-speed preload and planar square transport remain. Earlier 585, 588 with frame 0xf8: position, ground,
 // MiniMax S (11-15): no new form, no lower score (566): retail's frame is still 0xfc against this build's 0xf8 - the
@@ -4338,6 +4341,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P583: Actual paired aim/look validation-call outcomes, positive/complementary
 // bool/byte/short/long: 638/638/638/638/638/638/638/638 (reduced control 612; full 548). NOT kept: no exact frame/result/flight-home
 // recovery; original nested calls, tests and complete body restored.
+// MiniMax C (11-16): no new form, no lower score (548): our frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx, spills it to its frame slot and reloads it after the flight call where this build keeps it in ebp for the whole body, so the biped, state and definition homes sit four bytes apart and the flight call's arguments are still one register out.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4604,6 +4608,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
+// MiniMax E (11-16): no new form, no lower score (336); the frame 0x12c and retail's 1937-byte length still agree, but
+// the stack homes stay ours: the origin sits at esp+0x44 against retail's 0x40, the matrix at 0x60 against 0x50 and the
+// 16-byte placed object at 0x88 against 0x84.
 // MiniMax D (11-11): no new form, no lower score (371); the frame still agrees at 0x12c and the length still
 // matches retail's 1937, but the stack homes are still ours: the origin sits at esp+0x44 against retail's 0x40,
 // the matrix at 0x60 against 0x50 and the 16-byte placed object at 0x88 against 0x84, and every home from 0x94

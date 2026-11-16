@@ -1471,6 +1471,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // that moves the kept mask, the value load and the accumulate with it; every spelling of the flag (function scope,
 // declared first, wide, word, char) compiles to the same code.
 // MiniMax S (11-16): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner channel blocks still step the cursor by 0x170 where retail uses fixed offsets; reading the identity flag before the total is assigned raises the score to 111 and indexing the channels instead of walking them with a cursor raises it to 123.
+// MiniMax C (11-16): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, so the loop temporaries take eax and al where retail uses ebx and cl, and the inner channel blocks still step the cursor by 0x170 where retail uses fixed offsets; reading the identity flag before the total is assigned measures 111 and moves the channels pointer out of eax.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -2184,6 +2185,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // stay; what is left is retail's inner loop calling the port flag getter twice where this build calls the
 // out-of-line copy, and retail's remote mask in esi.
 // MiniMax S (11-16): no new form, no lower score (85): retail inlines both port-flag queries at this site where this build inlines one and calls the other out of line, and the second availability byte still loads lazily; making the second query inline measures 129 and takes two matched callers with it, so the helper stays as it is.
+// MiniMax C (11-16): no new form, no lower score (85): retail still inlines both port-flag queries at this site where this build inlines one and calls the other out of line, and the second availability byte still loads lazily; making the second query inline measures 129 and takes two matched callers with it.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3995,6 +3997,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member in a frame slot). On it: the member declared at function scope 164; the NONE and kind tests split 164; the
 // member fetched after the kind and members tests 147 (EBP still the member; alignment only); the cursor started as
 // `&data[2]` 164 (still `add edi, ecx`); the member assigned inside its NONE test 164.
+// MiniMax R (11-16): no new form, no lower score (139): re-measured the packet cursor beside the count (164, 478 B) and the
+// same cursor with the size decrement before the stride (167); a channel copy in a local of its own gives the cursor's bytes
+// unchanged, so the only difference left is the register the channel and the member take - retail keeps the channel in ebp
+// from the entry and the member in a frame slot, this build keeps the member in ebp and the channel in esi - and the frame
+// slot is not reachable from the source. The permuter over this function (300 s, 5 tries) found nothing below 139.
 // MiniMax D (11-15): no new form, no lower score (139): the packet cursor form (164) still keeps the member in ebp where retail keeps the channel and puts the member in a frame slot, and a channel copy in a local of its own gives the same bytes; the indexed form stays at 139.
 // P574: Original per-packet byte-budget admission, positive/complementary
 // bool/byte/short/long: 139/139/139/139/139/139/139/139. NOT kept: no exact native channel,

@@ -30,6 +30,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax S (11-16) trial, not kept (body stays 110): score 11 with these forms: the private normalizer's squared length named through dot3f gives
+// retail's sum order and its component registers, and the projection's k row reads the matrix's forward
+// component (a second access path to one field); what is left is the dot's i term, which still copies up's i
+// where retail copies forward's i, and the last normalization's i term, which still multiplies the component by
+// the reciprocal where retail multiplies the reciprocal by the component.
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax R (11-15), on its not-kept 11 form (below; main stays 110): the axis block agrees with retail except for the dot product's i-term
@@ -468,6 +473,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // standard array copy, all scalar inputs after j-square, then all scale inputs inside admission:
 // 240/246/235/342/342/361/349/364. NOT kept: no exact late-k/reciprocal recovery; original private helper,
 // complete target body, all observations and includes restored.
+// MiniMax S (11-16), NOT kept: 110 -> 11 came from reading the projection's k term as local_1[0].forward.k where
+// the body has the alias forward (the same storage, returned by 0x1d3fc1). That re-read through another name is a
+// match-only form; without it the same body measures 153, so the score shape is the re-read alone. dot3f in
+// 0x1d3fc1 did not help. Body back to main.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

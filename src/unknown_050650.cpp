@@ -514,6 +514,9 @@ struct s_collision_result_buffer_1697c0
 // site or the normaliser's length inlined, and its magnitude3d (0x24590) sits in another file, so the body stands.
 // MiniMax G (11-13): no new form, no lower score (303): the diff re-read this round shows the trig and magnitude temps four bytes below retail's (ours at +0x1c and +0x20, retail's at +0x20 and +0x24) while the saved arguments agree, and the frame is 12 bytes longer than retail's 1423, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (303).
+// MiniMax C (11-16): no kept form: an early return in the file-local normaliser moves its magnitude into retail's
+// frame-bottom slot (296) but leaves the pitch axis four bytes low, the sine and the random draw in their own homes
+// and the rotation block 28 bytes longer than retail's, so the original body stands.
 // score 299 (was 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
@@ -1346,6 +1349,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
 // MiniMax E (11-16), NOT kept: 335 (was 341), a 6-point gain, under the 8-point bar for a function above 30.
+// MiniMax D (11-16), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1655,6 +1659,7 @@ done:
 // MiniMax S (11-15): no new form, no lower score (9): the actor offset is still built in esi with an add where
 // retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
 // compiles to the same prologue, so the register choice is not steerable from this function.
+// MiniMax D (11-16): no new form, no lower score (9).
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -2260,6 +2265,7 @@ struct s_actor_looking_turn_request
 // flags in one initialised declaration 442; the entry copies chained, re-measured on this image, 442; the target-point
 // local renamed 442 (all same code). BLOCKED-BY 0x1fdd90 stands: retail keeps it out of line (its only caller) and
 // our build inlines it; what keeps it out of line so far is only a build flag on its file (lane 7 r99's /Ob1, 569).
+// MiniMax D (11-16): no new form, no lower score (442).
 // @retail 0x298370
 void function_298370(long actor_index)
 {

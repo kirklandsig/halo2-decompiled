@@ -1097,6 +1097,7 @@ PRIVATE inline long damage_object_root(long object_index)
 // players walked by an s_record_pool_iterator and data_iterator_next_inlined 201 (787 bytes, frame still 0x1a4). BLOCKED-BY
 // 0xbadc0 (its inline decision at site 1; src/unknown_0bad50.cpp is not this lane's).
 // MiniMax S (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the objects array still sits at base+0xc0, the player ordinal still keeps a register where retail homes it at +0x34, and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
+// MiniMax C (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the objects array still sits at base+0xc0, the player ordinal still keeps a register where retail homes it at +0x34, and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1617,6 +1618,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // copy read through a named pointer and through a named value, each give 10 (unchanged); no new form, no lower score.
 // MiniMax H (11-14): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built; a copy through a local and a cast destination both leave the same ten.
 // MiniMax S (11-16): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built where retail stores them before the push; the two are one cause, the late store keeps eax live across the address computation.
+// MiniMax C (11-16): no new form, no lower score (10): the owner copy goes through ecx, edx and eax in retail and through eax, ecx and edx here, and retail keeps the event's flags in eax until the address of the event is pushed while this build stores the flags before the four pushes.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -2141,6 +2143,7 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // retail's rotated by one (retail g_510c54 ECX, byte EAX, sum EDX; ours EAX, EDX, ECX) and its first load is the one-byte
 // shorter `mov eax, [moffs]`, which moves the nine later branch targets.
 // MiniMax S (11-16): no new form, no lower score (45): the delay block's temporaries are still rotated by one register against retail, and its first load is still the one byte shorter `mov eax, [moffs]`, which moves the nine later branch targets.
+// MiniMax C (11-16): no new form, no lower score (45): the delay block's three temporaries are still rotated by one register against retail, and its first load is still the one byte shorter `mov eax, [moffs]`, which moves the nine later branch targets; a permuter run of 300 s over the body found nothing below the baseline.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2901,6 +2904,7 @@ struct s_unit_event
 // P579: Actual region/permutation/object receiver role names, seven subsets, then the
 // existing region-argument reference renamed as well: 513/513/513/513/513/513/513/513. NOT kept: no exact native
 // region/permutation register recovery; original complete body and all observations restored.
+// MiniMax D (11-16): no new form, no lower score (513).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3283,6 +3287,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // early returns 28, and one enemy flag with a single final return (worse); no new form, no lower score.
 // MiniMax H (11-14): no new form, no lower score (5): only the order of the two cold exits differs (this build reloads the stack before it copies xmm1, retail copies first); a merged tail return measures 24 and an explicit else 5, so the block order stands.
 // MiniMax S (11-16): no new form, no lower score (5): only the order of the two cold exits differs, and an early return that leaves the state test in place compiles to the same five, so the source order does not decide the block order; dropping the inner damage return merges the two exits (24), inverting the enemy test flips the branch (16) and writing the block as an if/else changes nothing (5).
+// MiniMax C (11-16): no new form, no lower score (5): the two cold returns hold the same values on both sides, but retail lays the outer return out before the not-enemy return and this build lays the not-enemy one first; an explicit else on the enemy test compiles to the same order.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -5083,6 +5088,7 @@ dword function_db810(long object_index, long node_index)
 // and the definition through a named pointer all give 4 (unchanged); no new form, no lower score.
 // MiniMax H (11-14): no new form, no lower score (4): the four instructions that differ are the tag index's mask, the tag entry's two loads and the entry's field; retail masks the index before it pushes EBP and reuses EAX for the entry, and no spelling of them that this lane may write moves the mask ahead of the push.
 // MiniMax S (11-16): no new form, no lower score (4): retail still masks the tag index before it pushes ebp and still reuses eax for the tag entry and its field, where this build masks it after the push and takes the entry in edx; a local for the masked index, a local for the tag bytes and the typed tag field all compile to the same four instructions, and a permuter run over the body (110 tries) found nothing below the four.
+// MiniMax C (11-16): no new form, no lower score (4): the model index's mask sits between the two prologue pushes in retail and after both pushes here, and retail loads the entry pointer into eax and reuses that register for the field while this build loads it into edx; both differences are one instruction.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
