@@ -69,9 +69,22 @@ static __forceinline float second_pair_second_candidate(float mass,
 static __forceinline solver_projection_31c940 project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &linear_axis)
 {
-	__m128 relative = _mm_sub_ps(_mm_load_ps((float const *)&a->linear), b->linear);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(b->angular, row->b), _mm_mul_ps(row->a, a->angular));
-	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, linear_axis)));
+	// Reuse work values only after their final contribution is consumed.
+	__m128 work_0, work_1, work_2, work_3, work_4;
+	work_0 = b->linear;
+	work_3 = b->angular;
+	work_1 = a->linear;
+	work_2 = _mm_load_ps((float const *)&(row->a));
+	work_4 = _mm_load_ps((float const *)&(linear_axis));
+	work_1 = _mm_sub_ps(work_1, work_0);
+	work_0 = _mm_load_ps((float const *)&(a->angular));
+	work_0 = _mm_mul_ps(work_0, work_2);
+	work_2 = row->b;
+	work_3 = _mm_mul_ps(work_3, work_2);
+	work_1 = _mm_mul_ps(work_1, work_4);
+	work_0 = _mm_add_ps(work_0, work_3);
+	work_0 = _mm_add_ps(work_0, work_1);
+	return sum_three_projection(work_0);
 }
 
 static __forceinline solver_projection_31c940 project_second_linear_velocity(solver_linear_row_31e7b0 const *row,
@@ -385,28 +398,29 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	solver_step_31c940 *parameters = step;
 	float target_a = axis[-5].m128_f32[3];
 	solver_projection_31c940 projected_a = project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis);
-	// Give the first error its float home before projecting the second row.
-	float error_a = target_a * parameters->error_scale
-		- projected_a.value * parameters->velocity_scale;
+	// Retail stores this error to float; subsequent coupled expressions borrow
+	// that stored value while the second error retains its x87 intermediate.
+	solver_projection_31c940 stored_error_a(_mm_set_ss(target_a * parameters->error_scale
+		- projected_a.value * parameters->velocity_scale));
 	solver_projection_31c940 projected_b = project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b);
 	float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		- projected_b.value * parameters->velocity_scale;
 	float const &mass_a_source = axis[-3].m128_f32[3];
-	float impulse_a = mass_a_source * error_a + error_b * operation_float(op, 4);
+	solver_projection_31c940 stored_impulse_a(_mm_set_ss(mass_a_source * stored_error_a.value + error_b * operation_float(op, 4)));
 	// Capture the second mass before its coupled product.
 	float const &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
-	float impulse_b = mass_b * error_b + error_a * operation_float(op, 4);
+	solver_projection_31c940 stored_impulse_b(_mm_set_ss(mass_b * error_b + stored_error_a.value * operation_float(op, 4)));
 	// A rejected second-row candidate joins the same first-row fallback as a failed
 	// positive pair. Keep the positive pair before the second-row fallback.
 	do
 	{
-		if (impulse_a > 0.0f)
+		if (stored_impulse_a.value > 0.0f)
 		{
-			if (impulse_b > 0.0f)
+			if (stored_impulse_b.value > 0.0f)
 			{
-				apply_first_normal_positive_impulse(impulse_a, ((solver_linear_row_31e7b0 *)first_axis),axis-4, a, b, result);
-				apply_linear_spilled(impulse_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
+				apply_first_normal_positive_impulse(stored_impulse_a.value, ((solver_linear_row_31e7b0 *)first_axis),axis-4, a, b, result);
+				apply_linear_spilled(stored_impulse_b.value, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 				return;
 			}
 			break;
@@ -417,7 +431,7 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 		apply_first_normal_fallback(candidate_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 		return;
 	} while (false);
-	float candidate_a = error_a * axis[-4].m128_f32[3];
+	float candidate_a = stored_error_a.value * axis[-4].m128_f32[3];
 	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
 }
 
@@ -565,24 +579,24 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		- projected_b.value * parameters->velocity_scale;
 	float const &mass_a_source = terms[2].m128_f32[3];
 	float mass_a = mass_a_source;
-	float impulse_a = second_pair_first_candidate(mass_a, (float const &)error_a,
-		error_b, operation_float(op, 4));
+	solver_projection_31c940 stored_impulse_a(_mm_set_ss(second_pair_first_candidate(mass_a, (float const &)error_a,
+		error_b, operation_float(op, 4))));
 	// Capture the second mass before its coupled product.
 	float const &mass_b_source = terms[5].m128_f32[3];
 	float mass_b = mass_b_source;
-	float impulse_b = second_pair_second_candidate(mass_b, error_b,
-		(float const &)error_a, operation_float(op, 4));
+	solver_projection_31c940 stored_impulse_b(_mm_set_ss(second_pair_second_candidate(mass_b, error_b,
+		(float const &)error_a, operation_float(op, 4))));
 	// Keep the first-row fallback in both source paths. The compiler merges
 	// that tail while retaining retail's unordered second-row branch direction.
-	if (load_stored_impulse(impulse_a) > 0.0f)
+	if (load_stored_impulse(stored_impulse_a.value) > 0.0f)
 	{
-		if (load_stored_impulse(impulse_b) > 0.0f)
+		if (load_stored_impulse(stored_impulse_b.value) > 0.0f)
 		{
 			__m128 const *inverse_b_pointer = &b->inverse_inertia;
-			apply_second_pair_first_impulse(impulse_a,
+			apply_second_pair_first_impulse(stored_impulse_a.value,
 				((solver_linear_row_31e7b0 *)terms), a, *linear_b_pointer, angular_b_pointer, *inverse_b_pointer,
 				first_linear_axis, result);
-			apply_second_pair_second_impulse(impulse_b,
+			apply_second_pair_second_impulse(stored_impulse_b.value,
 				((solver_linear_row_31e7b0 *)(terms + 3)), a, *linear_b_pointer, angular_b_pointer,
 				*inverse_b_pointer, result + 1);
 			return;
@@ -1004,7 +1018,8 @@ union solver_pointer_phase_31c940
 	solver_velocity_31c940 *body_b;
 	float const *inverse_time;
 };
-// Review cleanup: ordinary score 2397 (was 1675); no volatile or goto tuning.
+// Ordinary score 2268 after explicit stored normal values (review baseline 2397).
+// The pre-review score 1675 used volatile tuning that is not restored here.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // Retail directly tests for friction opcode 8 after the second normal pair;
 // the structured implementation below still returns through generic dispatch.
