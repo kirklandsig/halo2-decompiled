@@ -7487,6 +7487,11 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // keeps it on the x87 stack, and the dot product's three products are still summed in the other order;
 // writing the rounded centre back into the screen array instead of a named local measures 576 again with
 // the same code, so the original body stands.
+// MiniMax C (11-16): score 576 (was 576): no new form, no lower score; the three direction components still
+// sit four bytes higher in the frame than retail's (ours at frame+0x18 against retail's frame+0x14) because
+// this build keeps the rounded centre in a slot of its own where retail keeps it on the x87 stack, and the
+// dot product's three products are still summed in the other order; this build also inlines the second ten
+// stage states and the three render-state calls that retail calls out of line.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -8506,6 +8511,11 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // 0x1f5c0 as controls; the group index is still sign-extended where retail moves the 32-bit index, the index
 // slot still sits at [esp+0x3c] against retail's [esp+0x58], and the body is still three bytes longer than
 // retail's, so the body stands.
+// MiniMax C (11-16): score 299 (was 299): no new form, no lower score; retail's entry loads the group count
+// into a register and tests it where this build compares the count in memory with one, the group index is
+// still widened from sixteen bits (movzx esi, ax) where retail moves the thirty-two bit index, and the
+// index slot sits at [esp+0x3c] against retail's [esp+0x58]; a thirty-two bit counter strength-reduces the
+// 0x98 stride into a second counter (506) and the for-loop form keeps the counter in a slot (300).
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
@@ -9361,6 +9371,10 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // scaled character offset at [esp+0x14], has a second flag byte at [esp+0xf] it never reads, inlines the three
 // removal sites where ours calls the helper out of line, and puts the pixel buffer at [esp+0x30] (frame 0x2020
 // against our 0x201c); earlier rounds' forced-inline helper and plain header local scored worse in the full build.
+// MiniMax C (11-16): score 328 (was 328): no new form, no lower score; the body is still 41 bytes shorter
+// than retail's (1092 against 1133), the frame is still 0x201c against retail's 0x2020, the parameter still
+// arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp, and the three removal sites are
+// still called out of line where retail inlines them.
 // score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
 // Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile

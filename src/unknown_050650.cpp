@@ -1558,6 +1558,12 @@ done:
 // actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
 // and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
 // MiniMax R (11-15): no new form, no lower score (9): retail still loads the pool pointer into edx and the masked, scaled index into eax, while this build loads the pool pointer into eax and folds the index into esi.
+// MiniMax C (11-16): score 9 (was 9): no new form, no lower score; only the prologue differs: retail loads the
+// pool pointer into edx and keeps the masked, scaled actor offset in eax (`mov eax, ecx; and eax, 0xffff;
+// imul eax, eax, 0x888; lea esi, [eax + edx]`) where this build loads the pool pointer into eax, folds the
+// offset into esi and finishes with an add, so this build also ends with an extra int3; twenty-five
+// spellings of the lookup and a 51-try permuter run all build the same prologue, so the register choice is
+// not steerable from this function.
 // score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
 // so the reduced image does not distort this one; the lookup's spelling does not change the code
 // (see below), and the prologue's register choice is not steerable from the source.
