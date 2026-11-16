@@ -215,6 +215,12 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // both magnitudes, second offset by SSE), but the pair takes an 8-byte slot after the double angle, so every home
 // below the axes moves down 4 and the axes and the double 8 (the pair named to sort first or last: 90/90). The two
 // magnitudes as a point2f pair 51 (the offset is still forwarded to its use).
+// Round 128 (m3 lane 9, fast, all on the fabs-at-each-use 2 form): fabsf for the offsets 2; the clamp as a single-exit
+// if/else-if 577 (2048 bytes); the products written constant first (`scale * coordinate * boost`) 2 (reassociated, 1.0
+// still first); a separate first/second boost local 2; the absolute angles written at each use 537 (1996 bytes).
+// Diagnostic (plain, reverted): the scale literal used in a function added to the stub file (built without LTCG) 2: the
+// link keeps the LTCG module's copy of the constant (our link map: src/unknown_157450.cpp's object), not the stub's. Retail's pool matches
+// ours (1/255, 2^32, 0.5, 1.0, -0.5 at 0x45dbb4-0x45dbc4); only the scale lies outside it, in the library's data.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

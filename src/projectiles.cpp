@@ -1130,6 +1130,9 @@ real function_30bf0(vector3f *v);
 // as an unsigned long; not kept (volatile without a match).
 // MiniMax A (11-13): no new form, no lower score (232): our frame is 0x28 against retail's 0x30 and the SSE register allocation
 // differs from the first instruction (xmm7 and xmm4 here where retail uses xmm5 and xmm7).
+// MiniMax C (11-15): no new form, no lower score (232): the forced-speed and time-scale parameters are read through a
+// pointer to themselves here, which the rules only allow with a match; reading them directly measures 255 and loses
+// 0xfa6a0 (34), so the pointer reads stay.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1893,6 +1896,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 // Entry frame/slot/tag homes and speed-update expansion remain.
 // MiniMax A (11-13): no new form, no lower score (296): retail expands 0xfbfd0 into this body while this build calls it, so the
 // body is 66 bytes short of retail's (BLOCKED-BY 0xfbfd0).
+// MiniMax C (11-15): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after
+// the 0xfbd40 call and keeps index * 12 in ebp, and that expansion is the one body this lane may not write out, so
+// the 66 missing bytes and the pool, tag and seat-bit homes behind them stand.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2185,6 +2191,13 @@ real function_17c900(short function_type, real input);
 // register homes.
 // MiniMax A (11-13): no new form, no lower score (348): the frame agrees (0x30) but the entry register allocation differs, and
 // the body is four bytes longer than retail's.
+// MiniMax C (11-15), on its not-kept 328 form (below; main stays 348): the salt is taken from the projectile index at its two uses instead of from a
+// local at the entry, and the drift and wander arms store the point into the output and return, which gives retail's
+// three output stores; the caller's inlined copy of this body rises from 947 to 982, and the index/output contract and
+// the rotation's register homes remain.
+// MiniMax C (11-16), NOT kept: 328 (was 348) with the salt local dropped for two (projectile_index >> 16) re-reads
+// and the aim point written straight through aim_point with an early return in both arms; 0xf8eb0 went 947 -> 982
+// with it. Without the re-reads (salt kept) 377 (fast). The re-read of a named local is kept only with a match.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

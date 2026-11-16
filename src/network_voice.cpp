@@ -1522,6 +1522,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax E (11-16): no new form, no lower score (60): the entry size declared first and assigned late leaves the bytes
+// as they are (60), computing it at the declaration costs (158) and an early return for the disabled queue moves the
+// layout (174). Retail keeps the player bit in EBP for the whole body and the entry size in EBX, this build keeps the
+// bit in EBX and the size in EBP, and the two frame slots follow the values; retail's size is made with a zeroed
+// register, a compare against zero and a setne, the same value as 11 + 2 * include_mask but written for a flag the
+// compiler cannot range, while the bool flag of this signature is known to be 0 or 1 and the size is made with a movzx.
+// The body stands.
 // MiniMax R (11-15): no new form, no lower score (60): the entry size as `include_mask ? 13 : 11` 147 and as
 // `11 + 2 * (include_mask != 0)` 146 both move the mask byte into a register before the compare where retail compares it
 // against a zero register; the size computed at function entry 163; the size declared before the clamped copy and the
@@ -3270,9 +3277,9 @@ finish:
 
 /* records the session's player mask and identities, and resets the voice
    channels when either has changed since the last call */
+// score 2 (was 2): only mask/source reload order after logging differs; frame and copy graph agree.
 // Round 19: unchanged; the mask/source reloads after the logging call stay in our order (edi then
 // ebp) against retail's (ebp then edi); the reduced image shows 2 even for the full-build match.
-// score 2 (was 2): only mask/source reload order after logging differs; frame and copy graph agree.
 // Round 196: query-carrier names singly/paired, comparison-input names singly/paired,
 // comparison ordinal and copy ordinal names [2, 2, 2, 2, 2, 2, 2, 2]; original source restored.
 // Round 198: read-only mask/source/both 2/2/2; unsigned/signed-word/unsigned-word copy ordinal 123/318/318; unsigned comparison/both ordinals 162/186. Opening body restored.
@@ -3286,6 +3293,12 @@ finish:
 // P466: Empty identity long/byte/word storage with memset 2/2/2; aggregate-zero
 // dword/byte/word and read-only dword/byte 2/153/142/2/153 on the plain-copy graph.
 // NOT kept: no exact reload recovery; original empty input and complete body restored.
+// Round 89 (m3 lane 2): the existing out-of-line player and mask accessors in place of the inline
+// copies 244 (fast, 518 bytes: both stay calls); the scan without the changed flag (`break`, then
+// `if (i == 16) return;`) 116 (fast); both bounded copies of this file through a file-local
+// terminating-copy helper (as src/font_loading.cpp has) 2 (plain; 0x41640 flipped to 4); the
+// identity pointer set to the player then overridden by empty 80 (fast); the mask test written
+// mask-first 3 (fast). All restored.
 // @retail 0x54590
 void function_54590(void)
 {

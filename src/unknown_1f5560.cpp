@@ -1135,6 +1135,10 @@ real normalize2d(point2f *v);
 // P533: Existing trajectory/validity/type truth at original movement flag stores:
 // 113/113/161/267/267/247/135/135. NOT kept: 113 reloads the trajectory byte for a flag
 // where retail stores immediate one; no native DL repair or byte match. Original complete body restored.
+// P545: Standard type/scan minima, vertical maximum, retry addition, speed/movement
+// eligibility and first/fallback planar predicates: 257/282/168/172/169/185/175/163.
+// NOT kept: none recovers native DL/independent-return transport; vertical maximum
+// reaches 935 bytes but regresses. Original complete body and all providers restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

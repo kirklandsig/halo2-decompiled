@@ -897,6 +897,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // 85; the zero-length arm's copy written per component 172 (618 B); the projection scale divided in place in local_0 2
 // (same code); `-sqrt(distance_squared)` without the double cast 66 (663 B). Diagnostic: the function renamed (its
 // definition and 0xf8eb0's declaration and call) still 2, so the decorated name does not decide the epilogue order.
+// m3 lane 16 r124 (fast with 0x188180, control 2): the result assigned from the distance test and then tested 181 (663 B);
+// the success path ending in `return true` 175 (659 B); the result declared bare with the success path jumping past a
+// `local_1 = false` at the exit label 175 (659 B); the forward copy declared before the sound position 2 (same code); the
+// velocity and location copies ahead of the forward normalize and compress 42.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

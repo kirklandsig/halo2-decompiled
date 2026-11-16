@@ -127,6 +127,13 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // code), `__cdecl` 26 (caller-pops); the forward vector's address named once ahead of the branch for both arms 142 (454
 // bytes). Diagnostic: the result as `arg_0 != NONE || arg_3 != NULL` folds to the constant and still shares it with
 // field2e (19), so the sharing is the constant's, not the return statement's.
+// Round 107 (m3 lane 11, fast): `field2e = true` 19 (same code); field1c and field2e stored ahead of the angle call 35;
+// the node arm's point call given `&arg_2->position` (the address local kept for the rest) 19 (same code); the angle call
+// ahead of the field10 store 32; the bounds test as `!(arg_1 >= 0 && arg_1 < node_count)` 19 (same code). Readings:
+// matched 0x1b1f70 shares its constant 1 between a word store and the bool return exactly as ours does here, so the
+// sharing is the compiler's default and retail's separate `mov al, 1` needs another cause; 0x1414d0 shows the same
+// EBX/EBP trade (a stack parameter loaded at entry takes EBX in ours, EBP in retail). Diagnostic, reverted at once:
+// the standard marker without the address local puts every argument on the stack, 137 (479 bytes).
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

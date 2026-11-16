@@ -243,6 +243,11 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 108 (m3 lane 1, fast): the record pointer `s_actor_view *const` 4; the loop bound as `sizeof(local_3.n) /
 // sizeof(local_3.n[0])` 4; the rows indexed from each vector's first component, `(&local_0->position.x)[component]`, 4;
 // the flag through a `bool *const` to its field 4 (re-measured); a `byte` component counter 243 (960 bytes, not unrolled).
+// Round 107 (m3 lane 11, fast): the flag through a `bool *const` taken at entry, with the rows written out by field 191
+// (1001 bytes: the flag stays early but the interleave is ours; written-out rows also renumber the later projection's
+// XMM registers, so retail's rows are loop-shaped); the copy as memcpy with the rows written out 192 (1001 bytes, the
+// flag sinks: exposing the copy's address early gives the store no edge); the entry flag pointer with the store in place
+// 4 (same code); the rows counted down with the flag after them 22; the entry flag pointer with the store after the rows 18.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

@@ -18,6 +18,13 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax E (11-15): no new form, no lower score (174): the mode bit still loads the flags into EDX where retail
+// keeps them in EAX, so that load stays a byte longer and every later address field drifts, and the size still
+// stays in a register across the two rounding calls where retail reloads it from the lowest slot, which sets the
+// frame's slots: BLOCKED-BY 0x48e70 (its xmm clobber set, in another lane's file). A 30-try permuter run found
+// no better form (best 168 differing instructions = the baseline); the height limit read as a dword 250, the size
+// and the aspect volatile 251 (a banned form, reverted) and the mode as a ternary chain 174 (the same code) all
+// leave the flags in EDX.
 // MiniMax R (11-14): no new form, no lower score (174): retail's mode test reads the flags with the five-byte
 // `mov eax, [flags]` form and shifts them in EAX, where this build reads them into EDX and shifts them there, so
 // every later offset drifts; the mode sits at [esp+0xc] and the extent at [esp+0x14] where ours keeps them at
