@@ -124,6 +124,13 @@ PRIVATE inline void timed_effect_point_fallback(point3f *point)
 }
 
 // Matches retail: destination references keep each store before the next input loads.
+// MiniMax E (11-16): matches retail byte for byte (score 0, was 19): the eight interpolation
+// destinations each get their own named pointer local, and this build then stores each
+// interpolated value before it loads the next pair of inputs, as retail does.
+// score 19 (was 454): same size and instructions; retail stores each interpolated value
+// before it loads the next pair of inputs, where ours loads one input ahead of the store.
+// MiniMax E (11-16), NOT kept: the eight interpolation outputs through one-use pointer locals (result04 ...
+// result50_3) measured the same score; one-use pointers are kept only with a match.
 // @retail 0x1fd20
 s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
 {
