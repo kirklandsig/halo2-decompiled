@@ -147,7 +147,9 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
-// score 539 (was 539): frame 0xe8 agrees; the first array home and later
+// score 530 (was 539): the start positions read the ray's axes (or the sweep's)
+// through one constant pointer, each axis's size before its data.
+// Before, 539 (was 539): frame 0xe8 agrees; the first array home and later
 // pointer/array homes differ. Vector-word start values 539; signed words
 // 539; axis steps in body 541; const endpoints 539; pointer-copy loop 539;
 // time loop 538 (NOT kept: gain 1); widening loop 664; scalar arrays 539.
@@ -174,13 +176,13 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 	clear_blocks_2e1090(flags.data, count);
 	endpoint_2e0f80 *start_position[3];
 	{
-		endpoints_2e0f80 const *axis = rays->axes ? rays->axes : axes;
+		endpoints_2e0f80 const *const from = rays->axes ? rays->axes : axes;
 		char *const bits = flags.data;
 		int bit = 0x11;
-		for (int i = 0; i < 3; i++, axis++, bit <<= 1)
+		for (int i = 0; i < 3; i++, bit <<= 1)
 		{
-			endpoint_2e0f80 *data = axis->data;
-			long const size = axis->size;
+			long const size = from[i].size;
+			endpoint_2e0f80 *data = from[i].data;
 			endpoint_2e0f80 const *const middle = data + (size >> 1);
 			unsigned long const point = start_words[i];
 			endpoint_2e0f80 *p;
