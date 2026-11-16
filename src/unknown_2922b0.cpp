@@ -547,6 +547,18 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // P539: Four-use unclamped angular product mutable/const after/before root publication 574/574/574/574;
 // limit-initialized angular result after/before sqrt and root publication 573/573/574/574.
 // NOT kept: all regress and shorten farther from retail; original helper/body and in-place captures restored.
+// M3 lane 11 r108 (fast; control 558): 0x2922b2 plain `inline` 558; the half-width bound once as `real const &` for the
+// four points and the ray lengths 558 (2876 bytes: a register reshuffle in the arg_6 cross and the rotation sums, the
+// points still share one negation); `bool local_0 = true;` declared at the top of the active block (with `return
+// local_0;` at that block's end) 552 (under the bar and a moved declaration, not kept: the success byte and the minimum
+// then sit at retail's +0x17/+0x18, but the hit flags, the input copy and the arg_6 cross output stay 4 bytes off, and
+// the true store follows the test); on that, the exit last (`if (field_48 > 0.0f) {...} return true;`) 664 (2865 bytes),
+// the hit flags declared in the active block too 562; on this body, the input copy declared after the hit flags 559, the
+// hit flags declared before the minimum 558, the two axis pointers initialised to the computed basis at their
+// declarations with only the arg_6 arm assigning them 564 (2870 bytes). Reading of the listing: retail reloads the
+// half-width for each of the four points (`0 - [ebp+0x14]` separately for points 3 and 4) while the width it loaded for
+// point 2 is still in XMM0, so in retail the point stores kill the definition's field; ours keeps one negation for
+// points 3 and 4 (its reload at point 2 is only a rematerialisation after point 1 clobbers XMM0).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

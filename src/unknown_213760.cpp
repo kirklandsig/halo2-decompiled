@@ -1752,6 +1752,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // NOT kept: all regress; original comparisons, asynchronous calls/waits,
 // progressive validity and failure-only count initialization restored.
 // NOT kept (coordinator screen, MiniMax C 11-16): a goto the function on main does not have (kept only with a byte match): `goto validation_done;`; the body is main's again.
+// M3 lane 11 r108 (fast with 0x2138f0, 0x213800, 0x2149c0, all MATCH; control 33). Round 56's 7 form rebuilt at 7 (left:
+// the write's flags zero in EAX with the handle loaded after it, retail's flags in ECX with the handle loaded first, and the
+// checksum load in EDX for retail's EAX). On the 7 form: the write's flags as a copy-initialised `s_file_write_flags flags =
+// 0;` local 7 (same code); the stored checksum named where it is read 7 (same code); the 0x213800 result in its own bool
+// copied to `valid`, the checksum tested under it 7 (same code: VC copy-propagates, so `valid` stays one web over the
+// checksum load); the close test with the handle test first 165 (946 bytes); `written` typed long 7 (same code).
+// Re-measured: the written flag alone on main's body 83 (the checksum still EDX there). Body unchanged at 33.
 // @retail 0x213970
 void function_213970(void)
 {

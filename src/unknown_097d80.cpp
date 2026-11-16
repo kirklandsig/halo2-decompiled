@@ -509,6 +509,11 @@ struct c_aggregate : c_child
 // 0x8024: a reference escapes to the virtual call the same way); the call's status named and published after the total
 // 32; `long produced;` then `produced = 0;` 31 (same code); the gate as nested `if (error == 0) if (child != 0)` 37; the
 // remaining room named ahead of the call 31. Still BLOCKED by the build flag.
+// M3 lane 11 r108 (fast with the six file-mates, all still matched): the collection loop walking the children with a
+// `c_child **` cursor over the member array 31; a block pointer advanced by each child's count and passed to v5 144 (389
+// bytes); v5's room and destination computed from `starts[i]` 31 (same code); produced declared in the collection loop's
+// for-init and zeroed in the call's block 42; the child pointer declared at function scope 31 (same code). Frame 0x8024 in
+// each. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
