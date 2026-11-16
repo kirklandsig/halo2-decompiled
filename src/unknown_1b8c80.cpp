@@ -1519,6 +1519,10 @@ void function_1f86a0(long actor_index);
 // MiniMax I (11-15): no new form, no lower score (134): retail keeps the loop entry in EBX and spills the masked flags
 // byte to F+3, ours keeps the mask in BL and reloads the entry from F+0; the source order of the two is the same, so the
 // frame difference (0x10 against 0x14) follows from that allocation alone, and no spelling of the mask moves it.
+// MiniMax D (11-16): no new form, no lower score (134): the mask byte as a short gives 253 (it is then stored as a
+// dword at F+0x18), so retail's 0x14 frame is reached only when the byte itself is spilled at F+3 - that is what
+// keeps our mask in BL and our loop entry in memory where retail keeps the entry in EBX; no form of this body
+// moves the byte out of BL.
 // score 134 (was 134): MiniMax R (11-15): no new form, no lower score; the frame is still 0x10 against retail's 0x14
 // and retail still takes the object pool base in the prologue where this build reads it in the middle of the opening,
 // and the lookup's memory summary belongs to 0xbaf40, whose body is in src/unknown_0bad50.cpp: BLOCKED-BY that file.
