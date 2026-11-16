@@ -457,6 +457,10 @@ void function_11bed0(s_location *location, point3f const *point);
 // MiniMax S (11-14): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while
 // retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
 // not edit, so the call boundary and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
+// MiniMax I (11-16): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while
+// retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
+// not edit; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form.
+// BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -2821,6 +2825,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // MiniMax E (11-15): 321 (was 339): 0x12a420 now stays out of line here, as retail has it (a `__declspec(noinline)`
 // declaration in src/unknown_124f90.cpp, where it is defined); the body is 1917 bytes against retail's 1929 and the
 // frame is still 0x4b4 against retail's 0x4bc, with the early scalar, primary and last-chunk homes still different.
+// MiniMax I (11-16): no new form, no lower score (339): the frame is still 0x4b4 against retail's 0x4bc and the
+// early scalar, primary and last-chunk homes still differ; this round's snapshot-locals and gain-local forms
+// scored 349 or worse, and the 321 form needs a bool flag the coordinator does not keep.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
