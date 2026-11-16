@@ -20,7 +20,19 @@ public:
 	virtual void refresh(child_description_2edd00 const *child, typed_2edd00 **other, context_2edd00 const *context) {}
 };
 
-// score 6 (was 141): the key search is the list's own member, reading the
+// makes room for one more child at the end, the array grown first when full
+static __forceinline void add_slot_2ec3d0(keyed_children_2ec680 &children)
+{
+	if (children.size == (children.capacity_and_flags & 0x7fffffff))
+	{
+		function_2d91d0(&children, sizeof(keyed_child_2ec680));
+	}
+	children.size++;
+}
+
+// score 0 (was 6): matched with the slot added by a helper that takes the list by reference and
+// the key stored through the last slot (retail reads the data after the size).
+// Before, 6 (was 141): the key search is the list's own member, reading the
 // child count once and returning the index from inside its loop, so the
 // children are reached through `this` (kept in ebx) as in retail; and the
 // added slot is `grown = size + 1; size = grown; data[grown - 1]`. Left:
@@ -56,7 +68,8 @@ void keyed_list_2ec680::function_2ec3d0(description_2edd00 const *description, t
 		{
 			if (found == -1)
 			{
-				children.added_slot().key = key;
+				add_slot_2ec3d0(children);
+				children.last_slot().key = key;
 				long arg_3 = field_8;
 				dispatcher_2edd00 *table = context->dispatcher;
 				long first = ((typed_2edd00 *)child.key)->type();

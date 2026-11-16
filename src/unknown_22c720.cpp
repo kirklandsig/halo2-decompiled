@@ -72,7 +72,85 @@ void c_havok_page_pool_allocator::deallocate_aligned(void *address)
 /* takes a block from its size class's free list; an empty list gets the
    rest of the current page (up to 0x100 bytes of blocks) or, for a large
    class, a whole new page */
-// score 78 (was 114): retail keeps the page count and the class size in ebx
+// a block of a size class whose free list is empty: cut from the current
+// page (the rest of a small class's share going to its free list) or from a
+// fresh page; none when the pages are used up
+static __forceinline void *refill_small_22c830(c_havok_page_pool_allocator *pool, long size_class)
+{
+	long class_size;
+	char *result;
+	long in_use;
+	class_size = pool->class_sizes[size_class];
+	long offset;
+	offset = class_size;
+	if ((unsigned long)(pool->unknown20 + class_size) > (unsigned long)pool->unknown1c)
+	{
+		if (pool->page_count >= 0x76)
+		{
+			return 0;
+		}
+		unsigned long page = (long)&pool->pages[0x4010 + (pool->page_count << 13)];
+		pool->unknown18 = page;
+		pool->unknown20 = page;
+		++pool->page_count;
+		long page_limit = page + 0x1fc0;
+		pool->unknown1c = page_limit;
+		pool->unknown2d0[0]++;
+	}
+	result = (char *)pool->unknown20;
+	pool->unknown20 = pool->unknown20 + class_size;
+	in_use = pool->unknown2e8[size_class].first;
+	for (; 0x100 > offset; offset += class_size)
+	{
+		char *block = (char *)pool->unknown20;
+		if ((unsigned long)((long)block + class_size) >= (unsigned long)pool->unknown1c)
+		{
+			break;
+		}
+		pool->unknownf0344[size_class]++;
+		pool->unknownf0388[size_class]++;
+		pool->unknown2e8[size_class].first--;
+		*(long *)block = pool->unknown24[size_class];
+		pool->unknown24[size_class] = (long)block;
+		pool->unknown20 += class_size;
+	}
+	pool->unknown2e8[size_class].first = in_use;
+	pool->unknownf0344[size_class]++;
+	return result;
+}
+
+static __forceinline void *refill_large_22c830(c_havok_page_pool_allocator *pool, long size_class)
+{
+	long class_size;
+	char *result;
+	long in_use;
+	class_size = pool->class_sizes[size_class];
+	if (pool->page_count < 0x76)
+	{
+		result = (char *)&pool->pages[0x4010 + (pool->page_count << 13)];
+		++pool->page_count;
+		pool->unknown2d0[0]++;
+		in_use = pool->unknown2e8[size_class].first;
+		char *block = result + class_size;
+		for (long offset = class_size; offset < 0x2000; offset += class_size, block += class_size)
+		{
+			pool->unknownf0344[size_class]++;
+			pool->unknownf0388[size_class]++;
+			pool->unknown2e8[size_class].first--;
+			*(long *)block = pool->unknown24[size_class];
+			pool->unknown24[size_class] = (long)block;
+		}
+		pool->unknown2e8[size_class].first = in_use;
+		pool->unknownf0344[size_class]++;
+		return result;
+	}
+	return 0;
+}
+
+// score 0 (was 78): matched with the small and the large refill each written as its own inline
+// helper over the pool (retail places the large one after the shared exit and
+// returns zero through the result register).
+// Before, 78 (was 114): retail keeps the page count and the class size in ebx
 // where ours keeps them in edi, and does the size compare before the frame
 // is set up; ours still reads the class size into a local of its own in each
 // branch
@@ -98,73 +176,7 @@ void *c_havok_page_pool_allocator::allocate16(long size, long memory_class)
 			unknownf0388[size_class]--;
 			return free_block;
 		}
-		long class_size;
-		char *result;
-		long in_use;
-		if (0x200 >= size)
-		{
-			class_size = class_sizes[size_class];
-			long offset;
-			offset = class_size;
-			if ((unsigned long)(unknown20 + class_size) > (unsigned long)unknown1c)
-			{
-				if (page_count >= 0x76)
-				{
-					result = 0;
-					return result;
-				}
-				unsigned long page = (long)&pages[0x4010 + (page_count << 13)];
-				unknown18 = page;
-				unknown20 = page;
-				++page_count;
-				long page_limit = page + 0x1fc0;
-				unknown1c = page_limit;
-				unknown2d0[0]++;
-			}
-			result = (char *)unknown20;
-			in_use = unknown2e8[size_class].first;
-			unknown20 = unknown20 + class_size;
-			for (; 0x100 > offset; offset += class_size)
-			{
-				long *block = (long *)unknown20;
-				if ((unsigned long)((char *)block + class_size) >= (unsigned long)unknown1c)
-				{
-					break;
-				}
-				unknownf0344[size_class]++;
-				unknownf0388[size_class]++;
-				unknown2e8[size_class].first--;
-				*block = unknown24[size_class];
-				unknown20 += class_size;
-				unknown24[size_class] = (long)block;
-			}
-		}
-		else
-		{
-			class_size = class_sizes[size_class];
-			if (page_count >= 0x76)
-			{
-				result = 0;
-				return result;
-			}
-			long fresh_page;
-			unknown2d0[0]++;
-			fresh_page = page_count;
-			in_use = unknown2e8[size_class].first;
-			page_count = fresh_page + 1;
-			result = (char *)&pages[0x4010 + (fresh_page << 13)];
-			for (char *block = result + class_size; block - result < 0x2000; block += class_size)
-			{
-				unknownf0344[size_class]++;
-				unknownf0388[size_class]++;
-				unknown2e8[size_class].first--;
-				*(long *)block = unknown24[size_class];
-				unknown24[size_class] = (long)block;
-			}
-		}
-		unknown2e8[size_class].first = in_use;
-		unknownf0344[size_class]++;
-		return result;
+		return 0x200 >= size ? refill_small_22c830(this, size_class) : refill_large_22c830(this, size_class);
 	}
 	return 0;
 }
