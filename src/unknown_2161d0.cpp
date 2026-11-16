@@ -167,6 +167,12 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // image); the path built by a forceinline wrapper returning the path, passed to the read, plain 10 (same code). Retail
 // recomputes the path at every use inside the inlined build (strncpy push, terminator, append), and 0x122810 never
 // writes ESI, so the reuse is the code generator's own choice here.
+// Round 130 (m3 lane 12; plain where marked): the language test moved into a forceinline path builder that returns
+// false early and else builds and returns true (`&& builder(&location, path)`), plain 10 (the join folds: same code);
+// the build and the read in one forceinline helper taking the record and the path, plain 10 (same code; the note had
+// only its reduced-image 72); the bit test through TEST_FIELD_BIT 10; the location type read into a named local for
+// the build 10; the bounded index as an if/else-if chain 10 (all same code). Diagnostic (reverted at once): speed
+// preference off around the function 143 (229 bytes; 0x2161d0 31), it reshapes the whole function.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
