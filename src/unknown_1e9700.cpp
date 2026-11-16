@@ -195,6 +195,22 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // byte test, where retail reloads it after that test, so retail's EDX is free for the engine index (EDX/EAX) and ours
 // takes EAX/ECX; the swap follows from the blocked reload, not a separate cause.
 // MiniMax S (11-14): no new form, no lower score (106): the enable flag's reload after the store still needs the aliasing that the held src/unknown_1967d0.cpp gets by taking &g_510cb0, so retail's EDX/EAX turnover stays unmatched here.
+// MiniMax D (11-15): the two maxima and the clamp store now use the held helpers' own forms (0x196960's flat
+// `g_511bf4.all[index * 0x1b5 + 12]` read and 0x1968b0's `s_input_counter *counter` store) 70 (was 106): the
+// counter's address is formed ahead of the clamp as retail does, the old maximum takes retail's `xor eax, eax;
+// mov ax` read and the 15-bit store matches retail's `mov cx, word ptr [esi]; xor cx, ax; and ecx, 0x7fff`.
+// Still differ: the enable byte is held in BL where retail reloads it into AL, CL and DL (that reload needs the
+// aliasing in src/unknown_1967d0.cpp, held), the old maximum's home is EAX against retail's ECX, and the row pointer
+// is formed before the increment against retail's `inc word ptr [eax+edx+0x16]; lea edi, [eax+edx]`.
+// MiniMax D (11-15): the old maximum now reads as an inverted ternary in its own block, which gives
+// retail's `cmp esi, -1` against the copy in ECX 64 (was 70): the block keeps the outer home in ECX and
+// the loaded value in EAX, so the copy to the outer survives. Still differ: the enable byte stays in BL
+// where retail reloads it into AL, CL and DL (the reload needs the flag's aliasing, held in globals.h),
+// the compare against the immediate where retail compares the register, and the row pointer is formed
+// before the increment against retail's `inc word ptr [eax+edx+0x16]; lea edi, [eax+edx]`.
+// NOT kept (coordinator review, MiniMax D 11-15): 106 -> 64 rested on match-only forms: a one-use current_maximum
+// local copied into old_maximum, a one-use counter pointer for the store, and the typed groups[index][12] written
+// as flattened all[index * 0x1b5 + 12] indexing.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
