@@ -201,12 +201,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
+// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax C (11-16): no new form, no lower score (32): the correction through the existing vector3f_add_scaled straight
 // into the output 97 (348 bytes) and the deltas i, j, k (79 in the earlier rounds: retail's velocity stores and its
 // (k + j) + i sum, but the rate chains and tick products then run i, j, k) leave the chain order tied to the component
 // the first delta reads, so retail's j, i, k chains with its i, j, k deltas still have no source form in this file.
-// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
-// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax I (11-14): no new form, no lower score (32): retail's rate chains and tick products run j, i, k while its velocity stores and deltas run i, j, k and the squared length sums (k + j) + i; our deltas j, i, k keep retail's chains but the stores and the sum follow the delta order, and deltas i, j, k give retail's stores and sum but move the chains to i, j (79), so one source order cannot give both.
 // MiniMax B (11-13): no new form, no lower score (32): retail's tick products run j, i, k while its velocity stores run i, j, k, and the inlined scaled-difference helper keeps the two together (the deltas written i, j, k give retail's stores and its (k + j) + i sum but move the products to i, j, k, 79); the deltas in the order k, i, j measure 30 and the copy-then-subtract form 29, but both are statement orders picked by score and were reverted by the coordinator on 11-09, and the permuter (fast, 7 tries in 390 s) found nothing below the 32 differing instructions of the reduced image, so the body is the original one.
 // MiniMax G (11-12): no new form, no lower score (32); the deltas written i, j, k give retail's velocity stores (i, j, k)
@@ -739,6 +739,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // length, default/explicit real operations 113/131, all with direct tracked input.
 // NOT kept: all regress and lose the native frame/transport; original parameter
 // storage, helpers, j-first delta graph and complete body restored.
+// Round 112 (m3 lane 10, fast): the deltas through a plain component loop 80; velocity and delta in one component loop (the
+// tick helper's body written out) 80; the tick count as `short` 77 (368 bytes); the prediction written into the velocity
+// local with the tick stage in place (`scaled_difference3f(2c, velocity, ticks, velocity)`) and the deltas i, j, k 53:
+// the ticks then convert into retail's XMM3 (the 79 form takes XMM5) and the stores, deltas and (k + j) + i sum are
+// retail's, leaving the rate/tick chains i, j against retail's j, i and one movaps fewer (retail parks dj in XMM2 and
+// dk in XMM3 for the correction); the same in-place form with the deltas j, i, k 57 (369 bytes). Diagnostic: deltas
+// i, j, k with the squares summed by hand k, j, i 79 (the sum order is not the cause). All restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
