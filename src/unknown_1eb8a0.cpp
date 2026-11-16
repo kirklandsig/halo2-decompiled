@@ -599,6 +599,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P538: Both actual direction-normalization return producers, real/const-real/double/const-double
 // and bool/byte/short/long missing-direction outcomes: 659/659/746/746/659/659/659/659.
 // NOT kept: no sample-register or coefficient-schedule repair; original calls, fallback stores and full body restored.
+// P556: Actual displacement/impulse/target-field/direction-object/target-object/output/
+// sampled-workspace/settling-workspace lvalues, fast control 614: 694/741/752/704/693/614/637/602.
+// NOT kept: local settling alias at 602 is nonexact and shortens away from retail; other forms tie or regress.
+// Original executable body, counter qualifier, helpers and 622 (was 622) heading retained.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

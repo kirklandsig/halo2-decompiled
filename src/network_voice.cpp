@@ -1469,6 +1469,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // MiniMax S (11-14): no new form, no lower score (94): the identity flag still takes bl where retail takes al, and
 // that moves the kept mask, the value load and the accumulate with it; every spelling of the flag (function scope,
 // declared first, wide, word, char) compiles to the same code.
+// MiniMax S (11-16): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner channel blocks still step the cursor by 0x170 where retail uses fixed offsets; reading the identity flag before the total is assigned raises the score to 111 and indexing the channels instead of walking them with a cursor raises it to 123.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1549,6 +1550,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // keeps its own epilogue (460 bytes against retail's 449).
 // MiniMax D (11-14): no new form, no lower score (60): the player bit still sits in EBX and the entry size in EBP where retail keeps the bit in EBP and the size in EBX, the membership mask is still loaded into EAX before the shift where retail loads it into ECX after it, and the capacity is still carried in a register where retail decrements it in place.
 // MiniMax A (11-13): no new form, no lower score (60): the membership helper's mask and shift operands swapped compile to the same code (all four network-voice scores unchanged), and the register split stands (the player bit in EBX and the entry size in EBP where retail has EBP and EBX).
+// MiniMax S (11-16): no new form, no lower score (60): the player bit still sits in EBX and the entry size in EBP where retail keeps the
+// bit in EBP and the size in EBX, the membership mask is still loaded into EAX before the shift where retail loads it into ECX after it,
+// and the capacity is still carried in a register where retail decrements it in place; the permuter (annealing, 420 s) found
+// no variant below 60 - the best it wrote ties the baseline and only respells the constants (a constant-only local, `== 0`
+// for `!x`, `capacity = capacity - n`), so it was reverted.
 // score 60 (was 60): the player bit and entry size in EBX/EBP (retail EBP/EBX), the kept mask in EAX, capacity through
 // a register, the capacity-fail exit's own epilogue (460 against 449 bytes).
 // m3 lane 5 r185 (fast with 0x56380/0x564c0/0x53b00/0x56000, control 60; both builds return with ret 0xc): one loop
@@ -2172,6 +2178,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // 1, 2 and 3 gives 104 (retail keeps the mode in ecx and materialises the active test), so the two mode helpers
 // stay; what is left is retail's inner loop calling the port flag getter twice where this build calls the
 // out-of-line copy, and retail's remote mask in esi.
+// MiniMax S (11-16): no new form, no lower score (85): retail inlines both port-flag queries at this site where this build inlines one and calls the other out of line, and the second availability byte still loads lazily; making the second query inline measures 129 and takes two matched callers with it, so the helper stays as it is.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3701,6 +3708,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // slot, which only frees if the channel is copied to a register at entry, and its cursor is an absolute pointer
 // while the count is re-read from the data argument each pass; capturing the count in a local scores 166 and
 // recomputing the cursor from the counter at the loop's end scores 167, both worse than the 139 baseline.
+// MiniMax S (11-16): no new form, no lower score (139): retail still keeps the channel in ebp from the entry and spills the member, while
+// this build loads the data pointer and keeps the member in ebp; the cursor and route homes are as before.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).

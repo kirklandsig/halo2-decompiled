@@ -963,6 +963,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // MiniMax C (11-15): no new form, no lower score (218): retail copies the pathfinding root into ebx and takes the
 // actor value in eax at the entry, where this build keeps the root in eax and reads the actor in the case body, so
 // the vertex loads and the cross product's float schedule follow from that allocation.
+// MiniMax S (11-16): no new form, no lower score (218): retail still pushes ebx and keeps the pathfinding root in ebx from the entry where this build reads the root's field first and keeps the root in eax with ebx as scratch, so the prologue order and the register that holds the root differ; a permuter run over the body found only a two-point variant that moves the second point_along_vector call after the assignments that follow it, a statement order the rules drop, so the body stands as it is.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
