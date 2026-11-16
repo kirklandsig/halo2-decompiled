@@ -475,25 +475,11 @@ class query_2ef260
 {
 public:
 	void function_3080a0(class_308180 *manifold);
-	void function_307f90(answer_307f90 *found, contact_307f90 *contact);
+	answer_307f90 *function_307f90(answer_307f90 *found, contact_307f90 *contact);
+	char deepest_contact_307f90(contact_307f90 *contact);
 };
 
-// the deepest contact between the boxes, when they overlap; here, in the file
-// that compiles 0x306400 first, so the call to 0x306580 reuses this in ecx as
-// retail's does
-// score 9 (was 11): the point's fourth component is a named `w_component`
-// local (lane 3). Output stores and the fresh failure zero still differ.
-// score 11 (was 69): retail stores the contact's normal before its point, and
-// writes the not-found answer from a fresh zero in cl instead of bl.
-// Output stores and fresh failure zero still differ.
-// Overlap outcome 74; lookup outcome 62; both 84; common failures 102/69/106;
-// both outcomes as bool 84; bool with common failure 106.
-// Pointer return 28; pointer return with class assignment 28; pointer return
-// with aligned stores 26; empty destructor 28; destructor and mutable-source
-// copy 28; destructor and aligned stores 26; mutable-source copy 28;
-// class local with empty destructor 11. NOT kept: no improvement.
-// @retail 0x307f90
-void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
+__forceinline char query_2ef260::deepest_contact_307f90(contact_307f90 *contact)
 {
 	char result = 0;
 	long w_component = 3;
@@ -534,11 +520,34 @@ void query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact
 		}
 		else
 		{
-			found->value = 0;
-			return;
+			return 0;
 		}
 	}
-	found->value = result;
+	return result;
+}
+
+// the deepest contact between the boxes, when they overlap; here, in the file
+// that compiles 0x306400 first, so the call to 0x306580 reuses this in ecx as
+// retail's does
+// Matched: the search is an inlined member returning the outcome (its not-found
+// exit returns a literal, which gives retail's fresh zero), and the function
+// returns the answer it was given, which keeps it in eax.
+// Before, 9 (was 11): the point's fourth component is a named `w_component`
+// local (lane 3). Output stores and the fresh failure zero still differ.
+// score 11 (was 69): retail stores the contact's normal before its point, and
+// writes the not-found answer from a fresh zero in cl instead of bl.
+// Output stores and fresh failure zero still differ.
+// Overlap outcome 74; lookup outcome 62; both 84; common failures 102/69/106;
+// both outcomes as bool 84; bool with common failure 106.
+// Pointer return 28; pointer return with class assignment 28; pointer return
+// with aligned stores 26; empty destructor 28; destructor and mutable-source
+// copy 28; destructor and aligned stores 26; mutable-source copy 28;
+// class local with empty destructor 11. NOT kept: no improvement.
+// @retail 0x307f90
+answer_307f90 *query_2ef260::function_307f90(answer_307f90 *found, contact_307f90 *contact)
+{
+	found->value = deepest_contact_307f90(contact);
+	return found;
 }
 
 // the manifold of contacts between the boxes brought up to date
