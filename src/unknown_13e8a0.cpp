@@ -612,6 +612,14 @@ struct s_text_line_measurement
 // P537: Original-site break-admission truth in positive/complementary bool/byte/short/long:
 // eight 77s at 415 bytes. NOT kept: native independent advance copy and early width load
 // unchanged; original field observation, flag writes, float trees and full body restored.
+// Round 129 (m3 lane 12, fast): the bound test with the sum on the left (`!(sum < bounds->x1) && count`) 77 (same
+// code: x1 still loads first); the header's advance and offsets typed as short fields (no casts; 0x13f700 and
+// 0x13f0e0 still match) 77; the three metrics through an inline `pixels * scale` helper 77; `real right =
+// position->x + advance;` named after the metrics and used in the test 74 (the width then loads early into XMM4, but
+// the advance gets no copy; a one-use part, not kept). Diagnostics: without the width restore 101 (394 bytes), without
+// the width's zero initialiser 53; neither gives the advance copy. Retail's colouring gives the bound XMM0 ahead of the
+// advance (whose update-path value then needs the XMM3 copy); ours colours the advance XMM0 and the width XMM3. Also:
+// the test and the update sharing a parenthesized `(advance + offset + kerning)` 83 (computed once, no copy).
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
