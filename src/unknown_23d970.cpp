@@ -564,7 +564,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
+// score 45 (was 45; earlier 45 (was 45)): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
@@ -1001,6 +1001,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // P539: Native float trig API pitch-cosine/yaw-pair/pitch-sine families, seven nonempty subsets,
 // then immutable reused cosine on the complete graph: eight at 45. NOT kept: no byte equality
 // or native product/store-base repair; original full callback and shared producers restored.
+// M3 lane 1 r109 (`--fast 0x23de50 0x1f0870 0x130f60`, control 45): the else arm through the existing angles helper of
+// src/unknown_130f60.cpp (reads yaw and pitch through its pointer at each use and stores through the output pointer; the
+// observer's yaw/pitch pair viewed as its two-real argument) 47 (1264 B, the else arm then retail's, as lane 8 r168's
+// one-caller helper); on it: the first product from `direction` 215 (1261 B); cross3f_staged for the second product 221
+// (1272 B); function_1f087b for both products 47; `right` declared ahead of previous_up 47. Body unchanged. Measured
+// without 0x1f0870 in the image the second product is not inlined, so keep 0x1f0870 in every fast list here.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
