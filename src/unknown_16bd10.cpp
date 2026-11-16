@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 149; 149 was 331): 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
+// score 126 (was 126; earlier 149, and 149 was 331): 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
 // timer, animation case and field-of-view tail), following the plane length's hoisted left.k load (retail left.j); that
 // costs the animation case a zero copy and the field-of-view tail its reuse of the target test's register (the 4 extra
 // bytes). Also left: the distance dot's operand loads, the yaw rotation's product/negation order, and the pan arm's
@@ -1132,6 +1132,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P526: Actual observer flags unsigned-int/long, object index int/full-width-long, output mode byte/char/signed-char fields, coherent complete output metadata:
 // 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery.
 // Original complete executable source restored.
+// M3 lane 7 r167 (fast with 0x16c6f0/0x13cb40/0x23d090, all MATCH): the field-of-view test as `duration <= time` 126;
+// `0.0f != length_squared` 125 (re-measure); the length as dot3f(&plane.n, &plane.n) 177, with the compare flipped 176;
+// as length_sq3f(&plane.n) with it 398; as dot3f(&left, &left) 392 (1700 B), with the compare flipped 391; as
+// dot3f(&left, &plane.n) 394 (1700 B).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
