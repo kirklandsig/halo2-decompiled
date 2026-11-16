@@ -649,6 +649,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // 0x270400 (contributor call lines); a defaulted parameter needs a ruling. On that form: the getter at the trace
 // call as well 92, as a named local there 92 (only the rotation's XMM numbering moves); a plain radius 211 (the
 // count still rests on the `real const &` radius); the ring term first in the angle 90; the distance product as
+// score still rests on the `real const &` radius); the ring term first in the angle 90; the distance product as
 // radius times ring 90.
 // Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
 // unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
@@ -801,6 +802,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the same code (90), the distance with the ring's float product widened by an inner cast gives
 // the same code (90), the distance written with the ring and the radius both cast to double
 // measures 266, and the float local used for the distance and the angle together scores 259; the
+// scores 266, and the float local used for the distance and the angle together scores 259; the
 // ring is still converted with `fild` where retail converts it to float, keeps that float in a
 // stack slot and reloads it as double: the compiler folds the float local back into the integer
 // conversion, so the body is unchanged.

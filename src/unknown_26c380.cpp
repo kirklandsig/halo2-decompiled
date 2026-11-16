@@ -579,9 +579,16 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // 397 (1617 B). On the goto form with the line as plane2f {n, d} (304, 1612 B): the 2-D dot written vector-first 304 (same code);
 // one to four unused long locals 304/304/304/303. In the 32 form and in retail one priority order sets both the three XMM homes
 // and the stack slots (ours n.j, n.i, d; retail d, n.j, n.i).
+// M3 lane 8 r172 (fast with 0x26c380/0x26c4e0/0x26ccb0/0x26d370/0x15f3a0; base lane 2 r82's 32 goto form, rebuilt 32 at 1605 B):
+// the code base's out-of-line magnitude3d (0x24590) for the private copy 32 (LTCG inlines it; same code); a pointer-returning
+// cross fed straight to the magnitude 32 (same code); that cross with row j spelled operand-swapped 32 (same code: the x87
+// operand order is the compiler's own, not the spelling's); no offset local, the origin's dot at each use 502 (1520 B, not
+// hoisted; 0x26c4e0 16, 0x26ccb0 209); no planar copy, each dot through `(vector2f const *)&normal` 428 (1554 B). Body unchanged.
 // P538: Actual traversal-limit outcome at its original word comparison, positive/complementary
 // bool/byte/short/long: 244/244/244/244/244/244/244/244. NOT kept: no byte/line/sector-home
 // or shared-tail repair; original count test, edge/query observations and complete traversal restored.
+// MiniMax E (11-15): no new form, no lower score (244): the permuter over the body found nothing lower, and the goto form
+// that reaches 32 needs a goto, which is kept only with a byte match.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -809,6 +809,10 @@ struct s_1f8a70_actor
 // 182 (same code); the route test and switch on route_mode itself (no `route` local) 397; the 0xe70b0 test without its
 // extra braces 182 (same code); re-measured the ternary route initialiser 182. Lead: retail's reload of route_found after
 // 0x1f8750 is what an address-exposed local gets, and the only address retail takes at +0x12 is the 0xe70b0 result's.
+// P543: Standard forward record transfers at direct/reference/state/fallback
+// phases 380/395/339/214; backward counterparts 383/421/381/231.
+// NOT kept: all regress and shorten away from retail; original copies,
+// cases, two results and returned-unit temporary restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

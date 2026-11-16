@@ -1074,6 +1074,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // the sample scan as a `while` 262; the mask declared at the top 262; `matrices`/`orientations` declared at the top 229 (829 B;
 // on this body alone 233; a declaration move whose gain is positional: the two zero stores move to the entry, where retail makes
 // them after the mask copy). Lane 5 r179's 169 lead rebuilt: its entry still differs from the second instruction on.
+// M3 lane 13 r98 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): on round 78's 194 lead,
+// `object = header->object` with the bit-29/+0x34b tests through object_get() 305; `sample` set through a pointer to itself
+// 194 (diagnostic, the pointer folds). On the 0xbfe20 clear alone (262): early returns of input_matrices with `result`
+// declared after the model test 264 (814 B); the bit-30 test through object_get() 262 (same code); `sample` declared first
+// 262 (same code); the first and third together 266. Retail keeps input_matrices in EDX to the final_matrices store with
+// result as a separate EDI copy, so the +0xb3 byte takes BL; every form here coalesces result with the parameter.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
