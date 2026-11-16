@@ -1946,6 +1946,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P561: Existing entry tag/animation/state/component pointer spill names, four isolated,
 // three pairs and the complete graph: eight 203. NOT kept: pure renames do not
 // recover native pointer/material homes or schedule; original full body restored.
+// P581: Rounded speed/boost/planar-length promoted receiver storage, seven subsets and
+// immutable planar receiver: 613/659/432/587/611/681/606/606. NOT kept: no exact native tag/material/animation homes
+// and walking/planar schedule; original real producers, shared helpers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

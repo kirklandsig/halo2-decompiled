@@ -884,6 +884,9 @@ struct s_collision_result_buffer_1697c0
 // four-point reduction is below eight and length grows away; root/axis homes recover but zero/scale
 // SIMD, trig transfer and rotation allocation still differ.
 // Original magnitude return, all three consumers and complete sampler restored.
+// P581: Rounded random-yaw/random-pitch/best-fraction promoted receiver storage, seven
+// subsets and immutable draw results: 332/362/363/335/379/366/371/371. NOT kept: no exact frame-bottom scratch,
+// axis/result-home and candidate-rotation recovery; original complete sampler and helpers restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
