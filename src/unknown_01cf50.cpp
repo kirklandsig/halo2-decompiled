@@ -7603,6 +7603,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // temporary each and overlaps the direction with them at [esp+0x14], our body is 71 bytes shorter than retail's 2507, and
 // its second group of ten stage states and its three render-state calls stay out of line where ours inlines them.
 // MiniMax D (11-15): no new form, no lower score (576): the four screen bounds are stored four bytes higher in our frame (+0x18 and +0x20 where retail has +0x14 and +0x1c) and our body is 71 bytes shorter than retail's.
+// MiniMax D (11-16), NOT kept: the four bounds as (real)(double)(screen[0] - 32.0f) etc. scored 558 (main 576),
+// but a float taken to double and straight back changes no value and only steers code generation; the source form
+// that computes them in double, a double constant ((real)(screen[0] - 32.0)), measures 586. Body back to main.
 // @retail 0x46ea0
 void function_46ea0(long tag, point3f const *position)
 {
@@ -7627,10 +7630,10 @@ void function_46ea0(long tag, point3f const *position)
     screen[0] = (real)floor(screen[0] + 0.5f);
     real center_y = (real)floor(screen[1] + 0.5f);
     real bounds[4];
-    bounds[0] = (real)(double)(screen[0] - 32.0f);
-    bounds[2] = (real)(double)(center_y - 32.0f);
-    bounds[1] = (real)(double)(screen[0] + 32.0f);
-    bounds[3] = (real)(double)(center_y + 32.0f);
+    bounds[0] = screen[0] - 32.0f;
+    bounds[2] = center_y - 32.0f;
+    bounds[1] = screen[0] + 32.0f;
+    bounds[3] = center_y + 32.0f;
     if (!((real)(short)g_48564e > bounds[0] && (real)(short)g_48564c > bounds[2] &&
         bounds[1] > (real)(short)g_48564a && bounds[3] > (real)(short)g_485648)) return;
     function_1cc30(10);
