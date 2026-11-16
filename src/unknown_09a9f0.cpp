@@ -1200,6 +1200,10 @@ bool c_projectile_type::v8(long a, long b)
 // object local (diagnostic) 12; the group row as a `long *` indexed `(index & 0xffff) * 3` with the value at [1] 12; the
 // group data base in a local 12; `real &` references for both state fields 12; the volatile definition copy between the
 // object and the flags 51. The entry always takes ESI; the mask hands it the flags' ESI, the word read the object's.
+// Round 123 (m3 lane 16, fast; the mask re-measured 12), all with the full-width mask: the volatile copy typed with the
+// device type 12; the 0x800 block as guard returns 47 (188 bytes); a pointer to the state's power field 12; the object
+// looked up after the a5e70 call 18 (retail's homes: object ESI, flags EDI, the mask kept; only the head moves after the
+// call, so the object loses the tie only while its range spans the call); permuter (1800 s, 167 tries) none below 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

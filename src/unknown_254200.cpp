@@ -523,6 +523,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // code), taking the colour and the lower and upper coordinates computed at the call 384 (2258 bytes). In this pair and in
 // 0x254490's, retail emits the two reloads in ascending register order (xmm0 first), ours in descending order; the
 // register each value gets already agrees.
+// Round 248 (m3 lane 3, fast; 0x254200 matched, 0x254490 4 throughout): the first quad's texture bounds as one
+// real_bounds aggregate {lower, upper} built after Begin 407 (2268 bytes), built before 0x1cf50 378 (2256 bytes);
+// `real const half_size` at the success block's top 505 (2268 bytes); lower and upper named at the function's entry
+// 257; the third and fourth texture calls through the D3DDevice:: member form like the first two 2 (same code). In this function
+// and 0x254490 retail emits the post-call reload pair in ascending register order whichever values they hold (here
+// xmm0 = lower first, there xmm0 = the depth constant first); ours emits xmm1 first in both.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

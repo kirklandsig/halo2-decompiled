@@ -61,7 +61,17 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
-// score 702 (was 715): m3 lane 16 r119 (plain) kept three retail shapes together: the second radial test's implied
+// score 679 (was 702): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
+// frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
+// local_14 the other way round, local_2 at +0x30 for retail's +0x1c between local_5 and local_6, local_6/local_7/local_15
+// 4-8 bytes low), the normaliser's k, j, i squares (retail i, k, j) and the steering-flag block layout. Tried in r203:
+// constant-left float compares at 12 sites 702 each but the 0x47c test 698 (3477 B, worse code there) and field_1c 704;
+// own dead locals n = 1..7 702/716/716/716/702/702/702; the target point written into the output vector (diagnostic) 679;
+// a three-component initializer `{ x + i, y + j, z + k }` 693; a point3f local_14 with a second cast 679 (same code); on
+// 679 the outputs declared at function scope before/after local_8, local_7 before local_6, local_8 declared first 679
+// each (same code), own dead locals 1..7 679/693/693/693/679/679/681.
+// Earlier at 702 (was 715): m3 lane 16 r119 (plain) kept three retail shapes together: the second radial test's implied
 // `!(local_23 > local_27) &&` dropped with the root written in the first test (no named double; EBX is then pushed after
 // the 0x26c test as retail), `0.0f - local_17.j` named once after the heading's normalize for its three uses (retail's
 // subss from the shared zero, at retail's place), and local_15/local_17 as planar aggregate copies (retail's integer
@@ -510,6 +520,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // subsets then the shared difference producer: eight 702 at 3473 bytes.
 // NOT kept: frame remains 0x8c versus 0x88; native query/planar-point home sharing
 // does not recover. Original complete executable source restored.
+// P534: Immutable complete planar target/side-point/radial-displacement producers, seven subsets,
+// then all with immutable pre-blend snapshot: eight 702 at 3473 bytes. NOT kept: frame remains
+// 0x8c versus 0x88; native query/target home sharing does not recover. Original full body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -557,7 +570,8 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 		else
 		{
 			function_26c180(arg_0);
-			point2f local_14 = { local_8.x + arg_2->i, local_8.y + arg_2->j };
+			vector3f local_14;
+			vector3f_add((vector3f const *)&local_8, arg_2, &local_14);
 			vector2f local_15 = *(vector2f const *)arg_2;
 			real local_16 = normalize2d((point2f *)&local_15);
 			vector2f local_17 = *(vector2f const *)local_4;
@@ -580,7 +594,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				real local_23 = local_2->field_20;
 				real local_24 = local_22 ? local_23 : -local_23;
 				point2f local_25 = { local_8.x + perpendicular * local_24, local_8.y + local_17.i * local_24 };
-				vector2f local_26 = { local_14.x - local_25.x, local_14.y - local_25.y };
+				vector2f local_26 = { local_14.i - local_25.x, local_14.j - local_25.y };
 				if (local_23 > sqrt((double)local_26.i * local_26.i + (double)local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
 					local_21 = false;
 				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)

@@ -231,7 +231,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
 // basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
 // src/unknown_11eed0.cpp).
-// score 220 (was 220): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
+// score 218 (was 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
 // callee's double local makes this function keep 8-byte stack parity, so it pads its frame and cannot
@@ -365,6 +365,23 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // World-up row first sums/results at each publication 220/220; all first sums/results
 // before stores 224/225; sequential rows 220; early first products 225; all sequential
 // results 225; native output aggregate 299. NOT kept: ties or regressions; original restored.
+// Walk b6B (11-06, vs retail 0x1197b0, statement by statement; fast scores with callers 0x118700 and callee
+// 0x11f0d0 in the image, which reproduces the full build's 220): no behaviour difference found. Offsets, the
+// flags bit 4 test (0x1197e8-0x1197f8), the speed_mode == 1 scale (0x119829-0x119875), the zero-limit test with its
+// forward/velocity copies (0x119878-0x1198c3), the 0x118e80/0x11f0d0 arguments (0x1198c5-0x119907), the world-up
+// parent/matrix sums (0x11995a-0x119a04: up, left, forward term order as the helper), the angle > max_angle * rate
+// direction (0x119a5c, jbe 0x119aa7), accel * 2 (0x119a67), both dots (< 0.9999f: 0x119b2b ja, 0x119b59 jbe) and the
+// final stores (0x119b5b-0x119bab) all agree. The 0x11ce20 call is now (&target_up, &up): retail loads ECX = up and
+// EDX = target_up (0x119a3e, 0x119a40), and our own compile of the matched 0x11ce20 puts the first parameter in EDX
+// (flexible_chain.cpp makes the same call); the angle is symmetric, so this is call setup, not behaviour: 220 -> 218.
+// Measured and NOT kept (fast, with callers): retail's order of copying the zero temporary velocity before the
+// world-up inline (0x119915-0x119921 precede 0x119925) 226 (224 on the 218 form; early ESI save stays); speed scale
+// read at each use as retail's two loads (0x119856, 0x11985a) 230; forward dot with swapped arguments (retail's
+// i product loads the new forward first, 0x119b47) 218 (no change); first basis call's left written into forward2
+// (retail's first left and second forward share 0x11d180's slot, 0x119a1d-0x119a35) 260.
+// The world-up matrix sums stay a private helper: matrix_transform_vector (matrix_transform.h, not included here)
+// adds forward first, retail adds up, left, forward (0x11998b-0x1199a1), and vector3f_rotate_into_axes sums in
+// another order per component, so neither fits and neither is used. Nothing new: no new include, helper or double.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -401,7 +418,7 @@ void function_1197b0(long object_index)
 	vector3f new_forward, target_up, left, forward2;
 	function_11d180(&forward, &object->requested_up, &new_forward, &left, &target_up);
 	function_11d180(&forward, &up, &forward2, &left, &up);
-	if (function_11ce20(&up, &target_up) > max_angle * g_510c54->rate)
+	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
 	{
 		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
 		function_11d180(&forward, &up, &forward2, &left, &up);

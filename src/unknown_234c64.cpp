@@ -366,6 +366,11 @@ void c_window_channel::v9()
 // 3; one base-type parameters pointer for builder, load and set_next 3; re-measured: `screen` declared bare first 3, the
 // type clear ahead of the request's declaration 5, the member load read into a local after the builder 5. Round 100's
 // member-builder lead still needs edits in held or avoided files (41 of the 110 builder calls), so it stays HELD.
+// Round 248 (m3 lane 3, fast with v9, 0x2354aa and 0x2358c3, which stay matched): `screen` declared first with the type
+// cleared after the builder 12; the load result straight to set_next with the type cleared after the builder 23; an early
+// return with the type cleared after the builder 12; the pending request read through a const reference for the
+// builder's arguments and the load 10; the new request declared ahead of the type test with the load result straight to
+// set_next 28. Still BLOCKED-BY 0x149f49 (round 100's member-builder lead).
 // @retail 0x23531c
 void c_window_channel::v10()
 {
