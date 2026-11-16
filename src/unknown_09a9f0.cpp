@@ -242,6 +242,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
 // loads the object table's data pointer again for the object read, where ours shares one address between
 // the two reads and keeps the result in EBP.
+// MiniMax E (11-16): no new form, no lower score (49); retail keeps the result in BL from before the creation call
+// and reloads the object table's data pointer between the flag test and the object read; the spellings that hold the
+// result in a bool measure 64 to 77.
 // MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
 // attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
 // between the header flag test and the object read, ours shares one address between the two reads.
