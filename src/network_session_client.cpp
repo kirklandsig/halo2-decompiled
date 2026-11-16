@@ -826,6 +826,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // `do { ...; i++; } while (i != member_count)` 42; the machine buffer zero-initialised in its declaration (no memset)
 // 24, the player buffer the same way 148 (495 bytes). Same code: the opening in De Morgan form or with `== 0`/`== NULL`,
 // the copy source through `&session->members[i]`, players declared first, no address pointer (the cast at both uses).
+// M3 lane 10 r110 (fast with the inlined callees, 0x5b060 and both callers; control 22): the 0x49c8 argument through the
+// existing get_value_49c8() getter 142 (503 bytes, session ESI, both callers lost); `if (session->state != 5) return false;`
+// with `return true;` at the end 142 (a second epilogue for the early return); the machine mask in a named local 22 (same
+// code); a walked output pointer in the copy countdown 26; a member base pointer for the copy source 22 (same code).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
