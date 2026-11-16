@@ -1134,6 +1134,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // for every user); the rows written scalar-first (`cosine * v`, `sine * cross`) 114 (same code); the vector's components read
 // into three locals first 192 (0x1ecf50 231, every user worse); the dot grouped (k + j) + i 109 (0x1ecf50 6, 0xe3910 85,
 // 0xd0080 59; the (j + k) + i code).
+// P542: Standard contiguous sampled-velocity transforms, real/double and both binders, direct/consumed-sample publication: 216/216/255/255/230/230/268/268.
+// NOT kept: all regress, with nonnative extent or enlarged frame. Original whole body and includes restored; rotation j/k, side-dot and eager exit loads remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

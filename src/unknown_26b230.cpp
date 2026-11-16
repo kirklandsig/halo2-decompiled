@@ -1840,6 +1840,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 void function_269250(long clump_index, long actor_index);
 
 // score 87 (was 87): round 112 (m3 lane 12) note at the end.
+// MiniMax I (11-15): no new form, no lower score (87); retail keeps the walk's pool in ebx, the selection on the stack and the two scores on the x87 stack, ours keeps the pool in memory, the selection in edi and compares with comiss; the in-arm compare (126) and the walk's datum index as the selection (128) both score worse, and the walk helpers are shared with four matched functions.
 // MiniMax G (11-14): no new form this round, unchanged (87; 89 on this build's reduced image): retail hoists the
 // walk's pool load into ebx and keeps the selection on the stack, ours keeps the pool in memory and the selection in
 // edi; the two walk helpers are shared with four matched functions and were left as they are.
@@ -2172,6 +2173,14 @@ void function_269250(long clump_index, long actor_index);
 // index with a `short` snapshot 138 (480 B); on this body the datum-index selection with a `short` snapshot 156 (458 B); the
 // selection stored before best with a `short` snapshot 125; the snapshot taken ahead of the walk's construction 87 (same
 // code). In both forms our walk lays the found block after the loop body and keeps the selection in EDI.
+// Round 123 (m3 lane 16, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510/0x1e46c0, all
+// matched; this body 87, the in-arm form with the selection stored first re-measured 126 at 480 B): permuter on the in-arm
+// form (1800 s, seed 123, 60 tries) best 112 only by swapping the 0x269580/0x2694d0/0x269250 arguments and narrowing the
+// created index to short (wrong values); its legitimate parts alone, the actor pointer declared before the iterator 126 and
+// with the snapshot read before the walk's init and the selection assigned after it 126 (same code each); a `short` activity
+// snapshot on the in-arm form 132 (481 B), on this body 125 (480 B, P460's 84 is another form). Retail never gives the
+// selection a register (reloaded from +0x14 at each use after the loop, even with EDI free in the selected arm); ours holds
+// it in EDI there, and the matched 0x268840 shows the same walk fully in registers when nothing competes.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

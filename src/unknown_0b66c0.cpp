@@ -460,6 +460,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // the named length and `start += (long)string` after the clamp 40 [match] (diagnostic: start stays in ECX, walk EDI; 0xb61d0
 // 2); the walk local declared before the counter on the current body 21 (same code, 0xb61d0 matched); on the current body:
 // the count tested before the start 27 [match]; `if (++count > 0x200)` 21 (same code); `length - count >= start` 35 [35].
+// M3 lane 5 r187 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the clamp as
+// `count = count + 1 > 0x200 ? 0x200 : count + 1` 35 [104] (caller 262 bytes); `bool result;` set false in both else arms 46
+// (96 bytes) [6]; `long length;` declared above the result 21 [match] (same code); the clamped size in its own named local
+// 35 [104]; early `return false` guards with `return true` at the end 46 (96 bytes) [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
