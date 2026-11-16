@@ -686,6 +686,11 @@ static inline bool teams_enabled_19e1c0()
 // P539: Complete signed copy-capacity outcomes bool/byte/short/long, inherited/ordinary result:
 // 432/432/523/522/691/691/691/691. NOT kept: all regress; ordinary results still merge name-copy tails.
 // Original result qualifier, direct signed clamps, text workspace and complete body restored.
+// M3 lane 13 r98 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691): one shared inline
+// copy helper (clamp, wcsncpy, return the length) for the four name cases and the token fallback, plain result 682 (1178 B),
+// on the volatile result 654 (1201 B: the expansions merge); the helper comparing `remaining <= length` 682 (same code); the
+// plain result with the clamps as `result = remaining < result ? remaining : result;` 691; the plain result with every token
+// comparison through one shared inline predicate 691 (same code: the token keeps EDI, `remaining` stays on the stack).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
