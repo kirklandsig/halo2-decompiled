@@ -514,6 +514,9 @@ struct s_collision_result_buffer_1697c0
 // site or the normaliser's length inlined, and its magnitude3d (0x24590) sits in another file, so the body stands.
 // MiniMax G (11-13): no new form, no lower score (303): the diff re-read this round shows the trig and magnitude temps four bytes below retail's (ours at +0x1c and +0x20, retail's at +0x20 and +0x24) while the saved arguments agree, and the frame is 12 bytes longer than retail's 1423, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (303).
+// MiniMax C (11-16): no kept form: an early return in the file-local normaliser moves its magnitude into retail's
+// frame-bottom slot (296) but leaves the pitch axis four bytes low, the sine and the random draw in their own homes
+// and the rotation block 28 bytes longer than retail's, so the original body stands.
 // score 299 (was 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
