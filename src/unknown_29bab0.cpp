@@ -534,6 +534,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P552: Uninitialized component transfers at heading, paired defaults, normalized input, history,
 // working directions, saved steering, final outputs and the complete graph.
 // Fast scores 779/759/726/810/724/770/743/833. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Scalar correction in-place pointer/reference, separate pointer/reference,
+// returned output pointer/reference and wider already-rounded return: seven 679s;
+// complete residual vector with a plain correction loop 795. NOT kept: no native
+// spill/home repair; original helper, all three correction calls and full body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

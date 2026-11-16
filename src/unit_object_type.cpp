@@ -7516,6 +7516,10 @@ public:
 // lookup, the unit in EBP (retail keeps it in EDX and stores it), the weapon definition in a frame slot (retail keeps
 // it in ESI), the empty flag in a frame byte (retail keeps it in DL), the slot loop's induction registers and the
 // frame slot layout.
+// P554: Scan-only outcome scope 492; complete matching-slot phase 493; uniform existing
+// object provider 507; both scan outcomes as bytes 492; incoming-weapon/tag storage names
+// 492/492; indexed slot pass on the native magazine baseline 492; complete ordered mode
+// admission 513. NOT kept: no permitted native spill repair; complete original body restored.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -7951,6 +7955,11 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // producers 346/346/346/346/363/363; named/nested shift producers 341/342.
 // NOT kept: every form regresses and shortens away from native extent;
 // original per-hand expressions restored. Native frame/flag transport remains.
+// P554: Complete conditional-mask accumulation 355; first-hand lifetime after
+// held admission / occupied-hand guard 304/304; first-hand / held byte storage
+// 244/244; immutable control snapshots 244; shared two-request table
+// 391; full-hand rate storage 244. NOT kept: no native flag-home/frame repair;
+// original complete body restored. Positive-only bit construction repeats an earlier form and is excluded.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -9408,11 +9417,16 @@ struct s_unit_melee_collision
 // NOT kept (coordinator review, MiniMax D 11-15): 493 -> 429 came from the named range read re-read three times
 // through *(real *)(local_67e06b + 0x1b8) and aim->j/k read as unit->unknown168.j/k beside aim->i; with those
 // restored and c_type_47f957 / TEST_FIELD_BIT kept it measures 523, so the whole form was reverted.
+// P554: Typed unit/parent tag fields 493; existing staged cross 522; both basis
+// scales through the shared helper 493; named fan-coordinate expressions 493;
+// per-row collision workspace 493; object-first collision case order 493;
+// successful-query-owned publication 493; positive seat admission 494. NOT kept:
+// no permitted frame/material-home gain. Only the verified typed field cleanup retained.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
 	s_unit *unit = UNIT_GET(unit_index);
-	byte *local_98b918_2 = UNIT_DEFINITION_GET(unit);
+	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
 	short index = unit->current_weapon_index;
 	long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
 	short material_index = g_47d8e0;
@@ -9543,7 +9557,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		}
 		if (damage_index == NONE)
 		{
-			damage_index = *(long *)(local_98b918_2 + 0x168);
+			damage_index = definition->unit.melee_damage.tag_index;
 		}
 	}
 	else
@@ -9553,14 +9567,14 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		{
 			goto impact;
 		}
-		byte *parent_definition = UNIT_DEFINITION_GET(UNIT_GET(hit_index));
-		if (!((*(dword *)&UNIT_SEATS(parent_definition)[unit->parent_seat_index].flags >> 11) & 1))
+		s_unit_definition *parent_definition = (s_unit_definition *)UNIT_DEFINITION_GET(UNIT_GET(hit_index));
+		if (!((*(dword *)&UNIT_SEATS((byte *)parent_definition)[unit->parent_seat_index].flags >> 11) & 1))
 		{
 			goto impact;
 		}
-		damage_index = *(long *)(local_98b918_2 + 0x170);
-		self_damage_index = *(long *)(local_98b918_2 + 0x178);
-		long graph_index = *(long *)(parent_definition + 0x38);
+		damage_index = definition->unit.boarding_melee.boarding_melee_damage.tag_index;
+		self_damage_index = definition->unit.boarding_melee.boarding_melee_response.tag_index;
+		long graph_index = parent_definition->object.model_tag_index;
 		if (graph_index != NONE)
 		{
 			byte *graph = g_4e3b44[graph_index & 0xffff].bytes;
