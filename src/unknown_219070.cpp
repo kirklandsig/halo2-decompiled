@@ -23,6 +23,9 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 // Set object reference, absolute slot expression, full-width cached result 3/3/3;
 // byte cached result 65; implicit store conversion, pointer addition, shared
 // relative slot and result-storage names 3/3/3/3. Original body restored.
+// P555: Reuse admission byte/short/long/dword available/missing outcomes:
+// 3/3/3/3/3/3/3/3. NOT kept: single-use query outcomes do not match;
+// nested-result push still precedes mask/offset setup. Original full body restored.
 // @retail 0x219070
 short function_219070(long set_index, s_sound_definition const *definition)
 {
