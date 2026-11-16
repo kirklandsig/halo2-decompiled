@@ -3546,6 +3546,7 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax E (11-15): no new form, no lower score (101): the call boundaries agree with retail's (ten calls in the same order), so what is left is the timeout owner's spill, which needs 0x769a0's unread owner parameter in another file. BLOCKED-BY 0x769a0.
 // MiniMax C (11-15): no new form, no lower score (101): the timeout call still takes its two values where retail
 // passes a third, the dead store of the session's second field, and that value needs an unread owner parameter on
 // 0x769a0, whose definition is in src/unknown_075870.cpp and not this lane's to change; the frame agrees (0x3c) and the
@@ -4427,6 +4428,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the channel index in EAX - where our declaration of that callee takes two, so the extra load and the spill it causes
 // are missing here too; that parameter list lives in include/unknown_075870.h and src/unknown_075870.cpp, which this
 // lane may not edit.
+// MiniMax E (11-15): no new form, no lower score (305): the call boundaries agree with retail's (twenty-one calls in the same order), so what is left is the rotation of the three boolean stack homes and the timeout spill, which needs 0x769a0's unread owner parameter in another file. BLOCKED-BY 0x769a0.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

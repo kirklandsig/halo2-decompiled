@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax E (11-15): no new form, no lower score (93): the call boundaries agree with retail's except that 0x11bed0 is expanded here where retail calls it out of line, and its definition is in src/unknown_11bed0.cpp. BLOCKED-BY 0x11bed0.
 // MiniMax D (11-15): no new form, no lower score (93): a hand-written index walk (the pool in a local, the datum
 // index, the 0xd4 stride and data_next_absolute_index_inlined) was measured at 156 (277 bytes against retail's 217)
 // and dropped: with the location query expanded here the walk is longer than retail's, and that helper's inline
@@ -2635,6 +2636,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // locals in a different order and the gap cannot be closed by padding;
 // retail reads the track value and the source scale before the clear, the one-fill clear and the
 // inlined 0x221810 (BLOCKED-BY 0x221810, another file) and the inlined 0x12a420 at the
+// stop_channel site remain (0x12a420 now stays out of line, as retail has it).
 // stop_channel site remain.
 // MiniMax C (11-14): no new form, no lower score (339): the frame is still eight bytes short of retail's and the homes are not a shifted copy of each other; the two helpers retail keeps out of line live in other files, so their call boundaries stand where they are.
 // MiniMax A (11-11): no new form, no lower score (339); the frame is still 0x4b4 against retail's 0x4bc and the
@@ -2773,6 +2775,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // MiniMax S (11-14): no new form, no lower score (339): the frame is still 0x4b4 against retail's 0x4bc and the
 // early scalar, primary and last-chunk homes still differ; the forms listed below score 339 or more, and the
 // bool-flag form that reached 321 was not kept (coordinator).
+// MiniMax E (11-15): 321 (was 339): 0x12a420 now stays out of line here, as retail has it (a `__declspec(noinline)`
+// declaration in src/unknown_124f90.cpp, where it is defined); the body is 1917 bytes against retail's 1929 and the
+// frame is still 0x4b4 against retail's 0x4bc, with the early scalar, primary and last-chunk homes still different.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
