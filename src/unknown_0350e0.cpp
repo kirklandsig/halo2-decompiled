@@ -2980,6 +2980,12 @@ real magnitude3d(vector3f const *v);
 // 182 (the double copy of the dot stays, fabs and acos now adjacent); acos on a fresh `dot3f(&second, &first)` in the
 // stored dot's operand order 198 (1039 B, as the swapped form); the fallback clamp as two independent ifs 192 (1021 B);
 // the cosine declared before the sine 170 (different code, same count). Body unchanged.
+// M3 lane 15 r92 (fast with 0x24590/0x30bf0, control 170): the dot named `cosine` and reused for the cosine of the
+// angle 170 (different code: the raw current length leaves a's slot for +8, the double copy of the dot stays); the dot
+// written at both uses (no local) 198 (1039 B); `angle = acos(dot); angle *= step;` 170 (scheduling only); the angle
+// variable reused for the cosine 168 (the name does not fit; sine and cosine still share one x87 load, `fld st(0)`);
+// one local for the dot, the angle and the cosine 187. Retail loads the angle from memory once for fsin and again for
+// fcos, as ours does in 0x1161f0 where the angle arrives in xmm0 from a call; every form here keeps the x87 duplicate.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3924,6 +3930,16 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // delta in a block of their own 486 (identical code: block scopes do not let `previous` and `old` share retail's one
 // 12-byte home); `old` copied through the `position` pointer declared first 486 (different code); on that, `old`
 // advanced in place for the first projection (M385's in-place receiver on this base) 544 (1977 B). Body unchanged.
+// M3 lane 15 r92 (fast, control 486): one combined trial of the retail-shaped pieces (`previous` reused for each
+// element's old position, the delta from the stored view position, phase store then distance then fade in each arm
+// with the strength read at its use, the size store as an if/else reading the field in each arm, the projection
+// writing through an output pointer) 531 (1985 B, frame 0x44, one home for both positions); on it: the
+// delta as dot3f of the forward vector with vector3d_from_points3d 609 (1909 B); the velocity add through the
+// indexed state array 560 (1957 B, frame 0x38 and that home at +0x3c as retail: the root loads the stored velocity); on that,
+// the normalization written with the speed test's k, i, j sum 562 (the length is shared with the speed test, retail
+// computes it twice); the speed test summed in float and the normalization's in double 529 (1989 B: the second root
+// appears as retail's). The float speed test alone on this body 510 (2011 B). Left: the first projection's x copy,
+// the second projection's if/else with z in a register, and the cycle flag's byte read.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

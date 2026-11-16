@@ -2182,6 +2182,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P547: Complete complementary grenade-retention admission in bool/char/signed char/byte/
 // short/word/long/dword: eight at 251/1216. NOT kept: native actor/options/pool retention
 // remains; original lazy tests, queries, random draws, stores and complete body restored.
+// M3 lane 15 r92 (fast with 0x1e5240/0x1e5280/0x1e53e0, all MATCH; control 251): the second block's unit looked up at
+// each use (no `unit` local) 254 (1231 B: the actor takes retail's ESI, first difference +0x26, but the lookups after
+// 0x1e53e0 are still merged; retail spills the unit to +0x14 for the 0x23e store and re-reads the actor's unit index and
+// the pool's data field after the call and again after the first weapon store, i.e. it treats both as writing memory);
+// that with a `long` weapon index 255 (1218 B); the weapon pair initialised to NONE first 251 (same code); `unit`
+// fetched after the weapon queries 251 (same code); the grenade reset test as nested ifs 251 (same code). Re-measured:
+// the `long` weapon index alone 278 (1191 B; retail's index is a long in EDI, spilled to +0x14).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
