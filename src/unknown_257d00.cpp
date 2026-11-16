@@ -2840,6 +2840,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20) 481 (the case 14 block then sits where retail's does; case
 // 18's registers rotate and an alignment pad appears), with cases 9 and 11 as `local_0->unknown018 == arg_1` 481; the result
 // flag `local_3` as `bool` 479 (same code).
+// M3 lane 15 r92 (plain unless marked; the fast image is not faithful here: fast control 474 at 2400 B against the full
+// 479 at 2404 B): case 4 with the facing read from the field at each use, no aggregate copy, 627 (2384 B; fast 467 at
+// retail's 2396 B: the copy is retail's missing 8 instructions, but the full build then gives the actor EDI and the
+// state EBX from +0x9); the facing through a const pointer 627; that with `displacement` declared first 627; case 4 as
+// `dot3f(&local_2->field_c, &displacement)` 627 (retail's k, j, i product order); dot3f with the operands swapped 627.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
