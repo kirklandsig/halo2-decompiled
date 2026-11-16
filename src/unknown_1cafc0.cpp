@@ -786,6 +786,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // forward/backward copies and name representation forward/backward copies:
 // 586/587/611/612/591/592/586/587. NOT kept: native graph/base reloads and byte
 // return remain; query copies disturb the agreeing prefix. Original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (348): retail's destructive graph-base reloads and its final
+// return-byte normalization are still the whole difference, and this body only calls the graph lookup that owns the
+// name record (src/unknown_1dacb0.cpp), which this lane may not edit, so the local spellings cannot move them.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

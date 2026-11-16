@@ -960,6 +960,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // distance products, radius bound, upper bound and actor-direction scale:
 // 373/419/409/448/422/438/468/378. NOT kept: extra operation calls grow frame/extent
 // and miss native early EBX-root/actor ingress; original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (218): retail copies the pathfinding root into ebx and takes the
+// actor value in eax at the entry, where this build keeps the root in eax and reads the actor in the case body, so
+// the vertex loads and the cross product's float schedule follow from that allocation.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
