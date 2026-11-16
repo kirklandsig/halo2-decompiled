@@ -40,3 +40,13 @@ def test_parse_result_reads_match_and_diff():
 
 def test_failure_reads_a_compiler_error():
     assert 'error C' in frame_probe.failure('x.cpp(1) : error C2059: syntax error\n')
+
+
+def test_dirty_reads_git_status(monkeypatch):
+    class Done:
+        stdout = ' M src/x.cpp\n'
+
+    monkeypatch.setattr(frame_probe.subprocess, 'run', lambda *a, **k: Done())
+    assert frame_probe.dirty('src/x.cpp')
+    Done.stdout = ''
+    assert not frame_probe.dirty('src/x.cpp')

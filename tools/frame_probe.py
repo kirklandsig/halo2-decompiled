@@ -11,8 +11,14 @@ frame that acts like retail's. The source is always restored.
     python tools/frame_probe.py 0x251f8d [--widths] [--full] [--dry-run]
 
 --fast (the default) scores a reduced image; --full builds the whole image for
-each probe and is much slower. The width probes change types, hence meaning:
-they are diagnostics, not drop-in bodies.
+each probe and is much slower. Every probe is a diagnostic: a dead local or a
+probe width only shows where the frame differs. It is not a form to commit; the
+body still needs a real local with real uses.
+
+The file must have no uncommitted changes before probing: a hard stop (SIGKILL
+or an outside timeout) skips the restore, and this keeps a probe from being
+left in a source unnoticed. The probes are listed first so one can also be put
+back by hand.
 """
 import argparse
 import os
@@ -60,6 +66,14 @@ def failure(output):
         if 'error C' in line or 'fatal error' in line or 'CL.Exe failed' in line:
             return line.strip()[:110]
     return 'no result'
+
+
+def dirty(path):
+    """Whether git reports uncommitted changes to path: a probe must start from
+    a clean file so a hard stop cannot leave one behind."""
+    done = subprocess.run(['git', 'status', '--porcelain', '--', path],
+                          cwd=ROOT, capture_output=True, text=True)
+    return bool(done.stdout.strip())
 
 
 def dead_probes(text, va, decls=DEFAULT_DECLS):
@@ -133,11 +147,18 @@ def main():
     if not source:
         raise SystemExit('no source file for that address in config/functions.csv')
     path = os.path.join(ROOT, source)
+    relative = os.path.relpath(path, ROOT)
+    if dirty(relative):
+        raise SystemExit(f'{path} has uncommitted changes: commit or restore it '
+                         'before probing, so a hard stop cannot leave a probe behind')
     original = open(path, encoding='utf-8', newline='').read()
     variants = [('baseline', original)] + dead_probes(original, va)
     if args.widths:
         variants += width_probes(original, va)
     print(f'{path}: {len(variants) - 1} probe(s)')
+    print(f'  restore with: git checkout -- {relative}')
+    print('  dead locals inserted at the top of the body: '
+          + ', '.join(decl for _, decl in DEFAULT_DECLS))
     if args.dry_run:
         for label, _ in variants:
             print(f'  {label}')
