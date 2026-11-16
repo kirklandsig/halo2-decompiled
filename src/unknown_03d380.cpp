@@ -590,6 +590,10 @@ void function_125a90(long value);
 // multiplies that copy into the byte offset (imul eax, eax, 0xbc) before it forms the address with a lea, where
 // this build multiplies the index in place into esi and adds the pool; the byte-offset and the array-subscript
 // spellings compile to the same bytes here.
+// MiniMax S (11-15): no new form, no lower score (36): the record's address is still built with an imul into esi
+// where retail multiplies into eax and forms the address with a lea, and the special arm still sits after the kind
+// arm; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that
+// getter lives in src/unknown_221490.cpp, which this lane may not edit.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

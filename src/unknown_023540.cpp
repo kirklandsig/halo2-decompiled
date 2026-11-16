@@ -2655,6 +2655,9 @@ dword __cdecl function_131fc0(real alpha);
 // source set (140 on a single-function image, 196 on the queue's image of 562 sources, where the
 // first difference is at +0x15); the difference itself is unchanged by the image.
 // MiniMax C (11-15): no new form, no lower score (140).
+// MiniMax S (11-15): no new form, no lower score (140): the two writes of the chosen default into the parameter's
+// own home are still missing and the preserve_alpha load is still hoisted above the `simple` branch, because the
+// callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2942,6 +2945,9 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // loads the offset through that address (lea eax, [eax + edx*4] and then a load through eax), where this build
 // loads the entry into edx and adds it (mov edx, [eax + edx*4] and lea eax, [ecx + edx*4]); retail also takes the
 // level's -1 with a lea (lea edx, [eax - 1]) where this build decrements the register.
+// MiniMax S (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build
+// inlines both copies of 0x235a0 while retail inlines the first one and calls the second, so the body after that
+// point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)

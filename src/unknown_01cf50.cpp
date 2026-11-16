@@ -2505,6 +2505,9 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // is that retail takes the count's subtraction between the scratch pointer's lea and the sorter's last push, and
 // retail's add of 0x84 sits inside the XDK D3DDevice_SetStipple inline, which is in a header this lane may not
 // edit.
+// MiniMax S (11-15): no new form, no lower score (4): the count's subtraction still comes after the sorter's last
+// push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's
+// second rep movsd; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2603,6 +2606,9 @@ void function_1e370(void)
 // MiniMax C (11-15): no new form, no lower score (8): the shared helper cannot be swapped either - taking
 // cache_record_take instead of cache_record_new measures 60 (238 bytes against retail's 241) - so the pool's base
 // still rides in edi where retail keeps it in ebp.
+// MiniMax S (11-15): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it
+// in ebp, and the payload copy then saves the other register; the base comes out of the shared helper
+// cache_record_new, whose body the rules forbid writing out by hand.
 // @retail 0x1e4e0
 bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
 {
@@ -2959,6 +2965,9 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // in this file) keeps the multiply only in the one-expression form, which measures 47 (157 bytes), and with the
 // present body it measures 29; the maximum's compare also keeps the other way round (comiss xmm1, xmm0 and a
 // copy into xmm0 where retail has comiss xmm0, xmm1 and a copy into xmm1) whatever order the source writes.
+// MiniMax S (11-15): no new form, no lower score (26): the body is unchanged; what still differs is the maximum's
+// compare operand order and the register its result lands in, the divisor's round trip through the stack, and the
+// one call setup that the two branches share.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -3244,6 +3253,9 @@ struct s_429a0_payload
 // retail's (379 against 378), so the linker's fixup mask stops applying near the end and the callback's
 // address (0x4b7890 here, 0x508d0 in retail) is counted in the score.
 // MiniMax C (11-15): no new form, no lower score (16).
+// MiniMax S (11-15): no new form, no lower score (16): retail still folds the record base into the payload pointer
+// one store earlier than this build does, and the body stays one byte longer than retail's; the base comes out of
+// the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3746,6 +3758,9 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // lane's file: BLOCKED-BY 0x15a60.
 // MiniMax C (11-15): no new form, no lower score (2): the reduced check has to list 0x15a60 as well, or the
 // reduced image builds this body differently (425 bytes and 117 against the plain build's 441 and 2).
+// MiniMax S (11-15): no new form, no lower score (2): the whole gap is still the one call's setup, where retail
+// loads 9 into eax before it zeroes ecx and this build zeroes ecx first; the argument order follows the callee's
+// declaration in src/unknown_0158f0.cpp, which this lane may not edit.
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
@@ -4150,6 +4165,10 @@ bool function_14600()
 // flag byte into al, so this build takes the width difference in dx and the width quotient in xmm0 where retail
 // takes them in ax and xmm2; the forms in the note below all give the same 32.
 // MiniMax C (11-15): no new form, no lower score (32).
+// MiniMax S (11-15): no new form, no lower score (32): the ratio of the two counters is still divided into xmm0
+// where retail divides into xmm2 and takes the second ratio's constant early, and the inlined vertex-constant helper
+// still loads its flag into al before the test where retail tests the memory directly; that helper is in an XDK
+// header this lane may not edit.
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -4248,6 +4267,9 @@ void function_1eb00()
 // that this project does not have, so the difference is a knowledge difference and not a local form; the ratio of the two
 // counters is still computed with the other operand order.
 // MiniMax E (11-15): no new form, no lower score (79): retail builds four shader programs from tables this project does not have, so the difference is a knowledge gap rather than a source shape.
+// MiniMax S (11-15): no new form, no lower score (79): retail's four shader programs still come from tables and
+// caches this project does not have, so the body stays 25 bytes shorter than retail's 763, and the ratio of the two
+// counters is still divided into xmm3 where retail divides into xmm2.
 // @retail 0x36580
 void function_36580()
 {
@@ -5941,6 +5963,10 @@ void function_1bd50(void *state);
 // the element argument's push in retail and before it here; the shared global's type may not change and a cast
 // of its own address is a banned form.
 // MiniMax C (11-15): no new form, no lower score (13).
+// MiniMax S (11-15): no new form, no lower score (13): the fallback tag is still read as a dword and masked where
+// retail reads a word, and this build pushes the call's second argument after the branch where retail pushes it
+// before; the tag as a word, the value in a local, the value inline in the call and the two calls in an if/else
+// measure 15, 15, 15 and 20, so the original body stays the lowest.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {
