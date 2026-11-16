@@ -278,6 +278,13 @@ struct s_object_damage_view
 };
 
 // score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// MiniMax D (11-16): no new form kept, no lower score (353): the permuter refuses this function (the reduced image scores
+// 446, the full image 341), so the round was run by hand; the consideration flag as a true default cleared by the
+// same-team test reproduces retail's store pair and gives 344, but that is a test-set flag (match only, as the 11-05 note
+// below says), so the body stays; a record pointer for the selected entry (retail's (selected + 0x2f) * 16 + object
+// address) gives 479 because the pointer spills and the frame grows, the killer's own damage-code test moved inside the
+// selected block (retail's shape) gives 355, the fallback's polarity 354 and the declaration orders 353; the three homes
+// stay rotated and the history cursor stays biased +4.
 // MiniMax H (11-14): no new form, no lower score (353): re-read the diff and the earlier rounds' thirteen trials; the frame stays 0x48 against retail's 0x50 and the three homes stay rotated, and every earlier trial (rounding in place, result lifetimes, short selections, direct duplicate skips, the history cursor) measured above 353.
 // MiniMax E (11-15): no new form, no lower score (353): the three homes stay rotated (ours victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c against retail's killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c), which only a change of the declaration order would turn round, and the history cursor stays biased +4.
 // MiniMax H (11-12): no new form, no lower score (353): the history entries read through a named record
