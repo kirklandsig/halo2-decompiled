@@ -1428,6 +1428,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // P526: Entry damping/direct/flying/gravity values from full Boolean arms, then false-initialized true arms:
 // 580/576/576/576/582/634/631/584. NOT kept: unmatched entry-result transport; no native damping/vector recovery.
 // Original complete executable source restored.
+// M3 lane 14 r100 (fast with 0x1f0450 and 0x24590, both MATCH; base 234): re-measured r95's 469 form (the general arm's
+// output through vector3f_add, the direct arm's rows as three statements) 469; on it the first arm clearing gravity before
+// its last add-scaled 468: the first arm still keeps its own out.k store, because the general arm's k row commutes into the
+// limited register (`addss xmm2, [eax + 8]`; retail `movss xmm0, [eax + 8]; addss xmm0, xmm2`), so there is no common tail
+// to cross-jump into. The direct arm's speed declared after the rotation rows (retail loads it after the third product)
+// 558 (3050 B), on the 469 form 318 (3048 B; the rotation products then load facing.i first); the direct arm's `limited`
+// declared before `delta` 234 (same code: the delta/limited homes 0x14/0xc stay, retail 0xc/0x14).
 // P540: Complete scalar-SSE planar rotation, planar/general deltas and additive setter inputs, 701/698/681/747/750/749/792/893.
 // NOT kept: changed prologue and larger frame/extent; original complete source restored.
 // @retail 0x1f0870
