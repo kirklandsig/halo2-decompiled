@@ -134,6 +134,10 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // sharing is the compiler's default and retail's separate `mov al, 1` needs another cause; 0x1414d0 shows the same
 // EBX/EBP trade (a stack parameter loaded at entry takes EBX in ours, EBP in retail). Diagnostic, reverted at once:
 // the standard marker without the address local puts every argument on the stack, 137 (479 bytes).
+// Round 112 (m3 lane 10, fast): the bounds test split (`arg_1 < 0` ahead of the node lookup, `>= node_count` after it) 89
+// (462 bytes); a byte return type 19 (same code, the constant 1 still shared); field1c and field2e stored right after the
+// constructor, ahead of the position, 39; the vector declared ahead of the address local and the point 19 (same code); the
+// else arm's point copied per component through a position pointer 143 (485 bytes). All restored.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
