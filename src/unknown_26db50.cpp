@@ -452,7 +452,9 @@ struct s_record_collision_view
 
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
-// score 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
+// score 45 (was 71): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
+// Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
 // (retail's cvtsi2ss/store/fld/mulss/fmul) and the frame now agree: the distance is computed in the trace call's
 // argument, the radius is a plain local (no `real const &` view) and the rotation goes through the existing
 // rotate_direction; each alone does not give it (see m3 lane 15 r90 below). Left: inside the rotation the direction's
@@ -932,6 +934,20 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // spelling) 209 (1089 B: the cosine is then computed first); the direction copy after the angle, or after the sine or
 // the cosine, 229 (1100 B); the structure pointer read ahead of the copy 77; the direction declared at function scope
 // 71 (same code); the cosine computed before the sine 80.
+// P547: On the 71-point native-ring/shared-rotation base, complete direction captures in
+// ijk/ikj/jik/jki/kij/kji order 233/234/233/234/234/234; whole-vector memcpy 71; existing
+// vector setter 253. NOT kept: no native j/k allocation gain; original full body and helper restored.
+// P549: Plain indexed trace/elevation/collision coordinate traversals, seven subsets then
+// fused trace/elevation with indexed collision: 77/45/45/71/77/42/203/202.
+// Kept only half-axis traversal, 71 -> 45 plain; native frame/extent and all matches retained.
+// NOT kept: collision combination adds only three; other forms tie or regress.
+// P551: Standard backward whole-object direction/world transfers, uninitialized
+// whole-object direction/world transfers, then both component-range forms: 127/142/246/134/246/140/246/134.
+// NOT kept: no native rotation/publication improvement; original full body and headers
+// restored. Native 0xd8 frame/1089-byte extent retained; rotation SIMD roles and marker timing remain.
+// Elevation output/axis/paired/range cursors 71/45/71/189; trace
+// origin/direction/output cursors 45/77/77; collision output cursor 71.
+// NOT kept: ties or regressions; original indexed elevation and full body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -967,9 +983,8 @@ long function_26d570(long object_index)
 					point.x = direction.i * trace_distance + origin->x;
 					point.y = direction.j * trace_distance + origin->y;
 					point.z = direction.k * trace_distance + origin->z;
-					point.x += g_4687b0->i * 0.5f;
-					point.y += g_4687b0->j * 0.5f;
-					point.z += g_4687b0->k * 0.5f;
+					for (long component = 0; component < 3; ++component)
+						point.n[component] += g_4687b0->n[component] * 0.5f;
 					s_location_entry_view *entry = (s_location_entry_view *)&record->entries[record->count];
 					point3f world;
 					s_record_collision_view collision;

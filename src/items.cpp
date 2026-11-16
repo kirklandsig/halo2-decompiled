@@ -783,6 +783,13 @@ struct s_item_collision_bsp
 // accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
 // 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
+// P544: current baseline already sign-extends both plane-query indices correctly;
+// instance-address scheduling, transformed-plane registers and spin/speed homes remain.
+// Whole plane/marker-axis/fallback-axis/both-axis memmove 336/247/196/264;
+// whole-object forward copies 342/240/194/263; shared instance receiver 192,
+// shared signed ordinal 207 (receiver/selector revisited after query-width repair).
+// NOT kept: fallback copies gain only two/four and the receiver only six, below
+// eight above 30; original complete body, observations and calls restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

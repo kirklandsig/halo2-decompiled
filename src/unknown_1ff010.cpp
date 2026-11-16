@@ -530,6 +530,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax I (11-06): no new form, no lower score; the frame and the prop and point refresh still agree and the first planar normalization is still the difference: retail divides first and tests the planar length after the scale products, ours tests the length against zero before dividing, and that schedule comes from the normalization helper, which is in another file.
 // MiniMax G (11-05): no new form, no lower score; the zero's lifetime depends on the inlined rotation from another file, so the rematerialised test zero stays unmatched.
 // MiniMax G (11-04): no new form, no lower score: the zero's lifetime and the rotation's register homes are the whole difference.
+// MiniMax C (11-16): no new form, no lower score (77): the turned pair scaled as `magnitude * turned.i` and
+// `magnitude * turned.j` 77 (the same code), and the tail (the velocity stores and the speed products) still matches
+// retail byte for byte; what still differs is inside the rotation expansion (src/unknown_1eb8a0.cpp) and the
+// normalisation (include/unknown_11cc90.h), neither of which is this lane's file.
 // score 77 (was 77): frame 0x20 agrees; retail tests the planar length after the scale products, keeps the
 // test zero in xmm0, multiplies the facing components as registers and stores the velocity directly, while
 // ours zeroes xmm6 above the divide, multiplies x * scale and carries that zero through the inlined turn.

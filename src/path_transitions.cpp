@@ -956,6 +956,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // parameter order and case order were tested for the coloring order, the declaration and 0x270d90's call changed
 // together: the actor declared first 218, second 218, the entry pointer declared first 218 (all the same code); case 5
 // placed first in the switch 329, case 2 first 354 (1284 B; the entry stays as before in both).
+// P545: Standard reciprocal, projected difference, fraction/margin products, paired
+// distance products, radius bound, upper bound and actor-direction scale:
+// 373/419/409/448/422/438/468/378. NOT kept: extra operation calls grow frame/extent
+// and miss native early EBX-root/actor ingress; original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (218): retail copies the pathfinding root into ebx and takes the
+// actor value in eax at the entry, where this build keeps the root in eax and reads the actor in the case body, so
+// the vertex loads and the cross product's float schedule follow from that allocation.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

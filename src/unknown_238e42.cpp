@@ -915,6 +915,12 @@ bool __stdcall function_2399da(long controller_index)
 // values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the requested rank
 // into ecx, so the callee needs no copy, while this build keeps the pointer in ecx and copies it into eax before the
 // call; the callee's own declaration fixes the order its parameters are read in.
+// MiniMax D (11-16): score 90 (was 90), nothing kept: retail reloads the selected identity pointer into eax
+// and the requested rank into ecx, this build reloads the identity into ecx and the rank into eax and copies
+// the identity into eax before the call to 0xac050, the one extra instruction whose two bytes shift every later
+// jump; the frame, the call arguments and every other instruction still agree with retail row for row. A
+// permutation search over this body (300 s, annealed, one job, with the callees in the reduced image) tried 34
+// variants and none scored below the baseline.
 // score 90 (was 90): the difference is purely the register colouring of the two values the
 // matched callee 0xac050 takes: retail reloads the selected identity pointer into eax and the
 // requested rank into ecx, so the callee needs no copy, ours keeps the pointer in ecx and the
