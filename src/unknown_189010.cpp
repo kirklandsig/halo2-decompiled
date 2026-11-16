@@ -901,6 +901,9 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // the success path ending in `return true` 175 (659 B); the result declared bare with the success path jumping past a
 // `local_1 = false` at the exit label 175 (659 B); the forward copy declared before the sound position 2 (same code); the
 // velocity and location copies ahead of the forward normalize and compress 42.
+// Round 169 (m3 lane 7, fast with 0x188180, control 2): the sound position's components written z, y, x 8; the sound
+// position record and the forward copy each declared with the outer block's vectors 2/2 (same code); the position computed
+// into a point local and copied into the record 90 (680 B); `along` declared with the outer locals, assigned in place 2.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
