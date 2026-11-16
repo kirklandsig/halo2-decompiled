@@ -1305,6 +1305,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // M3 lane 9 r126 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, control 290): the sphere depth from the `radius`
 // local 531 (2831 B); `center` declared at the cone arm's top 290 (same code); `box2f bounds;` assigned after the entry
 // pointer 288, with `entry` declared first 288 (two points, under the bar); `entries + i` 290 (same code). Body unchanged.
+// M3 lane 8 r172 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; the file's other matched functions
+// build differently in the reduced image, so they are no guide there): the entry pointer and its clear ahead of the bounds
+// copy 305; the element cleared through `&entries[i]` before the pointer is named 628 (2821 B); the cone scale written at
+// both uses with no scale local 580 (2797 B); the cone arm without `entry = entries;` 721 (2744 B: the reassignment is
+// retail's); the two true flags as one chained store 290 (same code). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

@@ -446,6 +446,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (ours copies up.i, retail forward.i); an 1800 s fast annealing permuter run on it (seed 122): 75 tries, none below 2. On
 // the lead: a const forward pointee 2, `vector3f *const up` 2, `up =` from the third normalization's returned pointer 2
 // (same code each). On the kept body the normalizer's squared length through the existing length_sq3f 153. Body unchanged.
+// P542: Complete normalized-product standard transforms, real/double and both binders, vector/scalar-setter publication: 513/513/616/616/567/567/685/685.
+// NOT kept: output staging enlarges frame to 0x1a4/0x1c0 versus 0x13c and extent to 1127..1281 versus 922. Original four-use helper/body/includes restored; late forward-k and reciprocal ownership remain.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
