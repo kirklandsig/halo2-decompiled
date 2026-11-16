@@ -180,6 +180,13 @@ struct s_physical_block_iterator
 };
 
 // score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// MiniMax R (11-15): score 194 (was 201): the default arm matches retail instruction for instruction now (both ages
+// clamped with cmp/sbb/and, the two products in the same registers), but the case 0 and case 1 blocks still sit after
+// the loop instead of in place between the default arm and the merge, the deletion walk and the insertion still use
+// other registers, and the function is 1229 bytes against retail's 1213; a take flag set from the have-best test and
+// read after the switch, the two operands of the take test the other way round, the switch's arms in the order
+// default, 1, 0 and an int result instead of a bool all give 194, 194, 194 and 199, so the merge's block placement
+// is still what differs.
 // MiniMax R (11-14): no new form, no lower score (201): the default arm's two products keep retail's factors, but retail
 // multiplies the best age's product first and ends the comparison in xmm1, ours multiplies the age's product first and ends it
 // in xmm0.
@@ -702,6 +709,7 @@ struct s_physical_block_iterator
 // reduced to `if (better)` 222 (1228 B); `better` declared at the scan's scope, cleared per candidate, 201 (same code); both
 // ages clamped `MAX(x, 0)` with the comparison written `candidate->pages * best_age < best.pages * age` 209 (1228 B, as the
 // listed symmetric clamp). Case 0 stays threaded into the take test on every form. Body unchanged.
+// MiniMax R (11-16), NOT kept: 194 (was 201), a 7-point gain, under the 8-point bar for a function above 30.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

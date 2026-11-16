@@ -32,6 +32,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// MiniMax R (11-15), on its not-kept 11 form (below; main stays 110): the axis block agrees with retail except for the dot product's i-term
+// and the last normalization's i scale, which still multiply their two operands in the opposite order, and the
+// function is 923 bytes against retail's 922; the normalizer's three scale statements in the six orders give
+// 11, 141, 34, 90, 140 and 87 with the i, j, k order the best, and writing the i term with its value first is the
+// same code, so what is left is the choice of which operand each multiply takes from memory.
 // MiniMax G (11-14): no new form, no lower score (110): the frame 0x13c and the 922-byte length agree; the axis
 // block's dot product still multiplies up's i first where retail multiplies forward's i first, and the shapes that
 // flip that need the existing dot3f body written out by hand.
@@ -454,6 +459,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // dot's i term: ours copies up.i, retail forward.i); on it: the dot local declared ahead of the pointers 2; the projection
 // rows scalar-first 2; the dot through both matrix fields, either order, 4 (the dot's terms then sum j, i, k); one side
 // through the field, the other through its pointer, 2 / 2. Body restored (array form).
+// MiniMax R (11-16), NOT kept: 11 (was 110) with sqrt(length_sq3f(arg_0)) and the projection's k term read as
+// local_1[0].forward.k while its i and j terms read forward-> (a re-read of the object in place of the named
+// pointer: kept only with a match). The length_sq3f form alone 153 (fast).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
