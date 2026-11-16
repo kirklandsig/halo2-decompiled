@@ -30,9 +30,23 @@ __forceinline void __cdecl inverse_vectors_306400(transform_306400 const *transf
 struct vector_306400
 {
 	__m128 value;
+	// takes `other` away from this vector
+	__forceinline void subtract(vector_306400 const &other)
+	{
+		value = _mm_sub_ps(value, other.value);
+	}
 	__forceinline void set_inverse_rotated(transform_306400 const *transform, __m128 const *direction)
 	{
-		inverse_vectors_306400(transform, direction, &value, 1);
+		__m128 c0 = transform->columns[0];
+		__m128 c1 = transform->columns[1];
+		__m128 c2 = transform->columns[2];
+		__m128 c3 = c2;
+		_MM_TRANSPOSE4_PS(c0, c1, c2, c3);
+		__m128 const d = *direction;
+		__m128 const x = _mm_mul_ps(c0, _mm_shuffle_ps(d, d, 0x00));
+		__m128 const y = _mm_mul_ps(c1, _mm_shuffle_ps(d, d, 0x55));
+		__m128 const z = _mm_mul_ps(c2, _mm_shuffle_ps(d, d, 0xaa));
+		value = _mm_add_ps(_mm_add_ps(x, y), z);
 	}
 };
 
@@ -50,7 +64,11 @@ public:
 	void function_306400();
 };
 
-// score 67 (was 67): the offset vector stores and single-vector registers still differ.
+// score 36 (was 67): one direction is turned by its own helper (the direction
+// read after the columns are transposed), the offset is copied after the first
+// position is found, subtracted by a vector member, and stored back through a
+// reload, as retail reloads it. The run's cursor registers now differ.
+// Before: the offset vector stores and single-vector registers still differ.
 // Reference/pointer results 67; transform reference 67; count-first helper 67;
 // indexed run 87; whole copies with changed result 136; consumed SSE/reference results 67.
 // New: explicit vector copy assignment 68; SSE assignment 75;
@@ -65,11 +83,11 @@ public:
 void box_pair_306400::function_306400()
 {
 	inverse_vectors_306400(first_transform, second_transform->columns, &relative[0].value, 4);
-	relative_offset.value = relative[3].value;
 	vector_306400 first_position;
 	first_position.set_inverse_rotated(first_transform, &first_transform->columns[3]);
-	relative_offset.value = _mm_sub_ps(relative_offset.value, first_position.value);
-	relative[3].value = relative_offset.value;
+	relative_offset.value = relative[3].value;
+	relative_offset.subtract(first_position);
+	_mm_store_ps((float *)&relative[3].value, _mm_load_ps((float *)&relative_offset.value));
 	first_centre.set_inverse_rotated((transform_306400 const *)relative, &relative_offset.value);
 }
 
