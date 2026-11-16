@@ -598,6 +598,16 @@ s_1a8a10 g_4453c0[] =
 // 17; the point's components named x and y ahead of the copy 17; the actor pointer declared `*const` 17 (all same code);
 // the final switch's identical cases 2 and 3 under one label 69; the table entry's fields read in place instead of the
 // three reference names 28.
+// Round 89 (m3 lane 2, fast with 0x1a8c30 0x1f5390 0x1f57a0 0x1f57f0): the forward sum first in retail's
+// term orders 31; the copy's j assigned after the first sum with both sums in retail's term orders 17 (the j
+// re-read appears; the first sum's i product goes through the i copy), with retail's [3], [1], [2], [0]
+// stores 19, with the identifier, index, score initialisation order 15 (the order alone gives that 15); the
+// forward sum and its two stores first, then the left sum and its two 31, the same with the left terms in the
+// original order 31 (same code), with the copy's j assigned before its i 31 (same code). Reading: computing
+// the forward sum first reproduces retail's use of the i copy for the forward product and retail's re-read of
+// j (the copy's j register dies in the forward product), but the point's x then takes XMM3, the forward j load
+// follows the y store and the forward sum is scheduled first; retail has x in XMM4, both facing loads ahead of
+// the y store and the left sum first. All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
