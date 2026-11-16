@@ -7568,7 +7568,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // comparison temporaries are still missing (retail copies each bound through a temp into a slot that overlaps
 // the dead direction), the dot product's three products are still summed in the other order, and this build
 // still inlines the second ten stage states and the three render-state calls that retail calls out of line.
-// score 558 (was 695), Round 1 of #1066: 2452 bytes against retail 2507. Fixed: the 2nd quad and the
+// score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
 // sampler_state_write (ten separate dirty-flag ORs), floor(screen[1] + 0.5f) stays unstored, bounds is a plain
