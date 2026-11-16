@@ -855,6 +855,11 @@ struct s_collision_result_buffer_1697c0
 // rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
 // sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
 // vector declared before best_fraction 300.
+// P548: Complete rotation-axis native/immutable vector, scalar/immutable scalar,
+// aggregate/immutable aggregate, existing setter and library captures:
+// 406/406/335/335/335/335/346/406. NOT kept: all regress and every form raises
+// the other rotation user (23 -> 210/233/234); three also lose the exact caller.
+// Original shared helper and entire sampler restored; native scratch/axis homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

@@ -6848,6 +6848,11 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // requests at those sites: 295/296/295/333/318/310/353/335. NOT kept: best gain three
 // is below the gate; value initialization grows the extent. Native mode/weapon
 // ownership, dead flag stores and shared readiness completion remain.
+// P548: Terminal case-group orders 7/5/2/0, 7/2/5/0, 7/0/2/5, 5/7/2/0,
+// 5/2/7/0, 2/7/5/0, 2/5/7/0, 0/5/2/7: 289/287/289/297/295/295/295/296.
+// NOT kept: native physical order is 0/2/5/7; leading case 7 reverses the two
+// request homes. Mode/weapon, dead flag stores and readiness join still differ.
+// Original complete switch and body restored; four exact callers survive every trial.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7117,6 +7122,10 @@ done:
 // full duration eligibility, conditional side store and standard tick clamp:
 // 242/266/240/242/252/248/280/258. NOT kept: two-point side lead is below the gate;
 // other forms tie/regress. Native flag-byte stores, state home and facing join remain.
+// P548: Existing inner/inner-plus-outer forced normalization declarations 242/242;
+// complete paired-normalization success/failure in bool/byte/short/long: eight 491
+// at 1272 bytes. NOT kept: completion grows away from native 1112; every original
+// helper contract, comparison and complete body restored. Facing/flag/state homes remain.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8265,6 +8274,10 @@ struct s_unit_turn_state_view
 // fast 254/434/254/254/254/254/254/240 (unchanged reduced 254, callee-context caveat).
 // Staged basis plain 268, kept: native first-product and look-axis multiply ownership;
 // frame/extent unchanged. Independent aim/left previews 246/248; old up-only form tied.
+// P548: Complete entry admission/rejection outcomes in bool/byte/short/long: eight 266
+// at 1670 bytes (calibrated caller/provider control 268/1669). NOT kept: gain two,
+// extent grows and one-use predicates need equality; frame 0x80 and early saves remain.
+// Original admission, retained false result, staged products and complete body restored.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {

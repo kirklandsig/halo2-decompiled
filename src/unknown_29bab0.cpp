@@ -523,6 +523,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P534: Immutable complete planar target/side-point/radial-displacement producers, seven subsets,
 // then all with immutable pre-blend snapshot: eight 702 at 3473 bytes. NOT kept: frame remains
 // 0x8c versus 0x88; native query/target home sharing does not recover. Original full body restored.
+// P548: Independent configuration, normalized-input/magnitude, heading/default, planar-input,
+// scalar-control, radial-workspace, pre-blend and velocity-residual declaration phases:
+// eight 679 at 3479 bytes. NOT kept: no native spill/home recovery on the shared query/target
+// storage graph. Every initializer and complete original executable source restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
