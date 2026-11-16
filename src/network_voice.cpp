@@ -1841,6 +1841,10 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // P532: Raw packet-mode byte/char/signed-char/short/word/long/dword/int domains
 // with uniform nonzero truth at the size producer: 146/146/146/144/144/146/146/146. NOT kept:
 // native zero/bit/size/capacity placement remains; original Boolean contract/body restored.
+// Round 203 (m3 lane 4, fast with 0x56380, 0x564c0, 0x53b00, 0x56000, all matched each time), on round 142's cewk order
+// with `include_mask ? 13 : 11` (134; head retail's through the has-player test): the player bit declared after the clamp
+// 134 (same code); the first cursor byte stored in each include_mask arm 178 (475 B), with the late bit 178; include_mask
+// declared `byte` in the definition 134 (same code); `capacity = capacity - 2` 134 (same code).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3964,6 +3968,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member in a frame slot). On it: the member declared at function scope 164; the NONE and kind tests split 164; the
 // member fetched after the kind and members tests 147 (EBP still the member; alignment only); the cursor started as
 // `&data[2]` 164 (still `add edi, ecx`); the member assigned inside its NONE test 164.
+// MiniMax D (11-15): no new form, no lower score (139): the packet cursor form (164) still keeps the member in ebp where retail keeps the channel and puts the member in a frame slot, and a channel copy in a local of its own gives the same bytes; the indexed form stays at 139.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -2193,10 +2193,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // (each used once, in the creation call) where retail holds NONE in EBX and track_definition in EBP, so track_definition
 // keeps its own slot instead of sharing it with the gains copy. On 248: the range entry's two stores through two getter calls
 // 419 (1939 bytes; the store reloads the pool data, where retail loads it once and forms both addresses before either store).
-// b5O walk (11-06, statement by statement against retail 0x21b0e0..0x21b860): one behaviour fix, kept. The pitch sum is
+// b5O walk (11-06, statement by statement against retail 0x21b0e0..0x21b860): one change to retail's evaluation order, later dropped (below). The pitch sum is
 // ((range * gain) + playing pitch) + lower bound: retail adds the playing pitch first (0x21b320 mulss, 0x21b325 addss
 // [esi+0x90], 0x21b32d addss xmm0 = lower) and never rounds between them; the unparenthesised form compiled lower
-// first, so the grouping is written out: 305 -> 304, callers/callees unchanged. Every other block agrees with retail:
+// first, so the grouping is written out: 305 -> 304 in the fast check, 418 in the full build (below); callers/callees unchanged. Every other block agrees with retail:
 // update test and 0x21b070 call, gain approach, controller seed, 0x2000 path (sounds/gains init, ring walk, mask,
 // 0x21b940 argument order, gain store through a dword), replacement path (0x21b870/0x21b940/0x126df0), detail loop
 // (flag tests, the x87 delay sum with no float store before the __ftol2 at 0x21b7b1) and the datum advance.
