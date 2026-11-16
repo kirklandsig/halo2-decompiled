@@ -9,6 +9,16 @@ matched 10639 of 11326 game functions (2046739 of 2786206 bytes, 73.46%)
 matched 1364 of 1436 Havok functions (207446 of 290362 bytes, 71.44%)
 ```
 
+0 new matches, none lost:
+- @andrewnakas's #1064, @ccgman123's #1202, @ccgman123's #1203: closer scores and notes, no new match.
+
+## 2026-11-16: 10639 functions match
+
+```
+matched 10639 of 11326 game functions (2046739 of 2786206 bytes, 73.46%)
+matched 1364 of 1436 Havok functions (207446 of 290362 bytes, 71.44%)
+```
+
 8 new matches, none lost:
 - @andrewnakas's #1210, #1211: `0x22c830`, `0x2e0350`, `0x2ea410`, `0x2ea530`, `0x2ea830`, `0x2ec3d0`, `0x312800` and `0x317d90` match.
 
