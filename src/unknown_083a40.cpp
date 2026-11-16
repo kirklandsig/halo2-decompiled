@@ -809,6 +809,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // stored after its key copy 39; a named occupant pointer before the update (round 56's form, re-measured) 45; the two
 // arms swapped under the negated test 28 (same code); `source` and `player` declared above the session-mask
 // `continue` 251. Reading: a key product that does not dominate (no loop-top player) still keeps our grouping.
+// Round 187 (m3 lane 6, fast with 0x84e90/0x69260, which matched in each), on the swap order (collection, player,
+// update, other) at definition, declaration and call (32: the swap call is retail's): the occupied key copied before
+// its type and index stores 37; the occupied key through a `players` array pointer (`collection->players`) 30 (the
+// last record's reads then agree; the key sum is (offset + cursor) + (collection + 4)), that pointer taken before the
+// update 30; a const `collection` defined before the second loop 276 (1072 bytes: the key then gets its own pointer
+// induction variable in a stack slot, which retail does not have, so retail's collection is not loop-invariant).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

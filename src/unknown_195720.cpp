@@ -108,6 +108,10 @@ bool function_1946f0(s_bitstream *stream)
 // all callers still matched) 2 (same code); the mask as `(byte)~(~0u << (saved % 8))` 4; the index renamed to sort first or
 // after the count 2/2; the mask under the clear's `count >= 0` test (the bound test folded into it) 40. Diagnostic: constant
 // stores (1, 0, -1, 4) to a scratch global after the pop leave both LEAs data-first.
+// M3 lane 2 r90 (fast): the masked byte through a `byte &` element reference in its block 9; the checkpoint bound to a
+// `long const &` 54 (reloaded at each use); the pop as `checkpoints[checkpoint_count -= 1]` 2; the bit offset named
+// (`saved % 8`) before the byte index 2; a `byte *const &` to the data field inside the clear's `count >= 0` block only 2.
+// Re-measured: the data-field reference after the index or at the function's top 2/2, the counter stores swapped 13.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

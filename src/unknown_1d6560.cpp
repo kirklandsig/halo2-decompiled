@@ -442,6 +442,8 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 60's 24 form 24 at 256 B [0] (same code as the free form); that with headers declared first 83 [2] (the component still
 // moves to EDX); with no object_index local (both lookups from this->object_index) 101 [0]; the 21 form (o,h,r,a,t) 21 [13].
 // The member form changes neither the colouring nor the incoming pair of any of these bodies. Body unchanged at 96.
+// P563: Eight alternate main-case source orders on the retained two-type-read dispatch:
+// 97/96/98/98/98/101/102/104. NOT kept: no native entry/type recovery or exact equality; original case order, full body and matched caller convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

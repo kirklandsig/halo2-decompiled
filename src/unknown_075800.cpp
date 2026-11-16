@@ -966,6 +966,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while the declaration here
 // is a thiscall member with the address, the type and the message, and a declaration never changes, so the entry
 // registers cannot be reached from this file.
+// MiniMax E (11-16): no new form, no lower score (143): retail's dispatcher takes the message type in EAX, the
+// message in ECX, the receiver in EDX and the address on the stack, while the declaration here is a thiscall
+// member with the address, the type and the message, and a declaration never changes, so the entry registers
+// cannot be reached from this file - and the only caller (src/unknown_07b330.cpp) passes them in this file's
+// order, so the order cannot be changed here either; case 11 sits in the first switch after case 24.
 // score 143 (was 143; 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier 143 (was 153).
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
@@ -1494,6 +1499,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // `ja` reaching the late test (the only path of unknown type), which is also what keeps that site hot enough to inline.
 // P535: ESI-consuming primary cases 8/24 after each connection case, six independent then two paired adjacencies; reduced control 196, full 143. Best six-point preview lead is below the keep gate; delayed ESI save and terminal expansion remain.
 // 194/193/193/196/195/195/193/190. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P564: All three lookup outcomes set by their original tests, bool/byte/short/long
+// then complementary defaults: 196/196/196/196/196/196/196/196 fast (control 196; full 143). NOT kept:
+// no delayed ESI save or outlined terminal case; original complete dispatch and call tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

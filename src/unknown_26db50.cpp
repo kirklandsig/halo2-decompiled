@@ -948,6 +948,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Elevation output/axis/paired/range cursors 71/45/71/189; trace
 // origin/direction/output cursors 45/77/77; collision output cursor 71.
 // NOT kept: ties or regressions; original indexed elevation and full body restored.
+// P556: Actual trace-point destination lvalues 71; collision-point/marker/world/owner/
+// entry-direction/sector/count lvalues 45/45/45/45/47/45/45. NOT kept: no equality or gain;
+// original executable body and shared rotation retained. Native rotation SIMD ownership and marker timing remain.
+// P558: Current half-axis graph with all three actual direction/trace/world workspace identities, eight
+// behavioral naming sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
+// equality; original complete executable body and shared rotation restored.
+// P560: Actual angle/sine/cosine lexical identities on the retained half-axis graph, eight
+// behavioral sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
+// equality; original complete executable body and shared rotation restored.
 // HELD (coordinator 11-16, lane 3 r250): MATCH (fast, plain and full check) with the collision record, its marker
 // store and the entry pointer declared at the top of the trace's success block (45 -> 39 alone) plus the rotation
 // through a new file-local __forceinline copy of rotate_direction whose axis projection is staged as dot_product2d

@@ -34,6 +34,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // (xmm1, xmm3, xmm5) and spills the second point's (frame 0x14), where ours materialises both offset vectors and
 // both views in the frame (0x20); the orthographic dot still runs i, j, k where retail runs j, k, i, and no helper in
 // include/ offers that order, so the body stands.
+// MiniMax E (11-16): no new form, no lower score (206): the frame is still 0x20 against retail's 0x14 (retail keeps
+// the first point's three offsets in registers and the second point's in the frame, this build materialises both
+// offset vectors and both views in the frame), the orthographic dot product still runs i, j, k where retail runs
+// j, k, i, and the scale is still applied in place where retail copies the raw offsets before the test; the source
+// permuter's search on this function was cut at its time limit before it scored any variant.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
@@ -550,6 +555,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // producers, seven subsets and immutable all: 207/206/238/207/239/238/239/239.
 // NOT kept: no exact result or frame recovery; original math APIs, helper and full body restored.
 // MiniMax E (11-15): no new form, no lower score (206): the permuter over the body found nothing below 206.
+// P567: Standard transform pair/final/both sum boundaries, weighted-position sums,
+// their combinations and complete metadata sums: 277/277/328/432/454/454/501/485.
+// NOT kept: regressed native frame/input/coefficient residence; original complete helper/body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

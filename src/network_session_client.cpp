@@ -830,6 +830,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // existing get_value_49c8() getter 142 (503 bytes, session ESI, both callers lost); `if (session->state != 5) return false;`
 // with `return true;` at the end 142 (a second epilogue for the early return); the machine mask in a named local 22 (same
 // code); a walked output pointer in the copy countdown 26; a member base pointer for the copy source 22 (same code).
+// Round 168 (m3 lane 7, fast with the inlined callees and both callers; control 22): the build block (summary, buffers,
+// copy, player loop, set_data_4f24) as a `__forceinline` helper taking the session 218 (361 bytes: the two address
+// tests fold away), as a plain `inline` helper 530 (kept out of line); the opening as a `stored` bool set from the flag
+// and the two addresses 218 (361 bytes); the tail's 0x5dd0 test ahead of the live test 29; the address copy through
+// walked member and address pointers 102 (477 bytes). Both callers are lost in the 218 and 530 forms.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

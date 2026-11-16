@@ -155,6 +155,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 12 (same code); the equal-arm store's actor lookup written as the getter's expression 12 (same code: the inline getter's
 // temporary does not order the offset's home); the 0x1e4be0 result as `dword const *` 12 (same code). 0x260670 on the
 // bool output's chain is still 440 at 3097 bytes against 3077.
+// m3 lane 5 r188 (`--fast 0x1af160 0x1e1f20`, control 12; ours homes the actor offset 0x24 / actor 0x28 / node 0x30 /
+// bool output 0x34, retail 0x28 / 0x24 / 0x34 / 0x30): the equal arm's result flag cleared before the actor store 12
+// (same code); the marker pointer as a NULL default and an if 236 (982 bytes); the two opening tests nested 12 (same
+// code); the definition's range field named once for its three uses 65; the 0x265c30 flag declared inside the found
+// test 19. Body unchanged.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

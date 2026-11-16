@@ -158,6 +158,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // with `result = NULL` first in the arm 83 (277); the frame reference declared after the result copy, null first, 83; the
 // element taken from `result` 95; the frame reference from a thread pointer local 95. Diagnostic: `&arguments` passed to
 // an allocator defined in another file, so only LTCG inlines it, 95 (still promoted after the cross-module inline).
+// M3 lane 8 r173 (fast; volatile-free forms): the result copy after the second allocation with `result = NULL` first in
+// the arm 83 (277 bytes); the two index slots as plain pointers with `result = NULL` first 83; `long *result;` declared
+// first and assigned after the third allocation, null first 83; the element as `arguments + argument_index` with `result
+// = NULL` between it and the call 83; `long *result;` declared above the frame reference and assigned right after the
+// first allocation 95 (266). In each null-first form the frame goes to ESI and the pointer to EAX from the first block on.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
