@@ -11,6 +11,10 @@ class reference_base_318970
 public:
 	// built with one reference
 	reference_base_318970() { reference_count = 1; }
+	// built leaving the count as it is (0x318bb0's contact manager: retail
+	// stores no count there)
+	enum count_untouched_318970 { count_untouched };
+	explicit reference_base_318970(count_untouched_318970) {}
 
 	unsigned short memory_size;
 	unsigned short reference_count;
