@@ -1243,7 +1243,8 @@ long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
 // MiniMax B (11-05): no new form, no lower score (6); the elapsed-store forms (a named local for the difference, the start read inlined, a named local for the clock read) match on the reduced image and stay at 6 in the full build; all six differences follow from 0x7e210's full-image convention (ours reads the session from the stack, retail passes it in EAX), which also orders the elapsed store after the stack cleanup and shifts the later calls; 0x7e210 has three call sites and sits in src/unknown_07a9a0.cpp, which is not this lane's file.
-// score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
+// Matches retail (coordinator 11-16, lane 5 r188's lead): with 0x7e210's group-highest scan through 0x631f0 the session
+// reaches 0x7e210 in EAX. Earlier 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differed: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
 // field and leaves one more pad byte. Earlier: the group-identity copy matches retail's
@@ -1329,6 +1330,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // Round 123 (m3 lane 16, fast control 8 / plain 6): five new 0x7e210 forms (its note, round 123: the conditional balance
 // clear, the single-exit form with it, with the player value through 0x63220, with grouped capacity labels, with a long
 // histogram) leave this at 8 each; the top 0x192e60 call inlines in all of them. Still BLOCKED-BY 0x7e210.
+// Round 188 (m3 lane 5, fast control 8 / plain 6, 0x7e210 766; trials in 0x7e210, all restored): its machine-id copy declared
+// in the group loop 8 (766); its group-highest scan through the existing 0x631f0 MATCH here (0x7e210 964 at 2684 bytes: the
+// session arrives in EAX with nothing else changed; not kept by the lane: a rise there; build/r188/lead-0x73530-631f0-call.patch; applied by the coordinator 11-16: MATCH in the full check); that
+// with `long histogram[16]` MATCH (984, frame 0xb4); that with the loop's variant through 0x192e60 MATCH (1011); the group
+// named before the written-out scan 8 (766). Still BLOCKED-BY 0x7e210.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1653,14 +1659,15 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     if (arg_0) local_0 = arg_0;
     return local_0;
 }
-// MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
-// the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
-// the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
-// changes nothing.
 // score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
 // instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
 // SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
 // variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
+// MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
+// the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
+// the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
+// changes nothing.
+// MiniMax R (11-16): no new form, no lower score (703): the frame agrees at 0xc0, but the slot helper's null test is still a branch where retail uses a conditional move, and the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18.
 // Earlier 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax S (11-15): no new form, no lower score (703).
 // Earlier 703 (was 703), merged from a second score line: earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
@@ -2021,6 +2028,13 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // as `properties > 0 && records > 0` 721; the first variant loop's player pointer 703 (re-measure, same code); the
 // request delay test as `delay < now - last` 703. Every positional line after the users loop is still off by retail's
 // cmovne (a file-flag question, see above).
+// Round 112 (m3 lane 10, fast; aligned counts in brackets, control 703 [500]): the request test with the state-4 retry
+// ahead of `state == 1` (retail's test order) 747 [483]; one forced-inline clear-states helper for the three 16-player
+// clear loops 717 [538] (2862 bytes, but the users loop's variant getter is then called, not expanded: inline budget);
+// the read-failure counter as `g_50c460 = failed ? g_50c460 + 1 : 0` 703 (same code); the completion's incomplete-state
+// reset as `state == 2 ? 1 : 4` 737 [515]; the completion's variant type read once into a local ahead of the record
+// loop (retail keeps it in a stack slot at +0x30) 702 [502]. Retail sets `failed` (the +0x13 byte) in both incomplete
+// arms and counts `received` per property pass. All restored; the slot test's cmovne still needs the SSE flag.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

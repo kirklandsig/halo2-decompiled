@@ -56,6 +56,7 @@ static __forceinline long floor_to_long_inline(real value)
 // tag parameter the flags' slot measures 42, the key's slot 318 and the instance's slot 86, so the stack home of the masked
 // flags is right; the permuter (27 tries) finds nothing below the baseline 10.
 
+// MiniMax E (11-16): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order (the entry's own word first) where retail takes the flags term first, and the kind's shift still lands in the copy to esi where retail shifts the call's result in eax; the earlier rounds' six OR orders, the split forms and the permuter run leave the bytes unchanged, because MSVC canonicalises the OR's operands.
 // MiniMax B (11-13): no new form, no lower score (10): the two masked words are still combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is still set after the bit-count test here and before it in retail.
 // MiniMax H (11-12): no new form, no lower score (10); the first word's OR chain still keeps the entry's own load
 // before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and
@@ -356,6 +357,10 @@ static __forceinline long floor_to_long_inline(real value)
 // swapping the OR operands changes nothing (10) and merging the kind word into one expression
 // scores 79.
 // MiniMax S (11-15): no new form, no lower score (10): the record's OR chain still takes the entry's masked word before the flags term where retail takes the flags term first, the kind's shift still lands in the copy to esi where retail shifts the call's result in eax, and the pool's argument copy still sits below the jbe; this round the OR terms in six orders (the flags term first, the category term in the middle, the right-deep parenthesised form), the assignment split into two statements, the flags mask in a local and the flags-and-category part in a local all compile to the bytes we already have, because the compiler reads the entry's old word before the flags term however the expression is written.
+// MiniMax C (11-16): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order (the entry's
+// MiniMax C (11-16): term first) where retail takes the flags term first, and the kind word's shift still lands in esi before the copy
+// MiniMax C (11-16): where retail shifts eax and copies it; a permutation run this round (74 tries) and a swap of the OR operands both
+// MiniMax C (11-16): leave the bytes unchanged.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

@@ -39,6 +39,13 @@ struct s_visibility_bound_record
 // 399 in the full image against its 429 baseline with a variant built on a volatile entry pointer, a volatile visible
 // pointer, a constant-only local and a one-use pointer local, so it was reverted, and the same variant without the two
 // locals measures 441 on the reduced image.
+// MiniMax S (11-16): no new form, no lower score (443): the body is still 1760 bytes against retail's 1742 and the first difference is
+// still at +0x10, where retail forms the entry address as a scaled index added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`,
+// `lea ebx, [eax + table]`) and this build forms it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail then
+// loads the tag table into esi and spills the entry at [esp+0x30] while this build keeps the entry in a register, the flags are read
+// ahead of the tag test where retail reads them in each arm, and the parts calls' pushes are hoisted where retail sets up each arm;
+// the permuter (annealing, 420 s) found no variant below 443 - the best it wrote ties the baseline and only respells the constants and
+// adds a volatile entry pointer, so it was reverted.
 // score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from

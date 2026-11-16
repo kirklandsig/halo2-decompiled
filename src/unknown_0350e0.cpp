@@ -69,9 +69,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax R (11-16): no new form, no lower score (334): the body is retail's 1779 bytes; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with the squares in xmm1, xmm4 and xmm6, while this build keeps the axis in xmm4, xmm5 and xmm6 and publishes the nine entries from xmm0, xmm1 and xmm2, and the frame stays 0x98 against retail's 0x90.
 // score 334 (was 334): round 80 at the end of this note (334 was 343). Earlier 343 (was 356): round 103 below.
 // MiniMax I (11-15): no new form, no lower score (334): retail's rotation helper still keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6 and forms the cross products first; the frame stays 0x98 against retail's 0x90.
-// score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
+// Earlier 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
 // MiniMax C (11-15): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6, and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6, forms the cross products before the x87 cosine and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90.
 // MiniMax B (11-14, later): no new form, no lower score (334): the permuter (300 s, --anneal) was stopped at its
 // outer time limit with no result, so the body stands.
@@ -309,6 +310,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // still hoisted ahead of the cosine); `real const inverse` 334 (same code); the squares renamed ii/jj/kk 334 (same code);
 // the cross terms declared yz, xz, xy 344 (1790 B). Retail keeps xx/yy/zz in XMM1/XMM4/XMM6 and spills the i and j sine
 // products, while ours spills the squares to hold j*k and i*k, formed before the trig.
+// P557: Complete diagonal coefficient component loop in long/dword/short/word, before/after cross
+// coefficients: 365/361/365/361/485/488/485/488. NOT kept: no exact native coefficient/publication
+// equality; original helpers, concurrent angles and entire body restored.
+// P559: Existing builder cosine/sine value/reference/pointer receiver pairs: 335/334/342/342/342/342/342/342.
+// NOT kept: unmatched input ownership and temporary/reference forms; frame 0x90 agrees but native
+// axis/square/sine residence remains unresolved; original builder contract and entire source restored.
+// P562: Actual squared-axis declaration orders ikj/jik/jki/kij/kji and complete
+// scalar lexical groups: 344/334/334/344/344/334/334/334. NOT kept: no equality or native
+// coefficient residence; current frame 0x90 agrees. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1820,6 +1830,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // body is tuned against the callee this one calls, so the pair cannot be moved apart from this file.
 // MiniMax I (11-11): no new form, no lower score (193): the body is 20 bytes shorter than retail's 812; the known form that reaches 177 raises 0x2e9e0 to 573, and 0x2e9e0's 492 body is tuned against the callee this one calls, so the two cannot be moved apart.
 
+// MiniMax E (11-16): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 and the shared helper 0x2e9e0's frame is 0x90 against retail's 0x94, and none of the earlier rounds' cross-term orders fixes the schedule.
 // MiniMax E (11-15): no new form, no lower score (193): cases 1 to 4 still differ in the dot and offset schedule - retail groups the case-1 sums and computes the case-2 and case-4 offsets through dot3f and vector3d_from_points3d where ours differs.
 // MiniMax B (11-13): no new form, no lower score (193): retail's four cases still compute their cross products with their own temporaries (its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before the jump table), so the bodies would have to be respelled one case at a time.
 // MiniMax H (11-12): no new form, no lower score (193); the three cross terms' order and the place of the case 1
@@ -2016,6 +2027,8 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // helper 0x2e9e0's frame is 0x90 against retail's 0x94, so both are one dword short; retail's frame here holds six
 // dwords (the two fpatan operands, the result and the three components of the reference vector) where this build
 // holds five, and retail keeps the result in the stack slot at +8 while this build keeps it in a register.
+// MiniMax C (11-16): no new form tried this round, no lower score (193): the body is still 792 bytes against retail's 812, so a block is
+// MiniMax C (11-16): still shorter here; the earlier rounds' forms are recorded above.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2087,6 +2100,8 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax C (11-16): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the tag, position, direction, colour, alpha, amount and scale slots stay in another order; tried the context alpha before the time (526), the context alpha declared without its initialiser (492), the visibility after the context alpha and the selected colour at function scope (533, a scope move and so reverted), and none of them moves the slots.
+// MiniMax R (11-16): no new form, no lower score (492): the body is retail's 2285 bytes; the frame is still 0x90 against retail's 0x94, so the ratio, the definition, the source, the scale and the vertex homes sit four bytes below retail's, and the tag, position, direction, colour, alpha, amount and scale slots are in another order. The permuter over this body (600 s, twelve tries) found no form below the baseline.
 // score 492 (was 492): earlier 492 (was 492), 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
@@ -2980,6 +2995,14 @@ real magnitude3d(vector3f const *v);
 // 182 (the double copy of the dot stays, fabs and acos now adjacent); acos on a fresh `dot3f(&second, &first)` in the
 // stored dot's operand order 198 (1039 B, as the swapped form); the fallback clamp as two independent ifs 192 (1021 B);
 // the cosine declared before the sine 170 (different code, same count). Body unchanged.
+// M3 lane 15 r92 (fast with 0x24590/0x30bf0, control 170): the dot named `cosine` and reused for the cosine of the
+// angle 170 (different code: the raw current length leaves a's slot for +8, the double copy of the dot stays); the dot
+// written at both uses (no local) 198 (1039 B); `angle = acos(dot); angle *= step;` 170 (scheduling only); the angle
+// variable reused for the cosine 168 (the name does not fit; sine and cosine still share one x87 load, `fld st(0)`);
+// one local for the dot, the angle and the cosine 187. Retail loads the angle from memory once for fsin and again for
+// fcos, as ours does in 0x1161f0 where the angle arrives in xmm0 from a call; every form here keeps the x87 duplicate.
+// MiniMax C (11-16): no new form tried this round, no lower score (170): the body is retail's length in the twenty-address image (1045
+// MiniMax C (11-16): bytes) and the blocks' order still differs in the ways the notes above record.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3067,6 +3090,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax E (11-16): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and 0x31590's own body is matched, so its argument register preference is fixed.
 // MiniMax H (11-12): no new form, no lower score (113); the frame is still 0x9c against retail's 0xa0 - retail spills
 // the input list and reloads it at the loop top and keeps the total on the stack, the index in EBX and the cursor in
 // EBP, where ours holds the total in EBP.
@@ -3288,6 +3312,9 @@ s_cached_input_list g_5234e8[4];
 // and EBP to the total or list. Retail copies EBX to EDI at the call although 0x31590 never writes EDI, so its
 // allocator did not tie the index to the argument register; no source form found here unties it.
 // MiniMax E (11-15): no new form, no lower score (147): our body is 532 bytes against retail's 548; retail saves esi where this build saves ebp and keeps the native list and total in stack homes, and the call to 0x31590 still takes the index in edi here.
+// MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
+// MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
+// MiniMax C (11-16): rounds used; nothing of this file's own moved it.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3391,6 +3418,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax E (11-16): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
 // MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
 // MiniMax G (11-12): no new form, no lower score (317); both builds spill the counter and the entries
@@ -3602,6 +3630,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // the index renamed cursor/entry_index 317/317 (all the same code). Declaration orders: the index declared first 317,
 // after `last` 317 (same code); the index and `found` first 355; `found` after `last` 355.
 // MiniMax E (11-15): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation: retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
+// MiniMax C (11-16): no new form tried this round, no lower score (317): the body's length matches retail's (1324 bytes) and the blocks'
+// MiniMax C (11-16): order still differs in the ways the notes above record.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3924,6 +3954,19 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // delta in a block of their own 486 (identical code: block scopes do not let `previous` and `old` share retail's one
 // 12-byte home); `old` copied through the `position` pointer declared first 486 (different code); on that, `old`
 // advanced in place for the first projection (M385's in-place receiver on this base) 544 (1977 B). Body unchanged.
+// M3 lane 15 r92 (fast, control 486): one combined trial of the retail-shaped pieces (`previous` reused for each
+// element's old position, the delta from the stored view position, phase store then distance then fade in each arm
+// with the strength read at its use, the size store as an if/else reading the field in each arm, the projection
+// writing through an output pointer) 531 (1985 B, frame 0x44, one home for both positions); on it: the
+// delta as dot3f of the forward vector with vector3d_from_points3d 609 (1909 B); the velocity add through the
+// indexed state array 560 (1957 B, frame 0x38 and that home at +0x3c as retail: the root loads the stored velocity); on that,
+// the normalization written with the speed test's k, i, j sum 562 (the length is shared with the speed test, retail
+// computes it twice); the speed test summed in float and the normalization's in double 529 (1989 B: the second root
+// appears as retail's). The float speed test alone on this body 510 (2011 B). Left: the first projection's x copy,
+// the second projection's if/else with z in a register, and the cycle flag's byte read.
+// MiniMax C (11-16): no new form tried this round, no lower score (486): the frame is still 0x60 against retail's 0x38, so the returned
+// MiniMax C (11-16): projected-point temporaries and the phase publication are still laid out differently; the earlier rounds' projection,
+// MiniMax C (11-16): publication and offset-order forms are recorded above.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -4214,6 +4257,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax R (11-16): no new form, no lower score (51): the frame is still 0x18 against retail's 0x1c, because retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at +0xc; that getter lives in another file.
 // score 51 (was 51; earlier 51 (was 62), 62 (was 177)): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
@@ -4431,6 +4475,16 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // `if (active)` 70 (0xff5f0 408). Neither a null test nor a single exit makes LTCG treat 0xff5f0's output pointers as
 // escaping, so the stores still go: BLOCKED-BY 0xff5f0 (retail's 0xff5f0 passes neither pointer to a call: its five callees
 // take only the weapon and an index).
+// P557: Native final getter output lexical identities in four fade/active name pairs, both declaration
+// orders: 70/70/70/70/70/70/70/70. NOT kept: no native scratch/frame equality with the default provider
+// present; original direct fade clamp and full body restored.
+// P559: Actual paired final-query output record, fade/active orders with aggregate/field/value/memset
+// defaults: 70/70/70/70/70/70/70/70. NOT kept: unmatched grouped outputs; no native final-query scratch/frame
+// equality; original direct fade and complete body restored.
+// P561: Initial query byte outputs owned by each switch case, paired/either output,
+// case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
+// NOT kept: no native frame word or final scratch recovery; original common
+// byte outputs, final direct fade path and complete executable body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

@@ -413,6 +413,9 @@
 // +0x18 and s1 at +0x1c, so retail's values are not forward-substituted into their uses: lead); both wave values declared
 // at function scope, assigned in the block, 536 (same code); s0's halving as `s0 *= 0.5f` 536 (same code); the first
 // cross vector at function scope 536 (same code).
+// P565: Actual paired special-cross input/output pointer tables, long/dword/short/word for,
+// long/short while, then long/short staged for: 667/667/757/757/667/757/649/758.
+// NOT kept: no native wave residence or exact frame/extent recovery; original full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -726,6 +729,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // this round the two vertex positions stored as aggregate copies give 631 (2716 bytes) and case 4's side length
 // through the existing length_sq3f gives 357 (2576 bytes), both regressions, so the body stands. The helper this body
 // calls at 0x131e50 has its declaration fixed in another file: BLOCKED-BY 0x131e50.
+// MiniMax C (11-16): score 233 (was 233): no new form, no lower score; BLOCKED-BY 0x131e50 (src/unknown_131e50.cpp):
+// retail's build inlines pack_color4f from that file while this file's front end expands its own copy, so the
+// frame is still 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes still
+// differ; the u step and the V end still take 4-byte homes where retail spills them to the 8-byte ones.
 // score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes

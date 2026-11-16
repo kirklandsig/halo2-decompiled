@@ -248,6 +248,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // XMM registers, so retail's rows are loop-shaped); the copy as memcpy with the rows written out 192 (1001 bytes, the
 // flag sinks: exposing the copy's address early gives the store no edge); the entry flag pointer with the store in place
 // 4 (same code); the rows counted down with the flag after them 22; the entry flag pointer with the store after the rows 18.
+// Round 187 (m3 lane 6, fast): the direction copied field by field 196 (1001 bytes); the flag stored through a raw byte
+// offset 4; the rows read through `real *` casts of each vector 4; `position`/`velocity`/`origin` field pointers taken
+// at entry and used in the row loop 4, with the flag store after the loop 18 (the store still sinks below the rows).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

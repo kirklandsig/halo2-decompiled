@@ -377,6 +377,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // retail's 0x20, since retail keeps the old direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and its
 // dot is summed k, j, i, an order the shared dot3f cannot produce.
 // MiniMax B (11-13): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches cross3f and dot3f; the rotation in place is the shared rotate_vector_170d70 body written out, which is kept only with a match.
+// MiniMax S (11-16): no new form, no lower score (117): the frame is still 0x28 against retail's 0x20 because retail keeps the old
+// direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and retail's dot is summed k, j, i, an order the shared
+// dot3f cannot produce; the seed and time register roles remain; the permuter (annealing, 420 s, 49 tries) found no variant
+// below 117.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
 // before the draw (197) move the seed update up but split the float chain, so both are worse.
@@ -764,6 +768,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // P537: Actual normalization return/absolute-magnitude producers, real/double/const-real/
 // const-double: 117/118/117/118/117/118/117/118 at 880 bytes. NOT kept: no exact
 // result or frame recovery; original call/test, shared products and complete body restored.
+// P569: Existing shared cross: mutable/immutable product parts 117/117; component accumulator 117;
+// mutable/immutable component results 117/117; entry product declarations 117;
+// reused component result/accumulator 117/117. NOT kept: all tie; original helper/body restored.
+// Frame 0x28 versus native 0x20 and direction/cross/seed homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -887,6 +895,9 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax I (11-16): no new form, no lower score (322): the first difference is the first call's argument setup - retail loads
+// the field into ESI, pushes it and keeps the header pointer in a stack slot, this build loads it into ECX and
+// pushes that.
 // MiniMax E (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls
 // them, both in src/unknown_01cf50.cpp, and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against
 // our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
@@ -897,6 +908,7 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // loop and the outer vertex calls stand as they are.
 // MiniMax C (11-01): no new form, no lower score.
 // MiniMax S (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
+// MiniMax E (11-16): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 and passes the first argument to 0x4b2d0 in ECX; both callees sit outside this lane's files.
 // score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
 // tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.

@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax E (11-16): no new form, no lower score (140): the body's length matches retail's, but this build still hoists the preserve_alpha load above the `simple` branch where retail loads it after, and the callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
 // MiniMax D (11-14, run 90): no new form, no lower score (140): the frame and the length agree with retail, but the
@@ -2658,6 +2659,9 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax S (11-15): no new form, no lower score (140): the two writes of the chosen default into the parameter's
 // own home are still missing and the preserve_alpha load is still hoisted above the `simple` branch, because the
 // callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
+// MiniMax C (11-16): no new form tried this round, no lower score (140): the body's length matches retail's (1729
+// bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
+// them; the score also moves with the reduced image's source set, as the note above records.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2847,6 +2851,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
+// MiniMax E (11-16): no new form, no lower score (330): this build still inlines both copies of 0x235a0 where retail inlines the first and calls the second, so the body after that point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax B (11-13): no new form, no lower score (364): the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
 // Earlier score 530 (was 530): Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 // Round 73 (plain checks with 0x73360): the held round 90 body 401 and 0x73360 MATCH -> 33 again;
@@ -2948,6 +2953,8 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // MiniMax S (11-15): no new form, no lower score (330): the first difference is still at +0x52, where this build
 // inlines both copies of 0x235a0 while retail inlines the first one and calls the second, so the body after that
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
+// MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
+// MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3066,6 +3073,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
 // MiniMax C (11-15): no new form, no lower score (54): the body is retail's length and the first difference is at +0x527, where this build places each x87 coordinate step one slot ahead of retail's in both corner sets, so what is left is the inlined rotation's schedule.
 // MiniMax H (11-14): no new form, no lower score (54).
 // MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.
@@ -3305,6 +3313,8 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax S (11-14): no new form, no lower score (54): the scheduler still places the x87 coordinate chains one
 // slot earlier among the SSE ones than retail (first difference +0x527), and the corner rows in the other orders
 // give 54 or worse.
+// MiniMax C (11-16): no new form tried this round, no lower score (54): the block's own order of the loads and its call setup still differ
+// MiniMax C (11-16): from retail in the ways the notes above record, and no form of this file's own moves them.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

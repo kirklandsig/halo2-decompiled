@@ -865,6 +865,7 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax C (11-16): no new form, no lower score (92): the frame is still a permutation of retail's - the grenade tag and the seat index sit 0xc below retail's homes and the shared block-vector slot 0xc above them - and the body is still four bytes longer than retail's 1699; the declaration order does not reach those homes.
 // MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
 // build, so the source stands.
 // score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
@@ -1432,6 +1433,16 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // the immediate and notice exits as `return result` 19, the notice after `done:` with its own `return result` 19 (volatile)
 // and 45 (plain, folds): identical return blocks are merged before layout and the merged exit always follows the notice,
 // so retail's notice exit is a separate return block whose value is not known there.
+// Round 110 (m3 lane 1, fast): the throw code under a positive grenade test ending `result = true; goto done;` with the
+// notice after it 19 (same code), with the entry lookup through the `objects` pool copy 16; a positive test jumping over
+// the notice to a label 19 (same code); the notice as a forceinline helper taking only the unit index under `if
+// (animate)` 74 (989 B, the player-index getter inlines); the notice after `return result;` entered by a goto with
+// `animate` at function scope 19 (same code). A /GL- compile-only screen of this file reproduces our layout: VC chains
+// the exit after the last placed block that jumps to it. A notice reached by one test stays in place with its own exit
+// copy and the success path falls into the exit (retail's assignment); any `||` (with a call, a field or a constant
+// second operand) makes the notice a join block that is deferred to just before the exit, whatever its source position
+// (after the success code, after the return, in an else, behind a positive test). Dropping the success path's tests
+// does not change it, so it is not a frequency estimate. Retail's notice sits after the exit, which no form here gives.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2076,6 +2087,12 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // type reloaded into ECX) appears only when the lookup is its own statement ahead of `primary`: a single-use `actions` is
 // forward-substituted into the test, so the compare always comes first; a unit or header statement is then reused by the
 // put-away code after the branch (harness 72/68), where retail reloads the global and data and keeps only the scaled index.
+// Round 110 (m3 lane 1, fast): the actions pointer through a forceinline accessor taking the unit index 11, the same
+// accessor with its own actions local and `primary` declared first 11; 0xe8980's prologue (an unused unit local and
+// `hand`) 11; e8720 called under `if (function_e8510(...))` (0xe8b20's form; e8510 is always true here) 11; `primary`
+// first and a unit local after it, the test on UNIT_ACTIONS_GET(unit) 95 (233 B, the unit is reused after the branch).
+// Retail's register choice says the type is loaded after the pool data (both in ECX), so its pre-schedule order has the
+// unit lookup ahead of the compare, with the add after it; every root that holds the unit is reused after the branch.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -2614,6 +2631,10 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
+// NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
+// compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
+// `goto done`s, which the rules drop. Body unchanged.
 // MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
@@ -2794,6 +2815,9 @@ __forceinline char unit_action_round(real value)
 // P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
 // 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
 // not recovered; original body restored.
+// MiniMax R (11-16): no new form, no lower score (234): the body is the 1197-byte form (the earlier 101 form was a
+// register pooling and was dropped), and the first difference at +0x9 is in the prologue's saved registers, with the
+// name, the type and the current pointer still landing in other registers than retail's.
 // m3 lane 9 r124 (fast with 0xe9ed0/0xea090/0xe9780, all matched throughout; diagnostics, all restored): retail never
 // constant-folds the result, even on the success path (`mov byte [esp+0x12], 1` ... `mov al, [esp+0x12]` after the
 // 0x7f/0xff stores), as if the byte lived in memory; the result declared volatile (forbidden, diagnostic only) gives the one
@@ -4578,6 +4602,11 @@ extern vector3f *g_4687bc;
 // (its load then follows the lookup, in AX) or after the 0xb67a0 call (CX, but after the call); same sites for the rigid
 // body as a reference, through a reference to the array, `(short)` on the index test, the damage block's position and
 // origin copies swapped, the strength clamp as a ternary, and the two centre declarations swapped.
+// Round 110 (m3 lane 1, fast; the /GL- screen reproduces both sites): the model tag in a named `byte *model` for the
+// effect tag 8; the element through `&component->rigid_bodies.data[index]` (bypassing the array's operator[]) 8; both 8;
+// the effect tag declared ahead of the definition and assigned from the named model 8, with the element through `.data`
+// 8 (all the same code). Screen only: the effect tag's address taken in a local reference (dropped, same code); the
+// component looked up again for the 0xb67a0 argument (the material stays in DX, the array still loads first).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

@@ -363,6 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax H (11-12): no new form, no lower score (84): the result long still lands at [esp+0xc] where retail
 // keeps it at [esp+8], the clip's amount out-parameter sits at [esp+0x10] against retail's [esp+0x1c] and
 // retail's range is at [esp+0x30] against our [esp+0x18]; the seat loop's two cross products keep our
@@ -375,7 +376,6 @@ real function_30bf0(vector3f *vector);
 // +0x1c, +0x28 and +0x30) and the two seat-loop cross products, whose operand order differs because both
 // products are computed by a helper that lives in another file's header and is therefore not this lane's to
 // rewrite; every form in the note block below has already been measured, so the body stands.
-// score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
 // MiniMax S (11-10): no new form, no lower score (84); the vector homes are still one slot off from retail's, the range's first load
@@ -814,6 +814,13 @@ real function_30bf0(vector3f *vector);
 // squared distance through dot3f(&delta, &delta) 84; the two out-of-range arms as `else if (out_of_range)` 84; the clip's
 // upper clamp as `amount = amount > 1.0f ? 1.0f : amount` 84; the endpoint and actor tests as nested ifs 84 (all the same
 // homes: the clip amount still shares the counter's slot at +0, the result sits at +4).
+// Round 112 (m3 lane 10, fast): the facing outputs declared at function scope after the result 84 (same code); the
+// not-facing secondary computed from primary 84 (same code); the world-up axis copied into a local vector for the first
+// seat-loop cross 220 (1326 bytes); the occupant's forward pointer formed ahead of the player test 96 (1308 bytes, but
+// `lea esi` then precedes the first cross); the first cross given the object-relative cast for the forward with the
+// pointer kept for the second cross and 0x263740 152 (1312 bytes). Retail treats every forward component as the
+// memory operand in both crosses (loading the world-up and side components), ours loads the forward component in
+// three of them. All restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2562,6 +2569,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the first search's index widened into a long local for the NONE test and the address 372 (that block becomes
 // retail's `movsx eax, si; cmp eax, -1`, but the players loop's registers rotate). Re-measured: 0x1c8150 for the slot
 // search alone, and for both searches, 769 each (2680 B, a call); 1 to 7 unused locals 168 each.
+// MiniMax R (11-16): no new form, no lower score (168); retail keeps the direction's three components in XMM1/XMM2/XMM3 across the relative and facing dot products where this build reads them from the frame again, and the two player searches still differ (retail's first search compares the index in 32 bits with the table base in EDX and the result in ESI, ours in 16 bits with the base in ESI and the result in EDX, and retail's second search steps a pointer where ours scales the index).
 // MiniMax H (11-12): no new form, no lower score (168): the first difference is still the inlined 0x26be00
 // lookup's address operand (ours [eax+ecx+0x58], retail [ecx+eax+0x58]), a base/index order the compiler
 // picks when the helper is expanded, and that helper's body is in src/unknown_26bda0.cpp, which is not mine;

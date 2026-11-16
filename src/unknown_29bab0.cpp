@@ -9,6 +9,7 @@
 #include <math.h>
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 real g_47ffd0 = 0.5f;
 
@@ -61,7 +62,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
-// score 679 (was 702): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// score 489 (was 679): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
 // local_14 the other way round, local_2 at +0x30 for retail's +0x1c between local_5 and local_6, local_6/local_7/local_15
@@ -538,6 +539,37 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // returned output pointer/reference and wider already-rounded return: seven 679s;
 // complete residual vector with a plain correction loop 795. NOT kept: no native
 // spill/home repair; original helper, all three correction calls and full body restored.
+// Round 129 (m3 lane 9, plain each; aligned/masked = difflib counts on the listing, masked = registers and esp offsets
+// masked). Kept, 679 -> 489 at 3503 bytes, frame 0x88: the 0x1f9e70 planar copy as `*(vector2f const *)&local_25`
+// (retail's integer moves) with the scale read from field_50 into local_27 before the call and `local_27 *= ...` (retail
+// loads field_50 ahead of the call) 637; the first steering arm as the direct expression (no initial true; retail's
+// false paths share one `xor al, al`) 615 (3499 B); the three velocity dots as one vector3f frame_velocity ahead of the
+// reciprocal (retail divides after the dots) 540; the speed floor as MAX, the half span squared then divided in two
+// statements and the turn factor as `(1 - dot) * 0.5f`, `*= local_26 * 0.5f`, `*= 4.0f` (one expression folds 0.5 * 4.0
+// into 2.0 and divides first) 527; field_64 read once into `blend` for the three rows plus float squares in the radial
+// root (retail's `fld [x]; fmul [x]`; either alone 623/662) 496; the first arm's dot without the double casts 488.
+// Self-review: both clamps as MIN(1.0f, ratio) (retail compares 1.0 > ratio) gives 488 against 489 for MIN(ratio, 1.0f),
+// restored to the latter; the field_50 read placed before the planar normalize 489 (same as after it, so after it).
+// Tried, not kept: MIN(1.0f, ratio) alone 679 (aligned 463 -> 458); with both floors as MAX 723; with the speed floor as
+// MAX 681; the halves as `/ 2.0f` 538 (same code as `* 0.5f`); the square/divide split without the turn-factor statements
+// 669; the dot floor as MAX (retail keeps the if form); the first arm's dot through dot_product2d 660; the three dots as
+// one-use named locals 589; the up vector (object +0x7c) at each use in place of local_28, a field lead: 622 on 527, 498
+// on 496 (first difference +0x60 -> +0xf9, local_6 then register-allocated as retail); slot locals renamed to forced-order
+// names (same code: names do not order these slots). Leads, only keepable with a match (each a reverted form): the side
+// offset ternary written in each coordinate gives retail's per-arm y 550 on 615 (561 on 488, frame moves); the flip through
+// `byte side` with `local_21 = side != 0` (retail's `test al, al; setne al`) 669; local_6.i/.j assigned before the k branch
+// (retail's order; aligned 213 -> 156, masked 57) 676; flip + order 673; all three 708. Left: local_8 at +0x7c with the
+// 0x1f9760 output/local_14/local_25 slot at +0x70 (retail the other way round); the normaliser's squares k, j, i (retail
+// i, k, j); the post-0x1f8510 block's order; the per-arm y and the flip conversion (ours 6 lines short in the steering block).
+// P556: Actual object/configuration/input/query-output/position/response/radial/final-output
+// lvalue receivers 679/679/683/679/682/704/693/766. NOT kept: no native spill/home equality;
+// original executable body, all producer helpers and both final publications restored.
+// P558: Actual collision-query output workspace, six complete flag/flag/vector field orders then both
+// flag-pair orders with the vector independent: 730/730/730/730/730/730/713/713. NOT kept: unmatched
+// output grouping; original independent outputs, all helpers and entire body restored.
+// P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
+// shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
+// NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -595,13 +627,11 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			real local_18 = (real)((double)local_2->field_1c * 0.5);
 			real local_19 = 0.0f >= local_2->field_14 ? local_1->unknown03c : local_2->field_14;
 			real local_20 = 1.0f;
-			bool local_21 = true;
+			bool local_21;
 			if (*(bool *)(local_0 + 0x654))
 			{
-				if ((double)local_15.i * local_17.i + (double)local_15.j * local_17.j < 0.99)
-					local_21 = false;
-				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
-					local_21 = false;
+				local_21 = !(local_15.i * local_17.i + local_15.j * local_17.j < 0.99) &&
+					(*(bool *)(local_0 + 0x4ae) || !(local_18 > local_16));
 			}
 			else
 			{
@@ -610,7 +640,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				real local_24 = local_22 ? local_23 : -local_23;
 				point2f local_25 = { local_8.x + perpendicular * local_24, local_8.y + local_17.i * local_24 };
 				vector2f local_26 = { local_14.i - local_25.x, local_14.j - local_25.y };
-				if (local_23 > sqrt((double)local_26.i * local_26.i + (double)local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
+				if (local_23 > sqrt(local_26.i * local_26.i + local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
 					local_21 = false;
 				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
@@ -670,13 +700,15 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_24 = *(real *)(local_0 + 0x47c);
 				else
 				{
-					real local_25 = local_16 * local_16;
-					if (!(local_25 > 0.001f)) local_25 = 0.001f;
+					real local_25 = MAX(local_16 * local_16, 0.001f);
 					real local_26 = local_2->field_1c * 0.5f;
-					local_26 = local_26 * local_26 / local_25;
+					local_26 *= local_26;
+					local_26 /= local_25;
 					real local_27 = dot_product2d(&local_15, &local_17);
 					if (!(local_27 > 0.0f)) local_27 = 0.0f;
-					local_24 = (1.0f - local_27) * 0.5f * (local_26 * 0.5f) * 4.0f;
+					local_24 = (1.0f - local_27) * 0.5f;
+					local_24 *= local_26 * 0.5f;
+					local_24 *= 4.0f;
 				}
 				local_24 = function_29bab2(local_24, 0.05f, 1.0f);
 				if (!(local_24 > local_23)) local_24 = local_23;
@@ -695,10 +727,11 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			}
 			else
 			{
-				vector2f local_26 = { local_25.i, local_25.j };
+				vector2f local_26 = *(vector2f const *)&local_25;
 				normalize2d((point2f *)&local_26);
-				real local_27 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_8, &local_15, &local_26,
-					&local_17, NULL, local_10, local_22 != 2) * local_2->field_50;
+				real local_27 = local_2->field_50;
+				local_27 *= function_1f9e70(arg_0, arg_1, (point2f const *)&local_8, &local_15, &local_26,
+					&local_17, NULL, local_10, local_22 != 2);
 				function_1f8510(true, &local_9, local_4, &local_6);
 				if (local_22 == 2)
 				{
@@ -721,10 +754,13 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					vector3f const *local_28 = (vector3f const *)((byte *)local_1 + 0x7c);
 					vector3f local_29;
 					cross3f(local_28, local_4, &local_29);
+					/* the velocity along the forward, side and up axes */
+					vector3f frame_velocity = { dot3f(&local_1->velocity, local_4), dot3f(&local_1->velocity, &local_29),
+						dot3f(&local_1->velocity, local_28) };
 					real local_30 = 1.0f / local_2->field_68;
-					real local_31 = local_6.i - local_30 * dot3f(&local_1->velocity, local_4);
-					real local_32 = local_6.j - local_30 * dot3f(&local_1->velocity, &local_29);
-					real local_33 = local_6.k - local_30 * dot3f(&local_1->velocity, local_28);
+					real local_31 = local_6.i - local_30 * frame_velocity.i;
+					real local_32 = local_6.j - local_30 * frame_velocity.j;
+					real local_33 = local_6.k - local_30 * frame_velocity.k;
 					local_6.i = function_29bab3(local_6.i, local_31, local_2);
 					local_6.j = function_29bab3(local_6.j, local_32, local_2);
 					local_6.k = function_29bab3(local_6.k, local_33, local_2);
@@ -733,9 +769,10 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 				local_6.j += local_7.j;
 				local_6.k += local_7.k;
 				function_1f3e40(arg_1, &local_5, &local_6);
-				local_6.i = *(real *)(local_0 + 0x678) * local_2->field_64 + local_6.i * (1.0f - local_2->field_64);
-				local_6.j = *(real *)(local_0 + 0x67c) * local_2->field_64 + local_6.j * (1.0f - local_2->field_64);
-				local_6.k = *(real *)(local_0 + 0x680) * local_2->field_64 + local_6.k * (1.0f - local_2->field_64);
+				real blend = local_2->field_64;
+				local_6.i = *(real *)(local_0 + 0x678) * blend + local_6.i * (1.0f - blend);
+				local_6.j = *(real *)(local_0 + 0x67c) * blend + local_6.j * (1.0f - blend);
+				local_6.k = *(real *)(local_0 + 0x680) * blend + local_6.k * (1.0f - blend);
 				local_6.i = function_29bab2(local_6.i, -1.0f, 1.0f);
 				local_6.j = function_29bab2(local_6.j, -1.0f, 1.0f);
 				local_6.k = function_29bab2(local_6.k, -1.0f, 1.0f);

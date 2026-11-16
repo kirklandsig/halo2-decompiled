@@ -1312,6 +1312,16 @@ PRIVATE __forceinline void reset_vehicle_contact(s_vehicle_contact *contact)
 	contact->compression = 0.0f;
 }
 
+// score 3: the only difference is where the inlined reset's `xorps xmm0` sits.
+// Retail has it after `imul eax, eax, 0x4c` and before `imul ecx, ecx, 0xd8`;
+// ours schedules it before `mov ecx, eax`. Same 222 bytes, same instructions.
+// Probed: swapping the contact/definition declarations 11; zeroing between the
+// reset copies 5, zeroing first 19; `(real)0`, a local zero, and a file-scope
+// zero constant all tie at 3.
+// Flag sweep (17 sets): the current `/O2 /Ob1 /arch:SSE /Gr` is best at 3;
+// `/Ox`, `/Ot`, `/Ob2`, `/Oy`, `/Oi`, `/Oi-`, `/GX`, `/GX-`, `/arch:SSE2`
+// tie at 3; `/Oy-` 80, `/Ob0` 103, `/O1` and `/Os` 108, `/Od` 247; `/Gd`
+// and `/Gz` fail. Not a source-order or flag difference.
 // @retail 0x207ab0
 void function_207ab0(long index, s_vehicle_physics_state *state, s_vehicle_contact_result const *result)
 {
@@ -2104,6 +2114,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // bytes); the overlay channel declared before `state` 28. Diagnostics: one more in-loop use of the vehicle index (a
 // NONE test in the final loop) leaves the three reloads in our order (53); one more in-loop graph use moves the
 // vehicle index to EBX at entry (117).
+// Round 110 (m3 lane 1, fast), at 9: the first lookup through the file-idiom pool copy (`s_record_pool *objects =
+// g_4e0300;`, as matched 0xe8720 has it) 13 (the SIB pair stays, the cross flips); the vehicle through the existing inline
+// getter `(s_vehicle *)havok_object_get(vehicle_index)` at the first lookup 9 (same code), the second 13, both 13; the
+// function channel declared with the overlay channel at the block top 552 (1943 B, its constructor moves). Matched
+// 0xeeb80 keeps its scaled index across calls too and is data-first like retail, so the CSE of the index is not the SIB
+// lever.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {

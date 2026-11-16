@@ -1384,6 +1384,15 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
+// argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
+// the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
+// m3 lane 3 r250 (fast with 0x2c3030/0x26ccb0, control 400): the step's fields read through points[index] with no
+// step pointer 473 (1758 B); `bool other_side = !side;` at the top of the attempt loop 435 (retail's 1746 B,
+// register-masked aligned 79 against 80); the center as `side ? corners[0] : corners[1]` 473 (1710 B); index, used
+// and copied_last declared ahead of the source pointer 399 (only the sector store moves after the zero stores: not
+// kept); the origin copied field by field 442 (1768 B). Diagnostic, reverted: the count read through a volatile
+// cast at its four loop uses 474 (the edge stays in a stack slot, so the count register is not the only cause).
 // MiniMax R (11-15): no new form, no lower score (400). The frame is 0x114 against retail's 0x10c, and the homes are
 // measured from ebp: the source radius sits at -0xe4 against retail's -0xe0, the expanded radius at -0xd8 against
 // -0xdc, the source pointer at -0xdc against -0xe4, the node table pointer at -0xe8 against -0xe0, the origin at
@@ -1398,13 +1407,13 @@ long function_1fa7f0(void);
 // moves the other homes and raises the score to 434 (403 differing instructions and 31 bytes short); the edge value
 // declared outside the loop (400, unchanged); the previous-point pointer written into the corner call (459). A
 // permuter run over this body (48 tries in 302 s) found nothing better.
-// score 400 (was 400): the frame is 0x114 against retail's 0x10c, the registers holding the count, the zero and the
+// Earlier at 400 (was 400): the frame is 0x114 against retail's 0x10c, the registers holding the count, the zero and the
 // step pointer are swapped with retail's, and the frame homes of the radius pair, the origin, the flags and the edge
 // differ.
 // MiniMax A (11-13): no new form, no lower score (400); the frame is still 0x114 against retail's 0x10c, the
 // source radius still sits at +0x30 against retail's +0x2c, the expanded radius at +0x44 against retail's
 // +0x34, and retail keeps the count in ebx where this build holds it in esi.
-// score 400 (was 400): earlier 400, 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// Earlier at 400 (was 400): earlier 400, 418; the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // MiniMax E (11-10): no new form, no lower score (400); the frame is 0x114 here and 0x10c there, because the edge value and the other-side flag are kept in stack slots here and in ebx and bl there, which moves every other home by eight bytes.
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,

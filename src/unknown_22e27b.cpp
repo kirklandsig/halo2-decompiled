@@ -461,6 +461,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // `restart = false;` at the loop bottom after the timing updates 139 (661 bytes); the loop as `for (; time >= next_time;
 // next_time += frame_time)` on this body 1 (same code); every animation-state read through one reference to the member 1
 // (same code); a 600 s permuter run (63 tries) none below 1.
+// Round 130 (m3 lane 12, fast): the loop test as `!(time < next_time)` 1 (same code); the flags word read into a
+// per-pass local at the loop-body top (none outside the loop) 200 (656 bytes); both loop disposal tests as
+// `(flags & 2) ? type == 0 : false` 216 (664 bytes); both loop restart tests as `type == 0 ? (bit 0 || bit 1) : false`
+// 1 (same code); diagnostic: the break as `restart & 1` 87 (659 bytes).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

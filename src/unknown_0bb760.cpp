@@ -446,6 +446,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax E (11-16): no new form, no lower score (84): the three differences are the same ones as before - the clamp entry still materialises the 1.0 before the zero where retail zeroes first and loads the 1.0 after, the blend still sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the choices pointer in the other slot, and the first scan still leaves on inequality where retail leaves on a signed less-than; every spelling of that bound tried in earlier rounds makes the build unroll the scan by four, so the body stands.
 // MiniMax E (11-15): no new form, no lower score (84): the blend's stack slot and the choices pointer's slot are still the other way round, and the 1.0 load still comes before the zero xorps where retail loads it after.
 // MiniMax S (11-15): no new form, no lower score (84).
 // MiniMax S (11-14): no new form, no lower score (84): the permuter's search over this body (60 tries, 610 s) found nothing below the baseline's 84; the first scan still leaves on != where retail leaves on a signed jl, the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot, and the clamp entry's constant order and the not-found path's own copy of the one still differ.
@@ -517,6 +518,13 @@ void function_3dd10(long object_index, bool force);
 // sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the choices pointer in the other slot, and
 // the first scan's `!=` exits still differ from retail's signed `<` loop, which unrolls by four in every
 // spelling measured so far; the body stands.
+// MiniMax C (11-16): score 84 (was 84): no new form, no lower score; at retail's 1034 bytes the first
+// difference is still the 1.0f load before the zeroing before the first clamp (retail's clamp entry is
+// xorps, movss, comiss), the blend still sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the
+// choices pointer in the other slot, and the first scan's `!=` exits still differ from retail's signed `<`
+// loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
+// found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
+// but a changed prologue) all score worse, so the body stands.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
