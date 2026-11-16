@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
+#include "unknown_124f90.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include <math.h>
@@ -169,7 +170,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax G (11-12): no new form tried this round, no lower score (866): the prologue still zeroes ebp where retail
 // zeroes esi, and the zeroed count still sits at esp+0x24 instead of esp+0x88, so the later frame offsets differ.
-// score 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// MiniMax S (11-15): score 853 (was 866): the six clamps of this function through the existing PIN_126660 macro
+// instead of the local pin helper; the body now has retail's length (3327 bytes) and 0x18bb80 stays matched. Left:
+// the prologue still zeroes ebp where retail zeroes esi, and the zeroed count's home differs (esp+0x24 here,
+// esp+0x88 in retail), so the later frame offsets differ.
+// score 853 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
 // keeps the choice count and the two loop indices in ESI/EDI/EAX, while ours narrows the count to a word and holds the
@@ -609,8 +614,8 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		{
 			s_loop_path_choice *choice = &choices[i];
 			real range = bsp->sounds[choice->source].range;
-			real fraction = fabs(-range) < 0.0001f ? (choice->distance < 0.0f ? 0.0f : 1.0f) : loop_path_pin(choice->distance / range, 0.0f, 1.0f);
-			real blend = loop_path_pin(fraction * fraction * 3.0f - fraction * fraction * fraction * 2.0f, 0.0f, 1.0f);
+			real fraction = fabs(-range) < 0.0001f ? (choice->distance < 0.0f ? 0.0f : 1.0f) : PIN_126660(choice->distance / range, 0.0f, 1.0f);
+			real blend = PIN_126660(fraction * fraction * 3.0f - fraction * fraction * fraction * 2.0f, 0.0f, 1.0f);
 			choice->gain = ((inside ? choice->inside : choice->outside) - choice->portal) * blend + choice->portal;
 			s_loop_path_target *target = &targets[target_count++];
 			target->tag = choice->tag;
@@ -679,7 +684,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			s_loop_path_datum *sound = loop_path_get(pool, index);
 			real current = loop_path_linear(sound->decibels);
 			real delta = loop_path_linear(target->decibels) - current;
-			real gain = current + loop_path_pin(delta, -target->step, target->step);
+			real gain = current + PIN_126660(delta, -target->step, target->step);
 			sound->decibels = loop_path_logarithmic(gain);
 			sound->flags |= 0x200;
 			if (target->audible) sound->flags &= ~0x80;
@@ -688,7 +693,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			else sound->flags &= ~0x10;
 			sound->listener = (char)g_4686c4;
 			sound->cluster = (short)target->cluster;
-			sound->gain += loop_path_pin(target->gain - sound->gain, -target->step, target->step);
+			sound->gain += PIN_126660(target->gain - sound->gain, -target->step, target->step);
 			sound->source = (char)target->source;
 		}
 	}
@@ -702,8 +707,8 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		{
 			real step = elapsed / (fabs(definitions[sound->source].fade_time) < 0.0001f ? 2.0f : definitions[sound->source].fade_time);
 			real gain = loop_path_linear(sound->decibels);
-			gain += loop_path_pin(0.0f - gain, -step, step);
-			sound->gain += loop_path_pin(0.0f - sound->gain, -step, step);
+			gain += PIN_126660(0.0f - gain, -step, step);
+			sound->gain += PIN_126660(0.0f - sound->gain, -step, step);
 			if (fabs(gain) < 0.0001f) loop_path_get(pool, index)->flags |= 2;
 			else sound->decibels = loop_path_logarithmic(gain);
 		}
