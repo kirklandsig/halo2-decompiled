@@ -30,11 +30,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
+// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax G (11-14): no new form, no lower score (110): the frame 0x13c and the 922-byte length agree; the axis
 // block's dot product still multiplies up's i first where retail multiplies forward's i first, and the shapes that
 // flip that need the existing dot3f body written out by hand.
-// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
-// magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax B (11-12): no new form, no lower score (110, was 110): the frame 0x13c and the 922-byte length agree; the
 // axis block's dot product still multiplies up's i first where retail multiplies forward's i first, and the only
 // shapes that flip it need the existing dot3f body written out by hand and a second access path to one field.
@@ -448,6 +448,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (same code each). On the kept body the normalizer's squared length through the existing length_sq3f 153. Body unchanged.
 // P542: Complete normalized-product standard transforms, real/double and both binders, vector/scalar-setter publication: 513/513/616/616/567/567/685/685.
 // NOT kept: output staging enlarges frame to 0x1a4/0x1c0 versus 0x13c and extent to 1127..1281 versus 922. Original four-use helper/body/includes restored; late forward-k and reciprocal ownership remain.
+// M3 lane 3 r249 (fast, 0x1c4a80 matched each time; base 110): the six-matrix array split into six named transform4x3f
+// locals in the array's order 110 (same layout and code: aggregates keep declaration order, names do not sort them). On that
+// split, round 150's lead (squared length through dot3f, the projection's k row read from the matrix field) 2 again (only the
+// dot's i term: ours copies up.i, retail forward.i); on it: the dot local declared ahead of the pointers 2; the projection
+// rows scalar-first 2; the dot through both matrix fields, either order, 4 (the dot's terms then sum j, i, k); one side
+// through the field, the other through its pointer, 2 / 2. Body restored (array form).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

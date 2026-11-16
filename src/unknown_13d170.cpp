@@ -179,10 +179,10 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax R (11-14): no new form, no lower score (201): the default arm's two products keep retail's factors, but retail
 // multiplies the best age's product first and ends the comparison in xmm1, ours multiplies the age's product first and ends it
 // in xmm0.
-// score 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax A (11-13): no new form, no lower score (201); the take test still jump-threads the case blocks past the
 // loop and the second age's clamp still folds away, and the only form that reaches 98 needs a policy helper with one caller.
 // Earlier 201 (was 201): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
@@ -696,6 +696,12 @@ struct s_physical_block_iterator
 // first difference +0xcc); an 1800 s fast annealing permuter run on it (seed 122, 183 tries) reached 95 with the insertion's
 // arms the other way round (`best.previous != NONE` first; plus `++pages` and `pages = pages + segment_pages`, noise):
 // build/r122/lead-0x13d370-perm95.patch in m3-lane16's worktree. Body unchanged.
+// M3 lane 3 r249 (fast with 0x13d320, MATCH each time; base 201): case 0 as `if (time != best.time) better = time <
+// best.time; else better = pages < best.pages;` 284 (1182 B, first difference +0x2f); case 0 as the ternary `better =
+// time == best.time ? pages < best.pages : time < best.time` 284 (same code); `bool better = !have_best;` with the take test
+// reduced to `if (better)` 222 (1228 B); `better` declared at the scan's scope, cleared per candidate, 201 (same code); both
+// ages clamped `MAX(x, 0)` with the comparison written `candidate->pages * best_age < best.pages * age` 209 (1228 B, as the
+// listed symmetric clamp). Case 0 stays threaded into the take test on every form. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
