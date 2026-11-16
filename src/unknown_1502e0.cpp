@@ -1236,6 +1236,10 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax S (11-16): no new form, no lower score (144): the body was re-measured and did not move; the three-point
+// form from the review stays out because it rests on the second lookup of the same unit, the re-read pool global and
+// the locals holding NONE until they are set, so the tag table still stays enregistered (EBX) through the first loop,
+// the player still spills and the frame stays 0x1c against retail's 0x18.
 // MiniMax S (11-16): no new form, no lower score (144): the tag table still stays enregistered (EBX) through the first loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are still not retail's; the counted-phase forms and the permuter tried before all leave the same code.
 // MiniMax S (11-15): no new form, no lower score (215): the tag table still stays enregistered (EBX) through the first
 // loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are
@@ -1243,7 +1247,15 @@ long function_cbd50(long unit_index, short weapon_index);
 // the pending lookup ahead of the held one, the weapon's own flags read once ahead of the slot loop, the mode clears
 // chained) all regress or leave the same code, and the grouping that moves the tag table's home is not a form the
 // review keeps.
-// score 144 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// score 215 (was 215; the 144 once on this line was 0x152660's): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// m3 lane 3 r250 (fast with 0x151aa0/0xcbd50, control 215): retail loads the tag table lazily in both arms of the hand
+// loop (ECX at the loop exit) and the weapon_index parameter lazily in the slot copies (EBP, reloaded at the joins),
+// where ours hoists both to dominating points; retail's held arm reads the weapon through the first lookup's unit but
+// re-reads player->unit_index and the pool data for the pending lookup (ours shares the index and slot pointer). Forms:
+// the count declared first 216; the slot weapon read at each use (no held_weapon local) 215; held and pending declared
+// ahead of the player 215; the held weapon in a named local stored into held[hand] and used for the bit-3 test 215; the
+// slot loop's tests nested 215. Diagnostic, reverted: the tag table's address taken at file scope 325 (it is then
+// reloaded after the mode stores, which retail does not do, so retail's lazy loads are allocation, not aliasing).
 // m3 lane 5 r185 (fast with 0xcd7b0/0xcbd50/0x151aa0/0x151940, control 215): the bit-3 tests in a second loop after the
 // lookups 293 (1008 B); held and pending as one `long weapons[2][2]` 215 (same code); the pending lookup ahead of the
 // held one 207 (the pool pointer then takes EDI as retail, but retail reads the held slot first, so the order is against
@@ -1675,6 +1687,10 @@ void function_150820(dword *bits, bool local_only)
 // code (43), so all four were restored; no declaration order, hand width or result spelling moves the rotation.
 // score 43 (was 43): player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
 // EDX, primary ECX, hand EAX; ours ECX, EAX, EDX); 0x151b80 shows the same exchange.
+// m3 lane 3 r250 (fast with 0x151b80/0xa8f80/0xcd4e0, control 43): `long hand = primary == false;` 43 (same code);
+// `bool result;` declared first and assigned after the player lookup 43 (same code); hand passed as `(short)hand` to
+// both calls and the modes index 69 (214 B); `long hand = 1; if (primary) hand = 0;` 45 (211 B); the cd4e0 arm as
+// `else if (...) { result = true; }` re-measured 47.
 // m3 lane 5 r185 (fast with 0x151b80/0xcd7b0/0xa8f80/0xcd4e0, control 43): the hand typed bool 89 (197 bytes); the
 // weapon and 0xcd7b0 tests held in a named bool 43 (same code); `result = true;` ahead of the 0xa8f80 call 71 (215
 // bytes); the `modes[hand]` test nested under the 0xcd7b0 test 43 (same code). Diagnostic: the names of player and hand

@@ -610,6 +610,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
+// and size through pointers; with the `void *` parameters view and one function-scope byte count the
+// length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
+// the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
+// body_size in ESI, retail ECX): retail computes each sum into a fresh register.
 // MiniMax C (11-15): no new form kept, no lower score (34, was 34): the entry total still lands in EAX where retail has
 // it in EDX; dropping the named total puts the sum in EDX as retail but reorders the header case's loads and scores 88,
 // and the total's operand orders, a parenthesised sub-sum, a two-statement total and a constant-first total all stay
@@ -622,12 +628,6 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // kept - and without it the same body scores 88. Still differs: the entry total lands in eax where retail keeps it
 // in edx, the hoisted body size in esi where retail keeps it in ecx, the signature position as a one-byte-shorter
 // add where retail uses lea, and the size/position pair is esi/edi where retail has edi/esi.
-// score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
-// size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
-// and size through pointers; with the `void *` parameters view and one function-scope byte count the
-// length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
-// the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
-// body_size in ESI, retail ECX): retail computes each sum into a fresh register.
 // M3 lane 8 r170 (fast): the direct arm's size before its buffer 34; `size == bytes` 34; the buffer arms swapped
 // (`if (!parameters->body)`) 41; no total local with 0-7 dead locals 88 each (no phase effect: dead locals change
 // nothing, only a used handle local does); a scratch-size local with the clamp `MIN(remaining, buffer_size)` 161 (691
@@ -1104,6 +1104,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // position declared (unassigned) ahead of `buffer` and `size` 34 (all three the same code: names and declaration order do not
 // move the size/position ESI/EDI pair); the shared job-buffer helper storing its two outputs before the owner and external
 // stores 34, but matched 0x2adb10 goes to 26 (not kept); the caller's body pointer in a two-use local 161 (689 bytes).
+// Round 125 (m3 lane 16, fast with 0x2ada70 and 0x2adb10, both stay matched; control 34): the parameters record as a
+// reference (`parameters.` at every use) 34 (same code); the entry total and the signature sum through `dword const &`
+// header_size/body_size references 34; the body case through `dword const &` body_size/body_offset references 34; the total
+// bound as `dword const &total` to the sum 34; both seek positions bound as `dword const &position` to their sums 34. The
+// remaining flagged constant lines (`fadd [2^32]`, `movss [1.0]`) are only the one-byte shift of the signature sum (ours
+// `add esi, ecx`, retail `lea esi, [ecx + edx]`).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

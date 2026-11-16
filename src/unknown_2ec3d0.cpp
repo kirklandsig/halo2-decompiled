@@ -20,7 +20,12 @@ public:
 	virtual void refresh(child_description_2edd00 const *child, typed_2edd00 **other, context_2edd00 const *context) {}
 };
 
-// score 141 (was 141): Frame 0x134 agrees; the saved object and search
+// score 6 (was 141): the key search is the list's own member, reading the
+// child count once and returning the index from inside its loop, so the
+// children are reached through `this` (kept in ebx) as in retail; and the
+// added slot is `grown = size + 1; size = grown; data[grown - 1]`. Left:
+// retail reads `data` after storing the new size, ours before.
+// Before: score 141: Frame 0x134 agrees; the saved object and search
 // result use different registers, with an extra array address kept across calls.
 // Decreasing count 141; one search exit 152; added-entry reference 164;
 // buffer declared first 141; stored key inputs 141; existing branch first 146;
@@ -46,7 +51,7 @@ void keyed_list_2ec680::function_2ec3d0(description_2edd00 const *description, t
 	{
 		child.key = (long)shape->child(key, &buffer);
 		child.index = key;
-		long found = children.index_of_key(key);
+		long found = index_of_key(key);
 		if (context->filter->accept(context, other, description, (shape_2edd00 const *)shape, key).value)
 		{
 			if (found == -1)

@@ -589,6 +589,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // or shared-tail repair; original count test, edge/query observations and complete traversal restored.
 // MiniMax E (11-15): no new form, no lower score (244): the permuter over the body found nothing lower, and the goto form
 // that reaches 32 needs a goto, which is kept only with a byte match.
+// P571: Actual backward-progress rejection/admission result, bool/byte/short/long:
+// 244/244/244/244/244/244/244/244. NOT kept: no exact byte/line/sector-home or shared-tail repair. Original
+// progress comparison, traversal, helpers and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
