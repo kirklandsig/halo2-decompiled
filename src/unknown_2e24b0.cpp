@@ -21,20 +21,14 @@ public:
 };
 
 // where `value` sits in the cell's list of boxes, or -1
-inline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
+__forceinline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
 {
 	long const count = cell->boxes.size;
-	if (count <= 0)
+	for (long index = 0; index < count; index++)
 	{
-		return -1;
-	}
-	unsigned short const *data = cell->boxes.data;
-	unsigned short const *end = data + count;
-	for (unsigned short const *entry = data; entry < end; entry++)
-	{
-		if (*entry == value)
+		if (cell->boxes.data[index] == value)
 		{
-			return entry - data;
+			return index;
 		}
 	}
 	return -1;
@@ -232,7 +226,10 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 312 (was 328): remaining index/receiver slots, scan loads and tail
+// score 263 (was 312): the cell lookup reads the list's count first and
+// returns its index from inside the loop, as both of retail's lookups do
+// (a pointer walk 312; the count and data both held 390; a guarded loop 372).
+// Before: 312 (was 328): remaining index/receiver slots, scan loads and tail
 // differ. Earlier 328 at retail length retained the in-place y/z test; its
 // count, index, receiver and array slots differed, the second x walk saved
 // the receiver instead of the word index, and the scan kept its box in a
