@@ -178,7 +178,12 @@ public:
 
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
-// score 250 (was 295): the absolute axes are an array filled in retail's order,
+// score 149 (was 250): the tolerance is copied once into a constant and both
+// face tests take its address (the compiler then reuses the vector as retail
+// does), the absolute axes are filled in index order, and the parallel
+// separation is declared before its limit. Stack homes of the axes and two
+// spills remain.
+// Before, 250 (was 295): the absolute axes are an array filled in retail's order,
 // each answer is returned where it is known (retail writes the byte directly and
 // shares one failure block), the face separations use the vector the edge reach
 // later uses (retail shares the slot) and are stored through a pointer, so the
@@ -197,14 +202,14 @@ public:
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {
-	__m128 const parallel_limit = _mm_set_ss(999.99994f);
 	__m128 const parallel_separation = _mm_set_ss(-1e17f);
+	__m128 const parallel_limit = _mm_set_ss(999.99994f);
 	int separated;
 	__m128 const mask = *(__m128 const *)g_455940;
 	__m128 a[3];
+	a[0] = _mm_and_ps(axes[0], mask);
 	a[1] = _mm_and_ps(axes[1], mask);
 	a[2] = _mm_and_ps(axes[2], mask);
-	a[0] = _mm_and_ps(axes[0], mask);
 
 	// the first box's faces
 	vector_306580 reach;
@@ -216,7 +221,8 @@ answer_306580 class_306580::function_306580()
 		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), first_extents);
 		reach.value = _mm_sub_ps(_mm_and_ps(second_centre, *(__m128 const *)g_455940), span);
 	}
-	exceeds_306580(&reach.value, &tolerance, &separated);
+	float const limit = tolerance;
+	exceeds_306580(&reach.value, &limit, &separated);
 	if (separated)
 	{
 		return answer_306580(false);
@@ -239,7 +245,7 @@ answer_306580 class_306580::function_306580()
 		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), second_extents);
 		reach.value = _mm_sub_ps(_mm_and_ps(first_centre, *(__m128 const *)g_455940), span);
 	}
-	exceeds_306580(&reach.value, &tolerance, &separated);
+	exceeds_306580(&reach.value, &limit, &separated);
 	if (separated)
 	{
 		return answer_306580(false);
