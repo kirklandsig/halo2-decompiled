@@ -5652,6 +5652,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // NOT kept: no permitted confirmed gain; original executable body restored.
 // Individual range helpers confirm 43/43; uniform use 61. NOT kept: selecting one
 // parallel producer only changes later rotation registers; native samplers already agree.
+// P552: Complementary default-direction outcomes in bool/byte/short/long; wider original actor carriers
+// short/long; overlap-safe fallback transfer and complete fallback source object.
+// Fast scores 168/168/172/171/85/84/182/58. NOT kept: no permitted confirmed gain; original body restored.
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -6859,6 +6862,10 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // 290/290 at 1064. NOT kept: admission grows away from native 1052; new one-use
 // outcomes also require equality. Header gains are below eight. Original body restored;
 // native dead flag bytes and shared readiness completion remain.
+// P552: Complete failure-owned readiness in bool/byte/short/long; selected-hand bool/long/word; sign-
+// extended slot result.
+// Fast scores 343/343/350/347/298/295/298/291. NOT kept: no permitted confirmed gain; original body restored.
+// NOT kept: widened slot gains seven and widened hand gains three, both below the keep gate.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -8292,6 +8299,9 @@ struct s_unit_turn_state_view
 // vector transfers at snapshots/targets/neutral velocities/flat snapshots 408/424/406/325.
 // NOT kept: ties or regressions; native frame 0x7c, deferred saves, moved/rate homes
 // and separate step divisions remain. Original entire body and headers restored.
+// P552: Three single-exit eligibility regions; complete per-vector unchanged producers aim/look/both;
+// read-only and existing typed state receivers.
+// Fast scores 268/268/268/268/268/268/268/268. NOT kept: no permitted confirmed gain; original body restored.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {

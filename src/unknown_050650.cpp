@@ -864,6 +864,9 @@ struct s_collision_result_buffer_1697c0
 // at pitch fallback/candidate/winner/both final outputs 350/348/352/359. NOT kept: no qualifying
 // native scratch/home repair; original full body, helper graph and headers restored.
 // Frame-bottom magnitude/random/sine scratch, axis/result homes and rotations remain.
+// P552: Standard forward and uninitialized component transfers at pitch fallback, sample acquisition,
+// best-hit retention and both final publications.
+// Fast scores 349/350/352/348/349/350/352/348. NOT kept: no permitted confirmed gain; original body restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
