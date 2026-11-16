@@ -7047,6 +7047,17 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax D (11-16): no lower score (184): typing the transform as int gives 179, five points under the keep-bar, so
+// the body stays as it is; what is left is retail's register permutation (the zero constant in edi, the outer counter
+// in esi, the section pointer in ebx, ours in ebx, edi and esi) and retail's doubled handle test.
+// MiniMax D (11-16): no lower score (184): retail's table handle is tested twice (a setne'd bool test, then a fresh
+// `cmp eax,-1` and the sign test), and repeating the NONE comparison inside the available branch reproduces that at 179,
+// but that comparison is always true where it stands, so the body stays at 184. What is left is the register
+// permutation: retail keeps the zero constant in edi, the outer counter in esi and the section pointer in ebx, ours has
+// them in ebx, edi and esi, and the handle's own test uses ebx as the zero where retail uses edi. Tried this round: the
+// handle test as `!= NONE` before `>= 0` (179 with the repeated comparison, 204 without the bool), the same test through
+// the context's dword (179), the outer counter, part counter and pass counter as int (179 each), the section index as
+// int (179) or byte (205), the transform as word (196), the handle as int (179), the availability flag as byte (179).
 // score 184 (was 199), fast build (b6L walk, 11-06): retail walked statement by statement. Fixed: (1) the
 // else branch of the transform test passes the section loop index to function_151e0, not NONE: retail's
 // call at 0x4c7ed loads no esi, and esi holds the loop counter there (xor esi,esi 0x4c74e ... inc esi
