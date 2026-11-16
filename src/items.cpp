@@ -578,7 +578,23 @@ struct s_item_collision_bsp
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
-// score 202 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
+// score 198 (was 200; full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
+// Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
+// the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
+// row 0x58, section 0xc8 + 0x70 and matrix products (up.k, left.j, forward.i order) 0x10d0c2..0x10d19f; distance sum z,y,x then -d
+// 0x10d1b8..0x10d1ed; 0.05 - distance 0x10d1f1..0x10d1fb; spin gate (ignore_object NONE, flag0 of 0xc1, flag5 or flag6) 0x10d245..0x10d275;
+// axis from marker up or the g_4687b0 vector 0x10d293..0x10d2c8; random range -pi/2..pi/2 0x10d2d6..0x10d2e0; sqrt sum order j,k then i
+// and float rounding of the speed (fst dword) 0x10d310..0x10d328; seed step, unsigned >>16 convert and 1/65535 0x10d338..0x10d35c; cross
+// product components and the length test 0x10d366..0x10d3d1; second seed draw x speed x pi/2 0x10d3de..0x10d413; linear (velocity + impulse)
+// and angular (spin + angular for i, angular + spin for j and k) sums 0x10d439..0x10d4a7; all constants read from retail match.
+// Only change: the path-A plane copy runs d, k, j, i (retail loads them in that order, 0x10d0a5..0x10d0bd; evaluation order only), 202 -> 200 in that fast build.
+// Precision difference (not fixed): retail keeps the spin scale unrounded on the x87 stack from 0x10d2e0 / 0x10d413 to the final fmul
+// st(1) at 0x10d439 (spin i/j are float-stored products 0x10d2eb, 0x10d41f, and k is scaled at 0x10d439 after the join); ours stores the scale
+// as a float first. Retail passes the plane index to 0x14a300 sign-extended (movsx edx at 0x10d097 and 0x10d0f4; the other callers do the
+// same, e.g. 0x17ddcb and 0x245870); ours has a word move. Declaring 0x14a300's parameter `long` (the definition in src/unknown_14a280.cpp and the
+// declarations in items.cpp, unknown_17d9a0.cpp, unknown_181a10.cpp, unknown_1fa590.cpp) keeps 0x14a300 MATCH and gives 200 -> 198 here (both movsx, fast build), not applied: other files.
+// Tried: y*j + z*k term order for the distance (200). Frame 0xa0 agrees; plane-index width, plane joins and pending spin-k homes differ.
+// Earlier 202 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
 // Earlier 211 (was 249): one shared spin scale for both spin branches, with the third spin
 // component scaled after the branch so the pending value and the scale stay on the x87 stack.
 // Plane-index width, plane-join registers and the transform product rows still differ.
@@ -796,10 +812,10 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 				{
 					s_item_collision_data *collision = (s_item_collision_data *)g_4e0340;
 					bsp3d_get_plane((s_bsp3d *)collision, collision->surfaces[item->material_index].plane_index, &plane);
-					surface_plane.i = plane.i;
-					surface_plane.j = plane.j;
-					surface_plane.k = plane.k;
 					surface_plane.d = plane.d;
+					surface_plane.k = plane.k;
+					surface_plane.j = plane.j;
+					surface_plane.i = plane.i;
 				}
 				else
 				{

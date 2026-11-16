@@ -1689,7 +1689,7 @@ struct s_cache_lookup_key
 };
 
 // @retail 0x1e280
-void *function_1e280(short index, bool flag, long part)
+void *function_1e280(short index, bool flag, short part)
 {
 	(void)&part;
 	s_cache_lookup_key key;
@@ -4601,6 +4601,19 @@ void function_2dd30()
 short function_1358c0(short format);
 void *function_135a30(s_type_7ba8e9 const *bitmap, short mipmap_index, short x, short y);
 
+// score 191 (was 195), fast build (b6M walk, 11-06): the surface read for front_value is the depth-stencil
+// surface (retail 0x13fad loads device + 0x1a08 and 0x13fb3 tests it; it was GetRenderTarget, device + 0x1a04),
+// and the explicit BlockUntilNotBusy call is gone (retail has the one call at 0x14049, made by the inlined
+// LockRect). The right and bottom limits are compared as 32-bit sums (0x13f44 add, 0x13f52 cmp) before the
+// short result is formed; the soft display filter is read as a byte (0x1411d, 0x14169, 0x14175); the bitmap's
+// format is read again before the pitch call (0x1407f) instead of kept in a local. The 64-bit frame counter
+// at the end matches. Still differing: retail copies the screen rectangle to the frame as two dwords (0x13f37,
+// 0x13f46) and reads the left and right edges from the registers but the top and bottom from the copy
+// (0x13f4a, 0x13f60); ours keeps all four in registers, and the frame slots after it sit four bytes apart.
+// Tried (fast build): the old 16-bit sum compare (192), the rectangle read straight from the global (196),
+// a named rectangle type for the copy (198), the global's two dwords as an s_buffer_pair (199, casts the
+// global's address), swapping the two filter stores (194), keeping the format local (193). The (byte) cast on
+// front_value stays: retail tests a byte (0x13f9f), but the callers declare (long, long), so the type is not changed.
 // @retail 0x13f10
 void function_13f10(long bitmap_value, long front_value)
 {
@@ -4609,31 +4622,29 @@ void function_13f10(long bitmap_value, long front_value)
     {
         short_rect_pair rectangle_pair;
         rectangle_pair.a = g_485a8a.a;
-        short right = (short)(rectangle_pair.a.v1 + *(short *)(bitmap + 4));
-        if (rectangle_pair.a.v3 <= right) right = rectangle_pair.a.v3;
-        short bottom = (short)(rectangle_pair.a.v0 + *(short *)(bitmap + 6));
-        if (rectangle_pair.a.v2 <= bottom) bottom = rectangle_pair.a.v2;
+        long right_limit = rectangle_pair.a.v1 + *(short *)(bitmap + 4);
+        short right = rectangle_pair.a.v3 <= right_limit ? rectangle_pair.a.v3 : right_limit;
+        long bottom_limit = rectangle_pair.a.v0 + *(short *)(bitmap + 6);
+        short bottom = rectangle_pair.a.v2 <= bottom_limit ? rectangle_pair.a.v2 : bottom_limit;
         long width = right - rectangle_pair.a.v1;
         long height = bottom - rectangle_pair.a.v0;
-        short format = *(short *)(bitmap + 0xc);
-        if ((format == 11 || format == 10) && *(short *)(bitmap + 0x14) == 0)
+        if ((*(short *)(bitmap + 0xc) == 11 || *(short *)(bitmap + 0xc) == 10) && *(short *)(bitmap + 0x14) == 0)
         {
             D3DSurface *surface;
             if ((byte)front_value != 0)
-                D3DDevice::GetRenderTarget(&surface);
+                D3DDevice_GetDepthStencilSurface(&surface);
             else
                 D3DDevice::GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &surface);
             D3DSURFACE_DESC description;
             D3DSurface_GetDesc(surface, &description);
             if (description.Size == description.Width * description.Height * 4)
             {
-                D3DResource_BlockUntilNotBusy(surface);
                 D3DLOCKED_RECT locked;
                 D3DSurface_LockRect(surface, &locked, NULL, 0);
                 byte *source = (byte *)((dword)locked.pBits | 0xf0000000);
                 if (source)
                 {
-                    long size = function_1358c0(format) * width / 8;
+                    long size = function_1358c0(*(short *)(bitmap + 0xc)) * width / 8;
                     for (long y = 0; y < height; ++y)
                     {
                         memcpy(function_135a30((s_type_7ba8e9 *)bitmap, 0, 0, (short)y), source, size);
@@ -4648,11 +4659,11 @@ void function_13f10(long bitmap_value, long front_value)
     D3DDevice_SetBackBufferScale(1.0f, 1.0f);
     D3DDevice_Swap(0);
     D3DDevice_SetBackBufferScale(1.0f, 1.0f);
-    if (g_467008 != g_485acc || g_46700c != g_485ad0)
+    if (g_467008 != g_485acc || g_46700c != (byte)g_485ad0)
     {
         D3DDevice_SetFlickerFilter(g_485acc);
-        D3DDevice_SetSoftDisplayFilter(g_485ad0);
-        g_46700c = g_485ad0;
+        D3DDevice_SetSoftDisplayFilter((byte)g_485ad0);
+        g_46700c = (byte)g_485ad0;
         g_467008 = g_485acc;
     }
     ++g_485aa0;
@@ -4730,10 +4741,24 @@ long function_184000(long index, long bit);
 // transform lookup writes the three floats separately in each of its two paths, as retail does. With
 // the volatile `out` read also dropped this is 301, but the caller 0x44ac0 then loses its match
 // (0 -> 58), so the read stays.
-// score 303 (was 332): our body is 24 bytes shorter than retail's (973 against 997); retail keeps the
-// output pointer in edi and the definition pointer in ecx, and passes the index in ecx and the output
-// pointer in eax, while ours takes the index in ax and the output pointer on the stack; the outlined
-// helper's argument order still differs from retail's.
+// b6T walk (11-06, against retail 0x45ce0-0x460c2, fast build, base r727 845b9213e): every block was compared
+// with retail and the logic agrees: field offsets, conditions, callees and arguments (1e280 gets the part and
+// the plane flag, 184000 the instance and bit), the three float stores of each transform path and the
+// bias term. No behaviour difference was found. Spelling changes that moved the score (fast build):
+// the instance test as TEST_FIELD_BIT((unknown00 >> 12) & 1), as retail's shr 0xc / test dl,1 (303 -> 299);
+// the definition read straight from each of the three paths instead of through a section local, retail
+// 0x45d49 and 0x45d7a (299 -> 275); the body inside `if (definition)` with one `return false` after it, so the
+// null path joins the common tail as at 0x45d82 -> 0x45f0f (275 -> 271); 0x1e280's third parameter as `short`
+// (271 -> 239): retail loads the caller's `part` slot as a whole dword (0x45d88, again at 0x45e2e) and pushes it
+// unextended at 0x45f24 for both calls, where a `long` parameter needs a movsx, and 0x1e280 only uses the low
+// word (0x1e291-0x1e29d); 0x1e280 still matches and has no other caller.
+// score 239 (was 303): our body is 15 bytes shorter than retail's (982 against 997); retail keeps `visible` in
+// cl and the stack slot (0x45da9, 0x45e32-0x45e36) where we store a setne result, returns cl for a failed
+// visibility test (0x460be) where we return a constant, and keeps the tag record in edx across the
+// table_entry_data call (0x45e7d) where we use ebx. Tried: `bool function_184000` (no setne) 277,
+// `byte visible` 315, `bool result = false` with one `return result` 313 (these three at 271), the commuted material sum,
+// every order of the four terms of the plane sum (all the same score), dropping the volatile `out` read 323
+// (callers 0x44ac0 and 0x44c90 lose their match: 0 -> 58 and 53).
 // @retail 0x45ce0
 bool function_45ce0(short index, byte *out, short part, short transform_index)
 {
@@ -4749,91 +4774,92 @@ bool function_45ce0(short index, byte *out, short part, short transform_index)
     else
     {
         byte *structure = (byte *)g_4e0348;
-        byte *section;
-        if (!(entry->unknown00 & 0x1000))
-            section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
+        if (!TEST_FIELD_BIT((entry->unknown00 >> 12) & 1))
+            definition = *(byte **)(*(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0 + 0x50);
         else
         {
             byte *instance = *(byte **)(structure + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
-            section = *(byte **)(structure + 0x13c) + *(short *)(instance + 0x34) * 0xc8;
+            definition = *(byte **)(*(byte **)(structure + 0x13c) + *(short *)(instance + 0x34) * 0xc8 + 0x50);
         }
-        definition = *(byte **)(section + 0x50);
     }
-    if (!definition) return false;
-    byte *record = *(byte **)(definition + 4) + part * 0x48;
-    *(real *)(out + 0x10) = 0.0f;
-    *(real *)(out + 0x28) = *(real *)(record + 0x2c) > 0.0f ? *(real *)(record + 0x2c) : 1.0f;
-    byte *material;
-    bool visible = true;
-    if (entry->tag != NONE)
-        material = *(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x64) + *(short *)(record + 4) * 32;
-    else
+    if (definition)
     {
-        material = *(byte **)((byte *)g_4e0348 + 0xa8) + *(short *)(record + 4) * 32;
-        long instance = (entry->flags >> 18) & 0x7ff;
-        if (instance == 0x7ff) instance = NONE;
-        long bit = material[0x1c] == 0xff ? NONE : material[0x1c];
-        visible = (byte)function_184000(instance, bit) != 0;
-    }
-    *(long *)out = *(long *)(material + 0xc);
-    out[0x14] = false;
-    if (!visible) return visible;
-    if (entry->tag != NONE)
-    {
-        long section_index = (entry->flags >> 9) & 0x1ff;
-        if (section_index == 0xff) return false;
-        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
-        byte *section = *(byte **)(tag + 0x28) + section_index * 0x5c;
-        byte *transforms = (byte *)table_entry_data(entry->unknown08);
-        short selected = *(short *)(section + 0x2c);
-        if (selected != NONE)
+        byte *record = *(byte **)(definition + 4) + part * 0x48;
+        *(real *)(out + 0x10) = 0.0f;
+        *(real *)(out + 0x28) = *(real *)(record + 0x2c) > 0.0f ? *(real *)(record + 0x2c) : 1.0f;
+        byte *material;
+        bool visible = true;
+        if (entry->tag != NONE)
+            material = *(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x64) + *(short *)(record + 4) * 32;
+        else
         {
-            byte *transform;
-            if (tag[4] & 4)
+            material = *(byte **)((byte *)g_4e0348 + 0xa8) + *(short *)(record + 4) * 32;
+            long instance = (entry->flags >> 18) & 0x7ff;
+            if (instance == 0x7ff) instance = NONE;
+            long bit = material[0x1c] == 0xff ? NONE : material[0x1c];
+            visible = (byte)function_184000(instance, bit) != 0;
+        }
+        *(long *)out = *(long *)(material + 0xc);
+        out[0x14] = false;
+        if (!visible) return visible;
+        if (entry->tag != NONE)
+        {
+            long section_index = (entry->flags >> 9) & 0x1ff;
+            if (section_index == 0xff) return false;
+            byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
+            byte *section = *(byte **)(tag + 0x28) + section_index * 0x5c;
+            byte *transforms = (byte *)table_entry_data(entry->unknown08);
+            short selected = *(short *)(section + 0x2c);
+            if (selected != NONE)
             {
-                selected = ((short *)(transforms + 4))[transform_index * 2];
-                transform = transforms + 0x44 + selected * 0x30;
+                byte *transform;
+                if (tag[4] & 4)
+                {
+                    selected = ((short *)(transforms + 4))[transform_index * 2];
+                    transform = transforms + 0x44 + selected * 0x30;
+                }
+                else transform = transforms + 0x44 + selected * 0x30;
+                *(real *)(out + 4) = *(real *)(transform + 0xc);
+                *(real *)(out + 8) = *(real *)(transform + 0x1c);
+                *(real *)(out + 0xc) = *(real *)(transform + 0x2c);
             }
-            else transform = transforms + 0x44 + selected * 0x30;
-            *(real *)(out + 4) = *(real *)(transform + 0xc);
-            *(real *)(out + 8) = *(real *)(transform + 0x1c);
-            *(real *)(out + 0xc) = *(real *)(transform + 0x2c);
+            else
+            {
+                *(real *)(out + 4) = *(real *)(transforms + 0x50);
+                *(real *)(out + 8) = *(real *)(transforms + 0x60);
+                *(real *)(out + 0xc) = *(real *)(transforms + 0x70);
+            }
+            if (entry->unknown10[11] & 15)
+                *(real *)(out + 0x10) = ((entry->unknown10[11] & 15) - 5) * 0.001f;
+        }
+        else if (entry->unknown00 & 0x1000)
+        {
+            byte *instance = *(byte **)((byte *)g_4e0348 + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
+            void *plane = function_1e280(*(short *)(instance + 0x34), true, part);
+            out[0x14] = plane != NULL;
+            if (plane) memcpy(out + 0x18, plane, 16);
+            *(point3f *)(out + 4) = *(point3f *)(instance + 0x3c);
+            if (out[0x14])
+            {
+                real x = *(real *)(out + 0x18), y = *(real *)(out + 0x1c), z = *(real *)(out + 0x20);
+                *(real *)(out + 0x18) = *(real *)(instance + 0x1c) * z + *(real *)(instance + 0x10) * y + *(real *)(instance + 4) * x;
+                *(real *)(out + 0x1c) = *(real *)(instance + 0x20) * z + *(real *)(instance + 0x14) * y + *(real *)(instance + 8) * x;
+                *(real *)(out + 0x20) = *(real *)(instance + 0x24) * z + *(real *)(instance + 0x18) * y + *(real *)(instance + 0xc) * x;
+                *(real *)(out + 0x24) = *(real *)(out + 0x24) * *(real *)instance +
+                    *(real *)(instance + 0x30) * *(real *)(out + 0x20) + *(real *)(instance + 0x2c) * *(real *)(out + 0x1c) +
+                    *(real *)(instance + 0x28) * *(real *)(out + 0x18);
+            }
         }
         else
         {
-            *(real *)(out + 4) = *(real *)(transforms + 0x50);
-            *(real *)(out + 8) = *(real *)(transforms + 0x60);
-            *(real *)(out + 0xc) = *(real *)(transforms + 0x70);
+            void *plane = function_1e280((short)((entry->flags >> 9) & 0x1ff), false, part);
+            out[0x14] = plane != NULL;
+            if (plane) memcpy(out + 0x18, plane, 16);
+            *(point3f *)(out + 4) = *(point3f *)(record + 0x10);
         }
-        if (entry->unknown10[11] & 15)
-            *(real *)(out + 0x10) = ((entry->unknown10[11] & 15) - 5) * 0.001f;
+        return visible;
     }
-    else if (entry->unknown00 & 0x1000)
-    {
-        byte *instance = *(byte **)((byte *)g_4e0348 + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
-        void *plane = function_1e280(*(short *)(instance + 0x34), true, part);
-        out[0x14] = plane != NULL;
-        if (plane) memcpy(out + 0x18, plane, 16);
-        *(point3f *)(out + 4) = *(point3f *)(instance + 0x3c);
-        if (out[0x14])
-        {
-            real x = *(real *)(out + 0x18), y = *(real *)(out + 0x1c), z = *(real *)(out + 0x20);
-            *(real *)(out + 0x18) = *(real *)(instance + 0x1c) * z + *(real *)(instance + 0x10) * y + *(real *)(instance + 4) * x;
-            *(real *)(out + 0x1c) = *(real *)(instance + 0x20) * z + *(real *)(instance + 0x14) * y + *(real *)(instance + 8) * x;
-            *(real *)(out + 0x20) = *(real *)(instance + 0x24) * z + *(real *)(instance + 0x18) * y + *(real *)(instance + 0xc) * x;
-            *(real *)(out + 0x24) = *(real *)(out + 0x24) * *(real *)instance +
-                *(real *)(instance + 0x30) * *(real *)(out + 0x20) + *(real *)(instance + 0x2c) * *(real *)(out + 0x1c) +
-                *(real *)(instance + 0x28) * *(real *)(out + 0x18);
-        }
-    }
-    else
-    {
-        void *plane = function_1e280((short)((entry->flags >> 9) & 0x1ff), false, part);
-        out[0x14] = plane != NULL;
-        if (plane) memcpy(out + 0x18, plane, 16);
-        *(point3f *)(out + 4) = *(point3f *)(record + 0x10);
-    }
-    return visible;
+    return false;
 }
 
 
@@ -7020,29 +7046,28 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
-// MiniMax D (11-06): no new form, no lower score; our ebx save in the prologue against retail's inside the
-// loop keeps the frame at 0xb0 instead of 0xac, so every stack reference sits four bytes off; this round the
-// outer loop as a while loop gives 199 and the same loop with the counter bumped on every path gives 199,
-// and neither moves the frame off 0xb0, the count in a local gives 237 and the handle tested twice against
-// NONE gives 240.
-// MiniMax G (11-05): no new form, no lower score; dropping the table local scores 200 and dropping the availability flag 240, and the frame stays 0xb0 against retail's 0xac.
-// MiniMax G (11-04): score 199 (was 223): the material pointer is loaded before the part type is
-// tested and the cull-mode global is no longer zeroed; the handle's sign test as (handle & 0x80000000)
-// == 0 gives retail's test/js but scores 224-240, and ours still keeps the ebx zero register where
-// retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax
-// at 0x3e380, whose declaration is in another file.
-// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
-// score 199 (was 241): the handle now goes into the context's dword at offset 8 and the availability
-// flag drives the table test, as retail does; left is our ebx zero register against retail's
-// edi and the loop counter in edi against retail's esi. Round 61: the permutations now arrive in ecx at
-// 0x3e380, a member of s_model_permutations, as retail; the count stays 223.
-// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
-// Earlier at 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
-// higher (the context buffer at [esp+0x44] against retail's [esp+0x3c], the indices at [esp+0x38]
-// against [esp+0x30]), so every reference in the body is at another offset.
-// Earlier at 241 (was 260): the length is retail's 877 bytes now, but retail keeps the tag-instance
-// pointer in ebp and saves ebx only where it starts to use it, while ours saves ebx in the
-// prologue and compares the handle against a zero register.
+// score 184 (was 199), fast build (b6L walk, 11-06): retail walked statement by statement. Fixed: (1) the
+// else branch of the transform test passes the section loop index to function_151e0, not NONE: retail's
+// call at 0x4c7ed loads no esi, and esi holds the loop counter there (xor esi,esi 0x4c74e ... inc esi
+// 0x4c9c7), while 0x151e3 compares esi with -1 (behaviour fix; alone 199 -> 221). (2) The part type and the
+// material tag are read from memory at each use, as retail does (movzx eax, word ptr [esi] before every
+// function_13d9f0 call at 0x4c8c0, mov edi,[eax+0xc] at 0x4c940); with a `type` local ours hoisted the
+// call out of the pass loop (retail's evaluation order, not a behaviour fix; 221 -> 193). (3) The volatile
+// on geometry is gone (193 -> 184); the length is retail's 877 and the frame retail's 0xac. (4) The (byte)
+// cast on the word at section + 0x1a is gone: retail pushes the zero-extended word (0x4c929) where ours
+// still loads a byte, because function_1cdd0 declares `byte flags`; its callee reads only the low byte
+// (0x1cdde), so no behaviour differs, and the score is the same. Still differs: ours creates the zero in
+// ebx before the test of function_3e320's result where retail makes it in edi after it (0x4c6fe), the
+// loop counter is in edi (copied to esi before function_151e0) where retail keeps it in esi, the section
+// is in esi where retail uses ebx, and ours tests the table handle once (jl) where retail tests NONE
+// then the sign (0x4c727-0x4c72e). Tried: handle != NONE && handle >= 0 for the table (204), the outer
+// counter declared before the for (184), `long type` local for the part type (188), `<= 0` for the three
+// word tests (193, retail's jbe, same score). Earlier rounds (MiniMax, 11-03 to 11-06), before the frame
+// matched: the handle as (handle & 0x80000000) == 0 gives retail's test/js but scored 224-240, dropping the
+// table local 200, dropping the availability flag 240, the count in a local 237, the outer loop as a while
+// loop 199, the handle tested twice against NONE 240; the material pointer is loaded before the part type is
+// tested and the cull-mode global is no longer zeroed (223 -> 199); the permutations arrive in ecx at 0x3e380
+// as retail, and the handle goes into the context's dword at offset 8.
 // @retail 0x4c690
 void function_4c690(long tag, transform4x3f const *nodes)
 {
@@ -7071,7 +7096,7 @@ void function_4c690(long tag, transform4x3f const *nodes)
                 if (section_index == 255) continue;
                 byte *section = *(byte **)(definition + 0x28) + section_index * 0x5c;
                 if (!*(word *)(section + 4) || !*(word *)(section + 6) || !*(word *)(section + 8)) continue;
-                byte *volatile geometry = 0;
+                byte *geometry = 0;
                 if (!g_4e6494 || function_12de70((s_geometry_block_info *)(section + 0x38), 0))
                     geometry = *(byte **)(section + 0x34);
                 short transform = *(short *)(section + 0x2c);
@@ -7080,18 +7105,16 @@ void function_4c690(long tag, transform4x3f const *nodes)
                     D3DDevice_SetVertexShaderConstantFast(-46, g_485a5c->transforms[transform], 3);
                     g_5093d8 = 0;
                 }
-                else function_151e0(NONE);
+                else function_151e0(index);
                 for (long part_index = 0; part_index < *(long *)geometry; ++part_index)
                 {
                     byte *part = *(byte **)(geometry + 4) + part_index * 0x48;
                     short material_index = *(short *)(part + 4);
                     if (material_index == NONE) continue;
                     byte *material = *(byte **)(definition + 0x64) + material_index * 0x20;
-                    word type = *(word *)part;
-                    if (type == 0 || type == 5 || type == 1) continue;
-                    long material_tag = *(long *)(material + 0xc);
-                    if (material_tag == NONE) continue;
-                    byte *shader = g_4e3b44[material_tag & 0xffff].bytes;
+                    if (*(word *)part == 0 || *(word *)part == 5 || *(word *)part == 1) continue;
+                    if (*(long *)(material + 0xc) == NONE) continue;
+                    byte *shader = g_4e3b44[*(long *)(material + 0xc) & 0xffff].bytes;
                     byte *shader_definition = g_4e3b44[*(long *)(shader + 4) & 0xffff].bytes;
                     byte *tables = *(byte **)(shader_definition + 0x5c);
                     byte *stage = *(byte **)(tables + 4);
@@ -7099,7 +7122,7 @@ void function_4c690(long tag, transform4x3f const *nodes)
                     word *passes = (word *)(*(byte **)(tables + 0xc) + (*(word *)stage & 0x1ff) * 2 + 0x1e);
                     for (long pass = 0; pass < (*passes >> 9); ++pass)
                     {
-                        if (!function_13d9f0(type)) continue;
+                        if (!function_13d9f0(*(word *)part)) continue;
                         byte *entry = *(byte **)(tables + 0x14) + ((*passes & 0x1ff) + pass) * 10;
                         byte *pass_definition = g_4e3b44[*(long *)(entry + 4) & 0xffff].bytes;
                         byte *program = *(byte **)(*(byte **)(pass_definition + 0x20) + 4);
@@ -7107,9 +7130,9 @@ void function_4c690(long tag, transform4x3f const *nodes)
                         if (function_1caa0(program_tag, section + 4, (word const *)part, geometry, 0, 0, 0))
                         {
                             if (*(long *)(definition + 0x14) > 0)
-                                function_1cdd0(*(real **)(definition + 0x18), (byte)*(word *)(section + 0x1a));
+                                function_1cdd0(*(real **)(definition + 0x18), *(word *)(section + 0x1a));
                             else function_1cdd0(0, 0);
-                            function_1bbf0(material_tag, 0, 15, pass, 0, 1024.0f);
+                            function_1bbf0(*(long *)(material + 0xc), 0, 15, pass, 0, 1024.0f);
                             D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
                             word const *vertices = *(word **)(geometry + 0x24) + *(word *)(part + 6);
                             long count = *(word *)(part + 8);
