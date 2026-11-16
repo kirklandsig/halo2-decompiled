@@ -132,13 +132,16 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 {
 	if (flags == 0x77 && (element->owner & 1) == 0)
 	{
-		for (int r = 0; r < rays->count; r++)
+		if (0 < rays->count)
 		{
-			float &slot = ((float *)left.data)[r];
-			float const distance = collector->add_box(element->owner, r);
-			float const kept = slot;
-			((float *)left.data)[r] = kept < distance ? kept : distance;
-			collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
+			for (int r = 0; r < rays->count; r++)
+			{
+				float &slot = ((float *)left.data)[r];
+				float const distance = collector->add_box(element->owner, r);
+				float const kept = slot;
+				((float *)left.data)[r] = kept < distance ? kept : distance;
+				collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
+			}
 		}
 	}
 }
@@ -147,7 +150,10 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
-// score 530 (was 539): the start positions read the ray's axes (or the sweep's)
+// score 436 (was 530): the ray loop is guarded by its own entry test
+// (`if (0 < rays->count)`, no code of its own; it gives retail's register roles
+// from the start). Extent now agrees; stack homes remain.
+// Before, 530 (was 539): the start positions read the ray's axes (or the sweep's)
 // through one constant pointer, each axis's size before its data.
 // Before, 539 (was 539): frame 0xe8 agrees; the first array home and later
 // pointer/array homes differ. Vector-word start values 539; signed words
