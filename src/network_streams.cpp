@@ -32,10 +32,9 @@ static inline long sequence_window_first(s_sequence_window const *window)
 static inline long sequence_window_index(s_sequence_window const *window, long sequence)
 {
 	long index = NONE;
-	long oldest = window->oldest;
-	if (sequence > oldest && sequence <= window->newest)
+	if (sequence > window->oldest && sequence <= window->newest)
 	{
-		long offset = sequence - oldest - 1;
+		long offset = sequence - window->oldest - 1;
 		index = (offset + sequence_window_first(window)) % window->capacity;
 	}
 	return index;
@@ -1014,32 +1013,34 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 102 (212 B); `oldest != newest` with the window-pointer bound 101 (213 B); `count > 0` with the window-pointer bound
 // in the test or in a local 91/91 (221 B); that with `return 4` in the found path 127 (190 B). In all of them `next`
 // takes ECX (retail ESI) and `time` is then cached in EBP for the get_next_send argument and the found path.
+// MiniMax C (11-16), NOT kept: 44 (was 60) with sequence_window_count expanded in place (window->newest -
+// window->oldest), the loop bound re-read as m_message_window.newest instead of the newest local, and an oldest
+// local in the shared sequence_window_index helper. Expanding an existing accessor is never kept; the helper's
+// local alone gives 90 (fast).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
 	long type = 0;
-	if (!get_next_send(&type, sequence, size, time))
+	if (!get_next_send(&type, sequence, size, time) && sequence_window_count(&m_message_window))
 	{
 		s_sequence_window *window = &m_message_window;
-		if (window->newest - window->oldest)
+		long newest = window->newest;
+		for (long next = m_next_sequence + 1; next < newest; next++)
 		{
-			for (long next = m_next_sequence + 1; next < m_message_window.newest; next++)
+			s_reliable_message *message;
+			long index = sequence_window_index(window, next);
+			message = 0;
+			if (index != NONE)
+				message = &m_messages[index];
+			word flags = message->flags;
+			if ((flags & 1) && !(flags & 2))
 			{
-				s_reliable_message *message;
-				long index = sequence_window_index(window, next);
-				message = 0;
-				if (index != NONE)
-					message = &m_messages[index];
-				word flags = message->flags;
-				if ((flags & 1) && !(flags & 2))
-				{
-					*sequence = next;
-					*size = message->size;
-					*time = message->unknown08;
-					message->flags |= 2;
-					type = 4;
-					break;
-				}
+				*sequence = next;
+				*size = message->size;
+				*time = message->unknown08;
+				message->flags |= 2;
+				type = 4;
+				break;
 			}
 		}
 	}
