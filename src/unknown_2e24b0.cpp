@@ -51,8 +51,9 @@ __forceinline void mark_holding_x_2e24b0(class_2e1090 *sweep, int count, int low
 		{
 			cell_2e1090 *cell = &sweep->cells[slot - 1];
 			flip_bit_2e1090(bits, cell->box);
+			int remaining = cell->boxes.size - 1;
 			unsigned short *held = cell->boxes.data;
-			for (int remaining = cell->boxes.size - 1; remaining >= 0; remaining--)
+			for (; remaining >= 0; remaining--)
 			{
 				flip_bit_2e1090(bits, *held);
 				held++;
@@ -188,7 +189,8 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	}
 }
 
-// score 77 (was 106): the quantizing (two-level helper, its steps as separate
+// score 75 (was 106; 77 with the held list read before its count): the
+// quantizing (two-level helper, its steps as separate
 // statements), the appends, the bit setter and the y/z test (in-place
 // statements) now match retail's code. Still: in the grid cell's walk ours
 // reloads the cell pointer into edx where retail uses ecx, and in the pair
@@ -226,9 +228,10 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 263 (was 312): the cell lookup reads the list's count first and
-// returns its index from inside the loop, as both of retail's lookups do
-// (a pointer walk 312; the count and data both held 390; a guarded loop 372).
+// score 261 (was 312): the cell lookup reads the list's count first and
+// returns its index from inside the loop, as both of retail's lookups do (a
+// pointer walk 312; the count and data both held 390; a guarded loop 372),
+// and the held count is read before the held list (263 the other way).
 // Before: 312 (was 328): remaining index/receiver slots, scan loads and tail
 // differ. Earlier 328 at retail length retained the in-place y/z test; its
 // count, index, receiver and array slots differed, the second x walk saved
