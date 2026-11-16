@@ -1242,6 +1242,9 @@ struct s_item_flags_view_10b850
 // MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
+// [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
+// against 0x12c); a named bool for the bits measures the same 824.
 // MiniMax E (11-15): no new form, no lower score (824): the frame is still 0x154 bytes against retail's 0x12c, so every stack home sits 0x28 further out, and retail keeps the two entry flags in stack slots where this build holds them in registers.
 // MiniMax G (11-13): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c,
 // the entry's flag byte differs (retail shifts the value and stores the parity byte where this
