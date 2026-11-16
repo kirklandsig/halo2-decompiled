@@ -1243,7 +1243,8 @@ long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
 // MiniMax B (11-05): no new form, no lower score (6); the elapsed-store forms (a named local for the difference, the start read inlined, a named local for the clock read) match on the reduced image and stay at 6 in the full build; all six differences follow from 0x7e210's full-image convention (ours reads the session from the stack, retail passes it in EAX), which also orders the elapsed store after the stack cleanup and shifts the later calls; 0x7e210 has three call sites and sits in src/unknown_07a9a0.cpp, which is not this lane's file.
-// score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
+// Matches retail (coordinator 11-16, lane 5 r188's lead): with 0x7e210's group-highest scan through 0x631f0 the session
+// reaches 0x7e210 in EAX. Earlier 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differed: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
 // field and leaves one more pad byte. Earlier: the group-identity copy matches retail's
@@ -1329,6 +1330,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // Round 123 (m3 lane 16, fast control 8 / plain 6): five new 0x7e210 forms (its note, round 123: the conditional balance
 // clear, the single-exit form with it, with the player value through 0x63220, with grouped capacity labels, with a long
 // histogram) leave this at 8 each; the top 0x192e60 call inlines in all of them. Still BLOCKED-BY 0x7e210.
+// Round 188 (m3 lane 5, fast control 8 / plain 6, 0x7e210 766; trials in 0x7e210, all restored): its machine-id copy declared
+// in the group loop 8 (766); its group-highest scan through the existing 0x631f0 MATCH here (0x7e210 964 at 2684 bytes: the
+// session arrives in EAX with nothing else changed; not kept by the lane: a rise there; build/r188/lead-0x73530-631f0-call.patch; applied by the coordinator 11-16: MATCH in the full check); that
+// with `long histogram[16]` MATCH (984, frame 0xb4); that with the loop's variant through 0x192e60 MATCH (1011); the group
+// named before the written-out scan 8 (766). Still BLOCKED-BY 0x7e210.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
