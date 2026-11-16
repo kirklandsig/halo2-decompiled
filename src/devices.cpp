@@ -1024,6 +1024,12 @@ struct s_device_machine_view
 // `word const *` to the group's flags 116 (655 B); the group pointer formed at the top of the case (ahead of the position
 // test) with direct masks 167 (661 B), with the lane S word and mask 170 (663 B); the machine flags read at the top of the
 // case on the lane S form 135 (657 B). Body unchanged.
+// M3 lane 3 r249 (fast; base 2, the zero store in place, only the word load differs): the machine flags through a
+// machine pointer re-derived from the index by DEVICE_GET 2 (same code); that pointer with the group pointer and direct
+// field masks 122 (the pushed ESI); a machine pointer local (the device cast) with the group word read after the machine
+// test 122; the machine pointer as `type == 7 ? device : NULL`, tested in place of the type test, 141 (666 B); the lane S
+// bits as an unmasked byte copy of the word, `(byte)group_flags`, 115 (654 B: retail's word load into AX and no mask,
+// registers all retail's, but the load stays folded ahead of the machine test, one instruction short). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
