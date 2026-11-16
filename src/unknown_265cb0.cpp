@@ -2562,6 +2562,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the first search's index widened into a long local for the NONE test and the address 372 (that block becomes
 // retail's `movsx eax, si; cmp eax, -1`, but the players loop's registers rotate). Re-measured: 0x1c8150 for the slot
 // search alone, and for both searches, 769 each (2680 B, a call); 1 to 7 unused locals 168 each.
+// MiniMax R (11-16): no new form, no lower score (168); retail keeps the direction's three components in XMM1/XMM2/XMM3 across the relative and facing dot products where this build reads them from the frame again, and the two player searches still differ (retail's first search compares the index in 32 bits with the table base in EDX and the result in ESI, ours in 16 bits with the base in ESI and the result in EDX, and retail's second search steps a pointer where ours scales the index).
 // MiniMax H (11-12): no new form, no lower score (168): the first difference is still the inlined 0x26be00
 // lookup's address operand (ours [eax+ecx+0x58], retail [ecx+eax+0x58]), a base/index order the compiler
 // picks when the helper is expanded, and that helper's body is in src/unknown_26bda0.cpp, which is not mine;

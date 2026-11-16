@@ -1590,6 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// MiniMax R (11-16): no new form, no lower score (270); the prologue still reads the cs pool global before the actor pool and takes arg_0 into ESI after the pushes where retail reads the actor pool first and takes arg_0 into EBP, and the case-10 flag store still follows the selector compare where retail stores the flag first; the permuter's best (221) swaps the arguments of the call to 0x1fb360, but retail's call site passes the unit index in EAX, the second argument in ECX and the constant on the stack, so the swap would change what the call does.
 // MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
 // reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
 // a swap of the arguments of the call to 0xcccd0 that puts the constant 1 where the unit index belongs; retail's call
