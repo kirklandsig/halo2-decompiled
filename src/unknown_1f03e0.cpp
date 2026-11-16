@@ -1435,6 +1435,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // to cross-jump into. The direct arm's speed declared after the rotation rows (retail loads it after the third product)
 // 558 (3050 B), on the 469 form 318 (3048 B; the rotation products then load facing.i first); the direct arm's `limited`
 // declared before `delta` 234 (same code: the delta/limited homes 0x14/0xc stay, retail 0xc/0x14).
+// P540: Complete scalar-SSE planar rotation, planar/general deltas and additive setter inputs, 701/698/681/747/750/749/792/893.
+// NOT kept: changed prologue and larger frame/extent; original complete source restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

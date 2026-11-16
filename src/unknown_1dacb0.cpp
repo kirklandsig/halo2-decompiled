@@ -1761,6 +1761,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // P533: Consistent own-input mode/class/type key-home reads, seven subsets,
 // then set-key home: 828/828/828/828/828/828/828/977. NOT kept: no byte match
 // or native candidate/output-home and late-zero repair; original complete body restored.
+// M3 lane 11 r106 (fast with 0x1dc790 and 0x1dc8c0 matched; base 828): the three found outputs stored type, class, mode
+// 829; the iterator declared after the three outputs 828 (same code); the early exit returning a fresh `c_type_709360()`
+// with `result` declared after it 988 at retail's 2825 bytes (the early exit then gets its own epilogue writing through
+// the return pointer, where retail jumps to the shared exit), with `result` declared inside the block 988; the NONE test
+// written `NONE == weapon_class` 828 (same code: the compare's registers do not follow the operand order).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
