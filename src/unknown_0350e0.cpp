@@ -2025,6 +2025,8 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // helper 0x2e9e0's frame is 0x90 against retail's 0x94, so both are one dword short; retail's frame here holds six
 // dwords (the two fpatan operands, the result and the three components of the reference vector) where this build
 // holds five, and retail keeps the result in the stack slot at +8 while this build keeps it in a register.
+// MiniMax C (11-16): no new form tried this round, no lower score (193): the body is still 792 bytes against retail's 812, so a block is
+// MiniMax C (11-16): still shorter here; the earlier rounds' forms are recorded above.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2989,6 +2991,8 @@ real magnitude3d(vector3f const *v);
 // 182 (the double copy of the dot stays, fabs and acos now adjacent); acos on a fresh `dot3f(&second, &first)` in the
 // stored dot's operand order 198 (1039 B, as the swapped form); the fallback clamp as two independent ifs 192 (1021 B);
 // the cosine declared before the sine 170 (different code, same count). Body unchanged.
+// MiniMax C (11-16): no new form tried this round, no lower score (170): the body is retail's length in the twenty-address image (1045
+// MiniMax C (11-16): bytes) and the blocks' order still differs in the ways the notes above record.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3297,6 +3301,9 @@ s_cached_input_list g_5234e8[4];
 // and EBP to the total or list. Retail copies EBX to EDI at the call although 0x31590 never writes EDI, so its
 // allocator did not tie the index to the argument register; no source form found here unties it.
 // MiniMax E (11-15): no new form, no lower score (147): our body is 532 bytes against retail's 548; retail saves esi where this build saves ebp and keeps the native list and total in stack homes, and the call to 0x31590 still takes the index in edi here.
+// MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
+// MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
+// MiniMax C (11-16): rounds used; nothing of this file's own moved it.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3611,6 +3618,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // the index renamed cursor/entry_index 317/317 (all the same code). Declaration orders: the index declared first 317,
 // after `last` 317 (same code); the index and `found` first 355; `found` after `last` 355.
 // MiniMax E (11-15): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation: retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
+// MiniMax C (11-16): no new form tried this round, no lower score (317): the body's length matches retail's (1324 bytes) and the blocks'
+// MiniMax C (11-16): order still differs in the ways the notes above record.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3933,6 +3942,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // delta in a block of their own 486 (identical code: block scopes do not let `previous` and `old` share retail's one
 // 12-byte home); `old` copied through the `position` pointer declared first 486 (different code); on that, `old`
 // advanced in place for the first projection (M385's in-place receiver on this base) 544 (1977 B). Body unchanged.
+// MiniMax C (11-16): no new form tried this round, no lower score (486): the frame is still 0x60 against retail's 0x38, so the returned
+// MiniMax C (11-16): projected-point temporaries and the phase publication are still laid out differently; the earlier rounds' projection,
+// MiniMax C (11-16): publication and offset-order forms are recorded above.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

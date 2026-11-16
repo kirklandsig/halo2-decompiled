@@ -939,6 +939,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // declared before the total (a /Gd harness then loads the extra count into ECX) 34 (same code); the two loops with their
 // own for-scoped indices 34 (same code); the copy stored first and the maximum read back from the copied element 75;
 // the highest index tracked from NONE and the fill value `highest_party + 1` 82 (173 bytes, frame 0x44). Original restored.
+// MiniMax C (11-16): no new form, no lower score (34): the first and third register-carried counts still reach the callee in the
+// MiniMax C (11-16): opposite eax and edx roles, and the definition-plus-call-site convention that decides them is held in
+// MiniMax C (11-16): src/unknown_07a9a0.cpp, a file this lane may not edit.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

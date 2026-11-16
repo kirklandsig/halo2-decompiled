@@ -367,6 +367,8 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // == NONE) return cache_index; initialize = true;` 83 (508 B), `if (result == NONE) return result;` closing the else arm
 // with the record block unconditional 87 (504 B); on main the three record lookups through a three-use inline getter 77
 // (same code). Original body restored.
+// MiniMax C (11-16): no new form tried this round, no lower score (77): the body is still 510 bytes against retail's 518 and the blocks'
+// MiniMax C (11-16): order still differs in the ways the notes above record.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
