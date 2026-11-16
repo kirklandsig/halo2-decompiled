@@ -665,6 +665,12 @@ void __stdcall function_1160c0(real dt)
 // index in a named long local 171 (same code); the segment chosen by if/else (last segment, else segment i) 297 (1379 B);
 // the segment selected ahead of the node pointer 279; `++node->ticks` ahead of the stiffness 175; the segment as
 // `segments + index` 171 (same code). Body unchanged.
+// M3 lane 8 r172 (fast with the file's ten matched functions, all kept): as a __stdcall member of the record (`this` = the
+// record; its callers are contributor code, so only a match could be held) 173 (two reloads swap); the rotation through a
+// forceinline helper taking the angle, sine and cosine its locals, predicted through a pointer 224; the else arm's delta,
+// scale and target declared at the loop body's top 171 (same code); the whole prediction (axis, normalize, offset copy,
+// vertical, angle, sine/cosine, predicted) as one forceinline helper 171 (same code: inlining moves no home); the segment
+// as a pointer to const 171 (same code). Body unchanged.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
