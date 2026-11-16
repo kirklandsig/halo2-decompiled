@@ -220,6 +220,12 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax E (11-15): no form kept, the body is the original one again; the reduced image (--fast, one
+// address) prefers the speed scale read twice from the definition (222 -> 213), one basis vector shared
+// between the first 0x11d180's left output and the later calls' forward output (213 -> 197) and the
+// temporary velocity copied before the world-up call (197 -> 111), but every one of them is worse in the
+// full build (215 differing instructions for the original body, 224 with the speed scale, 228 with the
+// velocity copy, 257 with the shared basis vector, 261 with all three), so the original body is kept.
 // MiniMax D (11-06, not kept at m3 review): 241 -> 208 with the temporary velocity copied only in the else
 // arm (then unset on the max_angle == 0 && acceleration == 0 path, which can still reach 0x11f0d0: a
 // behaviour change), the position copied into that same local, the first 0x11d180 call's left output
@@ -231,6 +237,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
 // basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
 // src/unknown_11eed0.cpp).
+// score 218 (was 218; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // score 218 (was 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
@@ -1119,6 +1126,10 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax I (11-16): no new form, no lower score (92): the first 200 aligned rows match and the tail still
+// diverges where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this
+// build keeps it in al; that shape needs 0x1c4b00's last parameter to be a bool, and its definition and its
+// declarations live in files this lane may not edit. Still BLOCKED-BY 0x1c4b00.
 // MiniMax C (11-15): no new form, no lower score (92): retail's 0x119020 pushes the force as a full dword
 // (push 1) before its 0x1c4b00 call, so the two other call sites in this file compile against the long
 // parameter and the bool form cannot be taken in this file alone.

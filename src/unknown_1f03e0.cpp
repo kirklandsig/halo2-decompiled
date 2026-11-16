@@ -1021,6 +1021,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
+// retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
+// (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
+// where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
 // score 234 (was 234): m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
@@ -1428,6 +1432,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // P526: Entry damping/direct/flying/gravity values from full Boolean arms, then false-initialized true arms:
 // 580/576/576/576/582/634/631/584. NOT kept: unmatched entry-result transport; no native damping/vector recovery.
 // Original complete executable source restored.
+// M3 lane 14 r100 (fast with 0x1f0450 and 0x24590, both MATCH; base 234): re-measured r95's 469 form (the general arm's
+// output through vector3f_add, the direct arm's rows as three statements) 469; on it the first arm clearing gravity before
+// its last add-scaled 468: the first arm still keeps its own out.k store, because the general arm's k row commutes into the
+// limited register (`addss xmm2, [eax + 8]`; retail `movss xmm0, [eax + 8]; addss xmm0, xmm2`), so there is no common tail
+// to cross-jump into. The direct arm's speed declared after the rotation rows (retail loads it after the third product)
+// 558 (3050 B), on the 469 form 318 (3048 B; the rotation products then load facing.i first); the direct arm's `limited`
+// declared before `delta` 234 (same code: the delta/limited homes 0x14/0xc stay, retail 0xc/0x14).
 // P540: Complete scalar-SSE planar rotation, planar/general deltas and additive setter inputs, 701/698/681/747/750/749/792/893.
 // NOT kept: changed prologue and larger frame/extent; original complete source restored.
 // @retail 0x1f0870
