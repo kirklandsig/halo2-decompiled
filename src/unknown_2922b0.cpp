@@ -76,6 +76,13 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// MiniMax I (11-16): no new form, no lower score (558): retail materialises the zero in XMM0 after the minimum's store
+// at +0x18 and keeps the range in XMM1, ours materialises it in XMM1 before the minimum's load and keeps the range in
+// XMM0, so every later row is one off. Naming the ray length once (retail computes the half width plus the range once
+// into XMM0 and stores it to +0x6c..+0x78) scored 553 and was dropped, so the body stands; the arms swapped, which
+// moves the exit out of line, reach retail's 2886 bytes but score 632. The homes still differ: the success byte at
+// +0x13 against retail's +0x17, the hit flags at +0x20..+0x23 against +0x1c..+0x1f, the input copy at +0x3c..+0x44
+// against +0x40..+0x48.
 // MiniMax D (11-15): no new form, no lower score (558): the frame size and the five calls agree with retail, but the
 // success byte, the minimum float, the four hit flags and the copied input vector still sit at other frame homes, and
 // the inactive exit still comes before the ray loop instead of after it.

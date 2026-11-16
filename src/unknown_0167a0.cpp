@@ -286,6 +286,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the function as a __stdcall member of a state type (state as `this`, the 0x1bbf0 call through a cast of g_485b48) 5 on either
 // entry form (same code), 178 / 176 with a `byte *state = (byte *)this;` copy; the tables published in a chained assignment 5;
 // the first block's two index sums written parameter first 5. Body unchanged.
+// Round 188 (m3 lane 5, fast; the reference form 5 at +0x19e, the direct store 5 at +0x1a7 with `second` loading into ESI
+// right after the entry lea): the entry reference typed `word *&` with the packed word read through it 5 (+0x19e, same code);
+// the tables and entry fields written through one two-field `byte **` view of the state 178 (+0x148); the direct store with
+// the chain index named where it is computed 5 (+0x1a7); the entry reference bound at function scope 5 (+0x19e, same code);
+// the direct store written `first * 10 + base` 5 (+0x1a7). Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

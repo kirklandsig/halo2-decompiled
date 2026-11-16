@@ -1759,6 +1759,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // copied to `valid`, the checksum tested under it 7 (same code: VC copy-propagates, so `valid` stays one web over the
 // checksum load); the close test with the handle test first 165 (946 bytes); `written` typed long 7 (same code).
 // Re-measured: the written flag alone on main's body 83 (the checksum still EDX there). Body unchanged at 33.
+// P562: Whole dependency validity as valid/invalid bit sets in dword/long/word/byte:
+// 175/175/182/274/293/293/298/292. NOT kept: no exact native byte-table/stack-home
+// recovery; original validity bytes, all I/O and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {

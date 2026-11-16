@@ -2266,6 +2266,11 @@ struct s_unit_motion
 // MiniMax G (11-12): no new form tried this round, no lower score (104): the out-of-line convention still needs the
 // body to stay out of line, which only a pragma or a twin copy could give, so the body stands as found.
 // MiniMax H (11-13): no new form, no lower score (104); retail moves the two incoming floats into xmm0 and xmm1 and compares them there, while this build compares them in xmm1 and xmm3 and keeps a third value in xmm5, and the body is 265 bytes against retail's 227.
+// MiniMax S (11-16): no new form, no lower score (104): this body still keeps position and velocity on the stack (ret 0xc) and is 265
+// bytes against retail's 227; retail takes them in XMM5/XMM4 with the time in XMM3, which the declaration in this file cannot spell, and
+// the register-convention body that reaches retail's length makes LTCG inline the callee into 0xc7840 and lose 0x1e5af0/0x1faf80:
+// BLOCKED-BY 0xc7840's call sites. The permuter (annealing, 427 s, 37 tries, the first run over this body) found no
+// variant below 104.
 // score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
@@ -2446,6 +2451,13 @@ void function_cfec0(long unit_index)
 // EDI ahead of the branch (12, 252 B), so the per-level epilogues are what keep the lazy pushes.
 // MiniMax G (11-12): no new form tried this round, no lower score (2): the only remaining difference is the last
 // exit, which returns the constant where retail moves the register copy, and no spelling of the copy avoids the fold.
+// MiniMax S (11-16): no new form, no lower score (1): the only difference left is the entry branch - this build's `>`
+// spelling of the test gives retail's `jle` where retail has `je`, and with it every exit returns the register copy as
+// retail does; the `!=` spelling gives retail's `je` but then the compiler folds the NONE exit to the constant, and a
+// copy spelled as a local, as a widened index or as an unsigned value is copied away again. This round adds the
+// complement test (`~unit_index != 0`, 96) and the shift test (`unit_index + 1`, 95), which leave three extra
+// instructions at the entry, and a copy of the index in a local for the NONE exit only, which is propagated back and
+// folds the exit as before (2); the permuter (annealing, 428 s, 38 tries) found no variant below 1.
 // score 1 (was 113): a return after each closing brace gives retail's per-level epilogues, lazy pushes and
 // exit order. Left: the last exit (unit_index == NONE) returns the constant (or eax, -1); retail moves ebx
 // (mov eax, ebx), so it did not fold the value there - the 11-15 round's `>` spelling of that test keeps the fold
@@ -2973,8 +2985,8 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
-// score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax S (11-16): no new form, no lower score (97): the body is still retail's 350 bytes with the same instruction sequence; the prologue still differs in that this build loads the object globals pointer into EAX before the pushes and hoists the unit index into EBX, while retail reads the unit index from the incoming stack slot into EAX and keeps the globals pointer in EDI, and the hoisted parameter differs too (retail's EBP holds the definition index, this build's EBP the material index); the call's register arguments follow the 0x188180 helper's own body, in another file: BLOCKED-BY 0x188180.
+// score 97 (was 97): the prologue's register roles differ - this build hoists the unit index into EBX and the material index into EBP where retail keeps the definition index in EBP and reads the unit index from the stack - and the effect call's arguments follow the 0x188180 helper's own convention.
 // MiniMax C (11-15): no new form, no lower score (97): the body is retail's length and the first difference is still
 // the prologue - retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit
 // index and the material from the stack at each use, while this build keeps the unit index in EBX and the material in
@@ -3528,6 +3540,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // 83 emits two out-of-line transfers absent from retail, whose axes copy
 // is inline scalar moves. Original camera/matrix/axis publications restored.
 // MiniMax D (11-15): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once, and the seat index is scaled before the definition lookup where retail scales it after.
+// MiniMax C (11-16): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the
+// MiniMax C (11-16): tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat
+// MiniMax C (11-16): lookup are scheduled differently; a permutation run this round reached 85 in its own reduced image with forms the
+// MiniMax C (11-16): rules reject, so nothing was kept.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -3711,6 +3727,12 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // into a named local before the root assignment 12; `bool result = false;` between the walk and the header 12; the walk
 // over the parameter itself with the call given a copy of the original index 26 (the function then loses `ret 4`); the
 // position as a const point reference 12.
+// Round 130 (m3 lane 12, fast, 12 throughout; same pair): the rigid-body index declared ahead of the component and
+// assigned after it 12; the walk as a while whose parent read goes through the root (`UNIT_GET(root_index)`) 12;
+// `register` on the root 12; the unit pool in a local read by both the walk and the header 12; the walk's index as a
+// `dword` 12; re-measured (listed): the component index assigned in the test 12. Diagnostic: the fixed test and the
+// position read (translation through real_point3d_set) as two forceinline helpers taking the index and component 36
+// (303 bytes), same pair.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
@@ -4919,6 +4941,9 @@ void function_c50a0(long unit_index)
 // decisions, consumed driver-role join and unchanged-driver return: eight at 166.
 // NOT kept: no exact ownership repair; original body, accessors and recursion restored.
 // MiniMax D (11-15): no new form, no lower score (166): retail keeps the vehicle in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
+// MiniMax C (11-16): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer
+// MiniMax C (11-16): from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp,
+// MiniMax C (11-16): so the tag's triple, the index's masking and the seat's fields land in the other registers.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -5027,6 +5052,12 @@ void __stdcall function_cc810(long vehicle_index)
    one is given; negative distances are planned mirrored */
 // MiniMax I (11-15): no new form, no lower score (162): an inner (real) cast on the sqrt argument leaves the discriminant on
 // the x87 stack and the eight-byte frame in place; retail computes the discriminant in SSE and spills it to the dead argument slot.
+// MiniMax S (11-16): no new form, no lower score (162): the one-use discriminant still lands on the x87 stack under an eight-byte
+// frame where retail keeps it in SSE with a spilled root, and the first test's three multiplies are still folded into one multiply by
+// 0.25; an inner (real) cast on the sqrt argument and a named float discriminant local both leave the same code; this round
+// repeated both (162 each) and compared the two builds side by side: retail computes the discriminant with mulss and subss and
+// stores it before the fsqrt, while this build keeps the whole chain on the x87 stack, which is a compiler-version difference
+// this source cannot reach.
 // score 162 (was 162; earlier 167): m3 lane 16 r120 (all restored): the first stop test grouped `(stop_time * 0.5f *
 // velocity) * 0.5f + distance` 189, fully grouped `((stop_time * 0.5f) * velocity) * 0.5f` 206 (the whole test moves to
 // x87); the acceleration/deceleration stores after the speed limit with no `negative` local and the coast reading
@@ -5419,6 +5450,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // 382/325/309/450; double counterparts 532/296/297/620.
 // NOT kept: larger frames/extents and no byte match; original parallel rows,
 // scalar precision, cross helpers and all call values restored.
+// MiniMax C (11-16): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here
+// MiniMax C (11-16): (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the
+// MiniMax C (11-16): other order.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6326,6 +6360,10 @@ void function_cf040(long unit_index, short type)
 // a data-first pointer arithmetic, a local header array, a plain integer sum and the masked-index
 // helper all compile to the same bytes here, so the swap is not reachable from the source and the body
 // stands.
+// MiniMax S (11-16): no new form, no lower score (1): the weapon loop's header lookup still keeps this build's SIB order (base eax,
+// index edi) where retail has the offset as the base; the lookup through the existing masked-index helper, as a named header pointer, as
+// byte arithmetic with the load and as long arithmetic in both orders all compile to the same bytes, so the order follows the register
+// allocation rather than the source text. The permuter (annealing, 428 s, 41 tries) found no variant below 1.
 // score 1 (was 274): what is left is the header lookup of the weapon loop, whose address operands are
 // swapped (ours [eax+edi+8], retail's [edi+eax+8]). Fixes made: the team test takes the unit's team first,
 // the bit 16 and 17 tests are two separate ifs, the seat flags are read in place, the group flag is
@@ -6533,6 +6571,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    definition's when unset), starts its animation and finds its two
    animation graph entries */
 // MiniMax E (11-15): no new form, no lower score (59): the success arm's scratch registers stay swapped (ours EDX and EAX where retail has EAX and ECX), which brings the creation pointer's load ahead of the state stores and keeps the five vector copies' source in EDX instead of ECX; reading the call's argument through a named local compiles to the same bytes.
+// MiniMax S (11-16): no new form, no lower score (59): the two initial header lookups still use this build's SIB encodings (the pool
+// data as the base where retail has the offset) and the EAX/ECX/EDX success scratch rotation remains; the frame, the unsigned source
+// loop and the three return blocks agree; the permuter (annealing, 420 s, 36 tries) found no variant below 59.
 // score 59 (was 59): the out-of-memory arm sets the return value before its store (retail's three return
 // blocks, 1040 bytes); left are the first two header reads' base/index order and the success arm's scratch
 // rotation (ours starts EDX, EAX where retail starts EAX, ECX after the out-of-memory block). Earlier rounds below.
@@ -8490,6 +8531,9 @@ real function_50650(real cosine);
 // components and re-associate the three products where retail keeps them in registers and adds them in the
 // source order, and the two 0xc7750 calls still pass their arguments on the stack where retail passes them in
 // xmm registers.
+// MiniMax S (11-16): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the two 0xc7750 calls still
+// push position and velocity where retail passes them in XMM5/XMM4 with the time in XMM3; that call's register convention is decided by
+// 0xc7750's own declaration, which this lane may not change: BLOCKED-BY 0xc7750.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.

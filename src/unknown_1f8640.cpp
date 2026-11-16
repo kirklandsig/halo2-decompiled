@@ -827,6 +827,9 @@ struct s_1f8a70_actor
 // route_found initialised false at its declaration with no store at `failed:` 182 (same code). Reading of the listing:
 // retail's first arm keeps `result` in BL (two defs reach its return) while both route exits return the frame byte
 // (`mov al, [esp + 0x12]`), so retail's route path returns route_found itself and some other path still assigns result.
+// P558: Actual unit-value/route-result phase union, bool/byte/short/word outcomes in both member orders:
+// 400/400/398/398/303/303/303/303. NOT kept: unmatched phase overlay and unit capture; original
+// returned-unit temporary, independent two-result flow and complete body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

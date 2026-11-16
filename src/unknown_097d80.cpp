@@ -505,6 +505,8 @@ struct c_aggregate : c_child
 // &result) ? result : NONE;` 31 (same code); the cleanup object declared in the if condition 74 (368 B); error, total and
 // starts declared ahead of blocks 31 (same code); the cleanup loop over a block pointer up to `&blocks[total]` 100 (391 B);
 // the item's object read from the field at each use 67 (376 B). Still BLOCKED by the build flag. Original body restored.
+// MiniMax R (11-16): no new form, no lower score (31): the frame is 0x8024 here against retail's 0x8020, and the
+// count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes off.
 // M3 lane 11 r104 (fast with the six file-mates, all still matched): v5's count output as a `long &` parameter 31 (frame
 // 0x8024: a reference escapes to the virtual call the same way); the call's status named and published after the total
 // 32; `long produced;` then `produced = 0;` 31 (same code); the gate as nested `if (error == 0) if (child != 0)` 37; the
