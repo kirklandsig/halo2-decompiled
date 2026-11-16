@@ -160,7 +160,10 @@ void sweep_batches_2e50d0::function_2e50d0(owners_2e50d0 const *owners, bounds_a
 // the boxes of the owners taken out together: the pairs they ended are
 // reported, the last boxes move into their places, each axis drops their
 // endpoints and renumbers the rest, and the grid cells follow
-// score 22 (was 162): the slot step is in the loop header, the tail's owner is
+// score 0 (was 22): matched with the first loop guarded by its own entry test
+// (`if (0 < count)`, no code of its own; it gives `this` and the count retail's
+// registers) and the cell renumbering reading each box index once.
+// Before, 22 (was 162): the slot step is in the loop header, the tail's owner is
 // tested directly, the moved box's owner is read from its new place, the cell is
 // addressed once, and the final renumbering reads the cell's list once per box.
 // The last loop still reads the element array through a kept address.
@@ -194,11 +197,14 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 	{
 		longs_2e1ab0 lower_ends(count);
 		lower_ends.size = count;
-		for (int i = 0; i < count; i++)
+		if (0 < count)
 		{
-			long *owner = owners->data[i];
-			((endpoint_2e0f80 *)lower_ends.data)[i].id = *(unsigned short *)owner;
-			((endpoint_2e0f80 *)lower_ends.data)[i].value = elements.data[*owner].slots[4];
+			for (int i = 0; i < count; i++)
+			{
+				long *owner = owners->data[i];
+				((endpoint_2e0f80 *)lower_ends.data)[i].id = *(unsigned short *)owner;
+				((endpoint_2e0f80 *)lower_ends.data)[i].value = elements.data[*owner].slots[4];
+			}
 		}
 		function_2e2f70((endpoint_2e0f80 *)lower_ends.data, count, pairs, 0);
 	}
@@ -275,8 +281,9 @@ void sweep_batches_2e50d0::function_2e5590(owners_2e50d0 const *owners, pairs_2e
 			cell_box.slots[3] -= removed;
 			for (int i = 0; i < cell.boxes.size; i++)
 			{
-				unsigned short *data = cell.boxes.data;
-				data[i] = new_index.data[data[i]];
+				unsigned short *data = cell.boxes.data + i;
+				unsigned short const old_index = *data;
+				*data = new_index.data[old_index];
 			}
 		}
 	}
