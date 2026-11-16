@@ -1379,9 +1379,11 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
+// retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
+// score 220 (was 220; earlier noted 218 (was 218), the full check gives 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
-// score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
 // start): all four spring defaults and overrides (0x166dbb-0x166e87), the five-term idle-motion test, the idle
 // counters (0x1674b3-0x167597), the overlay logic (0x1671d8-0x167307), the fmod frame (0x167353-0x1673ab), the tail
@@ -1800,6 +1802,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // M398: Original clamped-yaw/clamped-pitch/late-magnitude zero defaults, masks
 // 1/2/3/4/5/6/7, then complete activity/zoom/scope defaults: eight at 220 fast (control 220, full 218).
 // NOT kept: no frame/look-home gain; original producers, all five smoothing tuples and body restored.
+// M3 lane 7 r167 (plain where noted; the reduced image misbuilds caller 0x16760c, 142 with no change, MATCH in plain):
+// `inline` on 0xb6760's definition (now ours; round 30's lead) 217 plain, channelb8 then kept in ESI as retail, but
+// 0x106790 250->254 and 0x1cd070 210->269, not kept; diagnostic (a file-local copy of 0xb6760's body for this
+// function's three calls, not keepable) 215 fast: retail's callers disagree about 0xb6760's register summary, as with
+// 0x24590 at 0xe3380. Dead-local phase scan 1-7 at the top 220 each; `long const mode` 220; the overlay channel read
+// in place (no `channel` local) 220.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

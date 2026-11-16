@@ -12,6 +12,14 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax D (11-16): score 373 (was 373), nothing kept: retail's frame is 0x48 and it takes the third settings
+// pointer in esi from the entry, this build has a 0x4c frame and takes the random-state pointer in esi instead,
+// so the third input is reloaded from its stack slot and the state pointer is kept in a register across the
+// draws; retail also forwards the seed from the sign test through the three range draws in eax and stores it
+// once, this build stores and reloads it per draw, and retail's sign test is `test eax, 0x80000000` where this
+// build tests eax whole. The state pointer read through the global instead of through a named local scores 423
+// and was restored; a permutation search over this body (300 s, annealed, one job) found nothing below the
+// baseline.
 // MiniMax R (11-14, run 65): no new form, no lower score (373): the first difference is at +0x2, the frame, which
 // is 0x4c here against retail's 0x48, and the entry differs with it - this build pushes edi and keeps the random
 // state in esi from the first draw where retail pushes esi and holds the third settings pointer there - so every

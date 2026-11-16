@@ -213,6 +213,12 @@ static __forceinline long real_to_long(real value);
 // direction's i 2 each (dropped); a `real const &` to the facing's i before the slot pointer 6 (the i product still
 // loads the facing). Reading: retail's i product behaves as a reload of a value forwarded from the dir.i store (as
 // dir.k stays forwarded in xmm2), ours as a plain memory operand.
+// M3 lane 4 r204 (fast with 0x25d690, 0x30bf0, 0x1e5450, 0x1469f0): the prediction helper's point as a `real[3]` 2 (same
+// code); its point filled by a three-pass loop 6; the point and the difference in one three-pass loop writing the output
+// 34 (473 B); the helper's three differences as explicit stores 39; the helper taking the prop state and the actor (scale
+// 0.5 inside) 2 (same code). CL-only screen of this file (it reproduces our dot): all 48 term orders and operand orders of
+// the dot, a facing pointer for all three or only the i term, the i term's direction through slot_state or a `real *`,
+// the facing's i through a raw offset, and the helper's result ignored all keep the facing's i loaded first.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

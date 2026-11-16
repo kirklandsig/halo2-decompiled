@@ -811,6 +811,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // flagged clear and the field retest 41; the field read into a named local at the join and tested 37 (same code), with the
 // second virtual call given that local 63; with no first store, the local cleared in the flagged case, published at the join
 // and the field retested 68 (the join `or eax, -1; cmp eax, -1; mov [edi + 8], eax; je` is not threaded; f stays in EBP).
+// MiniMax R (11-16): no new form, no lower score (49): the first difference is at +0x4, where this build saves ebp
+// in the prologue and retail saves ebx, and the attach's write and the flagged arm's return sit in another order.
 // M3 lane 11 r105 (fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout; control 49): the
 // flagged arm as `result = false;` before the reset 50; `if (object_index != NONE)` in place of `if (result)` 76 (189 B);
 // the attach given `entity->object_index` 52; the long result computed before the entity store 49 (same code); the flagged
@@ -1204,6 +1206,10 @@ bool c_projectile_type::v8(long a, long b)
 // device type 12; the 0x800 block as guard returns 47 (188 bytes); a pointer to the state's power field 12; the object
 // looked up after the a5e70 call 18 (retail's homes: object ESI, flags EDI, the mask kept; only the head moves after the
 // call, so the object loses the tie only while its range spans the call); permuter (1800 s, 167 tries) none below 12.
+// Round 124 (m3 lane 16, fast; control 5), all with the full-width mask: 0xa3fd0's idiom (a `long group` value local, the
+// masked address written at the compare and at the store) 15; that local with the group value read once into a named local
+// used twice 24; flags declared before the object 12; the 0x400 test and compare nested 12; a `long group` local with an
+// entry pointer 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

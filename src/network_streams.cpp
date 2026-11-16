@@ -827,6 +827,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// MiniMax I (11-16): no new form, no lower score (60): the first difference is the loop counter's home - retail computes it in
+// ESI (mov esi, [edi+0x44]; inc esi) where this build computes it in ECX and copies it into ESI at the loop
+// head; the permuter (300 s, 5 tries) found no spelling that keeps it in ESI.
 // MiniMax R (11-15): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi with the next sequence in ecx, where retail keeps the next sequence in esi and recomputes the offset in eax on every pass; giving the index helper the member reproduces retail's loop body but moves the type local off its slot (the get_next_send setup pushes time in ebp) and the score rises to 89; the statement permuter over this body found no lower score either.
 // MiniMax G (11-14): no new form, no lower score (60): ours strength-reduces next - oldest - 1 into a second counter
 // (next in ecx, the reduced offset in esi) where retail keeps next in esi and recomputes the offset on every pass.
@@ -834,6 +837,12 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // but scores 89: the count folds oldest into its `sub` and the loop reloads it instead of keeping it in ebx, and the
 // pointer form keeps oldest in ebx while the offset is reduced. No spelling gives both.
 // MiniMax S (11-14): no new form, no lower score (60): this build still strength-reduces next - oldest - 1 into a second counter in ESI where retail keeps the next sequence in ESI and recomputes the offset in EAX on every pass, and it still compares the offset against the cached newest where retail re-reads the newest at the per-step test; the member form through &m_message_window reproduces retail's loop body but scores 89 (the count folds oldest into its subtraction and the loop reloads it instead of holding it in EBX), while the pointer form keeps oldest in EBX and reduces the offset, so no spelling of the window gives both.
+// MiniMax C (11-15), on its not-kept 44 form (below; main stays 60): the count spelled as the window's newest minus its oldest and the index helper
+// taking the window's oldest into a local of its own stop the strength reduction of next - oldest - 1, so the offset is
+// recomputed in eax on every pass and the newest is re-read at the per-step test as retail does; what still differs is the
+// loop head's registers (ours keeps the oldest in esi and the next sequence in ecx and copies the bound into ebx, retail
+// keeps the next sequence in esi and the oldest in ebx) and the count, which retail computes from its own loads of newest
+// and oldest before the bound is loaded.
 // score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.
@@ -1007,6 +1016,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 102 (212 B); `oldest != newest` with the window-pointer bound 101 (213 B); `count > 0` with the window-pointer bound
 // in the test or in a local 91/91 (221 B); that with `return 4` in the found path 127 (190 B). In all of them `next`
 // takes ECX (retail ESI) and `time` is then cached in EBP for the get_next_send argument and the found path.
+// MiniMax C (11-16), NOT kept: 44 (was 60) with sequence_window_count expanded in place (window->newest -
+// window->oldest), the loop bound re-read as m_message_window.newest instead of the newest local, and an oldest
+// local in the shared sequence_window_index helper. Expanding an existing accessor is never kept; the helper's
+// local alone gives 90 (fast).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

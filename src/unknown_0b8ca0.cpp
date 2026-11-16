@@ -679,7 +679,14 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// MiniMax I (11-15): score 38 (was 165): the pool step helper latches its result, the cluster bit table's base is read once before
+// MiniMax I (11-16), on its not-kept 38 form (below; main stays 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
+// body lives in the cluster loop's found branch and the loop leaves it with a break, so the function has no goto
+// that the body on main does not have; the frame and the slots are retail's (0xb4, the result byte at [esp+0x13],
+// the link iterator at [esp+0x40], the player index at [esp+0x14]) and the pool step helper latches its result;
+// left: the definition pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short
+// where retail passes it in a full register, the angle's pi/4 is added after the dot product where retail adds it
+// before, and the pool step's packed handle is built in edx where retail builds it in ecx.
+// MiniMax I (11-15), on the not-kept 38 form: the pool step helper latches its result, the cluster bit table's base is read once before
 // the first query and the body lives in the cluster loop's found branch, the range's zero is the model-NONE arm and the angle's
 // atan2 takes its arguments as reals (so the compiler expands it as fpatan and the frame is retail's 0xb4); left: the definition
 // pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short and the angle's pi/4 is added after
@@ -701,6 +708,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // every later offset shifts with the frame order; the alignment follows the two callers' call chain, whose files
 // this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (165): the byte flag's stack slot is still esp+0x13 against retail's esp+0xf, and the branch after the pool lookup still goes elsewhere.
+// MiniMax R (11-16): no new form, no lower score (165): the byte flag's stack slot is still [esp+0x13] against retail's [esp+0xf], the branch after the pool lookup still goes elsewhere, and the frame is still ours at 0xac where retail realigns to 0xb4.
 // score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
@@ -939,6 +947,11 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // flags read through the root object in the test 217; a named `real angle` ahead of the dot product 246 (946 bytes),
 // with `(real)atan2` 246. All restored.
 // NOT kept (coordinator screen, MiniMax I 11-15): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
+// MiniMax I (11-16), NOT kept: 38 (was 165) with the player scan moved inside the cluster loop's hit branch, the
+// shared object_query_next_ab helper as a single exit through a NONE-initialised result, the header flags re-read
+// through a root_object pointer instead of the flags local, and g_4e6948 through a one-use options pointer.
+// Without those three forms the restructure measures 309 (fast); with the helper's single exit alone 278. Each is
+// kept only with a match.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1829,6 +1842,11 @@ done:
 // after the palette offset 26 (size EAX and `imul eax, edi` as retail, the definition back in ECX); one variable for
 // the definition, the placements and the datum (`data += index * size`) 27 (the 27 form's code). Lead: retail looks like
 // the definition preferring EAX (as when it shares the datum's variable) while the size is the product's destination.
+// Round 107 (m3 lane 11, fast with 0xbf0f0/0xbf090): one table-entry pointer that is first the name entry and then
+// the definition (so the definition would start in the name's EAX) 17 on main's body and 27 on the 27 form (both the
+// same code as their bases: the reuse does not tie the homes). On the 27 form: the type and definition read above the
+// NONE test 30; the placements' scenario read from the global again 34; the placements read folded into the datum
+// with the offset read before the size 27 (same code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1995,6 +2013,10 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-16): no new form, no lower score (285); the bit-7 test of the object word written in retail's
+// shift form (">> 7" and "& 1") compiles to the same sign test as the mask, so the body is unchanged: the first
+// difference is still the ancestry loop's jump to our own epilogue at +0x76 where retail jumps to its shared one at
+// 0xb987a, and retail still inlines the marker pointer's helper, which needs 0xb8bd0's file flag.
 // MiniMax H (11-14): no new form, no lower score (285); the two state bits of the object word were written as
 // shifts (">> 7" and ">> 8" instead of the masks 0x80 and 0x100), which is the form retail uses, but the score stayed
 // 285 and the body stayed four bytes longer than retail's 1236, so the shift form was reverted; the first difference is
@@ -2021,6 +2043,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // difference at +0x76.
 // MiniMax R (11-15): no new form, no lower score (285): retail has one shared epilogue at 0xb987a reached from the ancestry loop and this build duplicates it, so the first difference is the jump target at +0x76.
 // MiniMax I (11-15): no new form, no lower score (285): the shared epilogue at retail's 0xb987a is still not reached here, and the marker pointer retail inlines belongs to 0xb8bd0 in another file, which is /Ob1.
+// MiniMax R (11-16): no new form, no lower score (285): the shared exit at retail's 0xb987a is still not reached here, so the first difference is the jump target at +0x76, and the marker pointer retail inlines belongs to 0xb8bd0 in another file, which is /Ob1.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

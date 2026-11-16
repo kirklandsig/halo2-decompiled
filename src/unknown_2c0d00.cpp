@@ -213,6 +213,17 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
+// MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
+// from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
+// the self-unit pointer at F+0x34, the range_max short at F+0x38, the location at F+0x40, the block_priority short at
+// F+0x48, the ignore_priority short at F+0x50, the actor pointer at F+0x14 and the two direction flags at F+0x01 and
+// F+0x03; ours puts the actor at F+0x04, the flags at F+0x03 and F+0x0b, the raised point at F+0x30, range_min at
+// F+0x40, the self-unit pointer at F+0x44, the location at F+0x48 and range_max at F+0x54.  The prologue clears the
+// same nine homes in the same order as retail (ignore, block, range_min, range_max, self-unit, actor, straight,
+// aligned, local_4d3867), so the declarations and their initialisation are already retail's; only the allocator's
+// placement differs, our scalar area running eight bytes longer (frame 0x2cb4 against 0x2cac), which carries the
+// query array and the marker arrays eight bytes up.  The permuter cannot search this one in the reduced image (916
+// reduced against 910 full) and a full build per trial is too slow for the time allowed, so the body is unchanged.
 // score 920 (was 920): earlier 920 (was 923), 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;

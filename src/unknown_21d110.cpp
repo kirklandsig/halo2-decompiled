@@ -326,6 +326,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax H (11-14): no new form, no lower score (181): the exact form needs the request passed in EDX by
 // 0x189fe0, whose file belongs to another lane and cannot be changed from here, so the eight-byte frame, the
 // state/tag registers and the opposite start/delete expansion stay as they are.
+// MiniMax C (11-16): no new form, no lower score (181): the entry still reserves eight bytes and keeps the state in
+// EDI where retail reserves four and keeps it in EBX, and the effect path still calls the start out of line where
+// retail expands it; the only form that reaches retail's shape (94 at 427 bytes, the state in EAX) needs the caller
+// 0x189fe0 in src/unknown_189010.cpp to move its request register, which loses ten matched functions:
+// BLOCKED-BY 0x189fe0.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound

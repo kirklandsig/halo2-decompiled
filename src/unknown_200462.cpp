@@ -191,6 +191,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // 214 (856 bytes); the corner array as a four-point aggregate initializer 14 (same code); the second x step moved up to just
 // after the corners 98 (843 bytes, the product spill goes); one pulse pointer at the draw loop's top ahead of the entry
 // pointer and mask test 14 (same code); the first pass's bitmap tag index named once for its test and lookup 14 (same code).
+// Round 111 (m3 lane 10, fast with 0x2008fc 0x200891, control 14; on the bounds-record pointer, re-measured 12, where only the
+// advance/half-height XMM3/XMM4 pair differs): one pulse-array pointer at the top for both loops 27 (the prologue moves); the running
+// position as two scalar reals 36 (frame 0x54); the vertical +50 step before the horizontal centring 19; the lower corners' y as
+// `half height + y` 12, with the right corners' x as `half width + x` too 12 (same code). Re-measured: half height after the first
+// x step 18 (x moves to XMM4 and 0.5 to XMM7).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

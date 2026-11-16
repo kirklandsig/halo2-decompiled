@@ -94,6 +94,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
+// second UV set in the other slot, and the aspect block still leaves the blend in XMM5; the tint in a nested scope
+// measures 234 and swapping the two UV declarations gives the same code, so the homes cannot be moved that way.
 // MiniMax D (11-14): no new form, no lower score (194): the first difference is still at +0x5b and what remains is
 // where the tint and the second UV set's bounds live and the blend that still leaves XMM5 in the aspect block, so
 // the difference is the storage of those two values rather than a statement order; the kept form with the width
@@ -622,6 +625,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // m3 lane 10 r109 (fast, control 194): the pivot as two reals 295 (1971 bytes); the second set's extents computed y first
 // (retail computes `by` ahead of `bx`) 208; the first set's two reciprocals declared before the second set's extents 194
 // (same code); the flip computed ahead of the extents 249; the blended reciprocals without the two one-use locals 322.
+// M3 lane 14 r100 (fast; base 194): in the real build (earlier only in a harness) the clamp indexed as `(&tint.alpha)[channel]`
+// 194 and as four if/else-if statements 194 (both the same code); the UV encoder (function_x0ec080) `__forceinline` 194, with
+// sprite_flip `__forceinline` too 194 (same code); the four 16-byte locals declared at the top in the order uv_b, uv_a,
+// geometry, tint 194 (same code). The tint (+0x60, retail +0x50) and the second set (+0x50, retail +0x60) keep their homes.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
