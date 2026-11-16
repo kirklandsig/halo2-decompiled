@@ -2944,6 +2944,8 @@ struct s_scenario_scripting_view
 // P527: Existing difference/self-product scalar field-lvalue nodes start/end/output/self/
 // start-end/start-output/end-output/all: 80/80/80/80/80/80/80/80. NOT kept: no native
 // actor/counter/selector or guarded-data repair; original shared header and full search restored.
+// P540: Shared difference/squared-length forced/automatic lowering, 80/140/80/90/80/140/90/193.
+// NOT kept: no exact native storage recovery; original complete source restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

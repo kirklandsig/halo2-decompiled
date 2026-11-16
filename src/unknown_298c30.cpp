@@ -469,6 +469,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // bool/byte/short/long away truth then aligned complement: 391/389/381/383/389/389/381/383.
 // NOT kept: no exact result-carrier match; original emitter, operands,
 // publication graph and complete body restored. Native unity/angle homes remain.
+// M3 lane 11 r106 (fast with 0x29a190 and 0x298c30, both MATCH throughout; base 382): diagnostic, the near arm's cosine and
+// sine through a forceinline helper with two output pointers 382 (same code: the outputs are scalar-replaced and stay on
+// x87, no float slots); field_8 stored right after field_4 in both entries 382; side/facing flags stored before the
+// direction 381; the x rows written point first (`x * c - y * s`) 382; the second entry with its own cosine/sine locals 382.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

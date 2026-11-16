@@ -296,6 +296,13 @@ long g_55e6c0;
 // in the else 29. Reading: the schedule follows the allocation (the value given EDX is loaded above the kind store,
 // the one given EAX after it), so the open cause is only which of the merged clamp value and the height the allocator
 // colours first.
+// M3 lane 9 r127 (fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp's store right
+// after the kind store 156 (493 bytes); the clamp through a levels copy with the upper test nested in the else 29 (same
+// code); the clamp through a plain inline multi-return helper 29; the call's level count through a copy declared just
+// before the call 29 (propagated); the clamp's store just before the linear select's store 70. Diagnostic, not retail's
+// code: the 0x1d6f0 call reading `entry->element_count` instead of the raw count 130 (485 bytes) puts the height in EAX
+// after the kind store as retail does (the clamp then takes EBP), so the call's use of the raw count is what ranks the
+// merged clamp value ahead of the height.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

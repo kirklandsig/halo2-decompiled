@@ -647,6 +647,7 @@ void function_3dd10(long object_index, bool force);
 // the inverse computed right after the blend seed 198 (frame 0x58).
 // MiniMax R (11-10): no new form, no lower score; the choice scan still exits on inequality where retail exits on less-than (a scan bounded by less than is unrolled here at 637, and as a do-while 221), the choice count test still skips on zero where retail skips on zero or less, and the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot.
 // MiniMax A (11-11): no new form, no lower score (84); the first difference is still the order of the 1.0f load and the zero xorps before the first clamp; the three clamps written as if/else, in the reversed test order or through locals measure 267, 201 and 245.
+// MiniMax D (11-15): no new form, no lower score (84): the first difference is still the order of the 1.0f load and the zero xorps before the first clamp, the blend keeps its frame slot at +0x38 where retail has +0x1c, and the first scan still exits on inequality where retail exits on less-than; a 43-try permuter run (309 s) found nothing below 84.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

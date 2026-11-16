@@ -340,6 +340,11 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // cross3f(vector, axis), rows reading the vector in place, `v * cos + a * proj - cross * sin`) 53 at 1405 bytes (dot still
 // k, j, i), the same through cross3f_staged 53, cross3f(axis, vector) with the cross term added 55, the textbook rows
 // written scalar first 53.
+// Round 166 (m3 lane 7, fast with 0x2936b0 0x259d0 0xb7930; control 30): the grouped `j + (i + k)` dot re-measured 55
+// (1409 bytes; it now sums k and i first with k as the accumulator); the rotation helper in 0x2551c0's helper shape (only
+// k named, vector-first dot) 53 (1409 bytes); the +0x10/+0x1a zero stores as one chained assignment after +0x18 31; +0x18
+// ahead of +0x10 30 (same code); the 0x2936b0 call ahead of the member's vector copy 44; the creation record declared in
+// the selected-entry block 35.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

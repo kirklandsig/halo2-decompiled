@@ -1240,6 +1240,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner
 // channel blocks are not unrolled.
 // MiniMax A (11-13): no new form, no lower score (94): the identity flag still takes BL here while retail keeps it in AL, and retail sets the size to two only after the flag's compare where this build sets it before; no untried form in the list moves the flag out of BL.
+// MiniMax S (11-15): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, so the loop temporaries take eax/al where retail uses ebx/cl, and the inner channel blocks still step the cursor by 0x170 where retail uses fixed offsets and one 0x5c0 step.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1995,6 +1996,7 @@ static inline dword voice_get_player_mask_inlined(void);
 // where retail loads both before the muted test, and the second port-flag query is called out of
 // line: BLOCKED-BY 0x59670/0x596a0.
 // MiniMax B (11-13): no new form, no lower score (85): the session getters 0x59670/0x596a0 (src/unknown_058ee0.cpp) are outside this lane's files, and the second port-flag query is still called out of line where retail inlines it here: BLOCKED-BY 0x59670/0x596a0.
+// MiniMax S (11-15): no new form, no lower score (85): the session getters 0x59670/0x596a0 live in another file, so the second availability byte still loads lazily where retail loads both before the muted test and keeps the remote mask in esi.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -3966,6 +3968,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the member in a frame slot). On it: the member declared at function scope 164; the NONE and kind tests split 164; the
 // member fetched after the kind and members tests 147 (EBP still the member; alignment only); the cursor started as
 // `&data[2]` 164 (still `add edi, ecx`); the member assigned inside its NONE test 164.
+// MiniMax D (11-15): no new form, no lower score (139): the packet cursor form (164) still keeps the member in ebp where retail keeps the channel and puts the member in a frame slot, and a channel copy in a local of its own gives the same bytes; the indexed form stays at 139.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

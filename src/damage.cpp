@@ -601,6 +601,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // copy after the owner's three stores 7 (the global load then waits for those stores: it may alias); the owner in
 // declaration order (player, object, team) 5. The reduced (--fast) image hoists the g_47d8e0 load above the
 // definition store (not address-taken there), so judge this body only with the plain check.
+// M3 lane 13 r98 (plain): the +0x1c/+0x20/+0x22 stores through an inline location-reset helper (leaf, cluster,
+// bsp) 3 (same code); `short bsp_index = g_4686c4;` right after the +0x7c copy 3 (same code); the +0x7c copy moved
+// down beside the +0x7e store 16 (the bsp load then hoists above the definition store); the location as an
+// initialised `s_location` local copied in 46 (119 bytes). Diagnostics: one to seven unused `long` locals 3 each
+// (no phase effect); the body through a mirror of the event type without the +4 byte/dword overlay 3 (same code).
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -2409,6 +2414,13 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // the count and elements read through a pointer to the pair 228; the shared actor stun-bounds inline (see 0xd9110) forced 228 with
 // the entry local and 3 without. Lead: a natural form that gives `object` one more use (or `info` one fewer) on the inline-guard
 // body should match; build/r114/lead-d8cb0.patch has that body.
+// M3 lane 13 r98 (fast, plain where noted): an inline guard taking (info, accumulator) that reads the entry only after
+// the info test 2 (fast and plain; retail's [eax + edx + 4] with no convention change, only the entry load still below
+// the je; a one-caller helper, not kept; build/r98/lead-d8cb0-guard.patch); on it the entry read into a local before the
+// info test 228 (the flip: definition in EAX, info EBP), early returns 2, a result flag 2, returning the inner condition 2,
+// `__forceinline` 2. The r114 guard called with `accumulator->field_4_2` for info 227 (857 B, the field reloaded; object
+// back in EBP, definition still EAX), plus definition read once through its address 222; the whole region-kill block as
+// a `__forceinline` helper 228. Every form that reads the entry before the info test flips the allocation.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2667,6 +2679,7 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// score 513 (was 513): 513 at m3 lane 12 r125 and r128, 517 before m3 lane 12 r125's drop-block helper, 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // MiniMax G (11-12): no new form, no lower score (476); retail's prologue takes only the object index in
 // EAX and reads the other five arguments off the stack with a 0x38 frame, ours takes the region index
 // and the permutation pointer in registers, and that argument set comes from this function's own first
@@ -2674,9 +2687,8 @@ struct s_unit_event
 // MiniMax A (11-14): no new form, no lower score (517): retail's entry takes only the permutation index in EAX
 // and reads the region index once into EBP off the stack (`ret 0x14`), while this build hands the region index
 // over in EBX and the permutation pointer in EBP; that register-argument set follows the parameter order.
-// score 513 (was 517): 517 before m3 lane 12 r125's drop-block helper, 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // MiniMax D (11-14): no new form, no lower score (517): reading the region index directly instead of through a pointer to the parameter gives 476 here but 67 for 0xdaaa0, so the pointer form stays; retail still takes the permutation in EAX and five arguments on the stack (ret 0x14), where this build takes the permutation from the stack.
-// score 517 (was 517): 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// Earlier 517 (was 517): 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // r101: unchanged at 472; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
@@ -2843,6 +2855,14 @@ struct s_unit_event
 // retail ([0x467840] is the request table's entry 0x1e): the call `function_e68c0(0x1e, unit)` 673 (1712 bytes, left
 // out of line here); its body written out (memset, type, 0xe6900) 531 (1884 bytes, inlined, the block then retail's
 // code but for registers; not kept, a helper's body written out).
+// m3 lane 12 r128 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd5de0, 0xd9d60; control 513, `ret 0x14` as retail, first difference
+// +0xc where the region index takes EBX and the permutation pointer EBP): 0xa8360 given `*region_reference` 513 (same code); the
+// region-state update through a state pointer formed at the update 513 (same code); the destroy test as
+// `!(flags & 1 ? db110(..) : !(flags & 0x10000) || state == 1 && db110(..))` 522 (1880 bytes); a `survives` flag (true, set from
+// db110 in the flags-1 arm and `state == 1 && db110(..)` in the 0x10000 arm, tested once) 529 at 1852 bytes, which gives retail's
+// shared 0xdb110 call exactly (`push 0; push 0; jmp` into `push; call; test al, al; jne`), not kept (a flag set in the arms); the
+// second arm as a nested ternary ending `: false` 513 (same code). Retail spills a constant 1 into the region argument's dead
+// home ([esp + 0x58]) for the region-state shift and later holds 1 in ESI (`or word ptr [x + 0x352], si`, the state compare).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4468,6 +4488,7 @@ bool function_138880();
 // 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the
 // second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // MiniMax I (11-15): no new form, no lower score (194 in the full image, 357 in the reduced image this lane measures): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
+// MiniMax S (11-15): no new form, no lower score (194): the 0xda110 permutation still arrives in EAX where retail keeps its convention, the flag pairs still merge into one word test and the second 0x138880 is still inlined where retail calls it: BLOCKED-BY 0xda110.
 // score 194 (was 229): 229 before m3 lane 7 r155's 0xda110 convention; 400, 402, 607 before that; at r94's start 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
 // one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
 // field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
@@ -5103,6 +5124,7 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
+// score 146 (was 146): 156 before MiniMax A (11-14), 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // MiniMax G (11-14): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the
 // search's entry test and the scratch registers of the last two lookups still differ.
 // MiniMax A (11-12): no new form, no lower score (156): the mask zero is still stored ahead of the states call where retail stores it in the node loop preheader, and the piece loop guard order, the search entry test and the scratch registers of the last two lookups still differ; storing the zero inside the block gives retail store but reallocates the frame (170), so the body stands.
@@ -5116,7 +5138,7 @@ struct s_damage_object_creation
 // MiniMax I (11-15): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in a register where this build saves first and routes the index through another, and retail spills the index * 12 at +0x10 where this build keeps the offset in a register.
 // score 146 (was 146): 156 before MiniMax A (11-14), 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // MiniMax D (11-14): no new form, no lower score (146): retail looks the tag definition up before it saves the registers and keeps the object index in eax, where this build saves first and routes the index through edi.
-// score 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
+// Earlier 146 (was 156): 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order, the section loop's count spill, and the scratch registers of the last two lookups.
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
@@ -5287,6 +5309,28 @@ struct s_damage_object_creation
 // (799 bytes); the zero after 0xba690 re-measured 229 (784 bytes), with the creation record and the node states
 // declared at the function or mask-block top 229, the creation record at the top on the early-zero form 187 (all the
 // same code). Lead: the copy form's tail is retail's; what is missing is a late zero that keeps object_index in ESI.
+// m3 lane 12 r128 (fast with 0xdb810 and 0xdbb40, control 146; a one-file LTCG harness of damage.cpp with its eight callee
+// files' objects gives our code exactly but for 0x1c3770's argument passing, aligned counts in brackets, base [72]): a
+// per-iteration copy of the mask for the search 146 (folded); the node loop's `|=` through a forceinline pointer helper 146;
+// object_index read once through its address 146; the final node-state set given the component recomputed 221 (819 bytes);
+// `attached_nodes` as long 146. The root node named (`long root_node = function_dbb40(object_index);`, then 0xdb810 given it)
+// 161 (799 bytes, first +0xc4) [47]: the whole head becomes retail's (globals before the pushes, the offset spilled, mask_a in
+// EDI) with the mask in memory at +0x10 and node_count sharing the offset's slot, but it is a one-use call result (match-only).
+// With it: the for/break search 156 (808 bytes) [25], plus the piece object pointer 157 [15]. Without it, the for/break search
+// with the piece pointer is the same code [15] (157 fast, 808 bytes, first +0xc4): left only the zero stored before the states
+// call, the guard order and the search's entry test. Harness grid (64 forms, zero declared just before the node loop): root
+// node named + retail's guard (`detached > 0 && tag != NONE` around a do-while ending `!= 0`) + piece pointer + node bit unnamed
+// + the while/ternary search 77 fast (808 bytes, first +0x37) [29], retail's register roles throughout (left: the offset shares
+// the mask's slot, the search); that with the early zero gives retail's slot layout exactly [28] (mask alone at +0x10, node_count
+// sharing the offset's +0x14), so retail's mask is live across the inlined 0xba690 lookup; that with `long detached_nodes = 0;`
+// at the top of the `if (section_mask_a)` block (the store sinks into retail's preheader slot) 106 fast (810 bytes) [24]: the
+// first 122 instructions are retail's exactly; left the search (ours `cmp ecx, edi; jl; or ecx, -1; push ecx`, retail's
+// for/break with a NONE start, `or eax, -1` ... `mov eax, ecx`), the 0xb7930 tag load order and the creation-copy registers.
+// Not kept: all rest on the named root node. Every for/break search spelling on that form (NONE in the declaration, set before
+// the loop, its own counter, a found test after a break loop, first_node at the guard scope, `while (!= 0)`) [89-102] hands the
+// mask ESI and object_index leaves it (frame 0x13dc); 80 more grid forms (root node, piece pointer, node bit, long piece_nodes,
+// long attached, word section masks, creation at the block top) [99-102]; with the late zero and no named root node the head
+// flips in every form [51-79]; r125's copy form with the block-top zero [80-108]; a named node index or model index [102-122].
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

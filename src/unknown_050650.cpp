@@ -1297,6 +1297,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
 // `field_x50962e != NONE` test 258 (all same code but the label form).
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1596,6 +1597,7 @@ done:
 // function's own body - a masked slot local added to the typed base, the byte-pointer product and the
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
+// MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
