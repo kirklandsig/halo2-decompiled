@@ -217,6 +217,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax C (11-15): no new form kept, no lower score (117, was 117): the fallback path still masks the tag index with
+// a word load (`movzx eax, dx`) where retail masks the 32-bit value in place (`and edx, 0xffff`); masking the index
+// inside the subscript reproduces retail's `and` but moves the tag table from EDI into ECX and hoists its load above
+// the frame (152), so the original is kept, and casting the index to a word keeps the same code. The stage and pass
+// homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged. The score-8 chain needs
+// the head, stage and pass elements bound by reference and is kept only with an exact match.
 // score 117 (was 117): M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late

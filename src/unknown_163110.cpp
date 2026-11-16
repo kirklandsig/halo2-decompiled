@@ -998,6 +998,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // vector3f_add (delta, then the point as a vector) 115 (same code, not kept); `out = output + k` 115; `p0`/`p1` as
 // `local_points + segment * 2` (+ 1) 115; the projection factor as `-(1.0f / w)` 258; the scale folded into the rows
 // (`t * delta.i + p0->x`, no vector3f_scale) 119. Body unchanged.
+// M3 lane 8 r172 (fast with the file's 15 matched functions, all kept): as a member of the view (`this` = view, both
+// callers through the view pointer; 0x320b0 stays matched) 251 (1867 B); plane 0's coefficients through a named
+// `vector3f const *` to vector_e4 251 (1867 B); the classification's j term spelled point-first 115 (same code:
+// canonicalised); plane 0's normal copied with memcpy 115 (same code); the far plane's negated vector computed ahead of
+// plane 0's copy 426. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

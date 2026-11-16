@@ -122,6 +122,7 @@ class Marked:
     const: bool = False  # a const method
     standard: bool = False  # "standard": its address escapes (a constructor: a caller outside LTCG calls it)
     abstract: bool = False  # "abstract": a constructor of an abstract class, which its stand-in cannot instantiate
+    convention: str = ''  # an explicit calling convention in the header (a method's address escape must name it)
 
 
 def _split_params(text):
@@ -153,6 +154,7 @@ def _param_type(param):
 
 QUALIFIERS = re.compile(r'\b(?:__stdcall|__cdecl|__fastcall|__thiscall|__clrcall|__inline|__forceinline|'
                         r'inline|PRIVATE|static|extern|virtual)\b')
+CONVENTION = re.compile(r'\b(__stdcall|__cdecl|__fastcall|__thiscall)\b')
 HEADER = re.compile(r'^(.*?)\s*((?:[A-Za-z_]\w*::)*~?[A-Za-z_]\w*)\s*\(')
 CLASS_DECLARATION = re.compile(r'\b(?:struct|class|union)\s+([A-Za-z_]\w*)')
 CLASS_TYPEDEF = re.compile(r'\btypedef\s+(?:struct|class|union)\b[^;{]*(?:\{.*?\})?\s*([A-Za-z_]\w*)\s*;', re.S)
@@ -242,9 +244,10 @@ def scan(text, path):
         if abstract and (m.group(1) == 'stub' or kind != 'constructor'):
             raise SystemExit(f'{path}:{i + 1}: "abstract" marks a decompiled constructor, not {name}')
         trailer = header[h.end() + len(inner) + 1:]
+        convention = CONVENTION.search(h.group(1))
         found.append(Marked(path, int(m.group(2), 16), name, returns or ('int' if kind == 'function' else ''),
                             params, m.group(1) == 'stub', cls, kind, bool(re.match(r'\s*const\b', trailer)),
-                            standard, abstract))
+                            standard, abstract, convention.group(1) if convention else ''))
     return found
 
 
@@ -354,7 +357,10 @@ def _escape(m, name):
     if m.kind == 'method':
         member = m.name.rpartition('::')[2]
         const = ' const' if m.const else ''
-        return f'{m.returns} ({m.cls}::*volatile {name})({", ".join(m.params)}){const} = &{m.cls}::{member};'
+        # a method declared __stdcall (or another explicit convention) needs it in the pointer's type too
+        convention = f'{m.convention} ' if m.convention else ''
+        return (f'{m.returns} ({convention}{m.cls}::*volatile {name})({", ".join(m.params)}){const} = '
+                f'&{m.cls}::{member};')
     return None
 
 

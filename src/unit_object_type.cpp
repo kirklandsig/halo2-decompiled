@@ -3517,6 +3517,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // forward/backward 84/83 at native 396 bytes. NOT kept: 84 gains only seven;
 // 83 emits two out-of-line transfers absent from retail, whose axes copy
 // is inline scalar moves. Original camera/matrix/axis publications restored.
+// MiniMax D (11-15): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once, and the seat index is scaled before the definition lookup where retail scales it after.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4905,6 +4906,7 @@ void function_c50a0(long unit_index)
 // P528: Native byte grouping/assignment/driver/gunner, paired signed roles, complete byte
 // decisions, consumed driver-role join and unchanged-driver return: eight at 166.
 // NOT kept: no exact ownership repair; original body, accessors and recursion restored.
+// MiniMax D (11-15): no new form, no lower score (166): retail keeps the vehicle in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -6282,6 +6284,9 @@ void function_cf040(long unit_index, short type)
 // header-pointer form, the byte-pointer arithmetic, the offset in a local, the pool in a local and the word-index
 // forms of that lookup, and every one of them compiles to the same bytes, so the order does not follow from the
 // source, and the permuter (26 tries, 305 s, full image 924 s) found nothing below 1 either.
+// MiniMax D (11-15): no new form, no lower score (1): the weapon loop's header lookup keeps our SIB order (base eax,
+// index edi) where retail has the byte offset as the base; the lookup through the masked-index helper, through a
+// local pool pointer read inside the loop and as the offset-first pointer sum all compile to the same bytes here.
 // MiniMax G (11-11): no new form, no lower score (1); the only difference left is the base and index order of the
 // header read inside the weapon loop (ours [eax+edi+8], retail [edi+eax+8]); the lookup macro, the data-first
 // pointer arithmetic, the same address spelled as an integer and the masked-index helper all compile to the same
@@ -6611,6 +6616,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // memmove 251, standard copy 309, backward copy 308; standard weapon-array fill 288.
 // NOT kept: all regress; tables add a frame and transfers lose the native extent;
 // original header addressing, scratch plan and three return blocks remain.
+// MiniMax D (11-15): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's five camera copies keep the source in ecx and the destination in edx where retail has them the other way round.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -6837,6 +6843,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // P541: Readiness callback results defined in complete success/failure arms: four independent sites, pairs, all and failure-first all:
 // 318/318/330/295/338/326/331/328. NOT kept: mode-six 295 gains only three; native mode/weapon registers, dead flag stores and shared readiness completion remain unresolved.
 // Original complete executable source and existing helper contracts restored.
+// MiniMax D (11-15): no new form, no lower score (298): the weapon index and the mode still take ebx and edi where retail keeps them in edi and bx, and the two weapon flag tests are still not stored in the readiness byte as retail stores them.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7101,6 +7108,7 @@ done:
 // 265/257/246/253; standard forward point copies 266/257/247/253.
 // NOT kept: all regress, several grow the frame or extent; native flag-byte
 // stores, state home and shared facing tail remain. Original complete body restored.
+// MiniMax D (11-15): no new form, no lower score (242): the planar copy of the unit's forward gives retail's four dword moves but leaves the body twelve bytes short, and the scale block still multiplies the y component in place where retail keeps the scale in a register.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -8541,6 +8549,7 @@ real function_50650(real cosine);
 // and the frame is 0x8c against retail's 0x80; the two 0xc7750 calls still push position and velocity on the
 // stack where retail passes them in xmm5 and xmm4: BLOCKED-BY 0xc7750's inlining.
 // MiniMax D (11-15), NOT kept: 608 (was 614), a 6-point gain, under the 8-point bar for a function above 30.
+// MiniMax D (11-15): no new form, no lower score (563): the frame is 0x8c against retail's 0x80, retail tests its second pointer at the entry and leaves the body when it is null while this build stores two zeroed speeds first and branches afterwards, and the two 0xc7750 calls still pass their arguments on the stack where retail passes them in xmm registers.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

@@ -286,6 +286,11 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // products 30/121 (same code); guard returns for the flag, NONE and sky tests 243/251 (838/844 bytes); the sky index
 // as a short local 30/121 (same code); color declared before direction 36/127; a 600 s permuter run on the 30 form
 // (65 tries), none below its baseline.
+// Round 185 (m3 lane 6, fast; colour first re-measured 121, only the post-call add and the ECX/EDI pair differ): colour first
+// with the sky index read once ahead of the flag test 143 (830 bytes, the load moves above the test), with the index assigned
+// inside the test 131 (the sky lookup's registers swap), with the scenario's sky block read through the shared tag-array type
+// in the sky helper 131 (a real build; earlier rounds only screened it compile-only), with the sky index passed straight from
+// the global 121 (same code), with the light entry typed as reals (`entry[4]`, `entry + 1`) 121 (same code).
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
