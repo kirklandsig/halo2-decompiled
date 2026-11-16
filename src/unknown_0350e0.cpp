@@ -2099,6 +2099,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax C (11-16): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the tag, position, direction, colour, alpha, amount and scale slots stay in another order; tried the context alpha before the time (526), the context alpha declared without its initialiser (492), the visibility after the context alpha and the selected colour at function scope (533, a scope move and so reverted), and none of them moves the slots.
 // MiniMax R (11-16): no new form, no lower score (492): the body is retail's 2285 bytes; the frame is still 0x90 against retail's 0x94, so the ratio, the definition, the source, the scale and the vertex homes sit four bytes below retail's, and the tag, position, direction, colour, alpha, amount and scale slots are in another order. The permuter over this body (600 s, twelve tries) found no form below the baseline.
 // score 492 (was 492): earlier 492 (was 492), 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
