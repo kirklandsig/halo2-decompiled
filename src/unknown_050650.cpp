@@ -1923,6 +1923,10 @@ struct s_actor_looking_structure_view
 // XMM5/XMM6, and the score's inner pair k, i (retail i, k; parentheses stop reassociation but not the operand swap). On 13
 // own dead locals n = 1..7 23/13/13/13/13/13/13; dead helper locals 1-7 between the copy and the rotation, or ahead of
 // the score, 13 each. Not kept (a one-caller twin of the shared helper).
+// M3 lane 14 r101 (fast with 0x296e60/0x2980d0/0x297660; control 23): a separate trace record for the loop's trace 144 (928 B);
+// the direction loop as `while (i < 8)` with `i++` last 23 (same code); the best-index test and the selected dot as one `&&`
+// test 144 (928 B); the counter declared beside the best pair 23 (same code); the clamp as `if (0.6f > score) score = 0.6f;
+// score *= fraction;` 141 (927 B).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

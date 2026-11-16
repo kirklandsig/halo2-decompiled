@@ -1238,6 +1238,11 @@ extern long *g_51e9cc;
 // sum as one `real const`: field first each. Diagnostics (not keepable): a `volatile` change, or any second use of the
 // change in the join block (a `> 5.0f` test, `* 2.0f`), loads the change first as retail; a second use right after
 // 0xe30c0 does not.
+// M3 lane 14 r101 (fast with 0xdd8e0/0xdd7d0/0xb77d0; all on the 2-form, re-measured 2: only the crouch pair): `velocity.k +=
+// -height_change` 2; height_change declared just ahead of the dd8e0 test 2; the pushes and the speed sum through a `vector3f
+// const *` to the velocity 2; the dd8e0 result in a bool tested after 2; the crouch read through a fresh BIPED_GET at the add
+// (diagnostic) 410 (1504 B, the lookup is redone). Re-measured: the two changes as a two-element array 4 (the crouch pair stays
+// field first; the physics byte moves), so the change's memory residence is not what orders the pair.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
