@@ -1236,6 +1236,10 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax S (11-16): no new form, no lower score (144): the body was re-measured and did not move; the three-point
+// form from the review stays out because it rests on the second lookup of the same unit, the re-read pool global and
+// the locals holding NONE until they are set, so the tag table still stays enregistered (EBX) through the first loop,
+// the player still spills and the frame stays 0x1c against retail's 0x18.
 // MiniMax S (11-16): no new form, no lower score (144): the tag table still stays enregistered (EBX) through the first loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are still not retail's; the counted-phase forms and the permuter tried before all leave the same code.
 // MiniMax S (11-15): no new form, no lower score (215): the tag table still stays enregistered (EBX) through the first
 // loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are
