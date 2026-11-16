@@ -132,7 +132,7 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 	return destination;
 }
 
-// score 21 (was 40): the string pointer and the character counter are kept in different registers
+// score 21 (was 21): the string pointer and the character counter are kept in different registers (40 before the early source)
 // here, and an extra register is pushed and restored around the copy loop. Tried: count before
 // start in the parameter list 40; the length in a named local after the sign tests 40;
 // string + start with start unmodified 28 but start then arrives in edx (0xb5f10 differs);
@@ -464,6 +464,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // `count = count + 1 > 0x200 ? 0x200 : count + 1` 35 [104] (caller 262 bytes); `bool result;` set false in both else arms 46
 // (96 bytes) [6]; `long length;` declared above the result 21 [match] (same code); the clamped size in its own named local
 // 35 [104]; early `return false` guards with `return true` at the end 46 (96 bytes) [6].
+// Round 186 (m3 lane 6, fast with 0xb5f10/0xb61d0; [0xb5f10]): the early source as `(char const *)(start + (long)string)` 21
+// [match] (same code); `if (++count > 0x200)` with `start += (long)string` after the clamp 40 [match]; one combined guard with the
+// length call and `start +=` after the clamp 40 [match]; the increment folded into the compare (`start + count++ <= length`) 31
+// [6]; `result = true` before the copy with `start + string` at the copy 38 (102 bytes) [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

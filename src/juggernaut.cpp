@@ -244,6 +244,9 @@ void juggernaut_set(long player_index, bool juggernaut)
 // as an inline predicate of the player and the waiting flag 20, the predicate computing waiting itself from the index and
 // the player 20; the draw split into a named choice and a named chosen index 20 (all the same code); the waiting test as an
 // if with the flags test nested and the unit test in an else-if, each storing 69 (245 bytes, the stores do not merge).
+// Round 128 (m3 lane 9, fast): the exclusion test ahead of the bit test 29; the bit test's operands swapped (`(1 << index)
+// & players`) 20; the candidate test's `||` operands swapped (flags first) 76 (249 bytes); the candidate stored from
+// `iterator.index` 20; an `int` count 20 (all the 20s the same code).
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
