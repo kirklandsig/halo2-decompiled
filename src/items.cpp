@@ -791,6 +791,9 @@ struct s_item_collision_bsp
 // shared signed ordinal 207 (receiver/selector revisited after query-width repair).
 // NOT kept: fallback copies gain only two/four and the receiver only six, below
 // eight above 30; original complete body, observations and calls restored.
+// MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
+// changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
+// [esp+0xac] after the two pushes). Body back to main.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -845,7 +848,7 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 				real offset = 0.05f - distance;
 				point3f position;
 				position.x = surface_plane.i * offset + marker.matrix.position.x;
-				position.y = surface_plane.j * offset + marker.matrix.position.x;
+				position.y = surface_plane.j * offset + marker.matrix.position.y;
 				position.z = surface_plane.k * offset + marker.matrix.position.z;
 				function_b75a0(item_index, &position, NULL, NULL, NULL, false);
 			}
