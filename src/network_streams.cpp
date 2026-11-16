@@ -843,6 +843,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // loop head's registers (ours keeps the oldest in esi and the next sequence in ecx and copies the bound into ebx, retail
 // keeps the next sequence in esi and the oldest in ebx) and the count, which retail computes from its own loads of newest
 // and oldest before the bound is loaded.
+// MiniMax E (11-16): no new form, no lower score (60): retail keeps the next sequence in ESI and recomputes the message offset each pass where this build folds it into the counter; the sequence window helpers are shared.
 // score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.
