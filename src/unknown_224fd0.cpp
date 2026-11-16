@@ -79,9 +79,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax G (11-05): the rotation helper with retail's statement order gives 342, with forward.i moved ahead of the cross products and the products re-associated 228, and with scalar locals for the squares and the sine products 342/418/510; the case bodies' scheduling and the four-byte table placement stay unmatched; no new form, no lower score.
 // MiniMax S (11-06): moving the shared tail's two outputs out of the rotation helper into the caller scores 352 against the baseline's 244 in the fast check; no lower score, the helper and the body stay.
-// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax S (11-01): no new form, no lower score.
 // Earlier at 219 (was 380): frame 0x6c and length agree; the rotation case bodies are scheduled differently
 // (retail squares k first and spills it, keeps the sine products in registers and reloads cosine), the
@@ -299,6 +299,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // vertex rows 0x101ac0/ad0/ae0 (0x2255a6, 0x22560a, 0x225675), the NONE test (0x225688) and color order (0x225694-0x2256a3), the span count/first loads (0x2256a8, 0x2256ac) and draw with 5
 // (0x2256c0) all agree. Shared-helper check: the row scaling is vector3f_scale (normalize3d.h) written out, and calling it gives the same 219 / 1836 bytes (fast) but needs a new #include, so it is not kept;
 // no shared helper exists for the negation, the rotation (draw_rotation is private, like 0x350e0's rotation_from_axis) or sin/cos. No new double local, no in-body pragma, no new include.
+// M3 lane 7 r167 (fast): dead-local phase scans, 1-7 longs at the top and 1-4 reals in the rotation helper, 219 each;
+// sine/cosine as `real const` parameters 219; ij/ik/jk declared at the helper's top 219; the diagonal terms written
+// square first 219 (a repeat of round 76). Retail's first case follows the helper's statement order nearly one for one
+// (k^2, k*s, i^2, j*s, s*i, forward.i, then ij as (j*C)*i); ours hoists the three sine products first.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
