@@ -976,6 +976,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // then long/short while: 369/369/367/367/371/371/369/367. NOT kept: intermediate grouping and
 // changed lifetime do not match native ingress/frame; six forms raise caller 286 to 313.
 // Original helpers and complete body restored.
+// P586: Actual final interpolation argument table, long/dword/short/word/byte/char for,
+// then long/short while: 369/369/408/408/408/408/369/408. NOT kept: argument grouping and
+// traversal miss native entry/frame/extent; original scalar outputs and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

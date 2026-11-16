@@ -685,6 +685,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P583: Inclusive final-ordinal lowest/pass/candidate bounds, seven subsets, then
 // one immutable shared final ordinal: 279/260/260/248/238/249/238/266. NOT kept: no exact native bound/frame
 // recovery; original signed loops, observations and complete body restored.
+// P586: Independent native real-home identities for the minimum pair, previous heading,
+// selected distance/heading/turn and candidate distance/heading/turn: eight at 144.
+// NOT kept: no frame/count/departure-home recovery; original complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

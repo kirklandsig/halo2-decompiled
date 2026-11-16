@@ -5900,6 +5900,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax C (11-15): no new form, no lower score (79): retail keeps the first product in xmm1 alive across the
 // block and computes the next value into xmm2, where this build spills xmm1 to [esp+0x10] and reloads it later;
 // the reduced check has to list 0x1ecf50 and 0x30bf0 as well, or it reports 621 against the 79.
+// P586: Immutable actual angle/cosine/sine producer subsets 1/2/4/3/5/6/7, then
+// complete producers with immutable biped receiver: 79/79/79/79/79/79/79/79.
+// NOT kept: first-rotation spill/operand and final-cross reload gaps remain; original body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

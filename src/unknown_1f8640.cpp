@@ -830,6 +830,9 @@ struct s_1f8a70_actor
 // P558: Actual unit-value/route-result phase union, bool/byte/short/word outcomes in both member orders:
 // 400/400/398/398/303/303/303/303. NOT kept: unmatched phase overlay and unit capture; original
 // returned-unit temporary, independent two-result flow and complete body restored.
+// P586: Unlisted low-family reverse destination orders 524367/542367/543267/534267/
+// 532467/524376/542376/543276: 361/374/235/235/360/376/396/381.
+// NOT kept: no native dispatch/failure-reload repair; original six cases and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

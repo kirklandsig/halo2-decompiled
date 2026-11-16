@@ -381,6 +381,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // P565: Cached/returned/scanned index signed/unsigned eight-byte homes, then full
 // domains: 167/168/171/167/168/171/252/252. NOT kept: no native merge/trailing-return
 // equality and narrow indices in retail; original complete body restored.
+// P586: Four-copy counter int/dword/short/word/char/byte/signed-eight-byte/unsigned-eight-byte:
+// 77/77/77/77/77/77/130/127. NOT kept: no cached-hit/merge/trailing-return recovery;
+// wide counters also grow frame/extent. Original memcpy loop and complete body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
