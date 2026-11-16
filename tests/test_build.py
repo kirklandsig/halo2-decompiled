@@ -200,6 +200,16 @@ def test_abstract_marker_calls_the_constructor_on_the_buffer():
     assert 'void standin_a_1(void) { ::new ((void *)standin_a_arguments) c_other(' in tu
 
 
+def test_standard_marker_on_a_stdcall_method_names_the_convention_in_its_escape():
+    text = ('// @retail 0x6fe90 standard\nbool __stdcall c_state::join(bool all, bool reserve)\n{\n}\n'
+            '// @retail 0x1010 standard\nbool c_list::has(long a) const\n{\n}\n')
+    marked = scan(text, 'src/s.cpp')
+    assert [m.convention for m in marked] == ['__stdcall', '']
+    tu = build.tu_source('/abs/src/s.cpp', marked, 's', set(), set(), set())
+    assert 'bool (__stdcall c_state::*volatile standin_s_outside_0)(bool, bool) = &c_state::join;' in tu
+    assert 'bool (c_list::*volatile standin_s_outside_1)(long) const = &c_list::has;' in tu
+
+
 @pytest.mark.parametrize('text', [
     '// @retail 0x1000 abstract\nc_list::~c_list()\n{\n}\n',
     '// @retail 0x1000 abstract\nvoid __stdcall plain(long a)\n{\n}\n',
