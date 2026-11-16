@@ -964,6 +964,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // inline in the body 204). Not kept: a private twin of an existing helper with a body picked by score (twin
 // ruling 10-30); the shared rotate_direction with the crosses before the dot 47 and loses 0x1ecf50 (160).
 // Patch: build/r250/held-26d570.patch (lane 3's worktree).
+// P581: Rounded angle/sine/cosine promoted receiver storage, seven subsets and immutable
+// complete graph: 46/80/209/59/216/100/209/209. NOT kept: no exact native j/k SIMD and marker-publication recovery;
+// original rounded producers, shared rotation and complete body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

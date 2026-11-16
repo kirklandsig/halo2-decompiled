@@ -597,6 +597,7 @@ union s_185be7
 // MiniMax S (11-15): no new form, no lower score (590): the head differs in register assignment, with the entry record base in
 // EBX where retail keeps it in ECX and the -1 sentinel in the other register, and the two zeroing loops and the store order
 // follow from that.
+// MiniMax I (11-16): no new form, no lower score (590): the head still differs in register assignment - the entry record base in EBX where retail keeps it in ECX and the -1 sentinel in the other register - and the flag test reloads the root global in retail where this build keeps it in EBX; that reload follows from retail treating 0x24590 as an opaque callee, so the fast check builds this body differently from the full image and no source form in this file can force it.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

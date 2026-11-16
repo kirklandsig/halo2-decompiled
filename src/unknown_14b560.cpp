@@ -1250,6 +1250,10 @@ bool function_14ed80(void)
 // M3 lane 8 r173 (fast with 0x14f0f0 and 0x14f2e0): `long third = first;` 8 (same code); the clamp's maximum computed before the
 // index read in its arm 8 (same code); the representation as `representations + index` with third read first 9 (re-measured
 // on the full build; listed from the harness); the bound test as `count > index` 9; the clamp as `maximum < index` 10.
+// M3 lane 12 r131 (fast with 0x14f0f0 and 0x14f2e0): the player looked up directly as `&((s_player *)g_4e8c24->data)[player_index &
+// 0xffff]` (0x14f190's form) 8 (same code); `s_player const *player` 8 (same code); the representation as a const pointer to
+// `representations + index` 8 (same code); index initialised from the field with the sign test on the local 52; no representation
+// pointer (both fields read through `globals->representations[index]`) 10.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1667,6 +1671,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // that control the mode test held in a named bool 43, a game-options pointer local for the mode test only 43, `(byte)` on
 // the mode 43, `(long)mode != 4L` 43 (each the same code), the outputs declared third_person first 45. A 1800 s fast
 // annealing permuter run on the current body (seed 122): 77 tries, none below 5. Body unchanged.
+// M3 lane 12 r131 (fast; control: the outputs declared in the mode block 43 at 1031 bytes): on that control the kept-unit NONE
+// test as an empty `if (unit_index == NONE) {} else` 43; `bool result` declared after `unit_index` 43; the outputs declared bare at
+// the top of the mode block, set and passed in a nested block 43; a const player pointer 43 (each the same code: the folded byte
+// compare keeps AL as its temp, so the -1 stays `mov eax, 0xffffffff`).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

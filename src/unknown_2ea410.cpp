@@ -56,7 +56,37 @@ public:
 	virtual void slot_4(void const *a, void const *b, void const *input, void *collector) {}
 };
 
-// score 79 (was 79): Frame 0x114 agrees; extent 270 versus 274. First +0x13
+// a part's shape and key, set together
+struct geometry_2ea410
+{
+	shape_2ea410 const *shape;
+	long key;
+};
+
+// one side of a query whose shape and key are set together
+struct part_2ea410 : geometry_2ea410
+{
+	void const *placement;
+	body_2ea410 const *parent;
+};
+
+// the agent entries and their count, as an array
+struct entries_2ea410
+{
+	agent_entry_2ea410 *data;
+	long size;
+};
+
+// one past the last entry
+inline agent_entry_2ea410 *end_of_2ea410(entries_2ea410 &array)
+{
+	return array.data + array.size;
+}
+
+// score 0 (was 79): matched with the cursor set before the end, the end taken from the entry
+// array as a list, and each part's shape and key stored together as a geometry
+// record.
+// Before, 79 (was 79): Frame 0x114 agrees; extent 270 versus 274. First +0x13
 // saves this in ESI rather than EDI; the input stays live across the update,
 // and the traversal starts with another table load. Cursor before end 81;
 // input view earlier 79; traversal scope 79; parent first 79; indexed count 80;
@@ -75,24 +105,28 @@ void class_2ea410::function_2ea410(void const *a, void const *b, void const *inp
 {
 	timer_add_2ebc80("LtBvTree");
 	((class_2e96a0 *)this)->function_2e96a0(a, b, input, function_2e90f0);
-	agent_entry_2ea410 const *const end = entries + entry_count;
+	agent_entry_2ea410 const *entry = entries;
+	agent_entry_2ea410 const *const end = end_of_2ea410(*(entries_2ea410 *)&entries);
 	body_2ea410 const *container_body = (body_2ea410 const *)b;
-	body_2ea410 part;
+	part_2ea410 part;
 	part.placement = container_body->placement;
 	part.parent = container_body;
 	timer_add_2ebc80("StNarrowPhase");
 	shape_2ea410 const *container = ((tree_shape_2ea410 const *)container_body->shape)->container;
 	__declspec(align(16)) char buffer[0x100];
-	for (agent_entry_2ea410 const *entry = entries; entry != end; entry++)
+	for (; entry != end; entry++)
 	{
-		part.shape = container->part(entry->key, buffer);
-		part.key = entry->key;
+		shape_2ea410 const *shape = container->part(entry->key, buffer);
+		geometry_2ea410 const geometry = { shape, entry->key };
+		static_cast<geometry_2ea410 &>(part) = geometry;
 		entry->agent->slot_4(a, &part, input, collector);
 	}
 	timer_add_2ebc80("lt");
 }
 
-// score 25 (was 25): Frame 0x114 and extent 272 agree; the end calculation
+// score 0 (was 25): matched with 0x2ea410's forms (cursor before the end, end from the entry
+// array as a list, parent stored before placement, shape and key together).
+// Before, 25 (was 25): Frame 0x114 and extent 272 agree; the end calculation
 // lacks the cursor copy, and the descriptor and virtual-call carriers differ.
 // Iterator before end 25; captured count 25; parent first 26; buffer first 25;
 // while traversal 25; named key 25; named agent 25; whole initialization 59;
@@ -113,17 +147,19 @@ void class_2ea530::function_2ea530(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("LtBvTree");
 	((class_2e9d90 *)this)->function_2e9d90(a, b, input, function_2e90f0);
 	timer_add_2ebc80("StNarrowPhase");
-	agent_entry_2ea410 const *const end = entries + entry_count;
+	agent_entry_2ea410 const *entry = entries;
+	agent_entry_2ea410 const *const end = end_of_2ea410(*(entries_2ea410 *)&entries);
 	body_2ea410 const *container_body = (body_2ea410 const *)b;
-	body_2ea410 part;
-	part.placement = container_body->placement;
+	part_2ea410 part;
 	part.parent = container_body;
+	part.placement = container_body->placement;
 	shape_2ea410 const *container = ((tree_shape_2ea410 const *)container_body->shape)->container;
 	__declspec(align(16)) char buffer[0x100];
-	for (agent_entry_2ea410 const *entry = entries; entry != end; entry++)
+	for (; entry != end; entry++)
 	{
-		part.shape = container->part(entry->key, buffer);
-		part.key = entry->key;
+		shape_2ea410 const *shape = container->part(entry->key, buffer);
+		geometry_2ea410 const geometry = { shape, entry->key };
+		static_cast<geometry_2ea410 &>(part) = geometry;
 		entry->agent->slot_3(a, &part, input, collector, second_collector);
 	}
 	timer_add_2ebc80("lt");

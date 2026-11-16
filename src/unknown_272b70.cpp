@@ -353,6 +353,11 @@ inline void ai_script_object_set_flag10a_14(long object_index, bool flag)
 
 /* sets a flag of the unit of every actor an ai index names, or of the objects
    of its perception when it has no unit */
+// score 7: the swarm loop's ECX/EDX trade places, as in 0x2732e0 (its note
+// lists the forms tried there, all tied). Ours keeps the object table base in
+// ECX and the creature in EDX; retail keeps the base in EDX and the creature
+// in ECX. Permuter on this function: 147 tries, best 7, no improvement; the
+// rest of the body is identical. Needs the callers and 0xdc310 in a fast check.
 // @retail 0x273200
 void function_273200(long ai_index, bool flag)
 {

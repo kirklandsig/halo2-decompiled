@@ -3750,6 +3750,7 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // stored to +0x14 and the split member-state lea), which round 65 matched only with an unread owner parameter on 0x769a0;
 // its definition is in src/unknown_075870.cpp, a held sort_4byte file this round too, and every form on this side is listed.
 // Still BLOCKED-BY 0x769a0.
+// MiniMax D (11-16): no new form, no lower score (101).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4631,6 +4632,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // laid out after the body); the reason-3 test as one `&&` 305 (same code); the channel-state test as one `&&` 305 (same code);
 // the timed-out arm with one identity copy and `*reason = identity_equal ? 4 : 6` 320 (1234 B); the `state > 8` test inverted
 // with the exit as its else 367 (1269 B). Body unchanged.
+// MiniMax D (11-16): no new form, no lower score (305).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

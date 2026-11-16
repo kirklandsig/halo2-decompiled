@@ -1086,6 +1086,11 @@ struct s_string_buffer
 // the time arm's minutes value in its own local, the score value declared in the else arm 13 (same code); on that, the 1/3/4/7/8
 // chain with an `else if (== 9)` arm 50 (481), the six-way equality chain 50 (481); each arm formatting its own second score 94
 // (493 bytes).
+// Round 189 (m3 lane 5, plain): one const row-record pointer shared by the timed arm and the loads arm 122; the six-mode
+// equality chain in a bool evaluated ahead of the timed test 121 (491 bytes); the timed test negated with the score arm first
+// 52; each value loaded under its own identical six-mode chain (a repeated test for LTCG to thread) 104 (517 bytes, not
+// threaded); the six-mode chain through a plain file-private function 75 (460 bytes: this /O1 file keeps it out of line).
+// All restored; the 9 test still sits in line.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

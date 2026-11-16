@@ -298,6 +298,10 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // the post-call add left. On that: the collision sentinel stored after `result = 2` 121, at the top of the sky branch 156, before
 // the collision call 177. Diagnostics: a store through `record` at entry or at the top of the sky branch gives the in-place add;
 // a second store into the collision buffer and dead reads of `point` or `record` do not.
+// M3 lane 12 r131 (fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI pair differ): on
+// colour first, declarations direction/strength/colour 124, strength/direction/colour 124, colour/strength/direction 128,
+// strength/colour/direction 128 (the add stays load-first in every order); a const light pointer and entry read 121; the light
+// index declared ahead of the light-count test 121 (both the same code).
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

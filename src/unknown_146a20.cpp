@@ -454,6 +454,11 @@ bool g_47f05b;
 // and `lea esi, [eax + 0x15040]` join exactly, but the shared constant 1 becomes three immediates); on that, `block` read
 // after the three global stores 38 and g_479884 stored last 38 (both the same code); the buffer named ahead of the global
 // stores 36 (146 B; it takes EDX early and the 1s become immediates).
+// MiniMax I (11-16): no new form, no lower score (34): the permuter tried 53 variants of this body in 310 s and none
+// came below the kept form (30 differing instructions in both images); the abstract allocator's vtable store retail keeps
+// is still dropped as a dead store and the pool's placement is still loaded and added where retail reloads the block and
+// forms the address with a lea, and both follow from the shared constructors in include/unknown_146a20.h, which this lane
+// may not edit. BLOCKED-BY that header.
 // @retail 0x146a20
 void function_146a20(void)
 {
