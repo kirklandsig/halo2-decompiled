@@ -1158,7 +1158,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
 // against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
 // is the same function in the reduced map and is not a source difference.
-// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
+// MiniMax C (11-15): the function now scores 7 (was 33): frame 0x1144 and extent agree; the write call
+// still loads the handle after the flags zero (ours builds the zero in EAX where retail already has the
+// handle in EAX and builds the zero in ECX) and the checksum compare still takes EDX where retail takes EAX.
+// score 7 (was 33): frame 0x1144 and extent agree; the write call's handle-first setup and the checksum register remain.
 // checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
@@ -1777,52 +1780,50 @@ void function_213970(void)
                 bool resized;
                 function_1a1310(*handle, expected_size, 0, 6, &resized, &done);
                 cache_wait_for_completion(&done);
-                dword bytes_written;
                 if (resized)
                 {
                     s_cache_header empty_header;
                     cache_header_initialize_strings(&empty_header);
+                    dword bytes_written;
                     function_1a1050(*handle, &empty_header, 0x800, 0, s_file_write_flags(0), 0, 6, &bytes_written, &done);
                     cache_wait_for_completion(&done);
+                    if (bytes_written == 0x800)
+                        goto validation_done;
                 }
-                else
-                    bytes_written = 0;
-                if (bytes_written != 0x800 && handle->handle != INVALID_HANDLE_VALUE)
+                if (handle->handle != INVALID_HANDLE_VALUE)
                 {
                     function_1a1550(*handle, 0, 6, &done);
                     cache_wait_for_completion(&done);
                     handle->handle = INVALID_HANDLE_VALUE;
                 }
             }
-            else
+            else if (cache_file_header_read(index))
             {
-                valid = cache_file_header_read(index);
-                if (valid)
+                valid = true;
+                if (index >= 1 && index <= 1)
                 {
-                    if (index >= 1 && index <= 1)
+                    s_cache_header header;
+                    cache_header_initialize_strings(&header);
+                    valid = function_213800((char const *)file + 0x24, &header);
+                    if (valid)
+                        valid = *(long *)((byte *)file + 0x148) == *(long *)((byte *)&header + 0x144);
+                    if (valid && index != 0 && index != 1)
                     {
-                        s_cache_header header;
-                        cache_header_initialize_strings(&header);
-                        valid = function_213800((char const *)file + 0x24, &header);
-                        if (valid)
-                            valid = *(long *)((byte *)file + 0x148) == *(long *)((byte *)&header + 0x144);
-                        if (valid && index != 0 && index != 1)
+                        for (long type = 0; type < 3; type++)
                         {
-                            for (long type = 0; type < 3; type++)
+                            if (*((byte *)file + 0x178 + type))
                             {
-                                if (*((byte *)file + 0x178 + type))
-                                {
-                                    FILETIME const *current = (FILETIME const *)((byte *)cache_file_from_type(type) + 0x17c);
-                                    FILETIME const *stored = (FILETIME const *)((byte *)file + 0x184 + type * 8);
-                                    valid = valid_types[type];
-                                    if (valid)
-                                        valid = CompareFileTime(current, stored) == 0;
-                                }
+                                FILETIME const *current = (FILETIME const *)((byte *)cache_file_from_type(type) + 0x17c);
+                                FILETIME const *stored = (FILETIME const *)((byte *)file + 0x184 + type * 8);
+                                valid = valid_types[type];
+                                if (valid)
+                                    valid = CompareFileTime(current, stored) == 0;
                             }
                         }
                     }
                 }
             }
+        validation_done:;
         }
         if (!valid)
         {

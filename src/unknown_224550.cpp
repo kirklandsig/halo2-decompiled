@@ -94,6 +94,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
+// second UV set in the other slot, and the aspect block still leaves the blend in XMM5; the tint in a nested scope
+// measures 234 and swapping the two UV declarations gives the same code, so the homes cannot be moved that way.
 // MiniMax D (11-14): no new form, no lower score (194): the first difference is still at +0x5b and what remains is
 // where the tint and the second UV set's bounds live and the blend that still leaves XMM5 in the aspect block, so
 // the difference is the storage of those two values rather than a statement order; the kept form with the width
