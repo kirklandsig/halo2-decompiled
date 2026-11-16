@@ -1136,6 +1136,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `0.0f != length_squared` 125 (re-measure); the length as dot3f(&plane.n, &plane.n) 177, with the compare flipped 176;
 // as length_sq3f(&plane.n) with it 398; as dot3f(&left, &left) 392 (1700 B), with the compare flipped 391; as
 // dot3f(&left, &plane.n) 394 (1700 B).
+// P541: Existing profile/animation-matrix automatic, ordinary and forced expansion declarations:
+// 126/684/126/779/126/684/779/1272. NOT kept: ties or forced expansion grows frame/extent; direction-j preload and length/zero homes remain.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
