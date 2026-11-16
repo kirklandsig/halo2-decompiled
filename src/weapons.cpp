@@ -3262,6 +3262,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax S (11-16): no new form, no lower score (190): the conversion scan still needs its entry tested for null - using the scan counter for the entry with a local found flag scores 206, keeping the entry by its index 194, clearing the available count when the scan finds nothing 206, and the pointer form with the skip as the else of the found test stays 190; the scan counter as a long instead of a short gives 210, and the destination weapon's register and the acquisition flag's sense still differ.
 // MiniMax G (11-14): no new form, no lower score (190): the type byte re-read at each of its three tests 212, the acquisition flag with retail's polarity 211 (715 bytes), the same with a found flag in the conversion scan 216, the destination magazine without its own pointer 207, both of those together 211 (743 bytes), the capacity minimum without its cast 190 (unchanged code, different allocation); a 300 s permuter run found nothing below 190.
 // MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
 // carriers only (retail holds the destination weapon in ebp and spills it around the conversion
