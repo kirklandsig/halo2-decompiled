@@ -237,6 +237,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
 // basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
 // src/unknown_11eed0.cpp).
+// MiniMax C (11-16): score 218 (was 218): no new form, no lower score; BLOCKED-BY 0x11f0d0
+// (src/unknown_11eed0.cpp): its named `double s` (and `double angle`, and its acos helper's double
+// return) makes this function keep 8-byte stack parity under LTCG, so the frame stays 0x78 against
+// retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
 // score 218 (was 218; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // score 218 (was 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
@@ -1169,6 +1173,11 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // MiniMax D (11-15): no new form, no lower score (92): the score is still mostly the one-row shift from the movzx of
 // the force argument, which needs 0x1c4b00's last parameter declared a bool in files this lane may not edit, and the
 // squared length still sums the three components in the order the compiler picks where retail sums them from k down.
+// MiniMax C (11-16): score 92 (was 92): no new form, no lower score; the frame is 0x1f0 as in retail, but the
+// score is still mostly the one-row shift from the zero extension of the force argument, which needs
+// 0x1c4b00's last parameter declared a bool in files this lane may not edit (BLOCKED-BY that file), and the
+// squared length still sums the three components in the order this build picks where retail sums them from
+// k down.
 // score 92 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension. Round 85 (m3 lane 16): 0x1e5af0's
 // parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).

@@ -1347,6 +1347,9 @@ struct s_133f70;
 // MiniMax R (11-16): no new form, no lower score (93): the plain check is the measure (the reduced image builds this function
 // differently and scores 355), and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns
 // remain; that tail's body is in another file. BLOCKED-BY 0x23690.
+// MiniMax S (11-16): no new form, no lower score (93): the frame 0x33f8 agrees with retail, but the distance staging, the
+// nullable-entry and cache adds and the result homes still differ, and the tail that 0x23690 owns is in another file:
+// BLOCKED-BY 0x23690; the permuter (full-image builds, 900 s, 14 tries) found no variant below 93.
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).

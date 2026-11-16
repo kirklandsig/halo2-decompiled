@@ -636,6 +636,10 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // inline 14 (both the same code: the arm still reloads ESI after the offset load); on the base body with the field read
 // directly 27; a helper taking the block, testing its linked flag and releasing 27; the 14 form with the test and the
 // arm each through its own reference to the field 14 (same code).
+// Round 130 (m3 lane 12, fast with 0x12e210, which stays matched): the cache block as a const pointer 27; the loop's
+// block local as a const pointer 27; the loop test as `busy(...) != false` 27 (all same code); the time test with its
+// operands swapped 28 (first difference +0x41); the tail's pointer offset read through the geometry block's own
+// section-offset field (no fixup-group cast) 27.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

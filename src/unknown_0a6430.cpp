@@ -14,15 +14,19 @@ void function_b7680(long index, real scale, real seconds);
 void function_bf830(long index, real shield, short value);
 void function_bf890(long index, byte const *states);
 void function_dbc80(long index, short first, short second);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 
 PRIVATE byte *update_object_0a6430(long index)
 {
 	return *(byte **)(g_4e0300->data + (index & 0xffff) * 12 + 8);
 }
 
-// score 16 (was 16): the 0x100 block's object pointer takes ECX (retail EAX, reusing the pool
-// base) and the pushed state pointer EDX (retail ECX), one scratch register on in rotation; the
-// 0x200 block loads the object pool before the index (retail after it, +1 byte). Tried: the
+// score 14 (was 16): round 173 reads the 0x100 block's count through the existing 0xba690, which
+// LTCG inlines: its object now takes EAX as retail. Left: the 0x100 call's pushed state pointer
+// takes EDX (retail ECX), and the 0x200 block loads the object pool before the index (retail after
+// it, +1 byte), its object in EAX where retail has EDX. Before round 173, at 16: the 0x100 block's
+// object pointer took ECX (retail EAX, reusing the pool base) and the pushed state pointer EDX
+// (retail ECX), one scratch register on in rotation. Tried: the
 // 0x100 compare reversed 17; the object read without a local 16; the tag lookups as tag-array
 // elements 16; the definition read straight from the object getter 16; the count cleared after
 // the object read 16.
@@ -112,6 +116,13 @@ PRIVATE byte *update_object_0a6430(long index)
 // the callers stay matched); the same in the callers' own order (object index, mask, c, state) 16 (byte-identical); the
 // 0x40 block's object through the header form 16 (same code); the 0x100 quotient named as a region count 16 (same code);
 // that compare state-byte first with `!=` and the call in the else 17.
+// M3 lane 8 r173 (fast; callers matched each time): before the 0xba690 form, the function as a const member of the
+// object type definition (every caller passes `this`; header, definition and six call lines) 16 (byte-identical); the object
+// getter returning `byte *const &` 16 (same code). Kept: the 0x100 count through 0xba690 into a `region_count`
+// out-parameter 14 (plain 14). On it: the 0x200
+// object read before `count = 0` 14 (same code); the 0x200 lookup through OBJECT_DATUM_GET with the typed definition
+// index 14; the 0x100 compare state byte first 15; the model lookup as a tag-array element 14 (same code); the 0x200
+// lookup through a header pointer 14.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
@@ -160,8 +171,9 @@ void function_a6430(c_object_type_definition const *definition, long mask, long 
 		function_bf830(object_index, *(real *)(state + 0x48), state[0x4c] == 0);
 	if (mask & 0x100)
 	{
-		byte *object = update_object_0a6430(object_index);
-		if (*(short *)(object + 0x118) / 10 == state[0x50])
+		long region_count;
+		function_ba690(object_index, &region_count, NULL, NULL, NULL);
+		if (region_count == state[0x50])
 			function_bf890(object_index, state + 0x51);
 	}
 	if (mask & 0x200)

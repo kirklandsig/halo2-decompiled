@@ -714,6 +714,13 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // `voice_index++` 3 (same code as the helper form); `register` on the inner counter 3. Diagnostic (reverted, not a source
 // form): a compiler memory barrier after the second store matches in the fast check, so retail behaves as if a scheduling
 // fence sits there that holds `inc esi` but not `inc edi`.
+// M3 lane 8 r173 (fast): all ten stores in a forceinline helper taking the voice pointer and the type 3 (same code); the voice
+// set from `&g_4e6378[voice_index]` with the stores from unknown0a on in a forceinline helper taking the index, called with
+// `voice_index++`, 3 (`inc edi` and `inc esi` both after the second store); the first two stores in a forceinline helper
+// taking (voice index, type) ahead of `&g_4e6378[voice_index++]` for the rest 3 (the same: `inc edi` follows the second
+// store). Diagnostics: round 185's helper by index re-measured 3 (as listed); that helper given `voice_index - 1` after a
+// post-increment 150 (599 bytes, the voice is recomputed). Every re-derivation through the index register holds `inc edi`
+// below the fence with `inc esi`; retail's fence holds only `inc esi`.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -3811,9 +3818,19 @@ void function_129100(s_voice_position_batch *batch, vector3f **buffers, vector3f
 	}
 }
 
-struct s_animation_state;
 struct s_animation_ref;
-void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
+
+struct s_animation_state
+{
+	byte unknown00[4];
+	char a;
+	char b;
+	word c;
+
+	void function_2192b0(s_animation_ref *ref, byte value);
+	void function_219310(s_animation_ref *ref, short value);
+};
+
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
 // score 24 (was 24): the loop is a for statement whose increment reloads the pool and advances the index, the
@@ -4042,7 +4059,7 @@ void function_1282d0(void)
 					{
 						if (!(bool)((*(word *)((byte *)function_221810(definition->promotion_index) + 0xa) >> 5) & 1) &&
 							(short)function_2193d0((s_animation_state *)range, (s_animation_ref *)definition) == NONE)
-							function_219310((s_animation_state *)range, (s_animation_ref *)definition, sound->permutation_index);
+							((s_animation_state *)range)->function_219310((s_animation_ref *)definition, sound->permutation_index);
 						function_127320(sound_index, 0xe);
 					}
 					break;

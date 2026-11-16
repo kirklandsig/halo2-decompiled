@@ -124,7 +124,7 @@ static inline void quaternion_transform_vector(
 // rows and sums the dot as i,k,j in the forward row and k,j,i in the left row) and retail's second store of 2w to
 // a slot nothing reads; the source forms tried do not decide the association.
 // MiniMax S (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the quaternion halves are still two separate locals and the sine half still takes the matrix parameter's home slot.
-// score 205 (was 200; fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
@@ -396,6 +396,13 @@ static inline void quaternion_transform_vector(
 // 240, cross via cross3f 239, both 237 (1317 bytes); plain halves 267; cross3f for the construction 250; helper statement order s,dot,w2 250 /
 // s,w2,dot 252 / w2,s,dot 207 / dot,s,w2 248 / w2,dot,s 208. Not used: the clamp is PIN_126660's expression (unknown_124f90.h, needs a new include);
 // quaternion_transform_vector repeats quaternion_rotate_point (unknown_11cb00.cpp, not in a header, other term orders).
+// Round 99 (m3 lane 13, fast): retail's transform order read from the listing is dot, w2 (stored twice), cross j, k, i
+// (j and k spilled), then the i row cross*w2 + v*s + q*dot and the j/k rows v*s + q*dot + cross*w2, with s = 2w*w - 1
+// computed once before the matrix copy. The helper with scalar crosses in that order and those row orders 262 (frame
+// 0x20); that with plain half-angle locals 252 (retail's 0x24 frame and quaternion slots, first difference +0x87: the
+// cosine half takes xmm4 and the sine product xmm5, retail the reverse); s computed in the body before the copy and
+// passed in 308 (frame 0x18); plain halves with the original helper 267; plain halves, scalar crosses and s first in
+// the helper 248. Original body and helper restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

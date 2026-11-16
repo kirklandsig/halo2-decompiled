@@ -126,12 +126,17 @@ struct s_animation_tag_data
 	s_animation_entry *entries;
 };
 
+struct s_animation_ref;
+
 struct s_animation_state
 {
 	byte unknown00[4];
 	char a;
 	char b;
 	word c;
+
+	void function_2192b0(s_animation_ref *ref, byte value);
+	void function_219310(s_animation_ref *ref, short value);
 };
 
 struct s_animation_ref
@@ -147,7 +152,7 @@ PRIVATE s_animation_entry *get_animation_entry(s_animation_ref *ref)
 	return &g_4e3b44[header->datum_index & 0xffff].data->entries[ref->index];
 }
 
-// score 3 (was 3): the final store puts the pointer in edx and the value in cl;
+// Earlier 3 (was 3, before the member form matched it): the final store put the pointer in edx and the value in cl;
 // retail puts the pointer in ecx and the value in dl. The permuter exhausted
 // its mutations at this score.
 // Read-only entry 3; overlap-safe byte store 22; field reference 3; read-only
@@ -156,17 +161,28 @@ PRIVATE s_animation_entry *get_animation_entry(s_animation_ref *ref)
 // P555: Admission byte/short/word/int/long/dword outcomes, then mutable/const
 // entry references: 3/3/3/3/3/3/3/3. NOT kept: no exact match;
 // final pointer/value register swap remains. Original body and helper restored.
+// Round 99 (m3 lane 13): the value as char 3, an early return 3, a long value with a
+// (char) cast 3, a const state pointer 3 (all identical: the value is loaded first).
+// Matches retail (coordinator 11-16, round 99's held patch applied): this setter as a
+// member of its state (`void s_animation_state::function_2192b0(s_animation_ref *ref,
+// byte value)`, `this` loaded first); its call in 0x21cbe0 is a member call now. 0x219310 matched the same way; its earlier notes
+// (same final-store swap): read-only entry 3; overlap-safe low-byte store 22; field
+// reference 3; read-only tag-data receiver 3; direct header-global reads 3;
+// default-null header result 24; native datum slot 20; pointer addition 3; P555
+// admission byte/short/word/int/long/dword outcomes, then mutable/const entry
+// references 3/3/3/3/3/3/3/3.
 // @retail 0x2192b0
-void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
+void s_animation_state::function_2192b0(s_animation_ref *ref, byte value)
 {
 	if (!(TEST_FIELD_BIT(get_animation_entry(ref)->flag5)))
 	{
-		state->a = value;
+		a = value;
 	}
 }
 
-// score 3 (was 3): same final-store register swap as 0x2192b0; manual variants could
-// not change it.
+/* stores the state's b unless the set's entry has flag 5 */
+// Earlier 3 (was 3, before the member form matched it): same final-store register swap as 0x2192b0; manual
+// variants could not change it.
 // Read-only entry 3; overlap-safe low-byte store 22; field reference 3;
 // read-only tag-data receiver 3; direct header-global reads 3; default-null
 // header result 24; native datum slot 20; pointer addition 3. All restored.
@@ -177,22 +193,29 @@ void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
 // fill-n, original admission and early flag exit: 22/22/21/21/30/30/19/19. NOT kept: no byte equality;
 // original short interface, shared getter and setter restored.
 // @retail 0x219310
-void function_219310(s_animation_state *state, s_animation_ref *ref, short value)
+void s_animation_state::function_219310(s_animation_ref *ref, short value)
 {
 	if (!(TEST_FIELD_BIT(get_animation_entry(ref)->flag5)))
 	{
-		state->b = value;
+		b = value;
 	}
 }
 
+/* the state's a (the last permutation), or NONE when the set's entry has flag 5;
+   callers take it as a short */
 // @retail 0x219370
-long function_219370(s_animation_state *state, s_animation_ref *ref)
+short function_219370(s_animation_state *state, s_animation_ref *ref)
 {
+	long result;
 	if (!(TEST_FIELD_BIT(get_animation_entry(ref)->flag5)))
 	{
-		return state->a;
+		result = state->a;
 	}
-	return NONE;
+	else
+	{
+		result = NONE;
+	}
+	return (short)result;
 }
 
 // @retail 0x2193d0
