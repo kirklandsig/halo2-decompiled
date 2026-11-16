@@ -2238,6 +2238,7 @@ struct s_unit_motion
 
 /* advances a position and velocity along the motion for a time; whether
    time remains after its last phase */
+// MiniMax R (11-16): no new form, no lower score (104): retail takes the position and the velocity in xmm5 and xmm4 and compares them there, while this build keeps them on the stack and compares them in xmm1 and xmm3 with a third value in xmm5; the body is 265 bytes against retail's 227, and the accumulator spelling that gives retail's 227 bytes at 28 is inlined into 0xc7840 by LTCG and loses the matched 0x1e5af0 and 0x1faf80. BLOCKED-BY 0xc7840's call sites.
 // MiniMax E (11-15): no new form, no lower score (104): the call boundaries agree with retail's (this body calls nothing), and what is left is the register convention - retail takes position and velocity in XMM5 and XMM4 and keeps the body out of line at 0xc7840's calls, where the accumulator spelling that gives retail's 227 bytes and 28 differences is inlined instead and loses the matched 0x1e5af0 and 0x1faf80. BLOCKED-BY 0xc7840's call sites.
 // MiniMax C (11-15): no new form, no lower score (104): retail moves the two incoming floats into xmm0 and xmm1 and
 // compares them there, while this build compares them in xmm1 and xmm3 and keeps a third value in xmm5, so the body is
@@ -2414,6 +2415,15 @@ void function_cfec0(long unit_index)
 /* the object that answers for the unit: the vehicle when the unit's seat
    has bit 0 or 3, or a rider of that vehicle with bit 27 of its
    definition's +0xbc and its object flag 26; else the unit */
+// MiniMax R (11-16): no new form, no lower score (1): the entry branch is still `jle` where retail has `je`; the
+// `!= NONE` spelling gives retail's `je` but VC folds the NONE exit to the constant again (2), and dropping the
+// inner returns to merge the exits moves retail's lazy pushes into the prologue (62 for all three, 12 for the
+// parent-level one, 39 for the seat-level and parent-level ones). Compile-only probes: a returned local or the
+// returned parameter folds to `or eax, 0xffffffff` unless the exit is a merge of two paths, and retail's five
+// exits are tail-duplicated copies of one return, which this build's frame layout cannot reproduce. This round's
+// battery measured a merged exit (2), a copy tested and returned (2), a copy tested with the parameter returned (160),
+// a masked compare (95) and an early return (92): every equality spelling folds the NONE exit to the constant, so the
+// `jle` spelling stays as the closest form.
 // MiniMax E (11-15): no new form, no lower score (1): the last exit still branches with `jle` where retail has `je`; the equality spelling gives `je` but folds the returned copy to the constant, a result variable keeps the copy only by losing retail's `mov ebx, eax` prologue (47), and a 300 s permuter run over the body (annealing, 2000 tries, 27 tries reached) stays at 1.
 // MiniMax E (11-16): no new form, no lower score (1): the `!= NONE` spelling matches retail's branch but VC folds the
 // NONE exit to `or eax, 0xffffffff` again (2, 258 bytes); the parameter copied into a local before the test, the test
@@ -5052,6 +5062,9 @@ void __stdcall function_cc810(long vehicle_index)
 /* plans a motion over a distance from a velocity: accelerate, coast and
    decelerate (by the acceleration) without passing the speed limit when
    one is given; negative distances are planned mirrored */
+// MiniMax R (11-16): no new form, no lower score (162): the one-use discriminant still lands on the x87 stack under the eight-byte
+// frame where retail keeps it in SSE with a spilled root, and the first test's three multiplies are still folded into one multiply by
+// 0.25; an inner (real) cast on the sqrt argument and a named float discriminant local both leave the same code (162 each).
 // MiniMax I (11-15): no new form, no lower score (162): an inner (real) cast on the sqrt argument leaves the discriminant on
 // the x87 stack and the eight-byte frame in place; retail computes the discriminant in SSE and spills it to the dead argument slot.
 // MiniMax S (11-16): no new form, no lower score (162): the one-use discriminant still lands on the x87 stack under an eight-byte
@@ -6380,6 +6393,18 @@ void function_cf040(long unit_index, short type)
 // (ours [index + pointer], retail [pointer + index]), as in 0x4c450, 0x181cf0, 0x23600, 0x1988e0 and 0x194710. About 20
 // forms tried on two of them (index spelling, declaration order, pointer formation, char and const types): none changed it.
 // Round 82 (lane 11, fast): the weapon loop through the existing 0xcbd50 getter 1, with the
+// MiniMax R (11-16): no new form, no lower score (1): the one difference is still the SIB byte of the weapon loop's
+// header lookup. This round's compile-only probes show VC keeping the pool data in the base slot of that address in
+// every spelling - the index form, the offset-first pointer sum, the offset-first integer sum, the pool data copied
+// into a long-typed local and the offset cast to a pointer - so the base is the term that comes from the pointer
+// field, and the only way to put the offset there would be a pool data field that is not a pointer. Spelling the
+// loop's lookup in the function itself as the offset-first pointer sum leaves the loop's bytes unchanged (1). A
+// second battery (fourteen spellings: the offset term first in the sum, the offset through a header pointer, the
+// offset in a local of its own, the pool data as a byte pointer, the offset cast to a pointer) leaves the address
+// with the pool data in the base slot in every one of them, so the swap is not reachable from the source text.
+// Retail's own two lookups of that array differ from each other (the first scales the index by four and keeps the
+// pool data in the base slot, the second keeps the offset unscaled and puts it in the base slot), so the order
+// follows the expression's shape rather than a fixed convention.
 // holder kept for its slot argument 1; the first unit lookup through unit_at_masked_index 1, both lookups through it 1;
 // the unit looked up before the vehicle 139. Diagnostic: 1-32 initialised unused locals at the top or before the loop
 // leave the order unchanged (not symbol numbering here).
@@ -6573,6 +6598,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
+// MiniMax R (11-16): no new form, no lower score (59): the two initial header lookups still take this build's SIB encodings (the pool
+// data as the base where retail has the offset) and the success arm's scratch registers are still ours edx, eax, ecx where retail has
+// eax, ecx, edx; the frame, the unsigned source loop and the three return blocks agree.
 // MiniMax E (11-15): no new form, no lower score (59): the success arm's scratch registers stay swapped (ours EDX and EAX where retail has EAX and ECX), which brings the creation pointer's load ahead of the state stores and keeps the five vector copies' source in EDX instead of ECX; reading the call's argument through a named local compiles to the same bytes.
 // MiniMax S (11-16): no new form, no lower score (59): the two initial header lookups still use this build's SIB encodings (the pool
 // data as the base where retail has the offset) and the EAX/ECX/EDX success scratch rotation remains; the frame, the unsigned source
@@ -8510,6 +8538,10 @@ real function_50650(real cosine);
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
+// MiniMax R (11-16): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, retail still tests its second
+// pointer at the entry and leaves the body when it is null where this build stores two zeroed speeds first and only then branches, and
+// the two 0xc7750 calls still push the position and the velocity on the stack where retail passes them in xmm5 and xmm4.
+// BLOCKED-BY 0xc7750's inlining.
 // MiniMax E (11-15): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80, the two 0xc7750 calls still push position and velocity on entry, and the two speeds are still stored as zeros first where retail branches first.
 // MiniMax A (11-14): no new form, no lower score (563): the frame is 0x8c against retail's 0x80, retail tests its
 // second pointer at the entry and leaves the body when it is null, while this build stores two zeroed speeds first and
