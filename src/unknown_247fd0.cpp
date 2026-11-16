@@ -761,6 +761,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // domains, then unsigned effect identity: 334/334/334/334/334/334/334/334.
 // NOT kept: no exact native address/home repair; separate effect-base additions,
 // gate/settings homes and escaped blend/getter allocation remain. Full body restored.
+// P565: Effect/allocation/child ordinal/child handle/tag/event/flags eight-byte
+// logical storage, each then all: 445/450/378/338/356/354/357/540. NOT kept: native values
+// are narrow and no split-address/home equality; original complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

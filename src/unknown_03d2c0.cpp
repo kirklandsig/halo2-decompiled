@@ -369,6 +369,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // (same code). Original body restored.
 // MiniMax C (11-16): no new form tried this round, no lower score (77): the body is still 510 bytes against retail's 518 and the blocks'
 // MiniMax C (11-16): order still differs in the ways the notes above record.
+// P565: Cached/returned/scanned index signed/unsigned eight-byte homes, then full
+// domains: 167/168/171/167/168/171/252/252. NOT kept: no native merge/trailing-return
+// equality and narrow indices in retail; original complete body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
