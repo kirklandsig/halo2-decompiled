@@ -1890,6 +1890,9 @@ void function_150820(dword *bits, bool local_only)
 // P533: Player ordinal ingress dword/int/unsigned-int/word, Boolean then byte return:
 // 43/43/43/84/43/43/43/84. NOT kept: no byte match; full-width mask and native
 // saved player/hand roles remain. Original complete body and sole outside declaration restored.
+// P582: Original-site hand/signed held-slot/selected-weapon scalar memcpy, seven
+// subsets, then complete scalar memmove: 43/43/43/43/43/43/43/170. NOT kept: no native ESI-player/EDI-hand equality;
+// original producers, signed conversions, complete body and game-call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -569,6 +569,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P561: Original negative duplicate-search flag in char/signed-char/byte/short/word/int/long/dword:
 // 846/846/846/915/915/846/846/846 at 3327/3327 bytes. NOT kept: no native entry zero/count/query
 // residence or exact bytes; original bool flag, helpers and complete executable body restored.
+// P582: Original-site scalar memcpy at completed query count/paired query indices/existing
+// candidate, seven subsets, then complete scalar memmove: 846/846/846/846/846/846/846/1144. NOT kept: no exact native entry-zero,
+// count/query/primary-home recovery; original scalar producers, helpers and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

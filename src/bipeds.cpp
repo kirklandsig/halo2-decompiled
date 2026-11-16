@@ -4901,6 +4901,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // 344/343/348/346/344; pivot/scaled/coordinate scalar names 336/336/336.
 // NOT kept: no native matrix/origin/property-home recovery or exact bytes;
 // original alias-safe helper and complete executable body restored.
+// P582: Rounded distance/clearance/collision-fraction promoted receiver storage, seven
+// subsets, then immutable original-site distance/clearance: 344/345/379/342/379/371/376/376. NOT kept: no exact native
+// matrix/origin/property/pivot-home recovery; original real receivers and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

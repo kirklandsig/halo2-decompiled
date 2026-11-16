@@ -566,6 +566,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // half-width for each of the four points (`0 - [ebp+0x14]` separately for points 3 and 4) while the width it loaded for
 // point 2 is still in XMM0, so in retail the point stores kill the definition's field; ours keeps one negation for
 // points 3 and 4 (its reload at point 2 is only a rematerialisation after point 1 clobbers XMM0).
+// P582: Rounded persistent minimum/active range/complete angle-limit promoted receiver
+// storage, seven subsets, then immutable range/angle receivers: 658/691/675/722/740/725/784/784. NOT kept: no exact native
+// success/input/hit homes or inactive-exit recovery; original real receivers, helpers and full body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
