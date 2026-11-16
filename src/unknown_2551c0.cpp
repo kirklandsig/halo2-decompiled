@@ -889,6 +889,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // (identical code each); constant-left float compares one site at a time (`0.f < local_11`, `0.f > local_11`, `0.5f < max`,
 // `0.f < length`, `0.f < heading_length`, `0.f < projection`, `0.95f < dot`) 17 each on that form and 87 each on this body,
 // the three side-block sites together 17. Body unchanged at 87.
+// P565: Zero-seeded standard forward/lateral/alignment whole-coordinate reductions,
+// seven nonempty subsets, then complete explicit operators: 246/227/215/232/170/221/218/255.
+// NOT kept: no native unit-argument/scalar-home repair or equality; original full body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

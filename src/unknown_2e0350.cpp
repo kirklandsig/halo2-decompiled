@@ -214,13 +214,30 @@ __forceinline void move_on_axis_2e0350(class_2e1090 *sweep, int axis, element_2e
 	}
 }
 
+// both corners of a box quantized
+__forceinline void quantize_box_2e0350(class_2e1090 const *sweep, bounds_2e0020 const &box, quantized_box_2e1090 &out)
+{
+	corner_words_2e1090 lower;
+	corner_words_2e1090 upper;
+	quantize_corner_2e1090(box.lower, sweep->lower_offset, sweep->scale,
+		*(__m128 const *)g_4125e0, *(__m128 const *)g_4125d0, lower);
+	quantize_corner_2e1090(box.upper, sweep->upper_offset, sweep->scale,
+		*(__m128 const *)g_4125e0, *(__m128 const *)g_4125d0, upper);
+	out.low[0] = lower.words[0] & 0xfffe;
+	out.low[1] = lower.words[1] & 0xfffe;
+	out.low[2] = lower.words[2] & 0xfffe;
+	out.high[0] = upper.words[0] | 1;
+	out.high[1] = upper.words[1] | 1;
+	out.high[2] = upper.words[2] | 1;
+}
+
 // one box moved to its quantized bounds along x (where grid cells' boxes
 // gain or lose it), then y, then z
 __forceinline void move_box_2e0350(class_2e1090 *sweep, long *owner, quantized_box_2e1090 const &bounds,
 	pairs_2e1090 *added, pairs_2e1090 *removed)
 {
-	unsigned long index = *owner;
 	element_2e1090 *data = sweep->elements.data;
+	unsigned long index = *owner;
 	element_2e1090 &box = data[index];
 	move_on_axis_2e0350(sweep, 0, data, box, index, bounds.low[0], bounds.high[0], true, added, removed);
 	move_on_axis_2e0350(sweep, 1, data, box, index, bounds.low[1], bounds.high[1], false, added, removed);
@@ -243,6 +260,8 @@ __forceinline void move_box_2e0350(class_2e1090 *sweep, long *owner, quantized_b
 // owner input 18; returned output reference 18; staged shifted parts 30;
 // nested vector expression 26; unsigned-int output fields 18; aligned
 // dword array 952. All restored, including the shared operations.
+// score 0: matched with the box quantized by a file-local helper that fills the
+// output in place, and the element array read before the owner's index.
 // @retail 0x2e0350
 void class_2e1090::function_2e0350(long *const *owners, bounds_2e0020 const *bounds, long count, pairs_2e1090 *added, pairs_2e1090 *removed)
 {
@@ -250,7 +269,7 @@ void class_2e1090::function_2e0350(long *const *owners, bounds_2e0020 const *bou
 	for (long *const *owner = owners; owner < end; owner++)
 	{
 		quantized_box_2e1090 box;
-		quantize_box_2e1090(this, *bounds, box);
+		quantize_box_2e0350(this, *bounds, box);
 		move_box_2e0350(this, *owner, box, added, removed);
 		bounds++;
 	}

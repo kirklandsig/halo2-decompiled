@@ -531,6 +531,11 @@ struct s_ai_scene_assignment
 // maximum with the next-role local for the flag and the recursion 59 at 347 bytes (retail's head exactly; the stores then
 // load the role with `movsx eax, word ptr` where retail reloads the raw dword into ECX for the movsx and the recursion's
 // `inc ecx`); the leaf copy as `*local_0 = local_0[-1]` 24 (347 bytes, the movsx stays).
+// Round 129 (m3 lane 9, fast, on the int copy unless noted): the found arm as `if (!(local_7 > 0.0f)) continue;` 12; the
+// head test as the while condition's second half 12 (both the same code); on the direct maximum, the scorer passed the
+// role through a const pointer to the parameter 59 (350 bytes, the read folds); no role-pointer local (the address
+// written at the switch and the scorer) 118 (363 bytes); the scorer's two outputs declared ahead of the head test 12.
+// Re-measured: the recursion passing the parameter with the compares on the int copy 76 (354 bytes).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

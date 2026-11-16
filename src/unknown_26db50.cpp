@@ -957,6 +957,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P560: Actual angle/sine/cosine lexical identities on the retained half-axis graph, eight
 // behavioral sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
 // equality; original complete executable body and shared rotation restored.
+// HELD (coordinator 11-16, lane 3 r250): MATCH (fast, plain and full check) with the collision record, its marker
+// store and the entry pointer declared at the top of the trace's success block (45 -> 39 alone) plus the rotation
+// through a new file-local __forceinline copy of rotate_direction whose axis projection is staged as dot_product2d
+// of the planar parts plus k*k (the same copy with a plain dot3f 39; dot j, i, k in one expression 39; written out
+// inline in the body 204). Not kept: a private twin of an existing helper with a body picked by score (twin
+// ruling 10-30); the shared rotate_direction with the crosses before the dot 47 and loses 0x1ecf50 (160).
+// Patch: build/r250/held-26d570.patch (lane 3's worktree).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

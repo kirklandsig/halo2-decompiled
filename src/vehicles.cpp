@@ -1312,6 +1312,16 @@ PRIVATE __forceinline void reset_vehicle_contact(s_vehicle_contact *contact)
 	contact->compression = 0.0f;
 }
 
+// score 3: the only difference is where the inlined reset's `xorps xmm0` sits.
+// Retail has it after `imul eax, eax, 0x4c` and before `imul ecx, ecx, 0xd8`;
+// ours schedules it before `mov ecx, eax`. Same 222 bytes, same instructions.
+// Probed: swapping the contact/definition declarations 11; zeroing between the
+// reset copies 5, zeroing first 19; `(real)0`, a local zero, and a file-scope
+// zero constant all tie at 3.
+// Flag sweep (17 sets): the current `/O2 /Ob1 /arch:SSE /Gr` is best at 3;
+// `/Ox`, `/Ot`, `/Ob2`, `/Oy`, `/Oi`, `/Oi-`, `/GX`, `/GX-`, `/arch:SSE2`
+// tie at 3; `/Oy-` 80, `/Ob0` 103, `/O1` and `/Os` 108, `/Od` 247; `/Gd`
+// and `/Gz` fail. Not a source-order or flag difference.
 // @retail 0x207ab0
 void function_207ab0(long index, s_vehicle_physics_state *state, s_vehicle_contact_result const *result)
 {

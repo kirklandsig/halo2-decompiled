@@ -502,6 +502,9 @@ struct s_text_line_measurement
 	long index;
 };
 
+// score 77 (was 77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// XMM0 and XMM3 colouring (retail moves the width into xmm4 early and copies xmm0 into xmm3, ours accumulates the
+// advance in xmm0 and moves the width late) and the one-use width local the rules drop. Body unchanged.
 // MiniMax S (11-16): no new form, no lower score (77): the remaining differences are still the XMM0/XMM3 colouring (this build gives XMM0 to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps inside the update arm while ours run ahead of the test; the summed-width spelling that reached 65 is not kept, a one-use local being kept only with a byte match.
 // MiniMax C (11-15): score 65 (was 77): the new running width is summed once after the can_break block and before the
 // test (`real next_width = advance + offset + kerning + width;`) and stored in the update arm ahead of the count's
@@ -632,6 +635,10 @@ struct s_text_line_measurement
 // NOT kept (coordinator review, MiniMax C 11-15): 77 -> 65 rested on a one-use local computed ahead of the test
 // (real next_width = advance + offset + kerning + width; then width = next_width in the else arm), a form kept
 // only with a byte match.
+// P566: Existing token/kerning/cache-entry/cache-ready ordinary inline declarations,
+// four isolated, token-kerning/cache-pair/token-cache-entry/all:
+// 42/77/77/77/42/77/42/42. NOT kept: token forms grow 415 to 418 bytes,
+// add a width reload and still lack native advance copy/early width. All declarations restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

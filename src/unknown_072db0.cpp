@@ -1659,15 +1659,15 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     if (arg_0) local_0 = arg_0;
     return local_0;
 }
+// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
+// instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
+// SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
+// variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
 // MiniMax I (11-15): no new form, no lower score (703): /arch:SSE2 on this file's flags line does reach retail's cmovne at
 // the slot test (mov ecx, 0; cmovne ecx, eax), but the function scores 748 and the switch is file-wide, so it would change
 // the file's other matched functions; /arch:SSE gives the same 748 and dropping the 'g'-off pragma around the slot helper
 // changes nothing.
 // MiniMax R (11-16): no new form, no lower score (703): the frame agrees at 0xc0, but the slot helper's null test is still a branch where retail uses a conditional move, and the users cursor still rides in EBX where retail keeps it in a stack slot at +0x18.
-// score 703 (was 703): m3 lane 16 r120: no new form measured. The listed blockers stand: the slot test's cmovne (one
-// instruction shorter than our je/mov, so every positional line after the first users loop is off by one) needs the
-// SSE architecture flag this file does not set, and retail treats calls into 0x1934f0's tree as writing memory (the
-// variant count re-read per pass, the loop counted down in EBX). Both are build-flag questions, not source forms.
 // Earlier 703 (was 703): earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // MiniMax S (11-15): no new form, no lower score (703).
 // Earlier 703 (was 703), merged from a second score line: earlier 709; 2910 bytes. Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
@@ -2028,6 +2028,13 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // as `properties > 0 && records > 0` 721; the first variant loop's player pointer 703 (re-measure, same code); the
 // request delay test as `delay < now - last` 703. Every positional line after the users loop is still off by retail's
 // cmovne (a file-flag question, see above).
+// Round 112 (m3 lane 10, fast; aligned counts in brackets, control 703 [500]): the request test with the state-4 retry
+// ahead of `state == 1` (retail's test order) 747 [483]; one forced-inline clear-states helper for the three 16-player
+// clear loops 717 [538] (2862 bytes, but the users loop's variant getter is then called, not expanded: inline budget);
+// the read-failure counter as `g_50c460 = failed ? g_50c460 + 1 : 0` 703 (same code); the completion's incomplete-state
+// reset as `state == 2 ? 1 : 4` 737 [515]; the completion's variant type read once into a local ahead of the record
+// loop (retail keeps it in a stack slot at +0x30) 702 [502]. Retail sets `failed` (the +0x13 byte) in both incomplete
+// arms and counts `received` per property pass. All restored; the slot test's cmovne still needs the SSE flag.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
