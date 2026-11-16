@@ -1343,6 +1343,9 @@ struct s_133f70;
 // push where retail loads it before, the dead entry lea in the 0x4ed284 test is still there, the previous level's byte
 // home still differs, and the record's +0xbc and +0x44 adds and the 0x4c190 argument order still differ; the tail
 // after that call is 0x23690 in src/unknown_023540.cpp, which this lane may not edit: BLOCKED-BY 0x23690.
+// MiniMax R (11-16): no new form, no lower score (93): the plain check is the measure (the reduced image builds this function
+// differently and scores 355), and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns
+// remain; that tail's body is in another file. BLOCKED-BY 0x23690.
 // score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
