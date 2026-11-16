@@ -1429,6 +1429,11 @@ struct s_looping_detail_request
 // this function: on the reduced image the original reads 117 differing instructions against the full build's
 // 110, so its fast search is invalid here and only a full-build search would do, which does not fit the time
 // budget.
+// MiniMax S (11-16): matches (was 110): the audible arm holds the offset in the stack temporary and copies
+// it into the request after the 0x21bfb0 call, the first-player query stays out of line as retail's 0x14dde0
+// (the redundant second test on the audible byte is what keeps the query from being expanded), the camera
+// lookup comes before the audible byte is set again, and the copy into the request sits after the flags, index
+// and callbacks stores with the result flag set last.
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // instead of retail's temporary/copy, and the first-player query still expands.
 // MiniMax E (11-14): no new form, no lower score (110, was 110): retail calls the first-player query out of line
@@ -1748,15 +1753,17 @@ bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_soun
 	if (sound->source.audible == 1)
 	{
 		source->audible = 1;
-		function_21ce60(detail, &request->offset);
-		function_21bfb0(looping_sound_index, detail->sound_definition_index, (s_sound_marker const *)&request->offset, source);
-		result = true;
+		vector3f offset;
+		function_21ce60(detail, &offset);
+		function_21bfb0(looping_sound_index, detail->sound_definition_index, (s_sound_marker const *)&offset, source);
 		request->flags = 0x2f;
 		request->looping_sound_index = looping_sound_index;
 		request->callbacks = &g_44a130;
+		request->offset = offset;
 		request->tracking_data_size = sizeof(request->offset);
+		result = true;
 	}
-	else
+	else if (sound->source.audible != 1)
 	{
 		long player_count = *(short *)&g_4e8c20->unknown00[8];
 		if (player_count > 0)
@@ -1768,8 +1775,8 @@ bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_soun
 				player = local_player_next_inline(player);
 				--skip;
 			}
-			source->audible = 1;
 			s_local_camera *camera = local_camera_get(player);
+			source->audible = 1;
 			vector3f offset;
 			function_21ce60(detail, &offset);
 			vector3f_add(&offset, (vector3f const *)&camera->position, (vector3f *)&source->spatial.position);
@@ -2016,6 +2023,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // retail holds the sound play state in the frame and this file's view of the detail request stops at 0x90; the
 // form that gives the request 0x125f70's full 0xa0-byte tail measures 305 again with a 0x12c frame, so it is
 // not kept; the playback pointer, the definition, the ring homes and the pitch-range counts still differ.
+// MiniMax S (11-16): score 305 (was 305): no new form; the length 1923 agrees but this build's frame is 0x11c
+// against retail's 0x128, so every stack slot is off by 0xc from the first store on; the missing locals are what
+// keep the two apart.
 // score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
@@ -3009,6 +3019,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // retail masks it with 1 after the pushes, and the saved-register order, the record homes, the energy loop's
 // padding and the track and state ownership still differ; the form that reads `alternate` inside the definition
 // guard measures 615 and is not kept.
+// MiniMax S (11-16): score 597 (was 597): no new form; the length 2518 agrees but the track loop's registers
+// still differ - retail holds the state in EBX, the NONE state in ESI and the track in EBP, while this build
+// holds NONE in EBX, the index in ESI and the track definition in EBP - and the entry's flag mask and the gains
+// clear still use this build's forms.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
