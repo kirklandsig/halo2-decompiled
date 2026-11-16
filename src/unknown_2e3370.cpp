@@ -40,6 +40,11 @@ struct endpoint_list_2e3370
 		data[size] = endpoint;
 		size++;
 	}
+	// a copy of `from`'s endpoint at `index`, after the last one
+	void append_from(endpoints_2e0f80 const &from, long index)
+	{
+		append(from.data[index]);
+	}
 };
 
 // the three lists, and the storage that follows them
@@ -51,7 +56,9 @@ struct overlap_endpoints_2e3370
 
 // the endpoints of every box the bounds overlap (not the grid cells'), one
 // list per axis, each sorted between a sentinel at each end
-// score 438 (was 438): frame size agrees; the array and vector slots differ.
+// score 414 (was 438): each kept endpoint is copied by a list member that takes
+// the source list and the slot (retail forms the list's address, then reads its
+// data, after the slot). Frame size agrees; the array and vector slots differ.
 // Earlier: array/cursor/sentinel renames and narrower scopes 518, in-place
 // loop 436, value append 544, member copies 706. New: range by value 479,
 // range pointer 438, first bound by value 475, later word declaration 438,
@@ -93,12 +100,12 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 	element_2e1090 **kept = (element_2e1090 **)found.data;
 	for (long remaining = found.size - 1; remaining >= 0; remaining--)
 	{
-		lists->axes[0].append(axes[0].data[(*kept)->slots[4]]);
-		lists->axes[0].append(axes[0].data[(*kept)->slots[5]]);
-		lists->axes[1].append(axes[1].data[(*kept)->slots[0]]);
-		lists->axes[1].append(axes[1].data[(*kept)->slots[2]]);
-		lists->axes[2].append(axes[2].data[(*kept)->slots[1]]);
-		lists->axes[2].append(axes[2].data[(*kept)->slots[3]]);
+		lists->axes[0].append_from(axes[0], (*kept)->slots[4]);
+		lists->axes[0].append_from(axes[0], (*kept)->slots[5]);
+		lists->axes[1].append_from(axes[1], (*kept)->slots[0]);
+		lists->axes[1].append_from(axes[1], (*kept)->slots[2]);
+		lists->axes[2].append_from(axes[2], (*kept)->slots[1]);
+		lists->axes[2].append_from(axes[2], (*kept)->slots[3]);
 		kept++;
 	}
 	endpoint_list_2e3370 *list = lists->axes;
