@@ -578,6 +578,7 @@ struct s_item_collision_bsp
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
+// MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
 // score 198 (was 200; full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
 // the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
@@ -844,7 +845,7 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 				real offset = 0.05f - distance;
 				point3f position;
 				position.x = surface_plane.i * offset + marker.matrix.position.x;
-				position.y = surface_plane.j * offset + marker.matrix.position.y;
+				position.y = surface_plane.j * offset + marker.matrix.position.x;
 				position.z = surface_plane.k * offset + marker.matrix.position.z;
 				function_b75a0(item_index, &position, NULL, NULL, NULL, false);
 			}
