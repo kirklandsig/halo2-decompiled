@@ -1021,6 +1021,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax S (11-15): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where
+// retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
+// (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
+// where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
 // score 234 (was 234): m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
