@@ -1445,6 +1445,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 506/506/487/487/503/503/503/503. NOT kept: unmatched grouped workspaces; frame 0x30 agrees but native
 // damping and raw/bounded/output-tail residence remains unresolved; original independent workspaces and
 // complete body restored.
+// P572: Paired slope interpolation numerator/denominator/complete-adjustment nodes, seven
+// subsets, then a complete ground-adjusted magnitude result: 481/481/479/363/363/373/370/520.
+// NOT kept: all regress; native damping and raw/bounded homes remain. Original arithmetic,
+// observation boundaries, helper calls and complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

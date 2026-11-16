@@ -203,6 +203,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // the index read first 5 (the kind then takes AX but its load follows the index's). Diagnostic (flags, not kept): the file
 // with `/arch:SSE` like the matched siblings 0x8c790 and 0x194260 (both load the same +0xe word unfolded with a plain read)
 // and a plain read 32 (95 bytes: still folded), so the flag is not what unfolds it.
+// M3 lane 14 r101 (fast with 0x8c5b0): with the existing kind read, no old-setting local (the stored setting compared in the
+// test) 4 (same code), `changed` set by if/else with no initialiser 25 (91 B); plain reads: the selection written in place
+// as `if (request->kind == 1 && available) ... else setting = 1` with the index read first 32, the controller looked up
+// before the selector 31, the read passed straight to the selector ahead of the index 30 (95 B each, compare folded).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

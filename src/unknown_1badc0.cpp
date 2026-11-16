@@ -13,6 +13,11 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax I (11-16): no new form, no lower score (171): retail forms the point differences as
+// d3.x, local_6.x, d1.x, d1.y, d3.y and local_6.y before the products while ours still forms d1.y
+// first and the two d3 components last, and the two dot products still multiply the i term before
+// the j term because the shared 2d product helper is i-first; the order of the terms inside the two
+// magnitudes is not the difference, the compiler schedules them the same way either way.
 // MiniMax H (11-14): no new form, no lower score (171): swapping the two operands of the first dot
 // product produces byte-identical code, so the products' destination registers are the allocator's
 // choice and not the source's; the body is unchanged.

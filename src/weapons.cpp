@@ -3055,6 +3055,12 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // MiniMax S (11-15): no new form, no lower score (389): ours opens with an eight-byte frame and keeps the weapon in EDI where
 // retail opens with one slot and keeps it in EBP, and ours tests 0x1d0007ba and 0x0c000569 before the switch where retail has
 // them as cases of a tree whose root branches `jle` where ours branches `jg`.
+// MiniMax D (11-16): no new form, no lower score (389 in the fast check): retail opens with one four-byte slot and keeps
+// the weapon in ebp with only the definition spilled, this build reserves eight bytes, keeps the weapon index in ebp and
+// spills the weapon and the definition; retail's switch is a comparison tree whose root branches jle to the
+// less-or-equal side, and the SDK's compiler builds the same tree for the same 27 values with jg to the greater side for
+// every order of the case labels (ascending, descending and a random order all give the same tree in a standalone
+// compile), so the difference in the tree's shape does not come from the order of the case labels.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3262,6 +3268,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax S (11-16): no new form, no lower score (190): the conversion scan still needs its entry tested for null - using the scan counter for the entry with a local found flag scores 206, keeping the entry by its index 194, clearing the available count when the scan finds nothing 206, and the pointer form with the skip as the else of the found test stays 190; the scan counter as a long instead of a short gives 210, and the destination weapon's register and the acquisition flag's sense still differ.
 // MiniMax G (11-14): no new form, no lower score (190): the type byte re-read at each of its three tests 212, the acquisition flag with retail's polarity 211 (715 bytes), the same with a found flag in the conversion scan 216, the destination magazine without its own pointer 207, both of those together 211 (743 bytes), the capacity minimum without its cast 190 (unchanged code, different allocation); a 300 s permuter run found nothing below 190.
 // MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
 // carriers only (retail holds the destination weapon in ebp and spills it around the conversion
@@ -3653,6 +3660,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // MiniMax A (11-14): no new form, no lower score (607 in the plain check, 643 in the fast one); retail's frame is four bytes shorter than ours and its homes for the weapon index, the definition and the two barrel offsets differ, so the prologue and the copy-out loop stay laid out differently.
 // MiniMax S (11-15): no new form, no lower score (607): retail keeps the weapon index in EBX and the barrel offset in EDI with
 // a frame four bytes shorter than ours, and the copy-out loop and the effect marker's block order differ.
+// MiniMax D (11-16): no new form, no lower score (643 in the fast check; ours is 2545 bytes against retail's 2533):
+// retail's frame is four bytes shorter and it keeps the weapon index in ebx, the barrel's offset in edi and the definition
+// spilled to [esp+0x14], while this build gives ebx the barrel's offset, edi the definition and esp+0x14 the weapon; the
+// barrel itself is reached as the weapon's base plus the index scaled by 0x34 in retail, and the direct barrel uses this
+// lane measured worse, so the body stands.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

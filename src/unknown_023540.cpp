@@ -2408,6 +2408,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax E (11-16): no new form, no lower score (140): the body's length matches retail's, but this build still hoists the preserve_alpha load above the `simple` branch where retail loads it after, and the callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
 // MiniMax B (11-13): no new form, no lower score (140): re-measured with the plain build (1729 bytes, as retail, first difference at +0x32b); what is left is the preserve_alpha load hoisted above the simple branch.
 // MiniMax D (11-14, run 90): no new form, no lower score (140): the frame and the length agree with retail, but the
@@ -2850,6 +2851,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
+// MiniMax E (11-16): no new form, no lower score (330): this build still inlines both copies of 0x235a0 where retail inlines the first and calls the second, so the body after that point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax B (11-13): no new form, no lower score (364): the first difference is at +0x52, where this build's early exit jumps to a block that sits further from the function's start than retail's, so the body after that pairs against the wrong instruction; the three rotation calls also pass the rotation on the stack instead of in EAX, because that callee lives in another file.
 // Earlier score 530 (was 530): Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 // Round 73 (plain checks with 0x73360): the held round 90 body 401 and 0x73360 MATCH -> 33 again;
@@ -3071,6 +3073,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
 // MiniMax C (11-15): no new form, no lower score (54): the body is retail's length and the first difference is at +0x527, where this build places each x87 coordinate step one slot ahead of retail's in both corner sets, so what is left is the inlined rotation's schedule.
 // MiniMax H (11-14): no new form, no lower score (54).
 // MiniMax B (11-13): no new form, no lower score (54): what is left is the scheduler's order inside the two corner sets, where this build places the x87 coordinate chains one slot earlier among the SSE ones than retail does (first difference +0x527); the corner rows in the other orders, the trig pairs as two statements and the point pairs all give 54 or worse.

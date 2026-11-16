@@ -350,6 +350,10 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // bytes); the +0x18/+0x1a pair as a two-short member aggregate with a forceinline `reset()` 54 at 1409 bytes (the tail then
 // keeps retail's store order and argument reload, but the dot sums j and k first with a.j loaded first), with the member
 // rotation 54, with `dot3f(vector, axis)` 54, with the vector named j, k, i 54.
+// M3 lane 2 r90 (fast with 0x2936b0 0x259d0 0xb7930): the three vector names as `real const &` references to the components
+// 43; the rotation written out in the body with local axis and vector pointers (the forceinline helper is this file's own)
+// 44 (1409 bytes); the angle as a `real const &` to the entry's field 41; the selected entry as a const reference with dot
+// reads 30 (same code); the projection over the named components in 0xc7840's i, k, j order 43.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

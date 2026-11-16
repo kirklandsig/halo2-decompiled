@@ -472,6 +472,7 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax S (11-16): no new form, no lower score (42): the emitter walk wrapped in an if with the offset's zero store inside it puts the store after the list test but shrinks the frame to 0x94 against retail's 0x98 (306), and moving the cache call ahead of the definition's test puts the two reloads in retail's order but flips the prologue's push order (140); the rotation's call sites (a temporary copy, a separate result, the two calls swapped and the origin added the other way round) leave the row-i order alone, as does the particle mask read before the particle loop.
 // score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
 // scale first (re-measured 113 at 1136 B; every integer difference fixed, only the rotations differ: VC
