@@ -1497,6 +1497,12 @@ real function_50650(real cosine);
 // (retail holds the actor in EDI and the object in ESI), so the prologue is one byte shorter and every later row pairs
 // with the wrong row; the actor written as the scaled offset first and the offset held in its own local both compile to
 // the same code.
+// MiniMax D (11-16): no new form, no lower score (120 in the fast check; ours is 1326 bytes against retail's 1324):
+// retail masks the actor index and multiplies it into edx before it loads the pool, then forms the actor with
+// lea edi,[edx+esi] and keeps the object in esi, while this build loads the pool first, holds the actor in esi and the
+// object in edi, so the prologue is two bytes longer and every later row pairs with the wrong row; the offset-first
+// expression, the scaled offset in a local of its own and the actor getter all compile to the same code, and the
+// velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, which this lane may not edit.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
@@ -1919,6 +1925,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // the baseline and none below it, and the direction swap (239), the swap with the shared origin local (289) and the
 // swapped operands (291) still measure worse, so the body stands; the parameter order retail uses is the one the note
 // below reports and is left alone.
+// MiniMax D (11-16): no new form, no lower score (238 in the fast check): the parameter order retail's own call site
+// uses (the actor in ecx, the object in eax, the target in edx and the tag type as the first stack argument) is the one
+// the note below reports; the declaration is shared with four other files, so it stays as it is, and the direction swap,
+// the swap with the shared origin local and the swapped operands still measure worse than the 238 they start from.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
