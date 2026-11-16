@@ -3512,6 +3512,11 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // locals) 127. Re-measured: record copies from the source locals 132; the byte result 85 (396 bytes, but one
 // merged setne tail where retail has three epilogues).
 // MiniMax S (11-14): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once and copies the five dwords from it.
+// P543: Standard forward/backward/trivial camera copies 169/166/169; camera
+// memmove 136; standard forward/backward marker matrix 111/127; both axes
+// forward/backward 84/83 at native 396 bytes. NOT kept: 84 gains only seven;
+// 83 emits two out-of-line transfers absent from retail, whose axes copy
+// is inline scalar moves. Original camera/matrix/axis publications restored.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -5390,6 +5395,10 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // reconstruction 291/169; in-place axes/full transform 290/169;
 // independent axis outcomes 188; complete limit result 185; basis memmove 174.
 // NOT kept: no exact reconstruction/result/transfer match; original body restored.
+// P543: Standard real product/first-sum/final-sum/complete-row providers
+// 382/325/309/450; double counterparts 532/296/297/620.
+// NOT kept: larger frames/extents and no byte match; original parallel rows,
+// scalar precision, cross helpers and all call values restored.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6815,6 +6824,9 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // readiness pair, raise pair, all and immediate headers first: 295/296/295/293/289/298/306/306.
 // NOT kept: independent gains at most five; 289 needs the combined form, others tie/regress
 // or shorten to 1040/1052. Native zero stores, readiness join and ownership still differ.
+// P541: Readiness callback results defined in complete success/failure arms: four independent sites, pairs, all and failure-first all:
+// 318/318/330/295/338/326/331/328. NOT kept: mode-six 295 gains only three; native mode/weapon registers, dead flag stores and shared readiness completion remain unresolved.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7072,6 +7084,9 @@ done:
 // P528: Actual toward/facing/output vector2f workspaces, seven subsets, then all with
 // paired scalar input stores: 242/242/242/242/242/242/242/247. NOT kept: no exact alias/home repair;
 // original point workspaces, normalizers, calls and complete body restored.
+// P541: Both definition-flag results with branch-defined positive/complementary bool/byte/short/long producers:
+// 242/242/242/242/242/242/242/242. NOT kept: one-use flag outcomes require equality; native facing copy, flag-byte stores and state home remain.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7867,7 +7882,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // held countdown as complete outcome 239; sound-request/flag-word role names 244/244.
 // NOT kept: ties, regressions or subthreshold gains; native flag dword transfer remains.
 // Earlier 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
-// score 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
+// Earlier 244 (was 253): frame 0x24 versus retail 0x28; native word flags use a dword stack transfer.
 // P494: result before lookups 245; positive crouch admission 244; direct held outcome 236;
 // requested zoom initialized before its test 290; complete rate producers 244;
 // sound aggregate 244; both last-level divisors named 244; full-scope sound request 278.
@@ -7876,6 +7891,10 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // acquisitions 244/244/244; contiguous word-setter loop 423;
 // packed control flags 506; dword bit-vector construction 473; double sound scale 273.
 // NOT kept: native frame/flag transfer unresolved; no exact storage/provider match.
+// P543: Complete five-control-bit window, dword/word/byte with conditional/arm
+// producers 346/346/346/346/363/363; named/nested shift producers 341/342.
+// NOT kept: every form regresses and shortens away from native extent;
+// original per-hand expressions restored. Native frame/flag transport remains.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -8168,7 +8187,7 @@ struct s_unit_turn_state_view
 // MiniMax D (11-15): no new form, no lower score (395): the frame is still 0x78 here and 0x7c in retail, the moved
 // flag still sits in ebx for the whole function where retail keeps it in a stack byte, and this build still makes one
 // reciprocal of the shared step where retail divides twice by the stored step.
-// score 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
+// Earlier 395 (was 395): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
 // in a stack slot ([esp+0xb], 0 stored up front, reloaded on the all-close path, BL=1 on the moved path)
@@ -8207,6 +8226,9 @@ struct s_unit_turn_state_view
 // MiniMax A (11-13): no new form tried this round, no lower score (395): the frame is 0x78 here and 0x7c in
 // retail, `moved` still sits in ebx for the whole function where retail keeps it in a stack byte, and this build
 // still makes one reciprocal of the shared step where retail divides twice by the stored step.
+// P541: Complete moved result from six closeness tests, conditional value, reused unchanged result, explicit final arms, byte/short/long results and exhaustive outer producers:
+// 412/414/418/414/414/420/422/432. NOT kept: native frame/save/result homes and step divisions remain unresolved.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {

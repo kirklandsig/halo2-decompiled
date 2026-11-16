@@ -403,6 +403,8 @@
 // special path's first cross through cross3f_staged 536 (same code). Compile-only: out-pointer or twice-assigned wave
 // locals are still folded, and no sin/cos spelling (float or double overloads, named terms, factor orders) keeps sin x,
 // cos 7.8y and cos 7.75y on the x87 stack as retail does.
+// P542: Standard scalar wave-weight providers, real/double first/second/both, then independent complete second/first-wave arithmetic: 732/743/785/779/789/823/865/790.
+// NOT kept: all regress and grow away from 2622 bytes. Original complete body and includes restored; native wave-result homes, x87 residence and frame 0x60 remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
