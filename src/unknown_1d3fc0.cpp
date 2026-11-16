@@ -464,6 +464,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // pointer: kept only with a match). The length_sq3f form alone 153 (fast).
 // P563: Four-use private magnitude forward/backward reductions, real/double accumulation and default/explicit operators:
 // 244/309/309/373/483/539/539/595. NOT kept: native late forward-k product and magnitude/projection scheduling remain; original private helper and entire body restored.
+// P579: Existing four-use normalizer scalar memcpy for i/j/k/all inputs, whole-vector memcpy/
+// standard array copy, all scalar inputs after j-square, then all scale inputs inside admission:
+// 240/246/235/342/342/361/349/364. NOT kept: no exact late-k/reciprocal recovery; original private helper,
+// complete target body, all observations and includes restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
