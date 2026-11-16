@@ -935,6 +935,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // it in eax, and the copy, the fill, the call setup and the final clamp all follow from that one register; under
 // whole-program optimization the register home is fixed by the caller's inlined copy, and that caller is in another
 // file, so the difference is not reachable from here.
+// MiniMax C (11-16): no new form, no lower score (34): the first and third register-carried counts still reach the callee in the
+// MiniMax C (11-16): opposite eax and edx roles, and the definition-plus-call-site convention that decides them is held in
+// MiniMax C (11-16): src/unknown_07a9a0.cpp, a file this lane may not edit.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

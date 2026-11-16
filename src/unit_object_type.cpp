@@ -3528,6 +3528,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // 83 emits two out-of-line transfers absent from retail, whose axes copy
 // is inline scalar moves. Original camera/matrix/axis publications restored.
 // MiniMax D (11-15): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once, and the seat index is scaled before the definition lookup where retail scales it after.
+// MiniMax C (11-16): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the
+// MiniMax C (11-16): tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat
+// MiniMax C (11-16): lookup are scheduled differently; a permutation run this round reached 85 in its own reduced image with forms the
+// MiniMax C (11-16): rules reject, so nothing was kept.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4919,6 +4923,9 @@ void function_c50a0(long unit_index)
 // decisions, consumed driver-role join and unchanged-driver return: eight at 166.
 // NOT kept: no exact ownership repair; original body, accessors and recursion restored.
 // MiniMax D (11-15): no new form, no lower score (166): retail keeps the vehicle in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
+// MiniMax C (11-16): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer
+// MiniMax C (11-16): from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp,
+// MiniMax C (11-16): so the tag's triple, the index's masking and the seat's fields land in the other registers.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -5419,6 +5426,9 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // 382/325/309/450; double counterparts 532/296/297/620.
 // NOT kept: larger frames/extents and no byte match; original parallel rows,
 // scalar precision, cross helpers and all call values restored.
+// MiniMax C (11-16): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here
+// MiniMax C (11-16): (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the
+// MiniMax C (11-16): other order.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
