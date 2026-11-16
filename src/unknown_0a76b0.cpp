@@ -2810,6 +2810,9 @@ __forceinline char unit_action_round(real value)
 // P506: Full-width unsigned current/name/first-person/type domains, subsets 1/2/4/8/3/5/9/15:
 // 315/234/234/234/315/315/315/315. NOT kept: signed entry/dispatch and completion-byte ownership
 // not recovered; original body restored.
+// MiniMax R (11-16): no new form, no lower score (234): the body is the 1197-byte form (the earlier 101 form was a
+// register pooling and was dropped), and the first difference at +0x9 is in the prologue's saved registers, with the
+// name, the type and the current pointer still landing in other registers than retail's.
 // m3 lane 9 r124 (fast with 0xe9ed0/0xea090/0xe9780, all matched throughout; diagnostics, all restored): retail never
 // constant-folds the result, even on the success path (`mov byte [esp+0x12], 1` ... `mov al, [esp+0x12]` after the
 // 0x7f/0xff stores), as if the byte lived in memory; the result declared volatile (forbidden, diagnostic only) gives the one
