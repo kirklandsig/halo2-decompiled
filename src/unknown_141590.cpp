@@ -123,6 +123,7 @@ static inline void quaternion_transform_vector(
 // orders in the three transforms (retail adds cross*2w first in every i row, cross + q*dot then v*s in the up j/k
 // rows and sums the dot as i,k,j in the forward row and k,j,i in the left row) and retail's second store of 2w to
 // a slot nothing reads; the source forms tried do not decide the association.
+// MiniMax S (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the quaternion halves are still two separate locals and the sine half still takes the matrix parameter's home slot.
 // score 205 (was 200; fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
