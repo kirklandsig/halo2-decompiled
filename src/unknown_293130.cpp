@@ -345,6 +345,11 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // k named, vector-first dot) 53 (1409 bytes); the +0x10/+0x1a zero stores as one chained assignment after +0x18 31; +0x18
 // ahead of +0x10 30 (same code); the 0x2936b0 call ahead of the member's vector copy 44; the creation record declared in
 // the selected-entry block 35.
+// Round 186 (m3 lane 6, fast with 0x2936b0 0x259d0 0xb7930): the rotation as a forceinline member of the creation record
+// turning its own forward vector 30 (same code); the member's ten stores as a forceinline member of the member view 60 (1409
+// bytes); the +0x18/+0x1a pair as a two-short member aggregate with a forceinline `reset()` 54 at 1409 bytes (the tail then
+// keeps retail's store order and argument reload, but the dot sums j and k first with a.j loaded first), with the member
+// rotation 54, with `dot3f(vector, axis)` 54, with the vector named j, k, i 54.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

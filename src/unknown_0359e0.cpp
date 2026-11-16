@@ -64,7 +64,7 @@ PRIVATE inline long swizzle_log2(dword value)
 // them differs: this build widens the third argument into EDI and the second into ESI at the entry where
 // retail copies the third into SI as a word and widens the second only where it is used.
 // MiniMax S (11-06): no new form, no lower score: the two coordinates still arrive in the other registers (retail x in EDX, ours in CX), so the widened copies, the two table lookups and the common count keep different homes; retail's minimum branches once and stores the common count after the join.
-// score 57 (was 82): both logarithms now have retail's loop and the common count is
+// score 57 (was 57; before that 57 was 82): both logarithms now have retail's loop and the common count is
 // taken by retail's branch, so the height count sits in ebx as in retail; left: the row
 // coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
 // widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
@@ -311,6 +311,16 @@ PRIVATE inline long swizzle_log2(dword value)
 // long-dword/dword-dword/word-dword/dword-word, signed interpretation at every use:
 // 120/136/150/57/57/57/120/136. NOT kept: word forms enlarge and lose the exact caller;
 // whole-width forms tie. Original captures, signed arithmetic, helper, contract and body restored.
+// Round 99 (m3 lane 13, fast with 0x136140): long bit counts with x and y used directly 128 (300 bytes, 0x136140
+// 28); the tail shifts done in place on the copies (`x_value >>= common_bits;`) 57 (same code); one forceinline
+// per-coordinate spread helper holding the mask branch, x and y used directly 151 (0x136140 125); the minimum through a
+// forceinline helper written at each use, no common local, 132 (237 bytes); x-first copies with the parameters
+// declared (width, y, x, height, out) and the call changed 54 (0x136140 65). A compile-only /Gd harness of this file
+// reproduces the 57 body exactly apart from the argument registers; in it the four minimum spellings give the
+// memory-homed common count in EBP (both if forms) or cmov (ternary, if/else), long counts or mask give cmov or EBP
+// again, and the bits locals declared before or after the copies change nothing. Retail's common count shares ECX
+// with the width count and is stored once after the join, like a spilled temporary, which no spelling of the
+// named local gives here. Original body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

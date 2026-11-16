@@ -1082,6 +1082,10 @@ struct s_string_buffer
 // second), then `if (== 2)` time else `%d`, 105 (470 bytes); the same with 2 last 87 (466). Re-measured: the chain, `== 9`
 // and else arms each with the score1 format call 99 at 483 bytes: the else path becomes `push esi; jmp` into the merged
 // tail right after an in-line 9 test, where retail merges the push as well and moves the 9 test past the return.
+// Round 111 (m3 lane 10, plain): a 1/3/4/7 chain and an `else if (== 8 || == 9)` arm with the same loads 50 (481 bytes, 9 in line);
+// the time arm's minutes value in its own local, the score value declared in the else arm 13 (same code); on that, the 1/3/4/7/8
+// chain with an `else if (== 9)` arm 50 (481), the six-way equality chain 50 (481); each arm formatting its own second score 94
+// (493 bytes).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

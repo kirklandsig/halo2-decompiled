@@ -532,6 +532,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax E (11-15): no form kept; the permuter's 68 tries on the reduced image found no variant below the 235
+// differing instructions of the full image (the reduced image agrees with the full one here). Still differs: the
+// frame is 0x40 against retail's 0x44 (retail keeps the origin's y and z in reused slots and has two unused
+// dwords below the plane), the second node's home is +0x14 against retail's +0x20, and retail reads the shape's
+// data word three times in the 1..16 classifier (0x18237a-0x18239c) where ours reads it once.
 // MiniMax R (11-14): no lower score (238): retail reads the origin and the contact position with float moves into separate
 // slots, ours copies the two aggregates with dword moves; the origin as three real coordinate snapshots scores 308 in either
 // read order, member-wise origin copies 309, a member-wise hit copy 325 and both 362.

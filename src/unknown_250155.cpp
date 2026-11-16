@@ -2667,6 +2667,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // widget indices in registers where ours spills them; the reload of players[i] after the voice query still needs
 // a store through a pointer somewhere in the 0x53b40 chain, whose source is in src/network_voice.cpp, another
 // lane's file.
+// MiniMax C (11-16): no new form, no lower score (87): the widget helper's case arms storing bitmap_b before
+// bitmap_a 88 and its default arm in retail's last-loop order (text_b, bitmap_a, text_a, bitmap_b) 92; the reload of
+// players[i] after the 0x53b40 voice query still needs a store through a pointer in that chain (src/network_voice.cpp,
+// another lane's file) and the last loop still keeps the screen in ebx where retail gives ebx to bitmap_a.
 // score 87 (was 87): the spilled locals sit one six-step cycle off retail's slots, retail reloads players[i]
 // after the 0x53b40 voice query (BLOCKED-BY 0x53b40's chain, whose bottom 0x59670/0x596a0 is a contributor's),
 // and the last loop keeps the screen in ebx where retail gives ebx to bitmap_a. Earlier rounds below.

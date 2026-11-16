@@ -671,6 +671,9 @@ void __stdcall function_1160c0(real dt)
 // scale and target declared at the loop body's top 171 (same code); the whole prediction (axis, normalize, offset copy,
 // vertical, angle, sine/cosine, predicted) as one forceinline helper 171 (same code: inlining moves no home); the segment
 // as a pointer to const 171 (same code). Body unchanged.
+// MiniMax R (11-16): no new form, no lower score (171): the segments base and the segment pointer sit in edi and ecx
+// where retail uses edx for both, and the low slots come out in the other order (here the axis at 0x10-0x18 against
+// retail's cosine at 0x10), which moves the whole rotation block.
 // MiniMax I (11-15): the rotation written into a named vector and the position added to it afterwards scores 165 (was
 // 171, 1368 bytes): the three rotation rows keep their expressions and the position addition becomes its own statement.
 // The dot stays the shared helper; written out in retail's k, j, i order it gives the same 165. The segment index as a

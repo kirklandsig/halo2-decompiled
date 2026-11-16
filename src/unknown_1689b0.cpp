@@ -1571,6 +1571,12 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
+// Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
+// where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
+// retail's homes (+0x5c, +0x64, +0x68) and the second sits four bytes high (+0x54, +0x58, +0x60 against retail's
+// +0x50, +0x54, +0x60). The successor index and the second point's address taken before the first reconstruction were
+// not re-tried: both move a one-use value ahead of a call.
 // score 606 (was 606): earlier 610, 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
 // Earlier first line: score 610 (was 610), the same status.
 // b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
