@@ -608,6 +608,14 @@ void swarm_leader_detach(long actor_index);
 // instead of being materialised and re-derived after the callback; the iterator compare reloads the
 // actor pointer instead of comparing against the cached one; and the second parameter becomes a
 // Boolean before the 0x203ed0 call where retail pushes the raw value.
+// MiniMax D (11-15): 216 (was 236): the definition bit is now tested through a named flag after a separate
+// null check, so the tested bit is kept in a byte slot and the branch reads it from there, as retail does.
+// What still differs: the prologue loads the record pool into EAX and keeps the scaled index in EBX (retail
+// loads the pool into ECX and the index into EAX and leaves the actor pointer unspilled in EBP) and this
+// build spills the actor pointer to a stack slot retail has not; the memory-entry walk keeps its countdown
+// in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte offset in
+// EDX and the countdown in a stack slot); and the body is 22 bytes short of retail's 980 because retail
+// expands 0x26ed40 into it (src/unknown_26e370.cpp).
 // score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
@@ -864,6 +872,9 @@ void swarm_leader_detach(long actor_index);
 // (974 B), with the iterator compare against the cached actor 274; the memory walk as a counted for 526 (1182 B, it
 // unrolls). Retail also stores the definition-bit test into the dead actor_index slot ([esp+0x34]) before branching on
 // it, the shape of an inlined helper's returned bool.
+// NOT kept (coordinator review, MiniMax D 11-15): 236 -> 216 rested on a bool flag set by one test and read by the
+// next (definition_bit = false; if (definition) definition_bit = ...; if (definition_bit)), a form kept only with
+// a byte match.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

@@ -499,6 +499,12 @@ struct s_24e9c7_points
 // frame changes); the in-place side with the half-width scaling y first (lane 12 r124's 123 form) re-measured 123, with
 // `-forward_j * size` the same code, with the unscaled perpendicular scaled by size in place 141 (752 B). None spills the
 // across j product to -8 ahead of the heights, so result keeps -8 (retail -0x10).
+// M3 lane 13 r98 (fast with 0x24e59f/0x22a664, both MATCH; control 125): the bitmap's height and width read through
+// `group->bitmaps[first_bitmap]` at both uses 144 (746 B); across j and side y as one scalar scaled in place 125; the half
+// width converted once into a named real for both side products 125; the returned height assigned straight from the
+// conversion (no long local) 125; the default bounds as two chained assignments 131.
+// P540: Complete scalar-SSE perpendicular/upper/side products and size addition, 258/264/262/273/282/282/297/321.
+// NOT kept: extra stack alignment and larger frame/extent; original complete source restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -1744,6 +1744,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // array again 81; `done` declared ahead of the expected size 33 (same code); `valid` declared at the top of the loop body
 // 33 (same code). Retail loads the write's handle (`mov eax, [ebp]`) before any of the call's pushes and zeroes the flags
 // in ECX; ours zeroes the flags in EAX first and loads the handle after them.
+// P543: Standard native-width query/count/checksum/handle predicates
+// 250/139/36/224; exact complementary providers 250/139/97/224.
+// NOT kept: all regress; original comparisons, asynchronous calls/waits,
+// progressive validity and failure-only count initialization restored.
 // @retail 0x213970
 void function_213970(void)
 {
