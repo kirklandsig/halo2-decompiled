@@ -1724,6 +1724,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // where retail clears it with one byte read-modify-write - neither the raw byte mask nor the byte-bitfield view
 // (s_item_flags_view_10b850) makes this build emit the memory form; dropping the spin local so that the returned byte
 // could sit at esp+0xf costs eighteen bytes of body length (874 against 892) and raises the score to 190, so the body stands.
+// MiniMax S (11-16): no new form, no lower score (140): the release byte is still cleared by a load, an and and a store where retail
+// clears it with one byte read-modify-write, and the return bytes, the event-point homes and the location-call setup remain; that call
+// setup follows the allocation callee 0xba300's own convention (retail takes the object in ecx and the location in eax), whose body is
+// in another file: BLOCKED-BY 0xba300; the permuter (annealing, 420 s, 15 tries) found no variant below 140.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
