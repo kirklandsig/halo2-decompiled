@@ -4598,6 +4598,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
+// MiniMax E (11-16): no new form, no lower score (336); the frame 0x12c and retail's 1937-byte length still agree, but
+// the stack homes stay ours: the origin sits at esp+0x44 against retail's 0x40, the matrix at 0x60 against 0x50 and the
+// 16-byte placed object at 0x88 against 0x84.
 // MiniMax D (11-11): no new form, no lower score (371); the frame still agrees at 0x12c and the length still
 // matches retail's 1937, but the stack homes are still ours: the origin sits at esp+0x44 against retail's 0x40,
 // the matrix at 0x60 against 0x50 and the 16-byte placed object at 0x88 against 0x84, and every home from 0x94

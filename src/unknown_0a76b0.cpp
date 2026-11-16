@@ -2639,6 +2639,9 @@ __forceinline char unit_action_round(real value)
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax E (11-16): no new form, no lower score (234); the prologue still loads the pool into EDI where retail uses
+// EBP and the getter's NONE compare is 8-bit against retail's 16-bit `cmp ax, bx`; the short-slot getter alone measures
+// 297 and the reordered statements 314, so both bodies were reverted.
 // MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
 // 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
 // is the same code; the permuter over this function found nothing (2 tries, best 227 against a baseline of 227), so the
