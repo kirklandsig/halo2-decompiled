@@ -234,6 +234,15 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // the surface through the stored member index 6; the side test against the stored member 122 (both callers lose their
 // match); the vertex from the m128 accessor's element 6; the radius assigned first in the body through a no-argument
 // base constructor 8 (header edit for the trial only, restored).
+// M3 lane 11 r108 (fast with 0x1ee4d0/0x1ee500, both matched throughout): the vertex pointer as a row of a `real (*)[4]`
+// view of the array 6 (same code); the source vertex addressed in each arm of `if (matrix)` (the transform reading it in
+// the true arm, the else arm pointing at it) 69 (473 bytes); the source vertex as a named vertex-record pointer with the
+// point taken from it 6 (same code); `word first_edge` with the edge cursor copied from it 6 (same code); the transform
+// helper returning the point by value 94 (480 bytes). Diagnostic (r98's listed form re-measured): with `real g_47f068 =
+// 0.01f;` here as the base argument the reduced map shows the radius read from that global (not folded to a constant),
+// and the index is still loaded first, so the entry order is not an aliasing effect of a .data load. A scan of the
+// retail image finds 0x47f068 referenced only here and never written; its .data neighbours 0x47f05c and 0x47f074 are
+// globals other files already define (src/impacts.cpp, src/unknown_1c2d40.cpp).
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)

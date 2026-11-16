@@ -1379,6 +1379,8 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
+// retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
 // score 220 (was 220; earlier noted 218 (was 218), the full check gives 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
@@ -1806,6 +1808,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // function's three calls, not keepable) 215 fast: retail's callers disagree about 0xb6760's register summary, as with
 // 0x24590 at 0xe3380. Dead-local phase scan 1-7 at the top 220 each; `long const mode` 220; the overlay channel read
 // in place (no `channel` local) 220.
+// P569: Idle draw real/const-real/double/const-double receivers 220/220/220/220;
+// complete chance decision bool/byte/short/long 220/220/220/220.
+// NOT kept: no equality or frame/home recovery; original call/test/body restored.
+// Frame 0x28 versus native 0x2c, unit/mode and independent look homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

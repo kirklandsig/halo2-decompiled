@@ -827,6 +827,22 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// Round 112 (m3 lane 10), NOT kept (coordinator 11-16): 44 needs the loop bound re-read as `m_message_window.newest` in
+// place of the named `newest` local (with the local 117), a re-read replacing a named local, which is kept only with a
+// match. The 44 form (fast, plain-confirmed with the file's 26 matched functions): the shared index
+// helper reads oldest into a local (`long oldest = window->oldest;`, used by its test and its offset), the window pointer
+// is declared ahead of the send call and serves the count too, and the loop test reads `m_message_window.newest` each
+// pass (no bound local): the offset is then recomputed per pass (no second counter) and the count's oldest is shared
+// with the loop, as retail. Left: the count's newest is kept in EBP (pushed before the count) and the helper's newest
+// test reads that register, where retail does the count in ECX/EAX, reloads the bound into EBP after the test and
+// re-reads newest per pass; next sits in ECX (retail ESI). Tried this round: the helper local with the member bound
+// but the count through `&m_message_window` 89 (221 bytes; the count folds oldest and the loop reloads it); the kept
+// form with the bound read through `window->newest` in the test 117 (197 bytes), or in a `long newest = window->newest`
+// local 117; member access everywhere with the helper local 89; that with the existing reliable_stream_get_message(this,
+// next) 89 (same code); the window declared after the send call in a nested if 44 (same code).
+// MiniMax I (11-16): no new form, no lower score (60): the first difference is the loop counter's home - retail computes it in
+// ESI (mov esi, [edi+0x44]; inc esi) where this build computes it in ECX and copies it into ESI at the loop
+// head; the permuter (300 s, 5 tries) found no spelling that keeps it in ESI.
 // MiniMax R (11-15): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi with the next sequence in ecx, where retail keeps the next sequence in esi and recomputes the offset in eax on every pass; giving the index helper the member reproduces retail's loop body but moves the type local off its slot (the get_next_send setup pushes time in ebp) and the score rises to 89; the statement permuter over this body found no lower score either.
 // MiniMax G (11-14): no new form, no lower score (60): ours strength-reduces next - oldest - 1 into a second counter
 // (next in ecx, the reduced offset in esi) where retail keeps next in esi and recomputes the offset on every pass.
@@ -840,6 +856,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // loop head's registers (ours keeps the oldest in esi and the next sequence in ecx and copies the bound into ebx, retail
 // keeps the next sequence in esi and the oldest in ebx) and the count, which retail computes from its own loads of newest
 // and oldest before the bound is loaded.
+// MiniMax E (11-16): no new form, no lower score (60): retail keeps the next sequence in ESI and recomputes the message offset each pass where this build folds it into the counter; the sequence window helpers are shared.
 // score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.

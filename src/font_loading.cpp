@@ -507,6 +507,10 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax I (11-16): no new form, no lower score (59): the alpha's parity is masked in sixteen bits (mov cl, al; and cl, 1; movzx
+// cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); dropping the byte cast
+// from the shared helper gives retail's parity at every site but moves the run out of EBX into EBP and merges
+// the two fill loops (203), and a twin of the shared helper is not kept.
 // MiniMax D (11-15): score 45 (was 59): the two decode sites of the type 3 class now take the alpha in a
 // full register, so the parity is masked in thirty-two bits (xor ecx, ecx; mov cl, al; and ecx, 1) as
 // retail does; still differs in the type 2 decode site, the literal word's loads, the type 3 run (add eax, 2)
@@ -833,6 +837,7 @@ static inline long font_character_pixel(long alpha, long color)
 // P530: Plain switch/ordinary fill induction pairs (for/while/body increment),
 // eight nonoriginal pairs: 59/59/59/59/59/59/59/59. NOT kept: no native
 // parity/literal/run-register repair; original indexed fills and complete body restored.
+// MiniMax E (11-16): no new form, no lower score (59): dropping the byte cast from the shared pixel helper widens the alpha's parity to thirty-two bits as retail does and makes the two type 3 pixel sites match, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX, which shifts the whole body (203); the twin helper at the two type 3 sites (45) is not kept.
 // MiniMax E (11-15): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits (mov cl, al; and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); the twin helper without the byte cast measures 45 but a twin of a shared helper is not kept.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)

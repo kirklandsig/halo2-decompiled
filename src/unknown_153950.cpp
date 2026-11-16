@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax E (11-16): no new form, no lower score (13): the thirteen differences are still the j and k rows of the inlined rotation, where retail adds the projection term first and this build adds the cosine term first; that text is the shared rotate_vector_170d70 helper's own, in src/unknown_170d70.cpp, which this lane may not edit, and a copy of it written for this caller is a same-behaviour twin that builds to the same bytes (13); writing the three rows out in the caller scores 59 and computing them into locals first scores 84, so the body stands.
 // MiniMax S (11-16): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, where this build adds the cosine term first and retail adds the projection term first; the permuter over the whole image (the reduced image scores 245 here) reported nothing below the baseline of 13 before it was stopped, and the rows follow the shared rotate helper's own text in another file: BLOCKED-BY 0x170d70.
 // MiniMax D (11-14): no new form, no lower score (13): the thirteen differences are all in the j and k rows
 // of the inlined rotation, whose text is the shared rotate_vector_170d70 helper's in src/unknown_170d70.cpp,
@@ -794,6 +795,15 @@ struct s_player_axes_153d10
 // product's forward.i read through the forward pointer 2 (same code); the k row's first forward.i through it 2 (same code);
 // every forward read of the cross through the forward pointer 12; the j row as `forward->k * up->i - up->k * forward->i`
 // 34 (first difference +0x13); every up read of the cross through the up pointer 28.
+// M3 lane 4 r205 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the cross written inside relative.i's dot (no
+// cross local), rows in k, j, i order 46 (an earlier inlined block reorders, first difference +0x364), in i, j, k order 46; the
+// cross read through the forward and up pointers with this product's text kept 105; relative declared before cross 2 (same
+// code); the j row as `-(up.k * forward.i - forward.k * up.i)` 117 (1301 B).
+// Also r205: forward/up as const references (cross and dots through them) declared after delta, after the cross and
+// relative declarations or at the top of the block 105 each, declared after the cross for the dots only 10, after delta for
+// the dots only 2; a `real const &` to up.k for both its products 8, declared after the i row for the j row only 2; to
+// forward.i for both its products 6, after the i row 10; to forward.j for both 6; the axes view as a const reference after
+// or before the two point calls 2/2.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

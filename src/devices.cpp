@@ -1030,6 +1030,13 @@ struct s_device_machine_view
 // test 122; the machine pointer as `type == 7 ? device : NULL`, tested in place of the type test, 141 (666 B); the lane S
 // bits as an unmasked byte copy of the word, `(byte)group_flags`, 115 (654 B: retail's word load into AX and no mask,
 // registers all retail's, but the load stays folded ahead of the machine test, one instruction short). Body unchanged.
+// M3 lane 4 r205 (fast with 0x107870, 0x1071e0): the whole group copied as an aggregate and its flags tested 199 (686 B,
+// a 12-byte frame); the group pointer and machine flags declared bare and assigned in order 122; the group pointer with
+// `(group->flags & 3) == 3` 120 (654 B, the pushed ESI); a `word const *` to the group's flags tested twice 122; the
+// two bit tests as nested ifs on the group pointer 122. Body unchanged.
+// Also r205 (references): `word const &` to the group's flags with the lane S bits 116 (655 B), tested directly 122,
+// declared after the machine flags 127 (657 B); `dword const &` machine flags 2 (same code); a const group reference with
+// the lane S bits 115 (655 B).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1248,8 +1255,12 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
+// but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
+// duration and the two ramp times, retail xmm5/xmm7/xmm1); the permuter found no spelling that moves them.
 // MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
 // returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
+// MiniMax E (11-16): no new form, no lower score (121): the initial velocity stays stack-passed where retail takes it in xmm6 with five stack floats and a 0x14 return.
 // score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
@@ -1759,6 +1770,14 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // 330 (1634 bytes); the factor as `(real)(1.0 / 30.0)` 2; the first call's 0.0f through a start-time local 2; the
 // definition, model and render-model lookups through a file-local inline tag getter 2; a const state pointer with the
 // flag block reading the animation and time through a const channel reference declared first in the block 2.
+// M3 lane 4 r205 (fast): the sampling method's unused third parameter typed `void const *` (header, definition, four callers;
+// the local a pointer, so no conversion is pushed) 2; the nested tests as early returns of the false result 402; the time
+// assigned inside the first call's animation argument (its store after the 0.0f push in source order) 2, so the store's
+// position in the call does not set it either; the step tests nested 2; inverse and relative at the flag block's scope 2.
+// Diagnostic: the speed block's two calls given a constant render model (fewer uses of the local) 98, fstp unmoved.
+// Also r205: the animation state as a reference (member calls through it), the model or the definition as a const
+// reference, the flag block reading the animation id and time through a const channel reference, the frame position
+// as a `real const &`, 2 each (same code).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -1998,6 +2017,7 @@ bool function_0b6760(s_index_pair const *pair);
 // retail's ESI/EBX and the result byte at [esp+0xf] (ours in DL) are unchanged.
 // MiniMax I (11-15): no new form, no lower score (250): the index and index * 12 sit in EDI/ESI where retail has ESI/EBX, the result is returned in DL where retail keeps a stack byte, and the definition is re-read where retail reads it once; the 58 and 69 leads rest on a one-use rate local, which is match-only.
 // MiniMax S (11-15): no new form, no lower score (250): the saved definition's volatile, the tick rate read straight from the global and the == 0 byte test are the standing body; the one shape that reaches retail's block order (58 at retail's 1495 bytes) needs the tick rate read into a local once just before the 0x11eed0 call, a one-use local, so it is not kept and the body stands.
+// MiniMax E (11-16): no new form, no lower score (250): the frame is retail's 0x20 and the state test matches; the index and index * 12 stay in EDI/ESI where retail uses other registers.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
@@ -2345,6 +2365,8 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// MiniMax I (11-16): no new form, no lower score (250): the first difference is the incoming register (retail takes the index in
+// ESI and the object header in EBP, this build in EDI and EBP) and the order in which the globals are loaded.
 // MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
 // passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
 // main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused

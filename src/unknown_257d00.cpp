@@ -1590,6 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// MiniMax R (11-16): no new form, no lower score (270); the prologue still reads the cs pool global before the actor pool and takes arg_0 into ESI after the pushes where retail reads the actor pool first and takes arg_0 into EBP, and the case-10 flag store still follows the selector compare where retail stores the flag first; the permuter's best (221) swaps the arguments of the call to 0x1fb360, but retail's call site passes the unit index in EAX, the second argument in ECX and the constant on the stack, so the swap would change what the call does.
 // MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
 // reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
 // a swap of the arguments of the call to 0xcccd0 that puts the constant 1 where the unit index belongs; retail's call
@@ -2472,6 +2473,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
+// MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
 // score 479 (was 479): m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // / `return 0;` 483 (re-measured on this base); one `turn_facing` pointer for case 2's copy and publish (same code); case
 // 2's aggregate copy, case 4's facing reads and case 18's and case 21's targets held across 0x25ab50, together 636
@@ -2839,6 +2841,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20) 481 (the case 14 block then sits where retail's does; case
 // 18's registers rotate and an alignment pad appears), with cases 9 and 11 as `local_0->unknown018 == arg_1` 481; the result
 // flag `local_3` as `bool` 479 (same code).
+// M3 lane 15 r92 (plain unless marked; the fast image is not faithful here: fast control 474 at 2400 B against the full
+// 479 at 2404 B): case 4 with the facing read from the field at each use, no aggregate copy, 627 (2384 B; fast 467 at
+// retail's 2396 B: the copy is retail's missing 8 instructions, but the full build then gives the actor EDI and the
+// state EBX from +0x9); the facing through a const pointer 627; that with `displacement` declared first 627; case 4 as
+// `dot3f(&local_2->field_c, &displacement)` 627 (retail's k, j, i product order); dot3f with the operands swapped 627.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
