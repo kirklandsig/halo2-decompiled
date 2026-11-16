@@ -969,7 +969,17 @@ extern s_sound_source_callbacks const g_44a130 = {
 };
 
 struct s_animation_ref;
-struct s_animation_state;
+
+struct s_animation_state
+{
+	byte unknown00[4];
+	char a;
+	char b;
+	word c;
+
+	void function_2192b0(s_animation_ref *ref, byte value);
+	void function_219310(s_animation_ref *ref, short value);
+};
 struct s_packed_value;
 struct s_set_ref;
 struct s_sound;
@@ -1016,8 +1026,7 @@ struct s_looping_sound_tables
 
 dword function_2194c0(s_animation_ref *ref, s_packed_value *value);
 void function_219560(s_packed_value *value, s_animation_ref *ref, dword data);
-void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value);
-long function_219370(s_animation_state *state, s_animation_ref *ref);
+short function_219370(s_animation_state *state, s_animation_ref *ref);
 
 // score 0 (was 16): fallback argument scheduling and final alignment byte differ;
 // common result 10; sound/playback reorder 16, with common result 10; fallback guard 16;
@@ -1055,7 +1064,7 @@ void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_definiti
 	{
 		s_permutation_set *set = &g_51ebd4->sets[playback->pitch_range_base + arg_58ecd0];
 		function_219560((s_packed_value *)set, (s_animation_ref *)playback, permutations);
-		function_2192b0((s_animation_state *)set, (s_animation_ref *)playback, (byte)permutation);
+		((s_animation_state *)set)->function_2192b0((s_animation_ref *)playback, (byte)permutation);
 	}
 }
 
