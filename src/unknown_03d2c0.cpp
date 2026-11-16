@@ -130,6 +130,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// score 77 (was 77): from +0x54: the found path enters the merge test (retail jumps past it to the reload), the merge
+// block tests EAX (retail ESI), and the walk's NONE return folds to a constant inline (retail: trailing `mov eax, esi`
+// epilogue); 510 bytes against 518. Notes below, merged into one; m3 lane 11 r104's findings at the end.
 // MiniMax D (11-16): no lower score (77): the arrangement that reproduces retail's layout (the merge block's flag set
 // before the reload, the record block placed right after the found path) gives a byte-identical record block, but
 // MSVC then drops the merge test there as provably redundant, because the walk block has already returned when the
@@ -141,9 +144,6 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // allocation's NONE test instead of after the walk block (115, 495 bytes), and the record pointer's index taken from the
 // merge's reload. The plain form that sets the flag on each path without copying the statement into both arms is still
 // missing.
-// score 77 (was 77): from +0x54: the found path enters the merge test (retail jumps past it to the reload), the merge
-// block tests EAX (retail ESI), and the walk's NONE return folds to a constant inline (retail: trailing `mov eax, esi`
-// epilogue); 510 bytes against 518. Notes below, merged into one; m3 lane 11 r104's findings at the end.
 // MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
 // form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
 // stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
@@ -369,6 +369,15 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // (same code). Original body restored.
 // MiniMax C (11-16): no new form tried this round, no lower score (77): the body is still 510 bytes against retail's 518 and the blocks'
 // MiniMax C (11-16): order still differs in the ways the notes above record.
+// Round 125 (m3 lane 16, fast with 0x3db00/0x3dd10, both MATCH; control 77): one variable for the cached and the allocated
+// index, early walk return kept 151 (508 B; the found path still enters the merge test, the index stored at its read); lane 14
+// r84's skeleton (`long result = NONE;`, the found test only setting result, `if (result == NONE) { allocation; walk; if (result
+// == NONE) goto done; initialize = true; }`, the only return at `done`) 85 (504 B), on it `initialize` declared first 85, the
+// found arm re-reading the object's field (`result = *(long *)(object + 0xcc);`) 150, the cached index as `long const &` to the
+// field 85. Reading of the 85 form: from the found test to the 0x3dd10 call it is retail's but for registers; the found path
+// brings the result in EAX, so the merge block preloads EAX (retail reloads ESI after the test) and the init tail keeps the
+// result in ESI across 0x3dd10, so one epilogue serves every path where retail has the reloading main epilogue plus the walk
+// exit's `mov eax, esi` copy.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
