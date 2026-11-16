@@ -219,7 +219,15 @@ __forceinline float along_normal_2fb150(contact_2fb150 const *other, contact_2fb
 // whether a contact lies deep or in front of a closer one's plane
 __forceinline bool apart_2fb150(contact_2fb150 const *other, contact_2fb150 const *closer, float tolerance)
 {
-	return other->point.value.m128_f32[3] < -0.1f ? true : along_normal_2fb150(other, closer) > tolerance;
+	if (other->point.value.m128_f32[3] < -0.1f)
+	{
+		return true;
+	}
+	if (along_normal_2fb150(other, closer) <= tolerance)
+	{
+		return false;
+	}
+	return true;
 }
 
 // whether a contact only repeats a closer one's plane: it does not lie deep,
@@ -233,7 +241,10 @@ __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, co
 // the triangles' contacts are gathered, sorted closest first, those that
 // only repeat a closer one's plane dropped, and the rest passed to the
 // collector with ids from the contact manager
-// score 276 (was 330): the plane test is a nested helper, the contact count is
+// score 244 (was 276): the plane helper tests the fourth component first and
+// returns from each arm (retail's byte result with the along-normal arm out of
+// line).
+// Before, 276 (was 330): the plane test is a nested helper, the contact count is
 // raised before the new index is taken, the other branch re-reads the entry's
 // agent, and the third loop names the kept and the added contact.
 // Before, 330 (was 344): receiver register, body homes and plane branch still differ.
