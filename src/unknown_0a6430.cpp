@@ -126,6 +126,10 @@ PRIVATE byte *update_object_0a6430(long index)
 // P575: Independent positive/complementary region-count, model-presence, entry-count and tail-count
 // decisions on the shared-count-provider body 14/14/14/14/14/14/14/14. NOT kept: no exact repair
 // of the state-pointer register or final pool/index schedule; original complete body restored.
+// P577: Shared-provider output at entry 14; scalar memcpy at region/tail/both
+// count bytes 14/14/14; first/second/both packed word observations 14/181/181;
+// existing model-count result through memcpy 14. NOT kept: no equality; native
+// state-pointer register and final pool/index schedule remain. Full body restored.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

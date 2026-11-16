@@ -1163,6 +1163,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P574: Original-site point-distance cap admission, positive/complementary
 // bool/byte/short/long: 395/395/395/395/395/395/395/395. NOT kept: no native direction-j
 // preload or length/zero-home recovery; original comparison and full body restored.
+// P577: Scalar memcpy for captured scale/mode/point handle/FOV start 471/126/126/405;
+// paired FOV time-duration 408; admitted timer ticks 399; complete target 389;
+// animation zero-float memset pair 155. NOT kept: no equality; original frame,
+// direction observations, persistent zero, helpers and entire body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

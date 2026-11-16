@@ -1810,6 +1810,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // P533: Guard-owned first signed-count comparison bool/byte/short/long, then second:
 // 328/328/328/328/327/327/327/327. NOT kept: no exact SETLE/default recovery;
 // original complete body restored, pool/state/count joins and return normalization remain.
+// P577: Scalar memcpy at controlling/control displacement/state displacement/overlay/name
+// 334/320/164/164/164; first/second/both signed counts 314/327/327.
+// NOT kept: no native pool/index, SETLE/default-home or return equality; original
+// queries, argument handling, observations and complete executable body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -2210,6 +2214,10 @@ bool __stdcall function_110ab0(long unit_index)
 // P532: Incoming-permission ownership for whole/primary/overlay/input-seeded outcomes,
 // positive then complementary: 577/516/445/492/642/551/599/663. NOT kept: no native
 // frame/default-byte/result-join equality; original complete body and Boolean interface restored.
+// P577: Actual scalar memcpy at controlling/control displacement/state displacement/both
+// displacements 445/446/446/485; first/second/both signed counts 445/445/445;
+// base-channel flag word 448. NOT kept: no native frame/default/result-home
+// equality; original queries, observations and complete executable body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2745,6 +2753,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // P532: Actual three-axis table inside the existing two-site projection, ordinary
 // for/while with long/dword/short/word rows: 878/878/878/878/910/910/910/910.
 // NOT kept: frame 0xe0 versus native 0xd4 and extent regress; original complete helper/body restored.
+// P577: Scalar memcpy for overlay ID/primary ID pair/secondary ID, all seven
+// complete subsets, 776 each; named complete pitch/yaw magnitudes 776.
+// NOT kept: no native ID-home, frame or selective-expansion equality; original
+// captures, helpers, constructors, observations and whole body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
