@@ -932,6 +932,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // spelling) 209 (1089 B: the cosine is then computed first); the direction copy after the angle, or after the sine or
 // the cosine, 229 (1100 B); the structure pointer read ahead of the copy 77; the direction declared at function scope
 // 71 (same code); the cosine computed before the sine 80.
+// P547: On the 71-point native-ring/shared-rotation base, complete direction captures in
+// ijk/ikj/jik/jki/kij/kji order 233/234/233/234/234/234; whole-vector memcpy 71; existing
+// vector setter 253. NOT kept: no native j/k allocation gain; original full body and helper restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

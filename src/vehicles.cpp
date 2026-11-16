@@ -3269,6 +3269,9 @@ real g_47ff30 = 2.5f;
 // NOT kept: no native frame/transport equality; original complete body restored.
 // P535: Immutable complete bounded-speed/fraction/directional-mass producers, seven subsets then all with immutable computed speed; native frame 0xfc remains unrecovered.
 // 672/672/672/672/672/672/672/672. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P547: Actual friction-axis table with plain for/while traversals, each in long, unsigned long,
+// short and unsigned short: eight at 964/2989. NOT kept: frame 0x140 versus native 0xfc
+// and shortened extent; original three friction gates, helpers and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
