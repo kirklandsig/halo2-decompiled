@@ -1522,6 +1522,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax E (11-16): no new form, no lower score (60): the entry size declared first and assigned late leaves the bytes
+// as they are (60), computing it at the declaration costs (158) and an early return for the disabled queue moves the
+// layout (174). Retail keeps the player bit in EBP for the whole body and the entry size in EBX, this build keeps the
+// bit in EBX and the size in EBP, and the two frame slots follow the values; retail's size is made with a zeroed
+// register, a compare against zero and a setne, the same value as 11 + 2 * include_mask but written for a flag the
+// compiler cannot range, while the bool flag of this signature is known to be 0 or 1 and the size is made with a movzx.
+// The body stands.
 // MiniMax R (11-15): no new form, no lower score (60): the entry size as `include_mask ? 13 : 11` 147 and as
 // `11 + 2 * (include_mask != 0)` 146 both move the mask byte into a register before the compare where retail compares it
 // against a zero register; the size computed at function entry 163; the size declared before the clamped copy and the
