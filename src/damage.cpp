@@ -606,6 +606,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // down beside the +0x7e store 16 (the bsp load then hoists above the definition store); the location as an
 // initialised `s_location` local copied in 46 (119 bytes). Diagnostics: one to seven unused `long` locals 3 each
 // (no phase effect); the body through a mirror of the event type without the +4 byte/dword overlay 3 (same code).
+// Round 168 (m3 lane 7, plain): unknown14 ahead of the owner's three stores 7; the three 1.0f stores ahead of the +0x7c
+// copy 37 (119 bytes); the +0x84 clear ahead of the +0x7e store 5; the location's cluster cleared before its leaf 5; the
+// +0x7e store ahead of the three 1.0f stores 7; the +0x7e store right after the owner's team 3 (same code: still stored
+// last). Diagnostic (reverted): g_4686c4 read through a pointer to it (address taken) 9: its load then waits for every
+// store ahead of +0x22, so retail does not treat it as aliased; its load sits right after the +0x7c store, held only by CX.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -1850,8 +1855,6 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
-// Round 172 lead 4 (match-only, not kept): only the reload order after function_d6a70 and function_176780 differs: retail reloads the spilled
-// shield damage before the zero, ours the zero first (the function_d5bc0 order is now retail's).
 // score 8 (was 8): only the reload order after three calls differs: after function_d5bc0 retail reloads 1.0f, the
 // zero, the maximum and the inverse (ours the zero, maximum, inverse, then 1.0f); after function_d6a70 and
 // function_176780 retail reloads the spilled shield damage before the zero (ours the zero first).
@@ -1928,6 +1931,15 @@ long function_1e4a10(long index);
 // an `info` local for the five reads 220 (declared first) / 216 (after the shield default). The order after function_d5bc0 permutes
 // among the four values as the count changes (zero, maximum, inverse, 1.0f tie), while zero stays ahead of the shield damage at every
 // count, so that pair is not a tie in our build.
+// Round 172 lead 4 (match-only, not kept): only the reload order after function_d6a70 and function_176780 differs: retail reloads the spilled
+// shield damage before the zero, ours the zero first (the function_d5bc0 order is now retail's).
+// Round 168 (m3 lane 7, fast, each on the six-name set at 4): the scaled shield damage as its own local 25; the depletion
+// block as two tests (`vit < 0` overflow block, then `vit <= 0 && !depleted`) 231 (874 bytes); the overflow block's zero
+// store ahead of its test 29; the shield-damaged flag set before the function_176780 call 141 (880 bytes); the stun
+// test's body-damage term ahead of the vitality zero test 12; the side-effect zeroing as a nested in-radius test 4 (same
+// code). Diagnostics (reverted): probe-symbol chains at the top (k = 1..8: 4 4 4 7 8 8 8 8) and right after the shield
+// default (k = 9/12/16/24: 8 each) never flip the zero/shield pair; on this set round 139's 1.0f clamp no longer flips it
+// either (257); the function_176780 call's first zero as 1.0f 176.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2432,6 +2444,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // `__forceinline` 2. The r114 guard called with `accumulator->field_4_2` for info 227 (857 B, the field reloaded; object
 // back in EBP, definition still EAX), plus definition read once through its address 222; the whole region-kill block as
 // a `__forceinline` helper 228. Every form that reads the entry before the info test flips the allocation.
+// Round 168 (m3 lane 7, fast): the region's flags read through an inline accessor returning `&info->regions[index]` 3
+// (same code, the amode stays [edx + eax + 4]); object declared before info 39; the guard's definition flag ahead of the
+// region flag 81; on the entry local before the guard (the hoisted load): object declared first 228, the end notify
+// through two fresh lookups instead of `damaged` 227, the entry read at the top of the damage block 218 (874 bytes).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

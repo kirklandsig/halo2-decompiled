@@ -2704,6 +2704,10 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // `real *` out-parameter 3 (same code); `squared` declared at function scope with the other reals 3 (same code); the two
 // point locals declared ahead of the NONE test 3 (same code); the two positions as one two-point array (source [0], target
 // [1]) 333; the helper also filling `real *x, *y, *z` out-parameters for the cases 343 (z subtracted fully first).
+// Round 168 (m3 lane 7, fast): the outer y, z, x or y, x, z differences ahead of the helper call 430/430 (1940 bytes); the
+// helper reading `a->y` into a local before its differences 411 (1944 bytes); the helper's differences declared z, x, y
+// but assigned y, z, x 26 (retail's instruction order, registers y XMM1, z XMM2, x XMM3) or y, x, z 19: registers and
+// schedule both follow the assignment order, not the declaration order.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
