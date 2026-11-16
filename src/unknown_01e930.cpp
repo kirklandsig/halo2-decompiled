@@ -572,7 +572,7 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH378: Direct combined rejection and readiness/loading/both positive pipeline ownership 246/246/246/246;
 // complete skip expression 277, direct mode-arm publication/both local outcomes/direct query-arm stores 272/272/272.
 // NOT kept: native 1098-byte skip forms regress and keep frame 0x3c; original complete body restored.
-// b5G (statement walk against retail, 2026-11-06, fast, base 8cda3c91d): every block compared with 0x156090..0x1564e0
+// b5G (statement walk against retail, 2026-11-06, fast, base 8cda3c91d): every block compared with 0x156090..0x1564da
 // (entry check and 0x100 override, finished/unknown03 stores, size (flags & 0x100 | 0x40) << 16, retry loop and its
 // 30-attempt limit, tsc elapsed clamp, 0.1 s test, XPhysicalProtect 2 / 0x404, direct sound call order, movie open
 // 0x8002000, surround bins {0,1,4,5} volumes {0x8000,0x8000,0x5472,0x5472} and stereo, 0x23e340 argument order, material
