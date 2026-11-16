@@ -529,6 +529,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // declarations with the else arm copying only the vector 360 (1723 B). Same code on the lead: the angles declared at the
 // top of the function; the normalizer's locals renamed (magnitude, inverse); local_11/local_12 renamed (aim_pitch,
 // target_pitch); rows with the projection term first.
+// P538: Unrounded planar-root/rotation-sine/rotation-cosine API producers, subsets
+// 1/2/4/3/5/6/7 then complete immutable: 263/179/179/263/263/177/264/264.
+// NOT kept: all regress; combined root/trig forms lose the matched sibling (24); original helpers and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

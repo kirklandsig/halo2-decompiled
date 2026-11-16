@@ -377,7 +377,7 @@ static inline bool structure_has_matching_samples(void)
 // score 223 (was 252; earlier 252, was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
 // false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
 // rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
-// Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22888);
+// Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22889);
 // sample loop keeps the ebx offset and a countdown (0x22abf-0x22ace); samples, source and the structure pointer are re-read after the calls
 // (0x22900, 0x22ab5, 0x22b06); axis fields are read from memory at each use (0x2292f-0x2294f); squares once.
 // Remaining: frame 0x5c/0x68, ebp saved in the prologue (retail pushes it after the checks, 0x228f6), retail's
@@ -2654,6 +2654,7 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax A (11-14): no new form, no lower score: this body's score moves with the reduced image's
 // source set (140 on a single-function image, 196 on the queue's image of 562 sources, where the
 // first difference is at +0x15); the difference itself is unchanged by the image.
+// MiniMax C (11-15): no new form, no lower score (140).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2937,6 +2938,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // while loop with the body under `if (available_samples)` 330 (same code); the second sample's source advanced in place
 // (`source += 12;`) 370; the level limit named 349 (re-measure; ESI/EDI swap at the entry); the coefficient pointer
 // formed after the clamp in one expression 336 (the pre-11-10 order).
+// MiniMax C (11-15): no new form, no lower score (330): retail forms the level's table entry with a lea pair and
+// loads the offset through that address (lea eax, [eax + edx*4] and then a load through eax), where this build
+// loads the entry into edx and adds it (mov edx, [eax + edx*4] and lea eax, [ecx + edx*4]); retail also takes the
+// level's -1 with a lea (lea edx, [eax - 1]) where this build decrements the register.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3887,6 +3892,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // symbol count). Retail copies both register values before destroying them (`mov eax, ebx; shl`, `mov al, cl; neg`); our
 // forms give one or the other. The one-file LTCG harness of this file builds 4628 B (not usable). Mode zero's extra
 // texture test as `(long)configuration == NONE` 9 (same code).
+// m3 lane 14 r99 (fast, control 9; left: only the input word's shl hoisted above the clear in EBX and the two reload pairs):
+// the RGB word through the shifted local with the alpha word shifted in place 939 (CSE'd: the no-local code); the power of
+// two named for its two uses in modes zero and one 832 (4840 B); both selectors `long const` 9 (same code); const selectors
+// with no shifted local 939; the selectors from one if/else on small with no shifted local 952. Re-measured: no shifted
+// local 939 (shift retail's, but small loads into AL after fraction's move to EBP where retail loads CL first).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
