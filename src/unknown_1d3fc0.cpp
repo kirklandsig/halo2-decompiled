@@ -18,8 +18,7 @@ int __fastcall function_142a60(transform4x3f const *arg_0, transform4x3f const *
 
 PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 {
- real j_squared = arg_0->j * arg_0->j;
- real local_0 = (real)sqrt(arg_0->i * arg_0->i + j_squared + arg_0->k * arg_0->k);
+ real local_0 = (real)sqrt(dot3f(arg_0, arg_0));
  if (!(fabs(local_0) < 0.0001f))
  {
   real local_1 = 1.0f / local_0;
@@ -30,6 +29,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax S (11-16): score 11 (was 110): the private normalizer's squared length named through dot3f gives
+// retail's sum order and its component registers, and the projection's k row reads the matrix's forward
+// component (a second access path to one field); what is left is the dot's i term, which still copies up's i
+// where retail copies forward's i, and the last normalization's i term, which still multiplies the component by
+// the reciprocal where retail multiplies the reciprocal by the component.
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // MiniMax R (11-15), on its not-kept 11 form (below; main stays 110): the axis block agrees with retail except for the dot product's i-term
@@ -506,7 +510,7 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
     real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;
-    up->k -= forward->k * local_10;
+    up->k -= local_1[0].forward.k * local_10;
     function_1d3fc1(up);
     cross3f(up, forward, &local_1[0].left);
     function_1d3fc1(&local_1[0].left);
