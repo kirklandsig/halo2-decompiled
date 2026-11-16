@@ -797,6 +797,7 @@ struct s_item_collision_bsp
 // MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
 // changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
 // [esp+0xac] after the two pushes). Body back to main.
+// MiniMax C (11-16): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order; the marker's y is the one read, as retail does.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -2060,6 +2061,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
 // shared impulse producer, damping statements and complete body restored.
 // P540: Eight coordinated contact-provider orders at its definition and both callers, 140 each. NOT kept: no return-byte/release/event-home recovery; original contracts, calls, helper and entire body restored.
+// MiniMax C (11-16): no new form, no lower score (140): retail still clears the release flag with one byte read-modify-write where this build splits it into a load, an and and a store, and retail still keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

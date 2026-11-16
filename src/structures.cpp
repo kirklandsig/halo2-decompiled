@@ -714,6 +714,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // Re-measured: the byte result declared first with `definition = NULL` at its declaration 185 (726 B, aligned 97/54; now
 // `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
+// MiniMax C (11-16): no new form, no lower score (172): retail still holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
