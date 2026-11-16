@@ -56,6 +56,7 @@ static __forceinline long floor_to_long_inline(real value)
 // tag parameter the flags' slot measures 42, the key's slot 318 and the instance's slot 86, so the stack home of the masked
 // flags is right; the permuter (27 tries) finds nothing below the baseline 10.
 
+// MiniMax E (11-16): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order (the entry's own word first) where retail takes the flags term first, and the kind's shift still lands in the copy to esi where retail shifts the call's result in eax; the earlier rounds' six OR orders, the split forms and the permuter run leave the bytes unchanged, because MSVC canonicalises the OR's operands.
 // MiniMax B (11-13): no new form, no lower score (10): the two masked words are still combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is still set after the bit-count test here and before it in retail.
 // MiniMax H (11-12): no new form, no lower score (10); the first word's OR chain still keeps the entry's own load
 // before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and

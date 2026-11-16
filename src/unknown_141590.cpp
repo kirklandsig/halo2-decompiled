@@ -118,6 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
 // MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
 // full image (the reduced image agrees with the full one here). Still differs: the compiler's term
 // orders in the three transforms (retail adds cross*2w first in every i row, cross + q*dot then v*s in the up j/k
@@ -403,6 +404,9 @@ static inline void quaternion_transform_vector(
 // cosine half takes xmm4 and the sine product xmm5, retail the reverse); s computed in the body before the copy and
 // passed in 308 (frame 0x18); plain halves with the original helper 267; plain halves, scalar crosses and s first in
 // the helper 248. Original body and helper restored.
+// P573: Original-site basis-validation success/repair outcomes, bool/byte/short/long:
+// eight 246 (1312 bytes, frame 0x1c). NOT kept: frame 0x24 and separate quaternion/cross
+// spills remain absent; original complete body, geometry helpers and repair calls restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1335,6 +1339,10 @@ void function_143250(
 // Band two's `s15 * s5` 1333 and band three's `s2 * s35` 1333 (same code: products re-sorted); band one's four negatives
 // as unary minus 1333 (same code: compiled as 0 - x); band three's sqrt(7) declared after s21_s35 1535 (10748 B); band
 // two's root product as one `(real)sqrt(5.0) * (real)sqrt(15.0)` 1729 (10712 B).
+// P566: Actual positive-root input/result tables, second/third/both bands through
+// long for/while, then third/both short for: 1671/1671/1592/1592/1751/1751/1748/1771.
+// NOT kept: grouped root-pipeline storage is unmatched and regresses; native paired
+// scalar homes and missing frame word remain. Original polynomial and full body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

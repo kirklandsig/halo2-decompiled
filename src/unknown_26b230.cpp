@@ -2181,6 +2181,9 @@ void function_269250(long clump_index, long actor_index);
 // snapshot on the in-arm form 132 (481 B), on this body 125 (480 B, P460's 84 is another form). Retail never gives the
 // selection a register (reloaded from +0x14 at each use after the loop, even with EDI free in the selected arm); ours holds
 // it in EDI there, and the matched 0x268840 shows the same walk fully in registers when nothing competes.
+// P572: Existing-selection transfer admission, positive/complementary bool/byte/short/long:
+// 87/87/87/87/87/87/87/87. NOT kept: no exact admission/selected-handle lifetime repair;
+// pool EBX, memory-only selection and native x87 score homes remain. Original full body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

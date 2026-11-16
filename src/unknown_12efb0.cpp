@@ -136,6 +136,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
+// score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
+// sign extension and the helper differences in the notes below are unchanged. Body unchanged.
 // MiniMax H (11-12): no new form, no lower score (607); the palette slot is still sign-extended and compared 16-bit where retail compares the byte with -1.
 // MiniMax I (11-11): no new form, no lower score (607): the 0x130f60 call's result still stays in EAX where retail moves it to EDX and keeps NONE in EAX, so the palette slot is still read as a word and the body is one instruction short from there on; that register home is set by the clamp in the three-scalar helper here, whose other callers keep their own match.
 // score 607 (was 607): earlier 616. Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
@@ -643,6 +646,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // P537: Actual returned alternate identity has an early existence decision, positive then
 // complementary bool/byte/short/long: 620/620/698/697/620/620/698/697. NOT kept:
 // extra code, no provider/NONE or palette/SIMD recovery; original helpers and body restored.
+// P566: Existing alternate-source/vector/weighted/cluster-output ordinary inline
+// declarations, four isolated, source-vector/weighted-cluster/source-weighted/all:
+// 757/607/879/607/757/879/911/911. NOT kept: no native provider/NONE or palette/SIMD
+// recovery; original target, helper bodies and all provider declarations restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

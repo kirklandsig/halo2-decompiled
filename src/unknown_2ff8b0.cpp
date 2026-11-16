@@ -603,7 +603,11 @@ public:
 // child cell, split the walk where the sphere spans both sides of a plane
 // (the first side by recursion), cut it off where the sphere misses a slab,
 // move the key base, or give a key to add to the list
-// score 375 (was 521): Frame 0x2c and extent 1596 agree; first +0x176
+// score 4 (was 375): case 0x60 reads its byte before stepping and storing; cases
+// 0x23 and 0x20 name the box's radius between the bounds they declare, in
+// retail's load order. Left: one base/index order in case 0x20 and the
+// accumulating register of case 0x29's first three-byte read.
+// Before, 375 (was 521): Frame 0x2c and extent 1596 agree; first +0x176
 // exchanges two reads. Loop-tail value update 537; limits first 400; limits
 // between position and extent 514; byte command 521/1608; box rename 521;
 // limit declarations first 521; paired word reads 521; axis loop 521.
@@ -729,16 +733,17 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x21:
 		case 0x22:
 		{
-			long const along = box->centre[op - 0x20];
 			long const plane = node[1];
+			long const reach = box->radius;
+			long const along = box->centre[op - 0x20];
 			node += 3;
-			if (along + box->radius < plane)
+			if (along + reach < plane)
 			{
 				continue;
 			}
 			long const skip = node[-1];
 			node += skip;
-			if (along > box->radius + plane + 1)
+			if (along > reach + plane + 1)
 			{
 				continue;
 			}
@@ -750,19 +755,20 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x24:
 		case 0x25:
 		{
-			long const along = box->centre[op - 0x23];
 			long const second_low = node[1];
 			long const first_high = node[2];
+			long const along = box->centre[op - 0x23];
+			long const reach = box->radius;
 			long const first_skip = READ_2_300290(node + 3);
 			node += 7;
-			if (along + box->radius < first_high)
+			if (along + reach < first_high)
 			{
 				node += first_skip;
 				continue;
 			}
 			long const second_skip = READ_2_300290(node - 2);
 			node += second_skip;
-			if (along > box->radius + second_low)
+			if (along > reach + second_low)
 			{
 				continue;
 			}
@@ -875,9 +881,12 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = node[1];
+		{
+			long const byte = node[1];
 			node += 2;
+			copy.values[op - 0x60] = byte;
 			break;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
