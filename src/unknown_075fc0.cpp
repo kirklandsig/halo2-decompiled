@@ -294,6 +294,8 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // EBP - where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is
 // still tested as a byte in retail (`test al, al`) where this build's callee returns a long; that callee, 0x75910, is
 // defined in another file, so the call's shape cannot be settled here. The body stands.
+// MiniMax R (11-16): no new form, no lower score (356): the frame is 0x38 here against retail's 0x34, and this build
+// keeps the observer in ebp and the argument in ecx where retail saves esi and edi around the block.
 // Round 244 (m3 lane 3, fast with 0x76520/0x765c0/0x77940/0x75910): the field_48c/48d/48e block nested in the
 // `if (!local_8)` block below it 392 (1369 bytes); the has-host arms as `arg_3 = arg_4 = true;` 355 (one point, under the
 // gate); the window size as `(flags & 8) ? 128 : 0` 397 (1369 bytes); the tick interval read before the elapsed count

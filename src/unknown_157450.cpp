@@ -5835,6 +5835,11 @@ void __stdcall function_d6bc0(long object_index);
 // EAX for the `= 1` store, where retail reloads it into EDI); that with the countdown's three index reads on the
 // loop-top local 207 (878 B); case 1 as `if (bit) break; goto countdown;` 21; the reset counter's arms swapped
 // (`if (reset) = 0; else ++`) 14, with the field test 172. On the kept body the field-test guard 167 (863 B).
+// M3 lane 8 r173 (fast with 0x15c150, matched each time; base 29): on the kept body, the function as a `__stdcall` member of
+// the existing c_engine_equipment (its first member is the entries array; the 0x15c150 call through it) 29 (byte-identical);
+// a timer pointer `&entries[i].value04` from the loop top for the zero test, the delay store, the countdown and the `= 1`
+// reset 173 (858 B); one scoped to the zero test and delay store 29 (same code); one for the countdown and its reset 29 (same
+// code); an entry pointer for the countdown block 205 (869 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -875,6 +875,7 @@ real normalize2d(point2f *v);
 // set, and the trajectory call still uses our callee's shorter convention (ours passes ten stack operands
 // and EDX and returns with ret 0x28, retail eleven and ret 0x2c), which is 0xfa1a0's own body in a
 // contributor's file.
+// MiniMax D (11-16): no new form and no lower score (135): retail still caches the trajectory result in DL across the force test (`mov dl, al`, `mov al, byte ptr [esp + 0x60]`, `test al, al`, `mov byte ptr [esp + 0x5c], dl`) where this build stores AL to its home at once, so the request, the facing stores and the returned flag stay off by that register turnover; retail's unit-request path returns the request's value straight in AL, so its result has two assignments and not three - returning `function_e6900(...)` directly from that branch drops the third assignment but scores 182 (919 bytes) because the exits are then split differently, and is restored.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -1139,6 +1140,10 @@ real normalize2d(point2f *v);
 // eligibility and first/fallback planar predicates: 257/282/168/172/169/185/175/163.
 // NOT kept: none recovers native DL/independent-return transport; vertical maximum
 // reaches 935 bytes but regresses. Original complete body and all providers restored.
+// P560: Sole common return with an uninitialized outcome, false/valid invalid assignment,
+// declared at entry/after speed/before force/before valid admission: eight 208 at 907/935.
+// NOT kept: common result takes BL, invalid zero still folds and length moves away; original
+// independent trajectory/request/invalid returns, all call tuples and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

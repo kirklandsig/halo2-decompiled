@@ -1441,6 +1441,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // declared before `delta` 234 (same code: the delta/limited homes 0x14/0xc stay, retail 0xc/0x14).
 // P540: Complete scalar-SSE planar rotation, planar/general deltas and additive setter inputs, 701/698/681/747/750/749/792/893.
 // NOT kept: changed prologue and larger frame/extent; original complete source restored.
+// P559: Actual planar/general raw-bounded pair records, both field orders independently and all four pairs:
+// 506/506/487/487/503/503/503/503. NOT kept: unmatched grouped workspaces; frame 0x30 agrees but native
+// damping and raw/bounded/output-tail residence remains unresolved; original independent workspaces and
+// complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

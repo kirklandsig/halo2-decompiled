@@ -560,6 +560,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // indices/clusters/portals homes become retail's +0x1f0/+0x3f0/+0x2f0, the count moves to +0x14 and the gains to
 // +0xf0); that with each choice filled through `&choices[choice_count++]` 972 (3287 B); the same pointer with the short
 // counts 967 (3275 B); the target count declared above the targets array 846 (same code).
+// P557: Bounded accepted-choice cap <2/<=1 with short/long query and choice domains:
+// 846/919/964/965/846/919/964/965. NOT kept: no equality or native entry/count/query-home repair;
+// original counters, equality cap, helpers and complete body restored.
+// P559: Declared sound/choice level vectors, paired storage and existing whole-copy/scale/default producers:
+// 846/846/846/938/916/850/925/868. NOT kept: unmatched record/producer shape; native entry zero/query/count
+// homes unresolved; original records, helpers and complete body restored.
+// P561: Original negative duplicate-search flag in char/signed-char/byte/short/word/int/long/dword:
+// 846/846/846/915/915/846/846/846 at 3327/3327 bytes. NOT kept: no native entry zero/count/query
+// residence or exact bytes; original bool flag, helpers and complete executable body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
