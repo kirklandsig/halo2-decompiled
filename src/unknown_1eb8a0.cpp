@@ -183,6 +183,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax E (11-16): no new form, no lower score (622 plain, 614 fast): retail keeps q (the fourth stack
+// argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and the first clamp
+// still computes t before the 12/8 factor is selected; a named local copy of q at the function entry (732) and
+// one just before the output copy (665) both score worse and both leave d in EBX, so the body is unchanged.
 // score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
@@ -595,6 +599,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P538: Both actual direction-normalization return producers, real/const-real/double/const-double
 // and bool/byte/short/long missing-direction outcomes: 659/659/746/746/659/659/659/659.
 // NOT kept: no sample-register or coefficient-schedule repair; original calls, fallback stores and full body restored.
+// P556: Actual displacement/impulse/target-field/direction-object/target-object/output/
+// sampled-workspace/settling-workspace lvalues, fast control 614: 694/741/752/704/693/614/637/602.
+// NOT kept: local settling alias at 602 is nonexact and shortens away from retail; other forms tie or regress.
+// Original executable body, counter qualifier, helpers and 622 (was 622) heading retained.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

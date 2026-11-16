@@ -1395,6 +1395,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // P534: Early optional mode/class/type output-presence Boolean subsets, then complete
 // byte presence: 1025/1025/1025/1046/1046/1046/1068/1068. NOT kept: candidate/output/result homes and late
 // zero remain, and early presence grows the native frame/extent. Original complete body restored.
+// P549: Full identifier named/result transfers through standard copy and copy_backward
+// boundaries (each/both), then named/result fill: 989/976/992/989/976/992/922/928.
+// NOT kept: native extent returns but candidate/output homes and EBP zero remain;
+// original complete body, constructors and header set restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1455,6 +1459,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax S (11-15): no new form kept, no lower score (828): the request's urgent flag held in a named local that only
+// carries a constant drops the score to 801 (2791 bytes) and makes the first resource request match retail instruction
+// for instruction, but a local holding nothing but a constant is not a shape retail's source can have, so it is not
+// kept; the same flag taken from the found entry pointer (983), from the weapon class (1011) or from the result index
+// (3574, reading a value never set) are worse.  The second request's mode copied into a named local and the mode read
+// through its own address both give 828 (same code), the per-pass candidate declared at function scope gives 926 (2825
+// bytes), and the permuter's best (774) swaps the lookup's key and size arguments, so it is not kept either.  The frame
+// still gives iterator_mode the dead found_mode slot (F+0x44) where retail puts the per-pass candidate and keeps
+// iterator_mode at F+0x00, so retail's result shorts sit at F+0xc and F+0xe while ours sit at F+0x08 and F+0x0a, and
+// retail's EBP zero carrier in the second request is still missing.
 // MiniMax D (11-15): no new form, no lower score (828): the first difference is still the NONE compare, where retail loads
 // the compared argument into edx and keeps the computed -1 in ecx while this build loads the argument into ecx and keeps
 // -1 in edx; that rides on the frame homes, where retail's result sits four bytes higher than ours and retail's third
@@ -1766,6 +1780,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // with `result` declared after it 988 at retail's 2825 bytes (the early exit then gets its own epilogue writing through
 // the return pointer, where retail jumps to the shared exit), with `result` declared inside the block 988; the NONE test
 // written `NONE == weapon_class` 828 (same code: the compare's registers do not follow the operand order).
+// P549: Full identifier named/result transfers through standard copy and copy_backward
+// boundaries (each/both), then named/result fill: 989/976/992/989/976/992/922/928.
+// NOT kept: native extent returns but candidate/output homes and EBP zero remain;
+// original complete body, constructors and header set restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

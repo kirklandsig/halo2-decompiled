@@ -379,6 +379,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // walkable bit in a byte local written only on the "index in range" path and reuses it in the special test, while this build keeps
 // that bit in the flags and gives the frame an extra dword; the node depth is read at one address here and through a lea there.
 // MiniMax I (11-15): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4, retail keeps the edge's walkable bit in a byte local while this build keeps it in the flags, and the node depth is read through a lea here and at one address there.
+// MiniMax R (11-16): no new form, no lower score (286): the frame is still 0xe8 against retail's 0xe4 (the extra dword is the
+// `previous` pointer, set to NULL here and left alone there; dropping that initializer gives retail's frame but the body grows
+// by two bytes and the score rises to 357), the node depth is still read at one address here and through a lea there, and the
+// prologue's saves and stores are in another order; the permuter (27 tries in 313 s, annealing) found no variant under 286.
 // score 286 (was 286; round 95 m3 lane 11 at the end): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
 // homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
@@ -818,6 +822,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `if` with a body at the traversal's end gives retail's pair order (207 with its own lines), one between the loops does
 // not (202), as round 71 found. 0x26f3f0 (unmatched) writes ECX and EDX and makes calls in both builds, so its LTCG
 // clobber summary is not the cause. Body unchanged.
+// MiniMax S (11-16): no new form, no lower score (286): retail carries state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links), where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and a pointer to the node and a named node pointer compile the same way. Changing the parameter order is a form the rules forbid, so retail's order is reported instead.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

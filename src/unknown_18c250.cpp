@@ -423,6 +423,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // offset, size) over the data head 8; the set as the existing two-field tag-data aggregate with the plain sum 8; the
 // samples fetched through an inline out-parameter getter into an address-taken local 8 (only memcpy keeps the scale first);
 // the offset through an inline entry getter, plain samples 8, memcpy'd samples 2 (the getter's result propagates).
+// Round 91 (m3 lane 15, fast): the memcpy replaced by a conversion of the samples address: `(byte const *)(dword)
+// data->samples + offset` 8, a dword local initialised from that cast 8, `(byte const *)(data->samples + offset)` 8,
+// `(byte const *)((dword)data->samples + offset)` 8, through `(void const *)` 8 (all the plain sum's schedule).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

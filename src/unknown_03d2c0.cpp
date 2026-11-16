@@ -130,6 +130,17 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
+// MiniMax D (11-16): no lower score (77): the arrangement that reproduces retail's layout (the merge block's flag set
+// before the reload, the record block placed right after the found path) gives a byte-identical record block, but
+// MSVC then drops the merge test there as provably redundant, because the walk block has already returned when the
+// result is NONE (86); the arrangements that keep the test relayout the function instead (138), and moving the flag's
+// set or the record pointer's index stays at 77 or 79.
+// MiniMax D (11-16): no lower score (77): retail's walk exit jumps to a trailing epilogue at 0x3dfca and falls through to
+// the merge test at 0x3deee, which sets the flag (mov cl,1) between the test and the reload, while this build ends the
+// walk with its own epilogue and reloads the result into eax at the merge. Tried this round: the flag set before the
+// allocation's NONE test instead of after the walk block (115, 495 bytes), and the record pointer's index taken from the
+// merge's reload. The plain form that sets the flag on each path without copying the statement into both arms is still
+// missing.
 // score 77 (was 77): from +0x54: the found path enters the merge test (retail jumps past it to the reload), the merge
 // block tests EAX (retail ESI), and the walk's NONE return folds to a constant inline (retail: trailing `mov eax, esi`
 // epilogue); 510 bytes against 518. Notes below, merged into one; m3 lane 11 r104's findings at the end.
@@ -356,6 +367,8 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // == NONE) return cache_index; initialize = true;` 83 (508 B), `if (result == NONE) return result;` closing the else arm
 // with the record block unconditional 87 (504 B); on main the three record lookups through a three-use inline getter 77
 // (same code). Original body restored.
+// MiniMax C (11-16): no new form tried this round, no lower score (77): the body is still 510 bytes against retail's 518 and the blocks'
+// MiniMax C (11-16): order still differs in the ways the notes above record.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -2079,19 +2079,6 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// MiniMax H (11-12): no new form, no lower score (168): the first difference is still the inlined 0x26be00
-// lookup's address operand (ours [eax+ecx+0x58], retail [ecx+eax+0x58]), a base/index order the compiler
-// picks when the helper is expanded, and that helper's body is in src/unknown_26bda0.cpp, which is not mine;
-// the permuter refuses this function because the reduced image and the full image disagree.
-// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
-// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
-// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
-// MiniMax I (11-15): no new form, no lower score (168): retail's second player search keeps a dword result at +0x1c and a
-// 32-bit counter with a stepped pointer, and the result is read back as a word, so typing that result long with a long counter
-// measures 365 (2893 bytes against 2880) and is not kept; the first search has retail's shape already (a 16-bit result in SI, a
-// 32-bit counter) and differs only in the register that holds the table base (EDI here, EDX in retail); in the positive arm
-// retail zeroes +0x31e and jumps back to the one store of the +0x320 count, while this build stores both in the else branch and
-// falls through to the +0x31c store.
 // score 168 (was 168; m3 lane 8 r166 at the end): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
@@ -2575,6 +2562,25 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the first search's index widened into a long local for the NONE test and the address 372 (that block becomes
 // retail's `movsx eax, si; cmp eax, -1`, but the players loop's registers rotate). Re-measured: 0x1c8150 for the slot
 // search alone, and for both searches, 769 each (2680 B, a call); 1 to 7 unused locals 168 each.
+// MiniMax H (11-12): no new form, no lower score (168): the first difference is still the inlined 0x26be00
+// lookup's address operand (ours [eax+ecx+0x58], retail [ecx+eax+0x58]), a base/index order the compiler
+// picks when the helper is expanded, and that helper's body is in src/unknown_26bda0.cpp, which is not mine;
+// the permuter refuses this function because the reduced image and the full image disagree.
+// MiniMax B (11-11): no new form, no lower score (168); the first difference is still the table load at +0x5c, ours
+// [eax+ecx+0x58] against retail [ecx+eax+0x58], a base/index order the compiler picks; the frame is still 0x7c against
+// retail's 0x80 and the normalized direction is still folded instead of being held in XMM1..XMM3 across the dots.
+// MiniMax I (11-15): no new form, no lower score (168): retail's second player search keeps a dword result at +0x1c and a
+// 32-bit counter with a stepped pointer, and the result is read back as a word, so typing that result long with a long counter
+// measures 365 (2893 bytes against 2880) and is not kept; the first search has retail's shape already (a 16-bit result in SI, a
+// 32-bit counter) and differs only in the register that holds the table base (EDI here, EDX in retail); in the positive arm
+// retail zeroes +0x31e and jumps back to the one store of the +0x320 count, while this build stores both in the else branch and
+// falls through to the +0x31c store.
+// M3 lane 14 r100 (fast with 0x25d810, 0x26be00, 0x25d740, all MATCH; base 168): the iterator start written as the file's
+// sibling idiom `iterator.next = actor_get(actor_index)->first_prop_index;` 168 (same code: the reloaded table's
+// `[eax + ecx + 0x58]` stays; retail's own 0x26be00 body has that order too, `[eax + edx + 0x58]`); the same as an array
+// index on the table (diagnostic) 168 (same code); the start through the `actor` local 559 (retail reloads the table); the
+// relative and facing dots through dot3f (`dot3f(&relative, &direction)`, `dot3f(&direction, &forward)`) 168 (same code:
+// the direction stays in memory); `direction` declared at the players-loop top 168 (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

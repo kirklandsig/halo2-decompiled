@@ -1024,6 +1024,12 @@ struct s_device_machine_view
 // `word const *` to the group's flags 116 (655 B); the group pointer formed at the top of the case (ahead of the position
 // test) with direct masks 167 (661 B), with the lane S word and mask 170 (663 B); the machine flags read at the top of the
 // case on the lane S form 135 (657 B). Body unchanged.
+// M3 lane 3 r249 (fast; base 2, the zero store in place, only the word load differs): the machine flags through a
+// machine pointer re-derived from the index by DEVICE_GET 2 (same code); that pointer with the group pointer and direct
+// field masks 122 (the pushed ESI); a machine pointer local (the device cast) with the group word read after the machine
+// test 122; the machine pointer as `type == 7 ? device : NULL`, tested in place of the type test, 141 (666 B); the lane S
+// bits as an unmasked byte copy of the word, `(byte)group_flags`, 115 (654 B: retail's word load into AX and no mask,
+// registers all retail's, but the load stays folded ahead of the machine test, one instruction short). Body unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1242,6 +1248,9 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
+// but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
+// duration and the two ramp times, retail xmm5/xmm7/xmm1); the permuter found no spelling that moves them.
 // MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
 // returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
 // score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
@@ -2339,6 +2348,8 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// MiniMax I (11-16): no new form, no lower score (250): the first difference is the incoming register (retail takes the index in
+// ESI and the object header in EBP, this build in EDI and EBP) and the order in which the globals are loaded.
 // MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
 // passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
 // main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused

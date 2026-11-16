@@ -291,6 +291,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // inside the test 131 (the sky lookup's registers swap), with the scenario's sky block read through the shared tag-array type
 // in the sky helper 131 (a real build; earlier rounds only screened it compile-only), with the sky index passed straight from
 // the global 121 (same code), with the light entry typed as reals (`entry[4]`, `entry + 1`) 121 (same code).
+// Round 124 (m3 lane 16, fast): colour first with `cos(pitch) * cos(yaw)` 121, `cos(pitch) * sin(yaw)` 183 (833 bytes), both
+// 183, the blend as `strength / (power * (i + 2))` 127, `(2.0f + (real)i)` 121. 0x131c20 declared (result, a, b, flags, t) or
+// (result, a, b, t, flags) at its definition, every declaration and all six calls: 28 here (the ECX/EDI pair is retail's;
+// 0x131c20, 0x131d60, 0xc0c80 stay matched) but 0xbe8e0 89 -> 171 (its loop head shifts), not kept; with colour first 119, only
+// the post-call add left. On that: the collision sentinel stored after `result = 2` 121, at the top of the sky branch 156, before
+// the collision call 177. Diagnostics: a store through `record` at entry or at the top of the sky branch gives the in-place add;
+// a second store into the collision buffer and dead reads of `point` or `record` do not.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1380,6 +1387,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
+// MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// (0x117c80 and 0x13b390 four times), but the frame is still 0x2c against retail's 0x28, the selection
+// result still spills where retail keeps it in a register, and the selection root's three components are
+// still stored in the other order (retail stores the x and the y before the z).
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax I (11-15): no new form, no lower score (529): retail hands this function its block in eax and its query in edx
 // while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where
@@ -1798,6 +1810,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.
 // MiniMax I (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the 0xd37f0 call
 // still hands its block and query over in the other order; the callee's own file is not this lane's.
 // MiniMax C (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 (three stack slots
@@ -1828,6 +1841,8 @@ real function_30bf0(vector3f *vector);
 // root, and the three components are stored in the other order (retail stores the x and the y before the z).
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax H (11-13): no new form, no lower score (378); the frame is 0x4c against retail's 0x40 and the normal copy and the limited, rotation and colour homes are elsewhere.
+// MiniMax C (11-16): score 378 (was 378): no new form, no lower score; the frame is still 0x4c against retail's
+// 0x40 and the normal copy and the limited, rotation and colour homes are still in other slots.
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
@@ -2320,6 +2335,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax E (11-15): no new form, no lower score (542): the call boundaries agree with retail's except that 0x30bf0 is expanded here where retail calls it out of line, and its definition is in another file. What is left in this file is the status, mesh, colour and sample homes.
 // MiniMax I (11-15): no new form, no lower score (542): the frame is retail's 0x90, but the status, mesh, colour and sample
 // homes sit 0xc bytes lower than retail's, and the second arm's 0x13da30 lookup expands here where retail calls it; that
 // helper lives in another file.
@@ -2340,6 +2356,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // the body; the calls and their arguments are in retail's order.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-13): no new form, no lower score (542); the locals sit in other stack slots and the indexed compare uses the other operand order.
+// MiniMax C (11-16): score 542 (was 542): no new form, no lower score; the frame is 0x90 as in retail and the
+// logic agrees (offsets, constants, condition directions, call arguments, result values and the final colour
+// stores all match), but the status, mesh, colour and sample homes still sit in other stack slots and the
+// selective helper expansion still differs.
 // score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the

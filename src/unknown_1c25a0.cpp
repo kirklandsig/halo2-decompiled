@@ -883,6 +883,13 @@ void function_1c54b0(char const *variants, long object_index)
 // bool predicate on the entity 4/18 (same code); no flag, `else island_index++;` 91 (231 B); `island_index = removed ?
 // island_index : island_index + 1;` 91 (231 B, the flag disappears); `count += (tests) ? 1 : 0;` 78 (253 B); the final
 // test as `count == i` 48 (253 B); re-measured the entity count read at each use 18/4. Original body restored.
+// Round 91 (m3 lane 15, fast): a permuter run with a new seed (30+ tries before a 10-minute stop) none below 4; the flag
+// assigned `count == entity_count` before/after the call 4/18 (folded to the constant); `entity_count == count` 5; the
+// island index declared in the for statement 4. Diagnostics (probe global, reverted): one store of 1, -1, 0x2001 or 4
+// anywhere flips the reload pair to retail's (0, 2, 5, 256 and 1000 do not); with the flag after the call a store of 0
+// gives retail's EBX/EBP and a store of 1 the pair, and both together give retail's whole body, so retail is the
+// flag-after form plus some code that perturbs both ties. On the flag-after form `count += 1`, `i += 1` and an explicit
+// `!= 0` on the flag test 18 (same code); `(void)&` on the count, the flag or both 4/18 (flag before/after).
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

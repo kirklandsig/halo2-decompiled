@@ -455,6 +455,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // early returns and a successor local 49, in a guarded do-while with result and break 43; the nested ifs in `while
 // (!result && index != NONE)` with a successor local stepped at the end 37 (player on the stack, ret 8, `mov al, 1; test
 // al, al` not threaded; callers 27/15). Original body restored.
+// MiniMax R (11-16): no new form, no lower score (43): retail keeps the index in esi scaled in place with the
+// successor in ebx and the entry's flags in ecx, while this build keeps the index and the successor in ecx and reads
+// the flags into eax.
 // P529: Existing offline-identity predicate returns its original comparison as
 // char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
 // NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit
@@ -1158,6 +1161,10 @@ void function_1537f0(s_profile_record *record);
 // order 49 (hoist). Diagnostics: the flags and the word after them through a dword pointer (`tail[0]`, `tail[1]`) on this body
 // 14 (retail's store schedule, only the +0x5c base left); that pointer with the links through `entry` 49 (NONE hoists again:
 // only NONE stores through a pointer end the hoist).
+// M3 lane 16 r124 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the link chain through an unnamed
+// `(&entry->unknown58)[n]` expression 49 (NONE hoists into EBP: only a named pointer ends it); the link pointer declared
+// before the record 18 (same code); the flags and the word after them stored before the links 27; the links as two chained
+// pairs through the pointer, (2,3) then (0,1) 18, (0,2) then (1,3) 18.
 // @retail 0x7f930
 void function_7f930(void)
 {
