@@ -2195,9 +2195,13 @@ real function_17c900(short function_type, real input);
 // local at the entry, and the drift and wander arms store the point into the output and return, which gives retail's
 // three output stores; the caller's inlined copy of this body rises from 947 to 982, and the index/output contract and
 // the rotation's register homes remain.
+// MiniMax C (11-16), NOT kept: 328 (was 348) with the salt local dropped for two (projectile_index >> 16) re-reads
+// and the aim point written straight through aim_point with an early return in both arms; 0xf8eb0 went 947 -> 982
+// with it. Without the re-reads (salt kept) 377 (fast). The re-read of a named local is kept only with a match.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
+	long salt = projectile_index >> 16;
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
 	point3f *center = (point3f *)((byte *)projectile + 0x30);
@@ -2250,10 +2254,9 @@ void function_f87f0(long projectile_index, point3f *aim_point)
 		real cosine = (real)cos(angle);
 		real along = dot * (1.0f - cosine);
 
-		real_point3d_set(aim_point, (to_target.i * along + axis.i * cosine - (axis.j * to_target.k - axis.k * to_target.j) * sine) * amount + arg_0e6828.x,
+		real_point3d_set(&arg_0e6828, (to_target.i * along + axis.i * cosine - (axis.j * to_target.k - axis.k * to_target.j) * sine) * amount + arg_0e6828.x,
 			(to_target.j * along + axis.j * cosine - (axis.k * to_target.i - to_target.k * axis.i) * sine) * amount + arg_0e6828.y,
 			(to_target.k * along + axis.k * cosine - (to_target.j * axis.i - axis.j * to_target.i) * sine) * amount + arg_0e6828.z);
-		return;
 	}
 	else if (!TEST_FIELD_BIT(definition->flag_bits.unknown7))
 	{
@@ -2273,16 +2276,15 @@ void function_f87f0(long projectile_index, point3f *aim_point)
 		else
 			amount = 0.0f;
 
-		real time_a = (real)((g_510c54->game_time + (projectile_index >> 16) * 3) & 0xffff) * g_510c54->rate;
-		real time_b = (real)((g_510c54->game_time + (projectile_index >> 16) * 7) & 0xffff) * g_510c54->rate;
+		real time_a = (real)((g_510c54->game_time + salt * 3) & 0xffff) * g_510c54->rate;
+		real time_b = (real)((g_510c54->game_time + salt * 7) & 0xffff) * g_510c54->rate;
 		real yaw = function_17c900(10, time_b * (1.0f / 3.0f)) * 6.2831855f;
 		real pitch = 3.1415927f - function_17c900(10, time_a * (1.0f / 3.0f)) * 1.5707964f;
 		real cosine_pitch = (real)cos(pitch);
 
-		real_point3d_set(aim_point, (real)cos(yaw) * cosine_pitch * amount + arg_0e6828.x,
+		real_point3d_set(&arg_0e6828, (real)cos(yaw) * cosine_pitch * amount + arg_0e6828.x,
 			(real)sin(yaw) * cosine_pitch * amount + arg_0e6828.y,
 			(real)sin(pitch) * amount + arg_0e6828.z);
-		return;
 	}
 	*aim_point = arg_0e6828;
 }
