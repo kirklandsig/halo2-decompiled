@@ -195,23 +195,12 @@ void pair_305f60::function_307720(table_305f60 *table, int first_axis, int secon
 	function_3076a0(table, &key, distance);
 }
 
-// a direction taken into a transform's frame
-__forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m128 const &direction)
-{
-	__m128 const x = _mm_shuffle_ps(direction, direction, 0x00);
-	__m128 const y = _mm_shuffle_ps(direction, direction, 0x55);
-	__m128 const z = _mm_shuffle_ps(direction, direction, 0xaa);
-	__m128 t0 = _mm_shuffle_ps(matrix->axes[0], matrix->axes[1], 0x44);
-	__m128 t1 = _mm_shuffle_ps(matrix->axes[2], matrix->axes[2], 0x44);
-	__m128 t2 = _mm_shuffle_ps(matrix->axes[0], matrix->axes[1], 0xee);
-	__m128 t3 = _mm_shuffle_ps(matrix->axes[2], matrix->axes[2], 0xee);
-	return _mm_add_ps(_mm_add_ps(
-		_mm_mul_ps(_mm_shuffle_ps(t0, t1, 0x88), x),
-		_mm_mul_ps(_mm_shuffle_ps(t0, t1, 0xdd), y)),
-		_mm_mul_ps(_mm_shuffle_ps(t2, t3, 0x88), z));
-}
-
-// score 254 (was 316): the newest normal is copied once and both rotations are
+// score 100 (was 254): rewritten from retail: the first transform's columns and
+// first shuffle, then the second's, the normal's three splats shared by both
+// rotations (second finished first), both absolute vectors before the axis
+// tests, the newest contact found by index, and the second key's id cleared
+// at its declaration. Count and the newest contact's registers still differ.
+// Before: score 254 (was 316): the newest normal is copied once and both rotations are
 // constant results (second before first, as retail finishes it); the corners
 // handed to 0x307720 are copied only inside the branch that needs them.
 // Before, 316 (was 316): retail computes the newest normal's three splats once,
@@ -237,17 +226,32 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 // zero store; neither occurs in retail. Original body and helper restored.
 // @retail 0x307840
 void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
-{
-	int const count = table->count;
+{	int const count = table->count;
 	if (count < 1)
 	{
 		return;
 	}
 	contacts_307840 const *contacts = *this->contacts;
-	contact_307840 const *newest = &contacts->data[contacts->size - count];
-	__m128 const normal = newest->normal;
-	__m128 const second = rotate_inverse_307840(second_transform, normal);
-	__m128 const first = _mm_xor_ps(rotate_inverse_307840(first_transform, normal), *(__m128 const *)g_4124a0);
+	long const first_index = contacts->size - count;
+	__m128 const a0 = first_transform->axes[0];
+	__m128 const a2 = first_transform->axes[2];
+	__m128 const first_t0 = _mm_shuffle_ps(a0, first_transform->axes[1], 0x44);
+	__m128 const b0 = second_transform->axes[0];
+	__m128 const second_t1 = _mm_shuffle_ps(second_transform->axes[2], second_transform->axes[2], 0x44);
+	__m128 const second_t0 = _mm_shuffle_ps(b0, second_transform->axes[1], 0x44);
+	__m128 const normal = contacts->data[first_index].normal;
+	__m128 const x = _mm_shuffle_ps(normal, normal, 0x00);
+	__m128 const y = _mm_shuffle_ps(normal, normal, 0x55);
+	__m128 const z = _mm_shuffle_ps(normal, normal, 0xaa);
+	__m128 second = _mm_add_ps(_mm_add_ps(
+		_mm_mul_ps(_mm_shuffle_ps(second_t0, second_t1, 0x88), x),
+		_mm_mul_ps(_mm_shuffle_ps(second_t0, second_t1, 0xdd), y)),
+		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(b0, second_transform->axes[1], 0xee), _mm_shuffle_ps(second_transform->axes[2], second_transform->axes[2], 0xee), 0x88), z));
+	__m128 const first_t1 = _mm_shuffle_ps(a2, a2, 0x44);
+	__m128 first = _mm_xor_ps(_mm_add_ps(_mm_add_ps(
+		_mm_mul_ps(_mm_shuffle_ps(first_t0, first_t1, 0x88), x),
+		_mm_mul_ps(_mm_shuffle_ps(first_t0, first_t1, 0xdd), y)),
+		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(a0, first_transform->axes[1], 0xee), _mm_shuffle_ps(a2, a2, 0xee), 0x88), z)), *(__m128 const *)g_4124a0);
 	__m128 first_size = _mm_and_ps(first, *(__m128 const *)g_455940);
 	__m128 second_size = _mm_and_ps(second, *(__m128 const *)g_455940);
 	int first_axis;
@@ -292,20 +296,20 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	key.field_2 = (unsigned short)(((_mm_movemask_ps(second) & 7) << 4) | ((*(unsigned long const *)&first_side >> 20) & 0x800));
 	float second_side = second_sides[second_axis];
 	key_305f60 second_key;
+	second_key.id = 0;
 	second_key.field_2 = (unsigned short)(((_mm_movemask_ps(first) & 7) << 4) | ((*(unsigned long const *)&second_side >> 20) & 0x800));
 	key.index = (unsigned short)first_axis;
 	second_key.index = (unsigned short)(second_axis + 3);
 	float distance = 1.0f;
 	for (int i = 0; i < table->count; i++)
 	{
-		float const contact_distance = newest[i].distance;
+		float const contact_distance = contacts->data[first_index + i].distance;
 		if (contact_distance < distance)
 		{
 			distance = contact_distance;
 		}
 	}
 	function_3061c0(table, key, (unsigned short)second_mask, distance);
-	second_key.id = 0;
 	function_3062e0(table, second_key, (unsigned short)first_mask, distance);
 	if (table->field_50 >= 4)
 	{
@@ -318,12 +322,11 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 		int const first_edge_1 = g_4135c0[first_axis + 2];
 		int const second_edge_0 = g_4135c0[second_axis + 1];
 		int const second_edge_1 = g_4135c0[second_axis + 2];
-		__m128 first_corner = first;
-		__m128 second_corner = _mm_xor_ps(second, *(__m128 const *)g_4124a0);
-		function_307720(table, first_edge_0, second_edge_0, first_edge_1, second_edge_1, &first_corner, &second_corner, distance);
-		function_307720(table, first_edge_0, second_edge_1, first_edge_1, second_edge_0, &first_corner, &second_corner, distance);
-		function_307720(table, first_edge_1, second_edge_0, first_edge_0, second_edge_1, &first_corner, &second_corner, distance);
-		function_307720(table, first_edge_1, second_edge_1, first_edge_0, second_edge_0, &first_corner, &second_corner, distance);
+		second = _mm_xor_ps(second, *(__m128 const *)g_4124a0);
+		function_307720(table, first_edge_0, second_edge_0, first_edge_1, second_edge_1, &first, &second, distance);
+		function_307720(table, first_edge_0, second_edge_1, first_edge_1, second_edge_0, &first, &second, distance);
+		function_307720(table, first_edge_1, second_edge_0, first_edge_0, second_edge_1, &first, &second, distance);
+		function_307720(table, first_edge_1, second_edge_1, first_edge_0, second_edge_0, &first, &second, distance);
 	}
 	((pair_305790 *)this)->function_305790((manifold_305790 *)table, first_mask, second_mask);
 }
