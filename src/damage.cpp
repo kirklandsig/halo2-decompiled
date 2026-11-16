@@ -2904,6 +2904,7 @@ struct s_unit_event
 // P579: Actual region/permutation/object receiver role names, seven subsets, then the
 // existing region-argument reference renamed as well: 513/513/513/513/513/513/513/513. NOT kept: no exact native
 // region/permutation register recovery; original complete body and all observations restored.
+// MiniMax D (11-16): no new form, no lower score (513).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

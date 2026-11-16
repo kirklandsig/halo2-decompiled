@@ -7572,6 +7572,12 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // this build keeps the rounded centre in a slot of its own where retail keeps it on the x87 stack, and the
 // dot product's three products are still summed in the other order; this build also inlines the second ten
 // stage states and the three render-state calls that retail calls out of line.
+// MiniMax D (11-16): score 558 (was 576): the four screen bounds are computed on the x87 stack with the float
+// 32.0 constant, as retail's bytes at 0x47001-0x47040 show. Still differs: the three direction components sit
+// four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14), retail's four
+// comparison temporaries are still missing (retail copies each bound through a temp into a slot that overlaps
+// the dead direction), the dot product's three products are still summed in the other order, and this build
+// still inlines the second ten stage states and the three render-state calls that retail calls out of line.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -7607,6 +7613,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // temporary each and overlaps the direction with them at [esp+0x14], our body is 71 bytes shorter than retail's 2507, and
 // its second group of ten stage states and its three render-state calls stay out of line where ours inlines them.
 // MiniMax D (11-15): no new form, no lower score (576): the four screen bounds are stored four bytes higher in our frame (+0x18 and +0x20 where retail has +0x14 and +0x1c) and our body is 71 bytes shorter than retail's.
+// MiniMax D (11-16), NOT kept: the four bounds as (real)(double)(screen[0] - 32.0f) etc. scored 558 (main 576),
+// but a float taken to double and straight back changes no value and only steers code generation; the source form
+// that computes them in double, a double constant ((real)(screen[0] - 32.0)), measures 586. Body back to main.
 // @retail 0x46ea0
 void function_46ea0(long tag, point3f const *position)
 {
@@ -8683,6 +8692,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // where this build keeps the counter at [esp+0x3c] and the facing at [esp+0x4c] without the push; and retail pads the
 // loop head with `push ebp; nop` where this build pads it with `push ebp; mov edi, edi`.
 // MiniMax D (11-15): no new form, no lower score (299): retail's first test jumps to a block placed after the function's end where ours jumps inside it, so the two streams are laid out differently from the entry.
+// MiniMax D (11-16): no new form, no lower score (299): the first test read as `<= 0` matches retail's `mov eax, [edi + 8]; test eax, eax; jle` byte for byte but scores 313 (the group's home and the fade's slots then sit four bytes off), and a 32-bit group counter costs four more frame bytes (514).
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -9480,6 +9490,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // ebp where ours uses esi and ebx, its text buffer keeps two word counters that are missing here, and our body is 25 bytes
 // shorter than retail's 1133 with the frame at 0x201c against retail's 0x2020.
 // MiniMax D (11-15): no new form, no lower score (328): the stack size is 0x201c against retail's 0x2020, the unit table pointer rides in edi where retail keeps it in eax, and the body is 25 bytes shorter than retail's.
+// MiniMax D (11-16): no new form, no lower score (328).
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
