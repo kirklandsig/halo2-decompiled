@@ -544,6 +544,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P558: Actual collision-query output workspace, six complete flag/flag/vector field orders then both
 // flag-pair orders with the vector independent: 730/730/730/730/730/730/713/713. NOT kept: unmatched
 // output grouping; original independent outputs, all helpers and entire body restored.
+// P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
+// shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
+// NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

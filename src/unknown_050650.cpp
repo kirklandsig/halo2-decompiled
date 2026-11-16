@@ -879,6 +879,11 @@ struct s_collision_result_buffer_1697c0
 // pointer/reference and reference/reference contracts, both formal orders:
 // 295/295/295/295/295/295/295/295. NOT kept: no native scratch/home equality; original private helper,
 // in-place calls and entire sampler restored.
+// P560: Existing private normalizer with explicit scalar magnitude output, vector/scalar
+// pointer/reference domains and both formal orders: eight 295 at 1448/1423 bytes. NOT kept:
+// four-point reduction is below eight and length grows away; root/axis homes recover but zero/scale
+// SIMD, trig transfer and rotation allocation still differ.
+// Original magnitude return, all three consumers and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

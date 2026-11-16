@@ -954,6 +954,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P558: Current half-axis graph with all three actual direction/trace/world workspace identities, eight
 // behavioral naming sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
 // equality; original complete executable body and shared rotation restored.
+// P560: Actual angle/sine/cosine lexical identities on the retained half-axis graph, eight
+// behavioral sets: 45/45/45/45/45/45/45/45. NOT kept: no native rotation SIMD or marker-schedule
+// equality; original complete executable body and shared rotation restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

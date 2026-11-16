@@ -1139,6 +1139,10 @@ real normalize2d(point2f *v);
 // eligibility and first/fallback planar predicates: 257/282/168/172/169/185/175/163.
 // NOT kept: none recovers native DL/independent-return transport; vertical maximum
 // reaches 935 bytes but regresses. Original complete body and all providers restored.
+// P560: Sole common return with an uninitialized outcome, false/valid invalid assignment,
+// declared at entry/after speed/before force/before valid admission: eight 208 at 907/935.
+// NOT kept: common result takes BL, invalid zero still folds and length moves away; original
+// independent trajectory/request/invalid returns, all call tuples and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

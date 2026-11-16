@@ -2185,6 +2185,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P547: Complete complementary grenade-retention admission in bool/char/signed char/byte/
 // short/word/long/dword: eight at 251/1216. NOT kept: native actor/options/pool retention
 // remains; original lazy tests, queries, random draws, stores and complete body restored.
+// P560: Existing equipment queries return found/missing status and publish the actual
+// weapon output only on success, pointer/reference outputs and both formal orders: eight
+// 293 at 1230/1216 bytes. NOT kept: actor/options/pool residence regresses; original private
+// queries, signed slots, lazy observations and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
