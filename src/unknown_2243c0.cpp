@@ -629,6 +629,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // local_11 149; the zeros together after local_11 alone 120 (re-measure); the flags local declared just before the
 // 0x173ba0 call (retail reads +0xd8 after the two cache tests) 149, and 0x224d90 lost (36). Diagnostic: dead-local
 // phase scan n = 0..3, 117 each.
+// M3 lane 15 r90 (fast with 0x2243c0 and 0x224d90, both matched each time; control 117): the function as a member of a renderer
+// type with the definition as `this` (0x224d90's call through a cast; LTCG still passes it in EAX) 117 as `__stdcall` and 117 as
+// thiscall (same code each); that member with the fallback masked `& 0xffff` 152; block_element_224db0 plain `inline` 117 (same
+// code); the fallback re-reading the tag field masked `& 0xffff` 152 (the field load CSEs with the tag, in-place `and`, table to
+// ECX ahead of the frame); the material definition named before its +8 read 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

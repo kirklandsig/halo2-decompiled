@@ -537,6 +537,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // worktree): the second view keeps its scaled copy in registers where retail spills i and k to [esp+4]/[esp] and
 // multiplies from memory, the opening loads' order, and the blend scale and root argument in each other's slot
 // ([esp+4]/[esp] for retail's [esp]/[esp+4]; renaming the blend scale changes nothing).
+// P537: Independent perspective-root/orthographic-root/normalizer double API-result
+// producers, seven subsets and immutable all: 207/206/238/207/239/238/239/239.
+// NOT kept: no exact result or frame recovery; original math APIs, helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

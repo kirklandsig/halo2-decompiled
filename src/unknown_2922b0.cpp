@@ -544,6 +544,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // P526: Original-site ray travel product mutable/const, shared local-range clearance floor mutable/const, four paired ownership graphs:
 // 563/563/651/651/656/656/656/656. NOT kept: no byte-equal native success/workspace recovery; original ray expressions and all in-place snapshots restored.
 // Original complete executable source restored.
+// P539: Four-use unclamped angular product mutable/const after/before root publication 574/574/574/574;
+// limit-initialized angular result after/before sqrt and root publication 573/573/574/574.
+// NOT kept: all regress and shorten farther from retail; original helper/body and in-place captures restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

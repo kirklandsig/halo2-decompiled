@@ -209,7 +209,8 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 
 struct s_material_245400
 {
-	long field_00;
+	short field_00;
+	short field_02;
 	byte field_04;
 	byte field_05;
 	short field_06;
@@ -217,9 +218,11 @@ struct s_material_245400
 
 struct s_surface_245400
 {
-	byte field_00[8];
+	word field_00;
+	word field_02;
+	byte field_04[4];
 	short field_08;
-	byte field_0a[2];
+	short field_0a;
 };
 
 struct s_vertex_245400
@@ -231,7 +234,9 @@ struct s_vertex_245400
 
 struct s_source_245400
 {
-	byte field_00[0x2c];
+	byte field_00[0xc];
+	plane3f *field_0c;
+	byte field_10[0x1c];
 	s_material_245400 *field_2c;
 	long field_30;
 	s_surface_245400 *field_34;
@@ -661,6 +666,17 @@ void function_245400(s_source_245400 const *source, long index,
 // seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
 // NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.
 // Frame 0x24/0x2c, independent side homes and delayed matrix acquisition remain.
+// B6G (11-06, walk of the whole body against retail 0x245540-0x24584c, scores from the fast build): behaviour difference found and fixed.
+// The edge is rotated by matrix_transform_vector, which sums every row forward + left + up; retail sums the j row (up + forward) + left
+// (0x2456ee movss up.j, 0x2456f3 mulss z, 0x2456fa mulss forward.j, 0x2456ff addss, 0x245703/0x245708/0x24570c left.j*y added last) and the i/k rows
+// forward + left + up (0x2456c5-0x2456e8, 0x245716-0x24574d), so ours rounded the j component differently. The j row is now written out
+// in retail's grouping (rows i and k written out beside it, since no shared helper has the j order): 214 (helper 209, same bytes, 783).
+// Expression-level spellings of the j row (`up*z + forward*x + left*y` in one statement, 209) are regrouped by the compiler; only a split
+// sum keeps the grouping. Everything else matches retail: the side tests (0x245661/0x24566a ja, 0x245680 jbe) and the +-0.0001 constants
+// (0x45ddfc, 0x45dbdc), cross(first, second) with k + j + i dot (0x245649-0x245661), scale != 1 test (0x24569e, 0x245751), point rotation
+// order (forward*x + up*z) + left*y + position, the call arguments (0x24580c-0x245841). Struct fields are now typed as retail reads them
+// (word material codes at 0x245558/0x245568, short surface indices at 0x24554d/0x24555d, plane table at source+0xc): the casts go, same bytes.
+// No new include, helper or double; callers 0x245aa0 and callees 0x245400, 0x244de0 stay MATCH.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -669,13 +685,13 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 	s_surface_245400 const *local_0 = &arg_1->field_34[arg_0];
 	long local_1 = local_0->field_08;
 	s_material_245400 const *materials = arg_1->field_2c;
-	short first_material = (short)materials[local_1].field_00;
-	short second_material = (short)materials[*(short *)local_0->field_0a].field_00;
+	short first_material = materials[local_1].field_00;
+	short second_material = materials[local_0->field_0a].field_00;
 	if (first_material != second_material)
 	{
-		plane3f const *local_7 = *(plane3f const *const *)((byte const *)arg_1 + 0xc);
-		point3f const *local_4 = &arg_1->field_3c[((word const *)local_0)[0]].field_00;
-		point3f const *local_5 = &arg_1->field_3c[((word const *)local_0)[1]].field_00;
+		plane3f const *local_7 = arg_1->field_0c;
+		point3f const *local_4 = &arg_1->field_3c[local_0->field_00].field_00;
+		point3f const *local_5 = &arg_1->field_3c[local_0->field_02].field_00;
 		vector3f local_6;
 		vector3d_from_points3d(local_4, local_5, &local_6);
 		long local_2 = first_material;
@@ -702,7 +718,14 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 		{
 			if (arg_2->scale != 1.f)
 				vector3f_scale(&local_6, arg_2->scale, &local_6);
-			matrix_transform_vector(arg_2, &local_6, &local_6);
+			/* retail sums the j row as (up + forward) + left, which matrix_transform_vector (forward + left) + up does not */
+			real edge_i = local_6.i;
+			real edge_j = local_6.j;
+			real edge_k = local_6.k;
+			local_6.i = arg_2->forward.i * edge_i + arg_2->left.i * edge_j + arg_2->up.i * edge_k;
+			local_6.j = arg_2->up.j * edge_k + arg_2->forward.j * edge_i;
+			local_6.j += arg_2->left.j * edge_j;
+			local_6.k = arg_2->forward.k * edge_i + arg_2->left.k * edge_j + arg_2->up.k * edge_k;
 			local_4 = function_245400_transform(arg_2, local_4, &local_14);
 		}
 		function_244de0(local_4, &local_6, arg_3, arg_4, arg_5, arg_6, local_1,

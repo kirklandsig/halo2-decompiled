@@ -79,7 +79,7 @@ struct s_animation_state
 	void update_blend_flags();
 	void channels_clear();
 	void secondary_channels_clear();
-	c_type_709360 *current_animation_get(c_type_709360 *result);
+	c_type_709360 current_animation_get();
 	real blend_fraction_get();
 	void animation_touch(c_type_709360 animation_id);
 	bool node_map_build(long render_model_tag_index, long *node_count, long *node_map);

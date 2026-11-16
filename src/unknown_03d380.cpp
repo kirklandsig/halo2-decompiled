@@ -586,6 +586,10 @@ void function_125a90(long value);
 // the element address with `imul eax` + `lea esi` before it loads the policy byte, keeps the type lookup's registers in
 // edx/eax/ecx and lays the special, remove, ordinary and keep blocks out of line; that block order needs 0x221810 to
 // stay out of line, which is another file's getter: BLOCKED-BY 0x221810.
+// MiniMax C (11-15): no new form, no lower score (36): retail masks the index into edi, copies it into eax and
+// multiplies that copy into the byte offset (imul eax, eax, 0xbc) before it forms the address with a lea, where
+// this build multiplies the index in place into esi and adds the pool; the byte-offset and the array-subscript
+// spellings compile to the same bytes here.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
