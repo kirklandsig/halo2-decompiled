@@ -679,14 +679,14 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// MiniMax I (11-16): score 38 (was 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
+// MiniMax I (11-16), on its not-kept 38 form (below; main stays 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
 // body lives in the cluster loop's found branch and the loop leaves it with a break, so the function has no goto
 // that the body on main does not have; the frame and the slots are retail's (0xb4, the result byte at [esp+0x13],
 // the link iterator at [esp+0x40], the player index at [esp+0x14]) and the pool step helper latches its result;
 // left: the definition pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short
 // where retail passes it in a full register, the angle's pi/4 is added after the dot product where retail adds it
 // before, and the pool step's packed handle is built in edx where retail builds it in ecx.
-// MiniMax I (11-15): score 38 (was 165): the pool step helper latches its result, the cluster bit table's base is read once before
+// MiniMax I (11-15), on the not-kept 38 form: the pool step helper latches its result, the cluster bit table's base is read once before
 // the first query and the body lives in the cluster loop's found branch, the range's zero is the model-NONE arm and the angle's
 // atan2 takes its arguments as reals (so the compiler expands it as fpatan and the frame is retail's 0xb4); left: the definition
 // pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short and the angle's pi/4 is added after
@@ -708,7 +708,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // every later offset shifts with the frame order; the alignment follows the two callers' call chain, whose files
 // this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (165): the byte flag's stack slot is still esp+0x13 against retail's esp+0xf, and the branch after the pool lookup still goes elsewhere.
-// score 38 (was 165): earlier 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
+// score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
 // retail keeps it at [esp+0x40], so the first difference is at +0x1a and every later offset shifts with the
