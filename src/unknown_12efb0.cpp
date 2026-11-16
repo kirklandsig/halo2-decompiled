@@ -634,6 +634,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // EBX, retail EBX/EDI), the result/NONE pair (EDX/EAX in retail), the early `movsx ecx, cl`, the 0x88 pointer's `lea`
 // before the tag test's branch, the tag arm's clamp store and `mov eax, edx`, one fallback add's operand order, the
 // tag arm's four-channel schedule and the 0x6c store.
+// P537: Actual returned alternate identity has an early existence decision, positive then
+// complementary bool/byte/short/long: 620/620/698/697/620/620/698/697. NOT kept:
+// extra code, no provider/NONE or palette/SIMD recovery; original helpers and body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

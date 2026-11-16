@@ -488,6 +488,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // first in each product 228. Retail keeps the heading's i and j in XMM6/XMM4 through the whole rotation and re-materialises the
 // zero k (a memory 0.0, then `xorps xmm7`) after XMM3 is reused for 1.0; every scalar form here keeps the zero in a register and
 // re-reads the heading's j from its home instead, so it spills one value fewer.
+// P539: Unrounded trig return producers feeding original real heading/tilt consumers, seven subsets
+// and immutable full graph: 286/231/231/304/304/234/304/304. NOT kept: all regress; combined graphs lose caller
+// 0x28dab0. Original helpers, real consumers, draws, full request and ordinary pooled reads restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
