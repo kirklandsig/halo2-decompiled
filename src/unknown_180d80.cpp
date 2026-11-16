@@ -153,6 +153,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ecx where retail loads it before them into eax; the guard as one positive test scores 121, a local copy of the strip pointer 168, and
 // the permuter's 22 annealed tries over the reduced image found nothing below the 93 baseline.
 #pragma inline_depth(1)
+// MiniMax E (11-16): no new form kept, the score is still 93: the guard's first index travels on the stack where retail keeps it in eax, and the callee that takes it, 0x17cfa0, has its parameter order in another file (BLOCKED-BY 0x17cfa0); the luminance terms in red, blue, green order score 91 and were restored (a gain of 2 is below the review bar), the guard with the cluster test first scores 650 and the count field as unsigned scores 149, so the body stands.
 // Earlier at 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // MiniMax I (11-10): no new form, no lower score (93); the count sum and the vertex cursor still take the
 // opposite stack slots, the three field sums still load the lower field first where retail loads the higher

@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// score 31 (was 31): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// probe's call target for the 0x8024 frame, whose address belongs to this build and cannot match; behind it the frame
+// is still 0x8024 against retail's 0x8020, because the address-taken produced count keeps a slot of its own under
+// /GL, and the two low loop homes stay swapped. Body unchanged.
 // MiniMax D (11-15): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, and the
 // one lever that would settle it is out of this file's reach: tools/build.py prepends /GL to every source's flags,
 // so a file's "// @flags" line cannot turn it off, and a /GL- build of this file would cost 0x97f60, 0x97fe0 and

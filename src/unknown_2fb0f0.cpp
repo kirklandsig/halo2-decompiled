@@ -216,19 +216,27 @@ __forceinline float along_normal_2fb150(contact_2fb150 const *other, contact_2fb
 	return along;
 }
 
+// whether a contact lies deep or in front of a closer one's plane
+__forceinline bool apart_2fb150(contact_2fb150 const *other, contact_2fb150 const *closer, float tolerance)
+{
+	return other->point.value.m128_f32[3] < -0.1f ? true : along_normal_2fb150(other, closer) > tolerance;
+}
+
 // whether a contact only repeats a closer one's plane: it does not lie deep,
 // and lies no further in front of the closer one's plane than the tolerance
 __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, contact_2fb150 const *closer, float tolerance)
 {
-	bool const apart = other->point.value.m128_f32[3] < -0.1f ? true : along_normal_2fb150(other, closer) > tolerance;
-	return answer_2fb150(!apart);
+	return answer_2fb150(!apart_2fb150(other, closer, tolerance));
 }
 
 // a query against a container's triangles, each through its part's agent:
 // the triangles' contacts are gathered, sorted closest first, those that
 // only repeat a closer one's plane dropped, and the rest passed to the
 // collector with ids from the contact manager
-// score 330 (was 344): receiver register, body homes and plane branch still differ.
+// score 276 (was 330): the plane test is a nested helper, the contact count is
+// raised before the new index is taken, the other branch re-reads the entry's
+// agent, and the third loop names the kept and the added contact.
+// Before, 330 (was 344): receiver register, body homes and plane branch still differ.
 // Object/entry/body/output/selection references 344; const list view 344; settings pointer 452;
 // one-exit answer 470; swap pointers 344; void vector assignment 330; direct plane tests 368;
 // shared contact type 345, with void assignment 332; parent-first and swap assignment 330.
@@ -282,7 +290,8 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 			{
 				function_2d91d0(&contacts, sizeof(contact_2fb150));
 			}
-			long const index = contacts.size++;
+			contacts.size++;
+			long const index = contacts.size - 1;
 			contacts.data[index].agent = agent;
 			contacts.data[index].part = part.shape;
 			contacts.data[index].key = entry->key;
@@ -293,7 +302,7 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 		}
 		else
 		{
-			agent->slot_4(a, &part, input, collector);
+			((part_agent_2fb150 *)entry->agent)->slot_4(a, &part, input, collector);
 		}
 	}
 
@@ -340,16 +349,18 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 				function_2d91d0(hits, sizeof(hit_2fb150));
 			}
 			hit_2fb150 *hit = &hits->data[hits->size++];
-			hit->point = contacts.data[k].point;
-			hit->normal = contacts.data[k].normal;
+			contact_2fb150 const *kept = &contacts.data[k];
+			hit->point = kept->point;
+			hit->normal = kept->normal;
 			if (contacts.data[k].agent->id == 0xffff)
 			{
 				part.parent = b;
 				part.placement = b->placement;
 				shape_2fb150 const *shape = container->child->part(contacts.data[k].key, buffer);
-				part.key = contacts.data[k].key;
+				contact_2fb150 *added = &contacts.data[k];
+				part.key = added->key;
 				part.shape = shape;
-				contacts.data[k].agent->id = agents->manager->add(a, &part, input, hit);
+				added->agent->id = agents->manager->add(a, &part, input, hit);
 			}
 			unsigned short const id = contacts.data[k].agent->id;
 			if (id != 0xffff)

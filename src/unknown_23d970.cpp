@@ -1012,6 +1012,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // for the second stay the best form. The else arm's forward through a named pointer measures 43, but it is a one-use
 // pointer and the gain is under the floor, so the body is unchanged. What is left is the first product's right.i/right.j
 // colours (ours xmm1/xmm2, retail xmm2/xmm1) and the second product's schedule.
+// P571: Terminal timer ready/pending classification, bool/byte/short/long: 45/45/45/45/45/45/45/45. NOT
+// kept: unmatched classification storage; right i/j registers, forward.k reuse and angle-store bases
+// remain. Original timer comparison, shared products and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

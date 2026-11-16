@@ -691,6 +691,10 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // the seventh argument reads best as a short - but the declarations that fix that split live in other files,
 // so the list stands as it is; the frame is 0x16c against retail's 0x48 because retail keeps 0x1765e0 out of
 // line and this build expands it.
+// MiniMax D (11-16): no new form, no lower score (165): the whole difference is still that this build expands
+// 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48); no form of this file's own body keeps the
+// call out of line, and the only known lever ("/Ob1" on src/unknown_175bd0.cpp) is in a file this lane may not
+// edit: BLOCKED-BY that file.
 // score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
 // expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
 // src/unknown_175bd0.cpp: BLOCKED-BY that file.

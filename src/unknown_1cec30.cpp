@@ -951,6 +951,10 @@ void function_1d1540(s_havok_component *component);
 // on the stack, and the parameter list may not be changed here; the frame is still 0x84 against retail's
 // 0x88, the entry copy is still rep movsd where retail uses four movaps, and that convention is decided
 // across the call cycle whose bodies are in other files.
+// MiniMax D (11-16): no new form, no lower score (65): retail's own argument order is (transform in EAX, index in
+// ECX, component in EBX) and this build takes the transform in EAX and pushes the index and the component, so the
+// frame is 0x84 against retail's 0x88 and the entry copy is a rep movsd where retail uses four movaps; the copy
+// through hkTransform::set is 90 at 231 bytes, so both differences have to be fixed together.
 // score 65 (was 65): MiniMax R (11-15): no new form, no lower score; retail takes the transform in EAX, the index
 // in ECX and the component in EBX (frame 0x5c) where this build pushes the index and the component (frame 0x50), and
 // LTCG picks that split across the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other
@@ -1178,6 +1182,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // component), the matrix in EAX and the index in ECX, while this build takes the index and the component on
 // the stack; the frame is still 0x50 against retail's 0x5c and every store offset follows from that, and
 // the convention is the one 0x1d0cf0's own list sets across the call cycle in other files.
+// MiniMax D (11-16): no new form, no lower score (38): the body is retail's twelve movss stores and one movaps;
+// what differs is the frame (0x50 against retail's 0x5c) and the component, which this build pushes where retail
+// hands it over in EBX - the same convention 0x1d0cf0 does not take here.
 // score 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
 // instruction, and the frame (0x50 against retail's 0x5c) and the component's travel (on the stack where retail keeps
 // it in EBX) follow 0x1d0cf0's convention, which is set across the call cycle in other files: BLOCKED-BY 0x1d0cf0.
@@ -2610,6 +2617,8 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // object transfers, then corresponding uninitialized transfers: 438/376/232/136/449/376/242/136.
 // NOT kept: no native early velocity j/k or property-zero recovery;
 // original full body, normalizer, property helpers and headers restored.
+// P563: Shared then private magnitude reductions; real/default, real/explicit, double/default, double/explicit at each boundary:
+// 142/169/142/169/400/442/400/442. NOT kept: native early velocity j/k loads and property-zero residence remain; original helper, header and full body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

@@ -1362,6 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax S (11-16): no new form, no lower score (83): the two count homes move only when item_count is initialised at its declaration, which then costs the extra prologue store and the spilled mode (121 for a zero initialiser, 145 for another one, 137 with the branch's own assignment dropped); a scan that derives the count from a cursor after the loop gives 164 and 178, and the tail fill as an indexed loop (172), a counted byte fill (164) or a separate cursor (83) does not buy retail's guarded rep stosd without moving the count into EBX.
 // MiniMax R (11-14, run 65): no new form, no lower score (83, was 83): this round measured the declaration order
 // of the two counts and it does not move their homes - item_count declared before index_count, item_count declared
 // first, and the two swapped in place all give 83 with the same bytes, so the homes follow MSVC's allocation and

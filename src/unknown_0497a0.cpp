@@ -413,6 +413,9 @@
 // +0x18 and s1 at +0x1c, so retail's values are not forward-substituted into their uses: lead); both wave values declared
 // at function scope, assigned in the block, 536 (same code); s0's halving as `s0 *= 0.5f` 536 (same code); the first
 // cross vector at function scope 536 (same code).
+// P565: Actual paired special-cross input/output pointer tables, long/dword/short/word for,
+// long/short while, then long/short staged for: 667/667/757/757/667/757/649/758.
+// NOT kept: no native wave residence or exact frame/extent recovery; original full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
