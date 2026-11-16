@@ -262,6 +262,10 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // the mode-2 up-offset point through it 20 (same code); the mode-1 positive and the three mode-2 points through it 20 (same
 // code); the quarter as a `static real const` 20 (same code). Diagnostic (removed): a constant store to a probe global at
 // the top 318 (1186 bytes; the mode-1 x row still loads the centre first), so the row does not follow store numbering.
+// M3 lane 12 r131 (fast with 0x1e55d0; control 20): a target-point pointer local (`point3f const *target = arg_4;`) at every arg_4
+// use 20 (same code), in the side vector only 26 (1175 bytes: the mode-2 z row folds, the mode-1 x row still loads first), in the
+// mode-2 block only 20, in the first probe's direction only 20, in the category and tail distances only 20. A 600 s permuter run
+// (anneal, seed 131, context 0x1e55d0): 25 tries, none below its baseline.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

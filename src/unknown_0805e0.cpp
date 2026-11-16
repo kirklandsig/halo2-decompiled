@@ -1165,6 +1165,11 @@ void function_1537f0(s_profile_record *record);
 // `(&entry->unknown58)[n]` expression 49 (NONE hoists into EBP: only a named pointer ends it); the link pointer declared
 // before the record 18 (same code); the flags and the word after them stored before the links 27; the links as two chained
 // pairs through the pointer, (2,3) then (0,1) 18, (0,2) then (1,3) 18.
+// M3 lane 12 r131 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the entry as a reference with the links pointer
+// 18 (same code); a view pointer for the 0x7f8b0 call with the links taken as `(short *)(view + 1)` 18 (same code); the links as
+// one chain through an entry reference 49 (NONE hoisted into EBP); `short *const links` 18. Diagnostic: the links set by a plain
+// counted loop through the pointer 38 (250 bytes): the loop becomes two dword -1 fills, and the base is then retail's +0x4c with
+// NONE not hoisted (EBP/EBX hold the record's two forwarded words as retail), so base and hoist follow the four word stores.
 // @retail 0x7f930
 void function_7f930(void)
 {
