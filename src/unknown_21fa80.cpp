@@ -403,6 +403,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // shape), and inlines exp/log10/sqrt as x87 code: the file's /Op stays the blocker.
 // P535: Immutable original selected-gain bits/mode/direct producers, seven subsets then all with immutable changed outcome; native driver/stream/gain roles and 0x224 frame remain unrecovered.
 // 544/544/544/544/544/544/544/544. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P551: Complete cached-gain retention and logarithmic-amplitude admission outcomes
+// in bool/byte/short/long: 549/549/549/549/536/536/536/536 (reduced control 536, full 544).
+// NOT kept: no native frame/stream/gain/flag-home repair; original full body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

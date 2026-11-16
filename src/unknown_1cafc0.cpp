@@ -782,6 +782,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
 // then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
 // destructive graph/base or lazy-reload repair; original complete body and declarations restored.
+// P545: Standard typed name forward/backward copies, primary/alternate hidden-result
+// forward/backward copies and name representation forward/backward copies:
+// 586/587/611/612/591/592/586/587. NOT kept: native graph/base reloads and byte
+// return remain; query copies disturb the agreeing prefix. Original complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

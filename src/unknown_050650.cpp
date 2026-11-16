@@ -855,6 +855,23 @@ struct s_collision_result_buffer_1697c0
 // rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
 // sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
 // vector declared before best_fraction 300.
+// P548: Complete rotation-axis native/immutable vector, scalar/immutable scalar,
+// aggregate/immutable aggregate, existing setter and library captures:
+// 406/406/335/335/335/335/346/406. NOT kept: all regress and every form raises
+// the other rotation user (23 -> 210/233/234); three also lose the exact caller.
+// Original shared helper and entire sampler restored; native scratch/axis homes remain.
+// P550: Complete best-hit promotion in bool/byte/short/long 299/299/299/299; backward transfers
+// at pitch fallback/candidate/winner/both final outputs 350/348/352/359. NOT kept: no qualifying
+// native scratch/home repair; original full body, helper graph and headers restored.
+// Frame-bottom magnitude/random/sine scratch, axis/result homes and rotations remain.
+// P552: Standard forward and uninitialized component transfers at pitch fallback, sample acquisition,
+// best-hit retention and both final publications.
+// Fast scores 349/350/352/348/349/350/352/348. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Existing rotation scalar receivers, reference/pointer-axis, reference/reference-axis,
+// value/pointer-axis/vector-output, reference/value-axis, value/component-output,
+// vector/component-output, reference/reference-axis-components, value/reference-axis-components:
+// 305/305/339/335/339/293/295/304. NOT kept: scalar contracts lack native call evidence and every sibling score rises
+// (23 -> 142/142/243/232/243/33/34/231); original shared helper and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

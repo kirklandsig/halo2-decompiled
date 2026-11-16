@@ -1395,6 +1395,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // P534: Early optional mode/class/type output-presence Boolean subsets, then complete
 // byte presence: 1025/1025/1025/1046/1046/1046/1068/1068. NOT kept: candidate/output/result homes and late
 // zero remain, and early presence grows the native frame/extent. Original complete body restored.
+// P549: Full identifier named/result transfers through standard copy and copy_backward
+// boundaries (each/both), then named/result fill: 989/976/992/989/976/992/922/928.
+// NOT kept: native extent returns but candidate/output homes and EBP zero remain;
+// original complete body, constructors and header set restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1766,6 +1770,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // with `result` declared after it 988 at retail's 2825 bytes (the early exit then gets its own epilogue writing through
 // the return pointer, where retail jumps to the shared exit), with `result` declared inside the block 988; the NONE test
 // written `NONE == weapon_class` 828 (same code: the compare's registers do not follow the operand order).
+// P549: Full identifier named/result transfers through standard copy and copy_backward
+// boundaries (each/both), then named/result fill: 989/976/992/989/976/992/922/928.
+// NOT kept: native extent returns but candidate/output homes and EBP zero remain;
+// original complete body, constructors and header set restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
