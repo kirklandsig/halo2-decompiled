@@ -228,7 +228,10 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 261 (was 312): the cell lookup reads the list's count first and
+// score 160 (was 312): the moved box's grid test is kept in a flag set only
+// when cells are used (folded into one condition, 261), the moved box's old
+// index is named inside the cell walk (222 computed in the call), and
+// the cell lookup reads the list's count first and
 // returns its index from inside the loop, as both of retail's lookups do (a
 // pointer walk 312; the count and data both held 390; a guarded loop 372),
 // and the held count is read before the held list (263 the other way).
@@ -292,7 +295,12 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 		{
 			((cell_2e1090 *)((char *)cells + (box.owner & ~1)))->box = (unsigned short)index;
 		}
-		if (cells_used && (box.owner & 1) == 0)
+		bool in_cells = false;
+		if (cells_used)
+		{
+			in_cells = (box.owner & 1) == 0;
+		}
+		if (in_cells)
 		{
 			// the grid cells holding the moved box hold it under its new index
 			unsigned short const x_low_slot = box.slots[4];
@@ -305,8 +313,9 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 			int const last = (axes[0].data[box.slots[5]].value >> shift) - 1;
 			for (int m = first; m <= last; m++)
 			{
+				unsigned short const moved = (unsigned short)(count - 1);
 				cell_2e1090 &cell = cells[m];
-				long const position = find_box_2e29b0(&cell, (unsigned short)(count - 1));
+				long const position = find_box_2e29b0(&cell, moved);
 				cell.boxes.data[position] = (unsigned short)index;
 			}
 		}
