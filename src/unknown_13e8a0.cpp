@@ -502,6 +502,9 @@ struct s_text_line_measurement
 	long index;
 };
 
+// score 77 (was 77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// XMM0 and XMM3 colouring (retail moves the width into xmm4 early and copies xmm0 into xmm3, ours accumulates the
+// advance in xmm0 and moves the width late) and the one-use width local the rules drop. Body unchanged.
 // MiniMax S (11-16): no new form, no lower score (77): the remaining differences are still the XMM0/XMM3 colouring (this build gives XMM0 to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps inside the update arm while ours run ahead of the test; the summed-width spelling that reached 65 is not kept, a one-use local being kept only with a byte match.
 // MiniMax C (11-15): score 65 (was 77): the new running width is summed once after the can_break block and before the
 // test (`real next_width = advance + offset + kerning + width;`) and stored in the update arm ahead of the count's

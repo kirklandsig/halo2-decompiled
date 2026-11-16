@@ -966,6 +966,8 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 84 (--fast): j before i 10; a long index local 6; `T &flag` with dot reads 6; the pitch cosine first in both products 6; `real
 // forward[3]` 6; a 600 s permuter run (17 tries) none below 6. Matched retail sites have `imul; push; push; add` (0x17ae50, 0x1b0400, 0x1be840);
 // none has `imul; push; add; push`, which is what ours emits here.
+// score 6 (was 6): ours issues the element's table add ahead of `push esi` (retail saves ESI first), so the second
+// `push 1` and `lea esi` land after the pitch load and fcos.
 // Lane 11 round 70 (fast): flag and vector computed inside the call's arguments 41 (98 bytes); a flag local with the vector filled inline in the
 // arguments 6; parameters as (flag, effect), as 0x2a06a0 has them, caller updated 6 (0x2a1120 12); a scenario local before the element 6; a long index
 // parameter with a short cast 15 (93 bytes). Diagnostic: `inc eax` between movsx and imul still leaves one push before the add, so the add waits on the imul, then outranks `push esi`.
@@ -1006,6 +1008,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // pitch cosine with double products 6; forward filled by a forceinline const member of the flag view (`flag->get_forward(&forward)`)
 // 6; the element from a forceinline member getter of the flags view 6; both members together 6. Diagnostic (reverted): a
 // constant store (1, 0, -1 or 2) to a scratch global before the call keeps the ESI save after the add, so no numbering tie.
+// M3 lane 2 r90 (fast with 0x2a1120, which stays matched): the flag as `T *const &flag = &...[index]` (0x2a06a0's spelling) 6;
+// the position as a `point3f const &` passed by address 6; `real const &` references to the yaw and pitch fields 6; the
+// vector as an aggregate initializer of its three components 6; the vector declared before the flag 6.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

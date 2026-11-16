@@ -1055,6 +1055,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // dword`); that sum written into the sin/cos arguments 808 (3402 B). Lead: retail reloads the radius after 0x2108a0/0x210770 though
 // neither of them nor their callees 0x1427f0/0x210d10 touches XMM5 in either build, so retail's link-time compile treated one of
 // them as clobbering the XMM registers; no source form here reproduces that.
+// M3 lane 15 r92 (fast with 0x29a190 MATCH, control 569): each sweep scale declared just before its two products
+// (retail computes scale, products, scale, products) 729 (3317 B); the two trace distances named before the sweep arms
+// (retail holds them in XMM6/XMM7 from there) 569 (same code); the first offset point through one call with
+// `field_0 ? arg_6 : -arg_6` 886 (3286 B); the early exit as `return local_0;` 569 (same code; retail places that exit
+// after the main epilogue); the names local_12 and local_13 swapped 569 (same code: the +0xd0/+0xf4 homes do not follow
+// the names); diagnostic, the radius read once through its own address 569 (same code). Retail loads the radius inside
+// the first arm where ours hoists it into XMM5 at entry (+0x14).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

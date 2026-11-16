@@ -1036,6 +1036,9 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // the walk trials there (1 in each).
 // M3 lane 10 r110: measured in each of 0x1c4040's walk trials (fast): MATCH with the src/damage.cpp set (six matched lost) and
 // with the 0x1c2a10-first set (eight lost); 1 in the others.
+// Round 129 (m3 lane 9, fast): `if (function_1c4040(...)) continue;` ahead of the retry step 1; `attempt <= 1` 3; a const
+// component parameter 1; the retry test inverted with the force step first (`if (attempt >= 2) { if (!force) ... } else
+// attempt++;`) 8; the call's result in a named bool 1. The force flag stays DL (0x1c4040's default convention).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1314,6 +1317,10 @@ struct s_1c4040
 // 1); that with 0x1c35f0 declared before 0x278f00 here 17 (same); both on the full set 0 (same losses as the full set);
 // 0xb8540's draft enabled (stub removed) alone 25 and with the full set 34 (0xb8540 matches; 28 matched lost each, 0x278f00
 // 185). All restored.
+// Round 129 (m3 lane 9, fast with 0x1c51c0, which stays 1): a named selected index for the found block 8 (same code); the
+// effect pointer declared in the detach arm 88; an early `return false` when nothing was found 119; the mode arm's flag
+// store through the object local 8; the custom body (array store without its cast, fixed island through g_51e9a4) with
+// function_146bf0 declared before function_278f00 here, fast over 59 cycle members 17 (still DL, nothing else moves).
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {

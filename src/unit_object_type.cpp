@@ -3450,6 +3450,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 
 /* where the unit's camera sits and its camera data: its seat's marker on
    the parent (when the parent has it), else the unit itself */
+// MiniMax E (11-16): no new form, no lower score (91): the seat index's multiply is still scheduled before the parent lookup, the seats array still comes back in ecx where retail uses esi, and the camera data is still read at [ebp+0x24] where retail advances the base once.
 // MiniMax E (11-15): no new form, no lower score (91): the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once, and the seat index's multiply is still scheduled before the parent lookup.
 // score 91 (was 91): left are the seat index multiply scheduled before the parent lookup, the seats array in ecx
 // (retail esi), the unit spill read after the matrix copy and the camera copies at [ebp+0x24]/[ebp+0xf0] where
@@ -4870,6 +4871,7 @@ void function_c50a0(long unit_index)
    riders, in two passes (plain seats, then seat groups whose rider is in
    place), recursing into ridden units; tells 0x1bbdf0 when the driver
    changed */
+// MiniMax E (11-16): no new form, no lower score (166): retail keeps the pool global in edx and the vehicle in esi and reloads the global after the recursive call, this build keeps the global in esi and the vehicle in ebp; reading the old driver index before the definition lookup scores 168, the permuter tried three rewrites without lowering its 163, so the body stands.
 // MiniMax I (11-15): no new form, no lower score (166): retail keeps the pool global in edx and the vehicle in esi, with the
 // global loads shrink-wrapped above the pushes; this build keeps the global in esi and the vehicle in ebp, with the loads
 // after the pushes.
@@ -5369,6 +5371,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 /* clamps a direction to the unit's yaw and pitch limits for aiming (or,
    when asked, for looking, relative to its aim) in its own frame; whether
    it changed */
+// MiniMax E (11-16): no new form, no lower score (169): the first difference is still inside the shared cross-product helper, whose header this lane may not edit, so the products land in the other SSE registers; retail loads up.k and up.j before up.i where this build preloads all three, and the clamped angles still reuse the two incoming argument slots.
 // MiniMax D (11-14): no new form, no lower score (169): re-measured this round: the body is 768 bytes against retail's
 // 767 and the first difference is at +0x4a, inside the shared cross-product helper, whose own file this lane may not
 // edit; the register plan of the three direction sums and the order retail loads up.k and up.j in still differ, and no
@@ -7527,6 +7530,7 @@ public:
    counting a held weapon in a multiplayer engine mode 7 with option 0x20,
    for the dropped weapon of a player on a flagged team; retail expands both
    counts in place */
+// MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
 // score 492 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
 // spills, magazine flags, later register/slot choices and the expanded
@@ -7890,6 +7894,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
    and grenade choices, zoom (with the weapon's or the globals' zoom
    sounds), and passes each hand's trigger state to its weapon; whether
    anything changed */
+// MiniMax E (11-16): no new form, no lower score (244): the frame is still 0x24 against retail's 0x28 and the trigger flags are still built with 32-bit shifts where retail uses 16-bit ones; retail's 16-bit flag operations follow from 0x100430's second parameter being a word, and that declaration is not this lane's to change (the flag value cast to a word before the shift measures 249 at eight bytes shorter, and the ternary chain written as if/else with |= and &= gives the same 244); the 15-point form recorded below rests on a word/dword union for the flags, byte casts on the two animation results and the pool lookup written out by hand, which the rules do not keep, so the body stands.
 // MiniMax C (11-15): no new form, no lower score (244): the frame is still 0x24 against retail's 0x28 (retail keeps the
 // second loop's `first` in a stack slot, the flags word in memory and the hand index spilled), the unit is still held in
 // EDX where retail looks it up again after 0x110ab0, and the trigger flags are still built with 32-bit operations where
@@ -9401,6 +9406,7 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
+// MiniMax E (11-16): score 484 (was 493): the material index local is typed c_type_47f957 (impacts.h, the type this file's own damage code uses), so its copies are the word moves retail's are, and the weapon index comes through the existing function_cbd50, which retail inlines here in its NONE-first form; the body is now retail's 2229 bytes. Still differs: the frame is 0x180 against retail's 0x17c, and the prologue still loads the pool global first and keeps the unit in ebx with the tag table in esi, where retail loads the tag table into esi and the pool into edi before the pushes and holds -1 in ebp for the weapon slot's compare.
 // MiniMax D (11-15): 493 -> 429 (2221 bytes vs retail 2229): the material local typed c_type_47f957 (impacts.h, the
 // type the file's own damage code passes), so its copies are the word moves retail's are; the range read from the
 // weapon definition at each use, with no named local; TEST_FIELD_BIT at both seat-flag tests; and the aim of the
@@ -9491,9 +9497,8 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	s_unit_definition *definition = (s_unit_definition *)UNIT_DEFINITION_GET(unit);
-	short index = unit->current_weapon_index;
-	long weapon_index = index != NONE ? unit->weapon_object_indices[index] : NONE;
-	short material_index = g_47d8e0;
+	long weapon_index = function_cbd50(unit_index, unit->current_weapon_index);
+	c_type_47f957 material_index(g_47d8e0);
 	point3f point = unit->position;
 	vector3f normal = *g_4687b0;
 	long hit_index = NONE;
@@ -9552,7 +9557,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 				case 3:
 					if (hit_index == NONE)
 					{
-						material_index = collision.material_type;
+						material_index = c_type_47f957(collision.material_type);
 						if (collision.bsp_surface_flags[0] & 8)
 						{
 							surface_type = collision.bsp_surface_flags[1];
@@ -9576,7 +9581,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 					{
 						hit_index = object_index;
 						hit_type = (char)object->type;
-						material_index = collision.material_type;
+						material_index = c_type_47f957(collision.material_type);
 						hit_t = collision.t;
 					}
 					break;
@@ -9645,7 +9650,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 
 			if (*(long *)(graph + 0x60))
 			{
-				material_index = *(short *)(*(byte **)(graph + 0x64) + 0xce);
+				material_index = c_type_47f957(*(short *)(*(byte **)(graph + 0x64) + 0xce));
 			}
 		}
 	}
@@ -9660,7 +9665,7 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		hit.unknown04 = surface_type;
 		hit.unknown08 = surface_a;
 		hit.unknown0c = surface_b;
-		hit.material_index = material_index;
+		hit.material_index = material_index.m_index;
 		/* the header types this byte as a bool, but retail stores the seat group byte unchanged */
 		*(char *)&hit.unknown18 = hit_seat;
 		hit.unknown14 = 0.0f > scale ? 0.0f : (scale > 1.0f ? 1.0f : scale);
@@ -9683,9 +9688,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		}
 	}
 impact:
-	if (global_material_get(material_index))
+	if (global_material_get(material_index.m_index))
 	{
-		function_ceee0(unit_index, damage_index, material_index, &point, &normal);
+		function_ceee0(unit_index, damage_index, material_index.m_index, &point, &normal);
 		if (self_damage_index != NONE)
 		{
 			s_type_1e6529 damage;

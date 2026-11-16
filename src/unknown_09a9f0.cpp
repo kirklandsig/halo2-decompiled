@@ -226,6 +226,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// score 49 (was 49): MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
+// remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
+// table's data pointer and recomputes the scaled index between the flag test and the object read; the earlier legal
+// forms stop at 42, a seven-point gain under the bar, and the lower ones need a redundant store or a volatile read.
+// Body unchanged.
 // MiniMax I (11-15): no new form, no lower score (49): the result byte's register split remains (retail keeps the false
 // result in bl and sets it only after the compare); no untried form reached it this round.
 // MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the

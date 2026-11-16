@@ -474,13 +474,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// colours and the projection sum's order differ.
+// MiniMax R (11-16): no new form, no lower score (218): retail copies the pathfinding root into EBX and takes the actor value from a stack slot at the entry, where this build keeps the root in EAX and reads the actor in the case body, so the vertex loads and the cross product's float schedule follow that allocation.
 // MiniMax R (11-15): no new form, no lower score (218): the entry still hands the pathfinding root over in the register the compiler picks instead of saving it in ebx, and the actor index is still not read into eax before the dispatch; the paired-edge block still keeps the vector's j and k in the other two xmm registers (retail: xmm3 = j, xmm4 = k and the 1.0f in xmm6; here xmm3 = k, xmm4 = j and the constant in xmm7); ten new spellings of the root local, the actor local, the case-5 statement order and the projection operand order all scored 218 or worse.
 // MiniMax A (11-14): no new form, no lower score (218): the entry still differs - retail copies the pathfinding
 // argument into EBX and reads the actor index into EAX there, while this build keeps the pathfinding in EAX and
 // reads the actor index in the case that uses it; dropping case 1's second vertex local so that the first can
 // take EBX scores 355 and was reverted.
-// score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
-// colours and the projection sum's order differ.
 // MiniMax H (11-12): no new form, no lower score (218): the entry still differs - retail moves the pathfinding pointer into ebx and loads the actor index into eax before the switch, ours keeps the pathfinding pointer in eax and reads the actor index in the cases that use it; the frame and case 2 agree.
 // MiniMax A (11-12): no new form, no lower score (218); retail copies the pathfinding argument into ebx at the entry and reloads the vertices pointer from that copy before ebx takes the first vertex index, and taking the case-2 vertices and the trace from the pathfinding argument instead of from state->pathfinding scores 265 and 294, so the root cannot be kept alive by the case-2 use.
 // MiniMax C (11-11): no new form, no lower score (218); retail copies the pathfinding argument into EBX at the entry
@@ -964,6 +965,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // actor value in eax at the entry, where this build keeps the root in eax and reads the actor in the case body, so
 // the vertex loads and the cross product's float schedule follow from that allocation.
 // MiniMax S (11-16): no new form, no lower score (218): retail still pushes ebx and keeps the pathfinding root in ebx from the entry where this build reads the root's field first and keeps the root in eax with ebx as scratch, so the prologue order and the register that holds the root differ; a permuter run over the body found only a two-point variant that moves the second point_along_vector call after the assignments that follow it, a statement order the rules drop, so the body stands as it is.
+// Round 125 (m3 lane 16, fast with 0x270d90 286 throughout; control 218): the function as a member of the pathfinding data
+// (`this` for the first parameter; header declaration and the 0x270d90 call changed, then restored) 219 (the entry is
+// unchanged: `this` stays in EAX); the four corner pointers declared at function scope (a, b, c, d) 287 (1284 bytes); the
+// pathfinding parameter as a pointer to const (definition and path.cpp's declaration) 218 (same code), with the a, b, c, d
+// corners 287 (1284 bytes: actor_index loaded at entry, pathfinding again arriving in EDX); on that, the surface as a
+// reference 287. A scan of matched retail entries found the `mov ebx, eax` + stack-argument load into EAX only where the
+// argument is used in the entry block itself (0x270930, 0x105a80, 0x10f430, 0x20d220).
 // P565: Actual two-edge difference/normalization tables, long/dword/short/word/byte/char for,
 // then long/short while: 369/369/367/367/371/371/369/367. NOT kept: intermediate grouping and
 // changed lifetime do not match native ingress/frame; six forms raise caller 286 to 313.
