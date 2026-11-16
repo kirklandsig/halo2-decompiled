@@ -1030,6 +1030,13 @@ struct s_device_machine_view
 // test 122; the machine pointer as `type == 7 ? device : NULL`, tested in place of the type test, 141 (666 B); the lane S
 // bits as an unmasked byte copy of the word, `(byte)group_flags`, 115 (654 B: retail's word load into AX and no mask,
 // registers all retail's, but the load stays folded ahead of the machine test, one instruction short). Body unchanged.
+// M3 lane 4 r205 (fast with 0x107870, 0x1071e0): the whole group copied as an aggregate and its flags tested 199 (686 B,
+// a 12-byte frame); the group pointer and machine flags declared bare and assigned in order 122; the group pointer with
+// `(group->flags & 3) == 3` 120 (654 B, the pushed ESI); a `word const *` to the group's flags tested twice 122; the
+// two bit tests as nested ifs on the group pointer 122. Body unchanged.
+// Also r205 (references): `word const &` to the group's flags with the lane S bits 116 (655 B), tested directly 122,
+// declared after the machine flags 127 (657 B); `dword const &` machine flags 2 (same code); a const group reference with
+// the lane S bits 115 (655 B).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1759,6 +1766,14 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // 330 (1634 bytes); the factor as `(real)(1.0 / 30.0)` 2; the first call's 0.0f through a start-time local 2; the
 // definition, model and render-model lookups through a file-local inline tag getter 2; a const state pointer with the
 // flag block reading the animation and time through a const channel reference declared first in the block 2.
+// M3 lane 4 r205 (fast): the sampling method's unused third parameter typed `void const *` (header, definition, four callers;
+// the local a pointer, so no conversion is pushed) 2; the nested tests as early returns of the false result 402; the time
+// assigned inside the first call's animation argument (its store after the 0.0f push in source order) 2, so the store's
+// position in the call does not set it either; the step tests nested 2; inverse and relative at the flag block's scope 2.
+// Diagnostic: the speed block's two calls given a constant render model (fewer uses of the local) 98, fstp unmoved.
+// Also r205: the animation state as a reference (member calls through it), the model or the definition as a const
+// reference, the flag block reading the animation id and time through a const channel reference, the frame position
+// as a `real const &`, 2 each (same code).
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
