@@ -3959,13 +3959,15 @@ bool g_55e6bc;
 // MiniMax A (11-13): no new form tried this round, no lower score (17): the far clip plane is still loaded
 // after the near-plane multiply here and into xmm2 before it in retail, and three of the four middle products
 // still load the row-relative factor where retail loads the fixed one.
+// MiniMax I (11-16), NOT kept: 10 (was 17) with the depth clip planes in two one-use locals (near_plane = (scaled
+// ? 0.15f : 1.0f) * g_485adc; far_plane = g_485ae0) passed to D3DDevice_SetDepthClipPlanes; one-use locals are
+// kept only with a match.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
     real constants[16];
-    real near_plane = (scaled ? 0.15f : 1.0f) * g_485adc;
-    real far_plane = g_485ae0;
-    D3DDevice_SetDepthClipPlanes(near_plane, far_plane, D3DSDCP_SET_VERTEXPROGRAM_PLANES);
+    D3DDevice_SetDepthClipPlanes((scaled ? 0.15f : 1.0f) * g_485adc, g_485ae0,
+        D3DSDCP_SET_VERTEXPROGRAM_PLANES);
     real const *matrix = projection ? projection : g_48568c;
     if (!output)
         output = constants;
