@@ -9,6 +9,16 @@ matched 10633 of 11326 game functions (2045310 of 2786206 bytes, 73.41%)
 matched 1353 of 1436 Havok functions (201021 of 290362 bytes, 69.23%)
 ```
 
+0 new matches, none lost:
+- @ccgman123's #1197: closer scores and notes, no new match.
+
+## 2026-11-16: 10633 functions match
+
+```
+matched 10633 of 11326 game functions (2045310 of 2786206 bytes, 73.41%)
+matched 1353 of 1436 Havok functions (201021 of 290362 bytes, 69.23%)
+```
+
 1 new matches, none lost:
 - Machine 3's batch 284 (#1196): `0x1fd20` match.
 
