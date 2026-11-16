@@ -303,6 +303,10 @@ long g_55e6c0;
 // code: the 0x1d6f0 call reading `entry->element_count` instead of the raw count 130 (485 bytes) puts the height in EAX
 // after the kind store as retail does (the clamp then takes EBP), so the call's use of the raw count is what ranks the
 // merged clamp value ahead of the height.
+// Round 111 (m3 lane 10, fast with 0x1dc40/0x1db10, all on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes):
+// the packing as one expression with no pitch local 29 (same code); a level count defaulted to the count and capped by if /
+// else-if tests on the count 166 (497 bytes); the clamp written from the non-negative side, `count >= 0 ? (count <= 4 ? count :
+// 4) : 0`, 32; the data pointer stored ahead of the width and height 31; the height stored ahead of the kind 31.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
