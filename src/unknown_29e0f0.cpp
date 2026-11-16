@@ -535,6 +535,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // local_19 - local_26; local_26 = -local_26;` 381 (a statement order, not kept); the output step as an if/else
 // increment 389 (6 instructions longer); the group record pointer formed right after the group's bitmap set 429 (1576
 // bytes); the scan's best test written `local_24 < local_21` 382 (same code).
+// M3 lane 2 r88 (fast with 0x29e730, MATCH each time; control 382): the point bitmap declared once beside the group
+// bitmap and cleared per group (`visited_points[0] = 0;`) 382 (same code); the scan's squared distance with its two points
+// swapped 382 (the deltas become marker-first, unlike retail); the pass loop's found-flag break folded into the `while`
+// condition 382 (same code); the `local_19 == NONE` skip after the record search 413; `local_20` declared after that skip
+// 386. Matched sibling 0x29df30 tests and sets its group bits through bit_vector_test/bit_vector_set on the field read
+// (no mask CSE), retail's shape here too, which supports the listed field-read-beside-local recipe (match-only).
 // P537: Original visited-point bitmap outcome as raw dword mask, positive byte/short/long,
 // complementary bool/byte/short/long: eight 382s at 1596 bytes. NOT kept: no exact
 // truth/home recovery; original bitmaps, metrics, selected homes and complete body restored.
