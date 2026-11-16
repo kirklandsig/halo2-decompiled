@@ -278,6 +278,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // tests and tested afterwards 43 (202 bytes); the outer test inverted with the `disable` store first 4; the three
 // tests in a named bool with `disable` tested first 80 (228 bytes, callers 0xb73b0 and 0x1ed340 lose 2 each); a
 // typed components local and a component index local inside the arm 4.
+// Round 187 (m3 lane 6, fast with 0xb73b0/0x1ed340): a pool pointer local in the arm indexed at the call 4; a static
+// helper taking the component index and doing the lookup and call 76 (177 bytes, out of line), forced inline 4; the
+// lookup as a forced-inline const member getter on a view of the pool 4; the component index assigned inside the
+// NONE test 4; a forced-inline getter taking the index field by const reference 4. Retail's other data-first caller
+// 0x1c4b00 crosses the same block edge with the index in EAX, but its next load takes EAX.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -1847,6 +1852,12 @@ done:
 // same code as their bases: the reuse does not tie the homes). On the 27 form: the type and definition read above the
 // NONE test 30; the placements' scenario read from the global again 34; the placements read folded into the datum
 // with the offset read before the size 27 (same code).
+// Round 187 (m3 lane 6, fast with 0xbf0f0/0xbf090): the placement-block type renamed `object_type` 17 (same code);
+// long palette offset, size and placement offset with a `size * index` datum local added to the placements and the
+// palette formed at the call 33 (the size is then read after the placement offset, no definition copy, but the
+// index takes ESI and the type EDX); main's body with only the size as a long 27 (236 bytes: the index is
+// sign-extended into EAX, pushed and used as the imul destination, where retail extends it in place in EDI), with
+// the product written size first 27 (same code); main's body with the palette formed at the call 37 (240 bytes).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
