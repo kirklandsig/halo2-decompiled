@@ -14,6 +14,11 @@ The addresses must share one source file. It reads config/functions.csv for
 the file, and runs in the current environment (set XDK_DIR as for
 tools/check.py). --fast sweeps a reduced image (the default); --full runs the
 whole image for each variant and is much slower.
+
+The file must have no uncommitted changes before a sweep: a hard stop (SIGKILL
+or an outside timeout) skips the restore, and this keeps a source from being
+left with a variant's flags unnoticed. The current flags line is printed first
+so it can also be put back by hand.
 """
 import argparse
 import os
@@ -137,6 +142,14 @@ def _failure(output):
     return 'no result'
 
 
+def dirty(path):
+    """Whether git reports uncommitted changes to path: a sweep must start from
+    a clean file so a hard stop cannot leave a variant's flags behind."""
+    done = subprocess.run(['git', 'status', '--porcelain', '--', path],
+                          cwd=ROOT, capture_output=True, text=True)
+    return bool(done.stdout.strip())
+
+
 def sweep(path, targets, flag_sets, full, timeout, dry, stream=sys.stdout):
     """Run every flag set against the targets, restoring the file each time.
     Returns [(flags, {va: (status, score)} or a failure string)]."""
@@ -188,8 +201,12 @@ def main():
     if len(paths) != 1 or None in paths:
         raise SystemExit('the addresses must all be in one source file recorded in config/functions.csv')
     path = os.path.join(ROOT, paths.pop())
+    if dirty(os.path.relpath(path, ROOT)):
+        raise SystemExit(f'{path} has uncommitted changes: commit or restore it '
+                         'before a sweep, so a hard stop cannot leave variant flags behind')
     current = parse_flags(open(path, encoding='utf-8', newline='').read())
     print(f'{path}: current flags {" ".join(current) or "(default)"}')
+    print(f'  restore with: git checkout -- {os.path.relpath(path, ROOT)}')
     flag_sets = variants(current)
     print(f'{len(flag_sets)} flag set(s)')
     rows = sweep(path, wanted, flag_sets, args.full, args.timeout, args.dry_run)

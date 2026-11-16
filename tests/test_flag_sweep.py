@@ -39,3 +39,13 @@ def test_results_reads_match_and_diff_lines():
         'MATCH  0011e5e0 function_11e5e0\n'
     )
     assert flag_sweep.results(output) == {0xa6430: ('DIFF', 14), 0x11e5e0: ('MATCH', 0)}
+
+
+def test_dirty_reads_git_status(monkeypatch):
+    class Done:
+        stdout = ' M src/x.cpp\n'
+
+    monkeypatch.setattr(flag_sweep.subprocess, 'run', lambda *a, **k: Done())
+    assert flag_sweep.dirty('src/x.cpp')
+    Done.stdout = ''
+    assert not flag_sweep.dirty('src/x.cpp')
