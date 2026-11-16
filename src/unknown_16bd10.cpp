@@ -727,6 +727,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// MiniMax I (11-16): score 126 (was 126): no new form, no lower score; the length still preloads the
+// camera point's left.k into xmm1 where retail preloads left.j, and the zero register stays xmm1 for
+// the timer, the animation case and the field-of-view tail; `t = 0.0f;` before the test (375), the
+// swapped dot3f operands (394), length_sq3f (399) and a `direction` pointer local (417) are worse.
 // score 126 (was 126; earlier 149, and 149 was 331): 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
 // timer, animation case and field-of-view tail), following the plane length's hoisted left.k load (retail left.j); that
 // costs the animation case a zero copy and the field-of-view tail its reuse of the target test's register (the 4 extra
