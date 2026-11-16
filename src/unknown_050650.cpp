@@ -855,6 +855,23 @@ struct s_collision_result_buffer_1697c0
 // rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
 // sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
 // vector declared before best_fraction 300.
+// P548: Complete rotation-axis native/immutable vector, scalar/immutable scalar,
+// aggregate/immutable aggregate, existing setter and library captures:
+// 406/406/335/335/335/335/346/406. NOT kept: all regress and every form raises
+// the other rotation user (23 -> 210/233/234); three also lose the exact caller.
+// Original shared helper and entire sampler restored; native scratch/axis homes remain.
+// P550: Complete best-hit promotion in bool/byte/short/long 299/299/299/299; backward transfers
+// at pitch fallback/candidate/winner/both final outputs 350/348/352/359. NOT kept: no qualifying
+// native scratch/home repair; original full body, helper graph and headers restored.
+// Frame-bottom magnitude/random/sine scratch, axis/result homes and rotations remain.
+// P552: Standard forward and uninitialized component transfers at pitch fallback, sample acquisition,
+// best-hit retention and both final publications.
+// Fast scores 349/350/352/348/349/350/352/348. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Existing rotation scalar receivers, reference/pointer-axis, reference/reference-axis,
+// value/pointer-axis/vector-output, reference/value-axis, value/component-output,
+// vector/component-output, reference/reference-axis-components, value/reference-axis-components:
+// 305/305/339/335/339/293/295/304. NOT kept: scalar contracts lack native call evidence and every sibling score rises
+// (23 -> 142/142/243/232/243/33/34/231); original shared helper and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -959,6 +976,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
+// MiniMax C (11-16): no new form, no lower score (257 plain, 341 on the reduced image): the frame agrees (0x8c) and
+// what is left is the byte homes of the result and the point-valid flag plus the direction chain's fall-through
+// predecessor, where retail enters case 2's remembered 0x1e3b00 block and ours falls into the merged 0xcafc0 block;
+// the reduced image scores higher because the helper it calls is laid out differently in that build.
 // score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
 // fall-through predecessor (retail: case 2's remembered 0x1e3b00 block; ours: the merged 0xcafc0 block).
 // Round 176 (m3 lane 5, plain): case 1's object index local renamed 257 (same code: the merge is
@@ -1598,6 +1619,9 @@ done:
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
 // MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
+// MiniMax S (11-15): no new form, no lower score (9): the actor offset is still built in esi with an add where
+// retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
+// compiles to the same prologue, so the register choice is not steerable from this function.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -2026,6 +2050,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax E (11-15): no new form, no lower score (442): the call boundaries agree with retail's except that 0x1fdd90 is expanded here where retail calls it out of line, and its definition is in another file. BLOCKED-BY 0x1fdd90.
 // MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
 // cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
 // keeps the actor table in a register; the forms for the frame and the carriers are in the notes below and none of them
@@ -2041,6 +2066,10 @@ struct s_actor_looking_turn_request
 // MiniMax S (11-14): no new form, no lower score (442): the two getters that hand back the view and the object
 // are shared with many other functions of this file, so their spelling - which decides whether the base and the
 // scaled index stay apart - was left alone and the body was re-measured unchanged.
+// MiniMax C (11-16): no new form, no lower score (442 plain, 548 on the reduced image): the frame is 0xcc against
+// retail's 0xc8 and the blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines
+// it, and only /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not
+// make.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

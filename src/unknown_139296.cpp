@@ -1334,6 +1334,10 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // function and zeroed inside the guard 118; sibling loops sharing one function-scope count 127; round 171's guard +
 // nonzero-count for in the first position only, real build 107 (368 B; the guard compares with the zero register, the
 // inner `test eax, eax; je` stays).
+// M3 lane 4 r204 (fast with 0x13a532, 0x1393f3; round 157's letters): JSG 44 (368 B: loops 1 and 2 exactly retail's, the
+// third is retail's plus its inner `test eax, eax; je`), JGS 76 (368 B), JSF 3 (only the third loop's offset zeroed before
+// its guard), JSW 3 (the same), JTG 44 (368 B). So a guard + nonzero-count for in the third position costs one zero use
+// and leaves loops 1 and 2 exact; its redundant inner test is the only difference there.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

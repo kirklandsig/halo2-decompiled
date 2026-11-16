@@ -553,6 +553,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // (entry, index, selection) 2, with `first + n` passed and no index local 2; the part loop as a forceinline helper 2 (all
 // the same code); a block pointer for the copy and the count update only, the loop still indexed, 148. Diagnostic: a use
 // of mode after first's store (a byte global written) leaves first in mode's home (126), so mode's home is free from entry.
+// Round 128 (m3 lane 9, fast): `if (!geometry) continue;` 2; the geometry call's flag as `(unknown00 & 0x1000) != 0` 2 (same
+// code); the part count hoisted into the `for` init 35; the entry read from the copy (`&g_4ba138[index]`) 147 (495 bytes);
+// the count read through the metadata view (`g_4c6b00[cache_index].count`) 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
