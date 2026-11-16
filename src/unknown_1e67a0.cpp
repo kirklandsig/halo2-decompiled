@@ -691,6 +691,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Earlier header detail: 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// MiniMax D (11-16): no new form, no lower score (114): the permuter searched this file for 303 s (31 tries, 5 worse
+// variants taken, 1 restart; the reduced image's baseline 108 equals the full image's 108) and found no improvement; the
+// first difference is still the inlined rotation's dot, where retail copies the vector's component into the destination
+// with `movaps` and multiplies the axis from memory while ours loads the axis and multiplies by the vector's register -
+// that body sits in src/unknown_1eb8a0.cpp, which this lane may not edit, and every other form measured above 114.
 // MiniMax A (11-12): no new form, no lower score (114, the reduced image and the full build agree): naming the
 // sine and the cosine before the rotation call scores 150 (1382 bytes) against 114, so the call keeps its
 // expressions; the first difference is still the inlined rotation's dot and cross products, whose body is in
