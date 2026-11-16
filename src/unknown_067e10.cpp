@@ -1752,20 +1752,11 @@ void function_68f30(c_class_6a600 *world)
 }
 
 
-void function_69a00(const byte *input, c_class_6a600 *world, dword mask);
+void function_69a00(c_class_6a600 *world, dword mask, const byte *input);
 void function_69b50(c_class_6a600 *world, dword mask, const byte *input);
 
-// score 5 (was 5): the state-2 call takes the world copy in edi here and in ecx in
-// retail, and the 0x69a00 argument setup loads the mask one step later.
-// Permuter (10 min, 123 tries, seed 999): no form below 5.
-// Round 89 (m3 lane 2, plain; --fast now builds this body differently, 43 at 92 bytes): the
-// dispatch as an inline member of the world type with `this` for all three calls 39 (95 bytes,
-// diagnostic through a file-local derived type); a probe global store after the tail 28
-// (diagnostic); states 3/5 as an early exit with the tail duplicated 38 (102 bytes); the state-2
-// arm closed by its own tail and `return` 16; the global to 0x69880 with the world local to both
-// state-4 calls 39 (95 bytes); no state local, the 2/4 tests through the world local 26 (101
-// bytes). Whenever the global's own load feeds 0x69880 it takes EAX (state ECX); retail keeps it
-// in ECX and copies it. All restored.
+/* applies an update block to the world: the whole block in state 2, its two
+   masked payloads in state 4; then stores the block's first dword plus one */
 // @retail 0x684e0
 void function_684e0(byte *block)
 {
@@ -1773,10 +1764,10 @@ void function_684e0(byte *block)
  if (state != 3 && state != 5)
  {
   c_class_6a600 *world = SIMULATION_WORLD;
-  if (state == 2) function_69880(world, block);
+  if (state == 2) function_69880(SIMULATION_WORLD, block);
   else if (state == 4)
   {
-   function_69a00(block + 0xc, SIMULATION_WORLD, *(dword *)(block + 8));
+   function_69a00(SIMULATION_WORLD, *(dword *)(block + 8), block + 0xc);
    function_69b50(world, *(dword *)(block + 0x5cc), block + 0x610);
   }
  }

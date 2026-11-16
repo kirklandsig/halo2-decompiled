@@ -569,6 +569,11 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // with the named game-time pointer 91 (415 bytes); the node state fetched once ahead of the range test 15 (same code); the rate
 // read into a local after the timestamp 97. Re-measured: the named game-time pointer 91 (result EBX and NONE EBP as retail, but the
 // pointer EDI, ticks EBP and the EBX push moved down to the 0x1e5380 call).
+// Round 174 (m3 lane 8, fast with 0x110ab0, control 15): the actor lookup written as the data-array expression 15;
+// the elapsed ticks taken in place, `(real)(local_3 -= local_5)`, 15; this function and its table moved below
+// 0x1ae440's, in retail's order, 15 (0x1ae440 still matches); the guards as `goto done` exits to the one return,
+// locals declared at the top, 17 (the swap kept, the elapsed compare inverted); the 0x1e5380 result read through
+// byte offsets as its other callers do 15. All same code but the last-but-one.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {
