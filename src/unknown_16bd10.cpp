@@ -1149,6 +1149,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P564: Zero-seeded complete mixed-input length reduction, forward/backward, real/double accumulation,
 // default/explicit operations: 251/473/481/509/527/544/566/578. NOT kept: native direction-j preload and
 // persistent length/zero homes remain; all regress and grow extent. Original shared dot and full body restored.
+// P566: Complete mixed-input product vector, forward/backward long and short,
+// forward dword/word/int/unsigned traversal: 400/399/450/450/400/450/400/400.
+// NOT kept: staged vector storage regresses and grows beyond native extent;
+// direction-j preload and persistent length/zero homes remain. Original full body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -643,6 +643,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // P537: Actual returned alternate identity has an early existence decision, positive then
 // complementary bool/byte/short/long: 620/620/698/697/620/620/698/697. NOT kept:
 // extra code, no provider/NONE or palette/SIMD recovery; original helpers and body restored.
+// P566: Existing alternate-source/vector/weighted/cluster-output ordinary inline
+// declarations, four isolated, source-vector/weighted-cluster/source-weighted/all:
+// 757/607/879/607/757/879/911/911. NOT kept: no native provider/NONE or palette/SIMD
+// recovery; original target, helper bodies and all provider declarations restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -632,6 +632,10 @@ struct s_text_line_measurement
 // NOT kept (coordinator review, MiniMax C 11-15): 77 -> 65 rested on a one-use local computed ahead of the test
 // (real next_width = advance + offset + kerning + width; then width = next_width in the else arm), a form kept
 // only with a byte match.
+// P566: Existing token/kerning/cache-entry/cache-ready ordinary inline declarations,
+// four isolated, token-kerning/cache-pair/token-cache-entry/all:
+// 42/77/77/77/42/77/42/42. NOT kept: token forms grow 415 to 418 bytes,
+// add a width reload and still lack native advance copy/early width. All declarations restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
