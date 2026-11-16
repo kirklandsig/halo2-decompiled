@@ -611,6 +611,9 @@ struct s_object_damage_view
 // directly; retail reloads killer from its home at both merges.
 // P563: Terminal self/other-player comparison results in byte/short/long/dword storage:
 // 365/370/369/369/365/370/369/369. NOT kept: native scalar homes and biased history cursor remain; original comparison, observations, providers and complete body restored.
+// P578: Scalar memcpy at victim team/selection handle/assist handle/selected event/
+// selected amount/credited team/related player/related object: 353/353/353/353/371/353/353/353. NOT kept:
+// no exact scalar-home or history-cursor recovery; original complete body and observations restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

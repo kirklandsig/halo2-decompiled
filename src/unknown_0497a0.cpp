@@ -16,7 +16,9 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
-// score 536 (was 536; 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
+// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// and late x87 factor lifetimes remain, at retail length 2622.
+// Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // MiniMax H (11-13): no new form, no lower score (536).
 // MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
@@ -416,6 +418,10 @@
 // P565: Actual paired special-cross input/output pointer tables, long/dword/short/word for,
 // long/short while, then long/short staged for: 667/667/757/757/667/757/649/758.
 // NOT kept: no native wave residence or exact frame/extent recovery; original full body restored.
+// P579: Actual scalar memcpy at camera side/vertical offsets, horizontal/vertical extents,
+// selected depth extent, reciprocal depth bounds, displacement depth bounds and output depth inputs:
+// 578/578/579/579/638/624/605/605. NOT kept: no exact native rounded-wave/frame recovery; original
+// complete body, scalar observations, helpers and includes restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

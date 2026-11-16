@@ -827,6 +827,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // difference +0x60): retail's present update is a spilled plain local (OR into the reloaded register, stored at once), its
 // old mask a spilled word register variable reloaded once into ECX, with globals kept in EBP across the loop; every plain
 // present form here rematerialises globals and gives present a register instead.
+// P575: Per-team added-bit decisions, positive/complementary bool/long with dword/word saved mask:
+// 32/32/32/32/77/77/77/77. NOT kept: native saved-word entry and shared post-loop reload remain;
+// original complete body, observations, indexed callbacks and local qualifier restored.
 // @retail 0x158140
 void function_158140(void)
 {
