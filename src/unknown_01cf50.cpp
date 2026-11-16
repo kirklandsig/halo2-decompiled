@@ -112,6 +112,9 @@ void __stdcall function_1c710(void *state);
 // global and inlines only the first of the four SetVertexData2s calls where this build inlines two of them; the only
 // lever for that (an inline_depth pair) may not be added.
 // MiniMax R (11-15): no new form, no lower score (188): retail still inlines only the first of the four SetVertexData2s calls and calls the other three out of line; the only lever for that is an inline_depth pair, which may not be added.
+// MiniMax R (11-16): no new form, no lower score (188): the body is 35 bytes longer than retail's 1422 and the first
+// difference is at +0x335, where retail inlines only the first of the four vertex writes and calls the other three
+// out of line.
 // score 188 (was 188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where
 // retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for
 // that is an inline_depth pair, which may not be added.
@@ -5114,6 +5117,9 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // the two early skips branch to a near block here and to the end of the body in retail, and the four screen values
 // are still loaded in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7).
 // MiniMax R (11-15): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, the two early skips branch to a near block here and to the end of the body in retail, and the four screen values are loaded in another register order.
+// MiniMax R (11-16): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, so
+// the two early skips branch to a near block here and to the end of the body in retail, and the four screen values
+// are loaded in another register and another slot order.
 // score 125 (was 125): our body is five bytes longer than retail's 1027, so the two early skips branch to a near block
 // here and to the end of the body in retail, and the four screen values are loaded in another register order (ours
 // xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies
@@ -5267,6 +5273,9 @@ void function_48010(real const *color);
 // at the six calls (288). None below 244, so the source is unchanged.
 // Permuter (25 min on #1066, about 850 variants): 228 only with the cull value stored through a word cast and a
 // word read of a long field; not kept.
+// MiniMax R (11-16): no new form, no lower score (244): the first difference is at +0xa, where this build saves esi
+// in the prologue and retail loads ebp from the argument, and the mode's dispatch stays a jump table here against
+// retail's compare chain.
 // MiniMax A (11-12): no new form, no lower score (244); retail copies the mode parameter into ebp in the prologue and
 // dispatches on it with a compare chain, while this build keeps the flag scratch in ebp and reaches the mode through
 // a jump table, and the forms tried (the if/else chain for the modes, the switch with a case 0, all eighteen sites
@@ -6434,6 +6443,9 @@ dword g_4b8430;
 // copied by value 508 (2421 bytes). Re-measured: each single product's operands swapped in rows 12 and 13, 2
 // each (same code). Diagnostics: the basis or the size renamed 2 (same code: names do not order the reloads).
 // The two reloads keep their order whatever the model read's form (the 125 forms show the same pair).
+// MiniMax R (11-16): no new form, no lower score (127): the model's read is folded into a single load here, where
+// retail forms the entry's address first and loads the model through it, and one pair of the vertex rows' float
+// reloads comes in the other order.
 // MiniMax S (11-14), NOT kept: 125 (was 127) with an eight-byte model-entry struct read through for the
 // reference table and the index's two bound tests split into two `continue`s; a 2-point gain, under the
 // 8-point bar for a function above 30.
@@ -7288,6 +7300,8 @@ void function_22850(void);
 // four-byte global at 0x4858a0 and keeps five more dword globals after it, while the shared global here is a double
 // declared in include/timed_effect.h and defined in src/unknown_01fbb0.cpp, so the copy goes through x87 and the
 // second field cannot be reached.
+// MiniMax R (11-16): no new form, no lower score (153): the timestamp is copied as a double here, where retail copies
+// one dword into a four-byte global, and the ramp's bytes still go through the device's ramp call.
 // MiniMax I (11-14): no new form, no lower score (153); the timestamp copy would need a dword-wise
 // write into the global that include/timed_effect.h declares as a double, and the gamma ramp still
 // goes through D3DDevice_SetGammaRamp where retail uploads it inline against the device's ramp buffers.
@@ -8300,6 +8314,9 @@ real scenario_ramp_evaluate_current(long index);
 // MiniMax S (11-14): no new form, no lower score (130): the frame contents are retail's (the ramp result in the
 // blur argument slot, the distortion, the weights and the grid), but this build still saves the frame pointer in
 // the prologue and reserves 0x5c, so every slot sits four bytes off and no source form tried here moves it.
+// MiniMax R (11-16): no new form, no lower score (130): the frame is 0x5c here against retail's 0x58, with the frame
+// pointer saved in the prologue where retail saves it around the filter loop, so the distortion, strength, weights
+// and grid homes all sit four bytes off.
 // MiniMax E (11-15): no new form, no lower score (130): the frame stays at 0x5c with the frame pointer saved in the prologue (retail reserves 0x58 and saves it around the filter loop), and removing the clamp's own local through the file's clamp_callback helper leaves both the frame and the score unchanged.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
@@ -10201,6 +10218,8 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // MiniMax B (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
 // registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
 // shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
+// MiniMax R (11-16): no new form, no lower score (171): the palette's result is written through a local out-parameter
+// here, where retail hands the palette global itself to the callee, and the palette's home sits in another slot.
 // MiniMax A (11-12): no new form, no lower score (171); retail sign-extends the two offsets into the argument
 // registers of 0x16a30, whose declaration is in another file, and passes the palette global itself as the
 // out-parameter, which the address-taking exception does not cover; the offset order, the palette result local and
