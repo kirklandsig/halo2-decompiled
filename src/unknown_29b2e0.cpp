@@ -541,6 +541,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // NOT kept: all regress; combined root/trig forms lose the matched sibling (24); original helpers and full body restored.
 // MiniMax E (11-15): no new form, no lower score (176): the normalizer's length taken from its return value instead of the
 // out-parameter measures 263 at 1719 bytes, and retail keeps that length in a register where ours holds an address-taken local.
+// P569: Maximum-angle policy positive bool/byte/short/long outcomes 281/281/281/281;
+// complementary outcomes 287/287/287/287. NOT kept: no native storage equality;
+// original producer/body restored. Unity, root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

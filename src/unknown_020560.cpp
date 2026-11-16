@@ -146,6 +146,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // 0x16ae0's body inlined (other files inline it through the same forced-inline form and match), and matched 0x18e80
 // has this loop's bit-scan and clear shape with EAX; 0x143c0's callee tree holds one unmatched function
 // (0x12ce00, a contributor's), but it uses EAX, ECX and EDX in both builds, so its clobber set is not the cause.
+// Round 187 (m3 lane 6, fast with 0x143c0, which matched in each): the level stored as `((real *)entry)[4]` 4; the entry's
+// tag through a `long const &` used for the NONE test, the count lookup and the call 4; the frame field through a
+// `real const &` for the magnitude test and fmod 4; the entry's level through a `real &` for the test and the store 4;
+// the tag and level references together 4 (all the same code; the clear keeps EDX).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

@@ -462,6 +462,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // MiniMax R (11-16), NOT kept: 11 (was 110) with sqrt(length_sq3f(arg_0)) and the projection's k term read as
 // local_1[0].forward.k while its i and j terms read forward-> (a re-read of the object in place of the named
 // pointer: kept only with a match). The length_sq3f form alone 153 (fast).
+// P563: Four-use private magnitude forward/backward reductions, real/double accumulation and default/explicit operators:
+// 244/309/309/373/483/539/539/595. NOT kept: native late forward-k product and magnitude/projection scheduling remain; original private helper and entire body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

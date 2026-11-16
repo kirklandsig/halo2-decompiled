@@ -1144,6 +1144,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // `projected = dot3f(vector, axis) * (1.0f - cosine)`, 94 at retail's 1382 B (first difference still +0x1f3; 0xd0080 58 -> 36)
 // but 0x1ecf50 loses its match (91) and 0xe3910 rises 79 -> 144: lead, not kept; the projection after the cross rows 154
 // (0x1ecf50 160, as the listed crosses-first form). Both files restored.
+// P563: Individual six initial flag fields, then first-five/all-six masked conditional publications:
+// 340/351/320/312/304/139/349/363. NOT kept: native rotation j/k products, side-dot residence and eager exit copies remain; original flags and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
