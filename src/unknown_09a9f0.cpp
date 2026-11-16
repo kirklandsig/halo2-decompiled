@@ -1215,6 +1215,10 @@ bool c_projectile_type::v8(long a, long b)
 // masked address written at the compare and at the store) 15; that local with the group value read once into a named local
 // used twice 24; flags declared before the object 12; the 0x400 test and compare nested 12; a `long group` local with an
 // entry pointer 12.
+// Round 174 (m3 lane 8, fast with 0xa5e70; control 5), all with the full-width mask: the object through an offset local
+// `(a & 0xffff) * 12` as matched 0xa1f70 and 0x9d450 read theirs 12; a `long` flags local 12; the group value as a
+// const reference to the masked entry's +4 15; a `byte *` state local for the four accesses 12; both copies written as
+// dword moves 12. Matched 0xa02e0 gets flags ESI and object EDI from the same head, as the mask form does here.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
