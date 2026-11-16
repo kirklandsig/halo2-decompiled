@@ -403,6 +403,7 @@
 // special path's first cross through cross3f_staged 536 (same code). Compile-only: out-pointer or twice-assigned wave
 // locals are still folded, and no sin/cos spelling (float or double overloads, named terms, factor orders) keeps sin x,
 // cos 7.8y and cos 7.75y on the x87 stack as retail does.
+// MiniMax D (11-15): no new form, no lower score (536): the frame is 0x54 against retail's 0x60, the constant rides in xmm3 here and in xmm1 there, and the two wave values are folded into x87 products where retail keeps both as stored floats.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1194,6 +1195,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // +0x88, r +0x94, scale +0x98, g +0x9c, b +0xa0, interleaved with the caller's v (+0x90); ours (the same-file copy, front-end
 // inlined) gives colour pointer +0x84, scale +0x88, a +0x94, r +0x9c, g +0xa4, b +0xa8, interleaved with the u step, V end and v.
 // The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
+// MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
