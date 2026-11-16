@@ -558,6 +558,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P557: Bounded accepted-choice cap <2/<=1 with short/long query and choice domains:
 // 846/919/964/965/846/919/964/965. NOT kept: no equality or native entry/count/query-home repair;
 // original counters, equality cap, helpers and complete body restored.
+// P559: Declared sound/choice level vectors, paired storage and existing whole-copy/scale/default producers:
+// 846/846/846/938/916/850/925/868. NOT kept: unmatched record/producer shape; native entry zero/query/count
+// homes unresolved; original records, helpers and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

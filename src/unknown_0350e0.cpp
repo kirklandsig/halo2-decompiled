@@ -312,6 +312,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P557: Complete diagonal coefficient component loop in long/dword/short/word, before/after cross
 // coefficients: 365/361/365/361/485/488/485/488. NOT kept: no exact native coefficient/publication
 // equality; original helpers, concurrent angles and entire body restored.
+// P559: Existing builder cosine/sine value/reference/pointer receiver pairs: 335/334/342/342/342/342/342/342.
+// NOT kept: unmatched input ownership and temporary/reference forms; frame 0x90 agrees but native
+// axis/square/sine residence remains unresolved; original builder contract and entire source restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4437,6 +4440,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // P557: Native final getter output lexical identities in four fade/active name pairs, both declaration
 // orders: 70/70/70/70/70/70/70/70. NOT kept: no native scratch/frame equality with the default provider
 // present; original direct fade clamp and full body restored.
+// P559: Actual paired final-query output record, fade/active orders with aggregate/field/value/memset
+// defaults: 70/70/70/70/70/70/70/70. NOT kept: unmatched grouped outputs; no native final-query scratch/frame
+// equality; original direct fade and complete body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
