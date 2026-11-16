@@ -1242,6 +1242,9 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
+// but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
+// duration and the two ramp times, retail xmm5/xmm7/xmm1); the permuter found no spelling that moves them.
 // MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
 // returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
 // score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
@@ -2339,6 +2342,8 @@ bool function_0b6760(s_index_pair const *pair);
 // P449: Power-change/position-activity, power preparation/advance, position preparation/advance,
 // position-change and lazy reversal decisions: eight 250s. NOT kept: no byte equality or native result-home repair.
 
+// MiniMax I (11-16): no new form, no lower score (250): the first difference is the incoming register (retail takes the index in
+// ESI and the object header in EBP, this build in EDI and EBP) and the order in which the globals are loaded.
 // MiniMax G (11-14), NOT kept (coordinator: the 250 -> 58 rests on the one-use `real rate = g_510c54->rate;` local
 // passed to function_11eed0, a form kept only with a byte match; measured on G's body without that local: 380, and
 // main without its volatile alone: 386; `== 0` for the `<= 0` byte test: 59; `bool increasing` for the reused

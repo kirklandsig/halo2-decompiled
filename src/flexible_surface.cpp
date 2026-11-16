@@ -881,6 +881,9 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax I (11-16): no new form, no lower score (322): the first difference is the first call's argument setup - retail loads
+// the field into ESI, pushes it and keeps the header pointer in a stack slot, this build loads it into ECX and
+// pushes that.
 // MiniMax E (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls
 // them, both in src/unknown_01cf50.cpp, and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against
 // our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.

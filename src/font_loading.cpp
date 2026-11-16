@@ -507,6 +507,10 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax I (11-16): no new form, no lower score (59): the alpha's parity is masked in sixteen bits (mov cl, al; and cl, 1; movzx
+// cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); dropping the byte cast
+// from the shared helper gives retail's parity at every site but moves the run out of EBX into EBP and merges
+// the two fill loops (203), and a twin of the shared helper is not kept.
 // MiniMax D (11-15): score 45 (was 59): the two decode sites of the type 3 class now take the alpha in a
 // full register, so the parity is masked in thirty-two bits (xor ecx, ecx; mov cl, al; and ecx, 1) as
 // retail does; still differs in the type 2 decode site, the literal word's loads, the type 3 run (add eax, 2)
