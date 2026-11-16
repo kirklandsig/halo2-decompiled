@@ -71,7 +71,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 
 // score 334 (was 334): round 80 at the end of this note (334 was 343). Earlier 343 (was 356): round 103 below.
 // MiniMax I (11-15): no new form, no lower score (334): retail's rotation helper still keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6 and forms the cross products first; the frame stays 0x98 against retail's 0x90.
-// score 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
+// Earlier 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
 // MiniMax C (11-15): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6, and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6, forms the cross products before the x87 cosine and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90.
 // MiniMax B (11-14, later): no new form, no lower score (334): the permuter (300 s, --anneal) was stopped at its
 // outer time limit with no result, so the body stands.
@@ -309,6 +309,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // still hoisted ahead of the cosine); `real const inverse` 334 (same code); the squares renamed ii/jj/kk 334 (same code);
 // the cross terms declared yz, xz, xy 344 (1790 B). Retail keeps xx/yy/zz in XMM1/XMM4/XMM6 and spills the i and j sine
 // products, while ours spills the squares to hold j*k and i*k, formed before the trig.
+// P557: Complete diagonal coefficient component loop in long/dword/short/word, before/after cross
+// coefficients: 365/361/365/361/485/488/485/488. NOT kept: no exact native coefficient/publication
+// equality; original helpers, concurrent angles and entire body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -4431,6 +4434,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // `if (active)` 70 (0xff5f0 408). Neither a null test nor a single exit makes LTCG treat 0xff5f0's output pointers as
 // escaping, so the stores still go: BLOCKED-BY 0xff5f0 (retail's 0xff5f0 passes neither pointer to a call: its five callees
 // take only the weapon and an index).
+// P557: Native final getter output lexical identities in four fade/active name pairs, both declaration
+// orders: 70/70/70/70/70/70/70/70. NOT kept: no native scratch/frame equality with the default provider
+// present; original direct fade clamp and full body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

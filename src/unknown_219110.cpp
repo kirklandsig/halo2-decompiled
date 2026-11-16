@@ -173,6 +173,9 @@ void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
 // P555: Admission byte/short/word/int/long/dword outcomes, then mutable/const
 // entry references: 3/3/3/3/3/3/3/3. NOT kept: no exact match;
 // final pointer/value register swap remains. Original body and helper restored.
+// P557: Actual byte-field publication through standard fill/fill-n/uninitialized-fill/uninitialized-
+// fill-n, original admission and early flag exit: 22/22/21/21/30/30/19/19. NOT kept: no byte equality;
+// original short interface, shared getter and setter restored.
 // @retail 0x219310
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value)
 {

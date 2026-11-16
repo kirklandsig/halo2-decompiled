@@ -1256,6 +1256,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // `bool flag = false; if (squad) flag = ...;` 238; the guard testing the squad index before the squad pointer 237 (same
 // code); the flags pointer `byte const *` 237 (same code); the unit arm under its own `if (!(*flags & 1))` after the
 // perception arm 305 (1254 bytes); the definition pointer `byte const *` 237 (same code). Body unchanged.
+// P557: Actual three-output query workspace in six field orders, then Boolean output pair with
+// probability second/first: 273/273/273/273/273/273/270/269. NOT kept: unmatched local grouping;
+// original independent outputs/defaults, sentinel/cleanup graph and complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
