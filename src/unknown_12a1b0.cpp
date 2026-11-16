@@ -1349,6 +1349,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // the count's increment folded into the test as `count++ > 0` 45 (211 B; 0x21b870 29, 0x21bd00 57); the index tested
 // ahead of the count 27 (the two tests swap, the tie stays; 0x21b870 4, 0x21bd00 4); the two tests nested 24 and
 // `++iterator->count` 24 (same code); this function declared `__stdcall` 24 (same code). Helpers and body restored.
+// Round 91 (m3 lane 15, fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; both builds
+// `ret 8`): the iterator's two helpers as member functions (begin/next) at all four users 24 (0x21b0e0 305 unchanged);
+// that with a named element local tested and the call kept 24; the loop on `next() != NONE` with the body reading
+// `iterator.index` and an element local 24; the iterator built by a constructor in its declaration in both fade
+// functions 24; the index declared in the for statement 24. Diagnostic: a probe global store of 0, 1, -1 or 2 at entry
+// leaves the element in EDI.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

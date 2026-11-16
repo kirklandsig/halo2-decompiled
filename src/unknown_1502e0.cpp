@@ -1609,6 +1609,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // field pointer or local copy merges as early as the plain read). On the getter-reload lead: the second read as the
 // player table's array element 5; 0 to 7 unused locals 5 each (the player add's operand order, retail index + data,
 // lead data + index, does not follow the symbol count; it follows whether the player address is a shared temp).
+// Round 91 (m3 lane 15, fast): the whole body in a forceinline helper taking the player pointer 17 (diagnostic, same
+// code); the player getter written as a byte offset (`data + (index & 0xffff) * sizeof`) alone 17 (0x151aa0 43), with
+// the getter reload of the unit index 5 (the player address still `mov edx, [edx + 0x44] ... add edx, eax`); the
+// definition moved to the end of the file 17; the unit looked up in place at both uses, no unit local, 17.
+// Diagnostic: a probe global store of 0, 1, -1 or 4 at entry leaves the unit index in ESI.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
