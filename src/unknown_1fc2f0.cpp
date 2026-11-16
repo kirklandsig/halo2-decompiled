@@ -730,6 +730,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // plain component loop 80 (first +0x2f), that with a named tick scale 80; the deltas as a component loop with dot3f for
 // the length 80; prediction, tick stage and deltas in one loop 94 (first +0x17); the delta loop accumulating the squared
 // length 79. Original body restored.
+// P544: whole-object standard forward fallback/velocity-history/location-history
+// copies 107/93/101; backward copies 107/94/101; standard inner-product squared
+// length, default/explicit real operations 113/131, all with direct tracked input.
+// NOT kept: all regress and lose the native frame/transport; original parameter
+// storage, helpers, j-first delta graph and complete body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -5095,6 +5095,11 @@ void __stdcall function_cc810(long vehicle_index)
 // conditional root result 162; shared ramp duration 162; complete coast
 // outcomes 162. NOT kept: nested admission gains only two; the rest
 // tie or regress, retaining the x87 discriminant and excess eight-byte frame.
+// P544: shared float radicand/root 165; shared branch root 173; conditional
+// radicand/root 171; conditional root 160; root-default time 178; shared double
+// radicand 173; conditional double radicand 169; rounded double root carrier 173.
+// NOT kept: conditional root gains only two at 708 bytes and retains frame 8;
+// the shared float radicand removes the frame but grows to 716 bytes.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -6601,6 +6606,11 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // local 60; the five copies of the forward vector in the reverse order 59; diagnostic: the entry lookup indexed by
 // `(word)unit_index` 258 (`movzx` and a scaled index). The two first header reads' `[off + data + 8]` is the same
 // operand order 0xc58f0's re-lookups show (there a named offset local gives retail's order for one of them).
+// P544: table-driven state allocations with signed/unsigned ordinal and failure
+// result 363/363, completed-ordinal result 367/367; all five vector transfers via
+// memmove 251, standard copy 309, backward copy 308; standard weapon-array fill 288.
+// NOT kept: all regress; tables add a frame and transfers lose the native extent;
+// original header addressing, scratch plan and three return blocks remain.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -7055,7 +7065,7 @@ done:
 // pointer local, `holder` re-read: no change); `or byte [mem], imm` flag updates (ours load/or/store through
 // AL); the tail loading ESI = unit_index at the join. On the committed (stdcall) convention these forms
 // Earlier convention forms were worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
-// score worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
+// Historical forms scored worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
 // Round 82 (lane 11): the declaration moved after 0xbd020's (still __stdcall) gives retail's convention, the
 // direction in ECX and the rest pushed: 254 -> 250 (aligned 198 -> 96), and matches 0xc42e0.
 // Round 151: __stdcall in place of the file's /Gr
@@ -7087,6 +7097,10 @@ done:
 // P541: Both definition-flag results with branch-defined positive/complementary bool/byte/short/long producers:
 // 242/242/242/242/242/242/242/242. NOT kept: one-use flag outcomes require equality; native facing copy, flag-byte stores and state home remain.
 // Original complete executable source and existing helper contracts restored.
+// P544: complete direction/facing/turn/identity transfers through memmove
+// 265/257/246/253; standard forward point copies 266/257/247/253.
+// NOT kept: all regress, several grow the frame or extent; native flag-byte
+// stores, state home and shared facing tail remain. Original complete body restored.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
