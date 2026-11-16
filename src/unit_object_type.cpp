@@ -3734,6 +3734,12 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // `dword` 12; re-measured (listed): the component index assigned in the test 12. Diagnostic: the fixed test and the
 // position read (translation through real_point3d_set) as two forceinline helpers taking the index and component 36
 // (303 bytes), same pair.
+// Round 100 (m3 lane 13, fast, 12 throughout unless noted): the translation read through an `hkVector4 const &` of the
+// typed motion transform and real_point3d_set with its (0), (1), (2) reads 36 (303 bytes: the typed transform sits at
+// +0xb0, not +0x70; otherwise the same code and the same pair); 0xe1a80's Havok idiom together (typed m_fixed, the member
+// keyframed call, `m_motion + 0x70` through real_point3d_set) 12; the walk and the header through one pool local 87; the
+// header's own tests and the root's tests as two nested ifs with the result declared first 89 (284 bytes); the walk
+// reading the parent into a local before recording the root 12; re-measured: the parent read through the root 12.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {
