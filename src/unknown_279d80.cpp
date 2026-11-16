@@ -2018,6 +2018,16 @@ void function_27dd10(void)
 // pointer as an array element address 2; the empty-group test as `!local_2` 2; the bit-flags selection as an if/else-if
 // chain 2; the destination lookup and mask test as nested ifs 2; the destination index initialised to NONE 2 (all the
 // same code).
+// Round 89 (m3 lane 2, fast with the four matched walk users): the shared walk (function_288571/2/3) as
+// __forceinline function templates over method, kind, mask, interpolation and component 2114 (0x281b60
+// 2048; every instance stays out of line, as round 100's template); the blend asm's sign-bit constant
+// typed as reals with -0.0f 2; in function_288572 the output cursor declared ahead of the in-place flag
+// 2 (0x288570 3, 0x289580 78); the inheritance map entry read as short 382 (36 matched walk users
+// regress); this function and 0x281b60 through the existing compute_orientations 4 (a second swapped
+// pair in pass 1: the apply-in-each-arm form is what fixes that pass); the frame-state saves declared
+// at the walk helper's top 2. Diagnostics: the apply as a member of a type derived from the output, 2
+// (same code); a probe global store at the wrapper's end 2. The pair is in pass 0 only (flags in EBX
+// after the blend asm, count in ECX after the decompressor calls). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2146,6 +2156,9 @@ void function_2818e0(void)
 // destination index passed straight to the apply 2 (0x288570 3), the group end as `count < index + 8 ? count : index + 8` 8
 // (all controls 6-8), the interpolation test as one if/else holding the root scale 4 (0x285750 184), the flags shift in the
 // inner for's step 12; component_decompress as a switch 2 (0x288570 120, 0x289580 78). All restored.
+// Round 89 (m3 lane 2, fast, the shared-helper trials listed above 0x27dff0): templates 2048; real-typed
+// sign constant 2; cursor declared ahead of the in-place flag 2; short inheritance map entry 367; the
+// existing compute_orientations 4; frame-state saves at the walk helper's top 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

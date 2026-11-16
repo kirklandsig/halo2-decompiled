@@ -3275,6 +3275,13 @@ real g_47ff30 = 2.5f;
 // NOT kept: no native frame/transport equality; original complete body restored.
 // P535: Immutable complete bounded-speed/fraction/directional-mass producers, seven subsets then all with immutable computed speed; native frame 0xfc remains unrecovered.
 // 672/672/672/672/672/672/672/672. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P547: Actual friction-axis table with plain for/while traversals, each in long, unsigned long,
+// short and unsigned short: eight at 964/2989. NOT kept: frame 0x140 versus native 0xfc
+// and shortened extent; original three friction gates, helpers and complete body restored.
+// P549: Shared typed unit boost field with original/per-use mass/acceleration/climb
+// observations, masks 0/1/2/4/3/5/6/7: 672/693/767/738/776/701/785/773.
+// Typed field alone preserves 672; NOT kept: all coefficient reloads regress or shorten
+// away from native. Original observations, helpers, matrices and full math graph restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3289,7 +3296,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
-		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+		boost = function_d1210(vehicle_index) * (((s_unit_definition *)definition)->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 	}
 	else
 	{
@@ -6189,6 +6196,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P518: Complete per-component reverse/preserve decisions in bool/byte/short/long:
 // 978/978/978/978/978/978/978/978. NOT kept: no exact native loop/frame repair;
 // original comparisons, loop domain, matrix owners and complete body restored.
+// P551: Complete backward flipped-matrix/desired-forward/quaternion-axis/state-rotation
+// transfers, then corresponding uninitialized object transfers: 1041/1078/1112/1107/1041/1083/1112/1107.
+// NOT kept: no exact native frame/index/matrix ownership recovery; original copies restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6231,7 +6241,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
-		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+		boost = function_d1210(vehicle_index) * (((s_unit_definition *)definition)->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 	}
 	else
 	{

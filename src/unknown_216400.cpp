@@ -496,6 +496,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // break;` then memcpy into `entries[count++]` 54 (654 bytes), as `if (count != 4096) memcpy else break` 54; a generic bool
 // append over (count pointer, maximum, element base, element size, element) 51; a bool append taking the list and entry by
 // reference with an aggregate copy 57 (656 bytes); a bool append copying through the pointer helper 60 (668 bytes).
+// Round 111 (m3 lane 10, fast with 0x216400/0x216d70/0x216e50): the bool append re-measured 51 (list EDX, count EAX, setne CL);
+// with its result in a caller bool declared at the function's top 51; inline room (`return count != 4096`) and index (`return
+// count++`) helpers with the room flag tested for the copy and again for the break 51; a bool append over a count reference and
+// the entry array with memcpy into `entries[count++]` 32 (setne CL, count EAX copied to ECX for the shift), the same with `long
+// index = count++` 51, with an aggregate assignment 57 (656 bytes). Every bool form keeps list EDX / count EAX / bool CL.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

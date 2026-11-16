@@ -1497,6 +1497,11 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax I (11-16): no new form, no lower score (164): the entry lookup and the two slot reads still fold the
+// index into the address where retail holds index times twelve in EDX and the pool's data in EBP (four pushes
+// against our three), and the three flag bytes still sit at +0x0e/+0x0f where retail has them at
+// +0x11/+0x12/+0x13; the if-form for the depletion queries scores 330, and the permuter (two tries on the full
+// image, since the reduced image cannot score this function) comes back to the same 164.
 // MiniMax E (11-15): no new form, no lower score (164): the two depletion queries still merge into one lookup where retail re-derives the second one, and retail's depleted flag still lives in bl with a third stack slot.
 // MiniMax B (11-12): no new form, no lower score (164); the permuter (57 tries, run with the 0xcbd50 context
 // because retail inlines that callee) finds nothing better than the baseline, and retail keeps the pool data
@@ -1924,6 +1929,9 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax I (11-16): no new form, no lower score (445): our frame is still 8 bytes against retail's 0xc and the
+// pool's global and data are still loaded into EAX and EDX where retail keeps them in ECX and ESI, so every stack
+// home sits one dword below retail's; the frame cannot be widened without a local the body never reads.
 // MiniMax S (11-14): no new form, no lower score (445): retail's frame is 0xc against our 8, it keeps the pool pointer in ECX and the pool data in ESI where ours loads the global into EAX and the data into EDX, it forms the control pointer as base+offset where ours stores the bare offset, and it writes the true default at the entry where ours starts from the switch; declaring the two flags before the pointers gives 446 and dropping the switch's default arm gives 489, so neither spelling reaches retail's frame.
 // MiniMax G (11-12): no new form, no lower score (445): the frame is still 0x8 against retail's 0xc — retail keeps the result byte in
 // the first argument's dead slot, the two flag bytes at the frame bottom and the control and controlling words above them, and it writes
@@ -2414,6 +2422,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
+// MiniMax I (11-16): no new form, no lower score (776): the first difference is still the frame - 0xcc against
+// retail's 0xd4 - so every stack home sits eight bytes below retail's; the locals the body declares account for
+// only 0xcc, and the eight missing bytes would have to come from a local the body never reads.
 // MiniMax S (11-14): no new form, no lower score (776): the body is 3418 bytes against retail's 3403 and our frame is 0xcc against retail's 0xd4, the unit and the state are in the opposite registers, the first angle conversion is expanded here and called out of line in retail, and retail's prologue still holds a chain of otherwise unused tag loads that ours does not have; the entry-default spelling that would take 0x1103a0's frame to retail's shape costs 0x10ff40 its 12.
 // MiniMax A (11-13): no new form, no lower score (776); our frame is still 0xcc against retail's 0xd4, the
 // first angle is still expanded where retail calls out of line, and retail's prologue chain of otherwise
@@ -4148,6 +4159,14 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // UNIT_ANIMATION_CONTROL(unit) at the overlay address / the flag7 test / the flag7 set 111/117/218, in pairs
 // 117/226/233; the definition read at each use 211 (re-measured). No untried natural form found for the slot pair:
 // retail's order needs definition at least as heavy as control by reference count.
+// MiniMax I (11-16): no new form, no lower score (12): the two flag clears still land in the set block where retail
+// clears them (+0x11, then +0x10) in the entry block ahead of its lookup branch, and the definition and control homes
+// stay swapped (retail +0x20 and +0x1c, ours +0x1c and +0x20); the two flags declared before the unit pointer 205 and
+// after it 204 (682 bytes each: the animation spills to +0x14), the two flag declarations swapped 12 (the clear order
+// then matches retail's, the placement does not), the control and definition declared with their initializers and then
+// assigned 12 (the set and mode homes then match retail's, the pair does not), both the flags and the pair assigned
+// separately 12; the permuter cannot search the function, because its reduced image scores 202 against the full
+// image's 12.
 // MiniMax B (11-13): no new form, no lower score (12): aligned the two listings instruction by instruction: the control and
 // definition homes stay swapped (retail 0x0c and 0x10 against our 0x10 and 0x0c) and the two flag clears stay after the
 // lookup's branch where retail clears them before it; retail also clears them in the other order (its 0x11 before its

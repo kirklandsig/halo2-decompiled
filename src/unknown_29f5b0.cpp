@@ -1002,6 +1002,10 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // from a scenario local at each field use 76 (125 bytes; 0x2a1120 8); a `dword` effect index with `true, true` 6; the flag
 // index read once through its own address 15 (93 bytes; 0x2a1120 13); `forward.i = forward.j = cosf(pitch)` then `*=` by the
 // yaw cosine and sine 6.
+// Round 186 (m3 lane 6, fast with 0x2a1120): the yaw trig in double, `(real)(cos(yaw) * cosf(pitch))` 6; a named `double`
+// pitch cosine with double products 6; forward filled by a forceinline const member of the flag view (`flag->get_forward(&forward)`)
+// 6; the element from a forceinline member getter of the flags view 6; both members together 6. Diagnostic (reverted): a
+// constant store (1, 0, -1 or 2) to a scratch global before the call keeps the ESI save after the add, so no numbering tie.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

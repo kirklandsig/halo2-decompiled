@@ -1158,6 +1158,10 @@ void function_1537f0(s_profile_record *record);
 // order 49 (hoist). Diagnostics: the flags and the word after them through a dword pointer (`tail[0]`, `tail[1]`) on this body
 // 14 (retail's store schedule, only the +0x5c base left); that pointer with the links through `entry` 49 (NONE hoists again:
 // only NONE stores through a pointer end the hoist).
+// M3 lane 16 r124 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the link chain through an unnamed
+// `(&entry->unknown58)[n]` expression 49 (NONE hoists into EBP: only a named pointer ends it); the link pointer declared
+// before the record 18 (same code); the flags and the word after them stored before the links 27; the links as two chained
+// pairs through the pointer, (2,3) then (0,1) 18, (0,2) then (1,3) 18.
 // @retail 0x7f930
 void function_7f930(void)
 {

@@ -32,6 +32,13 @@ struct s_visibility_bound_record
 // register saves and this build forms it with a shifted copy added to the table after them; the part centre's body
 // is inlined from 0x142570, whose file this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (443): retail still forms the entry address as a sign-extended index scaled by the entry size and added to the table, and the part centre is still 0x142570's body inlined from another file.
+// MiniMax R (11-16): no new form, no lower score (443): the zero constant in EBX (retail keeps the entry there), the
+// list-start stores, the two-step frustum source pointer, the plane cursor at .k and the j/k register naming, the tag table
+// reloaded in the bottom arm and the bound centre copied with integer moves (retail loads it into xmm0-2 and scales in place,
+// which is 0x142570's body in a file this lane may not edit) all remain; the permuter (29 tries in 306 s, annealing) reached
+// 399 in the full image against its 429 baseline with a variant built on a volatile entry pointer, a volatile visible
+// pointer, a constant-only local and a one-use pointer local, so it was reverted, and the same variant without the two
+// locals measures 441 on the reduced image.
 // score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
 // score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from

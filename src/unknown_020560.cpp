@@ -139,6 +139,13 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 108 (m3 lane 1, fast): the floor helper `__stdcall` 4, `__cdecl` 4; a `void *` parameter cast to the byte
 // pointer in a local 4; the count as a `real` 4; the truncation written at the compare and the store, no truncated
 // local, 4 (the clear stays EDX in each); the level store re-derived from state and index 51 (419 bytes, no CSE).
+// Round 107 (m3 lane 11, fast with 0x143c0, which matched in each): the magnitude test as a two-sided range test 33
+// (408 bytes); the bias arm as `if (!g_4ba019) bias = PIN(...); else bias = 0.0f;` without `adjusted` 30 (402 bytes);
+// the tag index as a `(word)` cast 24; the bias block ahead of the bitmap block 95 (400 bytes); both fmod operands
+// cast to double 4 (same code; `(double)count` alone does not compile, ambiguous overload). Reading: the floor asm is
+// 0x16ae0's body inlined (other files inline it through the same forced-inline form and match), and matched 0x18e80
+// has this loop's bit-scan and clear shape with EAX; 0x143c0's callee tree holds one unmatched function
+// (0x12ce00, a contributor's), but it uses EAX, ECX and EDX in both builds, so its clobber set is not the cause.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

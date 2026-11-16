@@ -375,6 +375,10 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
+// retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
+// route-found byte into AL; switching on the route word without the long copy measures 397 and returning the
+// route-found byte directly measures 439.
 // MiniMax G (11-12): no new form, no lower score (182): retail's case 2 arm runs the switch's value down through the
 // compare-and-decrement pair and calls 0x262b40, where ours tests the value in place and calls 0x410730, so the arm's
 // shape differs before the twenty bytes of extra code that shift every later branch.

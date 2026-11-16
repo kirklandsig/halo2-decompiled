@@ -30,6 +30,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers
+// (xmm1, xmm3, xmm5) and spills the second point's (frame 0x14), where ours materialises both offset vectors and
+// both views in the frame (0x20); the orthographic dot still runs i, j, k where retail runs j, k, i, and no helper in
+// include/ offers that order, so the body stands.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.

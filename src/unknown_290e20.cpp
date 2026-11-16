@@ -524,6 +524,13 @@ struct s_ai_scene_assignment
 // block), actor, score, variant, name 16, name, actor, score, variant 15. Re-measured: the long next-role local with the
 // direct maximum 59 at 347 bytes; `*(long const *)&maximum_count` as the copy's source folds back to the direct form (59,
 // 350 bytes). A 1800 s permuter run (anneal, 249 tries, 8 restarts) found nothing below the baseline.
+// Round 128 (m3 lane 9, fast): on the int copy, a long next-role local for the flag and the recursion 61 (347 bytes: the
+// copy's movsx stays and the stores read the role with one movsx from its slot); that local for the flag only 12 (same
+// code); the flag as `role_index >= role_count - 1` 13; the scorer's two outputs declared at function scope 12. On the
+// direct maximum, the next-role local for the flag only 59 (350 bytes: the role keeps ESI). Re-measured: the direct
+// maximum with the next-role local for the flag and the recursion 59 at 347 bytes (retail's head exactly; the stores then
+// load the role with `movsx eax, word ptr` where retail reloads the raw dword into ECX for the movsx and the recursion's
+// `inc ecx`); the leaf copy as `*local_0 = local_0[-1]` 24 (347 bytes, the movsx stays).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

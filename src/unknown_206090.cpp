@@ -614,6 +614,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1419 (0x5c0); the first loop walking its element and definition pointers (`+= 0xa8`, `+= 0x4c` at the body's end) 1397.
 // P542: Independent computed point/contact spring-damping, slope quotient, wave response, kinetic/static force, impulse-bound and excess-speed parts: 1398/1413/1426/1377/1397/1397/1375/1394.
 // NOT kept: ties or regressions; native frame 0x58c and component/velocity homes remain unresolved. Original body and all kernels restored.
+// P545: Standard component transforms at point/contact lever arms, moving-surface correction,
+// residual subtraction, repeated add/scale and first/second normalization tails:
+// 1453/1419/1408/1393/1592/1712/1476/1398. NOT kept: no native frame/extent
+// recovery; full control 1375, reduced 1392. Original kernels and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

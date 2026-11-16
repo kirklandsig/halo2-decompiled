@@ -201,6 +201,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax C (11-16): no new form, no lower score (32): the correction through the existing vector3f_add_scaled straight
+// into the output 97 (348 bytes) and the deltas i, j, k (79 in the earlier rounds: retail's velocity stores and its
+// (k + j) + i sum, but the rate chains and tick products then run i, j, k) leave the chain order tied to the component
+// the first delta reads, so retail's j, i, k chains with its i, j, k deltas still have no source form in this file.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax I (11-14): no new form, no lower score (32): retail's rate chains and tick products run j, i, k while its velocity stores and deltas run i, j, k and the squared length sums (k + j) + i; our deltas j, i, k keep retail's chains but the stores and the sum follow the delta order, and deltas i, j, k give retail's stores and sum but move the chains to i, j (79), so one source order cannot give both.
@@ -730,6 +734,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // plain component loop 80 (first +0x2f), that with a named tick scale 80; the deltas as a component loop with dot3f for
 // the length 80; prediction, tick stage and deltas in one loop 94 (first +0x17); the delta loop accumulating the squared
 // length 79. Original body restored.
+// P544: whole-object standard forward fallback/velocity-history/location-history
+// copies 107/93/101; backward copies 107/94/101; standard inner-product squared
+// length, default/explicit real operations 113/131, all with direct tracked input.
+// NOT kept: all regress and lose the native frame/transport; original parameter
+// storage, helpers, j-first delta graph and complete body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
