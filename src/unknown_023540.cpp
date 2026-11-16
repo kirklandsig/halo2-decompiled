@@ -3897,6 +3897,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // two named for its two uses in modes zero and one 832 (4840 B); both selectors `long const` 9 (same code); const selectors
 // with no shifted local 939; the selectors from one if/else on small with no shifted local 952. Re-measured: no shifted
 // local 939 (shift retail's, but small loads into AL after fraction's move to EBP where retail loads CL first).
+// Round 111 (m3 lane 10, fast, control 9): the byte clamp ahead of the two selectors 975 (4840 bytes). On the no-shifted-local
+// form (re-measured 939: shift retail's, small loaded into AL after fraction's move, no copy) with alpha before input (re-measured
+// 19: small AL copied to CL for the neg, alpha in ECX, where retail loads small into CL first and copies it to AL): both selectors
+// ahead of `fixed` 959; small typed byte 19; both selectors typed dword 19; the byte clamp between the alpha and input selectors
+// 973 (4832 bytes).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
