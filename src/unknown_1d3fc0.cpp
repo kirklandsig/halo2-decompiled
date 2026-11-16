@@ -18,7 +18,8 @@ int __fastcall function_142a60(transform4x3f const *arg_0, transform4x3f const *
 
 PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 {
- real local_0 = (real)sqrt(length_sq3f(arg_0));
+ real j_squared = arg_0->j * arg_0->j;
+ real local_0 = (real)sqrt(arg_0->i * arg_0->i + j_squared + arg_0->k * arg_0->k);
  if (!(fabs(local_0) < 0.0001f))
  {
   real local_1 = 1.0f / local_0;
@@ -452,6 +453,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // (ours copies up.i, retail forward.i); an 1800 s fast annealing permuter run on it (seed 122): 75 tries, none below 2. On
 // the lead: a const forward pointee 2, `vector3f *const up` 2, `up =` from the third normalization's returned pointer 2
 // (same code each). On the kept body the normalizer's squared length through the existing length_sq3f 153. Body unchanged.
+// MiniMax R (11-16), NOT kept: 11 (was 110) with sqrt(length_sq3f(arg_0)) and the projection's k term read as
+// local_1[0].forward.k while its i and j terms read forward-> (a re-read of the object in place of the named
+// pointer: kept only with a match). The length_sq3f form alone 153 (fast).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
@@ -494,7 +498,7 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
     real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;
-    up->k -= local_1[0].forward.k * local_10;
+    up->k -= forward->k * local_10;
     function_1d3fc1(up);
     cross3f(up, forward, &local_1[0].left);
     function_1d3fc1(&local_1[0].left);
