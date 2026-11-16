@@ -7584,6 +7584,9 @@ public:
 // object provider 507; both scan outcomes as bytes 492; incoming-weapon/tag storage names
 // 492/492; indexed slot pass on the native magazine baseline 492; complete ordered mode
 // admission 513. NOT kept: no permitted native spill repair; complete original body restored.
+// P576: Slot pointer body step, twice-used magazine receiver and paired scan names 492/492/492;
+// rounds-accumulation/first-slot lifetimes 511/492; actual modes/dual memset 492/492; eager final mode admission 521.
+// NOT kept: ties or regressions. Native early object/tag spills, scan flag homes and query-call boundary remain; whole body restored.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8376,6 +8379,10 @@ struct s_unit_turn_state_view
 // P552: Three single-exit eligibility regions; complete per-vector unchanged producers aim/look/both;
 // read-only and existing typed state receivers.
 // Fast scores 268/268/268/268/268/268/268/268. NOT kept: no permitted confirmed gain; original body restored.
+// P576: Distinct frame names, outer snapshots and scale if/else 268/268/268;
+// vector3f_assign snapshots/targets/neutral/planar 450/428/421/368; snapshot names 268.
+// NOT kept: no eligible gain; native frame 0x7c, deferred saves and separate divisions remain.
+// Original executable body restored.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -9431,7 +9438,7 @@ struct s_unit_melee_collision
 // locals declared before the weapon index (502, 537), the pool local without the data pointer (474), the tag table
 // as a local alone (487), the material class alone (487).
 // MiniMax I (11-15): no new form, no lower score (493): the melee damage and the self damage are still set only when the melee table entry exists where retail reaches the weapon's defaults with none still in both, and hit_t is still not initialised where retail has no store; the accessor macros are kept as they are.
-// score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
+// score 484 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
 // shapes (the controller as a long, the player pointer taken before the rounding) cost 7 through slot offsets
@@ -9492,6 +9499,9 @@ struct s_unit_melee_collision
 // per-row collision workspace 493; object-first collision case order 493;
 // successful-query-owned publication 493; positive seat admission 494. NOT kept:
 // no permitted frame/material-home gain. Only the verified typed field cleanup retained.
+// P576: Range at each use on the material/provider graph 531; whole-fan collision and outer hit/damage/basis scopes 484/484/490/485;
+// existing ray/paired point producers 484/567; complete fan/trace names 484. NOT kept: ties or regressions;
+// frame 0x180/native 0x17c and native tag/pool/counter carriers remain. Original entire body restored.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
