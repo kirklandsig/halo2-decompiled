@@ -2619,6 +2619,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // original full body, normalizer, property helpers and headers restored.
 // P563: Shared then private magnitude reductions; real/default, real/explicit, double/default, double/explicit at each boundary:
 // 142/169/142/169/400/442/400/442. NOT kept: native early velocity j/k loads and property-zero residence remain; original helper, header and full body restored.
+// P578: Scalar memcpy at contact bound/first and second signed body indices/contact flags/
+// surface ordinal/material word/separate speed-property flags/each array receiver:
+// 91/91/91/91/91/113/91/304. NOT kept: no native early velocity j/k or property-zero equality; original
+// complete body, shared helpers, inputs and all observations restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

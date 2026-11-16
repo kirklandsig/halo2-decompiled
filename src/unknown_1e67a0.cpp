@@ -689,7 +689,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
-// score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// Earlier header detail: 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax A (11-12): no new form, no lower score (114, the reduced image and the full build agree): naming the
 // sine and the cosine before the rotation call scores 150 (1382 bytes) against 114, so the call keeps its
 // expressions; the first difference is still the inlined rotation's dot and cross products, whose body is in
@@ -1146,6 +1147,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // (0x1ecf50 160, as the listed crosses-first form). Both files restored.
 // P563: Individual six initial flag fields, then first-five/all-six masked conditional publications:
 // 340/351/320/312/304/139/349/363. NOT kept: native rotation j/k products, side-dot residence and eager exit copies remain; original flags and complete body restored.
+// P578: Scalar memcpy at movement scale/tick rate/animation graph/animation handle/
+// signed animation index/support flags/first and second physics dwords: 205/194/215/213/146/140/114/114.
+// NOT kept: no native rotation j/k or eager-output equality; original complete body,
+// shared rotation, observations and flag publications restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
