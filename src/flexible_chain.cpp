@@ -235,6 +235,7 @@ void __stdcall function_1160c0(real dt)
 }
 
 // MiniMax S (11-14): no new form, no lower score (171): the body is still retail's length and the first difference is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and then in ECX, so only the branch targets and the block layout after it differ; the segment's base, its ownership and the frame's homes are the rest of the difference.
+// MiniMax E (11-16): no new form, no lower score (171): the segment base and the segment pointer take EDI/ECX where retail uses EDX for both, and the low stack slots are in another order.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
@@ -683,6 +684,9 @@ void __stdcall function_1160c0(real dt)
 // reversed (here the axis at 0x10-0x18, the segment and the scale at 0x1c and the cosine at 0x20; retail the cosine at
 // 0x10, the segment and the scale at 0x14 and the axis at 0x18-0x20), which moves the whole rotation block.
 // MiniMax I (11-15), NOT kept: 165 (was 171), a 6-point gain, under the 8-point bar for a function above 30.
+// P567: Standard bounded-segment minimum, long/int, both argument boundaries,
+// implicit/explicit ordering provider: 280/280/309/309/280/280/309/309. NOT kept: no
+// native EDX/segment/axis/previous homes or exact match; original complete body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

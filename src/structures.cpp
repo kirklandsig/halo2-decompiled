@@ -490,6 +490,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax H (11-13): no new form, no lower score (172): retail still saves ebx first and keeps the BSP global in ebx while this build keeps it in ebp and defers the ebp and esi saves, so the prologue's order and the frame's slot heights differ; the promoted 0x11e800 clone still hands its four pointers over in another register order (retail ecx, edx, eax, esi), and that callee lives in another file.
 // MiniMax I (11-11): no new form, no lower score (172): retail pushes ebx first and keeps the BSP pointer in ebx, we keep it in ebp and defer the ebp and esi pushes, and our frame's store slots sit one word lower than retail's; the callee's four argument registers (0x11e800) are outside this file.
 
+// MiniMax R (11-16): no new form, no lower score (172): retail pushes EBX first and keeps the BSP root in EBX with the section in its own home, where this build keeps the BSP in EBP and the section in EBX, and the frame's slot order follows that allocation; the permuter's six tries reach no variant under 172.
 // MiniMax D (11-14): no new form, no lower score (172): the frame 0x58 agrees, but the BSP global still sits in ebp where retail keeps it in ebx, and the prologue still pushes two registers where retail pushes three.
 // MiniMax G (11-13): no new form, no lower score (172): the BSP global sits in ebp where retail
 // keeps it in ebx, the prologue's push order and the frame's slot heights differ, and the 0x11e800

@@ -40,6 +40,11 @@ struct endpoint_list_2e3370
 		data[size] = endpoint;
 		size++;
 	}
+	// a copy of `from`'s endpoint at `index`, after the last one
+	void append_from(endpoints_2e0f80 const &from, long index)
+	{
+		append(from.data[index]);
+	}
 };
 
 // the three lists, and the storage that follows them
@@ -51,7 +56,9 @@ struct overlap_endpoints_2e3370
 
 // the endpoints of every box the bounds overlap (not the grid cells'), one
 // list per axis, each sorted between a sentinel at each end
-// score 438 (was 438): frame size agrees; the array and vector slots differ.
+// score 414 (was 438): each kept endpoint is copied by a list member that takes
+// the source list and the slot (retail forms the list's address, then reads its
+// data, after the slot). Frame size agrees; the array and vector slots differ.
 // Earlier: array/cursor/sentinel renames and narrower scopes 518, in-place
 // loop 436, value append 544, member copies 706. New: range by value 479,
 // range pointer 438, first bound by value 475, later word declaration 438,
@@ -93,12 +100,12 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 	element_2e1090 **kept = (element_2e1090 **)found.data;
 	for (long remaining = found.size - 1; remaining >= 0; remaining--)
 	{
-		lists->axes[0].append(axes[0].data[(*kept)->slots[4]]);
-		lists->axes[0].append(axes[0].data[(*kept)->slots[5]]);
-		lists->axes[1].append(axes[1].data[(*kept)->slots[0]]);
-		lists->axes[1].append(axes[1].data[(*kept)->slots[2]]);
-		lists->axes[2].append(axes[2].data[(*kept)->slots[1]]);
-		lists->axes[2].append(axes[2].data[(*kept)->slots[3]]);
+		lists->axes[0].append_from(axes[0], (*kept)->slots[4]);
+		lists->axes[0].append_from(axes[0], (*kept)->slots[5]);
+		lists->axes[1].append_from(axes[1], (*kept)->slots[0]);
+		lists->axes[1].append_from(axes[1], (*kept)->slots[2]);
+		lists->axes[2].append_from(axes[2], (*kept)->slots[1]);
+		lists->axes[2].append_from(axes[2], (*kept)->slots[3]);
 		kept++;
 	}
 	endpoint_list_2e3370 *list = lists->axes;
@@ -114,7 +121,52 @@ void class_2e1090::function_2e3370(bounds_2e0020 const *bounds, overlap_endpoint
 	lists->axes[2].append(sentinel);
 }
 
-// score 111 (was 171): first written form 171; frame now agrees. Sort setup
+inline void remap_boxes_2e3b00(shorts_2e1090 &boxes, long const *remap)
+{
+	for (long j = boxes.size - 1; j >= 0; j--)
+	{
+		boxes.data[j] = (unsigned short)remap[boxes.data[j]];
+	}
+}
+inline void set_index_2e3b00(element_2e1090 const &element, cell_2e1090 *cells, long index)
+{
+	long owner = element.owner;
+	if ((owner & 1) == 0)
+	{
+		*(long *)owner = index;
+	}
+	else
+	{
+		((cell_2e1090 *)((char *)cells + (owner & ~1)))->box = (unsigned short)index;
+	}
+}
+inline void set_index2_2e3b00(long const &owner_ref, cell_2e1090 *cells, long index)
+{
+	long owner = owner_ref;
+	if ((owner & 1) == 0)
+	{
+		*(long *)owner = index;
+	}
+	else
+	{
+		((cell_2e1090 *)((char *)cells + (owner & ~1)))->box = (unsigned short)index;
+	}
+}
+// sorts `count` entries by key
+inline void sort_2e02d0(entry_2e0250 *entries, int count)
+{
+	order_2e0250 order = {};
+	if (count > 1)
+	{
+		int const last = count - 1;
+		function_2e02d0(entries, 0, last, order);
+	}
+}
+
+// score 100 (was 111): the sort is set up by a helper that takes the entries and
+// their count (retail loads the list and steps past the sentinel before the
+// count test). Owner-loop copy, cell-loop registers and axis step order remain.
+// Before, 111 (was 171): first written form 171; frame now agrees. Sort setup
 // and loop registers differ. Object argument 141; its scope 141; cell
 // reference 130; named count 101 (NOT kept: repeated array pointer reads);
 // endpoint cursor 111; range pointer 100 (NOT kept: one use); element
@@ -151,12 +203,7 @@ void class_2e1090::function_2e3b00()
 		((endpoint_2e0f80 *)order.data)[i].value = axes[0].data[elements.data[i].slots[4]].value;
 		((endpoint_2e0f80 *)order.data)[i].id = (unsigned short)i;
 	}
-	long const sortable_count = order.size - 1;
-	order_2e0250 context = {};
-	if (sortable_count > 1)
-	{
-		function_2e02d0((entry_2e0250 *)(order.data + 1), 0, sortable_count - 1, context);
-	}
+	sort_2e02d0((entry_2e0250 *)(order.data + 1), order.size - 1);
 	for (long i = 0; i < elements.size; i++)
 	{
 		remap.data[((endpoint_2e0f80 *)order.data)[i].id] = i;

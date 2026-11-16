@@ -50,18 +50,6 @@ struct keyed_children_2ec680
 		size = 0;
 		capacity_and_flags = 0x80000004;
 	}
-	// the index of the child kept with the key, or -1
-	long index_of_key(long key) const
-	{
-		for (long i = 0; i < size; i++)
-		{
-			if (data[i].key == key)
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
 	// a new last element, the array grown first when full
 	keyed_child_2ec680 &added_slot()
 	{
@@ -69,8 +57,9 @@ struct keyed_children_2ec680
 		{
 			function_2d91d0(this, sizeof(keyed_child_2ec680));
 		}
-		size++;
-		return data[size - 1];
+		long const grown = size + 1;
+		size = grown;
+		return data[grown - 1];
 	}
 	keyed_child_2ec680 &last_slot()
 	{
@@ -89,6 +78,21 @@ class keyed_list_2ec680 : public sized_2edd00
 {
 public:
 	keyed_children_2ec680 children;
+
+	// the index of the child kept with the key, or -1 (the count read once,
+	// the children reached through the list)
+	long index_of_key(long key) const
+	{
+		long const count = children.size;
+		for (long i = 0; i < count; i++)
+		{
+			if (children.data[i].key == key)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
 
 	keyed_list_2ec680(description_2edd00 const *description, typed_2edd00 **other, context_2edd00 const *context, long arg_3);
 	void function_2ec3d0(description_2edd00 const *description, typed_2edd00 **other, context_2edd00 const *context);

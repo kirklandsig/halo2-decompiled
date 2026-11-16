@@ -555,6 +555,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // producers, seven subsets and immutable all: 207/206/238/207/239/238/239/239.
 // NOT kept: no exact result or frame recovery; original math APIs, helper and full body restored.
 // MiniMax E (11-15): no new form, no lower score (206): the permuter over the body found nothing below 206.
+// P567: Standard transform pair/final/both sum boundaries, weighted-position sums,
+// their combinations and complete metadata sums: 277/277/328/432/454/454/501/485.
+// NOT kept: regressed native frame/input/coefficient residence; original complete helper/body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
