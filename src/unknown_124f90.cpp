@@ -459,6 +459,7 @@ long function_126bd0(long definition_index)
 	return 0;
 }
 
+// NOT kept (coordinator screen, MiniMax E 11-16): a new __declspec(noinline) (reverted even with a match): `__declspec(noinline) void function_12a420(short voice_index);`; the body is main's again.
 // @retail 0x1272c0
 void sound_set_ambience(long ambience_index)
 {
@@ -481,9 +482,6 @@ void sound_set_ambience(long ambience_index)
 		}
 	}
 }
-
-/* retail keeps this setter out of line at its call in 0x21c400 */
-__declspec(noinline) void function_12a420(short voice_index);
 
 // @retail 0x12a420
 void function_12a420(short voice_index)
