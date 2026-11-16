@@ -1598,6 +1598,9 @@ done:
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
 // MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
+// MiniMax S (11-15): no new form, no lower score (9): the actor offset is still built in esi with an add where
+// retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
+// compiles to the same prologue, so the register choice is not steerable from this function.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
