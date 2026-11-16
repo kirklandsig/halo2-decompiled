@@ -1054,6 +1054,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax E (11-16): no new form, no lower score (964): retail's session arrives in eax with a 0xb4 frame against our 0xd4, and that convention is fixed by the caller in a file this lane may not edit.
 // MiniMax C (11-16): no new form, no lower score (766): retail takes the session in EAX and the output pointer on the
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other

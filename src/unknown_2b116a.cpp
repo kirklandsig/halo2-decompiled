@@ -5462,6 +5462,13 @@ long qos_service_lookup();
 bool qos_is_complete(long handle);
 void function_1486b8(long error, bool keep);
 
+// score 10 (155/155 bytes): retail keeps an entry `result = false` store
+// (`mov byte ptr [ebp - 1], 0`) before `*completion = false`, and stores 0
+// again on the else path; ours eliminates the entry store and starts with
+// `*completion = false`. Tried: `bool result = false;` at the declaration, an
+// explicit `result = false;` after the completion store, and the initializer
+// after that store: all tie at 10 (the later branch stores make it dead);
+// dropping the else assignment gives 150 bytes and 56. The rest matches.
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {

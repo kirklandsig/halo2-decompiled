@@ -409,6 +409,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // P551: Complete cached-gain retention and logarithmic-amplitude admission outcomes
 // in bool/byte/short/long: 549/549/549/549/536/536/536/536 (reduced control 536, full 544).
 // NOT kept: no native frame/stream/gain/flag-home repair; original full body restored.
+// P564: Separate per-query playing/stopped results in both original playback arms,
+// bool/byte/short/long: 534/534/534/534/536/536/536/536. NOT kept: native frame/stream/gain homes and
+// unrounded math expansion remain; original queries, guards, calls and complete body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

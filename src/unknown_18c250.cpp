@@ -426,6 +426,16 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // Round 91 (m3 lane 15, fast): the memcpy replaced by a conversion of the samples address: `(byte const *)(dword)
 // data->samples + offset` 8, a dword local initialised from that cast 8, `(byte const *)(data->samples + offset)` 8,
 // `(byte const *)((dword)data->samples + offset)` 8, through `(void const *)` 8 (all the plain sum's schedule).
+// M3 lane 11 r108 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10, all matched throughout): the set built and passed
+// in a forceinline helper taking (object, tag, samples, offset, count, scale) with the plain sum 8 (the add still runs
+// ahead of the scale load); the samples block read as a by-value copy of the existing two-field tag-data aggregate of
+// include/unknown_246cd0.h (address + offset) 28 (155 bytes: the dead size copy stays); the sum named where it is
+// computed with the count stored before the address 4 (registers unchanged, the stores follow source order); a
+// forceinline setter taking (set, count, offset, samples) and returning the set, called in 0x10e480's argument list with
+// the plain sum 8; `entry` declared before `data` and the copy local before the set 2 (same code). Reading of the
+// listings: in every plain-sum form the samples take EAX, so the scale load (EAX) waits for the add; retail's samples
+// and offset are both short temporaries (EDX, then EDI only because EAX holds the scale and ECX the set's address and
+// the object index across the add), which needs the add to come after the argument setup in the IR.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -635,6 +645,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax C (11-16): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80, so the extra four bytes are not in the case-0 cluster local, the object index local or the marker name local (dropping each of them leaves the frame at 0x84 and the score at 184); what is left is the pooled literal 1 in EBX, the four-byte gap between case 3's compress source and the 0x17b2d0 out-parameter where retail shares one slot, and the audibility byte's store.
 // MiniMax I (11-15): no new form, no lower score (184): the only lever left is the held chain - `inline` on 0x188790's
 // definition, which lives in src/unknown_1887d0.cpp and not in this lane's file (113 alone, 49 with the ternary this body
 // already keeps), and the steps after it rest on match-only forms; the body stands.

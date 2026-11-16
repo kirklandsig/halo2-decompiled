@@ -139,6 +139,12 @@ union s_6ec80
 // homes swap). On the scoped mask: the name and data pointer declarations swapped 225; `value_49c8` declared at its NONE
 // store 225; first_id, second_id and players declared at their first stores 225; an unsigned counter 226; a char counter
 // 247 (981 B). Declarations and initialisers do not move this allocation; only where the zero is written does.
+// M3 lane 14 r101 (fast with 0x6ec10/0x5b120; base 5): the mask scoped in the guard with the loop counter declared and zeroed
+// just before the guard 88 (every register is retail's: NONE ECX, the entry zero ESI, the mask's zero inside the guard, the
+// block pointers EBX/EDI; left: the counter's zero sits before the guard and the frame is 0x1154 with the slots reshuffled);
+// that with the counter declared among the top declarations 88 (same code). With the counter's zero inside the guard the
+// scoped mask goes back to 225: the counter in a nested block, an `int` counter, the counter declared before the guard and
+// zeroed inside it, 225 each. So the scoped form's register shift follows the counter's zero, not the mask's.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
