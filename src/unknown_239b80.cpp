@@ -650,6 +650,28 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // r103's completion-flag body with this helper convention, a positive written-out closure and `current` at function scope
 // 116 (784 B; count EDI, points EBX, current ESI, hull count cached in ECX where retail has count in its home, points ESI,
 // current EDI and the hull count cached in EBX).
+// M3 lane 10 r110 (fast with 0x239d50 and 0x239b80, both matched each time; control 144). Reading: retail's hull loop is
+// top-tested with every back edge jumping to its head, which is what jump threading of a completion flag gives (any plain
+// loop here is rotated); retail never makes `count` a register variable (after the classifier call `current` is reloaded
+// from count's home and the lowest scan bounds on an EDX copy of the call's EBX argument). Without a flag: one hull counter
+// in `while ((short)hull_count < count)` with a bool departure flag, `if (!left_start) left_start = points2d_differ(...)`, the
+// positive written-out closure and the three gotos 267 (757 B: frame 0x14 and the stack convention as retail, `count` in
+// memory, but points takes EBP for the whole function and the flag the points home, indices reloaded into EBX; the loop is
+// rotated); that with a long flag 247 (759 B), the closure as `!points2d_differ` 265, the departure as `left_start =
+// left_start || ...` 267, `short current = count;` before the classifier call 251 (746 B); the compaction inside the loop's
+// exit test (`for (;;) { if ((short)hull_count >= count) { compaction; break; } ... }`, breaks for the gotos) 267 and 251 (the
+// same code: the compiler moves it out and rotates). On main's body a bool flag 264 (762 B: count passed in EAX, 0x239d50
+// 80). Completion-flag family (match-only) re-measured: current before the call 116 (784 B), the flag declared after the
+// heading 116 (same code), current after the call 216 (791 B; prologue, frame, flag slot, points ESI and indices EBP all
+// retail's, but `count` keeps EBX for the whole function so the hull count only gets ECX); on that, `dword hull_count` 216,
+// lowest_y declared first 216, the closure as `!points2d_differ` 217.
+// P536: Explicit unrounded distance/heading/short-circuit absolute-result carriers,
+// subsets 1/2/4/3/5/6/7 then complete with both coordinate differences named:
+// 144/144/162/144/162/162/162/162. NOT kept: no exact result-transport/frame recovery;
+// original real consumers, private predicate and complete body restored.
+// P538: Actual missing-successor outcome at the terminal edge, positive/complementary
+// bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no native frame,
+// count/departure-home or compaction repair; original producer, terminal edge and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

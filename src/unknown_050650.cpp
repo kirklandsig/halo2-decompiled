@@ -1297,6 +1297,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
 // `field_x50962e != NONE` test 258 (all same code but the label form).
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1596,6 +1597,7 @@ done:
 // function's own body - a masked slot local added to the typed base, the byte-pointer product and the
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
+// MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -1888,6 +1890,15 @@ struct s_actor_looking_structure_view
 // structure/pathfinding lookup ahead of the actor 224; the normalised length named before its test 144 (928 B);
 // re-measured the up-axis pointer local 70 and the candidate pointer 139; permuter (600 s, seed 201, 62 tries) none
 // below 23. Retail's dot starts `movss xmm0, [axis + 4]` hoisted above the candidate copy; ours starts v.k * axis.k.
+// Round 203 (m3 lane 4, fast = full 23): a forceinline helper holding 1-7 dead locals before the loop, at the loop top or
+// between the copy and the rotation (21 builds) 23 each, identical code; `directions + i` at the rotation and the trace 23
+// (same code); the angle named between the copy and the rotation 33; the copy inside a forceinline helper taking (source,
+// axis, angle, out) 60. Diagnostic: a file-local copy of the rotate pair with the dot `((j + i) + k)`, used only here, plus
+// the score `(i + k) + j` in explicit parentheses 13 with 0x296e60 unchanged (299), so lane 11's 13 needs no change to the
+// shared helper; the copy alone 31. Left at 13: the dot's inner pair takes XMM2 for the j product (retail XMM0), the j row's
+// XMM5/XMM6, and the score's inner pair k, i (retail i, k; parentheses stop reassociation but not the operand swap). On 13
+// own dead locals n = 1..7 23/13/13/13/13/13/13; dead helper locals 1-7 between the copy and the rotation, or ahead of
+// the score, 13 each. Not kept (a one-caller twin of the shared helper).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

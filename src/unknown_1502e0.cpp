@@ -1102,6 +1102,10 @@ struct s_tail_transfer_traits
 // counter's type is the only change from the 143 form, and retail's code is straight. On that 134 form: on the global 180;
 // `long primary;` 188; held[2] replacing primary/secondary (the seat arm writes held[0]) 157 (829 B), with `long hand` 167;
 // cbe60 before the loop 161 (802 B). Body unchanged.
+// P534: Actual sixteen-entry copy-counter dword/int/short/word domains 144/144/144/144;
+// identifier-search counter dword/int/short/word domains 145/144/198/198. NOT kept:
+// no native selected-traits/unit/NONE or selection-counter-home recovery; narrow search
+// counters lengthen to 842 bytes. Original traversals and complete body restored.
 // NOT kept (coordinator review, MiniMax I 11-15): 144 -> 3 rested on forms kept only with a byte match: each
 // weapon read through a second tail_object_get of the same unit (first_again, second_again), the pool global re-
 // read into second_objects, current_weapon/other_weapon locals holding NONE until set and then copied, other
@@ -1849,6 +1853,9 @@ void function_150820(dword *bits, bool local_only)
 // in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and both bodies are 210 bytes. The rotation starts at
 // the entry block: retail reuses edx (the pool data pointer's register) for the unit index and leaves ecx free for the policy byte, this build reuses
 // ecx (the table's register) and takes the policy byte in al; no declaration order, hand width or result form moves it.
+// P533: Player ordinal ingress dword/int/unsigned-int/word, Boolean then byte return:
+// 43/43/43/84/43/43/43/84. NOT kept: no byte match; full-width mask and native
+// saved player/hand roles remain. Original complete body and sole outside declaration restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

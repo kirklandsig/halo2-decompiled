@@ -154,6 +154,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // in the arm 90; the element as `arguments + argument_index` with `result = NULL` first 83; the result copy declared
 // just before the initialisation test with `result = NULL` first in the arm 83; the element passed straight to the
 // call 95 (266 bytes). Every volatile-free form still gives the result and the pointer one register.
+// M3 lane 9 r127 (fast; volatile-free forms): the init block's lookups as named expression/name pointers 95 (266 bytes),
+// with `result = NULL` first in the arm 83 (277); the frame reference declared after the result copy, null first, 83; the
+// element taken from `result` 95; the frame reference from a thread pointer local 95. Diagnostic: `&arguments` passed to
+// an allocator defined in another file, so only LTCG inlines it, 95 (still promoted after the cross-module inline).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

@@ -186,6 +186,40 @@ def test_standard_marker_is_only_for_decompiled_functions_and_methods(text):
         scan(text, 'src/x.cpp')
 
 
+def test_abstract_marker_calls_the_constructor_on_the_buffer():
+    text = ('// @retail 0x31bbd0 abstract\nc_base::c_base(s_description const *description)\n{\n}\n'
+            '// @retail 0x2010\nc_other::c_other(long a)\n{\n}\n')
+    marked = scan(text, 'src/a.cpp')
+    assert [(m.retail, m.kind, m.abstract) for m in marked] == [
+        (0x31bbd0, 'constructor', True), (0x2010, 'constructor', False)]
+    tu = build.tu_source('/abs/src/a.cpp', marked, 'a', {'s_description'}, set(), set())
+    # no instantiation of the abstract class, an explicit call instead
+    assert '::new ((void *)standin_a_arguments) c_base(' not in tu
+    assert 'void standin_a_0(void) { ((c_base *)standin_a_arguments)->c_base::c_base(' in tu
+    # other constructors keep their placement-new stand-in
+    assert 'void standin_a_1(void) { ::new ((void *)standin_a_arguments) c_other(' in tu
+
+
+def test_standard_marker_on_a_stdcall_method_names_the_convention_in_its_escape():
+    text = ('// @retail 0x6fe90 standard\nbool __stdcall c_state::join(bool all, bool reserve)\n{\n}\n'
+            '// @retail 0x1010 standard\nbool c_list::has(long a) const\n{\n}\n')
+    marked = scan(text, 'src/s.cpp')
+    assert [m.convention for m in marked] == ['__stdcall', '']
+    tu = build.tu_source('/abs/src/s.cpp', marked, 's', set(), set(), set())
+    assert 'bool (__stdcall c_state::*volatile standin_s_outside_0)(bool, bool) = &c_state::join;' in tu
+    assert 'bool (c_list::*volatile standin_s_outside_1)(long) const = &c_list::has;' in tu
+
+
+@pytest.mark.parametrize('text', [
+    '// @retail 0x1000 abstract\nc_list::~c_list()\n{\n}\n',
+    '// @retail 0x1000 abstract\nvoid __stdcall plain(long a)\n{\n}\n',
+    '// @stub 0x1000 abstract\nc_list::c_list(long a)\n{\n}\n',
+])
+def test_abstract_marker_is_only_for_decompiled_constructors(text):
+    with pytest.raises(SystemExit, match='"abstract" marks'):
+        scan(text, 'src/x.cpp')
+
+
 STANDARD_CONSTRUCTOR = ('#include <string.h>\n#include "lists.h"\n  # include "more.h"\n'
                         '// @retail 0x2000 standard\nc_list::c_list(word flags, s_item const &item, bool alternate) :\n'
                         '\tc_base(flags)\n{\n}\n'

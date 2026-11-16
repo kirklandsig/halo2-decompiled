@@ -893,6 +893,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // (diagnostic: the callees inline as without the pragma); the camera exit as `return local_1;` 179 (661 B); the
 // velocity copied before the forward normalize 41; the square root left positive and subtracted per component 53
 // (660 B); the player-unit test as one ternary comparison 167 (667 B).
+// m3 lane 14 r99 (fast with 0x188180, control 2): `if (length_squared)` 2 (same code); the along test as `!(along < 0.0f)`
+// 85; the zero-length arm's copy written per component 172 (618 B); the projection scale divided in place in local_0 2
+// (same code); `-sqrt(distance_squared)` without the double cast 66 (663 B). Diagnostic: the function renamed (its
+// definition and 0xf8eb0's declaration and call) still 2, so the decorated name does not decide the epilogue order.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

@@ -606,6 +606,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // driven slip/projection/dynamic friction/static friction/load projection:
 // 1394/1443/1394/1394/1394/1394/1394/1380. NOT kept: all regress or move extent away;
 // excess frame and indexed homes remain. Original body, kernels and includes restored.
+// Round 128 (m3 lane 12, fast; control 1375, frame 0x5d0; retail keeps local_4 below local_5 at 0xb4/0xc0 and the component
+// at 0xcc, ours local_5 0xe0, local_4 0xec, component 0x11c; both builds inline the fld/fistp rounding, so both use the
+// asm-mode slot order): the two 0xba1d0 outputs named linear_velocity/angular_velocity 1392 (6211 bytes, frame 0x5cc, the pair
+// keeps its order); the impact position built by vector3f_add_scaled straight into the impact record 1412 (6163 bytes, 0x5c0);
+// the first loop's force added to +0x90 by vector3f_add_scaled in place of the scaled temporary 1373 (6243 bytes, 0x5cc); both
+// 1419 (0x5c0); the first loop walking its element and definition pointers (`+= 0xa8`, `+= 0x4c` at the body's end) 1397.
+// P542: Independent computed point/contact spring-damping, slope quotient, wave response, kinetic/static force, impulse-bound and excess-speed parts: 1398/1413/1426/1377/1397/1397/1375/1394.
+// NOT kept: ties or regressions; native frame 0x58c and component/velocity homes remain unresolved. Original body and all kernels restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

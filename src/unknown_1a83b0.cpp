@@ -594,6 +594,10 @@ s_1a8a10 g_4453c0[] =
 // declared at the switch or with the rotated point 17/17 (same code, it shares the array's slots); the rotated point as a
 // two-element real array 17 or typed as a 2D vector 17 (same code: its y store still does not stop the j reuse); the
 // facing copy made before the 0x1f5390 call 170 (564 bytes); a 600 s permuter run, 54 tries, best 17.
+// Round 166 (m3 lane 7, fast with 0x1f5390 0x1f57a0 0x1f57f0 0x1a8c30; control 17): the facing copy as a two-real array
+// 17; the point's components named x and y ahead of the copy 17; the actor pointer declared `*const` 17 (all same code);
+// the final switch's identical cases 2 and 3 under one label 69; the table entry's fields read in place instead of the
+// three reference names 28.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
