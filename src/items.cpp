@@ -1482,6 +1482,10 @@ struct s_item_flags_view_10b850
 // P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
 // unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
 // frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
+// P571: Actual flow-magnitude nonzero/zero decision at its consumer, bool/byte/short/long:
+// 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
+// point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
+// complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
