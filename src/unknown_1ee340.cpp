@@ -230,6 +230,10 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // vtable, the index is still loaded first); the w store ahead of the point set 14 (stores keep source order); the
 // surface pointer formed ahead of the member stores 22 (the entry loads the radius first as retail, but the surfaces
 // load moves above the stores); the surface pointer formed between the index and value stores 20.
+// Round 91 (m3 lane 15, fast with 0x1ee4d0/0x1ee500): the radius as a file-static .data global 6 (index still first);
+// the surface through the stored member index 6; the side test against the stored member 122 (both callers lose their
+// match); the vertex from the m128 accessor's element 6; the radius assigned first in the body through a no-argument
+// base constructor 8 (header edit for the trial only, restored).
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
