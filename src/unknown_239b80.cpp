@@ -672,6 +672,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P538: Actual missing-successor outcome at the terminal edge, positive/complementary
 // bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no native frame,
 // count/departure-home or compaction repair; original producer, terminal edge and complete body restored.
+// P547: Complete point2f displacement/opposite-heading producers, original/aggregate/shared
+// difference combinations: 154/154/144/154/154/144/154/154. NOT kept: no native frame/count-home
+// recovery; original scalars, closure helper, compaction and complete body restored.
+// P549: Persistent multiuse selected-distance/angle/delta workspaces, seven subsets,
+// then all with the existing successor ordinal retained across passes: eight at 144.
+// NOT kept: extra frame word, count/departure/produced-length homes and loop head remain.
+// Original complete body and declaration scopes restored.
+// P551: Standalone complete lowest-point replacement/retention outcomes in
+// bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no exact frame/count-home repair;
+// original body restored. Candidate decisions, all lazy observations and compaction unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -870,6 +880,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // in CX for the loop guard, so the previous-side bool is spilled to esp+0xd, while this build loads the sixteen-bit home
 // and keeps the bool in CL; the home is read as a dword only when the parameter is a thirty-two-bit type, and that width
 // is fixed by the declaration in src/unknown_17d9a0.cpp, which is not this lane's file.
+// MiniMax D (11-16): no new form and no lower score (129): a `count > 0` guard in front of the loop does give retail's count load (`mov ecx, dword ptr [ebp + 8]`, `movsx edi, cx`) and its `test cx, cx` guard, but the flow then differs elsewhere - `i = 0` is stored after the guard where retail stores it before the `jle`, the zero constant stays in XMM4 against retail's XMM2 and the function grows to 893 bytes (211; 92 only together with retail's fraction if/else and `current->x * plane->n.i`); the guard repeats the loop's own `i < count` test, so it may be kept only with a byte match and is restored here; the permutation search over the body (44 tries, 409 s, annealed, one job) reached 128, one point better than the baseline.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // MiniMax D (11-11): no new form, no lower score (129); retail reads the count argument as a dword home (`mov ecx, [ebp+8]; movsx edi, cx`) where this declaration's short count is read as a word, and that parameter type is declared in src/unknown_17d9a0.cpp, so the first difference stays.

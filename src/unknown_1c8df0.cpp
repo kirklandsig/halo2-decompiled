@@ -258,6 +258,10 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // (same code); the first probe's direction written out by components 24 (the x87 distance block's fld order moves, so
 // the inline helper's parameter temps count); the side vector through an inline two-point helper 20, with the points'
 // roles swapped 20; the normalise-or-default step through an inline helper 20.
+// M3 lane 8 r173 (fast with 0x1e55d0): the mode-1 positive point through the existing vector3f_add_scaled 20 (same code);
+// the mode-2 up-offset point through it 20 (same code); the mode-1 positive and the three mode-2 points through it 20 (same
+// code); the quarter as a `static real const` 20 (same code). Diagnostic (removed): a constant store to a probe global at
+// the top 318 (1186 bytes; the mode-1 x row still loads the centre first), so the row does not follow store numbering.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

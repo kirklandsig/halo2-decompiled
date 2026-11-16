@@ -449,6 +449,7 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // MiniMax A (11-13): no new form, no lower score (412): retail takes the actor index in EAX where ours loads it from
 // the stack, the frame stays 0xa4 against retail's 0xa0 and the body 1620 bytes against retail's 1616; the two callees
 // that held this one back now match, so what is left is the actor index's home and the frame.
+// MiniMax E (11-16): no new form, no lower score (412): the frame is still 0xa4 against retail's 0xa0 and retail still takes the actor index in EAX where ours loads the argument from the stack, so the body stays four bytes longer than retail's.
 // score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
@@ -1031,6 +1032,7 @@ real function_296600(long actor_index, long prop_ref_index);
 // the game time swap their places at the head, the suppressed and current byte homes stay swapped, and the first
 // 0x1c8df0 call keeps the root in a register where retail stores it into the squad's slot and evaluates !current
 // among the pushes.
+// MiniMax E (11-16): no new form, no lower score (90; the reduced image gives 91): the head still loads the object pool global before the game time, the suppressed and current byte homes are still swapped, and the first 0x1c8df0 call still keeps the root in a register where retail stores it into the squad's slot.
 // score 90 (was 90): retail's length, frame 0x20. Left (masked aligned count 20, registers and esp offsets masked): at the head ours
 // loads the object pool global before the game time and the object index, retail after them (so the object and table registers swap:
 // ours EAX/ECX, retail ECX/EAX, through the type-15 arm), the suppressed/current byte homes swapped, and the first 0x1c8df0 call, where retail

@@ -92,6 +92,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax E (11-15): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70), so the difference is still 0xbadc0's memory summary, whose definition is in src/unknown_0bad50.cpp. BLOCKED-BY 0xbadc0.
 // MiniMax C (11-15): no new form, no lower score (107): the unit is still fetched once and kept across the two
 // 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's
 // memory summary is in src/unknown_0bad50.cpp, which this lane may not edit, so the entry saves and the later
@@ -100,6 +101,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // the two 0xbadc0 calls, which our link does not do because that callee does not write the pool global; the
 // permuter's 17 tries reach 93 with the arguments of function_1896c0 swapped, which changes the call, so the
 // gain is not kept.
+// MiniMax C (11-16): score 107 (was 107): no new form, no lower score; BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp,
+// on the Avoid list): retail re-fetches the unit from the object pool after its two 0xbadc0 calls and does the
+// weapon lookup through that second fetch, while this link knows the callee writes no memory and merges the
+// two fetches, so the entry saves, the unit index's register and every later register differ; the callee's
+// memory summary is in a file this lane may not edit.
 // score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
 // again after the two 0xbadc0 calls (its link treats that callee as writing memory) and does the weapon lookup
 // through the second fetch; our link merges it into the entry fetch, so the entry saves, the unit index's
