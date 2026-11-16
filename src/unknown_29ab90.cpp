@@ -39,6 +39,14 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax E (11-15): no new form, no lower score (286): the magnitude and the settings pointer still take each
+// other's frame homes (ours [esp+0x10] and [esp+0x14], retail [esp+0x14] and [esp+0x10]), the two copies of the
+// global still take each other's homes (ours [esp+0x38]..[esp+0x40] for the position copy and [esp+0x44]..
+// [esp+0x4c] for the global's, retail the other way round), and the planar operand order and the xmm numbers of
+// the floors still differ; site 1's planar normalize still keeps the zero path as the fall-through with a result
+// home of its own where retail stores the zero into the magnitude's own home, which needs the 0x2b400 shape of
+// the shared helper (include/unknown_11cc90.h, another file): BLOCKED-BY 0x2b400. A 35-try permuter run found no
+// better form (best 284 differing instructions = the baseline).
 // MiniMax R (11-14): no new form, no lower score (286): the frame slots still differ (ours reads [esp+0x24] and
 // [esp+0x14] where retail reads [esp+0x1c] and [esp+0x10]), the saved-direction homes differ and the planar
 // operand order differs; the fast check prints caveats that the callees 0x26c180 and 0x1f9e70 build differently in

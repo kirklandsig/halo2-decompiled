@@ -601,6 +601,12 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax D (11-16): score 675 (was 675), nothing kept: retail takes the path pointer into ebx after the
+// pushes, keeps the success result in the stack byte at [esp+0x13] and loads the source radius before the 0.2f
+// constant, this build takes the path pointer into eax before the pushes, keeps the result in a dword and loads
+// the constant first, so the obstacle, search and step homes that follow differ from the first step block
+// onwards; the frame 0x1f88 and the length agree with retail, and the prologue's forms tried here (the path
+// reading after the radius block, the radius as one ternary, the result as a byte or a bool) all score lower.
 // score 675 (was 675): at retail's length, first difference +0x14 (the prologue's register homes); the two stacked
 // score lines below are merged into this one (m3 lane 11 r102).
 // MiniMax R (11-14, run 65): no new form, no lower score (675): the retail disassembly of 0x2c41b0 confirms the

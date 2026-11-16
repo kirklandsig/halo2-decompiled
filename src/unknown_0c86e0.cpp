@@ -92,6 +92,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax E (11-15): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70), so the difference is still 0xbadc0's memory summary, whose definition is in src/unknown_0bad50.cpp. BLOCKED-BY 0xbadc0.
 // MiniMax C (11-15): no new form, no lower score (107): the unit is still fetched once and kept across the two
 // 0xbadc0 calls where retail looks it up again, because this link knows that callee writes no memory; that callee's
 // memory summary is in src/unknown_0bad50.cpp, which this lane may not edit, so the entry saves and the later
