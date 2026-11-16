@@ -247,7 +247,11 @@ __forceinline __m128 lerp_3009e0(__m128 from, __m128 to, float fraction)
 // first (recursively, with the ray cut at the split) and then the far one
 // with what is left of the ray; bounds cut the ray to a node's range; each
 // leaf reached is cast against.
-// score 188 (was 892): the command is held as a long (narrowed only for the
+// score 180 (was 188): the four-byte key (case 0x53) is built in two statements
+// through a reference to `key` (high word shifted, then the low word added), which
+// keeps the two shifts apart as retail has them. Left: the `reached:` tail (retail is
+// 8 bytes longer there) and the second three-byte read of case 0x29.
+// Before, 188 (was 892): the command is held as a long (narrowed only for the
 // shift), and the key and filter test go through a pointer to the ray inside
 // their own block.
 // Before, 892 (was 892): the command widens through ecx; retail uses eax
@@ -606,8 +610,12 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 			key = READ_3_3009E0(commands + 1);
 			goto reached;
 		case 0x53:
-			key = (READ_2_3009E0(commands + 1) << 16) + READ_2_3009E0(commands + 3);
+		{
+			long &sum = key;
+			sum = READ_2_3009E0(commands + 1) << 16;
+			sum += READ_2_3009E0(commands + 3);
 			goto reached;
+		}
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:

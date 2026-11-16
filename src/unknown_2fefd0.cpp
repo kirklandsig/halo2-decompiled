@@ -252,6 +252,8 @@ public:
 // indexed shifted sum 81; last-byte sum first 78; advanced-cursor read 76;
 // unit-step word loop 78; with the advanced-cursor read 76.
 // NOT kept: two counts gained above 30; the loop pair does not match.
+// Matched: the four-byte offset (case 0x53) is built in two statements through a
+// reference to `offset`, and cases 0x60-0x63 step the cursor before the store.
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -330,8 +332,8 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = p[1];
 			commands = p + 2;
+			copy.values[op - 0x60] = commands[-1];
 			break;
 		case 0x64:
 		case 0x65:
@@ -364,8 +366,12 @@ void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsign
 			offset = READ_3_2FF210(p + 1);
 			goto found;
 		case 0x53:
-			offset = READ_4_2FF210(p + 1);
+		{
+			long &sum = offset;
+			sum = READ_2_2FF210(p + 1) << 16;
+			sum += READ_2_2FF210(p + 3);
 			goto found;
+		}
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
@@ -405,6 +411,8 @@ found:
 // byte-add loop 15; word-add loop 101; byte-or loop 120;
 // indexed shifted sum 15; last-byte sum first 12; advanced-cursor read 10.
 // NOT kept: the two-count reduction is below the three-count gate.
+// Matched: the four-byte offset (case 0x53) is built in two statements through a
+// reference to `offset`, and cases 0x60-0x63 step the cursor before the store.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -483,8 +491,8 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = p[1];
 			commands = p + 2;
+			copy.values[op - 0x60] = commands[-1];
 			break;
 		case 0x64:
 		case 0x65:
@@ -517,8 +525,12 @@ void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsign
 			offset = READ_3_2FF210(p + 1);
 			goto found;
 		case 0x53:
-			offset = READ_4_2FF210(p + 1);
+		{
+			long &sum = offset;
+			sum = READ_2_2FF210(p + 1) << 16;
+			sum += READ_2_2FF210(p + 3);
 			goto found;
+		}
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
