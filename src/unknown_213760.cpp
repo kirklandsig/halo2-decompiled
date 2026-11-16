@@ -1158,6 +1158,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
 // against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
 // is the same function in the reduced map and is not a source difference.
+// MiniMax C (11-15), on its not-kept 7 form (a new goto, screen-reverted; main stays 33): frame 0x1144 and extent agree; the write call
+// still loads the handle after the flags zero (ours builds the zero in EAX where retail already has the
+// handle in EAX and builds the zero in ECX) and the checksum compare still takes EDX where retail takes EAX.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
@@ -1744,6 +1747,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // array again 81; `done` declared ahead of the expected size 33 (same code); `valid` declared at the top of the loop body
 // 33 (same code). Retail loads the write's handle (`mov eax, [ebp]`) before any of the call's pushes and zeroes the flags
 // in ECX; ours zeroes the flags in EAX first and loads the handle after them.
+// P543: Standard native-width query/count/checksum/handle predicates
+// 250/139/36/224; exact complementary providers 250/139/97/224.
+// NOT kept: all regress; original comparisons, asynchronous calls/waits,
+// progressive validity and failure-only count initialization restored.
+// NOT kept (coordinator screen, MiniMax C 11-16): a goto the function on main does not have (kept only with a byte match): `goto validation_done;`; the body is main's again.
 // @retail 0x213970
 void function_213970(void)
 {

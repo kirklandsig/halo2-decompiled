@@ -31,11 +31,6 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
-// MiniMax H (11-13): no new form, no lower score (11): the early object reads through a named local filled from the
-// reference with the started test read plain scores 90 (plain build), and the reduced image does not reproduce retail's
-// shape for this file (the permuter's reduced image scores the original 83 against the full image's 7), so the plain
-// check is the only reliable one here; what still differs is the started test, which reads the reference
-// (`cmp dword ptr [esp + 0xb8], -1`) where retail compares its late EBX copy (`cmp ebx, -1`).
 // score 11 (was 11): every object-index read is plain but the started test, which reads
 // through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
 // where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into
@@ -200,6 +195,16 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // || positioned` 116; the clamp through the existing PIN_126660 macro 116; the description bit as one ternary assignment
 // 116; the sound index declared per arm, each arm storing it and returning on success 165 (537 bytes); the tag index
 // copied once into a local used by every later read 116.
+// MiniMax H (11-13): no new form, no lower score (11): the early object reads through a named local filled from the
+// reference with the started test read plain scores 90 (plain build), and the reduced image does not reproduce retail's
+// shape for this file (the permuter's reduced image scores the original 83 against the full image's 7), so the plain
+// check is the only reliable one here; what still differs is the started test, which reads the reference
+// (`cmp dword ptr [esp + 0xb8], -1`) where retail compares its late EBX copy (`cmp ebx, -1`).
+// Round 186 (m3 lane 6, plain): two reads through the reference mirroring retail's two loads (an early local for the NONE
+// test, the marker test and both marker calls, a late local for 0x189340, the started test and the dispatch) 85 (523 bytes); no
+// duration local 11 (same code); `positioned` started false and set under the spatialization test 146 (536 bytes); the class
+// index through the existing sound_definition_get 11 (same code); the request's object index from the parameter 11 (same
+// code); the slot pointer declared before the sound index 11 (same code).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

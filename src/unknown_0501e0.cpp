@@ -30,6 +30,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers
+// (xmm1, xmm3, xmm5) and spills the second point's (frame 0x14), where ours materialises both offset vectors and
+// both views in the frame (0x20); the orthographic dot still runs i, j, k where retail runs j, k, i, and no helper in
+// include/ offers that order, so the body stands.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
@@ -537,9 +541,15 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // worktree): the second view keeps its scaled copy in registers where retail spills i and k to [esp+4]/[esp] and
 // multiplies from memory, the opening loads' order, and the blend scale and root argument in each other's slot
 // ([esp+4]/[esp] for retail's [esp]/[esp+4]; renaming the blend scale changes nothing).
+// M3 lane 2 r88 (fast with 0x30290 and 0x30bf0, both MATCH; control 206): the clamped orthographic value declared at the top of
+// the orthographic arm 206 (same code: its slot stays [esp], retail's [esp+4]); the orthographic dot written out with retail's
+// load order (segment i first, global j and k first) 206 (same code: the operands canonicalise). On lane 13 r96's macro lead
+// (re-measured 256 at 1136 B): its rows in transform_vector's right/up/forward term order 256 (same code); x/y/z reals scaled in
+// place inside the macro, as transform_vector does, 295 (1174 B); both offsets through vector3d_from_points3d 256 (other code).
 // P537: Independent perspective-root/orthographic-root/normalizer double API-result
 // producers, seven subsets and immutable all: 207/206/238/207/239/238/239/239.
 // NOT kept: no exact result or frame recovery; original math APIs, helper and full body restored.
+// MiniMax E (11-15): no new form, no lower score (206): the permuter over the body found nothing below 206.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

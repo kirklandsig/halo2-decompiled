@@ -855,6 +855,23 @@ struct s_collision_result_buffer_1697c0
 // rotate helper caching the vector's k in a local (0x2551f0's helper spelling) 293, but 0x297d30 23 -> 245; that with the
 // sines and cosines passed straight (no angle wrapper) 303; the vector's i, j and k all cached 300 (0x297d30 243); the best
 // vector declared before best_fraction 300.
+// P548: Complete rotation-axis native/immutable vector, scalar/immutable scalar,
+// aggregate/immutable aggregate, existing setter and library captures:
+// 406/406/335/335/335/335/346/406. NOT kept: all regress and every form raises
+// the other rotation user (23 -> 210/233/234); three also lose the exact caller.
+// Original shared helper and entire sampler restored; native scratch/axis homes remain.
+// P550: Complete best-hit promotion in bool/byte/short/long 299/299/299/299; backward transfers
+// at pitch fallback/candidate/winner/both final outputs 350/348/352/359. NOT kept: no qualifying
+// native scratch/home repair; original full body, helper graph and headers restored.
+// Frame-bottom magnitude/random/sine scratch, axis/result homes and rotations remain.
+// P552: Standard forward and uninitialized component transfers at pitch fallback, sample acquisition,
+// best-hit retention and both final publications.
+// Fast scores 349/350/352/348/349/350/352/348. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Existing rotation scalar receivers, reference/pointer-axis, reference/reference-axis,
+// value/pointer-axis/vector-output, reference/value-axis, value/component-output,
+// vector/component-output, reference/reference-axis-components, value/reference-axis-components:
+// 305/305/339/335/339/293/295/304. NOT kept: scalar contracts lack native call evidence and every sibling score rises
+// (23 -> 142/142/243/232/243/33/34/231); original shared helper and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -959,6 +976,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // scores 257 at 1448 bytes, so the merged form stays.
 // MiniMax G (11-13): no new form, no lower score (257): the diff re-read this round puts the first difference at the 0x1ffe00 call, which retail makes with both arguments on the stack where this build passes the first in a register; that callee is defined in src/unknown_1ff010.cpp, a file this lane may not edit, so the body stands.
 // MiniMax H (11-13): no new form, no lower score (257).
+// MiniMax C (11-16): no new form, no lower score (257 plain, 341 on the reduced image): the frame agrees (0x8c) and
+// what is left is the byte homes of the result and the point-valid flag plus the direction chain's fall-through
+// predecessor, where retail enters case 2's remembered 0x1e3b00 block and ours falls into the merged 0xcafc0 block;
+// the reduced image scores higher because the helper it calls is laid out differently in that build.
 // score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
 // fall-through predecessor (retail: case 2's remembered 0x1e3b00 block; ours: the merged 0xcafc0 block).
 // Round 176 (m3 lane 5, plain): case 1's object index local renamed 257 (same code: the merge is
@@ -1297,6 +1318,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // round 85 found); case 6's NONE compare with its operands swapped 258; case 2's body nested under a positive
 // `field_x50962e != NONE` test 258 (all same code but the label form).
 // MiniMax R (11-15), NOT kept: 340 (was 341), a 1-point gain, under the 8-point bar for a function above 30.
+// MiniMax D (11-15): no new form, no lower score (257): the switch's branch into the table is laid out at a different offset from retail's and the table itself sits four bytes further along in our text.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1597,6 +1619,9 @@ done:
 // integer base plus the masked index - all compile to the same prologue (9), so MSVC keeps folding the
 // address computation into ESI with the base load in EAX; retail keeps the base in EDX and the index in EAX.
 // MiniMax E (11-15): no new form, no lower score (9): twenty-five spellings of the actor lookup (typed array subscript, byte-base expression, offset and slot locals, unsigned and thirty-two bit offset arithmetic, the shared getter inlined or not) all build the same prologue, because this build folds the scaled index into the destination register and uses `add` where retail builds the offset in eax and finishes with `lea esi, [eax + edx]`.
+// MiniMax S (11-15): no new form, no lower score (9): the actor offset is still built in esi with an add where
+// retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
+// compiles to the same prologue, so the register choice is not steerable from this function.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -1889,6 +1914,15 @@ struct s_actor_looking_structure_view
 // structure/pathfinding lookup ahead of the actor 224; the normalised length named before its test 144 (928 B);
 // re-measured the up-axis pointer local 70 and the candidate pointer 139; permuter (600 s, seed 201, 62 tries) none
 // below 23. Retail's dot starts `movss xmm0, [axis + 4]` hoisted above the candidate copy; ours starts v.k * axis.k.
+// Round 203 (m3 lane 4, fast = full 23): a forceinline helper holding 1-7 dead locals before the loop, at the loop top or
+// between the copy and the rotation (21 builds) 23 each, identical code; `directions + i` at the rotation and the trace 23
+// (same code); the angle named between the copy and the rotation 33; the copy inside a forceinline helper taking (source,
+// axis, angle, out) 60. Diagnostic: a file-local copy of the rotate pair with the dot `((j + i) + k)`, used only here, plus
+// the score `(i + k) + j` in explicit parentheses 13 with 0x296e60 unchanged (299), so lane 11's 13 needs no change to the
+// shared helper; the copy alone 31. Left at 13: the dot's inner pair takes XMM2 for the j product (retail XMM0), the j row's
+// XMM5/XMM6, and the score's inner pair k, i (retail i, k; parentheses stop reassociation but not the operand swap). On 13
+// own dead locals n = 1..7 23/13/13/13/13/13/13; dead helper locals 1-7 between the copy and the rotation, or ahead of
+// the score, 13 each. Not kept (a one-caller twin of the shared helper).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
@@ -2016,6 +2050,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax E (11-15): no new form, no lower score (442): the call boundaries agree with retail's except that 0x1fdd90 is expanded here where retail calls it out of line, and its definition is in another file. BLOCKED-BY 0x1fdd90.
 // MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
 // cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
 // keeps the actor table in a register; the forms for the frame and the carriers are in the notes below and none of them
@@ -2031,6 +2066,10 @@ struct s_actor_looking_turn_request
 // MiniMax S (11-14): no new form, no lower score (442): the two getters that hand back the view and the object
 // are shared with many other functions of this file, so their spelling - which decides whether the base and the
 // scaled index stay apart - was left alone and the body was re-measured unchanged.
+// MiniMax C (11-16): no new form, no lower score (442 plain, 548 on the reduced image): the frame is 0xcc against
+// retail's 0xc8 and the blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines
+// it, and only /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not
+// make.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

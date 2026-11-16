@@ -73,7 +73,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
-// score 544 (was 544): earlier 545.
+// score 534 (was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
+// /Op file still calls the CRT for them, and this build's frame is 0x22c against retail's 0x224.
+// MiniMax R (11-16): the level's square root taken in double, as retail's inline fsqrt keeps the extended
+// precision before the float store, lowers the full-build score by ten; exp and log10 stay library calls.
 // MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
 // Full build; b2D 11-06 statement walk against retail found no logic difference
 // (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
@@ -395,8 +398,17 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // and fabsf at all six 548 (1907 B, masked 239); the named difference with fabsf at all six 544 (same code as this body);
 // the cached gain stored at the top of the gain block 550 (1901 B, masked 236). The switch alone repeats lane 12 r81's form.
 // BLOCKED by the file's /Op (a flags decision: retail's double fabs, exp, log10 and sqrt expand inline and unrounded).
+// M3 lane 2 r88 (plain each with 0x21f8a0, MATCH each time; control 544, fast still carries the builds-differently caveat): the
+// amplitude clamp as an if/else-if on a copy 543 (one under, not kept); the buffer volume as one call with a conditional argument 544;
+// the send level assigned straight from its conditional expression (no `level` local) 546 (1903 bytes); the cached gain stored as
+// `*(real *)&stream->unknown0c = gain;` 593 (1935 bytes, first difference +0x0); the stream's 0x20 bit compared through a `(bool)` cast
+// 544. Retail also writes the bit-5 test of the send flags and every input-bit test to the +0xe byte before branching (the volatile
+// shape), and inlines exp/log10/sqrt as x87 code: the file's /Op stays the blocker.
 // P535: Immutable original selected-gain bits/mode/direct producers, seven subsets then all with immutable changed outcome; native driver/stream/gain roles and 0x224 frame remain unrecovered.
 // 544/544/544/544/544/544/544/544. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P551: Complete cached-gain retention and logarithmic-amplitude admission outcomes
+// in bool/byte/short/long: 549/549/549/549/536/536/536/536 (reduced control 536, full 544).
+// NOT kept: no native frame/stream/gain/flag-home repair; original full body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
@@ -449,7 +461,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 				real amplitude=channel_linear_gain(levels[i]);
 				energy+=amplitude*amplitude;
 			}
-			real amplitude=(real)sqrt(energy);
+			real amplitude=(real)sqrt((double)energy);
 			real bounded=amplitude<0.0f?0.0f:amplitude>1.0f?1.0f:amplitude;
 			// retail multiplies the log10 (fyl2x, 0x21fe2f) by 20 straight from the x87 stack (0x21fe31), so
 			// the logarithm is taken as a double: the float overload would round it first

@@ -459,6 +459,7 @@ long function_126bd0(long definition_index)
 	return 0;
 }
 
+// NOT kept (coordinator screen, MiniMax E 11-16): a new __declspec(noinline) (reverted even with a match): `__declspec(noinline) void function_12a420(short voice_index);`; the body is main's again.
 // @retail 0x1272c0
 void sound_set_ambience(long ambience_index)
 {
@@ -705,6 +706,14 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // (`inc esi` rises to just after `or ecx, -1` and `inc edi` stays at the loop end). So the instruction that feeds the
 // loop's final compare rises to just below the last flag writer before it, while the stores and `inc edi` keep source
 // order: retail needs a flag writer (or a dependency) after the second store at scheduling time.
+// Round 185 (m3 lane 6, fast): the ten stores in the aggregate's field order 11 (stores keep source order); the stores from
+// unknown0a on in a forceinline helper taking the voice index (re-deriving the voice from the pool global) with the index
+// advanced after it 3 (`inc esi` now follows the first two stores as in retail, but `inc edi` moves there with it); the
+// index copied first (`short index = voice_index++;`) for the voice and that helper 107 (565 bytes, the copy takes its own
+// register); the first two stores and that helper in a forceinline init helper taking (voice index, type), called with
+// `voice_index++` 3 (same code as the helper form); `register` on the inner counter 3. Diagnostic (reverted, not a source
+// form): a compiler memory barrier after the second store matches in the fast check, so retail behaves as if a scheduling
+// fence sits there that holds `inc esi` but not `inc edi`.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1303,6 +1312,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax E (11-15): no new form, no lower score (94): the call boundaries agree with retail's (0x221810), and what is left is the XMM allocation and the division - this build substitutes the reciprocal where retail keeps a real division.
 // MiniMax S (11-15): no new form, no lower score (94).
 // score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
 // and arm 1's product order and XMM colours (fade_out multiplied from memory before the reciprocal, elapsed in XMM2).
@@ -2691,6 +2701,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax I (11-16): no new form, no lower score (17): the first difference is still 0x219070's result - the set
+// index is sign-extended here where retail copies the dword, and the call takes two arguments where retail passes
+// one; 0x219070's and 0x218f50's declarations live in another file this lane may not edit.
 // MiniMax E (11-15): no new form, no lower score (17): the set index is still sign-extended where retail copies the dword, and 0x219070 is still called with two arguments where retail passes one; both live in other files.
 // MiniMax H (11-14): no new form, no lower score (17).
 // MiniMax H (11-12): no new form, no lower score (17); the first difference is still 0x219070's result, and the one-use short local that lowers it to 15 stays a match-only form.
@@ -3085,6 +3098,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax E (11-15): no new form, no lower score (96): the call boundaries agree with retail's (0x127320, 0x12a5d0 and the two outside helpers), so what is left is the result byte, which sits in a stack slot here where retail keeps it in AL at the entry and in BL on the failure path.
 // MiniMax S (11-15): no new form, no lower score (96).
 // MiniMax C (11-14): no new form, no lower score (96): retail keeps the result in registers - AL holds the
 // true value set at the entry and BL holds the false value across the two cleanup calls - while this build
@@ -3978,6 +3992,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // listed word voice index. On that base: `reason` declared at the loop-body top 78; case 0 without its closing 0xe stop
 // (diagnostic) 171, the swap kept; the range index named as a short before the pointer 88; the entry reading the pool
 // global directly with `sounds` set only by the increment 78 (same code); the voice as `g_4e6378 + voice_index` 78.
+// Round 185 (m3 lane 6, fast; the 6 form re-built at 6): with the range in case 0, `register` on the sound index 78, a
+// named long range index before the pointer 78, the class-flag test as bit 21 of a dword bit-field at +8 80 (`shr eax, 0x15`);
+// on the 6 form, the loop end as `data_datum_index(sounds, data_find_index(sounds = g_4e637c, next))` (the reload after
+// the ternary through the one pool local) 82 (pool ESI, index EBP), the same with the range above the mode 49.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -4060,6 +4078,7 @@ vector3f *vector3d_decompress(dword arg_0, vector3f *arg_1);
 
 vector3f *function_1427f0(transform4x3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
+// MiniMax E (11-15): no new form, no lower score (101): the call boundaries agree with retail's except that 0x221810 is expanded here where retail calls it out of line, and its definition is in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
 // MiniMax C (11-15): no new form, no lower score (101): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (101); retail still expands 0x16f3a0 where ours keeps the call, which is a caller-side decision in a file I may not edit.
 // MiniMax H (11-11): no new form, no lower score (101); the body is unchanged, because the lookup of the
@@ -4710,6 +4729,7 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax E (11-15): no new form, no lower score (535): the call boundaries agree with retail's (0x155760 twice, 0xcaf60, 0x11d6a0, 0x11d950, 0xba1d0, 0x11bed0 and 0x220790), so what is left is the frame (0x130 against retail's 0xe8) and the native rotation, environment and listener-index homes. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120, which have to stay out of line and live in other files.
 // MiniMax C (11-15): no new form, no lower score (535): the body stands as found.
 // MiniMax H (11-12): no new form, no lower score (535); retail still expands 0x1420f0 and 0x11c120, which carry noinline declarations on main.
 // MiniMax C (11-14): no new form, no lower score (535): the frame is still 0x134 against retail's 0xe8 and

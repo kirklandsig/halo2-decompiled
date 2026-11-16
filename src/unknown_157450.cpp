@@ -482,6 +482,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax S (11-16): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, it is still read from memory at each use where retail keeps it in ECX across the tail, the present accumulator's update still lands in ESI where retail keeps it in EBX, and the engine index is still read after the stores where retail reads it at the head of the change block; the word mask alone scores 77, the non-volatile accumulator alone 102 and the two together 63.
 // MiniMax I (11-15): no new form, no lower score (32): the width-cast form MiniMax D measured (24) and the volatile word (24)
 // were not retried, and the one-use team-bit carrier that reached 29 stays dropped as a one-use local under the bar; what
 // is left is retail's word load and word spill of the old mask and its reload into ECX ahead of the first jne.
@@ -5828,6 +5829,12 @@ void __stdcall function_d6bc0(long object_index);
 // (same code each); case 0's distance through the file's engine_distance_squared 38; re-measured the switch guard on
 // entries[i].index 167 (863 B). A one-file LTCG harness of this file (+ damage.cpp) does not reproduce (227 at 871 B:
 // 0x15f060's XMM3/EDI convention needs other files).
+// Round 203 (m3 lane 4, fast with 0x15c150 and the six callees, all matched each time; base 29): on the label form
+// (7): the index local declared `long const` 7 (same code); the schedule test on entries[i].index 172 (858 B; there
+// case 1 takes AL as retail, so the whole gap is `entries` in EDI from the loop top and the timer in EBX, reloaded into
+// EAX for the `= 1` store, where retail reloads it into EDI); that with the countdown's three index reads on the
+// loop-top local 207 (878 B); case 1 as `if (bit) break; goto countdown;` 21; the reset counter's arms swapped
+// (`if (reset) = 0; else ++`) 14, with the field test 172. On the kept body the field-test guard 167 (863 B).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

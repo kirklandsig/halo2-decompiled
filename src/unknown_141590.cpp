@@ -118,6 +118,12 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
+// full image (the reduced image agrees with the full one here). Still differs: the compiler's term
+// orders in the three transforms (retail adds cross*2w first in every i row, cross + q*dot then v*s in the up j/k
+// rows and sums the dot as i,k,j in the forward row and k,j,i in the left row) and retail's second store of 2w to
+// a slot nothing reads; the source forms tried do not decide the association.
+// MiniMax S (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the quaternion halves are still two separate locals and the sine half still takes the matrix parameter's home slot.
 // score 205 (was 200; fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
@@ -1317,6 +1323,11 @@ void function_143250(
 // Native frame 0x300 and first +0x3b recovered, but extent shrinks to 10716/10773.
 // NOT kept: unmatched one-use result carriers regress and worsen the length gap;
 // original roots, precision boundaries, polynomial and complete body restored.
+// M3 lane 11 r106 (fast with 0x143250 matched; control 1333): retail recomputes r6 * r3 and r6 * r0 in band three (its
+// 0x90 and 0x234 homes are stored from fresh `mulss` at 0x143fe9/0x144008), so band two's products are not reused there.
+// Band two's `s15 * s5` 1333 and band three's `s2 * s35` 1333 (same code: products re-sorted); band one's four negatives
+// as unary minus 1333 (same code: compiled as 0 - x); band three's sqrt(7) declared after s21_s35 1535 (10748 B); band
+// two's root product as one `(real)sqrt(5.0) * (real)sqrt(15.0)` 1729 (10712 B).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

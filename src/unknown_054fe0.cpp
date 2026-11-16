@@ -1727,6 +1727,10 @@ struct s_summary_player_sort_entry
 // MiniMax E (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8; retail's three extra homes (the member index, the membership block pointer and &session->value18) would each need a named one-use local or a pointer to a field used once, which are on the reverted list, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
 // MiniMax R (11-15): no new form, no lower score (339): retail still holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne needs the /arch:SSE flag this file does not set.
 // MiniMax I (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax C (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8 and the session
+// pointer and the state word take ebx and ecx where retail keeps them in ecx and edx; retail's cmovne for the state
+// needs /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it,
+// so the membership pointer and the member index never get the frame homes retail gives them.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
 // code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
@@ -1834,6 +1838,7 @@ struct s_summary_player_sort_entry
 // where ours holds them in ebx and ecx, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state
 // needs /arch:SSE, which this file's flags do not set.
 // MiniMax S (11-14): no new form, no lower score (339): retail holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax D (11-15): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

@@ -826,6 +826,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // `do { ...; i++; } while (i != member_count)` 42; the machine buffer zero-initialised in its declaration (no memset)
 // 24, the player buffer the same way 148 (495 bytes). Same code: the opening in De Morgan form or with `== 0`/`== NULL`,
 // the copy source through `&session->members[i]`, players declared first, no address pointer (the cast at both uses).
+// M3 lane 10 r110 (fast with the inlined callees, 0x5b060 and both callers; control 22): the 0x49c8 argument through the
+// existing get_value_49c8() getter 142 (503 bytes, session ESI, both callers lost); `if (session->state != 5) return false;`
+// with `return true;` at the end 142 (a second epilogue for the early return); the machine mask in a named local 22 (same
+// code); a walked output pointer in the copy countdown 26; a member base pointer for the copy source 22 (same code).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1185,8 +1189,17 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // with the destination declared in the branch, and MATCH with no destination pointer (`memcpy(identities[count], ...);
 // count++;`), the three callers matching. The full build loses the frame alignment without the `standard` marker's
 // address escape (288, 638 B), and with the marker tools/build.py's escape for a method is written as a plain member
-// pointer, which does not convert from a `__stdcall` member (C2440): BLOCKED-BY tools/build.py (`_escape` drops the
-// method's calling convention).
+// pointer, which does not convert from a `__stdcall` member (C2440). Coordinator 11-16: with tools/build.py's escape
+// naming the convention, the held patch with the `standard` marker builds in the full check and gives 195 (711 B,
+// retail's frame: `and esp, -8`, 0x154): the state stays in EBX and the count is spilled (`[esp+0xc]`), where retail
+// keeps the state in ESI and the count in EBX; the three callers stay matched. The fast check's MATCH is a
+// reduced-image result only (the reduced image gives 212 with the marker). Not kept; this body stays at 9.
+// M3 lane 4 r204 (fast with 0x6fcc0, 0x6f940, 0x6fa60): identities as `XUID identities[16]` (no align declaration; the frame
+// still self-aligns with the marker) filled by `identities[count] = *(XUID const *)&current->players[i].user_id; count++;`
+// 195 (the state takes EBX at +0xd, the count is spilled), the same with `identities[count++] = ...` 195; on that form an
+// unsigned `dword` player index 192 (721 B); a byte array filled by `memcpy(identities + count * 12, ...)` (0x6fa60's
+// matched spelling) 195; the indexed form with the else arm, the call's arguments and the final store through a typed
+// view of the state (`entry_count`, `entries`, `part`, `unknown104`) 195.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

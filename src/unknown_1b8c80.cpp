@@ -324,6 +324,14 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // seat index named at the loop top for all three calls 104 (358 bytes); a 1800 s fast annealing permuter run (seed 122, the
 // eight callers and callees as context, base the c8200 test nested under the 0x1b8d80 test, 3, same code): 152 tries, none
 // below 3. Restored.
+// Round 89 (m3 lane 2, fast with 0x1b8eb0/0x11b0c0/0x11ade0): the occupant's team as `long` 5 (a long
+// compare); the occupied-vehicle test looking the object up at each use 3 (same code); the unoccupied arm
+// nested under the reservation test with the unit, then the vehicle, in named locals before the 0xc8200 call 4
+// (the reload goes to EDX); the reservation mask tested before the object type 8; the unoccupied arm first,
+// closed by `continue`, the team test unnested 49. Diagnostic: a probe global store before the return 72
+// (409 bytes; the reload stays ECX). Reading: 0x1b8d80 takes the seat in BX, so EBX holds the seat from the
+// 0xc8f60 call on; retail's reload into EAX with the seat load scheduled before the dereference looks like
+// the unit's ECX being reserved before the object is set up, with the unit load later sunk below it. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -501,6 +509,11 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive/inclusive 11/8 (same code); the scan as a forced-inline helper returning the seat 11, filling an out-parameter
 // 11; `short i = NONE; while (++i < tag->seat_count)` 11. Every exclusive form keeps the count in EBP, the index in ESI
 // and the guard's zero in EAX, the first pass's extended index.
+// Round 185 (m3 lane 6, fast): the exclusive bound with the update as `seat = bit ? &seats[i] : seat;` 11 (same code as the
+// plain exclusive bound); the flags at +0xbc declared as the dword they are 8 (same code); `result` declared first,
+// inclusive/exclusive 8/11; `register` on the index, exclusive 11; the flags test as `(flags & 1) == 0`, exclusive 11. The
+// state pointer after the scan takes EBP in both builds: retail gives EBP to the index (its zero also serving the guard and
+// the NULL store, the first extended index a separate `xor eax, eax` after the guard), ours to the count.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -784,6 +797,10 @@ extern "C" void _ReadWriteBarrier(void);
 // (state, actor_index) 44, the first with the barrier after its actor lookup 6 (same code). Diagnostics: a flags bool
 // computed at the top without the barrier 44 (the flags load is sunk into the NONE block, the slot load with it); a NULL
 // test of the state joined to the NONE test 52 (211 bytes: the slot loads in the entry block, the data base moves to ESI).
+// Round 185 (m3 lane 6, fast): the busy test repeated in an else-if chain with each arm's test, with/without the barrier
+// 52/57 (215/218 bytes); the actor looked up at each use with no actor local, no barrier, 77 (229 bytes); the flags test
+// as `(state->flags & 4) == 4` 6 and the busy test as `NONE == actor->unknown26c` 6 (same code). No existing helper
+// reads the 0x26c index or writes this arm's fields, so no existing inline call is there to stand in for the barrier.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

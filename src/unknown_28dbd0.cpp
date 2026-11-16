@@ -497,6 +497,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // position updates read from it and field_40 then scaled in place 203 (1224 B, 0x120); rows assigned k, j, i 232 (1199 B);
 // the velocity stores ahead of the position updates 228; the field_40 form with scalar cross j/k and cross i inline in
 // row i 224 (frame 0x114). Helper restored.
+// MiniMax E (11-15): no new form, no lower score (173): the helper rewritten to retail's row formula with the arguments
+// swapped scores 216 with the frame still at 0x11c, and the permuter over the body found nothing lower in twenty minutes.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

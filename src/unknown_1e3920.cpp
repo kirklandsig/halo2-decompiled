@@ -890,10 +890,10 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// MiniMax S (11-15): score 237 (was 252): the squad entry index taken as a word (its low sixteen bits, the same ones the
+// score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
-// score 252 (was 252): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
+// Earlier 252 (was 252): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
 // ECX), retail's one shared spill slot for the squad pointer, the squad bit and the actor, and the unit arm's place remain.
 // M3 lane 8 r159 (fast; masked aligned 115 at 253): kept, the squad bit as `bool flag = squad && ((bits >> 10) & 1);`
 // in place of the bool started false and set under `if (squad)` 252 (a re-measure of round 48's form; it removes a flag set
@@ -1250,6 +1250,12 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // lane 9's flag loop re-measured 298 (1258 bytes), with the unit arm first 236 (1263), with the palette count read at
 // each use 345 (1264), both 340 (1272); the squad bit as `bool flag = false; if (squad) flag = ...;` 253, on the flag
 // loop with the unit arm first 232.
+// Round 123 (m3 lane 16, fast with the eight matched callees, all still matched; base 237): the -1 sentinel loses ESI
+// because ours gives the squad index a callee-saved register (ESI at the top, and again from the join after the loop for the
+// 0x1e02f0 argument), where retail never does (it reloads the parameter at each use). Tried: the squad bit as
+// `bool flag = false; if (squad) flag = ...;` 238; the guard testing the squad index before the squad pointer 237 (same
+// code); the flags pointer `byte const *` 237 (same code); the unit arm under its own `if (!(*flags & 1))` after the
+// perception arm 305 (1254 bytes); the definition pointer `byte const *` 237 (same code). Body unchanged.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2173,6 +2179,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // read once into a named local for the tail 251 (same code). Diagnostic (flags, reverted at once): src/unknown_0259a0.cpp
 // without /GL- and its body `inline` 306: the random state then rides in EBX from before 0x259a0 through 0x259d0 as retail,
 // but the pool global is still reloaded at each lookup. Body unchanged.
+// P547: Complete complementary grenade-retention admission in bool/char/signed char/byte/
+// short/word/long/dword: eight at 251/1216. NOT kept: native actor/options/pool retention
+// remains; original lazy tests, queries, random draws, stores and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

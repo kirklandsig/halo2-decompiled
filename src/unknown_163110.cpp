@@ -616,6 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax R (11-15): score 115 (was 115): the first plane's dot still keeps the copied normal's i in xmm4 right after the copy and reads view->vector_e4.i afterwards, where retail loads the coefficient into xmm4 before the copy and reads the normal's i back from the stack, so the zero constant of the negation sits in xmm3 instead of xmm4; the shared dot3f (278), all six term orders of each plane (129-149), the per-term operand swaps (115 each), the plane pointer (285), the normal pointer (150), the named components (307) and a 300 s permuter run (3 tries, best 115) all leave that coefficient load after the copy.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax G (11-14): no new form, no lower score (115, was 115): retail loads view->vector_e4.i into xmm4 before the forward copy and keeps the copied normal's i in xmm3, while this build loads the copied normal's i into xmm4 and reads the coefficient late into xmm3, so the zero constant of the negation moves with them; naming the three coefficients before the copy (276), copying the normal component by component (460) and reordering the first plane's d terms (133) all leave the coefficient load after the copy, and the permuter found nothing below 115 in 20 tries.
 // MiniMax G (11-12): no new form, no lower score (115): retail loads view->vector_e4.i into xmm4 before the forward copy, ours loads the copied normal's i into xmm4 and reads the coefficient late into xmm3, swapping the XMM3 and XMM4 roles; every term, grouping and operand order of the first plane's d still leaves the coefficient load after the copy.
@@ -998,6 +999,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // vector3f_add (delta, then the point as a vector) 115 (same code, not kept); `out = output + k` 115; `p0`/`p1` as
 // `local_points + segment * 2` (+ 1) 115; the projection factor as `-(1.0f / w)` 258; the scale folded into the rows
 // (`t * delta.i + p0->x`, no vector3f_scale) 119. Body unchanged.
+// M3 lane 8 r172 (fast with the file's 15 matched functions, all kept): as a member of the view (`this` = view, both
+// callers through the view pointer; 0x320b0 stays matched) 251 (1867 B); plane 0's coefficients through a named
+// `vector3f const *` to vector_e4 251 (1867 B); the classification's j term spelled point-first 115 (same code:
+// canonicalised); plane 0's normal copied with memcpy 115 (same code); the far plane's negated vector computed ahead of
+// plane 0's copy 426. Body unchanged.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

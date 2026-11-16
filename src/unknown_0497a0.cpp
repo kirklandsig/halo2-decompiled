@@ -16,6 +16,8 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// score 536 (was 536; 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
+// against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // MiniMax H (11-13): no new form, no lower score (536).
 // MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
 // staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
@@ -26,8 +28,6 @@
 // MiniMax G (11-12): no new form, no lower score (536): the permuter's search over this body (full image, annealed, 26 tries) found
 // no better form; the frame is still 0x54 against retail's 0x60 and retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are
 // what keep those three on the x87 stack until after the product.
-// score 536 (was 594): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
-// against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail holds the secondary shape in EDI, the primary shape at [esp+0x14]
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
@@ -403,6 +403,16 @@
 // special path's first cross through cross3f_staged 536 (same code). Compile-only: out-pointer or twice-assigned wave
 // locals are still folded, and no sin/cos spelling (float or double overloads, named terms, factor orders) keeps sin x,
 // cos 7.8y and cos 7.75y on the x87 stack as retail does.
+// P542: Standard scalar wave-weight providers, real/double first/second/both, then independent complete second/first-wave arithmetic: 732/743/785/779/789/823/865/790.
+// NOT kept: all regress and grow away from 2622 bytes. Original complete body and includes restored; native wave-result homes, x87 residence and frame 0x60 remain.
+// MiniMax D (11-15): no new form, no lower score (536): the frame is 0x54 against retail's 0x60, the constant rides in xmm3 here and in xmm1 there, and the two wave values are folded into x87 products where retail keeps both as stored floats.
+// M3 lane 3 r249 (fast; base 536, ret 0x20 as retail): the second cross renamed so it sorts last 536 (identical listing:
+// names do not move these slots); the special block split in two `if (special)` blocks, the cross and both wave values
+// (declared at function scope) in the first, the two scaled adds and the second cross in the second, 644 (2665 B, frame
+// 0x58: the second test is not threaded, but s1 is then evaluated first and both values get retail's own homes, s0 at
+// +0x18 and s1 at +0x1c, so retail's values are not forward-substituted into their uses: lead); both wave values declared
+// at function scope, assigned in the block, 536 (same code); s0's halving as `s0 *= 0.5f` 536 (same code); the first
+// cross vector at function scope 536 (same code).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1194,6 +1204,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // +0x88, r +0x94, scale +0x98, g +0x9c, b +0xa0, interleaved with the caller's v (+0x90); ours (the same-file copy, front-end
 // inlined) gives colour pointer +0x84, scale +0x88, a +0x94, r +0x9c, g +0xa4, b +0xa8, interleaved with the u step, V end and v.
 // The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
+// MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

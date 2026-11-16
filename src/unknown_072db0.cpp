@@ -458,6 +458,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P466: Index/variant/peer/primary identities and their independent read-only
 // bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
 // NOT kept: unchanged full-image helper order and EBP save; original body restored.
+// P547: Uninitialized native primary/peer, index and variant declaration phases, seven subsets
+// then complete reverse declaration order: eight reduced 0s; full reverse-order graph 33/138.
+// NOT kept: reversed pure helpers and extra EBP remain in the full image; original body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {
@@ -1323,6 +1326,9 @@ long function_1931a0(long count, s_surface_description *variant);
 // player value through the existing 0x63220 plus the long histogram MATCH, 0x7e210 1141 (2476 B); the 0x192e60 call as the
 // loop body's first statement plus the long histogram MATCH, 0x7e210 937 (2704 B, frame 0xb0, top still inlined). Still
 // BLOCKED-BY 0x7e210: every form that gives the session EAX raises 0x7e210.
+// Round 123 (m3 lane 16, fast control 8 / plain 6): five new 0x7e210 forms (its note, round 123: the conditional balance
+// clear, the single-exit form with it, with the player value through 0x63220, with grouped capacity labels, with a long
+// histogram) leave this at 8 each; the top 0x192e60 call inlines in all of them. Still BLOCKED-BY 0x7e210.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {

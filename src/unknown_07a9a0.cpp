@@ -1051,6 +1051,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax C (11-16): no new form, no lower score (766): retail takes the session in EAX and the output pointer on the
+// stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
+// out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
+// files.
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
@@ -1444,6 +1448,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // loop's variant through 0x192e60 922 (2724 B, 0x73530 1); the top lookup after the summary read with the loop's variant
 // through 0x192e60 908 (2724 B); the validity test split in two with the loop's variant through 0x192e60 901 (2740 B);
 // the type-5 scan's early return dropped and the rest of the body under `if (result)` 862 (2788 B).
+// Round 123 (m3 lane 16, fast with 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0, 0x1931a0 and 0x6fa60, all unchanged):
+// the balance result as `if (!balance_teams_by_count(...)) result = false;` (retail's test/jne/store-al shape) 777 (2812 B);
+// round 81's single-exit form rebuilt as control 984 (2948 B: retail's two failure exits store false to the result's home
+// and reload it, a shared `return result;` duplicated into each exit); on it that conditional clear 981; plus the player value
+// through 0x63220 924 (2916 B: 0x63220 inlines here, the top 0x192e60 and 0x193250 still inline, the capacity switch stays a
+// call); plus grouped capacity labels 1001 (2952 B); the 924 form with `long histogram[16]` 901 (2888 B, frame 0xb4 as
+// retail). Re-measured: the opening test as one inline admission predicate 948 (2956 B, M370's form). Body unchanged.
+// MiniMax E (11-15): no new form, no lower score (766): retail's session arrives in EAX with a 0xb4 frame against our
+// 0xd4, and that convention is fixed by the caller in a file I may not edit.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

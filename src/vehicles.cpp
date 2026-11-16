@@ -2098,6 +2098,12 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // j/i swapped, the i term still forward-first; a += split either way); linear_velocity declared first 9; the four
 // top-level pointers `*const` 9; the final overlay loop testing NONE with `continue` 9; the forward speed written
 // straight into the fraction call (no `speed` local) 9 (all but the first the same code).
+// Round 129 (m3 lane 12, fast), at 9: the function channel's byte read at each use (no `value` local) 9; `i` declared
+// at function scope 9; the overlay channel and `i` at function scope 613 (2117 bytes: the channel is built before the
+// graph test); the final loop's value as `value = PIN(value + 0.5f, 0.0f, 1.0f);` after the half product 61 (2035
+// bytes); the overlay channel declared before `state` 28. Diagnostics: one more in-loop use of the vehicle index (a
+// NONE test in the final loop) leaves the three reloads in our order (53); one more in-loop graph use moves the
+// vehicle index to EBX at entry (117).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2875,148 +2881,6 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 /* the physics of type 1 vehicles (the wheel-steered ones): the engine's
    torque to every contact, the steered contacts turned, and the wheels'
    spin */
-// score 10 (was 10): frame 0x30, 991-byte length and ret 8 agree; torque and loop-offset homes
-// remain swapped, plus the first fmod advance reload/zero order.
-// Before the frame repair (29): the spin wrap helper now takes the field's address and the advance (it adds,
-// wraps and re-reads the period through its pointer), which gives retail's spin tail. Left: frame
-// 0x34 versus 0x30 (one never-referenced dword at the frame top) with the torque and loop-offset
-// slots swapped; every other differing line is that 4-byte offset. Round 182: the helper in place
-// through pointers without the advance 89 (976 bytes, the fmod argument re-reads the field); the
-// advance inside the helper 29 (kept); braking through the existing 0xf5d70 call 321 (out of line
-// under /Ob1; forced inline 29, identical to the written-out test, but 0xf1950/0xf5ee0/0xf6d10 then
-// lose their out-of-line calls); torque renamed for slot order 29 (identical). Diagnostics: the extra
-// dword stays without the throttle/0xf1740 call, the spin tail, the steering calls or the gear
-// call, and with a constant braking argument; it goes (frame 0x30) only without the 0x2056e0 call.
-// It is not 0xefde0's aligned frame passed down (with 0xefde0 not calling it, still 0x34). Also 29
-// each (identical): the rotation at function scope, torque/i/braking declared first, braking as one
-// boolean expression.
-// Earlier at 71 (was 189): the contact definition as an element pointer, both steering
-// the frame is now retail's 0x30 (round 114); before that, frame 0x34 versus
-// 0x30; native gear and incoming roles agree;
-// the contact definition as an element pointer, both steering
-// bits read early into named locals, and the spin wrap helper changed to take the
-// spin value and return the wrapped one; the contact loop now matches retail
-// instruction for instruction. Left: frame 0x34 versus 0x30 (one never-referenced
-// dword at the frame top) with the torque and loop-offset slots swapped, and the
-// spin tail spilling the period instead of re-reading it from the definition.
-// Earlier at 189: frame 0x34 versus 0x30; native gear and incoming roles agree;
-// torque/contact homes, flag extraction and spin allocation remain. Shared workspace/in-place spin
-// and original bits 304/257/201/272/216; native short gear on the two legal graphs 187/202.
-// Early one-use bit forms 334/92/121 and their short-gear/return-value forms
-// 155/172/101/161/238/263 restored. Bit expressions at their original use point,
-// after contact stores, value/pointer period and original/short gear 201/187/216/198; t09 retained after plain confirmation.
-// DL180: entry-zero torque/dword flags 274; selection-zero torque/dword flags 301; entry-zero
-// torque/word flags 273; selection-zero torque/word flags 300; entry-zero torque/byte flags 284;
-// selection-zero torque/byte flags 311; entry-zero torque/use-point bits 274; selection-zero
-// torque/use-point bits 301; spin forceinline 189; steer forceinline 189; both forceinline 189;
-// spin noinline 425; steer noinline 350; both noinline 545. Original executable body restored.
-// J198: torque name/throttle scope/quaternion loop-entry/function-entry declarations 189 each;
-// native contact cursor with original/loop/entry/combined lifetimes 245 each.
-// Value-input spin result, value/field periods and short/byte gear 182/261/197/262;
-// separate exhaustive/default-zero results with value/field periods 189/261/208/258.
-// Seven-point value-input gain below margin; frame, torque/contact and period homes remain.
-// Round 49: torque/counter declaration swap 189; steering helper with a matrix argument 189;
-// both 189; const spin 189; late torque/late counter/both 189 each; behavioural counter name 189.
-// Original target and steering helper restored.
-// Round 50: the contact definition as an element pointer read twice (legal bit tests) 187 (below
-// the margin). On the early-bit graph (named bits after the flags read, plain if/else-if gear) 100
-// at 991 bytes; with the short gear 156; plus the element pointer (retail's dead `add eax, edi`) 62:
-// the loop then equals retail but for slots. Spin wrap there: period through a pointer 89 (976
-// bytes); value-in/value-out helper 241 (`ret 4`: vehicle_index moves to a register); value copy
-// inside the helper 93 (still `fld` of the field); the wrap with direct field names 29 at 991 bytes
-// (spin code then retail's: value temp, period re-read, field stored before the sign test; not
-// kept: early bits and a hand-written helper need a match). Left at 29: frame 0x34 against 0x30
-// (an extra never-referenced dword at the top) and torque/loop-offset slots swapped (retail shares
-// the throttle slot with torque; compile-only does too, LTCG pairs it with the offset). i before
-// torque, scoped throttle with late torque, a named gear-select result, the throttle magnitude
-// passed inline: 29 each. Original body restored.
-// Round 114 (lane 6): the 0x34 frame was 8-byte alignment that LTCG pushed up from 0x2056e0, whose
-// inline cap helper named a `double scale`; passing the scale straight to scale_vector_by_double
-// (0x2056e0 still matches) gives retail's 0x30 frame here (189 -> 187 on this body). On round 50's D9
-// form (early named bits, the element pointer, the wrap written on the fields; 29 before) that is 10,
-// and with `torque * dt` written in both adds (no spin local) 8 at 991 bytes: only the torque and
-// loop-offset slots stay swapped (torque 0x14 / offset 0x18 sharing the throttle's, retail the other
-// way round). None of those forms is kept without a byte match. On the 8 form: i or torque declared
-// first 8/8, torque declared late 8, throttle in a block 8, throttle passed inline 8, a while loop 8,
-// plain else-if gear 177, torque preset to 0 270, brake store before the torque store 19, torque
-// stored first 32, contact pointer before the definition pointer 9, memcpy for the rotation copy 71,
-// the existing VEHICLE_DWORD_BITS view for the bits (early 8, at use 180), torque from an inline
-// helper returning from each arm 8 / single exit 71, spin named before the calls 81. Wrap helper
-// forms: period through a pointer 84, by reference 84, forceinline 84; the helper also doing the add
-// with a named spin 10 (the D9 spin code), with `torque * dt` per call 70, with torque and dt passed
-// 70; on this body (period pointer, add inside) 183. Diagnostics: extra torque uses in or after the
-// loop, throttle and torque as one variable (10), and removing any single call never move torque
-// above the offset. Source permuter on the 8 form: 6 tries in 616 s, nothing lower. Original body
-// restored.
-// Round 103 (the frame is now 0x30; left: torque at 0x14 and the loop offset at 0x18 sharing the throttle's
-// slot, retail the other way round (8), and after the first fmod the period zero `xorps xmm2` comes before
-// the advance reload, retail after (2)): the gear arm as one ternary 10 (identical); the second steering
-// bit read from the element expression 242 (frame 0x34); torque assigned once,
-// `braking || vehicle->gear == NONE ? 0 : ...` 192 and with the short gear read first 193 (both give
-// torque retail's slot, shared with the throttle, but merge the two zero paths and put the computed path
-// first); a nested ternary with the gear assigned inside it 10 (identical). Diagnostics: without the
-// in-loop torque store torque takes retail's slot; without its use after the loop it does not. So torque
-// weighs more than the loop offset here (in-loop use and its three definitions); retail's must weigh less.
-// J220: non-braking producer first 23, active gear first 18, both 23;
-// advance before contact loop 168, with non-braking first 181. Definition cursor 168,
-// both real cursors 210, definition cursor/non-braking first 181.
-// Existing throttle temporary named before/after torque 10/10.
-// Round 13 (lane 17), at 10 (the same 8 slot lines and the 2-line zero/reload order after the first fmod): torque
-// renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
-// contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
-// rotation declared in each steering branch 186 (frame 0x40).
-// Round 81: contact-definition/contact/both names 10 each; `axle_torque` 10; `const delta` and
-// `real *const spin` 10 each; a local advance name 10; torque/braking declarations swapped 10;
-// definition/contact/both pointer arithmetic 10 each; a spin reference and helper advance/spin names 10 each;
-// throttle/torque joint declarations in either order 10 each; the wrap helper defined after its caller 10.
-// Opening body restored.
-// Round 134 (lane 6), at 10: the wrap helper's ternary as if/else 54 (993 bytes); the loop counter declared in
-// the for statement 10; the gear arm as `torque = 0.0f; if (gear != NONE) torque = ...;` (0xf1cd0's shape) 198
-// (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
-// test as `*spin < 0.0f` 10. A compile-only (no /GL) listing shares torque with the throttle as retail does and
-// homes the loop offset in a parameter slot, so it does not reproduce the LTCG frame.
-// Round 43 (lane 17, fast), at 10: torque named to sort after the compiler's `tv` temporaries (`wheel_torque`) 10
-// (identical: names do not order this frame); both steering bits read from the element expression (no pointer)
-// 242 (frame 0x34); a const contact-definition pointer 10; the gear read at each use in an else-if chain 176; the
-// braking test reading the vehicle lookup at each use (no `current`) 10. Original body restored.
-// Round 92 (lane 9), at 10: both wraps written on their fields (as 0xf1cd0 now matches) with the named spin 10
-// (identical), with `torque * dt` in both adds 8 (only the eight torque/offset slot lines; the spin local written out
-// needs a match); a wrap-only helper `(real *spin, real const *period)` with the caller doing `+=` 80 (976 bytes), with
-// `torque * dt` 84; on the 8 form: dead pointer locals (diagnostic) 1-8 give 8/10/10/10/10/10/10/10 (the slots never
-// move), vehicle_contact_steer written out at both sites 10.
-// Round 78 (lane 10, fast): the throttle magnitude held in `torque` itself (diagnostic) 12, the joint variable
-// still at 0x14 and the loop offset at 0x18; the throttle through the file's vehicle_magnitude 128; the contact
-// flags read once into a dword local 160; vehicle_wheel_spin_wrap or vehicle_contact_steer declared
-// __forceinline 10/10 (same code); a bare block around the second lookup and the braking test 10 (same code).
-// Round 95 (lane 9), at 10: `state->contacts[i].torque = torque;` in the loop (0xf1cd0's spelling) 8 (the 2-line
-// zero/reload order becomes retail's, the slots stay; mixed access); `if (!braking)` with the zero arm second 23;
-// the gear test `!= NONE` with the computed arm first 18; the wrap helper called with `torque * dt` 70, with the
-// contacts store too 71; torque, throttle or i renamed to sort first or last 10 each (spill slots ignore names); a
-// tick-length getter for dt 10, for dt and the braking test 65.
-// Round 84 (lane 10, fast), at 10: every contact access written `state->contacts[i].x` (no contact pointer) 46; the
-// half angle written into both trig calls 65; braking preset false and set by the test 222; the spin as `dt * torque`
-// 10 (same code); dt read after the vehicle and definition lookups 192.
-// m3 lane 1 r95 (fast), at 10: re-measured round 95's `state->contacts[i].torque = torque;` 8 (only the eight torque/offset
-// slot lines left; a mixed spelling, kept only on a match); on it: new, the braking store through the array too 22; the
-// permuter (926 s, 23 tries) best 8; re-measured round 114's brake store before the torque store 19 and spin named before
-// the calls 81 (torque still at 0x14, the offset at 0x18). New on the kept body: the gear product written field first
-// (`unknown378 * function_f14f0(...)`) 10; diagnostics that change torque's use count (behaviour kept, extra code): the
-// contact store as `braking ? 0.0f : torque` 166 (997 B), the spin as `braking ? 0.0f : torque * dt` 233 (994 B), a dead
-// `= 0.0f` initialiser on torque 10; in all three torque keeps 0x14 and the offset 0x18.
-// Round 192 (m3 lane 4, fast), at 10: braking assigned straight from its test (no if/else) 10; the quaternion declared at
-// function scope 10; cosf/sinf for the half-angle trig 10; the quaternion as a local of vehicle_contact_steer (no rotation
-// parameter) 183 (934 bytes); fmodf in the wrap helper 10. Diagnostics: 1 or 2 dead inline-helper locals at the top, before
-// the contact loop or before the spin 65/24 at each (the torque and loop-offset slots never move; only the spin tail's add
-// operands do), so the slot swap is not a numbering phase.
-// Round 121 (m3 lane 9, fast), at 10: the braking test as a call of 0xf5d70 (whose body it is) with that function marked
-// plain `inline` 10 (same code here, but our inliner then expands 0xf5d70 at every site, as the forced form did:
-// 0xf1950 175 and 0xf5ee0 113 unmatch, 0xf6d10 821; retail expands it only here). Every other torque/loop-offset reference
-// change named above is listed with its score and none moves the pair; the packer's order between them is the open cause.
-// Round 125 (m3 lane 9, fast), at 10: the whole contact loop as an inline helper (state, torque, braking, sine, cosine)
-// 561 (641 bytes: not inlined), forced inline 24 (the slots unchanged, the second wrap's tail worse); the wrap helper's
-// period before the advance 10; the gear read at each use in the nested if 176 (byte compare, late movsx); the rotation
-// declared first in the loop body 10; the steer helper's parameters in fill order (rotation, sine, cosine, state,
-// contact) 10.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3032,9 +2896,8 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 
 	function_f5bf0(vehicle_index);
 
-	s_vehicle *current = VEHICLE_GET(vehicle_index);
-
-	if (current->unknown384 && (0.5f > current->unknown384 * g_510c54->rate || (current->control_flags & 2)))
+	if (VEHICLE_GET(vehicle_index)->unknown384 && (0.5f > VEHICLE_GET(vehicle_index)->unknown384 * g_510c54->rate ||
+		(VEHICLE_GET(vehicle_index)->control_flags & 2)))
 	{
 		braking = true;
 	}
@@ -3053,15 +2916,17 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 	else
 	{
 		short gear = vehicle->gear;
+		real gear_torque;
 
 		if (gear == NONE)
 		{
-			torque = 0.0f;
+			gear_torque = 0.0f;
 		}
 		else
 		{
-			torque = function_f14f0(gear, vehicle_index) * VEHICLE_GET(vehicle_index)->unknown378;
+			gear_torque = function_f14f0(gear, vehicle_index) * VEHICLE_GET(vehicle_index)->unknown378;
 		}
+		torque = gear_torque;
 	}
 	for (i = 0; i < state->definition->contact_count; i++)
 	{
@@ -3071,7 +2936,7 @@ void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state
 		bool turn_left = TEST_FIELD_BIT((contact_definition->flags >> 2) & 1);
 		bool turn_right = TEST_FIELD_BIT((contact_definition->flags >> 3) & 1);
 
-		contact->torque = torque;
+		state->contacts[i].torque = torque;
 		if (braking)
 		{
 			contact->unknown83 = true;
@@ -3404,6 +3269,13 @@ real g_47ff30 = 2.5f;
 // NOT kept: no native frame/transport equality; original complete body restored.
 // P535: Immutable complete bounded-speed/fraction/directional-mass producers, seven subsets then all with immutable computed speed; native frame 0xfc remains unrecovered.
 // 672/672/672/672/672/672/672/672. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P547: Actual friction-axis table with plain for/while traversals, each in long, unsigned long,
+// short and unsigned short: eight at 964/2989. NOT kept: frame 0x140 versus native 0xfc
+// and shortened extent; original three friction gates, helpers and complete body restored.
+// P549: Shared typed unit boost field with original/per-use mass/acceleration/climb
+// observations, masks 0/1/2/4/3/5/6/7: 672/693/767/738/776/701/785/773.
+// Typed field alone preserves 672; NOT kept: all coefficient reloads regress or shorten
+// away from native. Original observations, helpers, matrices and full math graph restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3418,7 +3290,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
-		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+		boost = function_d1210(vehicle_index) * (((s_unit_definition *)definition)->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 	}
 	else
 	{
@@ -5033,6 +4905,10 @@ extern byte g_5107ee;
 // the cone result written into the ray vector and copied to the direction 9; the position and forward each in a const
 // pointer 2. Every cone caller shows the same pair (0xf6060, 0x17c0e0, and 0xce6b0 orders forward, result, seed in
 // retail): it follows 0x146320's convention, BLOCKED-BY 0x146320 (src/unknown_146240.cpp, held this round).
+// Round 129 (m3 lane 12, fast), at 2 (the cone call's EDI-before-ECX pair, BLOCKED-BY 0x146320, whose file is held):
+// the cone's forward read from `markers[marker_index]` 4; the collision declared before the direction 2; the loop on a
+// marker pointer (`marker < &markers[count]`) 200 (921 bytes); a marker cursor advanced with the index 4; the marker
+// pointer as `markers + marker_index` 2.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
@@ -6314,6 +6190,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P518: Complete per-component reverse/preserve decisions in bool/byte/short/long:
 // 978/978/978/978/978/978/978/978. NOT kept: no exact native loop/frame repair;
 // original comparisons, loop domain, matrix owners and complete body restored.
+// P551: Complete backward flipped-matrix/desired-forward/quaternion-axis/state-rotation
+// transfers, then corresponding uninitialized object transfers: 1041/1078/1112/1107/1041/1083/1112/1107.
+// NOT kept: no exact native frame/index/matrix ownership recovery; original copies restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6356,7 +6235,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 
 	if (TEST_FIELD_BIT(VEHICLE_WORD_BITS(vehicle->flags348)->bit4))
 	{
-		boost = function_d1210(vehicle_index) * (*(real *)(definition + 0x1d0) - 1.0f) + 1.0f;
+		boost = function_d1210(vehicle_index) * (((s_unit_definition *)definition)->unit.boost.boost_peak_power - 1.0f) + 1.0f;
 	}
 	else
 	{

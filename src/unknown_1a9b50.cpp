@@ -413,6 +413,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
 // entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the
 // facing pointer is formed in esi from the view call here and late from eax in retail, which 0x25d740's inlining decides;
@@ -425,7 +426,6 @@ extern point2f *g_468778;
 // saves and holds the actor in ebp, the slot in esi and the prop in ebx, where ours computes the actor's table entry after the settings
 // call and keeps the entry in ebx; moving the actor lookup ahead of the settings lookup still regresses (413), as the four entry
 // declaration orders recorded below do.
-// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // b2G walk (r719): every block, field offset, constant and call argument checked against retail 0x1aa0d0-0x1aa6da; no logic or
 // precision difference found (float sums in retail's k,j,i order, 0x24590 called, 0x2b400/0x30bf0 results as retail); the 20 matched callees and
@@ -734,6 +734,17 @@ extern point2f *g_468778;
 // P539: Isolated first facing-test outcome, positive/complementary bool/byte/short/long:
 // 377/377/377/377/377/377/377/377. NOT kept: no native entry/carrier repair or byte equality; original direct
 // comparison, early distance, all predicate calls and complete body restored.
+// M3 lane 1 r109 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375):
+// `bool result = false;` declared after the three lookups 409 (1519 B, frame 0x3c: the result goes to AL); diagnostic,
+// restored: `inline` on magnitude3d's definition (src/unknown_023540.cpp) with the actor first and constant exits 391 (1555 B,
+// frame 0x44, the actor spilled; lane 11's 393 form without the inline); the zero length left uninitialised and zeroed in
+// the copy arm (on the main order) 384 (1551 B); the first prediction written i, j, k 375 (same code); the request declared
+// at the top of the facing block 375 (same code). Retail keeps the weight in memory and rebuilds 0.0 after the magnitude3d
+// call, where ours holds the zero in XMM5 across it (the 0x24590 register-summary lead again).
+// MiniMax I (11-15): no new form, no lower score (375): the actor looked up before the settings call, with the entry
+// declarations in that order, measures 413 (1555 bytes) again - the actor pointer then takes edi and is spilled at
+// [esp + 0x20] and the frame grows to 0x44, where retail holds the actor in ebp, the slot in esi and the prop pointer
+// in ebx, and keeps the settings only in its home. The frame, the length and the carriers are the whole difference.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

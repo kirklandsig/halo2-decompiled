@@ -365,6 +365,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax E (11-15): no new form, no lower score (117, was 117): the rotation written out with scalar cross and dot
+// terms in retail's own order (the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, then cross j, cross k and
+// cross i inside the i row) gives 156 with the direction copy and 174 with three scalars, and the frame stays 0x24 or
+// 0x1c against retail's 0x20; the fraction drawn with the shared random step instead of the shared random real gives
+// 117 with the seed load still after the time product, and the seed pointer in a local gives 136. What still differs is
+// the frame size (0x28 against 0x20) and the seed pointer load, which retail makes between the two pushes.
 // MiniMax S (11-15): no new form, no lower score (117, was 117): on this body the row-i projection operand swapped to
 // projection*axis.i compiles to retail's own order and changes no byte (round 41's projection*axis rows were on the field-wise
 // `old` copy, not here), and a permuter run with a new seed stays at the starting score; the frame is still 0x28 against
@@ -749,6 +755,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // g_55ecd4.i, g_55ecd4.j, g_55ecd4.k }` 154 (880 B, frame 0x34: the global is then read with movss, j first, as retail,
 // but the cross product moves to the frame; cross3f_staged on it the same score), with the projection before cross3f
 // 152 (884 B, frame 0x28), with `old` initialized before the axis draw 158 (frame 0x34).
+// M3 lane 2 r88 (fast with 0x118140, 0x117c80, both MATCH; control 117): base for these, re-measured, round 69's tail (the
+// float-overload casts: retail's fxch pair and three fst stores) with no `old` copy and cross3f/dot3f/rows on the global 158 at
+// 880 B (the global's j/k then load right after the seed store, as retail). On it: the axis drawn before sine/cosine 158, cross3f_staged
+// 158, sine then the axis draw then cosine 158 (all three the same code); the projection first (re-measured 163) with
+// cross3f_staged 163, with dot3f(&global, &axis) 163. Retail computes the dot first, then cross j and k (spilled), then cross i inside
+// the i row (0x177d10's statement order), which neither shared cross helper gives. Body unchanged.
 // P537: Actual normalization return/absolute-magnitude producers, real/double/const-real/
 // const-double: 117/118/117/118/117/118/117/118 at 880 bytes. NOT kept: no exact
 // result or frame recovery; original call/test, shared products and complete body restored.

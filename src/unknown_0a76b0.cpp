@@ -1134,6 +1134,13 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // P511: Complete terminal placement success/failure outcomes in bool/byte/short/long:
 // 92/92/92/92/92/92/92/92. NOT kept: all canonicalize without recovering saved projectile/type
 // and shared-vector homes. Original complete body and all call tuples restored.
+// P541: Actual parent-velocity output validity, available/missing bool/byte/short/long call results:
+// 92/92/92/92/92/92/92/92. NOT kept: one-use output-validity outcomes require equality; saved index/type and shared vector homes remain.
+// Original complete executable source and existing helper contracts restored.
+// P555: Actual cancellation admission in bool/byte/short/long, cancelled/allowed
+// outcomes: 142/142/142/142/142/142/142/142 (1700/1699 bytes). NOT kept:
+// one-use guard captures do not match; saved projectile/type and vector homes remain.
+// Original guard, full body and every existing helper restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)

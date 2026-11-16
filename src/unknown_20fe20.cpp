@@ -1217,6 +1217,14 @@ void function_2118c0(void)
 // index locals) 174 (756 B); the band loop over a short row stepped by 8 to 24 with no band counter 150; a `word` band
 // counter with `long row = b * 8` 150; the seeding loop's row written `(b << 3) + k` with `long row = b * 8` 150, with
 // the band row as now 10 (same code).
+// M3 lane 4 r204 (fast): a `short` row carried from the band loop's foot as `row = b * 8` 156 (779 B); `long row = b * 8`
+// with `__assume(row >= 0)` 183 (803 B: the row is kept as `add reg, 8` but every row still reduces); the knot indices typed
+// `char` 157; p1 and out as pointers set before the band loop and stepped by 64 at its foot 176 (792 B); the knot indices
+// typed `short` on this form 13. Compile-only harness (exact here): extra live int or float values across the band loop
+// never stop the rows' reduction (not register pressure); a row loop `row < 24; row += 8` (long, short, dword) reduces
+// every row; long/dword `row = b * 8` carried from the foot leaves the rows unreduced but hoists the knot bases (125);
+// `noise[w] + row * 8`, `(noise + row)[w]`, `*(noise + row + w)`, `&noise[w][row * 8]`, `noise[row] + w * 8` all
+// canonicalise to the `row + w` code of the same row expression.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2692,6 +2700,10 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // copies 343 (y first, y XMM2, x XMM3), with the copies declared z, x, y 349; the cases reading delta's fields directly
 // 365 (y first and y XMM3, but z XMM2, x XMM0, sum XMM1; the fill order and a vector3d_from_points3d fill give the same
 // code); that with a one-expression sum 363.
+// M3 lane 10 r110 (fast with 0x20bbb0, 0x20c2f0 and 0xb9dd0, all matched; control 3): the helper returning the sum through a
+// `real *` out-parameter 3 (same code); `squared` declared at function scope with the other reals 3 (same code); the two
+// point locals declared ahead of the NONE test 3 (same code); the two positions as one two-point array (source [0], target
+// [1]) 333; the helper also filling `real *x, *y, *z` out-parameters for the cases 343 (z subtracted fully first).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

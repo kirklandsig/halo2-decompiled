@@ -1,5 +1,6 @@
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
+#include "unknown_124f90.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include <math.h>
@@ -156,6 +157,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// score 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
 // memory fourteen times and keeps it in xmm4 again after the pointer stores, while ours (a plain real declared
@@ -169,8 +172,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax G (11-12): no new form tried this round, no lower score (866): the prologue still zeroes ebp where retail
 // zeroes esi, and the zeroed count still sits at esp+0x24 instead of esp+0x88, so the later frame offsets differ.
-// score 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
-// frame layout and register homes remain (earlier starts 919 and 886 below).
+// MiniMax S (11-15): 853 (was 866) on its base; 846 with lane 1 r109's forms (coordinator, fast): the six clamps of this function through the existing PIN_126660 macro
+// instead of the local pin helper; the body now has retail's length (3327 bytes) and 0x18bb80 stays matched. Left:
+// the prologue still zeroes ebp where retail zeroes esi, and the zeroed count's home differs (esp+0x24 here,
+// esp+0x88 in retail), so the later frame offsets differ.
 // MiniMax S (11-10): no new form, no lower score (866): retail reads the query count as a dword at the loop head and
 // keeps the choice count and the two loop indices in ESI/EDI/EAX, while ours narrows the count to a word and holds the
 // outer index in EBP; taking the long count directly instead moves the frame offsets and scores 919. Retail's four
@@ -538,6 +543,18 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // the fade scan's `while ((i = next(pool, i + 1)) != NONE)` 909; the listener's detail slot through a `long *slot` 866
 // (same code); the existing list's store and increment as two statements 866; `fraction * fraction` named and used twice
 // in the blend 866. Re-measured: the fade scan's silent flag through `sound` 876, `choice_count && inside` 866 (listed).
+// M3 lane 1 r109 (fast with 0x18bb80 and 0x18d730, confirmed plain; control 866). Kept, 866 -> 858 (3328 B), three forms
+// with retail evidence: the portal distance as an if/else with the store in each arm (retail stores xmm0 in both arms,
+// 0x18b037/0x18b044); the detail tag defaulted to NONE and loaded under `if (primary != NONE)` (retail's `or ebp, -1`
+// ahead of the primary test, 0x18b8b9); the target loop's existing entry in a named three-use local (retail loads
+// existing[j] once into ESI, 0x18b550). Measured: the first two without the third 860; the detail form alone 864; the
+// decibel helper as a single-exit result on the kept form 881 (3303 B; retail moves each constant into a register, then
+// stores once). Left: the entry zero (ours EBP, retail ESI = the choice count), the query/choice counts (retail dword,
+// count in ESI), the choice address (retail forms it from the count after the increment), the target loop's audible
+// flag (retail two byte RMWs with the `or` arm first, ours one merged word RMW), and the pool scans' block layout.
+// On the kept 858 form (fast): the choice count as a long 965 (3268 B); the audible update with the `or` arm first
+// (`if (!target->audible)`) 858 (still one merged word RMW); the query count used directly at its three uses 913; the
+// fade time named once at both step sites 884 (3330 B); the decibel helper as a single-exit result 881 (above).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -583,8 +600,10 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 				choices[choice_count].muted = g_509420 == 0;
 			}
 			else choices[choice_count].muted = false;
-			choices[choice_count].distance = portals[i] != NONE ? function_14b240((s_14b240_owner *)bsp,
-				(s_bsp3d_disk *)(bsp->portals + portals[i] * 0x24), point) : 0.0f;
+			if (portals[i] != NONE)
+				choices[choice_count].distance = function_14b240((s_14b240_owner *)bsp,
+					(s_bsp3d_disk *)(bsp->portals + portals[i] * 0x24), point);
+			else choices[choice_count].distance = 0.0f;
 			choice_count++;
 		}
 		bool inside = cluster == clusters[0];
@@ -609,8 +628,8 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		{
 			s_loop_path_choice *choice = &choices[i];
 			real range = bsp->sounds[choice->source].range;
-			real fraction = fabs(-range) < 0.0001f ? (choice->distance < 0.0f ? 0.0f : 1.0f) : loop_path_pin(choice->distance / range, 0.0f, 1.0f);
-			real blend = loop_path_pin(fraction * fraction * 3.0f - fraction * fraction * fraction * 2.0f, 0.0f, 1.0f);
+			real fraction = fabs(-range) < 0.0001f ? (choice->distance < 0.0f ? 0.0f : 1.0f) : PIN_126660(choice->distance / range, 0.0f, 1.0f);
+			real blend = PIN_126660(fraction * fraction * 3.0f - fraction * fraction * fraction * 2.0f, 0.0f, 1.0f);
 			choice->gain = ((inside ? choice->inside : choice->outside) - choice->portal) * blend + choice->portal;
 			s_loop_path_target *target = &targets[target_count++];
 			target->tag = choice->tag;
@@ -662,9 +681,10 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		long index = NONE;
 		for (long j = 0; j < existing_count; j++)
 		{
-			if (existing[j] != NONE && loop_path_get(pool, existing[j])->tag == target->tag)
+			long candidate = existing[j];
+			if (candidate != NONE && loop_path_get(pool, candidate)->tag == target->tag)
 			{
-				index = existing[j];
+				index = candidate;
 				used[j >> 5] |= 1 << (j & 31);
 				break;
 			}
@@ -679,7 +699,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			s_loop_path_datum *sound = loop_path_get(pool, index);
 			real current = loop_path_linear(sound->decibels);
 			real delta = loop_path_linear(target->decibels) - current;
-			real gain = current + loop_path_pin(delta, -target->step, target->step);
+			real gain = current + PIN_126660(delta, -target->step, target->step);
 			sound->decibels = loop_path_logarithmic(gain);
 			sound->flags |= 0x200;
 			if (target->audible) sound->flags &= ~0x80;
@@ -688,7 +708,7 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			else sound->flags &= ~0x10;
 			sound->listener = (char)g_4686c4;
 			sound->cluster = (short)target->cluster;
-			sound->gain += loop_path_pin(target->gain - sound->gain, -target->step, target->step);
+			sound->gain += PIN_126660(target->gain - sound->gain, -target->step, target->step);
 			sound->source = (char)target->source;
 		}
 	}
@@ -702,13 +722,14 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		{
 			real step = elapsed / (fabs(definitions[sound->source].fade_time) < 0.0001f ? 2.0f : definitions[sound->source].fade_time);
 			real gain = loop_path_linear(sound->decibels);
-			gain += loop_path_pin(0.0f - gain, -step, step);
-			sound->gain += loop_path_pin(0.0f - sound->gain, -step, step);
+			gain += PIN_126660(0.0f - gain, -step, step);
+			sound->gain += PIN_126660(0.0f - sound->gain, -step, step);
 			if (fabs(gain) < 0.0001f) loop_path_get(pool, index)->flags |= 2;
 			else sound->decibels = loop_path_logarithmic(gain);
 		}
 	}
-	long detail = primary == NONE ? NONE : bsp->sounds[primary].detail_tag;
+	long detail = NONE;
+	if (primary != NONE) detail = bsp->sounds[primary].detail_tag;
 	long index = g_4ed288->indices[listener * 2];
 	if (index != NONE && loop_path_get(pool, index)->tag != detail)
 	{

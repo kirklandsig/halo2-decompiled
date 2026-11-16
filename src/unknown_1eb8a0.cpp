@@ -183,6 +183,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax E (11-16): no new form, no lower score (622 plain, 614 fast): retail keeps q (the fourth stack
+// argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and the first clamp
+// still computes t before the 12/8 factor is selected; a named local copy of q at the function entry (732) and
+// one just before the output copy (665) both score worse and both leave d in EBX, so the body is unchanged.
 // score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
@@ -579,6 +583,15 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // P525: Actual signed tick-state counter/duration/ticks-left full-width storage,
 // subsets 1/2/4/3/5/6/7 then complete int units: 622/676/622/676/622/676/676/676.
 // NOT kept: no native sample-home repair or byte equality; duration forms move the first gap earlier. Original record and body restored.
+// M3 lane 8 r172 (fast with the file's 17 matched functions, all kept): retail's two exits load the output pointer into EAX
+// (`mov eax, [esp + 0x28]`) just before `ret 0x14`, so retail returns nothing (the one caller ignores the value), as the
+// sister 0x1ed4a0 does. The return type void 621 (the exits then load out into EAX as retail); on it `s->counter++;` with the
+// final test reading the field (no counter local) 627 at 2893 B: the counter block is then retail's exactly (counter in EDX,
+// `mov eax, edx`), and only the restores differ: retail pops EDI, EBP, EBX in the counter block ahead of the test, ours in
+// each exit. With it: the test set-first 627 (same code); the volatile count local made plain (diagnostic) 695, plain
+// stores in the exits (diagnostic) 627, the settle test's else arm first 666, all with the pops still in the exits. Also
+// the function as a member of the ease state 684 (2893 B). Next: find what keeps the restores out of the counter block;
+// with them there the void + counter++ form should score well under 622.
 // P536: Inner initial-tick decision at its original output-ramp producer,
 // positive/complementary bool/byte/short/long: 622/622/622/622/622/622/622/622.
 // NOT kept: no native sample-home or coefficient-schedule repair; original

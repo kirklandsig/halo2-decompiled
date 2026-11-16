@@ -1152,6 +1152,16 @@ void function_1537f0(s_profile_record *record);
 // through `entry` (previous_other, next_other, unknown58, next) with the heads as two chained pairs 49; one link chain through
 // `entry` ahead of the 0x7f8b0 call 83 (268 bytes); the record, its initializers and the 0x7f8b0 call in their own block with
 // the link chain through `entry` after it 49. Every form with the link stores through `entry` hoists NONE into EBP.
+// M3 lane 10 r110 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the entry pointer declared after the record's
+// initializer 18, an identity pointer local for the clear and the call 18, the link pointer declared first with a view pointer
+// for the call 18 (all same code); the heads as one four-way chain with the links as four `entry->` statements in retail's
+// order 49 (hoist). Diagnostics: the flags and the word after them through a dword pointer (`tail[0]`, `tail[1]`) on this body
+// 14 (retail's store schedule, only the +0x5c base left); that pointer with the links through `entry` 49 (NONE hoists again:
+// only NONE stores through a pointer end the hoist).
+// M3 lane 16 r124 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the link chain through an unnamed
+// `(&entry->unknown58)[n]` expression 49 (NONE hoists into EBP: only a named pointer ends it); the link pointer declared
+// before the record 18 (same code); the flags and the word after them stored before the links 27; the links as two chained
+// pairs through the pointer, (2,3) then (0,1) 18, (0,2) then (1,3) 18.
 // @retail 0x7f930
 void function_7f930(void)
 {

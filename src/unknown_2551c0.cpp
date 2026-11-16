@@ -492,6 +492,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// MiniMax C (11-15): no new form, no lower score (87, was 87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, retail looks the object up before either vector is copied and holds the scaled index in EDX where ours keeps it in ECX, and the radius sum, the first length, the adjusted projection and the location index sit one slot lower than retail's.
 // MiniMax E (11-14): no new form, no lower score (87, was 87): retail loads the object index into EAX before it pushes
 // the timing call's buffer and looks the object up before either vector is copied; this build pushes the buffer first,
 // loads the index after and looks the object up between the two copies. The four scalar homes (the radius sum, the
@@ -881,6 +882,13 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // subsets, complete geometry with immutable target handle, then target handle alone: eight 87
 // at 963 bytes. Complete geometry-only const control also 87, excluded as listed. NOT kept:
 // unit-call scratch and scalar/query homes remain; original complete body restored.
+// Round 203 (m3 lane 4, fast with the file's functions, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): on lane 17's 17 form with the
+// adjusted projection written into the length local (17; {length, adjusted} at +4 and {sum, side1, timing3} at +8, retail the
+// other way round): a reach declared ahead of the length and assigned `size + radius` at the first test for both tests 197
+// (951 B, the radius call sinks); the size declared ahead of the length 17 and the radius declared ahead of the length 17
+// (identical code each); constant-left float compares one site at a time (`0.f < local_11`, `0.f > local_11`, `0.5f < max`,
+// `0.f < length`, `0.f < heading_length`, `0.f < projection`, `0.95f < dot`) 17 each on that form and 87 each on this body,
+// the three side-block sites together 17. Body unchanged at 87.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
