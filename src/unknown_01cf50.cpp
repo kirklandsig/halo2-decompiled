@@ -4278,6 +4278,7 @@ void function_1eb00()
 // tables and caches that this project does not have.
 // MiniMax I (11-14): no new form, no lower score (79): replacing the zeroed 24-float array's initializer with an explicit memset scores 119 (the body shrinks to 732 bytes against retail's 763), so the initializer stays; the rest of the difference is retail's four shader programs, which are built from tables this project does not have.
 // MiniMax R (11-15): no new form, no lower score (79): retail's four shader programs still come from tables and caches this project does not have, and the body is still 25 bytes shorter than retail's 763.
+// MiniMax R (11-16): no new form, no lower score (79): the two counters' ratio is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and the body is still 25 bytes shorter than retail's 763.
 // score 79 (was 79): this round found no gain - retail's body builds four shader programs from tables and
 // caches that this project does not have, so the difference is a knowledge difference, not a local form.
 // MiniMax C (11-08): no new form, no lower score.
@@ -7144,6 +7145,7 @@ extern dword g_4e6494;
 // handle test as `!= NONE` before `>= 0` (179 with the repeated comparison, 204 without the bool), the same test through
 // the context's dword (179), the outer counter, part counter and pass counter as int (179 each), the section index as
 // int (179) or byte (205), the transform as word (196), the handle as int (179), the availability flag as byte (179).
+// MiniMax R (11-16): no new form, no lower score (184): the table handle is still tested once against the zero register where retail tests NONE and then the sign, the zero lives in EBX where retail makes it in EDI, the section loop's counter is in EDI where retail keeps it in ESI, and the section itself is in ESI where retail uses EBX.
 // score 184 (was 199), fast build (b6L walk, 11-06): retail walked statement by statement. Fixed: (1) the
 // else branch of the transform test passes the section loop index to function_151e0, not NONE: retail's
 // call at 0x4c7ed loads no esi, and esi holds the loop counter there (xor esi,esi 0x4c74e ... inc esi
