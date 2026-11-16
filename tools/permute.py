@@ -2316,6 +2316,15 @@ def _writes_variable(line, name):
                      + r'|(?<!&)&\s*' + n + r'(?!\s*(?:->|\.|\[))', line) is not None
 
 
+def _writes_memory(line):
+    """Whether a line stores through memory (a dereference, an element or a field), not a plain local."""
+    flat = _squash(line)
+    m = re.search(r'([^=;{}]*?)(?<![=!<>])(?:=(?!=)|\+=|-=|\*=|/=|%=|&=|\|=|\^=|<<=|>>=)', flat)
+    if m and re.search(r'[*\[>.]', m.group(1)):
+        return True
+    return re.search(r'\+\+|--', flat) is not None and re.search(r'\*|->|\[', flat) is not None
+
+
 def _lvalue_names(lv):
     """The variable names an lvalue reads (its root and the names in its indices), not its members."""
     return set(re.findall(r'(?<![\w.>])[A-Za-z_]\w*', lv)) - KEYWORDS
@@ -2323,9 +2332,12 @@ def _lvalue_names(lv):
 
 def _lvalue_pointers(lv):
     """The prefixes of an lvalue chain that are loaded from memory and then followed by '->'
-    (a->b in a->b->c): pointers a call could change."""
+    (a->b in a->b->c), and a field indexed as a pointer (a->b[i], a.b[i]): pointers a call
+    or a store could change."""
     flat = _squash(lv)
-    return [flat[:m.start()] for m in re.finditer(r'->', flat) if re.search(r'(?:->|\.|\])[A-Za-z_]\w*$|\]$', flat[:m.start()])]
+    out = [flat[:m.start()] for m in re.finditer(r'->', flat) if re.search(r'(?:->|\.|\])[A-Za-z_]\w*$|\]$', flat[:m.start()])]
+    out += [flat[:m.start()] for m in re.finditer(r'(?:->|\.)\s*[A-Za-z_]\w*\s*\[', flat)]
+    return out
 
 
 def _reads_memory(lv, types):
@@ -2421,7 +2433,7 @@ def mut_remove_alias(body, rng, context=None):
             continue                                            # a pointer to it could write it unseen
         if any(_writes_chain(l, p) for p in _lvalue_pointers(lv) for l in span):
             continue
-        if _reads_memory(lv, types) and any(_has_call(l) for l in span):
+        if _reads_memory(lv, types) and any(_has_call(l) or _writes_memory(l) for l in span):
             continue
         cands.append((i, uses, name, lv, bool(amp)))
     if not cands:
@@ -2834,10 +2846,21 @@ def _expand(body, h, context, types):
             # parentheses the body puts around a name or a literal go (they change nothing)
             def put(x):
                 if x.group(2):
-                    return raw[x.group(2)]
+                    a, before, after = raw[x.group(2)], x.string[:x.start()], x.string[x.end():]
+                    if before[-1:] in OPERATOR_CHARS and a[:1] in OPERATOR_CHARS:
+                        a = ' ' + a                         # '-x' with '-y' must not paste as '--y'
+                    if after[:1] in OPERATOR_CHARS and a[-1:] in OPERATOR_CHARS:
+                        a = a + ' '
+                    return a
                 a, before, after = raw[x.group(1)], x.string[:x.start()], x.string[x.end():]
                 call_or_cast = re.search(r'[\w\])]\s*$', before) or re.match(r'\s*[\w(]', after)
-                return a if _plain_arg(a, volatile, context) and not call_or_cast else f'({a})'
+                if _plain_arg(a, volatile, context) and not call_or_cast:
+                    if before[-1:] in OPERATOR_CHARS and a[:1] in OPERATOR_CHARS:
+                        a = ' ' + a                             # '-x' with '-y' must not paste as '--y'
+                    if after[:1] in OPERATOR_CHARS and a[-1:] in OPERATOR_CHARS:
+                        a = a + ' '
+                    return a
+                return f'({a})'
             new = re.sub(r'\(\s*(%s)\s*\)|(?<![\w.])(?<!->)\b(%s)\b' % (alt, alt), put, h.parts[0])
             if _parenthesized(new) and _postfix(new[1:-1]):
                 new = new[1:-1]

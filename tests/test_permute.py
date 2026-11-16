@@ -818,8 +818,9 @@ CASES = [
     # 'if (*value)': the if's own parentheses stay
     (permute.mut_remove_alias, '\n\tlong *value = &thing->value;\n\tif (*value)\n\t\treturn 1;\n\treturn 0;\n',
      {'\n\tif (thing->value)\n\t\treturn 1;\n\treturn 0;\n'}),
+    # a subscript on a field is a load, so the call blocks; the reference case stays
     (permute.mut_remove_alias, '\n\ts_point &point = thing->point[0];\n\tstore(point.x, true);\n\treturn point.y;\n',
-     {'\n\tstore(thing->point[0].x, true);\n\treturn thing->point[0].y;\n'}),
+     set()),
     (permute.mut_remove_alias, '\n\tlong *value = &thing->value;\n\tstore(*value, true);\n\treturn helper(*value, 0);\n',
      {'\n\tstore(thing->value, true);\n\treturn helper(thing->value, 0);\n'}),
     # an existing helper's expression, in its operand order -> the helper; a macro both ways
@@ -926,6 +927,11 @@ def test_typed_mutations_leave_alone_what_they_must():
     # its address taken, a call between and a pointer loaded from memory in the chain; or when a const
     # reference binds a converted copy, or the name is declared twice
     assert permute.mut_remove_alias('\n\tlong *value = &thing->value;\n\tthing = g_thing;\n\treturn *value;\n', rng(), ctx) is None
+    # a subscript on a pointer field is a memory load: a call or a store in the range blocks it
+    assert permute.mut_remove_alias('\n\tlong *value = &thing->point[index].x;\n\tstore(1, true);\n\treturn *value;\n', rng(),
+                                    ctx) is None
+    assert permute.mut_remove_alias('\n\tlong *value = &thing->point[index].x;\n\tthing->point = g_thing->point;\n\treturn *value;\n',
+                                    rng(), ctx) is None
     assert permute.mut_remove_alias('\n\tlong *value = &thing->point[index].x;\n\tindex++;\n\treturn *value;\n', rng(),
                                     ctx) is None
     assert permute.mut_remove_alias('\n\tlong *value = &thing->value;\n\tvalue++;\n\treturn *value;\n', rng(), ctx) is None
@@ -994,6 +1000,7 @@ def test_typed_mutations_leave_alone_what_they_must():
     # #1064: a macro expands as the preprocessor does, no parentheses added; tokens stay apart
     assert h('\n\treturn TWICE_OF(index + 1);\n', rng(), ctx) == '\n\treturn index + 1 * 2;\n'
     assert h('\n\treturn -NEGATED(index);\n', rng(), ctx) == '\n\treturn - -index;\n'
+    assert '\n\treturn - -index;\n' in outputs(h, '\n\treturn NEGATED(-index);\n')
     # #1064: code in a comment is not code
     assert h('\n\tvector3f v;\n\t// v.i * v.i + v.j * v.j + v.k * v.k\n\treturn 0;\n', rng(), ctx) is None
     # a helper the file defines after the function cannot be called from it
