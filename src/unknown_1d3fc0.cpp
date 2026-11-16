@@ -30,7 +30,7 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
-// MiniMax S (11-16): score 11 (was 110): the private normalizer's squared length named through dot3f gives
+// MiniMax S (11-16) trial, not kept (body stays 110): score 11 with these forms: the private normalizer's squared length named through dot3f gives
 // retail's sum order and its component registers, and the projection's k row reads the matrix's forward
 // component (a second access path to one field); what is left is the dot's i term, which still copies up's i
 // where retail copies forward's i, and the last normalization's i term, which still multiplies the component by
