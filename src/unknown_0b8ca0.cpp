@@ -679,7 +679,14 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// MiniMax I (11-15): score 38 (was 165): the pool step helper latches its result, the cluster bit table's base is read once before
+// MiniMax I (11-16), on its not-kept 38 form (below; main stays 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
+// body lives in the cluster loop's found branch and the loop leaves it with a break, so the function has no goto
+// that the body on main does not have; the frame and the slots are retail's (0xb4, the result byte at [esp+0x13],
+// the link iterator at [esp+0x40], the player index at [esp+0x14]) and the pool step helper latches its result;
+// left: the definition pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short
+// where retail passes it in a full register, the angle's pi/4 is added after the dot product where retail adds it
+// before, and the pool step's packed handle is built in edx where retail builds it in ecx.
+// MiniMax I (11-15), on the not-kept 38 form: the pool step helper latches its result, the cluster bit table's base is read once before
 // the first query and the body lives in the cluster loop's found branch, the range's zero is the model-NONE arm and the angle's
 // atan2 takes its arguments as reals (so the compiler expands it as fpatan and the frame is retail's 0xb4); left: the definition
 // pointer sits in edx where retail holds it in eax, the zoom argument is narrowed to a short and the angle's pi/4 is added after
@@ -939,6 +946,11 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // flags read through the root object in the test 217; a named `real angle` ahead of the dot product 246 (946 bytes),
 // with `(real)atan2` 246. All restored.
 // NOT kept (coordinator screen, MiniMax I 11-15): a goto the function on main does not have (kept only with a byte match): `goto done;`; the body is main's again.
+// MiniMax I (11-16), NOT kept: 38 (was 165) with the player scan moved inside the cluster loop's hit branch, the
+// shared object_query_next_ab helper as a single exit through a NONE-initialised result, the header flags re-read
+// through a root_object pointer instead of the flags local, and g_4e6948 through a one-use options pointer.
+// Without those three forms the restructure measures 309 (fast); with the helper's single exit alone 278. Each is
+// kept only with a match.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -2000,6 +2012,10 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-16): no new form, no lower score (285); the bit-7 test of the object word written in retail's
+// shift form (">> 7" and "& 1") compiles to the same sign test as the mask, so the body is unchanged: the first
+// difference is still the ancestry loop's jump to our own epilogue at +0x76 where retail jumps to its shared one at
+// 0xb987a, and retail still inlines the marker pointer's helper, which needs 0xb8bd0's file flag.
 // MiniMax H (11-14): no new form, no lower score (285); the two state bits of the object word were written as
 // shifts (">> 7" and ">> 8" instead of the masks 0x80 and 0x100), which is the form retail uses, but the score stayed
 // 285 and the body stayed four bytes longer than retail's 1236, so the shift form was reverted; the first difference is

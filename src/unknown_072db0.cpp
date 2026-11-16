@@ -458,6 +458,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P466: Index/variant/peer/primary identities and their independent read-only
 // bindings: eight reduced 0s; primary binding plain 33 at 138/134 bytes.
 // NOT kept: unchanged full-image helper order and EBP save; original body restored.
+// P547: Uninitialized native primary/peer, index and variant declaration phases, seven subsets
+// then complete reverse declaration order: eight reduced 0s; full reverse-order graph 33/138.
+// NOT kept: reversed pure helpers and extra EBP remain in the full image; original body restored.
 // @retail 0x73360
 bool c_helper_b::v7()
 {

@@ -197,6 +197,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // available` 11, seeded `setting = 1` with the availability fields tested in place 15, one ternary 11; the availability
 // helper taking the header's address 4, also passed through the selector 4 (same code). Diagnostic: the kind compared with
 // the settings definition's first field (a 1 the compiler cannot see) loads the kind with movsx after the request (34).
+// Round 128 (m3 lane 9, fast, all with the volatile read): the index through an inline accessor taking the request 4; the
+// index declared ahead of the kind and assigned after it 4; the setting declared first and assigned after the reads 4;
+// index, setting and kind all declared first and assigned in order 4; a `dword` index 4 (all the same code). Re-measured:
+// the index read first 5 (the kind then takes AX but its load follows the index's). Diagnostic (flags, not kept): the file
+// with `/arch:SSE` like the matched siblings 0x8c790 and 0x194260 (both load the same +0xe word unfolded with a plain read)
+// and a plain read 32 (95 bytes: still folded), so the flag is not what unfolds it.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

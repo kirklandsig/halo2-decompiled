@@ -184,6 +184,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // Round 166 (m3 lane 7, fast): one `long const &` to the screen's animation type read by all five loops 23; the screen as a
 // base-widget parent pointer for the helper calls and every animation read 23; the model declared in its if condition 23;
 // the text declared in its if condition with the animation test nested 23; both 23 (all the same code).
+// Round 186 (m3 lane 6, fast): on `long i = 0;` above the pane lookup (25: the text reset becomes retail's `and`, the model
+// reset stays `and` with the EAX copy): the model loop as a `while` 25, with `if (!model) continue;` 25, with `if (model &&
+// animating)` and the store under its own `if (model)` 25, with its own counter declared in its `for` 25 or at the top 25 (all
+// the same code); on main's body the text loop's own counter zeroed above the pane lookup 23 (same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

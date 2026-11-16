@@ -365,6 +365,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax E (11-15): no new form, no lower score (117, was 117): the rotation written out with scalar cross and dot
+// terms in retail's own order (the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, then cross j, cross k and
+// cross i inside the i row) gives 156 with the direction copy and 174 with three scalars, and the frame stays 0x24 or
+// 0x1c against retail's 0x20; the fraction drawn with the shared random step instead of the shared random real gives
+// 117 with the seed load still after the time product, and the seed pointer in a local gives 136. What still differs is
+// the frame size (0x28 against 0x20) and the seed pointer load, which retail makes between the two pushes.
 // MiniMax S (11-15): no new form, no lower score (117, was 117): on this body the row-i projection operand swapped to
 // projection*axis.i compiles to retail's own order and changes no byte (round 41's projection*axis rows were on the field-wise
 // `old` copy, not here), and a permuter run with a new seed stays at the starting score; the frame is still 0x28 against

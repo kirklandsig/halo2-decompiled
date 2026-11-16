@@ -147,9 +147,15 @@ PRIVATE s_animation_entry *get_animation_entry(s_animation_ref *ref)
 	return &g_4e3b44[header->datum_index & 0xffff].data->entries[ref->index];
 }
 
-// score 3: the final store puts the pointer in edx and the value in cl;
+// score 3 (was 3): the final store puts the pointer in edx and the value in cl;
 // retail puts the pointer in ecx and the value in dl. The permuter exhausted
 // its mutations at this score.
+// Read-only entry 3; overlap-safe byte store 22; field reference 3; read-only
+// tag-data receiver 3; direct header-global reads 3; default-null header result
+// 24; native datum slot 20; entry pointer addition 3. Original source restored.
+// P555: Admission byte/short/word/int/long/dword outcomes, then mutable/const
+// entry references: 3/3/3/3/3/3/3/3. NOT kept: no exact match;
+// final pointer/value register swap remains. Original body and helper restored.
 // @retail 0x2192b0
 void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
 {
@@ -159,8 +165,14 @@ void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
 	}
 }
 
-// score 3: same final-store register swap as 0x2192b0; manual variants could
+// score 3 (was 3): same final-store register swap as 0x2192b0; manual variants could
 // not change it.
+// Read-only entry 3; overlap-safe low-byte store 22; field reference 3;
+// read-only tag-data receiver 3; direct header-global reads 3; default-null
+// header result 24; native datum slot 20; pointer addition 3. All restored.
+// P555: Admission byte/short/word/int/long/dword outcomes, then mutable/const
+// entry references: 3/3/3/3/3/3/3/3. NOT kept: no exact match;
+// final pointer/value register swap remains. Original body and helper restored.
 // @retail 0x219310
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value)
 {

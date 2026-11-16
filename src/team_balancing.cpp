@@ -931,6 +931,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // the other way round (`extra_count + player_count`) leaves the machine code exactly as it was, so the choice is not the operand
 // order's, and the swap cannot be made here because the caller in src/unknown_07a9a0.cpp passes the two values by position:
 // BLOCKED-BY the caller.
+// MiniMax S (11-15): no new form, no lower score (34): the player count is still tested in edx where retail tests
+// it in eax, and the copy, the fill, the call setup and the final clamp all follow from that one register; under
+// whole-program optimization the register home is fixed by the caller's inlined copy, and that caller is in another
+// file, so the difference is not reachable from here.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
