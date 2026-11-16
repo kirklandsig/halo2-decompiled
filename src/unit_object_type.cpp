@@ -2997,6 +2997,7 @@ void function_c5740(long unit_index, bool start)
 // MiniMax G (11-12): no new form tried this round, no lower score (90): the call to 0x188180 still needs its
 // parameter types fixed in another lane's file, so the call setup cannot be matched from here.
 // MiniMax H (11-13): no new form, no lower score (97); retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP.
+// MiniMax I (11-15): no new form, no lower score (97): retail still keeps the definition index in ebp and the object globals pointer in edi and re-reads the unit index and the material from the stack at each use, where this build keeps the unit index in ebx and the material in bp; the effect helper's seventh parameter and its register convention live in another file. The pool's data pointer is the other half: retail reloads it out of the pool global after the 0x1012c0 call, which is what a build that treats the callee as opaque does, while this build keeps the pointer in esi across the call because the callee's body is visible to it and the re-read folds away; that callee lives in another file, which this lane may not edit.
 // score 94 (was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
 // Pool snapshot 92 (two-point gain rejected); headers 94; shared tag lifetime 94; pool/tag 92;
 // direct unit observations 94; conditional material result 94; weapon getter 121; pool/getter 135;
@@ -4658,6 +4659,7 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // MiniMax G (11-12): no new form tried this round, no lower score (4): the cone call's argument setup still has
 // the sampled-speed spill and the seed copy in the other order, and the callee itself lives in another lane's file.
 // MiniMax H (11-13): no new form, no lower score (4); the cone call's four setup instructions are in the other order: retail spills the sampled speed first, then the forward pointer, then the result pointer and the seed, while this build forms the pointers first.
+// MiniMax I (11-15): no new form, no lower score (4): the four instructions that set up the random_vector_in_cone call are still in the other order - retail spills the sampled speed before it forms the forward pointer - and that order is the cone helper's own convention, whose file this lane may not edit. The two swaps are the spill of the sampled speed against the forward pointer's offset and the result pointer against the seed copy.
 // score 4 (was 4): cone setup differs: retail spills sampled speed before forming the forward
 // pointer, then forms the output pointer before copying the seed. Ours swaps both pairs.
 // The 0x98 frame and every other instruction agree.
@@ -5354,6 +5356,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // MiniMax D (11-11): no new form, no lower score (169).
 // MiniMax G (11-12): no new form tried this round, no lower score (169): the cross-product helper's own file stays
 // as it is, so the two component loads and the vector home cannot be brought into retail's order from here.
+// MiniMax I (11-15): no new form, no lower score (169): the body is still 768 bytes against retail's 767 and the first difference is at +0x4a, inside the shared cross-product helper, whose own file this lane may not edit; the register plan of the three direction sums and the order retail loads up.k and up.j in still differ.
 // score 169 (was 169; earlier 179): the logic agrees with retail statement by statement (re-walked in round 4 of #1049).
 // Round 4 of #1049: the two cross products through the repo's cross3f_staged / cross3f (retail's left vector is
 // never stored and all three components are formed before the up stores) give 169 here, but including
@@ -9374,6 +9377,7 @@ struct s_unit_melee_collision
 // lookup (543), the weapon index through the existing function_cbd50 (514) or as `= NONE; if` (473, 534), the NONE
 // locals declared before the weapon index (502, 537), the pool local without the data pointer (474), the tag table
 // as a local alone (487), the material class alone (487).
+// MiniMax I (11-15): no new form, no lower score (493): the melee damage and the self damage are still set only when the melee table entry exists where retail reaches the weapon's defaults with none still in both, and hit_t is still not initialised where retail has no store; the accessor macros are kept as they are.
 // score 493 (was 493; 504 and 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
