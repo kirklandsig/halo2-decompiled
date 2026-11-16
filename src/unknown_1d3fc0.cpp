@@ -30,13 +30,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
-// MiniMax R (11-15): score 11 (was 110): the axis block now agrees with retail except for the dot product's i-term
+// MiniMax R (11-15), on its not-kept 11 form (below; main stays 110): the axis block agrees with retail except for the dot product's i-term
 // and the last normalization's i scale, which still multiply their two operands in the opposite order, and the
 // function is 923 bytes against retail's 922; the normalizer's three scale statements in the six orders give
 // 11, 141, 34, 90, 140 and 87 with the i, j, k order the best, and writing the i term with its value first is the
 // same code, so what is left is the choice of which operand each multiply takes from memory.
-// score 11 (was 110): Frame 0x13c agrees and the length is 923 against retail's 922; the dot product's i-term and
-// the last normalization's i scale still multiply their operands in the opposite order from retail.
 // MiniMax G (11-14): no new form, no lower score (110): the frame 0x13c and the 922-byte length agree; the axis
 // block's dot product still multiplies up's i first where retail multiplies forward's i first, and the shapes that
 // flip that need the existing dot3f body written out by hand.
