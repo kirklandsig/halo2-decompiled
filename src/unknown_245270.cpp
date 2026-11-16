@@ -280,6 +280,14 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
+// matrix is taken in a named local inside the transform block, and the side bits are extracted with
+// an unsigned shift so retail's shr/and survives instead of our sar/xor fold; still differs: the
+// frame is 0x24 against retail's 0x2c, retail keeps the source in ESI and reloads the matrix into
+// EDX at the use point. The permuter (300s) only found 205, by swapping the third and fifth
+// arguments of the call to 0x244de0 (retail's push order differs because retail's declaration of
+// 0x245540 has its matrix and source the other way round); a one point gain, dropped. Declaring the
+// plane table after the point difference scores 207 again and a mask-test side bit scores 208.
 // score 214 (was 214; earlier noted 209 (was 209), 214 since B6G's j-row fix): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax G (11-05): no new form, no lower score; declaring the plane table after the point
 // difference scores 203 in the reduced and in the full build (a gain of six, below the keep
@@ -686,10 +694,10 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 	long arg_5, long arg_6, s_collection_245270 *arg_7)
 {
 	s_surface_245400 const *local_0 = &arg_1->field_34[arg_0];
-	long local_1 = local_0->field_08;
 	s_material_245400 const *materials = arg_1->field_2c;
-	short first_material = materials[local_1].field_00;
 	short second_material = materials[local_0->field_0a].field_00;
+	long local_1 = local_0->field_08;
+	short first_material = materials[local_1].field_00;
 	if (first_material != second_material)
 	{
 		plane3f const *local_7 = arg_1->field_0c;
@@ -701,14 +709,14 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 		long local_3 = second_material;
 		plane3f const *local_8 = &local_7[local_2 & 0x7fff];
 		plane3f const *local_9 = &local_7[local_3 & 0x7fff];
-		bool local_10 = (bool)((local_2 >> 15) & 1);
-		bool local_11 = (bool)((local_3 >> 15) & 1);
+		bool local_10 = (bool)((unsigned long)local_2 >> 15);
+		bool local_11 = (bool)((unsigned long)local_3 >> 15);
 		if ((local_2 & 0x7fff) != (local_3 & 0x7fff))
 		{
 			vector3f local_12;
 			cross3f(&local_8->n, &local_9->n, &local_12);
 			real local_13 = local_12.k * local_6.k + local_12.j * local_6.j + local_12.i * local_6.i;
-			if (local_10 == local_11)
+			if (local_11 == local_10)
 			{
 				if (!(local_13 > -0.0001f))
 					return;
@@ -719,17 +727,18 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 		point3f local_14;
 		if (arg_2)
 		{
-			if (arg_2->scale != 1.f)
-				vector3f_scale(&local_6, arg_2->scale, &local_6);
+			transform4x3f const *matrix = arg_2;
+			if (matrix->scale != 1.f)
+				vector3f_scale(&local_6, matrix->scale, &local_6);
 			/* retail sums the j row as (up + forward) + left, which matrix_transform_vector (forward + left) + up does not */
 			real edge_i = local_6.i;
 			real edge_j = local_6.j;
 			real edge_k = local_6.k;
-			local_6.i = arg_2->forward.i * edge_i + arg_2->left.i * edge_j + arg_2->up.i * edge_k;
-			local_6.j = arg_2->up.j * edge_k + arg_2->forward.j * edge_i;
-			local_6.j += arg_2->left.j * edge_j;
-			local_6.k = arg_2->forward.k * edge_i + arg_2->left.k * edge_j + arg_2->up.k * edge_k;
-			local_4 = function_245400_transform(arg_2, local_4, &local_14);
+			local_6.i = matrix->forward.i * edge_i + matrix->left.i * edge_j + matrix->up.i * edge_k;
+			local_6.j = matrix->up.j * edge_k + matrix->forward.j * edge_i;
+			local_6.j += matrix->left.j * edge_j;
+			local_6.k = matrix->forward.k * edge_i + matrix->left.k * edge_j + matrix->up.k * edge_k;
+			local_4 = function_245400_transform(matrix, local_4, &local_14);
 		}
 		function_244de0(local_4, &local_6, arg_3, arg_4, arg_5, arg_6, local_1,
 			materials[local_1].field_04, materials[local_1].field_05,

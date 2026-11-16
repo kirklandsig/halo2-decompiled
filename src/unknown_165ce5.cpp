@@ -1379,6 +1379,8 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
+// retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
 // score 220 (was 220; earlier noted 218 (was 218), the full check gives 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
