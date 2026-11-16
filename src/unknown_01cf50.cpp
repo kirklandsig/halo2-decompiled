@@ -4492,6 +4492,7 @@ extern long g_485898;
 // their own, so every slot above the position sits four bytes higher, and the 1.0 constant still takes xmm0 where
 // retail holds it in xmm3.
 // MiniMax C (11-15): no new form, no lower score (285).
+// MiniMax D (11-15): no new form, no lower score (285): the frame is 0x38 against retail's 0x34, the 1.0f constant rides in xmm0 here and in xmm3 there, and the first home sits at +0x18 where retail has +0x10.
 // @retail 0x2e540
 long __stdcall function_2e540(s_slot *slot, byte *data)
 {
@@ -7450,6 +7451,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // MiniMax A (11-12): no new form, no lower score (576): retail computes the four screen bounds on the x87 stack through a
 // temporary each and overlaps the direction with them at [esp+0x14], our body is 71 bytes shorter than retail's 2507, and
 // its second group of ten stage states and its three render-state calls stay out of line where ours inlines them.
+// MiniMax D (11-15): no new form, no lower score (576): the four screen bounds are stored four bytes higher in our frame (+0x18 and +0x20 where retail has +0x14 and +0x1c) and our body is 71 bytes shorter than retail's.
 // @retail 0x46ea0
 void function_46ea0(long tag, point3f const *position)
 {
@@ -8517,6 +8519,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // retail keeps that counter at [esp+0x54] and the facing float at [esp+0x50] under its `push ebp` around the loop,
 // where this build keeps the counter at [esp+0x3c] and the facing at [esp+0x4c] without the push; and retail pads the
 // loop head with `push ebp; nop` where this build pads it with `push ebp; mov edi, edi`.
+// MiniMax D (11-15): no new form, no lower score (299): retail's first test jumps to a block placed after the function's end where ours jumps inside it, so the two streams are laid out differently from the entry.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -9309,6 +9312,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // MiniMax A (11-12): no new form, no lower score (328): retail reads the stack parameter into ebx with the -1 sentinel in
 // ebp where ours uses esi and ebx, its text buffer keeps two word counters that are missing here, and our body is 25 bytes
 // shorter than retail's 1133 with the frame at 0x201c against retail's 0x2020.
+// MiniMax D (11-15): no new form, no lower score (328): the stack size is 0x201c against retail's 0x2020, the unit table pointer rides in edi where retail keeps it in eax, and the body is 25 bytes shorter than retail's.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
@@ -9587,6 +9591,14 @@ extern bool g_485a74;
 // What is left is 0x14b60's register argument (retail `mov eax, flags`; ours pushes it to the stub) and the jump-table
 // bytes it shifts: BLOCKED-BY 0x14b60. `inline` here makes every caller inline it at every pass (retail stops after
 // five or six per caller), so it stays out of line.
+// Alignment model (r802): with the real 0x14b60, 0x44370's frame is `sub esp,8`
+// (retail `push ecx`, 4), so 0x14b60 needs its own 4-byte pad before calling
+// 0x14ac0 and 0x14ac0's frame grows 0x30 -> 0x34; the five demotions follow. The
+// 4-byte difference is 0x44370's entry alignment: retail inlines 0x44370 into the
+// passes (five or six per caller) while this build keeps it out of line, so the
+// out-of-line callee sees a different stack. `inline` over-inlines every caller
+// (above), so reproducing the per-caller inlining pattern is the prerequisite,
+// not a local frame tweak.
 // @retail 0x44370
 bool __stdcall function_44370(long mode)
 {

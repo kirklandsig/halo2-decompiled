@@ -491,6 +491,14 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // P539: Unrounded trig return producers feeding original real heading/tilt consumers, seven subsets
 // and immutable full graph: 286/231/231/304/304/234/304/304. NOT kept: all regress; combined graphs lose caller
 // 0x28dab0. Original helpers, real consumers, draws, full request and ordinary pooled reads restored.
+// M3 lane 13 r98 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): function_28dbd2 in retail's order (sine,
+// dot3f(axis, v), cosine, `projection *= 1 - cosine`, cross3f(v, axis), rows `axis * projection + v * cosine - cross * sine`)
+// writing a separate output vector: a new local used for the updates 226 (frame 0x120); straight into field_40, the
+// position updates read from it and field_40 then scaled in place 203 (1224 B, 0x120); rows assigned k, j, i 232 (1199 B);
+// the velocity stores ahead of the position updates 228; the field_40 form with scalar cross j/k and cross i inline in
+// row i 224 (frame 0x114). Helper restored.
+// MiniMax E (11-15): no new form, no lower score (173): the helper rewritten to retail's row formula with the arguments
+// swapped scores 216 with the frame still at 0x11c, and the permuter over the body found nothing lower in twenty minutes.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

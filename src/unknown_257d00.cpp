@@ -2058,6 +2058,13 @@ void function_b7360(long object_index);
 // dispatch, point-reference observations and complete callback restored.
 // MiniMax I (11-15), NOT kept: 261 (was 270) moved the point store below the flag set (field_3 |= 0x40), a
 // statement order picked by score; kept only with a byte match. Code back to main, notes kept.
+// M3 lane 11 r106 (fast, base 270): every selector read as `*(short *)((byte *)local_1 + 6)` (the later functions'
+// form) 270 (same code); case 7's object read at each use (no local_8) 364 (1860 bytes); case 13's object read in each arm
+// 282; case 7's ratio index as one ternary 270; the actor looked up after the perception guard (guard through
+// actor_get) 270; the output parameter used directly with a cast at each use (no local_2) 270. Both inlined object
+// lookups (cases 7 and 13) load the pool's data pointer before the index in retail (EBX/EDX), after it here.
+// The two point reads (1/19 arm, case 5) through `cs_get(arg_3)` in place of local_1 506 (1876 bytes); that with the
+// 1/19 arm's test through it too 523 (1888 bytes).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

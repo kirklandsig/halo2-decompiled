@@ -1132,6 +1132,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P526: Actual observer flags unsigned-int/long, object index int/full-width-long, output mode byte/char/signed-char fields, coherent complete output metadata:
 // 149/149/149/149/149/149/149/149. NOT kept: no exact native preload/zero recovery.
 // Original complete executable source restored.
+// P541: Existing profile/animation-matrix automatic, ordinary and forced expansion declarations:
+// 126/684/126/779/126/684/779/1272. NOT kept: ties or forced expansion grows frame/extent; direction-j preload and length/zero homes remain.
+// Original complete executable source and existing helper contracts restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

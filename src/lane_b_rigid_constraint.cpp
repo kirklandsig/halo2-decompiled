@@ -76,11 +76,11 @@ lane_a_constraint::~lane_a_constraint()
 // @retail 0x31bba0 deleting lane_a_constraint
 // @retail 0x31bab0 adjustor lane_a_constraint 8
 
-// Retail constructor 0x31bbd0. Active marker deferred: stock generated
-// placement-new stand-in cannot instantiate this genuinely abstract base.
+// the base reference sets the one reference before the interface's vtable;
+// "abstract": its stand-in calls it on a buffer, as the class cannot be instantiated
+// @retail 0x31bbd0 abstract
 lane_a_constraint::lane_a_constraint(const lane_a_constraint_description *description)
 {
-	reference_count = 1;
 	owner = 0;
 	body_a = 0;
 	body_b = 0;
