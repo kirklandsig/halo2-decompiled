@@ -18,8 +18,7 @@ int __fastcall function_142a60(transform4x3f const *arg_0, transform4x3f const *
 
 PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 {
- real j_squared = arg_0->j * arg_0->j;
- real local_0 = (real)sqrt(arg_0->i * arg_0->i + j_squared + arg_0->k * arg_0->k);
+ real local_0 = (real)sqrt(length_sq3f(arg_0));
  if (!(fabs(local_0) < 0.0001f))
  {
   real local_1 = 1.0f / local_0;
@@ -30,6 +29,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax R (11-15): score 11 (was 110): the axis block now agrees with retail except for the dot product's i-term
+// and the last normalization's i scale, which still multiply their two operands in the opposite order, and the
+// function is 923 bytes against retail's 922; the normalizer's three scale statements in the six orders give
+// 11, 141, 34, 90, 140 and 87 with the i, j, k order the best, and writing the i term with its value first is the
+// same code, so what is left is the choice of which operand each multiply takes from memory.
+// score 11 (was 110): Frame 0x13c agrees and the length is 923 against retail's 922; the dot product's i-term and
+// the last normalization's i scale still multiply their operands in the opposite order from retail.
 // MiniMax G (11-14): no new form, no lower score (110): the frame 0x13c and the 922-byte length agree; the axis
 // block's dot product still multiplies up's i first where retail multiplies forward's i first, and the shapes that
 // flip that need the existing dot3f body written out by hand.
@@ -488,7 +494,7 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
     real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;
-    up->k -= forward->k * local_10;
+    up->k -= local_1[0].forward.k * local_10;
     function_1d3fc1(up);
     cross3f(up, forward, &local_1[0].left);
     function_1d3fc1(&local_1[0].left);

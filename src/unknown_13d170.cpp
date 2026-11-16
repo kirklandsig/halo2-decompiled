@@ -179,6 +179,13 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax R (11-15): score 194 (was 201): the default arm matches retail instruction for instruction now (both ages
+// clamped with cmp/sbb/and, the two products in the same registers), but the case 0 and case 1 blocks still sit after
+// the loop instead of in place between the default arm and the merge, the deletion walk and the insertion still use
+// other registers, and the function is 1229 bytes against retail's 1213; a take flag set from the have-best test and
+// read after the switch, the two operands of the take test the other way round, the switch's arms in the order
+// default, 1, 0 and an int result instead of a bool all give 194, 194, 194 and 199, so the merge's block placement
+// is still what differs.
 // MiniMax R (11-14): no new form, no lower score (201): the default arm's two products keep retail's factors, but retail
 // multiplies the best age's product first and ends the comparison in xmm1, ours multiplies the age's product first and ends it
 // in xmm0.
@@ -696,6 +703,7 @@ struct s_physical_block_iterator
 // first difference +0xcc); an 1800 s fast annealing permuter run on it (seed 122, 183 tries) reached 95 with the insertion's
 // arms the other way round (`best.previous != NONE` first; plus `++pages` and `pages = pages + segment_pages`, noise):
 // build/r122/lead-0x13d370-perm95.patch in m3-lane16's worktree. Body unchanged.
+// MiniMax R (11-16), NOT kept: 194 (was 201), a 7-point gain, under the 8-point bar for a function above 30.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
