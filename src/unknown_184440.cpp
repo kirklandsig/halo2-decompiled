@@ -392,6 +392,10 @@ __forceinline bool function_184448(long arg_0)
 // MiniMax S (11-15): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4 and the scene and
 // geometry homes are rotated, so every later load sits at a different offset; the endpoint, counter and width forms of the
 // earlier rounds all score 965 or worse.
+// MiniMax I (11-16): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the
+// worklist array and every later slot sit at a different offset and the scene and geometry homes are rotated; the
+// earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters)
+// scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

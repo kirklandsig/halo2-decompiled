@@ -160,6 +160,10 @@ public:
 	long vertex_count;
 	long vertex_capacity_and_flags;
 
+	__forceinline answer_3094d0 has_vertex_room() const
+	{
+		return answer_3094d0(vertex_count < (vertex_capacity_and_flags & 0x7fffffff));
+	}
 	~holder_309990();
 };
 
@@ -189,6 +193,12 @@ struct points_309b50
 		data = embedded;
 		size = 0;
 		capacity_and_flags = 0x80000000 | 55;
+	}
+	__forceinline void append(__m128 const &point)
+	{
+		__m128 &slot = data[size];
+		size++;
+		slot = point;
 	}
 	__forceinline ~points_309b50()
 	{
@@ -252,6 +262,13 @@ __forceinline __m128 edge_309b50(__m128 const &from, __m128 const &to)
 	return _mm_sub_ps(from, to);
 }
 
+// one vector copied over another
+__forceinline __m128 &copy_309b50(__m128 &to, __m128 const &from)
+{
+	to = from;
+	return to;
+}
+
 __forceinline __m128 cross_309b50(__m128 const &a, __m128 const &b)
 {
 	__m128 b_yzx = _mm_shuffle_ps(b, b, 0xc9);
@@ -277,6 +294,15 @@ __forceinline __m128 weighted_309b50(__m128 const *points, float const *weights)
 // distance in `arg_0` (or nothing found by the first step), 2 when the
 // simplex can't grow or the hull fails too often, and from the hull, 1 when
 // it ran out of room
+// score 441 (was 508): the first-shape points are declared (and filled)
+// before the second-shape ones, points are appended and vectors copied
+// through references, the hull's room test is a one-byte answer and the two
+// hull steps share one result. Still differs: retail places the collapsed
+// segment, the separated triangle and the shared `return 2` in that order
+// after the hull loop (here: return 2, triangle, segment; the order of the
+// blocks in the source, a shared `fail` label and moving them below the hull
+// block do not change it), and keeps delta at [esp+0x20] and nudge at
+// [esp+0x40] (here swapped).
 // @retail 0x309b50
 long class_309b50::function_309b50(long arg_0)
 {
@@ -428,9 +454,9 @@ long class_309b50::function_309b50(long arg_0)
 			direction[other] = -delta.m128_f32[across];
 			result->direction = normalized_309b50(result->direction);
 			__m128 const magnitude = _mm_and_ps(differences[0], *(__m128 const *)g_455940);
+			float second_size;
 			float first_size;
 			_mm_store_ss(&first_size, sum_309b50(magnitude));
-			float second_size;
 			_mm_store_ss(&second_size, sum_309b50(magnitude));
 			float const share = second_size / (first_size + second_size + 1.192092896e-07f);
 			__m128 const share4 = _mm_set_ps1(share);
@@ -455,13 +481,13 @@ long class_309b50::function_309b50(long arg_0)
 	expand:
 		{
 			class_30a810 hull(&differences[0], &differences[1], &differences[2], &differences[3]);
-			points_309b50 seconds;
 			points_309b50 firsts;
 			firsts.size = 4;
 			firsts.data[0] = simplex->points[0];
 			firsts.data[1] = simplex->points[1];
 			firsts.data[2] = simplex->points[2];
 			firsts.data[3] = simplex->points[3];
+			points_309b50 seconds;
 			seconds.size = 4;
 			seconds.data[0] = simplex->points[4];
 			seconds.data[1] = simplex->points[5];
@@ -487,11 +513,12 @@ long class_309b50::function_309b50(long arg_0)
 				}
 				int count = 0;
 				edge_30aac0 const *horizon;
-				if (hull.function_30abe0(&count, &horizon, face, &delta) != 0)
+				int failed = hull.function_30abe0(&count, &horizon, face, &delta);
+				if (failed != 0)
 				{
 					goto restart;
 				}
-				if (!(hull.vertex_count < (hull.vertex_capacity_and_flags & 0x7fffffff)))
+				if (!hull.has_vertex_room().value)
 				{
 					state = 1;
 					break;
@@ -501,9 +528,9 @@ long class_309b50::function_309b50(long arg_0)
 					state = 1;
 					break;
 				}
-				int const failed = hull.function_30ae70(count, (edge_30aac0 *)horizon, &delta);
-				firsts.data[firsts.size++] = support.first;
-				seconds.data[seconds.size++] = support.second;
+				failed = hull.function_30ae70(count, (edge_30aac0 *)horizon, &delta);
+				firsts.append(support.first);
+				seconds.append(support.second);
 				if (failed != 0)
 				{
 					goto restart;
@@ -537,9 +564,9 @@ long class_309b50::function_309b50(long arg_0)
 				float weights[3];
 				for (int step = 0; ; )
 				{
-					differences[0] = *face->edges[0].vertex;
-					differences[1] = *face->edges[1].vertex;
-					differences[2] = *face->edges[2].vertex;
+					copy_309b50(differences[0], *face->edges[0].vertex);
+					copy_309b50(differences[1], *face->edges[1].vertex);
+					copy_309b50(differences[2], *face->edges[2].vertex);
 					function_308260(&g_4801e0, &differences[0], &differences[1], &differences[2], weights);
 					if (!(weights[0] < 0.0f) && !(weights[1] < 0.0f) && !(weights[2] < 0.0f))
 					{
@@ -552,14 +579,14 @@ long class_309b50::function_309b50(long arg_0)
 					}
 				}
 				long index = (vertex_309b50 const *)face->edges[0].vertex - hull.vertices;
-				simplex->points[0] = firsts.data[index];
-				simplex->points[4] = seconds.data[index];
+				copy_309b50(simplex->points[0], firsts.data[index]);
+				copy_309b50(simplex->points[4], seconds.data[index]);
 				index = (vertex_309b50 const *)face->edges[1].vertex - hull.vertices;
-				simplex->points[1] = firsts.data[index];
-				simplex->points[5] = seconds.data[index];
+				copy_309b50(simplex->points[1], firsts.data[index]);
+				copy_309b50(simplex->points[5], seconds.data[index]);
 				index = (vertex_309b50 const *)face->edges[2].vertex - hull.vertices;
-				simplex->points[2] = firsts.data[index];
-				simplex->points[6] = seconds.data[index];
+				copy_309b50(simplex->points[2], firsts.data[index]);
+				copy_309b50(simplex->points[6], seconds.data[index]);
 				simplex->count = 3;
 				result->point = weighted_309b50(simplex->points, weights);
 				result->distance = -face->distance;

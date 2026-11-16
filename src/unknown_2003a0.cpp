@@ -2719,20 +2719,21 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// score 29 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
+// squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
+// which shifts the later jump targets and drops the actor loop's alignment nop; and since the int/long trigger tail,
+// its 32-bit index where retail's is 16-bit (round 169 below). Earlier 50 (was 50) with the short tail.
 // MiniMax D (11-16): no lower score (29): retail reloads the squad index from its stack home in the second half's
 // 0x290e20 call (mov edx, [esp+0x30]) and keeps the EBP copy alive up to the first 0x1fb8a0 call, while this build
 // drops the copy there and reloads the home instead; where the copy's live range ends is the whole difference, and
 // the two extra bytes shift every later jump target. Casting that call's argument (a long cast, dropping the short
 // cast) and writing the flag argument as 0 or 1 all leave the reload in place at 29.
-// MiniMax D (11-16): score 29 (was 50): the trigger index local_12 is held as int and local_13 as long, so the second half
+// MiniMax D (11-16): 29 from 50: the trigger index local_12 is held as int and local_13 as long, so the second half
 // builds the index in EAX and narrows it for its test; retail builds it in EDI and tests the low half. Left: the first
 // 0x1fb8a0 call still reloads the squad index from its stack home where retail keeps the EBP copy, so the body is 580
 // bytes against retail's 578. Also measured this round and left out: local_13 as int (35), local_12 as short with
 // local_13 as int (35), local_13 taken from the trigger pointer (local_6 + 0x6e) at 60 with 578 bytes, the trigger index
 // as word (35) and the casts on the first half's arguments (50 each).
-// score 29 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
-// squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
-// which shifts the later jump targets and drops the actor loop's alignment nop.
 // MiniMax D (11-11): no lower score (50): copying the squad index into a local and using the parameter directly at the call
 // both score 50, so the reload stays; no other form of that call changed the layout.
 // MiniMax S (11-10): no new form, no lower score (50); the only difference left is retail's EBP copy of the squad index where ours reloads its
@@ -3008,6 +3009,16 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // threshold and mapped-event addition: 203/188/187/172/209/133/120/96.
 // NOT kept: extra operation calls, altered frame/extent and the first-event EBP
 // reload remain. Original whole body, word domains and wrapped scan restored.
+// Round 169 (m3 lane 7, fast; each form also on the short trigger tail, 50 at 579 B): the squad's 0x40 flag read through
+// the word at +2 29/50 (same code); the trigger count `long local_7 = 0;` at the function's top 175 (593 B; short tail 176):
+// the first follow-up gets retail's `mov eax, ebp` but the 0 is stored at entry in a new slot; count and scan index declared
+// bare at the top 29; trigger list, count, threshold and scan index bare at the top 29; the second half's definition pointer
+// bare at the top 29. The int/long trigger tail is a second real difference (retail's tail is 16-bit: `mov bp, [ebp+2]`,
+// `lea edi, [ebp+0x6e]`, `cmp di, -1`); its 50 -> 29 is the scoring's alignment, so a match needs the short tail back.
+// Diagnostics (probe stores into the squad pool, reverted): a store of 1 (byte or long) or 0 at the top, or of 1 at the
+// else-if arm's own level just before the follow-up test, gives `mov eax, ebp`; -1, 2, 3, 4, 5, 0x40, 0x41, 0x7c, 0x98,
+// 0x101 and 0x10001, and stores in the first arm, the pending or compute arm, the follow-up, after it or in the second half
+// do not; dead or overwritten stores do nothing. Lead: a constant 1 whose use dominates the follow-up's `push 1`.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

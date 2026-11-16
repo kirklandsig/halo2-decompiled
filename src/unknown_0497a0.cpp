@@ -16,7 +16,9 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
-// score 536 (was 536; 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
+// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// and late x87 factor lifetimes remain, at retail length 2622.
+// Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
 // against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
 // MiniMax H (11-13): no new form, no lower score (536).
 // MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
@@ -416,6 +418,10 @@
 // P565: Actual paired special-cross input/output pointer tables, long/dword/short/word for,
 // long/short while, then long/short staged for: 667/667/757/757/667/757/649/758.
 // NOT kept: no native wave residence or exact frame/extent recovery; original full body restored.
+// P579: Actual scalar memcpy at camera side/vertical offsets, horizontal/vertical extents,
+// selected depth extent, reciprocal depth bounds, displacement depth bounds and output depth inputs:
+// 578/578/579/579/638/624/605/605. NOT kept: no exact native rounded-wave/frame recovery; original
+// complete body, scalar observations, helpers and includes restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1212,6 +1218,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // inlined) gives colour pointer +0x84, scale +0x88, a +0x94, r +0x9c, g +0xa4, b +0xa8, interleaved with the u step, V end and v.
 // The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
 // MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
+// MiniMax D (11-16): no new form, no lower score (233).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
