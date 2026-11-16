@@ -43,12 +43,18 @@ inline __m128 splat_306f80(float value)
 	return _mm_shuffle_ps(single, single, 0);
 }
 
-// the dot product of two vectors' first three terms
-__forceinline float dot3_306f80(__m128 const &a, __m128 const &b)
+// the dot product of two vectors' first three terms, in the first term
+__forceinline __m128 dot3_simd_306f80(__m128 const &a, __m128 const &b)
 {
 	__m128 const product = _mm_mul_ps(a, b);
+	return _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product));
+}
+
+// the first term of a vector
+__forceinline float first_306f80(__m128 const &value)
+{
 	float result;
-	_mm_store_ss(&result, _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product)));
+	_mm_store_ss(&result, value);
 	return result;
 }
 
@@ -87,13 +93,14 @@ public:
 	bool_3058b0 function_306f80(feature_305f60 *feature);
 };
 
-// score 159 (was 164): the x87 products now match (second_squared times a
-// bracketed product, axes[1] first in its term). Still differs: retail keeps
-// between in a 16-byte slot of its own (a 0x58 frame, here 0x48, where it
-// shares the slot of the edge read by index), and holds the second box's
-// corner signs and product in xmm1 where ours uses xmm0, so the xmm registers
-// differ from there on; const, a union, declaring it (or first_direction) at
-// the top, computing it earlier and swapped operands do not fix either.
+// score 95 (was 159): the dot products stay in a vector register and are
+// stored through a reference only where a float is needed (the distance is
+// stored twice: for the comparison and for the feature), the unit normal is
+// formed before the length test, and the operand orders follow retail. Still
+// differs: retail keeps between in a 16-byte slot of its own (a 0x58 frame,
+// here 0x48, where it shares the slot of the edge read by index), so the xmm
+// registers differ; const, a union, a copy, a by-value or by-reference term
+// helper, declaring it at the top and statement order do not fix that.
 // @retail 0x306f80
 bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 {
@@ -103,7 +110,7 @@ bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 	int const second_axis = 0xf & second_kind;
 	__m128 const second_signs = *(__m128 const *)((char const *)g_corner_signs_413610 + (second_kind & 0xf0));
 	__m128 first_corner = _mm_mul_ps(first_signs, first_half_extents);
-	__m128 const second_local = _mm_mul_ps(second_half_extents, second_signs);
+	__m128 const second_local = _mm_mul_ps(second_signs, second_half_extents);
 	__m128 second_edge = _mm_mul_ps(splat_306f80(second_half_extents.m128_f32[second_axis] + second_half_extents.m128_f32[second_axis]), axes[second_axis]);
 	float const first_edge = first_half_extents.m128_f32[first_axis] * -2.0f;
 	float const along = first_edge * second_edge.m128_f32[first_axis];
@@ -114,7 +121,7 @@ bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 	float const second_squared = second_half_extents.m128_f32[second_axis] * second_half_extents.m128_f32[second_axis] * 4.0f;
 	float const determinant = (float)fabs(second_squared * (first_edge * first_edge) - along * along);
 	__m128 between = _mm_sub_ps(second_corner, first_corner);
-	float const second_along = dot3_306f80(second_edge, between);
+	float const second_along = first_306f80(dot3_simd_306f80(second_edge, between));
 	float t = second_squared * (first_edge * between.m128_f32[first_axis]) - second_along * along;
 	if (!(g_461f10 * determinant >= t))
 	{
@@ -131,24 +138,22 @@ bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 					__m128 first_direction = _mm_setzero_ps();
 					first_direction.m128_f32[first_axis] = first_edge * 0.5f;
 					__m128 const normal = cross_306f80(first_direction, second_edge);
-					__m128 const squares = _mm_mul_ps(normal, normal);
-					__m128 const length_squared = _mm_add_ss(_mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares), _mm_shuffle_ps(squares, squares, 0xaa));
+					__m128 const length_squared = dot3_simd_306f80(normal, normal);
 					__m128 const inverse = inverse_sqrt_306f80(length_squared);
-					float length;
-					_mm_store_ss(&length, _mm_mul_ss(inverse, length_squared));
+					float const length = first_306f80(_mm_mul_ss(inverse, length_squared));
+					__m128 unit = _mm_mul_ps(inverse, normal);
 					if (!(length < minimum_length))
 					{
-						__m128 unit = _mm_mul_ps(inverse, normal);
-						if (dot3_306f80(first_signs, unit) < 0.0f)
+						if (first_306f80(dot3_simd_306f80(unit, first_signs)) < 0.0f)
 						{
 							unit = _mm_xor_ps(unit, *(__m128 const *)g_4124a0);
 						}
-						float const distance = dot3_306f80(unit, between);
-						if (!(tolerance < distance))
+						__m128 const distance = dot3_simd_306f80(unit, between);
+						if (!(first_306f80(distance) > tolerance))
 						{
-							feature->distance = distance;
 							feature->first_point = first_corner;
 							feature->normal = _mm_xor_ps(unit, *(__m128 const *)g_4124a0);
+							feature->distance = first_306f80(distance);
 							return bool_3058b0(true);
 						}
 					}
