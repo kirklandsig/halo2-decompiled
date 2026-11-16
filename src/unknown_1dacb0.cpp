@@ -1096,6 +1096,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // masked 102 against 72); the weapon_class NONE test as `if (weapon_class != NONE) { ... }` 1040 (lane 14 r43's single exit,
 // re-measured); 0x1dc790's matched loop shape (iterate ahead of `while (!found && entry)`, iterate again in the else arm)
 // with the early return kept 995 (2825 B and retail's 1011 instructions, masked 86); that loop with the if/else result 998.
+// MiniMax E (11-16): no new form, no lower score (828); the frame 0x2c still agrees, but retail keeps the three
+// iterator outputs at the bottom of the frame while ours leaves one in a reused argument home and the result shorts
+// 4 bytes lower; the class/NONE registers, the result/output/candidate homes and the later zero carrier remain.
 // NOT kept (coordinator review, MiniMax G 11-13): 828 -> 807 came from grouping the three resolved outputs into one
 // `long resolved[3]` array (an aggregate grouping locals: kept only with a byte match); the three named locals stay.
 // MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,

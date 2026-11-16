@@ -625,6 +625,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // before the volumes 150 (same code); the elapsed clock declared at the top with the start 150 (same code); the copy
 // flags stored before the movie size 152. Diagnostic: the same file built /O1 464 (an EBP frame), so /O2 stays. Retail's
 // two dead zero stores at entry fall on the memory-status block's +0x18 dword. Not moved (kept only with a match).
+// P574: Actual audio-layout admission, positive/complementary bool/byte/short/long:
+// 272/272/272/272/272/272/272/272. NOT kept: no exact native frame/status/clock/audio-home
+// recovery; original layout test, arrays, helpers and complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

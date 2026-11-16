@@ -321,6 +321,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // again, and the bits locals declared before or after the copies change nothing. Retail's common count shares ECX
 // with the width count and is stored once after the join, like a spilled temporary, which no spelling of the
 // named local gives here. Original body restored.
+// P574: Immutable width/height/mask producers, seven subsets then complete
+// immutable minimum graph: 57/57/57/57/57/57/57/80. NOT kept: no exact delayed
+// coordinate promotion or native common-count join; original full body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

@@ -155,12 +155,19 @@ public:
 // entry uses 193; cursor in for scope 96; ordinal declared first 96; while
 // loop 97; one int for kind 182; retained entry-array base 97. NOT kept:
 // the 96 forms gain only one. Opening executable source restored.
+// score 12 (was 20): the entry is addressed from the index at the top of each
+// pass instead of being stepped beside it. Only the order of the distance
+// stores against the next-slot loads remains.
+// Before, 20 (was 97): each arm that keeps its entry steps to the next one
+// itself, so the step code follows the first arm as in retail (one shared
+// step after the arms put it after the second). Entry setup position, the
+// distance stores and the saved cursor's register remain.
 // @retail 0x3072f0
 void box_pair_3072f0::function_3072f0(class_308180 *manifold)
 {
-	s_308180_entry *entry = manifold->entries;
 	for (int i = 0; i < manifold->count;)
 	{
+		s_308180_entry *entry = &manifold->entries[i];
 		unsigned short const kind = entry->first;
 		int const type = kind;
 		if (type <= 2)
@@ -175,6 +182,8 @@ void box_pair_3072f0::function_3072f0(class_308180 *manifold)
 			feature.distance = feature.scale * feature.first_point.m128_f32[axis] - first_extents.m128_f32[axis];
 			contact_3072f0 *contact = &results->contacts->next_slot();
 			((pair_305ca0 const *)this)->function_305ca0((contact_305ca0 *)contact, (key_305ca0 const *)entry, (feature_305ca0 const *)&feature);
+			i++;
+			continue;
 		}
 		else if (type <= 5)
 		{
@@ -188,6 +197,8 @@ void box_pair_3072f0::function_3072f0(class_308180 *manifold)
 			feature.distance = -(feature.scale * feature.second_point.m128_f32[axis]) - second_extents.m128_f32[axis];
 			contact_3072f0 *contact = &results->contacts->next_slot();
 			((pair_305e10 const *)this)->function_305e10((contact_305e10 *)contact, (key_305e10 const *)entry, (feature_305e10 const *)&feature);
+			i++;
+			continue;
 		}
 		else
 		{
@@ -198,15 +209,14 @@ void box_pair_3072f0::function_3072f0(class_308180 *manifold)
 			{
 				contact_3072f0 *contact = &results->contacts->next_slot();
 				((pair_305eb0 const *)this)->function_305eb0((contact_305eb0 *)contact, (key_305eb0 const *)entry, (feature_305eb0 const *)&feature);
+				i++;
+				continue;
 			}
 			else
 			{
 				goto drop;
 			}
 		}
-		i++;
-		entry++;
-		continue;
 	drop:
 		if (entry->first <= 5)
 		{
