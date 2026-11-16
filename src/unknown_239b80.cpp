@@ -675,6 +675,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P547: Complete point2f displacement/opposite-heading producers, original/aggregate/shared
 // difference combinations: 154/154/144/154/154/144/154/154. NOT kept: no native frame/count-home
 // recovery; original scalars, closure helper, compaction and complete body restored.
+// P549: Persistent multiuse selected-distance/angle/delta workspaces, seven subsets,
+// then all with the existing successor ordinal retained across passes: eight at 144.
+// NOT kept: extra frame word, count/departure/produced-length homes and loop head remain.
+// Original complete body and declaration scopes restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
