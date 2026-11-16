@@ -895,6 +895,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Also: the group pass as `if (flags) { short remaining = secondary_count; while (remaining > 0) {...} }` (no separate
 // count test) 534 (the `remaining` store then sits before the `jle` as retail's; the only change); the first loop as a
 // plain `for (...; i++)` with `faces[i]` 548; `definition` declared ahead of the two arrays 535.
+// P568: Standard bitwise range identity dword/long/word/byte 793/793/793/752;
+// explicit equality predicates 729/729/729/729. NOT kept: no native tag/count/plane
+// home or rotation-spill recovery; original helpers and input-before-output captures restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
