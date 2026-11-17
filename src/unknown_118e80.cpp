@@ -1149,7 +1149,18 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// MiniMax S (11-16): score 45 (was 92): the 0x119bc0 result is stored in the physics-move struct's byte member, so the byte store retail makes appears here too and the force argument is widened out of that member instead of straight out of al; the argument's own zero extension and the member's slot are what still differ.
+// score 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
+// from the 0x119bc0 result on: retail keeps it in its own stack cell [esp+0x14] (shared with the rounding temporary),
+// pushes that dword, and every later scratch register follows; ours stores it in the move output's byte member and
+// zero-extends it, one scratch step ahead from there on. A bool local for it (long force) 90 (1034 bytes: the tail
+// takes retail's scratch registers, but the value stays in AL for `movzx edx, al`, one row short), the same with an
+// explicit `(long)` 90; the object re-fetched before the 0x119bc0 call 46 (1036 bytes); the copy through memcpy 43
+// (same code); the member typed bool 43 (same code). Diagnostic, HELD (build/r134/held-0x118700.patch, code back to
+// main): 0x1c4b00's force as bool in its definition and all 14 declarations with the bool local 40 fast (retail's
+// spill and dword push; left are the copy loading the object before the source's i and the tail rotation; 0x1c4b00 and
+// its matched callers still match, 0xe24f0 579 -> 601, 0x10b010 19 in the reduced image only as round 82 found).
+// Still BLOCKED-BY 0x1c4b00 (its definition is in src/unknown_1c25a0.cpp, held by another lane this round).
+// MiniMax S (11-16): 45 (was 92): the 0x119bc0 result is stored in the physics-move struct's byte member, so the byte store retail makes appears here too and the force argument is widened out of that member instead of straight out of al; the argument's own zero extension and the member's slot are what still differ.
 // MiniMax E (11-16): no new form, no lower score (92): the frame is 0x1f0 as in retail and the first 200 aligned rows match; the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition (src/unknown_1c25a0.cpp) and in its declarations, which live in files this lane may not edit. Still BLOCKED-BY 0x1c4b00.
 // MiniMax I (11-16): no new form, no lower score (92): the first 200 aligned rows match and the tail still
 // diverges where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this
@@ -1194,13 +1205,13 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // MiniMax D (11-15): no new form, no lower score (92): the score is still mostly the one-row shift from the movzx of
 // the force argument, which needs 0x1c4b00's last parameter declared a bool in files this lane may not edit, and the
 // squared length still sums the three components in the order the compiler picks where retail sums them from k down.
-// MiniMax C (11-16): score 92 (was 92): no new form, no lower score; the frame is 0x1f0 as in retail, but the
+// MiniMax C (11-16): 92 (was 92): no new form, no lower score; the frame is 0x1f0 as in retail, but the
 // score is still mostly the one-row shift from the zero extension of the force argument, which needs
 // 0x1c4b00's last parameter declared a bool in files this lane may not edit (BLOCKED-BY that file), and the
 // squared length still sums the three components in the order this build picks where retail sums them from
 // k down.
 // MiniMax E (11-17): no new form, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al; that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 13 declarations, in files this lane may not edit (BLOCKED-BY 0x1c4b00).
-// score 43 (was 45): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
+// Earlier (43, was 45): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension. Round 85 (m3 lane 16): 0x1e5af0's
 // parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).
 // MiniMax H (11-04): the squared length written as i*i + j*j + k*k 94; the component order

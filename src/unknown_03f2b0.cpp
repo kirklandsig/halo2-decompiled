@@ -1316,6 +1316,13 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// score 93 (was 93): m3 lane 9 r134 (all plain; the earlier 175-base forms re-measured on the 93 base that round 224
+// reached, and the MiniMax C line that sat below the marker moved up into this note): the object-header table read
+// into a local before the count store 349; the type stored through one ternary 93 (same code); the 0x4ed284 entry
+// test nested inside the flag/index test 93 (same code); the failure count declared after the 0x4bcc0 call 375 (1296
+// bytes); the first cache lookup on *source_object with no drawn-object local 98. Left: the 0x4bcc0 argument load
+// (retail EAX before the force push), retail's dead entry lea, the header global loaded first, the byte previous level
+// with record + 0xbc in its own branch, and the scratch rotation those leave.
 // MiniMax E (11-16): no new form tried this round, no lower score (93 on the full image, 355 on the reduced one): the plain
 // build's first difference is still at the 0x4bcc0 call, where retail loads the distance into EAX and this build loads it into
 // ECX, and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns are unchanged; the reduced
@@ -1572,8 +1579,8 @@ struct s_133f70;
 // the 0x4ed284 test through a one-caller inline entry getter 93 (it folds: no dead lea); that getter with `success` first 91.
 // Retail's 0x3e380-like allocate-and-fill sequence (count, bytes, render_memory_allocate, 0x137800) is one inlined helper in
 // retail; the existing 0x3e380 differs (NONE object, extra bytes), so no existing helper fits.
-// @retail 0x4b5d0
 // MiniMax C (11-17): no new form, no lower score (93 plain; the reduced image's fast score is 344 and is only a screen): every difference sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the signed-char and inline-getter forms of the earlier rounds all raise the positional count, so the body stands.
+// @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
 {
