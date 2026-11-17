@@ -625,6 +625,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // selected before t in the second clamp 723 (2854 B), in the output clamp 597, in both 722; the void return 597, with
 // `s->counter++` and the closing test reading the field 596 (2880 B). Also kept (identical code, 603): the activation
 // alignment as dot3f(d, a), the settle length and the output distance as sqrt(length_sq3f(...)).
+// Round 96 (m3 lane 2, fast with 0x1eb6f0 and 0x1ed4a0, MATCH in each; control 603, register/stack/global-masked aligned
+// 281): the time globals read at each use with no local (round 68's 634 on the old base) 600 (2888 B); with the void
+// return, `s->counter++` and the closing test reading the field 601 (2890 B); with the void return alone 600; with the
+// 0.866 test as dot3f(&s->direction, d) 601; the globals local kept for the update block and the output stage reading
+// g_510c54 at each use (retail reloads it there) 600. Retail's final block pops EDI, EBP, EBX before the closing tests
+// and ORs memory directly (`or dword ptr [eax], 4`); ours pops in each exit.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
