@@ -2662,6 +2662,7 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax C (11-16): no new form tried this round, no lower score (140): the body's length matches retail's (1729
 // bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
 // them; the score also moves with the reduced image's source set, as the note above records.
+// MiniMax R (11-17): no new form, no lower score (140): the body's length matches retail's (1729 bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves them; the reload's order is decided by the callee at 0x131fc0 in src/unknown_131e50.cpp.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2955,6 +2956,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
 // MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3315,6 +3317,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // give 54 or worse.
 // MiniMax C (11-16): no new form tried this round, no lower score (54): the block's own order of the loads and its call setup still differ
 // MiniMax C (11-16): from retail in the ways the notes above record, and no form of this file's own moves them.
+// MiniMax R (11-17): no new form, no lower score (54): the block's own order of the loads and its call setup still differ from retail in the ways the notes above record, and no form of this file's own moves them.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

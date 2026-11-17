@@ -2537,6 +2537,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // MiniMax C (11-16): takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd
 // MiniMax C (11-16): where retail puts it after; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK
 // MiniMax C (11-16): inline, so both orders are fixed outside this file.
+// MiniMax R (11-17): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd where retail puts it after; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2642,6 +2643,7 @@ void function_1e370(void)
 // MiniMax C (11-16): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; this round
 // MiniMax C (11-16): changed the one-caller helper cache_record_new twice (the base in a local of its own, and the active store before the
 // MiniMax C (11-16): count's increment) and those forms measure 21 and 60, so the helper keeps its body.
+// MiniMax R (11-17): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; changing the one-caller helper cache_record_new twice (the base in a local of its own, and the active store before the count's increment) measures 21 and 60, so the helper keeps its body.
 // @retail 0x1e4e0
 bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
 {
@@ -3014,6 +3016,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // MiniMax C (11-16): other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit
 // MiniMax C (11-16): reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function
 // MiniMax C (11-16): floating point switch, which the rules forbid.
+// MiniMax R (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -3305,6 +3308,7 @@ struct s_429a0_payload
 // the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
 // MiniMax C (11-16): no new form, no lower score (16): the globals are still loaded once and kept in registers where retail reloads each of
 // MiniMax C (11-16): them at its use and keeps the constant 1 in ecx across the block.
+// MiniMax R (11-17): no new form, no lower score (16): the globals are still loaded once and kept in registers where retail reloads each of them at its use and keeps the constant 1 in ecx across the block.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3824,6 +3828,7 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // MiniMax C (11-16): no new form, no lower score (2): the second call's two register setups still come in the opposite order (this build
 // MiniMax C (11-16): sets ecx before eax, retail sets eax before ecx), and that order follows the callee's register homes, which 0x15a60's
 // MiniMax C (11-16): body in src/unknown_0158f0.cpp decides.
+// MiniMax R (11-17): no new form, no lower score (2): the second call's two register setups still come in the opposite order (this build sets ecx before eax, retail sets eax before ecx), and that order follows the callee's register homes, which 0x15a60's body in src/unknown_0158f0.cpp decides; a permutation run this round found nothing (2).
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
@@ -4054,6 +4059,7 @@ bool g_55e6bc;
 // MiniMax C (11-16): matrix[38 + i] and the rest) and the bytes did not move, so MSVC canonicalises the multiply's operands and keeps the
 // MiniMax C (11-16): row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still
 // MiniMax C (11-16): differ.
+// MiniMax R (11-17): no new form, no lower score (17): writing every product with the constant operand first does not move the bytes, so MSVC canonicalises the multiply's operands and keeps the row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still differ.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -4241,6 +4247,7 @@ bool function_14600()
 // MiniMax C (11-16): no new form, no lower score (32): the XDK inline still hoists its flag byte into al, which takes the width difference
 // MiniMax C (11-16): into ax where retail keeps it in dx, and retail's four shader programs still come from tables this project does not
 // MiniMax C (11-16): have.
+// MiniMax R (11-17): no new form, no lower score (32): the XDK inline still hoists its flag byte into al, which takes the width difference into ax where retail keeps it in dx, and retail's four shader programs still come from tables this project does not have.
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -6073,6 +6080,7 @@ void function_1bd50(void *state);
 // MiniMax C (11-16): widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the
 // MiniMax C (11-16): shared global g_4858b8's declared type is not this lane's to change and reading it as a word would need a cast of
 // MiniMax C (11-16): its own address.
+// MiniMax R (11-17): no new form, no lower score (13): the fallback index is still loaded as a masked dword where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the shared global g_4858b8's declared type is not this lane's to change and reading it as a word would need a cast of its own address.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {
