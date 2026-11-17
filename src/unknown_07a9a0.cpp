@@ -1043,6 +1043,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax I (11-17): no new form, no lower score (964): re-measured the baseline; retail's session arrives in EAX
+// with a 0xb4 frame against our 0xd4, and that ingress is fixed by the callers in the other files, and the opening
+// 0x192e60 and the capacity test are inlined or called the other way round here (both callees in other files), so
+// the body stands.
 // MiniMax E (11-16): no new form, no lower score (964): retail's session arrives in eax with a 0xb4 frame against our 0xd4, and that convention is fixed by the caller in a file this lane may not edit.
 // MiniMax C (11-16): no new form, no lower score (766): retail takes the session in EAX and the output pointer on the
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
