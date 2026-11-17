@@ -1862,67 +1862,39 @@ void function_195e90(void);
 void function_68c00(s_simulation_world_owner *owner, void *definitions,
  s_simulation_distribution *distribution, c_class_6a600 *world);
 
-// score 34 (was 34): earlier 35. Retail computes the mode as `xor ebx, ebx; cmp eax, 2; setne bl;
-// lea ebx, [ebx + ebx + 2]` after a dead `mov ecx, eax; sub ecx, 2` (5 bytes, perhaps
-// left by a lowered switch; no switch tried here gives it), and loads its fields in the
-// order state, owner, +0x14, distribution. Ours computes 4 - 2 * (state == 2) as sete/sub/shl; the rest is the
-// same code in another order and other registers. Tried: state == 2 ? 2 : 4, != with the
-// arms swapped, 2 + 2 * (state != 2), a bool local, if/else, a switch with __assume(0)
-// for the other states (62, 172 bytes: the setne/lea form without the dead sub); switch
-// with case 2 and default, mode = 4 then switch or if, an inline helper with a switch
-// (58-63, 180 bytes, branches); (state - 2) ? 4 : 2 (60, sub/neg/sbb); 2 << (state != 2) (50).
-// P568: In-place state classification by conditional store/value 56/56; standard equality
-// arithmetic 67, inequality arithmetic 64, equality/inequality conditional 64/64,
-// bound equality arithmetic 91, bound inequality conditional 96. NOT kept: no native state/mode or spill recovery.
-// P570: Standard saved-address acquisition, object forward/backward and byte forward/backward,
-// 59/59/59/59; restoration counterparts 51/61/51/61. NOT kept: native mode/state
-// schedule and overwritten subtraction remain; original six-byte transfers and complete body restored.
-// P573: Immutable saved mode/owner/distribution/local/address/preservation captures:
-// 34/34/34/34/34/34; signed-byte/word preservation 34/51. NOT kept: native state-first,
-// overwritten subtraction and SETNE/LEA remain; word grows. Original complete body restored.
-// M3 lane 5 r191 (fast with 0x83220/0x6aee0/0x68e20, all matched throughout): `long state = world->state;` with
-// `long mode = state != 2 ? 4 : state;` 59 at 172 bytes: LEAD, every instruction is then retail's (state in EAX, owner
-// EBP, xor/cmp/setne/lea into EBX, +0x14 in ECX, the same frame, homes and tail) except retail's dead `mov ecx, eax;
-// sub ecx, 2`, which is missing (the +0x14 load then moves up into the free ECX). `char mode` with `state == 2 ? 2 : 4`
-// 64 at 170 bytes (no `xor ebx, ebx`; from `lea edi` on the same code as retail); `long mode = state == 2 ? 2 : 4` 62
-// at 172 bytes (state in EDX); switch with case 2 and default re-measured 58 (180 bytes, mode in memory); that switch
-// into a `char` 59 (174 bytes); `long mode = world->state;` then a switch overwriting it with 4 for the other states
-// 56 (176 bytes, mode in memory). Retail's dead `sub ecx, 2` is the only dead subtract in the whole retail image; a
-// compile-only screen of about 660 switch, ternary, conditional-overwrite and assume spellings never left one beside
-// a setne, so it is probably a lowered switch the link-time code generator if-converted afterwards.
-// P585: Overlap-safe library transfers at address save/restore, scalar save/restore,
-// preservation byte, owner/distribution captures, complete input and complete transfer graphs:
-// 56/51/81/81/80/79/121/133. NOT kept: no native state/mode recovery; original six-byte
-// transfer, scalar snapshots, calls and full body restored.
-// M3 lane 9 r131 (fast; base 34): new spellings on the state local, all without the dead subtract: a switch with
-// `case 2: mode = state;`, cases 3-5 giving 4 and `default: __assume(0);` 59 (172 B, the lead's code); `state == 2 ? state
-// : 4` 59 (172 B); `mode = 4; if (state == 2) mode = state;` 56 (176 B); a one-case switch (`case 2: mode = state;`,
-// default 4) 58 (180 B, mode in memory). Compile-only screen (about 200 switch shapes: case sets 0-9, merged or separate
-// arms, assume or default, long or char mode, preset or not): every one- or two-case switch lowers to `sub reg, 2; jne`
-// with mode in memory, three or more cases with `__assume(0)` fold to the lead's cmp/setne, none leaves a dead
-// subtract beside a setne. Diagnostic only, reverted: an unused second parameter on the stdcall callee 0x68e20 fed
-// `state - 2` keeps the argument (`add eax, -2; push eax`, 29 at 176 B), so a dropped-argument origin is untested.
-// Also the switch straight on the field (no state local), case 2 giving 2, cases 3-5 giving 4, `default: __assume(0);`
-// 62 (172 B, state in EDX).
+/* an authority world (state 2 or 4) is set up again from its saved owner, distribution and address, and the
+   simulation's mode follows its state. The states share one arm with no reachable default, as 0x6aee0's switch has
+   for the other two (3 and 5): the only caller, 0x83220, calls this for a world that 0x67e10 reports as an authority
+   (not 3 or 5) and that is not idle (1). Retail's `mov ecx, eax; sub ecx, 2` with no jump after it is what is left of
+   that switch's first case test. */
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {
- long mode = 4 - 2 * (world->state == 2);
- s_simulation_world_owner *owner = world->owner;
- s_simulation_distribution *distribution = world->distribution;
- long local = *(long *)((byte *)world + 0x14);
- s_machine_address address = world->local_address;
- byte preserve = world->unknown2f;
- function_68e20(world);
- if (g_510ca0) g_510ca0 = false;
- g_4e6948->mode = mode;
- g_4cf778 = false;
- function_68c00(owner, (void *)g_4cf784, distribution, world);
- world->local_address = address;
- world->unknown0c = true;
- *(long *)((byte *)world + 0x14) = local;
- function_6a770(world);
- if (preserve) world->unknown2f = true;
+ switch (world->state)
+ {
+ case 2:
+ case 4:
+ {
+  long mode = world->state == 2 ? 2 : 4;
+  s_simulation_world_owner *owner = world->owner;
+  s_simulation_distribution *distribution = world->distribution;
+  long local = *(long *)((byte *)world + 0x14);
+  s_machine_address address = world->local_address;
+  byte preserve = world->unknown2f;
+  function_68e20(world);
+  if (g_510ca0) g_510ca0 = false;
+  g_4e6948->mode = mode;
+  g_4cf778 = false;
+  function_68c00(owner, (void *)g_4cf784, distribution, world);
+  world->local_address = address;
+  world->unknown0c = true;
+  *(long *)((byte *)world + 0x14) = local;
+  function_6a770(world);
+  if (preserve) world->unknown2f = true;
+ }
+  break;
+ default: __assume(0);
+ }
  return true;
 }
 
