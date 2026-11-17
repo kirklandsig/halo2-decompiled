@@ -481,6 +481,9 @@ void __stdcall function_508d0(void *payload_data)
 // MiniMax S (11-17): no new form, no lower score (626, was 626; the fast image without 0x508d0 scores 680); the frame stays 0x1490 against retail's self-aligned 0x1474 and the flag stays a stack load into AL against retail's CL, the exponent clamp, the random real and the level float are already retail's, and the permuter over this function's source (300 s, fast with 0x508d0) was stopped before its first trial finished on the loaded machine, so the body stays as it is.
 // MiniMax D (11-17): no new form, no lower score (626, was 626); the frame stays 0x1490 against
 // retail's self-aligned 0x1474 and the mode stays a stack home against retail's CL, so nothing else
+// in this file can be reached from here; a permuter run over the body (5 tries, full image, 603
+// differing instructions) finds nothing below the baseline, and the reduced image counts 680
+// where it counted 626 before, because the image this function is built in changed.
 // in this file can be reached from here.
 // MiniMax D (11-05): no new form, no lower score; retail's self-aligned 0x1474 frame and its sole
 // caller at 0x508d0 (still a stub) keep this function out of reach.
