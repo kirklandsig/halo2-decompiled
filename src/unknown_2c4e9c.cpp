@@ -401,6 +401,16 @@ void c_xbox_live_message_list::v20(c_class_1a2c81 *item, long unused)
 bool function_19acc6(XUID const *xuid);
 bool online_title_is_this_title(DWORD title_id);
 
+// score 173 (was 173): Retail outlines the lower-priority flag branches and shares
+// the item12 clear after classification.
+// flag-10 fallback branch written first 173; flag-11 fallback branch written first
+// 173; flag-12 fallback branch written first 173; all three fallback branches written
+// first 173; default-class filter after classification 173; default item set before
+// its optional-item filter 173; defer session negation to the matching class 184;
+// positive same-title predicate in both item selections 193; default item derived
+// from recognition result 168 (NOT kept: form requires a byte match); last optional-
+// item flag assigned after exclusion tests 166 (NOT kept: form requires a byte
+// match).
 // @retail 0x2c6b65
 void c_xbox_live_message_list::set_message(s_online_message_view *message)
 {
@@ -1689,6 +1699,11 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // this/base casts, event local/reference, initialized bool, guarded parameter
 // switch and saved event fields 2; long result 11; outer switch/early type
 // return 7; copy loop 26; memmove 27; changed-first guard 16. Original kept.
+// inherited handler qualified through immediate base 2; base call inside the changed-
+// settings branch 29; button guard with base call inside the changed-settings branch
+// 29; copy sequenced in the changed-settings return 23; restore result assigned by
+// the button dispatch 28; back case before cancel case 2; non-cancel button breaks
+// the event case 9; combined restore predicate with copy-path return 28.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
@@ -3673,9 +3688,14 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
-// score 9: only the EAX/EDX roles in the `1 << controller_index` mask and the
+// score 9 (was 9): only the EAX/EDX roles in the `1 << controller_index` mask and the
 // zero store differ. A named controller_mask local keeps the same code.
 // Permuter: 295 tries in 600 s, no lower form.
+// aggregate initialization of screen parameters 184; byte-zero initialization of
+// screen parameters 173; only field_c zeroed with memset 168; controller flags
+// initialized in the request field 111; field_c memset followed by compound short
+// mask shift 169; missing datum returns before the create partition 9; screen path
+// before the create path 178; named create result with nested file tests 138.
 // @retail 0x2c5897
 void c_game_engine_variant_category_list::handle_item(s_controller_reference **controller, long *item)
 {
