@@ -1883,6 +1883,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // MiniMax D (11-17): no new form, no lower score (60): the player bit still lands in ebx where retail holds it in ebp (and
 // the clamp's value in ebp where retail holds it in ebx), and the body is still eleven bytes longer than retail's 449; the
 // shared helper's spelling decides the register the bit takes, and every form tried here moves both scores together.
+// M3 lane 6 r190 (fast with 0x56380/0x564c0/0x53b00/0x56000; both `ret 0xc`): retail's entry size comes from `setne bl`,
+// which needs a byte register (so the size takes EBX and the bit EBP), and its result zero stays live in EAX to the
+// capacity exit. New: the capacity failure as an early `return result;` 161 (452 B; 0x56380 73); the entry size and the
+// capacity debit ahead of the player tests 176 (472 B; 0x56380 2); the capacity test as `entry_size <= capacity` 60 (same
+// code); the player bit typed `word` 139 (445 B; 0x56380 13); the success length assigned after the two header stores
+// 164 (462 B). Re-measured: `include_mask ? 13 : 11` 147 (461 B: setne lands in CL and the size still moves to EBP).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4048,6 +4054,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // channel takes EBP from entry as in retail and the frame shrinks to 0xc, so the member's life across the three calls is
 // what wins it EBP in our build (retail keeps it in its frame slot); the permuter on the cursor form (613 s, 39 tries)
 // best 148 (a volatile cursor and numbered constant locals, not a form).
+// M3 lane 6 r190 (fast with 0x564c0, matched each time): on the packet-cursor form (re-measured 164, 478 B; the member
+// still takes EBP and the channel no register): the member bit as a `word` local for the test and the clear 168 (471 B);
+// the channel bound as `s_voice_channel *const &` to the parameter 164 (same code); the NONE and kind tests split with
+// the channel bound as `s_voice_channel &` for every index read 164 (same code); an `if (0 < data[1])` guard around the
+// loop 166 (494 B: the clamp's count takes EBP instead); the cursor, consumed and size advances in the order cursor,
+// consumed, size 167. Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
