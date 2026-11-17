@@ -327,6 +327,7 @@ void __stdcall function_15ec0(long index)
 
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
+// MiniMax R (11-17): no new form, no lower score (77): retail's palette pointer still arrives in ebx where this build takes it in esi, and 0x15b10's body is in src/unknown_0158f0.cpp, which this lane may not edit: BLOCKED-BY 0x15b10.
 // MiniMax E (11-16): no new form tried this round, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in
 // esi where retail takes it in ebx, so the frame stays one push deeper and the copy count rides in edi, and the copy still ends in
 // a bare rep movsd where retail ends it with a rep movsb tail; that callee's body is in src/unknown_0158f0.cpp, which this lane may
@@ -3700,6 +3701,7 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
+// MiniMax R (11-17): no new form, no lower score (62): retail keeps the locked pBits in memory where this build holds it in a register, and the XDK's D3DLOCKED_RECT has Pitch before pBits while retail has pBits first, so the inlined lock's slot order cannot be reproduced from this source.
 // MiniMax C (11-17): no new form, no lower score (62): retail's own call is the XDK's D3D::PixelJar::FindSurfaceWithinTexture with five out-pointers, so I called that directly (with the XDK's D3D::BlockOnResource before it) and passed the pixel pointer as a void* so that the 0xf0000000 flag is set in memory as in retail: that form matches retail's shape (the flag in memory, the pointer reloaded from the frame in every row, the row base advanced by the pitch) but measures 81 to 88, because this build gives the void* local and its byte cast an extra frame slot, so the five out-pointers and the description sit four bytes above retail's; the macro form stands.
 // MiniMax E (11-16): no new form tried this round, no lower score (62): the locked rectangle's pointer and pitch still sit in the
 // other order in the frame (retail keeps the pointer at [esp+0xc] and the pitch at [esp+0x10], ours the other way round), which
@@ -4395,6 +4397,7 @@ void function_1eb00()
     g_4b6298 = 0;
     g_4b6294 = true;
 }
+// MiniMax R (11-17): no new form, no lower score (136): this build hoists the constant 1 into ebx and pushes it (six uses of 1) where retail stores each 1 as an immediate, and the hoist shifts every stack offset by four; the height difference still folds its second operand into the subtraction where retail subtracts in registers; a 300 second permutation run over the reduced image found only a one-point gain from swapping the first two statements, which the rules do not allow.
 // MiniMax C (11-16): no new form, no lower score (79): retail's four shader programs still come from tables and caches this project does not have, so the body stays 25 bytes shorter than retail's 763 and the ratio of the two counters is still divided into xmm3 where retail divides into xmm2.
 // MiniMax S (11-15): no new form, no lower score (79).
 // MiniMax H (11-11): no new form, no lower score (79); the body is still 25 bytes shorter than retail's, the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and retail's body builds four shader programs from tables and caches that this project does not have, so the difference is a knowledge difference rather than a local form.
@@ -6557,6 +6560,7 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
+// MiniMax R (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here.
 // MiniMax D (11-14): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx (retail's order is the tag in edx, the first argument in ecx and the second in eax, with the third and fourth on the stack), and the callers are in other files, so the convention cannot be changed from here.
 // MiniMax H (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX, and the arguments behind it still sit one stack slot lower; retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with the third and fourth on the stack, and the callers are in other files, so the convention cannot be changed from here.
 // score 62 (was 62): retail takes tag/first/second in EDX/ECX/EAX (first and second moved to ESI/EDI, the tag table
@@ -6991,6 +6995,7 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 {
     function_4ede0(tag, context, first, second, third, handle, material);
 }
+// MiniMax R (11-17): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body at 117), and the allocation still puts the handle in ebx where retail keeps it in edi.
 // MiniMax C (11-17): no new form, no lower score (54): the score rests on the load-bearing volatile tag local (the rules allow a volatile only with a byte match); retail reads the block base out of the table before the tag lookup and keeps the tag in a register where this build spills it and reloads it; this round took the volatile off and moved the block base ahead of the tag lookup together, which rebuilds the body (111), and taking the volatile off alone gives 117, so the body stands.
 // MiniMax E (11-16): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (which the
 // rules allow only for a byte match), and retail still reads the block base out of the table before the tag lookup and keeps the
@@ -7497,6 +7502,7 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax R (11-17): no new form, no lower score (184): the zero constant, the outer counter and the section pointer still sit in ebx, edi and esi where retail has them in edi, esi and ebx, and retail's doubled table handle test is an always-true test that the rules do not let a body keep.
 // MiniMax D (11-17): no new form, no lower score (184): the table handle is still tested once against the zero
 // register where retail tests NONE and then the sign, the zero constant lives in EBX where retail makes it in EDI,
 // the outer counter is in EDI where retail keeps it in ESI, and the section itself is in ESI where retail uses EBX;
@@ -7861,6 +7867,7 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
 bool function_48b00(point3f const *point, real radius, real *screen, real *extent);
 real function_30bf0(vector3f *vector);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
+// MiniMax R (11-17): no new form, no lower score (576): retail's four screen bounds still come off the x87 stack through a temporary each and overlap the direction at +0x14, our body is still shorter than retail's 2507, and the second group of ten stage states and the three render-state calls stay inlined here where retail calls them.
 // MiniMax E (11-17): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18 against retail's frame+0x14), the dot product's three products are still summed in the other order, and retail's four bound temporaries, copied into the slots that overlap the dead direction, are still missing; the four bounds computed on the x87 stack through double (558) only steers the code and is not kept.
 // MiniMax G (11-13): no new form, no lower score (576): the diff re-read this round shows retail summing the dot product's products in a rotated order and giving the two constants after the normalize call the other registers, with the call's result slot four bytes higher here than in retail, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary, and the double forms tried for that score 614, 586, 576, 614, 612 and 583; retail calls 0x224f0 out of line for the second group of ten stage states where our build inlines it, and the only lever for that (an in-body inline_depth pair) is not allowed.
