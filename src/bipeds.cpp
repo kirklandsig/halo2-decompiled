@@ -6877,8 +6877,9 @@ struct s_biped_physics_move
 	vector3f up;
 	byte unknown30[0x54 - 0x30];
 	bool placed;
-	byte unknown55[0x64 - 0x55];
-	point3f position;
+	byte unknown55[0x58 - 0x55];
+	point3f placement;	/* where a mode 4/5 move puts the biped (0x1fc660 writes it with placed) */
+	point3f position;	/* +0x64 */
 };
 
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output);
@@ -7082,7 +7083,9 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	function_e2e90(arg_159e6d, &names[0], &names[1], move.direction, move.value, (byte *)&names[2]);
 	if ((biped->physics_mode == 4 || biped->physics_mode == 5) && move.placed)
 	{
-		function_b75a0(arg_159e6d, &move.position, NULL, NULL, NULL, false);
+		/* retail (0xe2650-0xe2660) passes move + 0x58, the point 0x1fc660
+		   stores with the placed flag; +0x64 is never written in modes 4/5 */
+		function_b75a0(arg_159e6d, &move.placement, NULL, NULL, NULL, false);
 	}
 	/* the moving class is the requested animation's (retail keeps it in ebx),
 	   not the kept moving one's: otherwise a biped asked to idle while it
