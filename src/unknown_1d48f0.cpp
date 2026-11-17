@@ -331,6 +331,12 @@ const dword g_455978[81] = {
 // existing vector3f_add_scaled, the zero-length test ahead of the inverse. Retail's first release is 0x279740 inlined
 // (with its size getter) and its second a call; ours can inline neither from 0x279740's /Ob1 file, which leaves the
 // budget that inlines 0x11bed0 here (build flags: the user's decision; `inline` on its definition is listed above).
+// MiniMax D (11-17): no new form, no lower score (298): retail takes the first argument in a register
+// (EAX into EBX) and so keeps a 0x1d4 frame with its locals four bytes higher than ours, which still takes
+// that argument on the stack; that transport is decided by this function's callers in other files. The
+// first difference also puts retail's zero register before the load of the first bound and our version
+// after it, and our build still reads a different global and calls a different function at the first
+// dispatch point.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

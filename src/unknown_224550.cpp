@@ -650,6 +650,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // callees MATCH. Existing-helper check: the index clamp as PIN_126660 (needs #include "unknown_124f90.h", not added)
 // 194 (same code). Score stays 194 (fast, r830): what remains is the known tint/uv_b home swap and the blend's XMM5
 // residence.
+// M3 lane 8 r180 (fast, control 194; all restored): the reciprocals declared inv_ax, inv_bx, inv_ay, inv_by 244 (1946 B);
+// each set's reciprocals right after its extents 194 (same code); both blended next terms ahead of the two inverse sums
+// 194 (same code); the two inverse sums through a force-inline (1-t)*a + b*t helper 238 (1943 B); remaining_blend assigned
+// at the top of each aspect arm 338 (1972 B). Retail's sequence arm jumps over a join block that reloads the blend into
+// XMM5 for the other paths; ours falls through and the aspect block reads the blend from memory (about 19 bytes longer).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

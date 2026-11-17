@@ -1083,6 +1083,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax S (11-17): no new form, no lower score (828, was 828); the frame 0x2c agrees, but retail keeps its three iterator outputs at the bottom of the frame with the result four bytes above ours and a dead input slot for the candidate, and the earlier home moves (991-1004) and the grouped-outputs array (807, an aggregate grouping, dropped) did not recover them, so the body stays as it is.
 // MiniMax E (11-14): no new form, no lower score (828, was 828): retail holds the found mode in EBP across the lookups
 // and keeps the graph pointer in EBX, so the table pointer takes the dead parameter's home; this build re-reads the mode
 // from its home at each lookup, keeps the table pointer in EBX and loads the graph pointer into EBP once per kind. The
@@ -1807,6 +1808,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // block (outputs outside) 828; the candidate and lookup in their own block in the loop body 828; the outputs renamed to
 // sort after the candidate and result 828; the candidate renamed to sort after the outputs 828 (all the same code); the
 // candidate declared at the block's scope and reset per pass 932 (2825 B, frame 0x30: the candidate gets its own slot).
+// MiniMax D (11-17): no new form, no lower score (828): the first difference is still the pair of found
+// outputs, where retail writes the third iterator output into the home of the incoming argument and ours
+// into the home of the first found output, so the two stores land in the opposite order; the calls, the
+// argument order and the two requests are unchanged, and the remaining difference follows from where that
+// third output is written.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -1353,6 +1353,11 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // SSS with the draw result named and stored on failure in loop 1/2/3 only 106/106/106; the current form with it in loop 1
 // 107; S first with later `long count = field; long offset; for (offset = 0; count > 0; --count)` 6 (xor before the
 // guard, as S F F); SSS with `success = 0;` 106 (same code).
+// M3 lane 3 r256 (fast with 0x13a532, 0x1393f3; control 1): SSS with all three guards written zero-first (`0 < field`)
+// 118; SSS with loop 1's failure written `success = draw(...) ? success : false;` 150 (381 B: the kept-value arm is
+// not dropped), in all three loops 166 (393 B); SSS with loop 1's offset stepped and read through a `long &` bound to
+// it 118 (the binding folds); S first with both later loops as a `> 0` guard around a for with offset and count in the
+// header (S K K) 118.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

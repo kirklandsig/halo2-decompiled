@@ -293,6 +293,14 @@ c_class_58d20 *network_session_manager_find_session(s_network_session_list *mana
 // reread back with other registers (23, also with nested ifs); an inner-block
 // barrier and a session local stay at 20. The 600 s permutation run found no
 // improvement.
+// b13N (11-17) walk against retail, fast build on r846: logic equals retail (flag test 0x59972, call 0x59988 with the
+// session list in ebx and &g_510528 pushed, result test 0x5998d, stores 0x5999b and 0x599a2). Only the reread at
+// 0x59992 differs (the 11 missing bytes: mov eax, test, je, plus an immediate 0 store instead of al). Retail reads
+// g_510518 a second time after the call. A volatile qualifier on the definition makes 0x59940 MATCH but turns matched
+// 0x598f0 into 18 (74 bytes vs 65), so retail reads it plainly there; reading only the second check through
+// `*(volatile long *)&g_510518` also MATCHES with the other 31 functions of this file unchanged, but is a volatile
+// cast on a global (not kept). No score change from: g_510518..g_510528 merged into one struct (20), its address
+// stored in another global (20), a session_tracking_changed(bool) helper for the inner block (20).
 // @retail 0x59940
 void function_59940(void)
 {

@@ -744,6 +744,16 @@ struct s_physical_block_iterator
 // dword: retail evaluates the candidate's age, then the best's, then multiplies candidate pages by the best's age
 // first (0x13d5f3) and best pages by the age second (0x13d5f6). Left (layout and registers only): clock in EDX vs
 // our EAX at 0x13d5cf, cases 0/1 in place (0x13d600, 0x13d60d), walk roles, data reload 0x13d7e1.
+// M3 lane 17 r45 (fast with 0x13d320 and the file's six other functions, all MATCH throughout; control 201). Rebuilt for
+// reference: the case-0 comparator in 0x13d320's style with the second age clamped 115 (1194 B); lane 9 r109's lead 93 (1213 B).
+// New, all on the 93 lead: the deletion walk as a forceinline helper taking (physical, offset, pages), taking (physical, pages,
+// offset), or taking the best candidate by pointer with the pages, 93 each (the same code: count EBX, bit EDI, the overlap sum
+// built in best.offset's register); that walk helper alone on this body 201 (same code); the success arm's four NONE uses
+// through a local declared in the arm (diagnostic) 93 (propagated: NONE is still materialized in EDI ahead of the allocation
+// test, the result in EBX). Reading of retail for the next round: in the matched sibling 0x13d950 the walk's high-water count
+// is given its register before the bit (ESI, then EBX), as here in retail (EDI, then EBX); on the lead ours gives the bit EDI
+// first. In retail's found path EBX carries the bit, then the block data, then the pages (the sum is built there) and last the
+// handle argument, and EDI carries the count, then best.offset (copied to EDX for the second test), then `this`. Body unchanged.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

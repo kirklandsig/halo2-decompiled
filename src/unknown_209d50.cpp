@@ -176,6 +176,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // named `result` and copied into `arguments` 95; the arm's evaluation through an inline helper taking the arguments pointer 95.
 // Reading: retail's frame takes EAX (loaded through EDX), which keeps the pointer out of EAX, so the pointer (EBX, spilled) and
 // the result (EAX) are two webs; in every volatile-free form here the pointer and the result share EAX and the frame folds.
+// Round 116 (m3 lane 1, fast with 0x2099f0; volatile-free forms): `result = arguments = allocation` chained 95 (266 bytes);
+// `long *&result = arguments` 95; the arm as an inline helper returning NULL with `return helper(...)` in the arm and
+// `return arguments` at the end 90 (277 bytes; pointer EDX, frame ESI); the two index slots as plain pointers with the
+// result copy after the allocation 95; the result copied in the init block and in an else arm 87 (278 bytes: the frame
+// then loads through the reference, `lea ebx; mov ecx, [ebx]`, as retail's does, but into ECX, with the pointer in EDX).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

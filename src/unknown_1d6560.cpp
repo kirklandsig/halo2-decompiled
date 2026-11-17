@@ -473,6 +473,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // as `s_physics_object_header *const &` 28 (same code); the object index as `long const &` to the component's field 96
 // [208]; the body array as `s_physics_rigid_body *const &bodies` 93 at 260 B [0]. On main: case 0's flag read as the
 // existing object view's `flag2` bitfield (its header included) 96 (same score; still `shr eax, 2`). Restored.
+// M3 lane 6 r190 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 at 256 B [0] (aligned 21: only the
+// entry's colouring and the `mov al` + `movzx` type load differ); on it, each the same code: the header array, the object
+// index or the header's type through a trivial inline accessor, or the first two together, 24/24/24/24 [0]; the object
+// index, the header array, the rigid body or all three declared const 24/24/24/24 [0]; case 0 through the global's header
+// array instead of the local 24 [0]. Worse: case 7's flag through `owner->model->rigid_bodies[rigid_body_index]` 95 [9];
+// case 0 through the object index local 101 [0] (the masked index is then shared, no re-mask); the retail schedule order
+// (headers, rigid body, object index, absolute index, type) 94 [13]: the owner then arrives in EDX, the index in EAX and the
+// component on the stack. A `long` type gives retail's `movzx` load (89 positional, 24 aligned). Body unchanged.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
