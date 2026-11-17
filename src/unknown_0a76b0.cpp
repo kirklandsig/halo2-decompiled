@@ -1196,6 +1196,13 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // result;` 45 (958 B), with the immediate throw ending so too 74 (956 B), both as the listed forms (the returns fold); the
 // grenade count from a ternary on the grenade pointer, tested `<= 0` once, 176; the notice written under `!grenade` and
 // again under the count test (two blocks) 184 (968 B: the copies are not merged).
+// M3 lane 12 r137 (fast): `(void)&result` with the notice after `return result;` entered by a goto and ending in its own
+// `return result;` 45 (958 B: the taken address does not stop the fold to `xor al, al`); the success code first in source
+// order with the immediate throw and the notice after it behind labels 19 (same code: source order does not reach the
+// layout); the count test as `!(count > 0)` 19 (same code); the throw code after the active test in its own braces 19 (same
+// code). Diagnostic (value-wrong, reverted): the result made unknown on the notice path (a `result = true` under an
+// impossible unit test) with the notice ending in `return result;` 261 (974 B): that return still merges with the exit,
+// which still follows the notice, so a separate unfolded return alone does not give retail's layout.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
