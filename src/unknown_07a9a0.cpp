@@ -1052,7 +1052,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
-// score 964 (was 964): frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
+// score 942 (was 964): frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
 // coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
 // it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
@@ -1490,6 +1490,18 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // retail's ECX holds the group's highest rating at that call, so `lower` is a behaviour difference left for the reviewer);
 // that with the loop's variant through 0x192e60 1011 (2620 B: the loop's lookup stays a call and the top one still
 // inlines, the reverse of retail); the clamp as `adjusted > lower ? adjusted : 0x1931a0(highest)` 968.
+// M3 lane 11 r112 (fast with 0x73530, 0x71730, 0x6fa60, 0x192e60, 0x631f0, 0x63220, 0x193300, 0x1932c0; plain confirmed
+// 942; 0x73530 MATCH and 0x71730 387 throughout). Kept: the excess exit as `result = false;` (the existing `if (result
+// && ...)` guards the rest; retail's exit at 0x7ea98 stores false into the result's stack byte and reloads it, which this
+// form reproduces) 964 -> 942 (2716 B); its direct form `result &= excess <= available;` 954 (2700 B). On 964: round 81's
+// single exit (opening test too, rest under `if (result)`) 984 (2948 B, 0x73530 8); that with `long histogram[16]` and
+// memset clears 935 (2908 B, 0x73530 8); `long histogram[16]` with memset clears 964 -> 995 (2636 B). On 942: that long
+// histogram 975 (2656 B); the opening exit as `{ result = false; return result; }` 942 (same code); the rest under
+// `if (result)` after the type-5 scan (opening return kept) 951 (2704 B); the type-5 exit as `return false;` 942 (same
+// code); `adding_group` declared beside `result` 889 (2764 B; a moved declaration, so match-only); the balance result as
+// `if (!balance_teams_by_count(...)) result = false;` 902 (2764 B: retail's exact `test al, al; jne; mov byte ptr [esp +
+// 0x13], al` after 0x91e30, but its direct form is main's `result &=`, so match-only); both 890 (2768 B). The same
+// conditional clear with the excess exit left as `return false` 917 (2736 B).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1634,7 +1646,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 	if (!adding_group)
 	{
 		long excess = out->imbalance > ratings_allowed_imbalance(variant) ? out->imbalance - ratings_allowed_imbalance(variant) : 0;
-		if (excess > available) return false;
+		if (excess > available) result = false;
 	}
 	if (result && !adding_group && variant->type != 5)
 	{
