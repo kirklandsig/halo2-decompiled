@@ -67,6 +67,15 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax S (11-16): score 319 (was 319): no new form; the aligned 0x94 frame still agrees, but retail takes its
+// first argument in EAX and keeps the move pointer in EBX and the input pointer in EDI, while this build takes all
+// three arguments on the stack and keeps the move pointer in EDI and the input pointer in EBX; the swap is settled
+// by the stub for the case-3 callee 0x1ec690, which lives in a file this lane may not edit.
+// MiniMax I (11-17): no new form, no lower score (319): the aligned 0x94 frame still agrees, but retail still
+// takes the output pointer in EAX and keeps it in EBX with the input in EDI, while this build keeps the output in
+// EDI and the input in EBX; both take the second argument from the stack, and the trade is settled by the 0x1ec690
+// stub's convention in another file (a 900-second permuter run found no variant below the baseline of 310
+// differing instructions): BLOCKED-BY 0x1ec690 (src/stubs/bipeds.cpp).
 // score 319 (was 319): no new form and no lower score; the aligned 0x94 frame still agrees, but the move
 // pointer is in EDI here and in EBX in retail while the physics pointer trades it with it, and that swap is
 // settled by the stub for 0x1ec690 (src/stubs/bipeds.cpp).

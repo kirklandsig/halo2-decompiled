@@ -1615,6 +1615,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // capacity admission, long/dword/const-long/const-dword: 32/32/32/32/32/32/32/32.
 // NOT kept: no handle-before-scaling, departure-selector or request/slot-home recovery;
 // original observations, publication, requests and complete body restored.
+// P587: Eight independent original iterator-workspace identities with all original
+// receiver names and publication scopes: eight 32 at native 846-byte extent.
+// NOT kept: no handle-before-scaling or leave/request/slot-home repair; full body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2959,6 +2962,9 @@ struct s_scenario_scripting_view
 // eight nonoriginal pairs: 80/126/80/80/126/80/80/126. NOT kept: ordinary/inline forms
 // retain the actor/counter/selector homes; forced commit expansion grows to 399/367 bytes.
 // Original declarations, helper bodies and complete search restored.
+// P590: Original packed incoming parameter lexical priorities against native
+// local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
+// or guarded-data recovery; original input name and complete body restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

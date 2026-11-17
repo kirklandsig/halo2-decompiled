@@ -2662,6 +2662,7 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax C (11-16): no new form tried this round, no lower score (140): the body's length matches retail's (1729
 // bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
 // them; the score also moves with the reduced image's source set, as the note above records.
+// MiniMax R (11-17): no new form, no lower score (140): the body's length matches retail's (1729 bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves them; the reload's order is decided by the callee at 0x131fc0 in src/unknown_131e50.cpp.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2955,6 +2956,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
 // MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3315,6 +3317,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // give 54 or worse.
 // MiniMax C (11-16): no new form tried this round, no lower score (54): the block's own order of the loads and its call setup still differ
 // MiniMax C (11-16): from retail in the ways the notes above record, and no form of this file's own moves them.
+// MiniMax R (11-17): no new form, no lower score (54): the block's own order of the loads and its call setup still differ from retail in the ways the notes above record, and no form of this file's own moves them.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3922,6 +3925,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // 19: small AL copied to CL for the neg, alpha in ECX, where retail loads small into CL first and copies it to AL): both selectors
 // ahead of `fixed` 959; small typed byte 19; both selectors typed dword 19; the byte clamp between the alpha and input selectors
 // 973 (4832 bytes).
+// Round 189 (m3 lane 5, fast, base 9: the input word's shl in EBX ahead of the clear and the two reload pairs after modes
+// zero and one's depth-bias write, ours 1.0f first, retail the span first; site one's pair before the clear is span first in
+// both): `long input = small + 4;` 961 (the input then lives in ESI and small is reloaded); the definition cleared before
+// `fixed` 954 (4844 bytes); a named attenuation before each gain 9 (same code); the alpha input word as the stored RGB word
+// `| 0x8000` with no shifted local 948; `small` initialised from its condition 1182 (4840 bytes). All restored.
+// Round 93 (m3 lane 2, fast, base 9): the offset clamp as one nested ternary 1072 (the listed pin form); `allow_small`
+// typed bool 9 (same code); each mode's gain as one expression 85 (the span/power quotient is evaluated first and
+// every gain register moves; the pairs stay constant first); both selectors defaulted then set under one `if (small)`
+// 948. Diagnostic: mode zero's blending and depth-bias writes without the skip test 894 (4816 bytes): the reloads
+// right after the call are still 1.0f first, so the join is not what orders them.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

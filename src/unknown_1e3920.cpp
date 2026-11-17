@@ -890,6 +890,12 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
+// MiniMax E (11-16): no new form tried this round, no lower score (237): the frame and the length agree with retail's and the squad
+// entry index is taken as a word as in retail, but the -1 sentinel is still held in edi where retail keeps it in esi, and the
+// successor and query homes still sit at other frame offsets, so the blocks after the first call are laid out differently.
+// MiniMax R (11-16): no new form, no lower score (237): the -1 sentinel still loses esi here - this build gives the squad index edi
+// (with `or edi, 0xffffffff`) where retail keeps it in esi - and the squad's address is still built with a movzx and an imul into ecx
+// where retail masks eax and multiplies it there; the frame and the length (1272 bytes) agree.
 // score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
@@ -1881,6 +1887,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax E (11-16): no new form, no lower score (251): the permuter (1500 s, 131 tries, one job) left the baseline at 251, so the pool global is still re-read after each lookup where retail holds it in EDI across the callees, and the actor, options and pool registers still rotate the way the notes below say.
+// MiniMax R (11-17): no new form, no lower score (251): the permuter's 20 tries over the reduced image (311.7 s) reach
+// 246 in the full image as well, a five-point gain that is under the keep bar, so nothing was written; what still
+// differs is that retail holds the pool global in EDI and reloads the seed into EBX where this build keeps them the
+// other way round, the two-weapon index is spilled, and the random-state load rides across the opaque /GL- call
+// 0x259a0 in src/unknown_0259a0.cpp.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax D (11-15): no new form, no lower score (251): naming the object-pool global in a local does not make it live in a

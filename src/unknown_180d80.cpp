@@ -107,6 +107,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
+// argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
+// still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
+// after them), the count loop's sign extension where retail zero-extends the word, and the swapped slots of the count
+// sum and the vertex cursor.
 // MiniMax S (11-15): no new form, no lower score (93): the three field sums spelled as a load and an accumulate
 // give 290 (the body then loses 21 bytes and every row moves), the same sums spelled the other way round compile to
 // the same code, the luminance red, blue, green gives 91, a gain under the review threshold, and the vertex cursor
@@ -128,6 +133,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // short strip count read at the entry gives 168; all three were restored. What still differs: the count sum and the
 // vertex cursor take the opposite stack slots, and the 0x17cfa0 call still passes the first index in ecx where retail
 // passes it in eax (that callee lives in another file).
+// MiniMax R (11-17): no new form, no lower score (93): the permuter's annealed tries over the reduced image found
+// nothing below 93, so the body stands; what still differs is that retail loads the fifth argument into eax before
+// the register saves where this build loads the strip record into ecx after them, the count loop sign-extends the
+// word where retail tests it and zero-extends, the count sum and the vertex cursor take the opposite stack slots,
+// and the transform's x row computes left.i*y before up.i*z where retail computes up.i*z before y*left.i; the call to
+// 0x17cfa0 that passes the first index in ecx where retail passes it in eax belongs to that callee's own file.
 // score 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
 // ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
 // zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)

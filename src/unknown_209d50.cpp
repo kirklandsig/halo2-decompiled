@@ -163,6 +163,19 @@ static inline void *function_xc5914d(long thread_index, short size)
 // first and assigned after the third allocation, null first 83; the element as `arguments + argument_index` with `result
 // = NULL` between it and the call 83; `long *result;` declared above the frame reference and assigned right after the
 // first allocation 95 (266). In each null-first form the frame goes to ESI and the pointer to EAX from the first block on.
+// M3 lane 12 r131 (fast; volatile-free forms, control 95 at 266 bytes): the first allocation read through `*frame` with a named
+// frame pointer (0x208310's form) 95, with a `short size` local (0x207cf0's form) 95, with the reference declared `*const *` 95;
+// the `*const *` reference alone 95; the frame field bound as a reference and the first allocation through it 95 (all the same
+// code). Our frame load stays folded into `[eax+ecx+0x10]` ahead of the reference's lea, so the frame takes ESI and the pointer
+// EAX; retail and the matched siblings 0x208310 and 0x207cf0 load the frame through `[edx]` after the lea, which leaves retail's
+// frame in EAX and the pointer in EBX (spilled). The `result = NULL` first form (83, 277 bytes) has the same folded frame load.
+// Round 171 (m3 lane 7, fast with 0x2099f0; volatile-free forms): the first allocation written out as the matched 0x208310 does
+// (`frame = *frame_reference;` with a const reference, the pointer from `frame->data + frame->size`, then `frame->size +=`) 95
+// (266 bytes: the frame load still folds into `[eax + ecx + 0x10]` and goes to ESI, the pointer to EAX), with `result = NULL`
+// first in the arm 83 (277); 0x207cf0's `short size` form with `result = NULL` first 83 (277, same frame fold); the allocation
+// named `result` and copied into `arguments` 95; the arm's evaluation through an inline helper taking the arguments pointer 95.
+// Reading: retail's frame takes EAX (loaded through EDX), which keeps the pointer out of EAX, so the pointer (EBX, spilled) and
+// the result (EAX) are two webs; in every volatile-free form here the pointer and the result share EAX and the frame folds.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

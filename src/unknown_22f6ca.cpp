@@ -192,6 +192,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // and read by the model's start 23, the same in the text loop 23; the model result as a `*const` local 23; the model
 // definition as an `s_model_block &` element reference passed by address 23; the pane as a `*const &` bound to the getter's
 // result 23. (The flag getter cannot take the screen without its cast: c_widget is not one of its bases.)
+// M3 lane 13 r101 (fast): the definition moved to the end of the file (a prototype left in its place) 23; the implicit
+// short conversion at all four value0a stores 23; the model's animation read through an explicit base-widget cast of the
+// screen 23; all five animation starts through a forceinline (widget, screen) helper 23 (all the same code); `long i = 0;`
+// above the pane call with `if (!pane) return;` 25 (the zero moves above the call). Permuter (seed 101, 600 s, fast,
+// anneal): 76 tries, none below its reduced-image baseline 21 (full image 23).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

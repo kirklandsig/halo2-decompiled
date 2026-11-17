@@ -323,6 +323,12 @@ extern "C" void _ReadWriteBarrier(void);
 // needs a read/write barrier, which the rules forbid, so the iterator's own declaration stands.
 // MiniMax C (11-14): no new form, no lower score (122): the frame is still 0xc against retail's 0x14 and the pool is still forwarded into EDI for both reads; the form that matches retail's body needs the iterator step written out by hand, which this round does not use.
 // MiniMax D (11-16): no new form and no lower score (122): retail's 0x14 frame with the pool in two stack homes and the datum index in EDI still needs the iterator step written out by hand, which the rules bar, and the shared header step keeps the pool in EDI with a 0xc frame (162); the pool local, the four-field iterator orders, the barrier's places and the step written out in the body all measure 122 or worse.
+// MiniMax D (11-16): no new form, no lower score (122): this round compared the two bodies again and the delta is the
+// same as before: this build's frame is 0xc and it forwards the pool into EDI for both the scan and the element,
+// while retail's frame is 0x14 with the pool in two stack homes and the iterator's home read back inside the loop;
+// retail also packs the two 16-bit halves into EDI where this build packs them into EBX and keeps the element pointer
+// in EBP where this build keeps it in ECX; the length is 473 against retail's 473; the form that reaches retail's
+// frame needs the iterator step written out by hand, which the rules bar.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.
@@ -579,6 +585,19 @@ extern "C" void _ReadWriteBarrier(void);
 // which is banned; the pool read from the global, from a local and from the iterator's own field all
 // leave the frame at 0xc.
 // MiniMax S (11-14): no new form, no lower score (122): retail's 0x14 frame with the object pool in two stack homes and the datum index in EDI still needs the iterator step's body written out by hand, which the rules bar.
+// b8N (11-17) walk against retail, fast build on r836: no logic or structure difference found, score stays 122.
+// Every jcc was read for the side that does the work (no float code, so no NaN case): scan 0x1fb535/0x1fb540 exit on
+// index+1 < 0 or >= high water; 0x1fb56b exits on NONE; datum lookup 0x1fb591/0x1fb5a6/0x1fb5b7/0x1fb5c3 (NONE, signed
+// index >= max, salt 0, salt != index >> 16) leave EBP 0; 0x1fb5c9/0x1fb5dc/0x1fb5e7 (no datum, type mask 3, object 0)
+// go to the release at 0x1fb6d7; flags & 1 (0x1fb5f4) selects the release arm, else the tick arm loops without release.
+// Tick arm: dec word [+8] (0x1fb5fd), apply pushes +0x10, +0xc, +0x14, +0x90 (0x1fb60b-0x1fb61a), finished = !result
+// (0x1fb620-0x1fb629), remaining_ticks++ before c6de0(object, control) (0x1fb62b-0x1fb630), flag 0 set/cleared at
+// 0x1fb639/0x1fb642: all identical here. Release arm: flag 0 from (flags & 4), flag 22 cleared, cbf60(object, 0),
+// 0xb8540 only if flags & 8, object != NONE and 0xbeb30 is false, f0fd0(object, 1) if flags & 0x10,
+// release(g_4f5724, EDI): identical, and f0fd0's flag now travels in CL (0x1fb6d0), so the older DL/BLOCKED-BY remark
+// is stale. Only evaluation differences remain: retail snapshots the high water in ESI (0x1fb53b) where ours re-reads
+// it per pass (the volatile scan, load-bearing for 0x1fb4c0/0x1fb6f0/0x1fb760); the frame and register split are
+// already recorded. No code changed.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

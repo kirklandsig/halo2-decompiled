@@ -608,6 +608,21 @@ s_1a8a10 g_4453c0[] =
 // j (the copy's j register dies in the forward product), but the point's x then takes XMM3, the forward j load
 // follows the y store and the forward sum is scheduled first; retail has x in XMM4, both facing loads ahead of
 // the y store and the left sum first. All restored.
+// Round 174 (m3 lane 8, fast with 0x1a8c30; control 17): the rotation's negations as unary minus 17 (same code); the
+// two negated values as unary minus 17; the facing copy as a const vector with an initializer 17; the four values
+// stored in index order [0], [1], [2], [3] 18; the negated values read back from the stored [0] and [2] 17. All
+// restored.
+// Round 93 (m3 lane 2, fast; control 17): the point copied from the input then rotated in place by the switch (cases 2
+// and 3 empty) 175 (564 bytes); the left sum reading i and j from the actor 29 (both still one load each, merged with
+// the copy); the forward sum's i from the actor 38 (it is loaded again, late); the left sum accumulated in two
+// statements 17 (same code); i and j as scalar locals with the negation reading j in place 31 (the scalar j is
+// forwarded to its one use, so it loads late into XMM1, as the listed i-scalar form). Re-measured for the folding: the
+// copy's j for the negation with the forward j in place 40 (the in-place j in the forward sum is never merged with an
+// earlier load; the copy's j stays at the copy and is not folded); the i scalar with j in place twice 31 (retail's
+// folded `subss xmm0, [esi+0x294]`, but the forward j load comes after the left sum in XMM1 and the zero takes XMM2).
+// Reading: an aggregate copy's fields load at the copy, a one-use scalar's load moves to its use, and an in-place read
+// in the left sum merges with the copy while one in the forward sum does not; retail needs the copy's j used once (j*y)
+// and the left sum's negated j a separate folded load.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

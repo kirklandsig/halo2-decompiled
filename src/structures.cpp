@@ -714,6 +714,22 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // Re-measured: the byte result declared first with `definition = NULL` at its declaration 185 (726 B, aligned 97/54; now
 // `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
+// MiniMax C (11-16): no new form, no lower score (172): retail still holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
+// MiniMax I (11-17): no new form, no lower score.
+// b8B (11-17) walk against retail, fast build on r836: fields, offsets, branch senses, loop shape and callees
+// agree (type 1 at 0x14acb5, type 3 at 0x14acee, loop 0x14ad82-0x14aee0, fill 0x14aef4); no behaviour error
+// found. Order differences, both measured above and not applied: retail zeroes the result byte at 0x14aca2,
+// before the type test's jne at 0x14acb3, and clears the definition once at 0x14ac9d with no clear in the type-1
+// block or the else path; ours does both after the type test. Retail returns the byte raw (0x14aee6, 0x14af28)
+// where ours adds test/setne; `bool result` measures 182 (726 bytes), not kept. Retail tests only the first
+// vertex's fetch (0x14ae25 reads a byte at esp+0x12 that no path initialises; 0x14ae1e/0x14ae63/0x14ae9a set it
+// to 1) and calls 0x11e800 at 0x14aebb whatever the second and third fetches gave, with stale vertices; ours
+// skips the triangle when any fetch fails (NULL data at 0x14adf6, bad strip index). `if (!get(v0)) continue;
+// get(v1); get(v2);` with a defined failure measures 182 (192 with a bool result); with the getter's result left
+// unset on a miss and a bool result 200 (731 bytes), its vertex block equals retail's in opcodes except the
+// stores at 0x14ae63/0x14ae9a (dropped as dead) and the swapped flag and result slots. The else path reads an
+// unset range at 0x14ad52, harmless (section NULL). The 0x16e1b0 homes and the 0x11e800 registers are unchanged:
+// BLOCKED-BY 0x11e800.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -974,6 +990,9 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // m3 lane 16 r124: listing re-read (fast 4), still only 0x11e800's four argument registers. HELD (needs the owner's OK): the
 // (p, a, b, c, u, v) reorder re-measured (fast, restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the
 // diff is in build/r124/held-14a8e0.patch. BLOCKED-BY 0x11e800 (contributor).
+// Round 169 (m3 lane 7): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
+// M3 lane 8 r177: baseline listing (full build, 4) still differs only in 0x11e800's four argument registers (ours a/b/c/point
+// in eax/esi/edx/ecx, retail eax/edx/ecx/esi); 0x11e800 is still contributor code; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

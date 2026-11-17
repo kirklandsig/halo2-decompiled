@@ -465,6 +465,13 @@ static inline real interpolate_linear(real a, real b, real t)
 // per-pass local at the loop-body top (none outside the loop) 200 (656 bytes); both loop disposal tests as
 // `(flags & 2) ? type == 0 : false` 216 (664 bytes); both loop restart tests as `type == 0 ? (bit 0 || bit 1) : false`
 // 1 (same code); diagnostic: the break as `restart & 1` 87 (659 bytes).
+// Round 111 (m3 lane 1, fast): the in-range frame as an empty first arm (`if (frame >= 0 && frame != value8) {} else if
+// (frame < 0) ... else ...`) 60 (661 bytes); the second boundary as `frame >= value8` 1 (`jl` for `jne`, still past the
+// restart test); both boundary restarts as `expr ? true : restart` 197 (645 bytes); restart as the element of a one-element
+// bool array 1 (same code); restart as the member of a one-member local aggregate 1 (same code).
+// Round 102 (m3 lane 13, fast): the in-range frame as an empty middle arm (`else if (frame != value8) {} else`) 1;
+// the loop test as `next_time <= time` with a direction-first frame sum 5; the flag-8 test reading the field 1;
+// `!type` in both loop restart tests 1; the frame count in a named local for both boundary compares 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

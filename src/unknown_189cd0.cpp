@@ -210,6 +210,11 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // variable 11 (same code); no pointer local, the started test reading `*(long const volatile *)&object_index` 11 (same code);
 // the pointer declared in the arm just before the started test 11 (same code); the reference read for 0x1892a0's object
 // argument instead, the started test plain 85 (524 bytes). The listing on main differs from retail only in that test.
+// M3 lane 13 r101 (plain; every form without the reference, object reads plain, control 116 per the notes above): the request
+// test written `!positioned && object_index == NONE` 118 (531 bytes); the spatialization picked by one ternary 154 (541 bytes);
+// the sound tag read inline where the classes table is indexed (no tag local) 116; the marker declared at the positioned arm's top with
+// the description 116; the started test from a bool set just before 0x189340 116. Plain: tag in EDI, object in EBP, the
+// spatialization spilled (frame 0xa4); retail keeps the tag in EBP and the spatialization in EDI (frame 0xa0).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

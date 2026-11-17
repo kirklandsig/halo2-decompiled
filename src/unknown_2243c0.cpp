@@ -640,6 +640,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // thiscall (same code each); that member with the fallback masked `& 0xffff` 152; block_element_224db0 plain `inline` 117 (same
 // code); the fallback re-reading the tag field masked `& 0xffff` 152 (the field load CSEs with the tag, in-place `and`, table to
 // ECX ahead of the frame); the material definition named before its +8 read 117 (same code).
+// M3 lane 15 r93 (fast with 0x2243c0 and 0x224d90, both matched each time; control 117): the fallback indexed by the tag
+// field's low word read from memory 117 (same code: the load CSEs with the tag); the 0x173ba0 mask written `local_16 &
+// ~field_44` 117; the flags local as `long` 117; the tag-data pointer typed `dword const *` 117; the flags local declared at
+// the top of the draw block and assigned in place 117 (all the same code). Diagnostic re-measure of the in-place mask (152):
+// the table then takes ECX and is loaded ahead of `sub esp`, where retail keeps it in EDI after the pushes.
+// P576: Actual scalar acquisitions through memcpy, head/stage/pass subsets 1/2/4/3/5/6/7: 142/141/117/172/142/141/172;
+// all three through memmove 255. NOT kept: no byte equality; word acquisitions expand the native frame, pass copy ties.
+// Original full body/helper/includes restored. Fallback EDX normalization, stage/pass homes and unfused loads remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

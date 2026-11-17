@@ -865,6 +865,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax I (11-16): no new form, no lower score (92): the body is still four bytes longer than retail's 1699 and the frame
+// homes are permuted - the projectile index sits at 0x24 against retail's 0x30, the grenade type at 0x20 against retail's
+// 0x2c, and the block-vector group at 0x48..0x50 against retail's 0x54..0x5c - and the blended direction still travels in
+// xmm5/xmm6/xmm7 instead of retail's registers.
 // MiniMax C (11-16): no new form, no lower score (92): the frame is still a permutation of retail's - the grenade tag and the seat index sit 0xc below retail's homes and the shared block-vector slot 0xc above them - and the body is still four bytes longer than retail's 1699; the declaration order does not reach those homes.
 // MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
 // build, so the source stands.
@@ -1142,6 +1146,26 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // outcomes: 142/142/142/142/142/142/142/142 (1700/1699 bytes). NOT kept:
 // one-use guard captures do not match; saved projectile/type and vector homes remain.
 // Original guard, full body and every existing helper restored.
+// M3 lane 14 r103 (fast; 0xe8420/0xa91c0 MATCH; none kept, no match): the blend through the existing vector3f_assign 92
+// (same schedule); vector3f_scale(&velocity, ratio, &scaled_velocity) + vector3f_scale(&aim, 1 - ratio, &aim) +
+// vector3f_add 147 (1703 B, retail's load/product/add schedule but aim in xmm5/0/1), the add operands swapped 147 (same
+// code); vector3f_scale(&velocity, ratio, &velocity) + vector3f_add_scaled(&velocity, &aim, 1 - ratio) 150 (1706 B); a
+// one-use `vector3f scaled_velocity` (vector3f_scale(&velocity, ratio, &scaled_velocity)) with the rows
+// `aim.c * aim_weight + scaled_velocity.c` 75 (weight named before the scaled velocity), 64 (1700 B, weight named after
+// the velocity scale: the whole blend block is retail's code). MATCH-ONLY LEAD, 22 (1700 B, first difference +0x1b5):
+// that blend (aim and scaled_velocity declared together, the velocity scale, then the weight) with main's two origins,
+// `bool placed = true;` set from function_bc1d0 on a release point of its own, and the parent velocity and the release
+// point in bare blocks; every frame slot (origin/direction, type/index/shared vector) is then retail's, and the only
+// difference is the throw velocity scale's first product: retail `movaps xmm5, xmm0; mulss xmm5, [dir.i]`, ours
+// `movss xmm5, [dir.i]; mulss xmm5, xmm0` (one byte; the other 21 points are the calls and jumps it shifts). With one
+// function-scope origin instead 34 (origin/direction swapped again); main's per-row blend on that structure 109. On 22
+// (all 22, same code): direction renamed, direction beside the throw origin, a `direction_reference` pointer for the
+// scale, `real speed` named at the scale or declared before direction, the random scale named too, scaled_velocity at
+// function scope, velocity declared in the not-attached block; the velocity scale written out as v*s or with s*v for
+// i only 36 (1699 B: the scale stays unfolded and the blend's velocity*ratio products fold instead: the fold choices
+// move together); the velocity copied from direction and scaled in place 322; the else arm's direction copied
+// component by component 301 (1736 B); the velocity scale written out with the speed read in each product 135 (1701 B:
+// three speed loads); permuter (619 s, 19 tries) best 22.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1443,6 +1467,12 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // second operand) makes the notice a join block that is deferred to just before the exit, whatever its source position
 // (after the success code, after the return, in an else, behind a positive test). Dropping the success path's tests
 // does not change it, so it is not a frequency estimate. Retail's notice sits after the exit, which no form here gives.
+// Round 100 (m3 lane 13, fast; round 78's entry pool copy re-measured 16 as the base): the result assigned from the two
+// throw-animation starts (`result = (animate && ...) || ...;`) with the setup under `if (result)` 118 (977 bytes), on the
+// pool copy 115 (the constant store moves ahead of the setup); on the pool copy: the notice's player value read at each use
+// in one combined test (no player_value local) 57 (984 bytes), `result = true` as the success block's first store 58, the
+// notice in the then-arm without its goto and the rest in the else-arm 16. Diagnostic (reverted): an address-taken result
+// with the notice ending in its own `return result;` 257 (969 bytes, the pointer store adds code).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2005,7 +2035,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
-// score 11 (was 11; 29 before): only the entry block's order differs (retail loads the global and the
+// Matched: the object pool is read into a local with a reference bound to it, and the unit is looked up in its own
+// statement through that reference ahead of `primary`. A local with a reference bound to it is not folded away, so the
+// inlined 0xe8510 lookup no longer merges with this one and reloads the pool as retail does; 0xe8510 and 0xe8d10 are
+// untouched and still match.
+// Before, 11 (was 11; 29 before): only the entry block's order differs (retail loads the global and the
 // actions pointer before `cmp ecx, 8; sete bl`). Tried: unit_action_active() 95; primary
 // declared first 11; primary inside the block 82; a unit local 90; an early-return guard 11;
 // actions read inside the test with primary first 11; the bit test as its expression 11; the test
@@ -2093,13 +2127,27 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // first and a unit local after it, the test on UNIT_ACTIONS_GET(unit) 95 (233 B, the unit is reused after the branch).
 // Retail's register choice says the type is loaded after the pool data (both in ECX), so its pre-schedule order has the
 // unit lookup ahead of the compare, with the add after it; every root that holds the unit is reused after the branch.
+// Round 100 (m3 lane 13, fast): LEAD, a byte match held back by its callee. The unit looked up in its own statement ahead
+// of `primary` (the test on UNIT_ACTIONS_GET(unit)) together with 0xe8510's hand weapon read through a pool copy given to
+// the pool helper (`s_record_pool *objects = g_4e0300;` then unit_action_pool_hand_weapon_get(objects, unit_index,
+// !primary), the per-lookup idiom of 0xe8de0) MATCHES 0xe8c10: the copy is used twice, so the inlined lookup is not
+// merged with this function's unit and reloads the pool as retail does. But 0xe8510 itself then scores 60 and 0xe8d10
+// 48 (the pool data in ECX and the hand in EDX, retail the other way round, and the 0xee7f0 argument computed in EAX),
+// so it is not kept. Same 60/48 with a named hand first, `primary ? 0 : 1`, `primary == false`, the name ternary at both
+// uses, the result initialised in its own statement; `bool result` declared first 101 (0xe8980/0xe8b20 change length).
+// 0xe8510 alone with that form leaves 0xe8c10 at 11. Without the pool helper the inlined lookup merges again: the unit
+// statement alone 90 (233 bytes, a repeat), with a pool copy in this function 90, with 0xe8510 reading through a pool
+// copy once (hand getter on the copy's lookup, 0xe8510 matched) 90, with the pool helper given g_4e0300 itself 90. The
+// unit's header entry named ahead of `primary` 77 (240 bytes); a pool copy read twice through the actions macro 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
-	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
+	s_record_pool *objects = g_4e0300;
+	s_record_pool *&pool = objects;
+	s_unit_action_unit *unit = ((s_unit_action_header *)pool->data)[unit_index & 0xffff].unit;
 	bool primary = type == 8;
 
-	if (bit_vector_test(actions->active, type))
+	if (bit_vector_test(UNIT_ACTIONS_GET(unit)->active, type))
 	{
 		function_e8510(unit_index, true, false, primary);
 		function_e8720(unit_index, 0x7000101, false, false, primary);
@@ -2639,6 +2687,9 @@ __forceinline char unit_action_round(real value)
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax E (11-16): no new form, no lower score (234); the prologue still loads the pool into EDI where retail uses
+// EBP and the getter's NONE compare is 8-bit against retail's 16-bit `cmp ax, bx`; the short-slot getter alone measures
+// 297 and the reordered statements 314, so both bodies were reverted.
 // MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
 // 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
 // is the same code; the permuter over this function found nothing (2 tries, best 227 against a baseline of 227), so the
@@ -2827,6 +2878,11 @@ __forceinline char unit_action_round(real value)
 // first_person_name first 315; type declared ahead of first_person_name on the 101 form 101. Left on 101: pool EDI for EBP,
 // offset EBX for EDI, the NONE carrier EBP for EBX (retail's first_person_name, also the getter's compare register),
 // type EBX for EBP, `current` EAX for ESI.
+// M3 lane 14 r103 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0; none kept): the whole body as a forceinline helper called
+// from a one-line wrapper (its returns become one exit after inlining) 234 (same code: the result is still folded, retail
+// reads it from its stack byte at the exit); is_biped typed byte 234 (same code); the channel declared with the top locals
+// 300 (re-measured); the weapon through the existing unit_get_current_weapon (short slot, own unit lookup) 297 (1196 B),
+// with first_person_name = NONE declared first 314 (1195 B).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

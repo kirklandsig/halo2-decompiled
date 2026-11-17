@@ -640,6 +640,16 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // block local as a const pointer 27; the loop test as `busy(...) != false` 27 (all same code); the time test with its
 // operands swapped 28 (first difference +0x41); the tail's pointer offset read through the geometry block's own
 // section-offset field (no fixup-group cast) 27.
+// Round 100 (m3 lane 13, fast with 0x12e210, which stays matched): the task count stored to the file-level counter
+// g_4e28f0 (0x12b450's spelling of the same address, never address-taken) in place of the async aggregate's field 27
+// (same code: the store's alias status does not move the arm's block load), with the loop read at each use and the
+// tail's block local 51; the physical object's time read once into a named local for the compare and the store 27;
+// the release address as a named dword inside the arm 27; the wait as a guarded do/while 27 (all 27 the same code).
+// Round 128 (m3 lane 16, fast with 0x12e210, which stays matched): the loop's block local as a reference to the field 27
+// (same code); one reference to the block field at the guard's top for every later read 51 (EDI/EBP swap, the loop block
+// still straight to ESI); the tail's pointer clear through an inline helper taking the group with the loop read at each
+// use 51 (tail exact, EDI/EBP swap); both linked tests through an inline accessor taking the cache block 27 (same code);
+// the cache block bound by reference for every access 27 (same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

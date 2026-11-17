@@ -262,6 +262,18 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // the mode-2 up-offset point through it 20 (same code); the mode-1 positive and the three mode-2 points through it 20 (same
 // code); the quarter as a `static real const` 20 (same code). Diagnostic (removed): a constant store to a probe global at
 // the top 318 (1186 bytes; the mode-1 x row still loads the centre first), so the row does not follow store numbering.
+// M3 lane 12 r131 (fast with 0x1e55d0; control 20): a target-point pointer local (`point3f const *target = arg_4;`) at every arg_4
+// use 20 (same code), in the side vector only 26 (1175 bytes: the mode-2 z row folds, the mode-1 x row still loads first), in the
+// mode-2 block only 20, in the first probe's direction only 20, in the category and tail distances only 20. A 600 s permuter run
+// (anneal, seed 131, context 0x1e55d0): 25 tries, none below its baseline.
+// Round 171 (m3 lane 7, fast with 0x1e55d0): diagnostics, a store through `arg_9` as long, then as real, at the top of the mode-1
+// block 243/257 (1189 bytes; the mode-1 x row still loads the centre first, so it is not the side vector's reads staying
+// available across 0x30bf0). Round 188's order (arg_2, arg_3, arg_1, arg_5 .. arg_9, arg_4, arg_0) re-measured at the
+// definition, every declaration and all seven calls: MATCH, 0x1b2770 and 0x1be120 still match, 0x264b50 91 (was 90), but
+// 0x1b0400 38 (319 bytes) and 0x25f7b0 8: in both the `unknown26c != NONE` argument's field is loaded before arg_0 takes EBX,
+// where retail compares it in memory between the stack pushes and the EBX load (retail evidence for the current order).
+// Body forms: top-level const on both point parameters 20 (same code); both modes' positive/negative points through one inline
+// helper (side, distance, centre, positive, negative) 20, with the centre first 20 (same code).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

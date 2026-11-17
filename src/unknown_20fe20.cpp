@@ -1225,6 +1225,18 @@ void function_2118c0(void)
 // every row; long/dword `row = b * 8` carried from the foot leaves the rows unreduced but hoists the knot bases (125);
 // `noise[w] + row * 8`, `(noise + row)[w]`, `*(noise + row + w)`, `&noise[w][row * 8]`, `noise[row] + w * 8` all
 // canonicalise to the `row + w` code of the same row expression.
+// Round 102 (m3 lane 14, fast; a compile-only harness of the file reproduces the 10): the three knot row indices in a
+// `long rows[3]` array filled per band 23; the knot rows read in place at each component with `long row = b << 3` 124
+// (790 B); three per-knot `short` row counters started at the knot index and stepped by 8 at the band loop's foot 170
+// (797 B); the interpolation as an inline call of 0x212100 (`inline` forward declaration) with `long row = b << 3` knot
+// rows and p1/out from `b * 8 + k` 123 (790 B), with every row from that row 162 (767 B). Harness only: a short, word,
+// long, dword, char or byte row stepped by 8 beside b with p1/out from `b * 8 + k` or from the row, both sum orders (24
+// forms): short/word leave the knot rows unreduced but sign-extend the row each band; long/dword reduce every row.
+// M3 lane 8 r177 (fast with 0x212100; references that keep two steps apart): the band row through a reference
+// (`long &row = band_row; row = b * 8;`) 150; the same assigned `row = b; row *= 8;` 150; a reference row started at
+// zero above the band loop and stepped by 8 at its foot beside b 150 (all rows reduced to pointers, hoisted to the
+// knot level); the three knot rows through references into a `long [3]` (`r3 = row; r3 += w3;` from `b * 8`) 157 (790
+// B: one row from a row IV, one reduced); the band counter itself through a `short &` 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2708,6 +2720,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // helper reading `a->y` into a local before its differences 411 (1944 bytes); the helper's differences declared z, x, y
 // but assigned y, z, x 26 (retail's instruction order, registers y XMM1, z XMM2, x XMM3) or y, x, z 19: registers and
 // schedule both follow the assignment order, not the declaration order.
+// Round 252 (m3 lane 3, fast; control 3, only the z load hoisted above the y load and subtract): the helper as a
+// non-static `inline` 3 (same code); the helper returning the z, x, y difference vector by value with the staged sum and
+// the cases reading its fields 506 (2008 bytes, the vector goes through the stack); cases 8 and 9 as `1.0f < z` and
+// `-1.0f > z` 3; the selector local declared at function scope and assigned in place 3; the outer x, y, z in one
+// declaration statement 3 (all same code). No cross-file helper has retail's z, y, x sum (devices.cpp's is file-local).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

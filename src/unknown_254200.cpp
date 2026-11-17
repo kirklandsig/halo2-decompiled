@@ -215,6 +215,16 @@ void function_254200(void)
 // Round 91 (m3 lane 15, single-address fast): through the XDK's IDirect3DDevice8_ wrappers with a NULL device: the four
 // vertex 4f calls 10 (the pair unchanged; the colour helper's three spill slots permuted), the four 2s calls 4,
 // Begin/End 4, the two SetRenderState calls 4, the colour helper's 4f call 4, every stream call 10.
+// Round 102 (m3 lane 14, single-address fast, control 4): the colour helper's parameters in the other order 4 (same
+// code); the four texture/position pairs as a forceinline quad helper taking the point pointer and the size 259 (1205 B,
+// the point re-read at each use), taking the point copy by value 135 (1097 B); the point copy and size declared at the
+// top of the body 4 (same code); diagnostic (not kept) a dead float product ahead of the point copy 4.
+// M3 lane 8 r177 (single-address fast, control 4; references that are not folded back): the size through a `real &`
+// 259 (1205 B, the size re-read at each use); the point copy through a `point2f const &` 259 (1205 B); the 16777215
+// constant through a `real const &` to a named value 8 (the colour products' spill slots swap, the pair unchanged); the
+// first vertex's y sum written size first, the others as now 4; the second vertex's y sum size first only 4 (same code).
+// Reading: the colour block reloads its three spilled products from the highest slot down in both builds; only the
+// constant and the y sum after the second and third reservations come back in the other order.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -538,6 +548,14 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // second block's SRCBLEND/DESTBLEND pair ahead of its 0x14390 call 12. Same code (2): the lower coordinate's product
 // commuted in all four uses, the lower coordinate as `arg_1 * -0.5f + 0.5f`, the else arm as a separate test after an
 // early return, the guard inverted with the success block in the else, the point pointers declared ahead of the size.
+// Round 102 (m3 lane 14, single-address fast, control 2): the last quad's size `real const` 2; the last quad's size and
+// point pointers after 0x1cf50 10; the colour through a `real const *` 2; every upper texture coordinate written
+// constant first 2; the first two vertices' depth through the platform's 24-bit depth maximum macro 2 (same code).
+// M3 lane 8 r177 (single-address fast, control 2; const references, which keep a value in memory): the first quad's lower
+// texture coordinate bound by a `real const &` 363 (2278 B, computed ahead of 0x1cf50), the upper one 363 (2278 B), both
+// 342 (2256 B); the colour as a `color3f const` value copied from the getter 392 (2238 B); the getter's result passed
+// straight to the existing colour helper `function_254491(1.f, ...)` after Begin 31 (the getter moves after Begin; the
+// reload pair unchanged).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

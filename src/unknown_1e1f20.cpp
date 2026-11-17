@@ -616,9 +616,18 @@ void swarm_leader_detach(long actor_index);
 // in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte offset in
 // EDX and the countdown in a stack slot); and the body is 22 bytes short of retail's 980 because retail
 // expands 0x26ed40 into it (src/unknown_26e370.cpp).
+// MiniMax I (11-17): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
+// loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and this build still spills
+// the actor pointer to [esp+0x14] where retail holds it in EBP; the definition-bit test written as a nested if
+// compiles to the same bytes as the && form, and the permuter's best variant (300 s, two tries, 205 differing
+// instructions on the reduced image against a baseline of 219) only reaches it through a constant local and a bool
+// flag set by one test, both banned, so the body stands.
 // score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
+// MiniMax E (11-16): no new form, no lower score (236); the body is still 22 bytes short of retail's 980 because
+// retail expands 0x26ed40 into it (src/unknown_26e370.cpp, BLOCKED-BY), and the prologue still loads the actor pool
+// into EAX where retail loads it into ECX.
 // MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
 // setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
 // actor through the pool; a permuter run was stopped at its time limit without reporting a variant.
