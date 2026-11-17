@@ -52,6 +52,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax I (11-17): no new form, no lower score (43): retail keeps the index and the entry pointer in one
+// register - esi holds the index, is scaled in place into the pointer and the successor goes to ebx - where this
+// build scales the index in ecx and copies it into a second register for the pointer; the forms measured this round
+// - the successor in its own local with the index stepped at the loop's end 51 (the copy stays), the same with the
+// result returned from inside the loop 49, and the exclusion mask as a byte local in place of the literal 3 43 (the
+// mask stays an immediate) - are all worse than the kept 43, so the original body stands.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;

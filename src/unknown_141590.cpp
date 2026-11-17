@@ -118,6 +118,13 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax I (11-17): no new form, no lower score (205): re-measured the baseline; the first difference is still the
+// frame (ours 0x1c, retail's 0x24) and the rest follows from the stack offsets that move with it: retail keeps the
+// quaternion's sixteen bytes in the same absolute place as this build but spills the transform's terms into the
+// matrix parameter's home slot and the two slots above it, while this build spills the cross terms into the
+// quaternion's own bytes; the three rows' term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up
+// rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and retail's second store of the
+// doubled scalar to a slot nothing reads are still not reproduced by any source form tried. The body stands.
 // score 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
 // MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
