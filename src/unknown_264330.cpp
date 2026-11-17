@@ -1233,6 +1233,20 @@ real function_296600(long actor_index, long prop_ref_index);
 // MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
 // pointer still lives in edi where retail keeps it in ebx.
 // MiniMax S (11-14): no new form, no lower score (91): the actor pointer still lives in EDI where retail keeps it in EBX, and retail's `sete` for !current still sits between the first call's pushes.
+// b10D (11-17) walk against retail, fast build on r841: no logic difference found. Checked: the head (actor[9]
+// test, squad 0x264b7e-0x264baa, tracking view 0x264bd0-0x264be8), the sense of every jcc (the 25.0f test at
+// 0x264e1f-0x264e2b skips on NaN as ours: `comiss; jbe`; constant 0x45e0d8 reads 25.0), the register and stack
+// arguments of both 0x1c8df0 calls, 0x25c9d0, 0x25cb60, 0x263810 and 0x26bfa0, the unit/root selection
+// (0x264d8c-0x264d9b), the type-15 arm's copies and 4-valued stores, the nested MAX (0x264f9e-0x264fb6), the `== 1
+// && state >= 1` bump and the tail's `>= 2` / `> 0` signed tests. Retail reuses the unit's slot [esp+0x24] for the
+// CSE'd `!current` byte (store at 0x264de7, reload at 0x264edd). Fast recipe that reproduces the full build's code
+// (91, 1268 B): check 0x264b50 with 0x1c8df0's other callers (0x1b0400 0x1b2770 0x1be120 0x25f7b0) plus the
+// callees; without them the reduced image misbuilds it (225, 1259 B). Not kept (91 base): the prop/time/object
+// lookups in the other five orders 93/326/328/94/323 (three of them 1264 B); a named object index before the prop,
+// before the object, or one use only 91 (same code); `volatile long root` 275 (1281 B, retail's two root reads
+// from [esp+0x1c] but the frame grows); a named `attached` bool before root / after not_current 276/270 (1275 B);
+// `volatile bool` current 311, suppressed 315. Left as before: the object/table registers, the 0x12/0x13 byte
+// homes, and root/`!current` evaluation at the first 0x1c8df0 call.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
