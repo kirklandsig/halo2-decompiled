@@ -806,6 +806,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the global's j/k in xmm5/xmm4 and the axis i in memory); the axis draw alone through it 152 (880 B), the first draw
 // alone 154 (880 B). On 125: sine and cosine as named locals around the axis draw 152; one `dword *seed` local for
 // the three draws 149 (889 B); the shared helper capturing the vector's j as well as k 155 (893 B; 0x2551f0 63, lost).
+// Round 614: one random-state object for all draws, taken before the record, between record and
+// definition, or after the definition 130/152/130. Separate seed step before time 198, after both
+// clock reads 192, between interval/count 199 or count/interval 190, and before time through the
+// earlier state object 199. NOT kept: the early seed step gets ESI between the pushes but ahead of
+// the clock reads, and all forms leave the frame at 0x1c against 0x20.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
