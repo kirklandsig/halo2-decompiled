@@ -891,6 +891,20 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // P579: Scalar memcpy at lazy unit/readiness/state inputs, target handle, radius, object type,
 // request target and request side: 40/87/227/87/121/87/87/87. NOT kept: no exact unit-argument/scalar-home
 // recovery; original complete body, all observations and request publications restored.
+// b10E (11-17) walk against retail, fast build on r841: every statement, offset, jcc sense and constant checked against
+// 0x255740-0x255b00; no logic difference found, so no behaviour fix. Checked: the 0x5ac/0x5b0 (word)/0x18/0x5d0 guard
+// (0x25575c-0x255795), the 0x5ec/0x290 copies with k cleared (0x2557f2, 0x2557fc), both 0x30bf0 lengths (jbe
+// 0x255814/0x255829 skip NaN as ours), delta 0x30..0x38 minus 0x238..0x240, size 0x3c, type byte 0xaa, tag +0x270
+// (0x255939), constants 0.0/0.95/0.5/1.33/0.4/0.6/-1.0 and the -0.0 at 0x2559d4 (0.f * -1.f), the x87 `fabs < sum *
+// 0.6f` at 0x2558e0-0x255906, the switch default reading the lateral's slot [esp+0x68] at 0x255a88, field re-reads at
+// 0x25590c/0x255a9b/0x255adf (0x18) and 0x255ad0 (0x5ac). Retail's [esp+0x68] is the arg_0 home (radius, lateral,
+// timing output 2); ours uses it too. Retail's order does the target lookup (0x25579b-0x2557ba) before the copies:
+// alone 92 (964 B); with the one-use `long unit` before the 0x110ab0 test (as matched 0x1a9ec0/0x1ae440 write it),
+// nested guard, short/long request stores, named size: 17 (963 B). Left: slots (ours {sum,side0} 0x10, {length,side1}
+// 0x14, index 0x18, adjusted 0x1c; retail side0 0x10, {sum,side1} 0x14, {length,adjusted} 0x18, index 0x1c) and
+// XMM2/XMM3 at 0x255a1c/0x255a42. New on that form: adjusted written into the length local, whole adjustment included:
+// retail's groups, 0x14/0x18 swapped, 17; sum assigned into a side1 variable 164-197; side0 zeroed ahead of the length,
+// dot or size 132-159 (966 B); the four scalars as one local struct 155 (frame 0x64).
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

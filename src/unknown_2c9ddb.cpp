@@ -308,6 +308,18 @@ extern long g_55c154;
 // MiniMax S (11-15): no new form, no lower score (61): retail branches on the selected index itself, with one 0x212bc0
 // call in each arm and the name copy called out of line, where ours uses a single call site with a spilled byte and expands
 // the copy in place.
+// b10I (11-17) walk against retail, fast build on r841: 0x2ca284 is unaligned because the file is packed: the
+// previous function 0x2ca244 ends exactly here (no padding, no fall-through) and 0x2ca4cd follows. Every field,
+// offset, jcc sense and callee argument agrees statement by statement: the entry (0x2ca2af), the NONE and bit-21
+// tests (0x2ca2b5-0x2ca2cf), the word NONE test (0x2ca2d5), the g_54e49c store from the re-read entry (0x2ca2fc) and
+// from `saved` in both second-half arms (0x2ca41d, 0x2ca475), `selected` re-read into ESI (0x2ca400), `variant.name`
+// as the copy source (0x2ca446) and the late `g_55c154` read for the failure call (0x2ca4b9): no behaviour or
+// evaluation-order fix found, the rest is code generation. New two-arm forms, all the listed 174 (595 bytes,
+// unbiased frame): a `goto fail` join for the 0x215f40 test; arms on entry->variant with no `selected` local; a
+// `self = this` alias for the second half's member reads; `flag_c = true;` probes at the function top or the first
+// half's top 191/192 (round 55's probe does not reproduce). In every two-arm body EBX takes `saved` (the constant 1
+// before it) and `this` takes ESI or EDI, so `this` spills around the rep movsd, and each arm hoists `mov ebx,
+// &g_54e4a0` even with two register uses; retail has `this` EBX, entry ESI, saved EDI and no hoist.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
