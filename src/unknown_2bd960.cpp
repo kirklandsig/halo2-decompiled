@@ -2035,7 +2035,7 @@ void function_2beee0()
     }
 }
 
-void function_19f680(long tag, long group, long pass, long variant, void *context,
+void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
     real perimeter, point3f const *color, real height);
 
@@ -2051,7 +2051,7 @@ void __stdcall function_2be5d0(long arg_0, long arg_1, long arg_2, long arg_3,
         if (g_4b9ed8 != NONE)
             player = g_4e8c20->entries[g_4b9ed8];
         hill_color(player, &color);
-        function_19f680(arg_0, arg_2, arg_4, arg_3, arg_6, hill->vertices, 32,
+        function_19f680(arg_0, arg_2, arg_3, arg_4, arg_6, hill->vertices, 32,
             (point3f *)&hill->center_x, hill->radius, hill->perimeter, (point3f *)&color, 0.8f);
     }
 }
