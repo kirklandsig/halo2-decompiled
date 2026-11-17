@@ -925,6 +925,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // of `origin` 235 (all the same code), `second` declared before `first` 237; on main `second` before `first` 245 (1247 B).
 // Retail's homes from its listing: hit +0x1c..+0x24 (set by movss, published by dword copy), origin.x +0x28 with +0x2c/+0x30
 // untouched, origin.y/z in +4/+8, and 0x182b90's outputs in +8 (friction) and second's +0x14. Original body restored.
+// M3 lane 12 r132 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the root's type in a named
+// local before the test 238 (same code: still compared in memory, where retail loads it into ECX); the next node and its shape
+// in locals declared ahead of nested tests 307 (1245 B); the origin as a const reference to the transform's position 381 (1208
+// B); the hit as a const reference to the contact position 335 (1243 B); the contact normal published by aggregate assignment
+// 271 (1243 B). Reading: in the key adjustment retail clamps with the constants in ECX and still compares ECX with EDX after
+// `mov ecx, edx` on the unclamped path (the self-compare is not folded), so the compare's second operand was a separate read
+// of the data word when the clamp was folded. Original body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

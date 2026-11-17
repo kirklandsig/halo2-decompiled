@@ -2058,6 +2058,14 @@ void function_195a40(void);
 // P573: Mode carriers signed byte/short, unsigned byte/short/long: 23/23/24/24/5;
 // explicit distribution arms, nested range, complementary range arms: 33/3/33.
 // NOT kept: width forms alter comparisons/call allocation; result arms grow; native pre-clear pointer load remains.
+// Round 132 (m3 lane 12, fast): without the barrier 5 (the mode read is hoisted above the two flag stores); the
+// distribution as a ternary 33 (129 bytes); the distribution cleared ahead of the stores 5; an early return on the
+// guard 3 (same code); the mode field read at each use 23. Diagnostics, restored at once: the two flags defined in
+// a /GL- file 5; an unreferenced function returning the two flags' addresses gives a byte match with no barrier.
+// So retail's flags were address-taken somewhere in its program (no surviving retail code or data takes them: a
+// scan finds only direct loads and stores), which keeps the mode read behind the stores, as matched 0x196390's
+// flag store (its byte sits in an address-taken record) keeps its state read behind it. Taking a shared global's
+// address is not allowed, so the barrier stands in.
 // @retail 0x67ee0
 void function_67ee0(void)
 {
