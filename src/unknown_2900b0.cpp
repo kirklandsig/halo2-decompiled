@@ -450,6 +450,10 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // the function body, no inline helper, 28 (same code); tools/permute.py with `--context 0x1e3b60 --context 0x28f890`
 // (its reduced image then scores 28 as the full one does): 147 tries in 1200 s, none below 28. Diagnostics (reverted):
 // one component copied 138 (the data still ECX, the origin EDX); a second use of the pool data 114 (it moves to ESI).
+// Round 253 (m3 lane 3, fast with 0x1e3b60 and 0x28f890): trivial inline accessors to shift the
+// scratch rotation: the actor index test through one 30, the origin pointer through one 28, the
+// pool data through one 28 (the prologue unchanged in each); the centre update as a member of the
+// record 60; the origin as a const reference passed to the copy 28.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

@@ -574,6 +574,13 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // 0x1ae440's, in retail's order, 15 (0x1ae440 still matches); the guards as `goto done` exits to the one return,
 // locals declared at the top, 17 (the swap kept, the elapsed compare inverted); the 0x1e5380 result read through
 // byte offsets as its other callers do 15. All same code but the last-but-one.
+// Round 93 (m3 lane 2, fast with 0x1ae440; control 15): the result's null and field_6 tests through a force-inline
+// predicate 15; the random value named before its compare 15; the interval field bound by a const reference ahead of
+// the clock read 15 (all same code); the prop index named once for the two final calls 51 (kept in a register across
+// 0x26c2d0, where retail reads it again). Diagnostic: field_6 compared against -2 103 (no NONE use after the 0x3c
+// compare, yet the result stays EBP and the game-time pointer EBX), so the tie is result against game-time pointer:
+// ours ranks ticks, pointer, result; retail ticks, result, pointer; one more result read (listed 88) overshoots to
+// result, ticks, pointer.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

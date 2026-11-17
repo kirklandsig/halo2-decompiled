@@ -849,6 +849,7 @@ static inline long font_character_pixel(long alpha, long color)
 // P592: Eight-level opacity enum at the existing pixel helper, byte/numeric parity,
 // long/word result and signed/unsigned color: 59/203/109/192/59/203/109/192. NOT kept: no native
 // parity/literal/run-two equality; original helper, calls and complete decoder restored.
+// MiniMax R (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the two fills still merge into one block; a helper without the byte cast gives retail's parity at every site but moves the run out of EBX into EBP (203), a byte alpha in the helper narrows it further (209) and a word result for the two bytes of the type 0 value changes nothing else (103).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

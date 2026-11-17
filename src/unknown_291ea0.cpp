@@ -139,6 +139,10 @@ inline void dialogue_name_override(long *name, long value)
 // (actor, name, script, duration) at the definition, declarations and all three calls 9 (same code); the default
 // name and the unit's dialogue state both through inline helpers 9; the override helper by reference 9; result
 // declared before the scenario pointer 9; the tag table pointer declared at function scope 9. All restored.
+// Round 253 (m3 lane 3, fast): the object header as a const reference 9; the elements pointer as a
+// const reference in the arm 9; the elements through a trivial inline accessor 9; the vocalization
+// through an inline accessor 9; the unit and its dialogue state as const references 9 (all the
+// same two eax/edx picks).
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

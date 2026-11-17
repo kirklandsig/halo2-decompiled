@@ -607,6 +607,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // while 684; standard forward/backward transfer 714/714; backward short 696 (fast control 614).
 // NOT kept: all regress. Original copy/body restored; sample/direction residence
 // and coefficient schedules remain.
+// M3 lane 11 r109 (plain each with the matched caller 0x1eb6f0, MATCH throughout; control 622): the active block's two target
+// updates through the existing vector3f_add_scaled 667 (2897 B); the activation delta plus the impulse through the existing
+// vector3f_add 683 (2890 B); the void return with `s->counter++`, the closing test reading the field and the clear arm as
+// `{ out->flags &= ~4; return; }` 627 (2893 B, lane 8 r172's code: the pops stay in each exit; the matched sister 0x1ed4a0
+// ends the same way and gets retail's early pops, so the cause is not that tail's spelling); the settle arm's test as
+// `nlen != 0.f && align > ...` 635 (2888 B, first difference +0x2); the output stage's distance vector computed in full
+// before the three rate scalings 622 (same score). Body unchanged.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
