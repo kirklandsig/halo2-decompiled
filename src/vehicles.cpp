@@ -4809,6 +4809,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // MiniMax C (11-17): score 24 (was 48): the two marker counts are summed into a 16-bit local and the
 // loop bound is that local widened to 32 bits - the capacities the two calls are given (15 and
 // 16 - primary_count) bound the sum, so the value is unchanged - and the sum's sign extension then
@@ -4842,7 +4843,6 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
 // operands swapped both leave the second count's sign extension in EAX.
 // MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
-// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
 // loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
 // block), plus the 0x146320 set-up pair (its declared order, BLOCKED-BY 0x146320: seed declared
@@ -4899,6 +4899,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // secondary_count; i++)` 43 (`add edi, eax` and the zero store as retail, but movsx eax and shifted loop registers);
 // `long count = (short)(primary_count + ...)` 22 (loop body clean, but the pre-call code and the colour constant
 // differ); `long count = f(); short primary_count = count;` 141.
+// Still differing: the signed marker total in EAX rather than EDI and the subsequent scratch registers.
+// Index initialized before/between fills 60/47, short-index while 240,
+// scoped short secondary result 46, scoped secondary with primary accumulation 46,
+// array-derived short remaining capacity 46, scoped facing before parameters 46,
+// parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
