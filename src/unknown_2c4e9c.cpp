@@ -3086,6 +3086,11 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // reset by for initializer 29 (NOT kept: gain below the retention threshold), success declared in while
 // condition 30, const current entry at lookup 30, named entry map ID at lookup 30, const saved ID and
 // qualified base selection 30, continue on mismatch and break on selection 33.
+// Round 459: last map compared at both direct reads 30, named validity of saved map before iteration 30,
+// iterator success carried by for loop 30, loop condition saves the next result before mismatch 33, pool
+// read between guard and sentinel writes 30, map definition through a read-only reference 30, selection
+// through named inherited list pointer 30, loop skips mismatched definitions and publishes current datum
+// 27 (NOT kept: gain of three with prologue still differing), selected datum named only at the hit 30.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
