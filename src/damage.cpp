@@ -2750,6 +2750,10 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// MiniMax I (11-17, run 103): no new form, no lower score (420): retail still holds the region index in EBP and the
+// permutation pointer in EBX, where this build holds them the other way round, and retail reads the info argument
+// after its first push where this build reads it before the pushes; reading the region index directly scores 510 and
+// dropping the region local 558, so the body stands.
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
