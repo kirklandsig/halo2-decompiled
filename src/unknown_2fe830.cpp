@@ -41,14 +41,12 @@ struct body_2fe830
 	{
 		parent = parent_;
 		placement = placement_;
-		key = parent->key;
-		shape = parent_->shape;
 	}
 
-	void set_shape(shape_2fe830 const *shape_, long key_)
+	void set_key(long key_, shape_2fe830 const *shape_)
 	{
-		shape = shape_;
 		key = key_;
+		shape = shape_;
 	}
 };
 
@@ -176,9 +174,10 @@ inline float dot3_2fe830(__m128 const &a, __m128 const &b)
 	return result;
 }
 
-// Matched: the moved body's constructor copies its parent's key and shape (the key
-// through the stored parent, the shape through the parameter), the copy's source
-// is named as a reference, and the config is read after the body is set up.
+// Matched: the moved body's constructor only links parent and placement; the key
+// (through the stored parent) and the shape (through the parameter) are then set by
+// set_key, the copy's source is named as a reference, and the move count is read
+// from the config in the loop's start.
 // Before, 8 (was 8): frame 0x128 and homes agree; placement-copy source and
 // body stores/configuration schedule differ. Earlier result name and input-first
 // declarations tied. Vector record copy 379; direct vector stores 8; distance
@@ -257,8 +256,8 @@ void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_,
 		class_2e7d80 const &source = *a->placement;
 		class_2e7d80 moved(source);
 		body_2fe830 moved_a(a, &moved);
-		cast_config_2fe830 const *config = input->header.config;
-		for (int i = config->iterations - 1; i >= 0; i--)
+		moved_a.set_key(moved_a.parent->key, a->shape);
+		for (int i = input->header.config->iterations - 1; i >= 0; i--)
 		{
 			moved_closest.reset();
 			class_2e7d80 const *placement = a->placement;
@@ -308,10 +307,10 @@ public:
 	virtual void get_closest(body_2fe830 const *a, body_2fe830 const *b, query_header_2fe830 const *header, closest_collector_2fe830 *collector) {}
 };
 
-// score 5 (was 8): from the body constructor shared with 0x2fe830 (the set_shape
-// call is gone) with the copy's source named as a reference. Left: retail loads the
-// config first and the shape after the placement store, and the shape and key
-// stores are the other way round.
+// Matched (was 5): same body setup as 0x2fe830 (plain constructor, then set_key with
+// the key read through the stored parent and the shape through the parameter; the
+// setter takes the key first, so the shape is read first) and the move count read
+// from the config in the loop's start.
 // Before, 8 (was 8): frame and homes agree; setup reads still exchange registers.
 // Earlier 190 form exchanged the first collector/result homes; declaration order,
 // scopes and names tied; reset before translation 197.
@@ -381,8 +380,8 @@ void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *i
 		class_2e7d80 const &source = *a->placement;
 		class_2e7d80 moved(source);
 		body_2fe830 moved_a(a, &moved);
-		cast_config_2fe830 const *config = input->header.config;
-		for (int i = config->iterations - 1; i >= 0; i--)
+		moved_a.set_key(moved_a.parent->key, a->shape);
+		for (int i = input->header.config->iterations - 1; i >= 0; i--)
 		{
 			moved_closest.reset();
 			__m128 const translation = a->placement->rows[5];

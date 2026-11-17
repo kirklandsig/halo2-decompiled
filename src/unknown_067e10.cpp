@@ -1890,6 +1890,10 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // 56 (176 bytes, mode in memory). Retail's dead `sub ecx, 2` is the only dead subtract in the whole retail image; a
 // compile-only screen of about 660 switch, ternary, conditional-overwrite and assume spellings never left one beside
 // a setne, so it is probably a lowered switch the link-time code generator if-converted afterwards.
+// P585: Overlap-safe library transfers at address save/restore, scalar save/restore,
+// preservation byte, owner/distribution captures, complete input and complete transfer graphs:
+// 56/51/81/81/80/79/121/133. NOT kept: no native state/mode recovery; original six-byte
+// transfer, scalar snapshots, calls and full body restored.
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {
@@ -2077,6 +2081,14 @@ void function_195a40(void);
 // P573: Mode carriers signed byte/short, unsigned byte/short/long: 23/23/24/24/5;
 // explicit distribution arms, nested range, complementary range arms: 33/3/33.
 // NOT kept: width forms alter comparisons/call allocation; result arms grow; native pre-clear pointer load remains.
+// Round 132 (m3 lane 12, fast): without the barrier 5 (the mode read is hoisted above the two flag stores); the
+// distribution as a ternary 33 (129 bytes); the distribution cleared ahead of the stores 5; an early return on the
+// guard 3 (same code); the mode field read at each use 23. Diagnostics, restored at once: the two flags defined in
+// a /GL- file 5; an unreferenced function returning the two flags' addresses gives a byte match with no barrier.
+// So retail's flags were address-taken somewhere in its program (no surviving retail code or data takes them: a
+// scan finds only direct loads and stores), which keeps the mode read behind the stores, as matched 0x196390's
+// flag store (its byte sits in an address-taken record) keeps its state read behind it. Taking a shared global's
+// address is not allowed, so the barrier stands in.
 // @retail 0x67ee0
 void function_67ee0(void)
 {

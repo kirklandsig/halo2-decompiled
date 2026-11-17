@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-16): no new form, no lower score (43): the datum pointer still takes ebx where retail takes edi and
+// the player datum takes edi where retail takes ebx; the colouring comes from the shared iterator step in
+// include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
 // MiniMax E (11-16): no new form, no lower score (43): the datum iterator's data pointer still takes ebx where retail takes edi, and that register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
 // MiniMax I (11-16): no new form, no lower score (43): the difference still opens inside the root walk, whose
 // body is the out-of-line 0xbaf40 in src/unknown_0bad50.cpp - the datum iterator's data pointer takes EBX here
@@ -2562,6 +2565,9 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax C (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the 0xccd20
+// call and the first 0x151b80 call are still expanded here where retail calls them, and both callees live in other
+// files that this lane may not edit.
 // MiniMax E (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this build inlines 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
 // MiniMax I (11-16): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74 - retail
 // holds two request homes and eight bytes more of small homes than this build's one request home - and the
@@ -3124,6 +3130,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax C (11-16): no new form, no lower score (103): the players-globals pointer is still kept in edi across both
+// loops where retail keeps it in esi, and the 0x16bc00 call is still expanded here where retail calls it out of line;
+// the stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue.
 // MiniMax E (11-16): no new form, no lower score (103): our build keeps the players-globals pointer in edi across both loops where retail keeps it in esi and reloads it late, and retail inlines the status test that this build calls out of line; that callee lives in src/unknown_13bf00.cpp, and the stubs 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20.
 // MiniMax I (11-16): no new form, no lower score (103 on the full build, 193 on the reduced one): the globals
 // pointer still ends up in EDI where retail keeps it in ESI, and the two loops still swap the datum and unit

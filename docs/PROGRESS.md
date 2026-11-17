@@ -2,6 +2,86 @@
 
 The newest entry comes first.
 
+## 2026-11-17: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1257: `0x2f3030` match.
+
+## 2026-11-17: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1392 of 1436 Havok functions (233001 of 290362 bytes, 80.25%)
+```
+
+0 new matches, none lost:
+- @andrewnakas's #1256: closer scores and notes, no new match.
+
+## 2026-11-17: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1392 of 1436 Havok functions (233001 of 290362 bytes, 80.25%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1253, @andrewnakas's #1254, @coldspear's #1255: `0x300290` and `0x309b50` match.
+
+## 2026-11-16: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1390 of 1436 Havok functions (228497 of 290362 bytes, 78.69%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1246: `0x306f80` and `0x307840` match.
+
+## 2026-11-16: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1388 of 1436 Havok functions (226602 of 290362 bytes, 78.04%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1243, #1244, #1245: `0x3009e0` and `0x3072f0` match.
+
+## 2026-11-16: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1386 of 1436 Havok functions (222649 of 290362 bytes, 76.68%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1238, #1239, #1241: `0x2e3b00` and `0x301a60` match.
+
+## 2026-11-16: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1384 of 1436 Havok functions (218403 of 290362 bytes, 75.22%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 288 (#1242): `0x6a040` match.
+
+## 2026-11-16: 10643 functions match
+
+```
+matched 10643 of 11326 game functions (2048603 of 2786206 bytes, 73.53%)
+matched 1384 of 1436 Havok functions (218403 of 290362 bytes, 75.22%)
+```
+
+4 new matches, none lost:
+- @andrewnakas's #1235, #1236, #1237: `0x2f1b80`, `0x2f1ea0`, `0x2f2130` and `0x2fec10` match.
+
 ## 2026-11-16: 10643 functions match
 
 ```

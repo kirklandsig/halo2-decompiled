@@ -49,9 +49,10 @@ struct frame_2f28f0
 inline __m128 frame_point_2f28f0(frame_2f28f0 const *m, __m128 const *point)
 {
 	__m128 p = *point;
-	__m128 z = _mm_add_ps(_mm_mul_ps(m->axes[2], _mm_shuffle_ps(p, p, 0xaa)), m->position);
-	__m128 y = _mm_mul_ps(m->axes[1], _mm_shuffle_ps(p, p, 0x55));
-	__m128 x = _mm_mul_ps(m->axes[0], _mm_shuffle_ps(p, p, 0x00));
+	__m128 const *axes = m->axes;
+	__m128 z = _mm_add_ps(_mm_mul_ps(axes[2], _mm_shuffle_ps(p, p, 0xaa)), m->position);
+	__m128 y = _mm_mul_ps(axes[1], _mm_shuffle_ps(p, p, 0x55));
+	__m128 x = _mm_mul_ps(axes[0], _mm_shuffle_ps(p, p, 0x00));
 	return _mm_add_ps(_mm_add_ps(x, y), z);
 }
 
@@ -127,7 +128,16 @@ public:
 // the sum of a vector's first three terms, in the first
 inline __m128 sum_2f28f0(__m128 const &v)
 {
-	return _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v));
+	__m128 const *terms = &v;
+	return _mm_add_ss(_mm_shuffle_ps(*terms, *terms, 0xaa), _mm_add_ss(_mm_shuffle_ps(*terms, *terms, 0x55), *terms));
+}
+
+// the sum of the products of two vectors' first three terms
+inline float dot_2f28f0(__m128 const &a, __m128 const &b)
+{
+	float result;
+	_mm_store_ss(&result, sum_2f28f0(_mm_mul_ps(a, b)));
+	return result;
 }
 
 // a vector of four copies of a float
@@ -135,6 +145,12 @@ inline __m128 splat_2f28f0(float value)
 {
 	__m128 const single = _mm_set_ss(value);
 	return _mm_shuffle_ps(single, single, 0);
+}
+
+// a vector scaled by a float
+inline __m128 scaled_2f28f0(float scale, __m128 const &v)
+{
+	return _mm_mul_ps(splat_2f28f0(scale), v);
 }
 
 // scales a vector to unit length: one over the square root of its length's
@@ -172,8 +188,7 @@ __forceinline void capsule_segment_contacts_2f28f0(body_2f28f0 const *body, __m1
 	__m128 direction = _mm_sub_ps(ends[1], ends[0]);
 	__m128 const other_start = segment[0];
 	__m128 other_direction = _mm_sub_ps(segment[1], other_start);
-	float along;
-	_mm_store_ss(&along, sum_2f28f0(_mm_mul_ps(direction, other_direction)));
+	float along = dot_2f28f0(direction, other_direction);
 	float cosine = along;
 	if (along < 0.0f)
 	{
@@ -184,14 +199,10 @@ __forceinline void capsule_segment_contacts_2f28f0(body_2f28f0 const *body, __m1
 		ends[1] = swapped;
 	}
 	__m128 const offset = _mm_sub_ps(other_start, ends[0]);
-	float offset_along;
-	_mm_store_ss(&offset_along, sum_2f28f0(_mm_mul_ps(direction, offset)));
-	float offset_along_other;
-	_mm_store_ss(&offset_along_other, sum_2f28f0(_mm_mul_ps(other_direction, offset)));
-	float length_squared;
-	_mm_store_ss(&length_squared, sum_2f28f0(_mm_mul_ps(direction, direction)));
-	float other_length_squared;
-	_mm_store_ss(&other_length_squared, sum_2f28f0(_mm_mul_ps(other_direction, other_direction)));
+	float offset_along = dot_2f28f0(direction, offset);
+	float offset_along_other = dot_2f28f0(other_direction, offset);
+	float length_squared = dot_2f28f0(direction, direction);
+	float other_length_squared = dot_2f28f0(other_direction, other_direction);
 
 	float product = other_length_squared * length_squared;
 	float const cosine_squared = cosine * cosine;
@@ -251,13 +262,12 @@ __forceinline void capsule_segment_contacts_2f28f0(body_2f28f0 const *body, __m1
 		fraction = numerator / length_squared;
 	}
 found:
-	__m128 const closest = _mm_add_ps(ends[0], _mm_mul_ps(splat_2f28f0(fraction), direction));
+	__m128 const closest = _mm_add_ps(ends[0], scaled_2f28f0(fraction, direction));
 	float const radii = radius + capsule->radius;
 	float const reach = radii + points->point.m128_f32[3];
-	__m128 const other_closest = _mm_add_ps(other_start, _mm_mul_ps(splat_2f28f0(other_fraction), other_direction));
+	__m128 const other_closest = _mm_add_ps(other_start, scaled_2f28f0(other_fraction, other_direction));
 	__m128 const between = _mm_sub_ps(closest, other_closest);
-	float distance_squared;
-	_mm_store_ss(&distance_squared, sum_2f28f0(_mm_mul_ps(between, between)));
+	float distance_squared = dot_2f28f0(between, between);
 	if (distance_squared < reach * reach)
 	{
 		float const distance = (float)sqrt(distance_squared);
@@ -287,7 +297,7 @@ found:
 		}
 		normalize_2f28f0(points->normal);
 
-		points->point = _mm_add_ps(closest, _mm_mul_ps(splat_2f28f0(radius - distance), points->normal));
+		points->point = _mm_add_ps(closest, scaled_2f28f0(radius - distance, points->normal));
 		points->point.m128_f32[3] = distance - radii;
 
 		// nearly parallel: the ends of each segment that lie across the other
@@ -323,16 +333,16 @@ found:
 						}
 						if (other_projection * other_projection * other_inverse_length_squared > projection * projection * inverse_length_squared)
 						{
-							end_point = _mm_add_ps(end_point, _mm_mul_ps(splat_2f28f0(inverse_length_squared * projection), direction));
+							end_point = _mm_add_ps(end_point, scaled_2f28f0(inverse_length_squared * projection, direction));
 						}
 						else
 						{
-							other_end_point = _mm_add_ps(other_end_point, _mm_mul_ps(splat_2f28f0(other_projection * other_inverse_length_squared), other_direction));
+							other_end_point = _mm_add_ps(other_end_point, scaled_2f28f0(other_projection * other_inverse_length_squared, other_direction));
 						}
 					}
 					else
 					{
-						other_end_point = _mm_add_ps(other_end_point, _mm_mul_ps(splat_2f28f0(other_projection * other_inverse_length_squared), other_direction));
+						other_end_point = _mm_add_ps(other_end_point, scaled_2f28f0(other_projection * other_inverse_length_squared, other_direction));
 					}
 				}
 				else if (projection > 0.0f)
@@ -341,14 +351,13 @@ found:
 					{
 						goto next;
 					}
-					end_point = _mm_add_ps(end_point, _mm_mul_ps(splat_2f28f0(inverse_length_squared * projection), direction));
+					end_point = _mm_add_ps(end_point, scaled_2f28f0(inverse_length_squared * projection, direction));
 				}
 				{
 					float const end_radii = radius + capsule->radius;
 					__m128 const end_between = _mm_sub_ps(end_point, other_end_point);
 					float const end_reach = end_radii + point->point.m128_f32[3];
-					float end_distance_squared;
-					_mm_store_ss(&end_distance_squared, sum_2f28f0(_mm_mul_ps(end_between, end_between)));
+					float end_distance_squared = dot_2f28f0(end_between, end_between);
 					if (end_distance_squared < end_reach * end_reach)
 					{
 						float const end_distance = (float)sqrt(end_distance_squared);
@@ -362,7 +371,7 @@ found:
 						{
 							point->normal = points->normal;
 						}
-						point->point = _mm_add_ps(end_point, _mm_mul_ps(splat_2f28f0(radius - end_distance), point->normal));
+						point->point = _mm_add_ps(end_point, scaled_2f28f0(radius - end_distance, point->normal));
 						point->point.m128_f32[3] = end_distance - end_radii;
 					}
 				}
@@ -400,14 +409,11 @@ void *__fastcall function_31bc70(void *arg_0);
 // second capsule's radius; each of the three contacts found keeps its id
 // from the owner while it lies within the tolerance and is added to the
 // results, and gives its id back when it no longer does
-// score 1 (was 15): the store of the transformed capsule ends puts the base
-// and the index the other way round: [eax + ecx] here, [ecx + eax] in retail.
-// Indexed transforms 575; indexed source 575; indexed output 573; source-bound 505;
-// output-bound 620; endpoint-array name 1; later frame 1; frame copy 624;
-// source-first advances 1; transform input order 1; y-product first 1.
-// Ascending cursor loop 1; while count test 1; unsigned count 1;
-// nonnegative count 1; aligned load 1; aligned store 1; point by value 1;
-// separate z product 1. All restored.
+// Matched (was 1): the function itself is unchanged; the shared helpers take their dot
+// products through dot_2f28f0, sum_2f28f0 reads its argument through a pointer, the frame's
+// axes are named once and scaled vectors come from scaled_2f28f0. With the helpers in this
+// shape the second weight loop's store is `[cursor + offset]` as in retail. The store order
+// depends on the whole inlined body: recheck this function after any change to the helpers.
 // @retail 0x2f3030
 void indexed_2f28b0::function_2f3030(body_2f28f0 const *a, body_2f28f0 const *b, input_2f3030 const *input, results_2f3030 *results)
 {
