@@ -740,6 +740,10 @@ void __stdcall function_1160c0(real dt)
 // cross3f(v, axis, &cross) inside the helper 143 (1368 B); the cosine taken ahead of the sine 121 (1369 B); the helper
 // writing a separate `rotated` vector that the rows add to position 164 (1368 B); the cosine complement named, or the
 // dot named ahead of the sine and cosine, the same code as the lead.
+// M3 lane 8 r181 (fast; base 171): the projection as `(1.f - cosine) * dot3f(&axis, &offset)` 171; the cross terms
+// as `sine * (...)` in all three rows 171; the dot named ahead of the complement (`projection * (1.f - cosine)`) 171;
+// a `vector3f const` vertical 171; a `vector3f const` rest offset 171 (all the same code). The segments base still
+// takes EDI and the segment ECX where retail uses EDX for both.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
