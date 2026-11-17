@@ -197,35 +197,11 @@ void pair_305f60::function_307720(table_305f60 *table, int first_axis, int secon
 	function_3076a0(table, &key, distance);
 }
 
-// score 100 (was 254): rewritten from retail: the first transform's columns and
-// first shuffle, then the second's, the normal's three splats shared by both
-// rotations (second finished first), both absolute vectors before the axis
-// tests, the newest contact found by index, and the second key's id cleared
-// at its declaration. Count and the newest contact's registers still differ.
-// Before: score 254 (was 316): the newest normal is copied once and both rotations are
-// constant results (second before first, as retail finishes it); the corners
-// handed to 0x307720 are copied only inside the branch that needs them.
-// Before, 316 (was 316): retail computes the newest normal's three splats once,
-// spills them and shares them between the two rotations, and keeps the count
-// in edi; sharing the splats here scores 322 to 326.
-// Shared inverse inline 478; by-value normal 317; first rotation first 155
-// (NOT kept: its computations run in the opposite order to retail);
-// count captured at distance loop 510; pointer/count loop 452; early key 316;
-// separate rejection guards 316; direct side bits 331;
-// output reference 316; original count bound 510.
-// Positive count scope 317; count name 316; all three row locals 316;
-// axes read once 318; ordinary inline 487; later second absolute vector 316;
-// false comparison arms first 309; conditional minimum 316.
-// NOT kept: false arms gain seven above 30; the original body remains.
-// the faces of the two boxes most nearly facing along the normal of the
-// newest contacts, when both face it closely: their contacts and, when asked,
-// those of the edges around them, with the smallest distance among the
-// contacts
-// Normal snapshot 321; transpose macro 318; end-minus-count pointer 316;
-// fallback initialization 301; zero key aggregate 301; final else 316;
-// three named products 316; early vector declarations 316.
-// NOT kept: fallback stores precede tests, and the aggregate adds an early
-// zero store; neither occurs in retail. Original body and helper restored.
+// Matched (was 100): the newest contact is addressed once after the index, both transforms
+// are named before the axis reads, the first rotation's second row is formed before the second
+// rotation (so the second one's row is the value spilled), the splats are declared z, y, x, and
+// each side's sign bits are read through a reference to the float, which lets the mask's `and`
+// come before the float's store.
 // @retail 0x307840
 void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 {	int const count = table->count;
@@ -235,25 +211,29 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	}
 	contacts_307840 const *contacts = *this->contacts;
 	long const first_index = contacts->size - count;
-	__m128 const a0 = first_transform->axes[0];
-	__m128 const a2 = first_transform->axes[2];
-	__m128 const first_t0 = _mm_shuffle_ps(a0, first_transform->axes[1], 0x44);
-	__m128 const b0 = second_transform->axes[0];
-	__m128 const second_t1 = _mm_shuffle_ps(second_transform->axes[2], second_transform->axes[2], 0x44);
-	__m128 const second_t0 = _mm_shuffle_ps(b0, second_transform->axes[1], 0x44);
+	contact_307840 const *const newest = contacts->data + first_index;
+	transform_307840 const *const first_frame = first_transform;
+	transform_307840 const *const second_frame = second_transform;
+	__m128 const a0 = first_frame->axes[0];
+	__m128 const a2 = first_frame->axes[2];
+	__m128 const first_t0 = _mm_shuffle_ps(a0, first_frame->axes[1], 0x44);
+	__m128 const first_t1 = _mm_shuffle_ps(a2, a2, 0x44);
+	__m128 const b0 = second_frame->axes[0];
+	__m128 const b2 = second_frame->axes[2];
+	__m128 const second_t0 = _mm_shuffle_ps(b0, second_frame->axes[1], 0x44);
+	__m128 const second_t1 = _mm_shuffle_ps(b2, b2, 0x44);
 	__m128 const normal = contacts->data[first_index].normal;
-	__m128 const x = _mm_shuffle_ps(normal, normal, 0x00);
-	__m128 const y = _mm_shuffle_ps(normal, normal, 0x55);
 	__m128 const z = _mm_shuffle_ps(normal, normal, 0xaa);
+	__m128 const y = _mm_shuffle_ps(normal, normal, 0x55);
+	__m128 const x = _mm_shuffle_ps(normal, normal, 0x00);
 	__m128 second = _mm_add_ps(_mm_add_ps(
 		_mm_mul_ps(_mm_shuffle_ps(second_t0, second_t1, 0x88), x),
 		_mm_mul_ps(_mm_shuffle_ps(second_t0, second_t1, 0xdd), y)),
-		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(b0, second_transform->axes[1], 0xee), _mm_shuffle_ps(second_transform->axes[2], second_transform->axes[2], 0xee), 0x88), z));
-	__m128 const first_t1 = _mm_shuffle_ps(a2, a2, 0x44);
+		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(b0, second_frame->axes[1], 0xee), _mm_shuffle_ps(b2, b2, 0xee), 0x88), z));
 	__m128 first = _mm_xor_ps(_mm_add_ps(_mm_add_ps(
 		_mm_mul_ps(_mm_shuffle_ps(first_t0, first_t1, 0x88), x),
 		_mm_mul_ps(_mm_shuffle_ps(first_t0, first_t1, 0xdd), y)),
-		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(a0, first_transform->axes[1], 0xee), _mm_shuffle_ps(a2, a2, 0xee), 0x88), z)), *(__m128 const *)g_4124a0);
+		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(a0, first_frame->axes[1], 0xee), _mm_shuffle_ps(a2, a2, 0xee), 0x88), z)), *(__m128 const *)g_4124a0);
 	__m128 first_size = _mm_and_ps(first, *(__m128 const *)g_455940);
 	__m128 second_size = _mm_and_ps(second, *(__m128 const *)g_455940);
 	int first_axis;
@@ -295,17 +275,19 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 		return;
 	}
 	float first_side = first_sides[first_axis];
-	key.field_2 = (unsigned short)(((_mm_movemask_ps(second) & 7) << 4) | ((*(unsigned long const *)&first_side >> 20) & 0x800));
+	unsigned long const &first_bits = *(unsigned long const *)&first_side;
+	key.field_2 = (unsigned short)(((_mm_movemask_ps(second) & 7) << 4) | ((first_bits >> 20) & 0x800));
 	float second_side = second_sides[second_axis];
+	unsigned long const &second_bits = *(unsigned long const *)&second_side;
 	key_305f60 second_key;
 	second_key.id = 0;
-	second_key.field_2 = (unsigned short)(((_mm_movemask_ps(first) & 7) << 4) | ((*(unsigned long const *)&second_side >> 20) & 0x800));
+	second_key.field_2 = (unsigned short)(((_mm_movemask_ps(first) & 7) << 4) | ((second_bits >> 20) & 0x800));
 	key.index = (unsigned short)first_axis;
 	second_key.index = (unsigned short)(second_axis + 3);
 	float distance = 1.0f;
 	for (int i = 0; i < table->count; i++)
 	{
-		float const contact_distance = contacts->data[first_index + i].distance;
+		float const contact_distance = newest[i].distance;
 		if (contact_distance < distance)
 		{
 			distance = contact_distance;
