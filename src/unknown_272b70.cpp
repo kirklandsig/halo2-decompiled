@@ -2962,6 +2962,9 @@ struct s_scenario_scripting_view
 // eight nonoriginal pairs: 80/126/80/80/126/80/80/126. NOT kept: ordinary/inline forms
 // retain the actor/counter/selector homes; forced commit expansion grows to 399/367 bytes.
 // Original declarations, helper bodies and complete search restored.
+// P590: Original packed incoming parameter lexical priorities against native
+// local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
+// or guarded-data recovery; original input name and complete body restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
