@@ -2058,6 +2058,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // 1) return;` ahead of the state-2 test 720 (same code); the first with the delay as `> 3 ? 300000 : 2000` 717 (aligned
 // 489); the existing online_logon_connected() for the opening test with online_tasks.h included 823 (2926 B: the header
 // changes more than the test); the write timestamp in a named local used for both reads 727 (aligned 501).
+// M3 lane 16 r131 (fast; base 703): the poll delay as one nested conditional expression 703 (same code); the completion state
+// update as one `else if` chain 703 (same code); `team` declared where it is computed 703 (same code), with the delay expression
+// as well 703; the identity-change copy from the local identity instead of the session record 777. Body unchanged; the slot
+// helper's cmovne still needs the SSE flag.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

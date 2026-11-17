@@ -472,6 +472,13 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 102 (m3 lane 13, fast): the in-range frame as an empty middle arm (`else if (frame != value8) {} else`) 1;
 // the loop test as `next_time <= time` with a direction-first frame sum 5; the flag-8 test reading the field 1;
 // `!type` in both loop restart tests 1; the frame count in a named local for both boundary compares 1.
+// Round 116 (m3 lane 1, compile-only screen of the file, which reproduces the skip): the boundary restarts as `type == 0 &&
+// (flags & 3) != 0` 1 (skip); `else restart = false;` after the restart break 1; `&& !restart` added to the loop test 1;
+// restart declared after dispose and cleared by a separate statement 1; `dispose = restart = false;` as the per-pass reset 1;
+// `restart = dispose;` after the restart break 1 (dispose is known false there). Diagnostics (reverted): an unknown value
+// stored to restart on the latch path (after the break), or an unknown start value, each lands the miss on the test, so
+// the skip needs both the known start and the latch's implied false; retail stores the false start at entry, so its latch
+// must not imply false.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

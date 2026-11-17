@@ -711,6 +711,11 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // not from this file, so that lever is out of reach here; what still differs is that this build expands 0x1765e0 into
 // the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body is
 // in src/unknown_175bd0.cpp.
+// MiniMax I (11-17): no new form, no lower score (165): the difference is still that this build expands 0x1765e0
+// into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's
+// body is in src/unknown_175bd0.cpp, which this lane may not edit: BLOCKED-BY that file. The inline threshold on
+// this file's own flag line changes nothing, because the threshold that decides the expansion comes from the
+// generated ballast.
 // score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
 // expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
 // src/unknown_175bd0.cpp: BLOCKED-BY that file.

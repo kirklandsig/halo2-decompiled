@@ -16,8 +16,10 @@ struct s_cache_file
 	byte unknown04[0x800];
 };
 
-s_cache_file g_557c90[6];
-long g_55aca8;
+#include <stddef.h>
+#include "cache_file_table.h"
+
+s_cache_file_table g_557c90;
 
 #include "async.h"
 
@@ -45,18 +47,18 @@ static inline long cache_location_file_type(dword location)
 
 static inline HANDLE cache_file_handle(long type)
 {
-	HANDLE handle = g_557c90[g_55aca8].handle;
+	HANDLE handle = g_557c90.files[g_557c90.current].handle;
 
 	switch (type)
 	{
 	case 0:
-		handle = g_557c90[2].handle;
+		handle = g_557c90.files[2].handle;
 		break;
 	case 1:
-		handle = g_557c90[0].handle;
+		handle = g_557c90.files[0].handle;
 		break;
 	case 2:
-		handle = g_557c90[1].handle;
+		handle = g_557c90.files[1].handle;
 		break;
 	}
 	return handle;
@@ -65,18 +67,18 @@ static inline HANDLE cache_file_handle(long type)
 // @retail 0x213760
 long function_213760(dword location, long size, void *buffer, dword *bytes_read, bool *done, long type, long priority)
 {
-	HANDLE file = g_557c90[g_55aca8].handle;
+	HANDLE file = g_557c90.files[g_557c90.current].handle;
 	long local_0 = cache_location_file_type(location);
 	switch (local_0)
 	{
 	case 0:
-		file = g_557c90[2].handle;
+		file = g_557c90.files[2].handle;
 		break;
 	case 1:
-		file = g_557c90[0].handle;
+		file = g_557c90.files[0].handle;
 		break;
 	case 2:
-		file = g_557c90[1].handle;
+		file = g_557c90.files[1].handle;
 		break;
 	}
 
@@ -148,7 +150,7 @@ struct s_cache_initial_path
 	s_cache_initial_path() { path[0] = 0; }
 };
 
-/* the 0x385c bytes at 0x557c90 (g_557c90, g_55aca8 and g_55acac): retail's
+/* the 0x385c bytes at 0x557c90 (g_557c90: the files, the current one and the copies): retail's
    static initializer at 0x377f00 constructs them with 0x2135c0, and 0x2136c0
    clears them with one memset */
 struct s_cache_initial_state
@@ -1772,6 +1774,28 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P588: Fixed file/handle/current-time/stored-time bindings, immutable expected
 // size, original file/handle/cleanup identities on the native handle graph:
 // eight 33 at 930/930. NOT kept: no query/count/write/checksum-home repair; original body restored.
+// M3 lane 9 r132 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33; round 53's 7 form rebuilt
+// at 7). On the 7 form: a write-handle local 114 (917 bytes: close argument pushed from EAX, checksum ECX); that with
+// the close's handle built from `file->handle` in its own local 114 (917 bytes, aligned 3: write and checksum as
+// retail, only the close's `mov ecx, eax` copy and two pads missing); the write-local form with the close test as
+// nested ifs 114 and with the handle invalidated by an aggregate assignment 114 (same code as the write-local form);
+// the write handle read as `*(s_file_handle *)&file->handle` 7; exact-typed literals at the write call (`0x800ul,
+// 0ul, flags(0ul), 0l, 6l`) 7, the `0ul` offset alone 7, the `0l` category alone 7, `sizeof(empty_header)` for the
+// size 7 (same code each). Diagnostic (plain check, shared header restored at once): the flags' constructor as a
+// member initializer 7 (same code). Each handle local moves every later scratch pick back one register: the 7 form
+// has the close copy in ECX as retail and the checksum in EDX, one local drops the copy and gives ECX, two give EAX.
+// Lead (match-only, saved as build/r132/lead-213970-5.patch): the 7 form with the stored checksum read through a
+// reference-bound local (`long checksum = ...; long &stored_checksum = checksum;`) 5: the checksum load takes EAX as
+// retail and only the write call's setup is left (flags zero in EAX ahead of the handle load). On that 5 form: the
+// write handle through a reference-bound local 114 (917 bytes, the plain write-local code), with the close handle
+// reference-bound too 114 (aligned 3, the close still pushes EAX), the close's local declared ahead of its test 168
+// (946 bytes); the flags through a reference-bound local 5; the flags declared ahead of the resize 139 (917 bytes)
+// or at the loop body's top 249; the flags copied from a named object 5; the offset zero or the category zero
+// through a reference-bound local 5/5; both headers declared with the file's constructed header type 7 on the 7
+// form (same code); the write-success flag as `failed`, as set then cleared, or seeded from `resized` 5 each, as a
+// direct `written = bytes_written == 0x800` with or without an else arm 111. Diagnostics: no header strings 171
+// (901 bytes), the strings as four direct stores 5, a NULL count pointer 143: the flags zero stays in EAX in all.
+// Body unchanged at 33.
 // M3 lane 15 r94 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33): the write filling its own
 // block-scoped count, copied into an outer `dword bytes_written = 0;` that is not address-taken, 83 (first difference
 // +0x1e1: the failed resize jumps straight to the close's handle test and the size/count homes and frame are retail's,
@@ -1796,12 +1820,12 @@ void function_213970(void)
     function_2138f0(6, 20);
     for (long index = 0; index < 6; index++)
     {
-        s_cache_file *file = &g_557c90[index];
+        s_cache_file *file = &g_557c90.files[index];
         char path[256];
         cache_file_path_from_slot(index, path, sizeof(path));
         dword expected_size = cache_file_size_limit(index);
         bool volatile done;
-        s_file_handle *handle = (s_file_handle *)&g_557c90[index].handle;
+        s_file_handle *handle = (s_file_handle *)&g_557c90.files[index].handle;
         function_1a0b40(path, 3, 3, 1, 0, 6, handle, &done);
         cache_wait_for_completion(&done);
         bool valid = false;

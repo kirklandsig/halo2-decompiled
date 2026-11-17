@@ -716,6 +716,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // EBX); a redundant `if (0 < count)` guard around the candidate scan 149, around the hull loop 247; the first hull
 // index bound as `short const &first = indices[0];` for its six reads 144 (same code); the departure as
 // `if (!left_start) left_start = points2d_differ(...)` 162.
+// m3 lane 7 r174 (fast with 0x239d50 and 0x239b80, both matched each time; control 144): `hull_count = pass + 1;` moved
+// after the candidate scan (ahead of `current = next`) 187; the hull count indexing and incrementing itself beside the pass
+// counter (`indices[hull_count] = current; hull_count++;`) 248 (794 B); best_distance declared last of the pass's four 144
+// (same code); the pass loop tested on `(short)hull_count < count` with the pass counter kept for the index 250 (795 B); a
+// `point2f const *point` for the lowest scan's six reads 144 (same code). Retail's outer region caches the hull count in EBX
+// (its home +0x10 reloaded after the candidate scan, which leaves EBX unused); ours caches the count there instead.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

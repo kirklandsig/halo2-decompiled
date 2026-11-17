@@ -1007,6 +1007,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // local 218 (same code); the vertex-word tests as a negated early return 218; `case 6:` before `case 1:` 218 (same
 // code); the projection and origin sums written out as y*j + z*k + x*i, vector- or point-major, grouped or not, 366
 // (1288 B).
+// M3 lane 16 r131 (fast with 0x270d90/0x270400; base 218): corners a, b, c, d re-measured 287 (1284 B); the actor parameter
+// declared `long const` 218 (same code), on a, b, c, d 287; case 5's outcomes as one fallback block with shared out stores
+// re-measured 399, on a, b, c, d 344 (1228 B); a, b, c, d with the switch on `(long)surface->type` 287 (same code); a, b, c, d
+// through one `vertices` base for the four corners 295. On a, b, c, d the caller loads pathfinding into EDX too (retail EAX):
+// the incoming register follows whether the actor load is placed before or after pathfinding's copy to EBX. Body unchanged.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

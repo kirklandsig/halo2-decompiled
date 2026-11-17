@@ -850,6 +850,16 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // 0xa5abb, and this/entity swap to EDI/ESI); `_ReadBarrier` 66/80, `_WriteBarrier` 77. With the barrier, the second
 // index spelled `% 0x10000`, `<< 16 >> 16`, `| 0`, `* 12`, `*4*3`, `<<2*3`, or both lookups as forceinline getters: 42
 // (all canonicalised and shared); a volatile header flag read 77. Not kept: a barrier is no match.
+// M3 lane 17 r45 (fast with 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10/0xbb780, matched throughout; control 49), all on the early
+// bool result set after the attach (re-measured 77, 160 B): the flag test through a local copy of the object table pointer 77;
+// the object read through such a copy 77; each through its own copy (the idiom of the matched 0xd1540) 77; both through one
+// copy 78; each through its own copy with the object read indexed by `entity->object_index` 77; the macro test with that
+// copy-and-entity object read 77; every object index read from the entity (the creation result stored straight into the entity,
+// no index local) 82 (157 B: the attach argument is then re-read from the entity after the field store). In every one the two
+// lookups still share one header address and f is cached in EBP. A scan of retail (build/r45/scan_reload2.py) finds 54 places
+// where the table pointer stays in a register and its data pointer is loaded twice with no store between; the matched ones
+// are parent-chain loops, joins after a branch that skips the first lookup, or the per-lookup pointer copies tried above.
+// Body unchanged.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

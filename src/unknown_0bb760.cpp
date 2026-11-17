@@ -446,6 +446,7 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax I (11-17): the variant byte read before the blend value 123 (was 132): the byte is then held in BL across the fmod and the blend's store follows the call, so the compare moves behind it, but the colours pointer now takes EBX where retail uses EBP; the not-found exit still joins the clamp entry's 1.0 load and the first scan still leaves on inequality.
 // MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
 // still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
 // where retail keeps it at [esp+0x1c], the first scan still leaves on inequality where retail leaves on a signed
@@ -702,8 +703,8 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 real seed = (real)fabs((*(real *)(object + 0x6c) * 744.1241455078125f + *(real *)(object + 0x64) * 315.89312744140625f + index * 431.1289367675781f) + *(real *)(object + 0x68) * 587.1294555664062f);
                 real selection = (real)fmod((double)seed, 1.0);
                 seed = (real)fabs(index * 0.7121099829673767f + *(real *)(object + 0x68));
-                real blend = (real)fmod((double)seed, 1.0);
                 char variant_index = *(char *)(object + 0xb1);
+                real blend = (real)fmod((double)seed, 1.0);
 
                 if (variant_index != NONE && *(long *)(definition + 0x38) != NONE)
                 {

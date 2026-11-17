@@ -1247,6 +1247,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // from [esp+0x1c] but the frame grows); a named `attached` bool before root / after not_current 276/270 (1275 B);
 // `volatile bool` current 311, suppressed 315. Left as before: the object/table registers, the 0x12/0x13 byte
 // homes, and root/`!current` evaluation at the first 0x1c8df0 call.
+// MiniMax D (11-17): no new form, no lower score (90 in the full-program check, unchanged); retail keeps the object pool
+// base in EAX and the object index in ECX where ours keeps the pool base in ECX, so the whole type-15 arm differs, and the
+// permuter found nothing in 300 s.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
