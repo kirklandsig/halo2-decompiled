@@ -108,7 +108,23 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
-// score 446 (was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines). Left: retail's
+// score 252 (was 252): three slot pairs swapped against retail (walk position/offset, record spill/centroid sum, object
+// spill/nearest distance), see below.
+// MiniMax C (11-11): no new form, no lower score; the fast check scores this function 280 at 3717 bytes, where the
+// note's 252 is the full build's count, and retail's dead store of zero to the speed vector's i is still missing, so
+// the walk head keeps its pad and every later slot stays off; the three-member local struct lead (274 on the fast
+// check) stays under the keep bar, and two permuter runs over this function (the second with the fast image and
+// annealing) were stopped at their time limits without producing any candidate.
+// MiniMax H (11-06): no new form, no lower score; retail's dead store of zero to the speed vector's i
+// (0x29454d, one of three consecutive stores into the slots 0x88/0x8c/0x90) is still missing, and the value
+// retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
+// the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
+// already holds, so ours is one instruction longer there and every later slot offset stays off.
+// Earlier, score 252 (was 446): the walk's self test is an if-block around the body and the centroid is scaled into its own point; that
+// brings back retail's dead store of zero to the speed vector's i and retail's walk head (no pad), and the length is retail's 3716.
+// Left (masked aligned 25): three slot pairs swapped against retail (record spill/centroid sum, object spill/nearest distance,
+// walk position/offset), the local_13 copy against the 3.4e38 store, load folding at the walk's alignment i term and both
+// 0x2949aa dot i terms, the scaled centre's y/z loads, one product at +0x598. Before round 141: 446 (was 446; before r98 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
 // dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
 // a pad and every later line is two off; the walk's position and offset vector take each other's homes (position at 0x94,
 // retail shares 0x20 with the post-walk vector); the character and shortest-distance slots are swapped (0x6c/0x74);
@@ -133,6 +149,18 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // membership and size, not scopes or names: find the real record over 16 bytes that holds the speed vector and still leaves frame 0xdc.
 // Earlier first line: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // MiniMax B (11-04): no new form, no lower score.
+// Statement walk against retail (f1B, 2026-11-05; every block from 0x294380 to the ret at 0x295201): no behaviour difference
+// found. Entry (pool +0x44 with 40-byte records, definition +0x84 via the record's short at +2, object table +0x44, flock
+// member = +0x13a when the +0x134 state is 1, parent at +0x14 tested against -1 then the member), the walk (head-tested
+// iterator, self skipped by datum pointer, cos(+0x50) test on the normalised offset dot forward, +0x34/dist/zero tests,
+// +0x40/+0x38/+0x44 terms into the +0x54 and +0x60 vectors, position sum, nearest else-arm with the 3.4e38 start), the
+// 0x295600/0x293d30/0x294050/0x0b75a0/0x0b9fc0 calls (argument order and register/stack split read from the push sequence),
+// the five 3.0 clamps (0x294814 and the four 0x294b56 inlines), the +0x5c/+0x60/+0x64 centre block (its scaled centre is not stored back in retail, dead in ours too), the
+// +0x58/+0x34*0.5 blend, the waypoint block (+0x14/+0x18, 16-byte records, radius defaulting to 1.0), the maximum with
+// local_18, the 0.7 (0x45dd1c) hysteresis on +0xd, the inlined forward getter and the 0x30-byte request copy to +0x13c all
+// agree with the source, and the constants (0.5, 1.0, 3.0, 0.7, 3.4e38) read from the XBE agree. A multiset comparison of
+// instruction text (registers kept) leaves only: the walk's two vector homes (0x94/0x20 swapped), the 0x6c/0x74 pair, x-operand
+// order at five products, the missing dead store, and ESI/ECX choices; nothing is a logic, offset or condition difference.
 // Earlier first line, after MiniMax B: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // Earlier score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
 // step (retail's head-tested loop) and 0x118fe0 stays out of line as in retail. Left: retail keeps the
@@ -158,6 +186,98 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // already a union); the three-member struct re-measured 293 (3718, frame 0xc0, store back, masked 39); with the request declared first 293;
 // with the value read after the request's init 374 (3734, frame still 0xc0: the struct overlaps the request even then); with the request's
 // +0xc copy after the +0x24 call 293.
+// Permuter, 30 minutes (11-06): full image 348 from 442, only with a flag set inside a test and a temporary pointer.
+// Lead: the pointer alone (`vector3f *tmp0 = &local_19;` passed to vector3f_scale) gives 400 fast from 465, at the
+// same size and frame and without the dead store at 0x294552; the same form's declaration moves and statement orders
+// give 453 without it. How local_19 reaches vector3f_scale sways the whole function's registers, so vector3f_scale's
+// own form may be the place to look. Not kept (an alias with no other use).
+// Round 135 (m3 lane 7, plain checks with 0x293b30, which stays matched; masked aligned difference 70 lines on 446):
+// the object pointer and the nearest distance renamed (object / shortest_distance, the object sorting first) 446, same
+// homes (names do not order these slots); the walk position declared as a vector3f (casts at its three uses) 446, it still
+// takes 0x94; the nearest distance declared first (constant initializer) 516 (scheduling from +0xf, homes unchanged); the
+// centre scaled through the existing scale_particle_vector_2b (retail's s*x, y*s, z*s operand pattern) 446, same code (the
+// operand order canonicalises; retail's early y/z loads are scheduling). Lead, not kept (a gain of 4): the request's speed
+// vector stored before its forward vector 442 (aligned 68: the tail stores then interleave exactly as retail); with that, the
+// nearest fallback's add through vector3f_add_scaled 442 (same code). Matched callees 0x293d30/0x294050/0x295600 take (direction, strength)
+// as separate pointers, so no real record for the speed/offset aggregate exists among them.
+// Lane 9 r98 (fast, control 465; the fast image carries the "builds differently" caveat, as before): the walk's two vectors named
+// member_position/member_offset 465 (homes unchanged: position 0x94, offset 0x20, retail the reverse); 0x294669 with every product
+// written scale-first 465 (same code); the speed zeros as one chain `i = j = k = 0.0f` 464 (store still gone, j/k order swapped); the walk
+// dot as dot3f(forward, offset) 465 (same code); the neighbour count as a long 712 (retail tests it with `test si, si`, so short is
+// right). Retail's slots also show the object pointer at 0x6c and the nearest distance at 0x74 (ours the reverse), the same reversal
+// as the walk's two vectors. Body restored.
+// Round 161 (m3 lane 6; fast control 465, plain 446): the speed vector's i set with `+=` the speed 465 fast, 446 plain (the
+// zero folds, the store stays gone); the three speed zeros before the forward scale 468 fast, 449 plain; the nearest distance
+// and point declared after the zeros 481 fast, 458 plain. Lead: the walk's self test as an if-block around the rest of the body instead of `continue` 462 fast, 455
+// plain (3712 bytes): retail's dead store of zero to the speed vector's i at 0x88 comes back, the walk head's pad goes and
+// the walk's jumps are retail's (masked aligned 25 -> 22), but the pool record's spill moves below the centroid sum (record
+// 0x78, sum 0x7c-0x84, retail sum 0x78-0x80, record 0x84), so the body is 4 bytes short and every later jump differs. On
+// that form: the record or the centroid sum renamed to sort last or first 462 (homes unchanged); one exit for the early
+// test (the body inside `if (parent == NONE && member)`) 462 fast, 455 plain (same code); plain, on the if-block form: the
+// request's speed vector stored before its forward vector 458 (aligned 84 -> 82, masked 22); the nearest point copied before
+// its distance 458; the neighbour count raised before the position sums 456 (the record's spill stays at 0x78 in all three).
+// Next: the if-block form plus whatever puts the record's spill (shared with the cohesion block's 3 - total) back above the
+// centroid sum.
+// Round 141 (m3 lane 7, plain unless marked fast): the if-block form 455 (3712); on it, 18 fast forms (sum through vector3f_add, count
+// first, nearest point first, iterator fields swapped, self test operands swapped, speed zeros first, reciprocal inline, mixes)
+// 462-483 fast, record slot unchanged; diagnostics (not kept): one or three extra reads of the sum flip the record/sum slots, an
+// extra object read moves the object spill to 0xa0, an extra position read leaves the position at 0x94. The centroid scaled into
+// a separate point 280 fast, 252 plain at 3716 (kept); on it `3 - total` unnamed 462 fast; 30 fast forms (the options above,
+// dot3f inputs swapped, the self test through the walk pointer, the nearest test operands, mixes) 280-552, slots unchanged;
+// the nearest distance declared first 334 fast (slots unchanged); the offset declared before the position 280 fast (same code);
+// the centroid scaled in place through scale_particle_vector_2b 462 fast, copied then scaled 785 fast (3766). Diagnostic on 252
+// (plain, not kept): three extra reads of the sum put the record spill at 0x80 as retail but move the object spill to 0x78 (470, 3734).
+// Round 142 (m3 lane 7, fast; control 280 at 3717, aligned 104): diagnostic, the walk's position as a reference to the
+// post-walk vector (one variable for both) 525 at 3716, aligned 78: the walk block then matches, position at 0x20
+// sharing the post-walk vector's slot as retail, so retail's position (not the offset) shares that slot; the sum adds
+// then load the position first. Not kept (a reference that only renames). The offset in a nested block to the end of
+// the walk body 280 (same code); the sum scaled in place by vector3f_scale and the vector taken to it 462 (aligned
+// 101), with the reciprocal written into the call 466; the centroid, nearest-fallback and waypoint steps each with
+// their own block-local vector instead of the shared one 755/756/755 (3737-3738 B), all three 764 (3734 B): retail
+// reuses one vector. Re-measured (Round 64 lists it): the position, the offset or both declared at the walk body's top
+// 280 each (same code).
+// Round 226 (m3 lane 3, fast, control 280): the walk's position, offset and the post-walk vector renamed so the post-walk vector
+// sorts after both and the position after the offset (member_position/member_offset/steering, neighbour_point/neighbour_offset/
+// steering, position/away/steering), the post-walk vector alone (adjustment), position/offset as point/offset: 280 each, identical
+// code; names do not order these slots.
+// M3 lane 16 r102 (plain checks with 0x293b30, which stays matched; `--fast` builds this function differently, control 280 there;
+// aligned / registers-masked / registers-and-slots-masked counts on the 252 body: 62 / 59 / 14): the scalar reused for four strengths
+// split into one named local per use: the waypoint strength 338 (3717 B), the wander (0x295600) strength 253 (same shape), the path
+// (0x294050) strength 355 (3723 B), all three 280 (3716 B; the object spill / nearest distance pair becomes retail's), waypoint + wander
+// 341, wander + path 372 (3722 B), waypoint + path 340; the cohesion strength apart from the alignment weight sum 293 (3717 B); all four
+// 522 at 3716 B but aligned 57 / masked 55: object / nearest pair and the second 0x2949aa site's dots as retail, record / sum and
+// position / offset pairs, the first 0x2949aa site, the walk's 1.0 load and the centroid's y/z loads still differ (lead, not kept).
+// A `vector3f const *` forward pointer for the scale, the walk dot and the k drop 614 (3708 B). Body unchanged at 252.
+// M3 lane 9 r110 (plain with 0x293b30, which stays matched; `--fast` still builds it differently, 280): the speed vector
+// declared without its copy of the default vector 797 (3683 B: retail keeps that copy). Re-measured on this 252 body: the
+// request's speed vector stored before its forward vector 248 (the four tail stores then are retail's; a statement order,
+// kept only with a match). Frame slots read from the spills (frame offsets): retail object 0x5c, count 0x60, nearest
+// distance 0x64, centroid sum 0x68-0x70, pool record 0x74; ours nearest 0x5c, count 0x60, object 0x64, record 0x68, sum
+// 0x6c-0x74. On that 248 form (plain): the waypoint radius as a ternary initializer 269; the hysteresis as one compare
+// against a ternary threshold 369 (3704 B); the wander/steer sum written steer first 248 (same code); the speed zeros
+// through vector3f_assign re-measured 452 (3712 B).
+// M3 lane 16 r104 (plain with 0x293b30, which stays matched): the waypoint radius as a ternary 273; the hysteresis threshold
+// as a named local 387 (3705 B); the waypoint index read once into a short local used three times 281 (3717 B); the 3.0 clamp
+// after the wander call as a ternary 252 (same code); the separation weight passed as `0.0f - local_29` 252 (same code).
+// m3 lane 11 r90 (plain with 0x293b30, which stays matched; masked = registers and stack slots masked, aligned, 25 on 252): both 0x2949aa
+// dots with their operands swapped (`dot3f(arg_1, &...current)` and previous) 455 at 3712 bytes, masked 22: the first site's previous-dot
+// i term folds its load (`mulss xmm3, [ebx+0x28]`) as retail, the second site's still loads first; only the previous dot swapped 455
+// (same code, the current dot's order is free); that plus the four reused strengths as named locals (wander, volume, path, waypoint) 280
+// (3716 bytes, masked 41); 0x294669's i term vector-first like j and k 252 (same code). Diagnostic: two of the walk position's reads
+// dropped 643 at 3693 bytes (the position moves to 0x9c, not to retail's 0x20). Left with slots masked: the walk's alignment i term,
+// the second 0x2949aa site's fold, the scaled centre's early y/z loads and the nearest fallback's i product.
+// M3 lane 2 r72 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched throughout; aligned/masked in brackets, base
+// [90/25]): the walk's position and offset declared at the top of the walk's if-block (outside the loop) 252 (same code);
+// the post-walk vector declared at the top of the function 252 (same code): neither scope moves the shared slot (retail's
+// position shares the post-walk vector's slot, ours the offset); the neighbour test as `local_26 > 0.0f && field_34 >
+// local_26` 256 [95/30]; the squared distance named once and used for the reciprocal and the separation test 281 (3717
+// bytes) [106/38]; the nearest point copied before its distance 255 [91/27].
+// m3 lane 5 r192 (plain with 0x293b30/0x293d30/0x294050/0x295600, all unchanged; control 252, aligned 90, masked 25): the
+// centroid sum typed as a vector (no casts) 252, the post-walk vector and its scalar in a block ending after the waypoint
+// step 252, the nearest test as `local_26 < local_10` 252, the scalar declared at the top uninitialised 252 (all the same code:
+// neither scope nor type moves the swapped slot pairs); the half radius computed where the cohesion arm uses it 500 (3703 B);
+// the walk test as `cos(...) < dot` 628; the steer flag's declaration moved to the top 772 (3730 B); the path step's maximum
+// declared just before the 0x294050 call 726 (3718 B); the strength total declared after the walk 785 (3731 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
@@ -197,35 +317,37 @@ void function_294380(long arg_0, long arg_1)
         while ((local_21 = function_2937a1(&local_20)) != NULL)
         {
             s_slot_object_view *local_22 = (s_slot_object_view *)local_21;
-            if (local_22 == local_2) continue;
-            point3f local_24;
-            function_b9dd0(local_20.object_index, &local_24);
-            vector3f local_25;
-            vector3d_from_points3d(&local_4, &local_24, &local_25);
-            real local_26 = function_30bf0(&local_25);
-            if (dot3f(&local_25, &local_2->forward) > (real)cos(local_1->field_50))
+            if (local_22 != local_2)
             {
-                if (local_1->field_34 > local_26 && local_26 > 0.0f)
+                point3f local_24;
+                function_b9dd0(local_20.object_index, &local_24);
+                vector3f local_25;
+                vector3d_from_points3d(&local_4, &local_24, &local_25);
+                real local_26 = function_30bf0(&local_25);
+                if (dot3f(&local_25, &local_2->forward) > (real)cos(local_1->field_50))
                 {
-                    real local_27 = 1.0f / (local_26 * local_26);
-                    real local_28 = local_1->field_40 * local_27;
-                    function_294669(&local_13, local_28, &local_22->forward);
-                    local_16 += local_28;
-                    if (local_1->field_38 * local_1->field_38 > local_26 * local_26)
+                    if (local_1->field_34 > local_26 && local_26 > 0.0f)
                     {
-                        real local_29 = (local_27 - 1.0f / (local_1->field_38 * local_1->field_38)) * local_1->field_44;
-                        function_294669(&local_14, -local_29, &local_25);
-                        local_17 += local_29;
+                        real local_27 = 1.0f / (local_26 * local_26);
+                        real local_28 = local_1->field_40 * local_27;
+                        function_294669(&local_13, local_28, &local_22->forward);
+                        local_16 += local_28;
+                        if (local_1->field_38 * local_1->field_38 > local_26 * local_26)
+                        {
+                            real local_29 = (local_27 - 1.0f / (local_1->field_38 * local_1->field_38)) * local_1->field_44;
+                            function_294669(&local_14, -local_29, &local_25);
+                            local_17 += local_29;
+                        }
+                        local_9.x += local_24.x;
+                        local_9.y += local_24.y;
+                        local_9.z += local_24.z;
+                        local_15++;
                     }
-                    local_9.x += local_24.x;
-                    local_9.y += local_24.y;
-                    local_9.z += local_24.z;
-                    local_15++;
-                }
-                else if (local_10 > local_26)
-                {
-                    local_10 = local_26;
-                    local_11 = local_24;
+                    else if (local_10 > local_26)
+                    {
+                        local_10 = local_26;
+                        local_11 = local_24;
+                    }
                 }
             }
         }
@@ -278,8 +400,9 @@ void function_294380(long arg_0, long arg_1)
                     real local_33 = 3.0f - local_5;
                     local_16 = local_1->field_5c * local_33;
                     real local_34 = 1.0f / local_15;
-                    vector3f_scale((vector3f *)&local_9, local_34, (vector3f *)&local_9);
-                    vector3d_from_points3d(&local_4, &local_9, &local_30);
+                    point3f local_40;
+                    vector3f_scale((vector3f *)&local_9, local_34, (vector3f *)&local_40);
+                    vector3d_from_points3d(&local_4, &local_40, &local_30);
                     real local_35 = function_30bf0(&local_30);
                     if (local_35 > local_1->field_60)
                     {

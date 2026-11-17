@@ -20,21 +20,21 @@ public:
 	void remove_two(int first, int second);
 };
 
+// how many boxes a sweep holds
+inline long box_count_2e29b0(class_2e1090 const &sweep)
+{
+	return sweep.elements.size;
+}
+
 // where `value` sits in the cell's list of boxes, or -1
-inline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
+__forceinline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
 {
 	long const count = cell->boxes.size;
-	if (count <= 0)
+	for (long index = 0; index < count; index++)
 	{
-		return -1;
-	}
-	unsigned short const *data = cell->boxes.data;
-	unsigned short const *end = data + count;
-	for (unsigned short const *entry = data; entry < end; entry++)
-	{
-		if (*entry == value)
+		if (cell->boxes.data[index] == value)
 		{
-			return entry - data;
+			return index;
 		}
 	}
 	return -1;
@@ -58,7 +58,10 @@ __forceinline void mark_holding_x_2e24b0(class_2e1090 *sweep, int count, int low
 			cell_2e1090 *cell = &sweep->cells[slot - 1];
 			flip_bit_2e1090(bits, cell->box);
 			unsigned short *held = cell->boxes.data;
-			for (int remaining = cell->boxes.size - 1; remaining >= 0; remaining--)
+			int remaining = cell->boxes.size;
+			int &left = remaining;
+			left--;
+			for (; left >= 0; left--)
 			{
 				flip_bit_2e1090(bits, *held);
 				held++;
@@ -126,7 +129,7 @@ __forceinline void report_added_2e24b0(class_2e1090 *sweep, long *owner, int ind
 			}
 			if (found & 1)
 			{
-				unsigned long const apart = apart_yz_2e1090(*other, box);
+				unsigned long const apart = apart_yz_2e1090(box, *other);
 				if (!apart)
 				{
 					if ((other->owner & 1) == 0)
@@ -156,7 +159,7 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	pair.first = owner;
 	element_2e1090 *group = sweep->elements.data;
 	long *word = bits;
-	long *end = bits + (sweep->elements.size >> 5) + 1;
+	long *end = bits + (box_count_2e29b0(*sweep) >> 5) + 1;
 	for (; word < end; group += 32, word++)
 	{
 		element_2e1090 *other = group;
@@ -182,9 +185,7 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 					else
 					{
 						cell_2e1090 *cell = (cell_2e1090 *)((char *)sweep->cells + (other->owner & ~1));
-						long const position = find_box_2e29b0(cell, (unsigned short)index);
-						cell->boxes.size--;
-						cell->boxes.data[position] = cell->boxes.data[cell->boxes.size];
+						cell->boxes.remove_at(find_box_2e29b0(cell, (unsigned short)index));
 					}
 				}
 			}
@@ -194,12 +195,25 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	}
 }
 
-// score 77 (was 106): the quantizing (two-level helper, its steps as separate
+// score 39 (was 49): the marking helper's cell walk counts down through a reference bound
+// to its counter, and its y/z test takes the box first. Left: in the pair scan's preheader
+// retail allocates the end pointer before the word pointer (ours the reverse), and the
+// y/z test's four loads come in another order.
+// Before, 49 (was 106): the y/z test reads the box's lower word first
+// (apart_yz_2e1090; 75 reading it last, every other user unchanged), and the
+// held count is read before the held list (77 the other way). Earlier: the
+// quantizing (two-level helper, its steps as separate
 // statements), the appends, the bit setter and the y/z test (in-place
 // statements) now match retail's code. Still: in the grid cell's walk ours
 // reloads the cell pointer into edx where retail uses ecx, and in the pair
 // scan the word pointer and the scanned box take ecx and edx the other way
 // round.
+// Existing XOR helper 257; existing AND helper 198; indexed held list 95;
+// count-based descent 205; indexed outer scan 279; branch-local pair 77;
+// consumed bit cursor 77; read-only cell-element pointer 77. All restored.
+// Round 426: array-end loop 214; word countdown 116; pair next_slot 100;
+// short next_slot 119; direct call test 102; read-only input 77; separate
+// stop locals 81; cell branch first 88. NOT kept: no improvement.
 // @retail 0x2e24b0
 void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pairs_2e1090 *pairs)
 {
@@ -223,10 +237,35 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 	}
 }
 
+// takes the box's endpoints out of each axis and moves the other boxes'
+// endpoint indices back
+__forceinline void drop_endpoints_2e29b0(class_2e1090 *sweep, element_2e1090 *data, unsigned long count, element_2e1090 &box)
+{
+	((array_2dffa0 *)&sweep->axes[0])->remove_two(box.slots[4], box.slots[5]);
+	((array_2dffa0 *)&sweep->axes[1])->remove_two(box.slots[0], box.slots[2]);
+	((array_2dffa0 *)&sweep->axes[2])->remove_two(box.slots[1], box.slots[3]);
+	((quantized_boxes_2dfcc0 *)sweep)->function_2dfdc0((quantized_box_2dfcc0 *)data, count, box.slots);
+}
+
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 312 (was 328): remaining index/receiver slots, scan loads and tail
+// score 102 (was 130): the scan's end pointer takes the box count through
+// box_count_2e29b0, and the overlaps size and the mark call use the count directly instead
+// of a second local. Left: retail keeps `this` in esi and the box index in edi (ours the
+// reverse), and the scan's word and end pointers as in 0x2e24b0.
+// Before, 130 (was 160): the grid test is one condition, the element array is
+// read before the endpoints are dropped (a helper takes it), and the cell's box
+// is removed at the index a lookup returns. this and the box pointer still take
+// each other's registers.
+// Before, 160 (was 312): the moved box's grid test is kept in a flag set only
+// when cells are used (folded into one condition, 261), the moved box's old
+// index is named inside the cell walk (222 computed in the call), and
+// the cell lookup reads the list's count first and
+// returns its index from inside the loop, as both of retail's lookups do (a
+// pointer walk 312; the count and data both held 390; a guarded loop 372),
+// and the held count is read before the held list (263 the other way).
+// Before: 312 (was 328): remaining index/receiver slots, scan loads and tail
 // differ. Earlier 328 at retail length retained the in-place y/z test; its
 // count, index, receiver and array slots differed, the second x walk saved
 // the receiver instead of the word index, and the scan kept its box in a
@@ -241,6 +280,14 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 // On 312: scan-input rename, list/cell references, int lookup result,
 // unsigned-int count and scan-local renames 312; array reference 452;
 // direct array-data inputs 325. Original code restored.
+// New: pointer-stop conditional result 452; moved-box memcpy 312;
+// combined scan guard 309 NOT kept (three-point gain); word step in body
+// 313; persistent cell cursor 325; read-only scan bits 312; late box
+// binding 345; fixed scratch base 312. Original body restored.
+// List base/count arguments 339; returned entry pointer 472; next-slot
+// pair copy 311 NOT kept (one-point gain); one count 312; scan count
+// argument 448; exclusive upper loop bound 343; existing list erase
+// with pointer search 312; twice-used endpoint slot 437. All restored.
 // @retail 0x2e29b0
 void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 {
@@ -248,17 +295,13 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 	unsigned long const index = *owner;
 	element_2e1090 &box = elements.data[index];
 	{
-		int const inner_count = elements.size;
-		longs_2e1ab0 overlaps((inner_count >> 5) + 4);
+		longs_2e1ab0 overlaps(((int)count >> 5) + 4);
 		long *bits = overlaps.data;
-		mark_holding_x_2e24b0(this, inner_count, axes[0].data[box.slots[4]].value, box.slots[4], box.slots[5], bits);
+		mark_holding_x_2e24b0(this, (int)count, axes[0].data[box.slots[4]].value, box.slots[4], box.slots[5], bits);
 		report_removed_2e29b0(this, owner, index, bits, box, pairs);
 	}
 
-	((array_2dffa0 *)&axes[0])->remove_two(box.slots[4], box.slots[5]);
-	((array_2dffa0 *)&axes[1])->remove_two(box.slots[0], box.slots[2]);
-	((array_2dffa0 *)&axes[2])->remove_two(box.slots[1], box.slots[3]);
-	((quantized_boxes_2dfcc0 *)this)->function_2dfdc0((quantized_box_2dfcc0 *)elements.data, count, box.slots);
+	drop_endpoints_2e29b0(this, elements.data, count, box);
 
 	// the last box moves into the freed place
 	if (index < count - 1)
@@ -291,8 +334,9 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 			int const last = (axes[0].data[box.slots[5]].value >> shift) - 1;
 			for (int m = first; m <= last; m++)
 			{
+				unsigned short const moved = (unsigned short)(count - 1);
 				cell_2e1090 &cell = cells[m];
-				long const position = find_box_2e29b0(&cell, (unsigned short)(count - 1));
+				long const position = find_box_2e29b0(&cell, moved);
 				cell.boxes.data[position] = (unsigned short)index;
 			}
 		}

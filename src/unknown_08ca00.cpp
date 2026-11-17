@@ -194,8 +194,6 @@ s_4672bc g_4672bc =
  { {0, function_a45d0}, {0, function_8c790} }
 };
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x8c790
 bool __stdcall function_8c790(const byte *request)
 {
@@ -211,7 +209,6 @@ bool __stdcall function_8c790(const byte *request)
    dword size = *(dword *)(request + 0x28) - 16;
    if (source && size > 0 && function_199560(source, size) == 0x25224)
    {
-    _ReadWriteBarrier();
     byte *allocation = (byte *)function_80e14(0x25224, 0, 0, 0, 90, 1.0f);
     if (allocation)
     {
@@ -225,4 +222,3 @@ bool __stdcall function_8c790(const byte *request)
  }
  return result;
 }
-#pragma function(_ReadWriteBarrier)

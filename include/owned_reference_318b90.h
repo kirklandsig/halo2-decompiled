@@ -7,6 +7,7 @@
 #include "reference_base_318970.h"
 
 class lane_a_simple_contact_manager;
+class class_318e60;
 struct lane_a_contact_body;
 
 class class_318b90 : public reference_base_318970
@@ -27,7 +28,7 @@ public:
 	REFERENCED_NEW_2D88A0(0x1d)
 
 	class_319080(void *owner);
-	virtual void slot_1() {}
+	virtual class_318e60 *create(lane_a_contact_body const *, lane_a_contact_body const *, void const *);
 	virtual void slot_2() {}
 
 	void *owner;

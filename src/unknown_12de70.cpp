@@ -564,6 +564,92 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // (266), block named then the store 73 (266); store first with the flag or block and flag named 27/27; loop read at each use 27, with the tail's named block 51; the tail's block named inside the arm 27,
 // with the loop's read at each use 27; a group and base named in the arm 27, the base named with the block direct 27; the arm's read as `*(s_fixup_group **)&` 27, as long 27, the test's through a cast
 // view 27 (a typed view does not stop the CSE). Diagnostic: the release callee as (base, group) 27 (same code; a contributor's function). Retail's block looks like a scratch temp with the arm's own load forwarded to `mov esi, edx`.
+// Round 155 (m3 lane 6, fast): the loop's release through an inline helper taking (block, index) 27; the loop's test and release
+// as an inline helper taking (cache block, index) 27 (real build; the harness only before); one physical-object local for the
+// loop's blocks and page shift 27; the tail as an inline helper taking the cache block 27; a group local before the tail's test
+// for the pointer 51 (edi/ebp swap). Diagnostics: with no release in the loop the tail still loads EDX and copies it to ECX, so
+// the tail copy is the tail's own; the swap follows the number of `cache_block->block` reads (the tail's block local plus the
+// loop read at each use and the tail's pointer base read through the cache block gives no swap, 38, but reloads the base).
+// Round 80 (m3 lane 10, fast): round 89's 18 form rebuilt: once the loop's block load lands in EDX the tail is exact with no other change, so the
+// tail's copy follows the loop. The release's block re-read with the address in a local first 27; the test re-reading the block field with the loop
+// local kept for the argument 27; diagnostics: the block read before the wait 71 (not retail's order), the count store written in both arms of the
+// linked test 18 (266 bytes: the stores merge after the test and the arm reloads the block into ESI). Retail's loop looks like two loads of the block
+// field with the second turned into `mov esi, edx` after allocation, as our tail does with `mov ecx, edx`: the loop and the tail trade which pair
+// is CSE'd. The release address named before the linked test (not in the arm) 27.
+// Round 177 (m3 lane 4, fast): LEAD, what splits the loop's block into EDX and a copy. A block read used once in the arm merges
+// with the test's read (one load, straight into ESI); a block value used twice in the arm stays apart from the test's read, and
+// the arm's load then becomes `mov esi, edx`. Diagnostic (wrong code, reverted): the loop read at each use with a second arm use
+// (`+ cache_block->block->cache_block_index` on the address) and a block local in the tail gives retail's loop and tail line for
+// line with EDI/EBP as retail, 41 at 272 bytes, differing only by the added field's own load and add. So retail's arm uses the
+// block twice and its tail once (a block local, or one read). A second use in the test's own block instead (`&& flags != 0xff`,
+// diagnostic) 55 (269 bytes): no copy, so it has to be in the arm. New, each with the loop read at each use and the tail block
+// local: the entry test through the pool getter 81; the last store through the pool getter 109 (286 bytes); the linked test
+// repeated inside the loop's arm 51 and an arm block local beside the direct read 51 (both second uses fold away before they
+// count); the group passed as the address of the block's first field 51; the tail's offset through the block's own field 51.
+// Re-measured: loop read at each use with a tail block local 51 (EDI/EBP swap), with a group local in the tail's arm 27, that
+// tail alone 27, a group local in the loop's arm with the tail block local 51. The matched sibling 0x12e210 reads the block
+// twice through two lookups (two loads, no copy); the three fixup functions have no caller outside this file.
+// Wanted: a second use of the block in the loop's arm that leaves no code of its own.
+// Round 85 (m3 lane 14, fast): LEAD, the second use is a separate load. The arm reading the block through
+// `&cache_block->block` taken before the loop (the test reading the field directly) gives 14 at 266 bytes: the two loads
+// stay apart, as in matched 0x12e210, where the arm's re-read through the getter is its own `mov esi, [edi+8]`. The test's
+// block then goes to EDX as retail and the tail is exact. Left: our arm loads ESI from [edi+8] after EDX has been reused
+// for the pool data, where retail copies EDX into ESI before that load and reads the page shift first. Not kept (a field
+// read through its own address, mixed with direct reads; match-only). On that form, the same code: the group in a local
+// before the call 14, the pointer for the test and the direct read in the arm 14, group and base locals 14, the pointer
+// taken at the top 14, the tail's two reads through it as well 14; the release callee as (base, group) (a contributor's
+// function, measured and put back) 14, same code; the page shift named first 14 (same code); the tail reading the block
+// once into a local for its test and pointer 18. On the original body: the block local initialised above the tasks store
+// 71 (the block is loaded before the count and held in ESI across the lock calls); `__assume(local_1 != NULL)` in the arm
+// 45. A 600 s permuter run on the 14 form found nothing (its reduced image scores that form 73, the full image 13).
+// Round 87 (m3 lane 14, fast): the EDI/EBP choice and whether the loop test's block stays apart follow the number of
+// reads of the cache block's field in the loop. With a block local for the tail's test and pointer: the loop read at each
+// use 51; that with a dead `(void)cache_block->block;` in the arm 51 (same code); with an unused block local in the arm
+// (diagnostic, a redundant statement) 18 at 266 bytes: EDI/EBP, the test's EDX and the tail are retail's, and only the
+// arm's own `mov esi, [edi+8]` (after the pool data load) stands where retail has `mov esi, edx` before it; a group local
+// in the arm 51; the loop's block local kept for the argument with the test reading the field 51; group and base as two
+// statements in the arm 51; a block local in the arm with the linked test repeated on it 53 (267 bytes). Compile-only:
+// the physical block getter with a pool local or an allocator local gives the same load order. Retail's arm load is a
+// second read forwarded from the test's register: it needs a real second use of the block in the arm, ahead of the
+// base's loads.
+// Round 163 (m3 lane 8, fast with 0x12e210, which stays matched): LEAD, the loop arm reading the block at each use with
+// the tail reading it once into a block local (re-measured 51: tail exact, cache block and the index product swap
+// EDI/EBP), plus the task count named and stored after the arm's flag read (`long count = 120bf0(); bool linked =
+// block->runtime_linked; tasks_added = count; if (linked) ...`) 22 at 266 bytes: EDI/EBP, the flag read into EDX and the
+// tail test are retail's; left are the count store after that read (retail before it), the arm's own `mov esi, [edi +
+// 8]` after the pool data load (retail `mov esi, edx` before it) and the tail's two stores one rotation step off. Not
+// kept: one-use count and flag. On that form: the group read into a local ahead of the address 22, the store written in
+// both arms of the flag test 22, the contributor's release callee as (base, group) (diagnostic, put back) 22, all the same
+// code. Also: the store first with a named flag 51 (the two reads merge again); a block local in the arm with
+// `__assume(block != NULL)` 65.
+// Round 94 (m3 lane 13, fast with 0x12e210, which stays matched): round 85's 14 form re-measured 14 (266 bytes). On it: the
+// release address in a local ahead of the linked test 14 (same code: sunk into the arm); round 163's count named and stored
+// after the flag read 18 (266 bytes, the store stays after the load); the field pointer declared inside the loop 14; the
+// pointer typed `s_fixup_group **` for the argument with no cast at the call 14; the group read through the pointer into a
+// local ahead of the linked test 14 (sunk); the time adjusted through the physical block with no field pointer 70 (268
+// bytes). In every 14 form the arm's own `mov esi, [edi + 8]` comes after the pool data load into EDX; retail's `mov esi,
+// edx` comes before it, as if the argument were set up first and the scheduler then hoisted the pool and shift loads
+// above the copy (the data load into EDX cannot cross it). On the base form the address local ahead of the block read
+// re-measured 27 (round 80's form).
+// Round 98 (m3 lane 14, fast with 0x12e210, which stays matched): round 85's 14 form re-measured 14. To set the group up
+// before the address, the release step as an inline helper taking (group, physical index): on the 14 form 14, forced
+// inline 14 (both the same code: the arm still reloads ESI after the offset load); on the base body with the field read
+// directly 27; a helper taking the block, testing its linked flag and releasing 27; the 14 form with the test and the
+// arm each through its own reference to the field 14 (same code).
+// Round 130 (m3 lane 12, fast with 0x12e210, which stays matched): the cache block as a const pointer 27; the loop's
+// block local as a const pointer 27; the loop test as `busy(...) != false` 27 (all same code); the time test with its
+// operands swapped 28 (first difference +0x41); the tail's pointer offset read through the geometry block's own
+// section-offset field (no fixup-group cast) 27.
+// Round 100 (m3 lane 13, fast with 0x12e210, which stays matched): the task count stored to the file-level counter
+// g_4e28f0 (0x12b450's spelling of the same address, never address-taken) in place of the async aggregate's field 27
+// (same code: the store's alias status does not move the arm's block load), with the loop read at each use and the
+// tail's block local 51; the physical object's time read once into a named local for the compare and the store 27;
+// the release address as a named dword inside the arm 27; the wait as a guarded do/while 27 (all 27 the same code).
+// Round 128 (m3 lane 16, fast with 0x12e210, which stays matched): the loop's block local as a reference to the field 27
+// (same code); one reference to the block field at the guard's top for every later read 51 (EDI/EBP swap, the loop block
+// still straight to ESI); the tail's pointer clear through an inline helper taking the group with the loop read at each
+// use 51 (tail exact, EDI/EBP swap); both linked tests through an inline accessor taking the cache block 27 (same code);
+// the cache block bound by reference for every access 27 (same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

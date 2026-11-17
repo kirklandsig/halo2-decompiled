@@ -34,6 +34,17 @@ extern s_game_time_globals *g_510c54;
    source file views through its own s_object_header */
 extern s_record_pool *g_4e0300;
 
+/* the word of flags at 0x10a of an object, read as one-bit fields
+   (src/unknown_0bb760.cpp, src/unknown_0350e0.cpp) */
+struct s_object_flags_10a
+{
+	byte unknown000[0x10a];
+	word bit0 : 1;
+	word bit1 : 1;
+	word bit2 : 1;
+	word : 13;
+};
+
 /* g_4e6948: the game options. 016a90 reads the state at +8, 03d380 and
    072c70 the mode at +0xc, 146240 the ticks per second at +0xe, the session
    states (058dd0) the ids and positions at +0x10..+0x20 and the flag at

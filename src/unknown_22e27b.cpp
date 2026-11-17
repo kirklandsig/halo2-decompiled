@@ -404,6 +404,74 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 151 (m3 lane 5, fast): restart written through `&restart` in a forceinline helper at all three sites, expression,
 // if/else, plain inline, by reference 1 each (the address folds away); that helper reading its pointer parameter through its
 // address, expression 186 (zero materialised, jump still threaded), if/else 1.
+// Round 93 (m3 lane 16, fast): the break as `restart && type == 0` (diagnostic) 146 (662 bytes), but the plain-frame
+// path then jumps to the restart test as retail: ours threads it because restart is known false on the back edge as
+// well as at entry. Flags read from the field at each use in the loop 207; the update in `if (!restart) { ... } else
+// break;` 1; the equality boundary tested first 234 (676 bytes); dispose false at its declaration with both resets
+// dropped 1; a byte restart 1; a 600 s permuter run (72 tries) none below 1.
+// Round 69 (m3 lane 13, fast): restart uninitialised at the top and cleared in the active block just before the loop
+// 16 (the clear schedules into the timing setup; the plain path still skips the test), cleared first in that block 19;
+// the frame store as an else-if of the restart test 1; the break as `restart != dispose` 1; restart and dispose in one
+// declaration 1; the break as `restart > 0`, `>= 1`, `!(restart <= 0)`, `> false` or `0 < restart` 87 each (659 bytes,
+// `ja` for `jne`): with those the plain-frame path does reach the restart test as retail's does, so our skip comes from
+// the `!= 0` test's implied value on the back edge together with the false start. Diagnostic (reverted at once): a
+// volatile restart 215 (652 bytes).
+// Round 59 (m3 lane 2, fast): code-free boundaries ahead of the threaded test: `__assume(this != NULL)` before the
+// restart test 1, at the loop-body top 1; `__assume(animation.target != NULL)` before the test 89 (659 bytes); an
+// else arm on the plain path holding `__assume(frame >= 0)` 1; the break as `restart != 0` 1; `__assume(!dispose)`
+// before the restart test 1.
+// Round 83 (m3 lane 10, fast): `(void)&restart;` after the declarations 1 (folds away); the outer test inverted with the
+// inactive arm first 1; dispose initialised false at its declaration with the pre-loop reset dropped (per-pass reset kept) 1;
+// both loop switches with an explicit `case 3` and an unreachable `default` 1 (same code each); the end-time store before
+// the next-time step 1; a 600 s permuter run (seed 8383, 65 tries, 812 s full baseline) none below 1.
+// Round 75 (m3 lane 15, fast): the inactive arm reading the flags field at each use 1; the flags local declared after
+// the timing locals 1; the direction flips as `*= -1` 1; the fraction as `elapsed / (real)frame_time` 1 (round 11's uncast
+// elapsed, re-measured on this base); explicit `!= 0` bit tests in the three restart expressions 1 (all the same code); the
+// end-time test as `g_54d5b8 >= animation.end_time` 3 (the compare flips).
+// Round 96 (m3 lane 10, fast): the per-pass disposal reset moved from the loop top to the join just before the
+// restart test 1, to the loop bottom after the timing updates 1; restart uninitialised and cleared with
+// `restart = dispose = false;` before the loop 16 (round 69's form, re-measured); the three timing locals declared at
+// function scope 1; one function-scope flags word shared by both arms 1; dispose false at its declaration with the
+// pre-loop reset dropped and the per-pass reset at the join 1. All restored. Compile-only harness of the file (it
+// reproduces the skip): restart's address passed to an opaque call just before the loop makes the miss land on the
+// restart test with the loop otherwise unchanged; the same call after the loop does not; so the skip comes from the
+// known false start, and retail's source must leave restart's value unknown at the loop entry.
+// Round 97 (m3 lane 1, fast): a named activity bool for the three opening tests with the same if/else 1; that bool
+// with the inactive arm as a second `if (!active)` 1; the flags read into a local at the join ahead of the restart
+// test 1 (the load sinks past the test); the two flags cleared by a chained assignment at the function top, either
+// order 1/1 (all the same code). A stand-alone reduction of the loop (compile-only) shows what stops the thread: a
+// compound exit test, an unknown start value, a store or a volatile load ahead of the test at the join (either
+// stays in the code), or restart's address passed to a real call anywhere in the function together with a call or
+// a store through a loaded pointer inside the loop. Stores through `this`, an address folded away by an inlined
+// helper, an array element or aggregate member for restart, always-false start expressions, and /O2, /Oa, /Ow,
+// /Op, /G7 (one settings diagnostic) do not stop it. Retail shows none of the forms that do, so the cause is open.
+// Round 163 (m3 lane 8, fast): diagnostics, the thread stays with the inactive arm's flags dropped and with the post-loop
+// interpolation dropped, so it is the loop's own. A per-pass `bool` declared in the loop body, set only in the two
+// boundary blocks and tested in place of restart (`restart = it; break;` on true) 154 (659 bytes): the plain-frame path
+// then lands on the test as retail's does, but the flag takes its own slot ([ebp-1], restart [ebp-2]); that flag copied
+// into restart ahead of the test 147 (661 bytes, the copy stays); the flag at function scope, uninitialised, with
+// `restart = true; break;` 142 (659 bytes); restart cleared by a one-byte memset (diagnostic) 223 (a `stosb`); both
+// boundaries grouped under `if (frame < 0 || frame == value8)` with an inner if/else 60 (661 bytes).
+// Also round 163: the boundary restart as `if (type != 0) false; else if (bit 0) true; else bit 1` in both blocks 219 (665 bytes).
+// Round 94 (m3 lane 13, fast): both boundary restarts as `restart = restart || (...)` 11 (each block's true/false stores
+// swap places, the plain-frame miss stays); as `restart |= ...` 184; the flag-8 store tested `!restart && !(flags & 8)`
+// ahead of the restart break 1; only the flag-8 store under `if (!restart) {...} else break;` 1; restart computed as
+// `!dispose && ...` ahead of the dispose break 233 (681 bytes).
+// Round 98 (m3 lane 14, fast): a compiler read/write barrier just ahead of the restart test at the join 209 (655 bytes);
+// `restart = false;` at the loop bottom after the timing updates 139 (661 bytes); the loop as `for (; time >= next_time;
+// next_time += frame_time)` on this body 1 (same code); every animation-state read through one reference to the member 1
+// (same code); a 600 s permuter run (63 tries) none below 1.
+// Round 130 (m3 lane 12, fast): the loop test as `!(time < next_time)` 1 (same code); the flags word read into a
+// per-pass local at the loop-body top (none outside the loop) 200 (656 bytes); both loop disposal tests as
+// `(flags & 2) ? type == 0 : false` 216 (664 bytes); both loop restart tests as `type == 0 ? (bit 0 || bit 1) : false`
+// 1 (same code); diagnostic: the break as `restart & 1` 87 (659 bytes).
+// Round 111 (m3 lane 1, fast): the in-range frame as an empty first arm (`if (frame >= 0 && frame != value8) {} else if
+// (frame < 0) ... else ...`) 60 (661 bytes); the second boundary as `frame >= value8` 1 (`jl` for `jne`, still past the
+// restart test); both boundary restarts as `expr ? true : restart` 197 (645 bytes); restart as the element of a one-element
+// bool array 1 (same code); restart as the member of a one-member local aggregate 1 (same code).
+// Round 102 (m3 lane 13, fast): the in-range frame as an empty middle arm (`else if (frame != value8) {} else`) 1;
+// the loop test as `next_time <= time` with a direction-first frame sum 5; the flag-8 test reading the field 1;
+// `!type` in both loop restart tests 1; the frame count in a named local for both boundary compares 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
