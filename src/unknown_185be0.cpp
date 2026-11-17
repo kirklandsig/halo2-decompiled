@@ -143,6 +143,7 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
 // MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
 // `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
 // field_18 stays misaligned because retail keeps the flag condition in EDX across the stores and writes the word

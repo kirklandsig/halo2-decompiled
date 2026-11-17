@@ -93,7 +93,10 @@ public:
 	bool_3058b0 function_306f80(feature_305f60 *feature);
 };
 
-// score 80 (was 95): `between` is stored before `along` reads the edge copy and
+// score 2 (was 80): the unit normal is declared before the length, and the length's product has
+// the squared length on the left, so the inverse is still live when the unit is formed and every
+// vector register agrees. Left: one x87 product loads the determinant before the constant.
+// Before, 80 (was 95): `between` is stored before `along` reads the edge copy and
 // the determinant is formed just before `t`, so `between` keeps its own slot and
 // the frame is retail's 0x58. Vector register roles and one fmul operand order
 // remain.
@@ -144,8 +147,8 @@ bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 					__m128 const normal = cross_306f80(first_direction, second_edge);
 					__m128 const length_squared = dot3_simd_306f80(normal, normal);
 					__m128 const inverse = inverse_sqrt_306f80(length_squared);
-					float const length = first_306f80(_mm_mul_ss(inverse, length_squared));
 					__m128 unit = _mm_mul_ps(inverse, normal);
+					float const length = first_306f80(_mm_mul_ss(length_squared, inverse));
 					if (!(length < minimum_length))
 					{
 						if (first_306f80(dot3_simd_306f80(unit, first_signs)) < 0.0f)

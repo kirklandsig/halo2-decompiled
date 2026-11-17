@@ -174,11 +174,6 @@ struct linked_30e720 : head_30e720, side_30e720
 	body_30e720 *body;
 };
 
-__forceinline void *__cdecl byte_offset_30e720(void *address, int offset)
-{
-	return static_cast<char *>(address) + offset;
-}
-
 struct link_30e720
 {
 	side_30e720 *first;
@@ -236,6 +231,12 @@ public:
 
 
 
+// an island's pairs: room for four for each action, one for each join and link
+struct island_pairs_30e720 : pairs_30d870
+{
+	island_pairs_30e720(long links, long joins, long actions) : pairs_30d870(actions * 4 + joins + links) {}
+};
+
 static __forceinline void append_island_30e720(islands_30e720 &list, island_30e720 *value)
 {
 	if ((list.capacity_and_flags & 0x7fffffff) == list.size)
@@ -253,7 +254,21 @@ static __forceinline bool one_group_30e720(grouping_3720a0 const &grouping)
 	return single;
 }
 
-// score 345 (was 396): rewritten from retail: the joins loop reads each join's
+// the island of the body a linked pair's side belongs to
+static __forceinline island_30e720 *side_island_30e720(side_30e720 *side)
+{
+	char *address = (char *)side;
+	address -= sizeof(head_30e720);
+	return ((linked_30e720 *)address)->body->island;
+}
+
+// score 227 (was 345): the pair list's room comes from a constructor taking the
+// three counts (links, joins, actions), which loads all three before the sum as
+// retail does, and a link's island is found by stepping a byte pointer back from
+// the side, which gives retail's separate subtraction. Left: the second side's
+// load is still folded, ebx/ebp are swapped in the split section, and the opening
+// decrement.
+// Before, 345 (was 396): rewritten from retail: the joins loop reads each join's
 // owner through the join entry, the list and link loops are guarded by their own
 // entry tests (`if (0 < n)`), the single-group test is a file-local helper with a
 // named result, and the islands are appended by a file-local helper. The empty
@@ -288,7 +303,7 @@ void c_311100::function_30e720()
 		}
 		else if (island->needs_split)
 		{
-			pairs_30d870 pairs(island->actions.size * 4 + island->links.size + island->joins.size);
+			island_pairs_30e720 pairs(island->links.size, island->joins.size, island->actions.size);
 			((class_317d90 *)island)->function_317d90((id_pairs_317d90 *)&pairs);
 			longs_2e1ab0 parents(island->bodies.size);
 			longs_2e1ab0 scratch(pairs.size);
@@ -389,10 +404,10 @@ void c_311100::function_30e720()
 					for (int l = 0; l < links.size; l++)
 					{
 						link_30e720 &link = links.data[l];
-						island_30e720 *owner = static_cast<linked_30e720 *>(byte_offset_30e720(link.first, -int(sizeof(head_30e720))))->body->island;
+						island_30e720 *owner = side_island_30e720(link.first);
 						if (owner->taken_out_of_world())
 						{
-							owner = static_cast<linked_30e720 *>(byte_offset_30e720(link.second, -int(sizeof(head_30e720))))->body->island;
+							owner = side_island_30e720(link.second);
 						}
 						if (owner != island)
 						{

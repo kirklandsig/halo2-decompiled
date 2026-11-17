@@ -922,6 +922,9 @@ struct s_tail_transfer_traits
 	s_tail_unit_state weapons[3];
 	byte grenades[2];
 };
+// MiniMax C (11-16): no new form, no lower score (144): after the two copies only the register assignment differs, the
+// record pointer and the selection index trading ebx, ebp and edi; the score 3 form below rested on a second lookup of
+// the same object and on locals holding NONE until set, both of which are match-only forms and so cannot be kept.
 // MiniMax I (11-15): score 3 (was 144): the players are walked with the existing 16-byte s_player_iterator (player_queries.h),
 // the two slot fields are read as shorts and the third weapon keeps its NONE preset; left: the three object lookups address
 // [data + offset + 8] where retail has [offset + data + 8].
@@ -1125,6 +1128,11 @@ struct s_tail_transfer_traits
 // P581: Original-site scalar memcpy at unit handle/paired signed no-seat slots/scan
 // weapon, seven subsets, then complete scalar memmove: 144/144/144/144/144/144/144/252. NOT kept: no exact
 // selected-traits/unit/NONE homes or no-seat reload recovery; original complete body restored.
+// M3 lane 2 r92 (fast, on lane 6 r180's lead re-applied at 3): the main lookup through a const reference to the header
+// element 3; an unused header element pointer after the main lookup (matched 0xe5040's shape) 3; the seat and no-seat arms
+// swapped 123 (829 B); every lookup through an index-masked-first helper (0xce0c0's index local, headers local, then
+// `headers[index]`) 3; the no-seat weapons through the existing 0xcbd50 with the slots from fresh lookups on the global 161
+// (816 B). Diagnostic: probe stores of 1, -1 and 0 at the top 258-263 (842 B), the lookups keep ours data-first order.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1461,6 +1469,14 @@ long function_cbd50(long unit_index, short weapon_index);
 // P581: Original-site scalar memcpy at full flag/tag ordinal/inventory weapon, seven
 // subsets, then complete scalar memmove: 215/215/215/215/215/215/215/325. NOT kept: no exact native frame/player/
 // pool/tag ownership; original private flag producer, all observations and complete body restored.
+// M3 lane 2 r92 (fast with 0xcbd50, control 215): retail merges each 0xcbd50 weapon read with its own slot lookup and
+// re-reads player->unit_index and the pool data for every later lookup (pending, flag reads), so the player carries two
+// reads a pass and keeps EBP; ours shares the held lookup with the pending slot read. Forms: every lookup on the global (no
+// pool copy) 295 (the held slot and weapon then share one lookup as retail, but the pending slot joins it too); the held
+// lookup on the global with the pending one through the pool copy 293 (1022 B: held as retail, pending reloads but its
+// weapon read does not merge); the slot reads as `(&unit->held_slots[0])[hand]` (unit_object_type.cpp's matched spelling)
+// 215 (same code); no player local (the getter at each use) 233 (1010 B). Diagnostic: the held/pending stores through
+// pointer locals 287 (the stores do not make the later lookups reload: the compiler resolves the pointers).
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1638,6 +1654,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // the getter reload of the unit index 5 (the player address still `mov edx, [edx + 0x44] ... add edx, eax`); the
 // definition moved to the end of the file 17; the unit looked up in place at both uses, no unit local, 17.
 // Diagnostic: a probe global store of 0, 1, -1 or 4 at entry leaves the unit index in ESI.
+// M3 lane 16 r126 (fast with 0x14f820): the e68c0 code named before the mode test 17 (same code); the hand written as
+// `!primary` at both uses (no hand local) 44 (143 B); the slot assigned inside the slot test 17 (same code); the e68c0 arm
+// as an early return with the a9030 arm falling through 36; the a9030 arm returning true directly 27. Diagnostic: the
+// `register` keyword on the slot 17 (ignored). Both of 0x14f820's retail calls are inlined in our build, with the
+// getter-reload lead as well (0x14f820 2742 B there).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1890,6 +1911,12 @@ void function_150820(dword *bits, bool local_only)
 // P533: Player ordinal ingress dword/int/unsigned-int/word, Boolean then byte return:
 // 43/43/43/84/43/43/43/84. NOT kept: no byte match; full-width mask and native
 // saved player/hand roles remain. Original complete body and sole outside declaration restored.
+// M3 lane 2 r92 (fast, control 43): the player as a const reference (`s_tail_player const &player`) 43; the unit as a
+// const reference 43; the slot as `char const &slot` 49 (207 B); the unit lookup with the index masked into a local and
+// the header array in a local first (0xce0c0's helper shape) 43; the hand from one read of `primary` through its address 43.
+// P582: Original-site hand/signed held-slot/selected-weapon scalar memcpy, seven
+// subsets, then complete scalar memmove: 43/43/43/43/43/43/43/170. NOT kept: no native ESI-player/EDI-hand equality;
+// original producers, signed conversions, complete body and game-call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

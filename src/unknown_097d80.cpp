@@ -60,7 +60,7 @@ struct c_aggregate : c_child
 // one lever that would settle it is out of this file's reach: tools/build.py prepends /GL to every source's flags,
 // so a file's "// @flags" line cannot turn it off, and a /GL- build of this file would cost 0x97f60, 0x97fe0 and
 // 0x980d0 their matches.
-// score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
+// Earlier note, also at 31: the release reads the allocator global again (allocator_globals_release, retail's
 // MiniMax H (11-13): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020, because
 // the address-taken count keeps a slot of its own under /GL; a /GL- build of this file is byte-exact but would cost
 // 0x97f60, 0x97fe0 and 0x980d0 their matches, so the file's flags stay as they are, and the permuter's 46 tries in
@@ -520,6 +520,14 @@ struct c_aggregate : c_child
 // bytes); v5's room and destination computed from `starts[i]` 31 (same code); produced declared in the collection loop's
 // for-init and zeroed in the call's block 42; the child pointer declared at function scope 31 (same code). Frame 0x8024 in
 // each. Still BLOCKED by the build flag.
+// M3 lane 16 r127 (fast with the six file-mates, all still matched): the collection bound as the children array's
+// element count 31 (same code); the call's status named, the total added, then the status published 32; the child
+// pointer `c_child *const` 31; the dispatch gate as `!error && ...` 31; the cleanup's item count read once into a
+// const local 74. Frame 0x8024 in each; still BLOCKED by the build flag.
+// MiniMax S (11-16): no new form, no lower score (31): the frame is 0x8024 here against retail's 0x8020 and the
+// count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes
+// off; adding /GL- to this file's own flags line builds the body byte-exact (it matches exactly) but costs
+// 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56), so the flags line stays as it is.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

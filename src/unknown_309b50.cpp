@@ -290,19 +290,32 @@ __forceinline __m128 weighted_309b50(__m128 const *points, float const *weights)
 	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(w0, points[0]), second), third);
 }
 
+// the same point from weights spread after all three are read
+__forceinline __m128 spread_weighted_309b50(__m128 const *points, float const *weights)
+{
+	__m128 const w0 = _mm_set_ss(weights[0]);
+	__m128 const w1 = _mm_set_ss(weights[1]);
+	__m128 const w2 = _mm_set_ss(weights[2]);
+	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_shuffle_ps(w0, w0, 0), points[0]), _mm_mul_ps(_mm_shuffle_ps(w1, w1, 0), points[1])), _mm_mul_ps(_mm_shuffle_ps(w2, w2, 0), points[2]));
+}
+
 // The penetration of the two shapes: 0 with the direction, point and
 // distance in `arg_0` (or nothing found by the first step), 2 when the
 // simplex can't grow or the hull fails too often, and from the hull, 1 when
 // it ran out of room
-// score 441 (was 508): the first-shape points are declared (and filled)
-// before the second-shape ones, points are appended and vectors copied
-// through references, the hull's room test is a one-byte answer and the two
-// hull steps share one result. Still differs: retail places the collapsed
-// segment, the separated triangle and the shared `return 2` in that order
-// after the hull loop (here: return 2, triangle, segment; the order of the
-// blocks in the source, a shared `fail` label and moving them below the hull
-// block do not change it), and keeps delta at [esp+0x20] and nudge at
-// [esp+0x40] (here swapped).
+// score 104 (was 441): the simplex cases fall through a switch; the separated
+// triangle's point spreads its weights after reading all three; the face room
+// is counted in steps; the second size is stored first; both hull failures
+// leave the face loop by `break` and are told from the out-of-room exit by
+// one test of `failed` after it, which puts the shared out-of-room block
+// right after the restart code. Naming the height mask, the face's three
+// points and the turned term before use would give 62 (one-use locals).
+// Still differs: retail merges the first step's return with the separated
+// triangle's (here: with the collapsed segment's), keeps delta at [esp+0x20]
+// and nudge at [esp+0x40] (here swapped; the separated triangle's square-root
+// temporary shares nudge's slot in retail, the normal's here), and the
+// one-point case and the first step use eax/ecx and edx where we use ecx/edx
+// and eax.
 // @retail 0x309b50
 long class_309b50::function_309b50(long arg_0)
 {
@@ -315,18 +328,120 @@ long class_309b50::function_309b50(long arg_0)
 		switch (simplex->count)
 		{
 		case 0:
-			goto first;
-		case 1:
-			goto point;
-		case 2:
-			goto segment;
-		case 3:
-			goto triangle;
-		case 4:
-			goto tetrahedron;
-		default:
-			goto expand;
+	first:
+		if (((search_3093e0 *)this)->function_3094d0(result).value)
+		{
+			return 0;
 		}
+		grown = 0;
+		case 1:
+	point:
+		{
+			float length_squared;
+			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(differences[0], differences[0])));
+			if (length_squared <= 0.001f * 0.001f)
+			{
+				if (grown >= 0)
+				{
+					break;
+				}
+				simplex->count--;
+				goto first;
+			}
+			grown = 1;
+			((search_3093e0 *)this)->function_309610();
+		}
+		case 2:
+	segment:
+		{
+			__m128 const along = _mm_sub_ps(differences[0], differences[1]);
+			float length_squared;
+			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(along, along)));
+			if (length_squared <= 0.001f * 0.001f)
+			{
+				if (grown >= 2)
+				{
+					break;
+				}
+				simplex->count--;
+				goto point;
+			}
+			grown = 2;
+			((search_3093e0 *)this)->function_309700();
+		}
+		case 3:
+	triangle:
+		{
+			__m128 const a = _mm_sub_ps(differences[0], differences[1]);
+			__m128 const b = _mm_sub_ps(differences[1], differences[2]);
+			normal = cross_309b50(a, b);
+			float length_squared;
+			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(normal, normal)));
+			if (!(length_squared != 0.0f))
+			{
+				if (grown >= 2)
+				{
+					// the simplex is a segment: a direction across it, and the point
+					// between its ends
+					result->distance = 0.0f;
+					delta = _mm_sub_ps(differences[0], differences[1]);
+					int across = 1;
+					int smallest = 0;
+					int other = 2;
+					float least = (float)fabs(delta.m128_f32[0]);
+					float const second = (float)fabs(delta.m128_f32[1]);
+					float const third = (float)fabs(delta.m128_f32[2]);
+					if (second < least)
+					{
+						least = second;
+						across = 0;
+						smallest = 1;
+					}
+					if (third < least)
+					{
+						other = smallest;
+						smallest = 2;
+					}
+					float *direction = (float *)&result->direction;
+					direction[smallest] = 0.0f;
+					direction[across] = delta.m128_f32[other];
+					direction[other] = -delta.m128_f32[across];
+					result->direction = normalized_309b50(result->direction);
+					__m128 const magnitude = _mm_and_ps(differences[0], *(__m128 const *)g_455940);
+					float second_size;
+					float first_size;
+					_mm_store_ss(&second_size, sum_309b50(magnitude));
+					_mm_store_ss(&first_size, sum_309b50(magnitude));
+					float const share = second_size / (first_size + second_size + 1.192092896e-07f);
+					__m128 const share4 = _mm_set_ps1(share);
+					result->point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, share4), simplex->points[0]), _mm_mul_ps(share4, simplex->points[1]));
+					result->field_24 = 0.5f;
+					return 0;
+				}
+				simplex->count--;
+				goto segment;
+			}
+			scored_support_3093e0 scored;
+			grown = 3;
+			((search_3093e0 *)this)->function_3093e0(&normal, differences, &scored);
+			if (scored.distance < 0.001f)
+			{
+				// the triangle's plane is the direction
+				normal = normalized_309b50(normal);
+				result->distance = 0.0f;
+				result->direction = normal;
+				float weights[3];
+				function_308260(&g_4801e0, &differences[0], &differences[1], &differences[2], weights);
+				result->point = spread_weighted_309b50(simplex->points, weights);
+				result->field_24 = 0.5f;
+				return 0;
+			}
+			differences[simplex->count] = _mm_sub_ps(scored.support.first, scored.support.second_placed);
+			simplex->points[simplex->count] = scored.support.first;
+			simplex->points[simplex->count + 4] = scored.support.second;
+			simplex->count++;
+		}
+		case 4:
 	tetrahedron:
 		{
 			__m128 const a = edge_309b50(differences[0], differences[1]);
@@ -338,147 +453,18 @@ long class_309b50::function_309b50(long arg_0)
 			__m128 const second = _mm_mul_ps(a_zxy, b_yzx);
 			normal = _mm_sub_ps(_mm_mul_ps(a_yzx, b_zxy), second);
 			float const height = dot3_309b50(_mm_sub_ps(differences[3], differences[0]), normal);
-			if (!((float)fabs(height) <= 0.001f))
+			if ((float)fabs(height) <= 0.001f)
 			{
-				goto expand;
+				if (grown < 3)
+				{
+					simplex->count--;
+					goto triangle;
+				}
+				break;
 			}
-			if (grown >= 3)
-			{
-				return 2;
-			}
-			simplex->count--;
-		}
-	triangle:
-		{
-			__m128 const a = _mm_sub_ps(differences[0], differences[1]);
-			__m128 const b = _mm_sub_ps(differences[1], differences[2]);
-			normal = cross_309b50(a, b);
-			float length_squared;
-			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(normal, normal)));
-			if (length_squared != 0.0f)
-			{
-				goto grow_triangle;
-			}
-			if (grown >= 2)
-			{
-				goto collapsed_simplex;
-			}
-			simplex->count--;
-		}
-	segment:
-		{
-			__m128 const along = _mm_sub_ps(differences[0], differences[1]);
-			float length_squared;
-			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(along, along)));
-			if (!(length_squared <= 0.001f * 0.001f))
-			{
-				goto grow_segment;
-			}
-			if (grown >= 2)
-			{
-				return 2;
-			}
-			simplex->count--;
-		}
-	point:
-		{
-			float length_squared;
-			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(differences[0], differences[0])));
-			if (!(length_squared <= 0.001f * 0.001f))
-			{
-				goto grow_point;
-			}
-			if (grown >= 0)
-			{
-				return 2;
-			}
-			simplex->count--;
-		}
-	first:
-			if (((search_3093e0 *)this)->function_3094d0(result).value)
-			{
-				return 0;
-			}
-			grown = 0;
-			goto point;
-	grow_point:
-		grown = 1;
-		((search_3093e0 *)this)->function_309610();
-		goto segment;
-	grow_segment:
-		grown = 2;
-		((search_3093e0 *)this)->function_309700();
-		goto triangle;
-	grow_triangle:
-	{
-		scored_support_3093e0 scored;
-		grown = 3;
-		((search_3093e0 *)this)->function_3093e0(&normal, differences, &scored);
-		if (scored.distance < 0.001f)
-		{
-			goto separated;
-		}
-		differences[simplex->count] = _mm_sub_ps(scored.support.first, scored.support.second_placed);
-		simplex->points[simplex->count] = scored.support.first;
-		simplex->points[simplex->count + 4] = scored.support.second;
-		simplex->count++;
-		goto tetrahedron;
-	}
-
-	collapsed_simplex:
-		{
-			// the simplex is a segment: a direction across it, and the point
-			// between its ends
-			result->distance = 0.0f;
-			delta = _mm_sub_ps(differences[0], differences[1]);
-			int across = 1;
-			int smallest = 0;
-			int other = 2;
-			float least = (float)fabs(delta.m128_f32[0]);
-			float const second = (float)fabs(delta.m128_f32[1]);
-			float const third = (float)fabs(delta.m128_f32[2]);
-			if (second < least)
-			{
-				least = second;
-				across = 0;
-				smallest = 1;
-			}
-			if (third < least)
-			{
-				other = smallest;
-				smallest = 2;
-			}
-			float *direction = (float *)&result->direction;
-			direction[smallest] = 0.0f;
-			direction[across] = delta.m128_f32[other];
-			direction[other] = -delta.m128_f32[across];
-			result->direction = normalized_309b50(result->direction);
-			__m128 const magnitude = _mm_and_ps(differences[0], *(__m128 const *)g_455940);
-			float second_size;
-			float first_size;
-			_mm_store_ss(&first_size, sum_309b50(magnitude));
-			_mm_store_ss(&second_size, sum_309b50(magnitude));
-			float const share = second_size / (first_size + second_size + 1.192092896e-07f);
-			__m128 const share4 = _mm_set_ps1(share);
-			result->point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, share4), simplex->points[0]), _mm_mul_ps(share4, simplex->points[1]));
-			result->field_24 = 0.5f;
-			return 0;
 		}
 
-	separated:
-		{
-			// the triangle's plane is the direction
-			normal = normalized_309b50(normal);
-			result->distance = 0.0f;
-			result->direction = normal;
-			float weights[3];
-			function_308260(&g_4801e0, &differences[0], &differences[1], &differences[2], weights);
-			result->point = weighted_309b50(simplex->points, weights);
-			result->field_24 = 0.5f;
-			return 0;
-		}
-
-	expand:
+		default:
 		{
 			class_30a810 hull(&differences[0], &differences[1], &differences[2], &differences[3]);
 			points_309b50 firsts;
@@ -495,6 +481,7 @@ long class_309b50::function_309b50(long arg_0)
 			seconds.data[3] = simplex->points[7];
 			long state = 0;
 			face_30aac0 *face;
+			int failed;
 			for (;;)
 			{
 				face = (face_30aac0 *)((list_309120 const *)&hull)->function_309120();
@@ -509,21 +496,24 @@ long class_309b50::function_309b50(long arg_0)
 				heights.inverse_rotate(&offsets, &face->normal);
 				if (_mm_movemask_ps(_mm_cmplt_ps(heights.value, *(__m128 const *)g_461f20)) & 7)
 				{
-					break;
+					goto found;
 				}
 				int count = 0;
 				edge_30aac0 const *horizon;
-				int failed = hull.function_30abe0(&count, &horizon, face, &delta);
+				failed = hull.function_30abe0(&count, &horizon, face, &delta);
 				if (failed != 0)
 				{
-					goto restart;
+					break;
 				}
 				if (!hull.has_vertex_room().value)
 				{
 					state = 1;
 					break;
 				}
-				if ((hull.face_capacity_and_flags & 0x7fffffff) - hull.face_count + hull.face_pointer_count < count)
+				long face_room = hull.face_capacity_and_flags & 0x7fffffff;
+				face_room -= hull.face_count;
+				face_room += hull.face_pointer_count;
+				if (face_room < count)
 				{
 					state = 1;
 					break;
@@ -533,30 +523,27 @@ long class_309b50::function_309b50(long arg_0)
 				seconds.append(support.second);
 				if (failed != 0)
 				{
-					goto restart;
+					break;
 				}
 			}
-			goto found;
-
-		restart:
-			if (++attempts == 1)
+			if (failed != 0)
 			{
-				simplex->count = 1;
-				continue;
-			}
-			if (attempts >= 20)
-			{
+				if (++attempts == 1)
+				{
+					simplex->count = 1;
+					continue;
+				}
+				if (attempts < 20)
+				{
+					__m128 nudge;
+					simplex->count = 0;
+					((random_309270 *)this)->function_309270(attempts, -0.0001f, 0.0001f, (float *)&nudge);
+					nudge = _mm_add_ps(nudge, position);
+					position = nudge;
+					continue;
+				}
 				state = 2;
-				goto found;
 			}
-			{
-				__m128 nudge;
-				simplex->count = 0;
-				((random_309270 *)this)->function_309270(attempts, -0.0001f, 0.0001f, (float *)&nudge);
-				nudge = _mm_add_ps(nudge, position);
-				position = nudge;
-			}
-			continue;
 
 		found:
 			// the face the origin projects into, walked to from the nearest
@@ -594,5 +581,7 @@ long class_309b50::function_309b50(long arg_0)
 			}
 			return state;
 		}
+		}
+		return 2;
 	}
 }

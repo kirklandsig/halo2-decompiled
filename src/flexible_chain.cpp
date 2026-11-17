@@ -234,6 +234,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax R (11-16): no new form, no lower score (171): re-measured in this round's nine-address set, the body is retail's 1368 bytes and the frame 0xa4 with the attachment homes agreeing; what is left is the carrier rotation (the segment's axis load keeps the value in EDI where retail keeps it in EDX and the segment pointer follows in ECX where retail keeps EDX), the scalar spill at +0x1c against retail's +0x14, and the previous/rest-offset and axis/scalar homes exchanging at +0x28 and +0x2c.
 // MiniMax S (11-14): no new form, no lower score (171): the body is still retail's length and the first difference is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and then in ECX, so only the branch targets and the block layout after it differ; the segment's base, its ownership and the frame's homes are the rest of the difference.
 // MiniMax E (11-16): no new form, no lower score (171): the segment base and the segment pointer take EDI/ECX where retail uses EDX for both, and the low stack slots are in another order.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
