@@ -145,6 +145,10 @@ union s_6ec80
 // that with the counter declared among the top declarations 88 (same code). With the counter's zero inside the guard the
 // scoped mask goes back to 225: the counter in a nested block, an `int` counter, the counter declared before the guard and
 // zeroed inside it, 225 each. So the scoped form's register shift follows the counter's zero, not the mask's.
+// M3 lane 14 r104 (fast with 0x6ec10/0x5b120; base 5), all with the mask scoped in the guard: the mask accumulated through a
+// reference bound to it 225; the active test through a trivial inline accessor taking the player record 225; the mask and
+// counter zeroed by one chained assignment, mask first 227, counter first 225; the bit or-ed in branch-free from the active
+// byte 247 (286 instructions). Each keeps NONE in EDI and the entry zero in ECX.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

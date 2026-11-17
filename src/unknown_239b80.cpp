@@ -230,6 +230,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax I (11-17): no new form, no lower score (144): a short hull count gives retail's 0x14 frame and puts the
+// departure flag's byte in an argument home (236), but the flag has to stay a dword to keep the matched caller 0x239d50
+// (a bool flag drops it to 80), so the frame stays 0x18; the one-counter while form (260), the two-continuation form
+// (326) and the pass counter as a short (261) all move the loop shape or the homes away from retail's.
 // score 144 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
 // in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index

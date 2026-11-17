@@ -227,6 +227,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 }
 
 // MiniMax D (run 46): no new form, no lower score.
+// MiniMax C (11-17): score 195 (was 195): no lower score; the frame is still 0x30 against retail's 0x2c
+// because the second point transform spills both its scaled x and scaled z into two local slots, where
+// retail keeps them in xmm7 and xmm4 and spills only the scaled z into the scale parameter's home, so our
+// inverse defaults land in one local and in that dead parameter slot instead of the two fresh locals at
+// [esp+4] and [esp+8]. Tried: the three orders of the scaled components inside transform_point, a hoisted
+// scale local and the swapped multiply operands, all 195 with identical code.
 // score 195 (was 195): Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills

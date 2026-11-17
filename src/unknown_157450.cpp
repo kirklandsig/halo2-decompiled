@@ -830,6 +830,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // P575: Per-team added-bit decisions, positive/complementary bool/long with dword/word saved mask:
 // 32/32/32/32/77/77/77/77. NOT kept: native saved-word entry and shared post-loop reload remain;
 // original complete body, observations, indexed callbacks and local qualifier restored.
+// M3 lane 9 r131 (fast; base 32; re-measured: word mask with plain present 63 at 384 B, dword with plain present 102 at
+// 378 B): retail's mask load between the first cmp and jne is a head merge (both successor blocks start with the same
+// `mov ecx, [slot]` spill reload, and block 2 reloads present into ESI ahead of `movzx eax, cx`), so retail's present
+// and old mask are plain spilled locals; the dword/plain form already gets the merge, and only the word mask moves present
+// into EDI (globals rematerialised). New, on the word mask with plain present: present through a reference-bound name 63,
+// playing through one 63, a one-use team bit for present 63, both accumulators zeroed after the iterator setup 63; on the
+// word mask with the volatile present, the old mask through a reference-bound copy 77 (references fold away).
 // @retail 0x158140
 void function_158140(void)
 {

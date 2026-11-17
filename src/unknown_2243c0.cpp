@@ -223,6 +223,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the frame (152), so the original is kept, and casting the index to a word keeps the same code. The stage and pass
 // homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged. The score-8 chain needs
 // the head, stage and pass elements bound by reference and is kept only with an exact match.
+// MiniMax I (11-17): no new form, no lower score (117): the else path's in-place `and edx, 0xffff` needs the `& 0xffff`
+// spelling, which hoists the tag table global into ECX before `sub esp` (152), while the `(word)` cast keeps the table in
+// EDI but gives `movzx eax, dx` (117); the mask assigned back to the tag, a masked-tag local and a named element address
+// leave the code unchanged (117) or worse (152). The block chain's argument registers and unfused element loads stand.
 // score 117 (was 117): M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
