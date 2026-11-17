@@ -795,6 +795,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Shared direction/heading renamed or declared after forward 153/153.
 // NOT kept: the shared direction/heading swaps the velocity and forward slots.
 // Velocity-copy registers, early unity and the normalizer/angle registers still differ.
+// N405: Speed scope, initial-velocity scope, heading scope, nested speed scope,
+// work points declared at first store, separate producer scopes and reversing
+// scope all score 116. Tag lookup after the first velocity copy scores 141.
+// NOT kept: none recovers the first velocity-copy receivers or early unity.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

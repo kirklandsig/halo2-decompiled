@@ -543,6 +543,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 0x1ee340/0x1689b0/0xa76b0 use); that helper returning its output pointer; the displaced sums written in retail's operand
 // order (d.i + a.x, a.y + d.j, d.k + a.z: the compiler picks the load order, ours stays a-first for x and z); the three
 // defaults as `a = a ? a : g_468788;` and likewise; the helper scaling with `x *= camera->scale`. Body unchanged.
+// N405: Signed displacement selection inside the transform as component
+// branches, captured origin updates, a complete point or component conditionals
+// 255/307/263/307. Explicit expansion repeats those four scores.
+// NOT kept: the transform still needs the native X/Z and inverse allocation.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

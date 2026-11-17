@@ -448,6 +448,10 @@
 // with scales at use 655; incremental first phase or named double combined wave
 // with scales after both waves 651/651. NOT kept: the frame reaches at most 0x5c.
 // Separate rounded-wave and cross homes remain.
+// N405: Indexed special displacement through axis/amplitude/weight tables,
+// weighted tables, split wave records and weighted wave records 635/635/704/625;
+// short separate/weighted tables 753/708; separate scale then add with tables or
+// weighted records 791/705. NOT kept: no exact rounded-wave or cross schedule.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

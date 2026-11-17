@@ -411,6 +411,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // owner through the carried hit record 172; miss-only record with two/one returns
 // 173/178; initialization within the miss path 176. NOT kept: the native cache-hit
 // bypass and trailing register return remain.
+// N405: Seed the eviction choice from the first occupied datum as the shared
+// result, shared result before cursor, separate successful choice, or immutable
+// first index with separate choice 106/106/169/168. The for walk repeats these.
+// NOT kept: cache-hit bypass, trailing ESI return and native length still differ.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
