@@ -9,6 +9,16 @@ matched 10645 of 11326 game functions (2049730 of 2786206 bytes, 73.57%)
 matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
 ```
 
+0 new matches, none lost:
+- @coldspear's #1260: closer scores and notes, no new match.
+
+## 2026-11-17: 10645 functions match
+
+```
+matched 10645 of 11326 game functions (2049730 of 2786206 bytes, 73.57%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
 1 new matches, none lost:
 - @andrewnakas's #1259: `0x1a54a0` match.
 
