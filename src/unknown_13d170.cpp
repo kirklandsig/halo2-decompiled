@@ -762,6 +762,9 @@ struct s_physical_block_iterator
 // branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
 // NOT kept: no closer case-zero result or native size. Case-zero/case-one
 // placement and the weighted-age register allocation still differ.
+// P598: Advance the ring ordinal after prefetch/after accumulation/before prefetch 250/355/273.
+// While scan with early advance 250, with undersized entries skipped 355. Conditional
+// best record/pointer/reference 248/248/248. The case-zero Boolean still needs its retail join.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

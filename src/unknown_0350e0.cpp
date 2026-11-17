@@ -338,6 +338,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // moves inverse last, j*i first); matrix3x3 locals with the complement in each cross product 371 (1810 B); i and j
 // copied, k read again, with the complement 435 (1673 B); the row copied as an aggregate before the rotation 455
 // (1655 B, integer moves where retail loads floats). Body unchanged.
+// P598: Axis scalars captured at each square/before all squares 369/376. By-value axis
+// with original/named sine products 380/383. Scalar captures with named sine products
+// 400/400, with named diagonal complements 369/376. The 0x90 frame and the square
+// and sine-product register lifetimes still need to agree in one form.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

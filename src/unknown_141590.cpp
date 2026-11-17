@@ -429,6 +429,10 @@ static inline void quaternion_transform_vector(
 // fixed grouping is not retail's); the dot's grouping alone 241 (1320 B), the rows' alone 215 (1327 B); with the
 // cross j, k, i 250 (1324 B); with s first and the cross j, k, i 254 (1310 B). The half-angle pair scoped in a block
 // with the construction 205 (identical listing); plain halves in that block 267 (1297 B, the plain-halves count).
+// P598: Half-angle initializer 205, with cosine assigned on all clamp paths 299.
+// Selected identity quaternion pointer with assigned/initialized halves 337/337.
+// Identity pointer before shared quadratic term 289/289, also sharing doubled w 274/274,
+// with assigned/initialized halves. The frame still needs separate quaternion and cross spills.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

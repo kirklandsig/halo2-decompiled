@@ -950,6 +950,9 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // output end with indexed input 174, independent remaining count and ordinal 83,
 // with a separate walking output 106. NOT kept: the 83 form reaches retail length
 // and first +0x6a, but the six-point reduction is below the keep bar.
+// P598: post-increment at blend/scale/both entry lookups 182/166/183. Continue past unnamed
+// blend/scale/both entries 89/89/89. Exact ordinal termination and outer while 89/89.
+// The input cursor still spills across the inner loops and the output stays in EDI.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
