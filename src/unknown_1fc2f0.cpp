@@ -758,6 +758,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P588: Repeated state-velocity/output-velocity/state-location field lvalues,
 // seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
 // NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.
+// M3 lane 15 r95 (fast with 0x1fc660 and the file's four other functions, all MATCH; control 32): on round 112's
+// in-place form (the prediction straight into `velocity`, scaled_difference3f in place, 53 with deltas i, j, k as
+// listed), the four delta orders not listed there: k, i, j 58 (369 B), k, j, i 72, i, k, j 57 (369 B), j, k, i 52;
+// the prediction into a point, then the existing vector3d_from_points3d into `velocity` and the existing
+// vector3f_scale by the ticks in place (normalize3d.h), deltas i, j, k 73 and j, i, k 73 (369 bytes each: the scale
+// takes the ticks as its left operand, so the products copy). Body unchanged.
 // M3 lane 13 r103 (fast with the file's five matched functions, all kept; [exact, register/stack-masked] aligned control [25, 9]):
 // the tick count read before the rate 32 (same code); the rate local dropped with the global passed to vector3f_add_scaled on
 // this body's j, i, k deltas 32 (same code); the correction scaled in place in `delta` through local_scale3d(&delta, scale,
