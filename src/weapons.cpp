@@ -4447,7 +4447,7 @@ bool function_1fddd0(long actor_index, point3f const *origin, vector3f *directio
 short function_15cca0(long player_index, byte code);
 void function_b7930(void *data, long tag_index, long object_index, s_effect_owner const *owner);
 long __stdcall function_b7b40(void *data);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 void __stdcall function_a7870(long object_index);
 void function_fa100(long projectile_index);
 transform4x3f *function_b8c00(long object_index, long *node_count);
@@ -4760,7 +4760,7 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 {
                     real minimum = WEAPON_REAL_AT(barrel_definition, 0x58) * scale +
                         WEAPON_REAL_AT(barrel_definition, 0x70) * (1.0f - scale);
-                    random_vector_in_cone(&creation.forward, &creation.forward, &g_4e7408->unknown0, minimum, spread);
+                    random_vector_in_cone(&g_4e7408->unknown0, &creation.forward, &creation.forward, minimum, spread);
                 }
                 if (WEAPON_BIT_AT(barrel_definition, 0, 7))
                 {

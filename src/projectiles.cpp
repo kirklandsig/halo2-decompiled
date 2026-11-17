@@ -3083,7 +3083,7 @@ void function_f8eb0(long projectile_index, vector3f *displacement)
 
 real function_11ce20(vector3f const *a, vector3f const *b);
 real function_1201a0(vector3f *v, vector3f const *fallback);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 struct s_globals_element;
 s_globals_element *function_188690(short index);
 void function_184060(long unknown3c, long unknown59, s_type_1e6529 *data, long unknown50);
@@ -3492,7 +3492,7 @@ no_effects:
 	}
 
 	if (response->angular_noise > 0.0f)
-		random_vector_in_cone(velocity, velocity, &g_4e7408->unknown0, 0.0f, response->angular_noise);
+		random_vector_in_cone(&g_4e7408->unknown0, velocity, velocity, 0.0f, response->angular_noise);
 	if (response->velocity_noise != 0.0f)
 	{
 		real length = function_30bf0(velocity);

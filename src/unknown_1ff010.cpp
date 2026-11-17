@@ -750,6 +750,18 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // three tests and the inlined rotation's cosine is the cause. BLOCKED-BY 0x1ecf50: rotate_direction's body in
 // src/unknown_1eb8a0.cpp is shared with src/flexible_surface.cpp and src/unknown_1e67a0.cpp, both held by other lanes this
 // round. Body unchanged.
+// b10F (11-17) walk against retail, fast build on r841 (with 0x1ecf50 and 0x2b400, control 77, 846 bytes vs 850): the
+// logic agrees with retail through the direction copy (+0x0 to +0xeb: actor +0x7e0/+0x7cc/+0x26c/+0x7e8/+0x7f4, prop
+// node +0x24/+0x20, point +0x48 plus 0.2f, the 0x25d690/0x26c2d0/0x1fef40/0x1ff010 calls) and in the tail; the four jcc
+// senses (0x1ff4ac, 0x1ff4d7, 0x1ff50b, 0x1ff618: magnitude > 0, 0 > dot, cross > 0, turned length > 0) and the
+// constants (1.0, 1e-4, 0.5, 0.0) match, so no behaviour fix. One rounding difference, inside rotate_direction
+// (src/unknown_1eb8a0.cpp, not editable here): retail's dot is (a.j*j + a.i*i) + k*a.k (addss 0x1ff543, 0x1ff55f), the
+// C grouping (i + j) + k; ours compiles (j + k) first, then i. Diagnostic twins of the helper, restored (they count
+// only on a MATCH): written inline, six dot term orders 72 (842 B), cross statement orders 72-146; as a local
+// forceinline function (cross_k, cross_j, cross_i, then the dot axis-first) 68 (843), with a file-scope zero as the
+// cosine 66 (847, best recipe; the zero folds); axis x vector with `+ cross * sine` 101-107; dot-first and cross-first
+// permutations 77/78. The test zero is still hoisted above the divide and the scale products are x * scale (retail
+// `scale * x`), so no match.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
