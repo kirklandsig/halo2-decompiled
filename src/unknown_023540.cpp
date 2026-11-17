@@ -3950,6 +3950,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // every gain register moves; the pairs stay constant first); both selectors defaulted then set under one `if (small)`
 // 948. Diagnostic: mode zero's blending and depth-bias writes without the skip test 894 (4816 bytes): the reloads
 // right after the call are still 1.0f first, so the join is not what orders them.
+// Round 180 (m3 lane 8, fast, base 9; all restored): the switch's default case setting maximum and both permissions with no
+// initialisers 1207 (4856 B); `register` on the shifted input word 9 (same code); mode zero's extra-texture test declared ahead
+// of the mode chain 761; both selectors typed byte with the shifted local kept 861 (4848 B), typed short 480 (4816 B).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
