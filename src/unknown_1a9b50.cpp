@@ -758,6 +758,11 @@ extern point2f *g_468778;
 // if/else 378 (1553 B, masked 112); the field_34 arm's one as if/else 374 (1549 B, masked 110: positional, not kept); both
 // 375 (1552 B, masked 112). The tail around 0x1f4280 / 0x1a9d80 / 0x1a9e00 differs only in registers (retail's field_2d
 // pointer in EBP); the actor-first, constant-exit, velocity-pointer and prop forms and their combinations are listed above.
+// MiniMax I (11-17): no new form, no lower score (375): retail computes the actor pointer before the call to
+// 0x1e4f90 and keeps it in ebp, this build computes it after the call and keeps it in ebx; the actor-first
+// declaration order measures 413 again (the actor pointer then takes edi, is spilled at esp+0x20 and the frame grows
+// to 0x44), the slot between the two lookups measures 413 as well, and the same order with the result declared last
+// measures 426.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

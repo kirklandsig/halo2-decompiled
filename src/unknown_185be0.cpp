@@ -603,6 +603,11 @@ union s_185be7
 // EBX where retail keeps it in ECX and the -1 sentinel in the other register, and the two zeroing loops and the store order
 // follow from that.
 // MiniMax I (11-16): no new form, no lower score (590): the head still differs in register assignment - the entry record base in EBX where retail keeps it in ECX and the -1 sentinel in the other register - and the flag test reloads the root global in retail where this build keeps it in EBX; that reload follows from retail treating 0x24590 as an opaque callee, so the fast check builds this body differently from the full image and no source form in this file can force it.
+// MiniMax I (11-17): no new form, no lower score (590): the head still differs in register assignment - retail loads
+// the root global into ecx for one lea and gives ebx to the -1 sentinel, this build keeps the root global in ebx and
+// gives ecx to the sentinel - and the first local's home sits at esp+0x3c against retail's esp+0x38; retail reloads
+// the root global after the magnitude call because it treats 0x24590 as an opaque callee, and that helper's
+// declaration lives in src/unknown_023540.cpp, which this lane may not edit.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

@@ -883,6 +883,11 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // retail shares the last `mov [edi+3], al` between the forced `audible = 1` and the outer `else audible = 0` (load/and/store,
 // laid out before the join); ours emits the else as `and byte ptr [edi+3], 0xf0` after the `ret`. Tried: the forced block as
 // `flags |= 1; audible = 1;` 183 (only the `or` moves up, as retail); the type-1 test inverted with `audible = 0` first 193.
+// MiniMax I (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80 and the
+// literal 1 is still pooled in ebx, where retail tests the flags byte with an immediate and materialises the 1 only
+// for the shift; retail gives ebx to the object pointer because it treats 0x188790 as clobbering ecx, and that
+// helper's inline-ness is decided in src/unknown_1887d0.cpp, which this lane may not edit. Reading the same bit
+// through TEST_FIELD_BIT(sound->flag0) instead of sound->flags & 1 compiles to the same bytes (184).
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
