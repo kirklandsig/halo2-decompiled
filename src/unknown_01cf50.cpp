@@ -2695,6 +2695,7 @@ void function_1e370(void)
 // Parameter order (size, position, callback, data): retail's one caller, 0x174420, loads EDX with the position (0x1748c3)
 // before ECX with the size (0x1748c7), and the body reads them there.
 // MiniMax S (11-17): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; this round's reorder of the shared helper cache_record_take's own stores leaves both this function and 0x429a0 unchanged, dropping the (void)& lines on the two parameters changes nothing, and the helper keeps its body.
+// MiniMax C (11-17): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; moving the helper's active store after the count's increment leaves the bytes unchanged, and the base comes out of the shared helper cache_record_new, whose body the rules forbid writing out by hand.
 // @retail 0x1e4e0
 bool function_1e4e0(long size, point3f const *position, t_1e4e0_callback callback, void const *data)
 {
@@ -3088,6 +3089,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // MiniMax C (11-16): floating point switch, which the rules forbid.
 // MiniMax R (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
 // MiniMax S (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
+// MiniMax C (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -3381,6 +3383,7 @@ struct s_429a0_payload
 // MiniMax C (11-16): them at its use and keeps the constant 1 in ecx across the block.
 // MiniMax R (11-17): no new form, no lower score (16): the globals are still loaded once and kept in registers where retail reloads each of them at its use and keeps the constant 1 in ecx across the block.
 // MiniMax S (11-17): no new form, no lower score (16): retail still folds the record base into eax before the store at +0x28 where this build stores through [eax + ebx + 0x28] and adds ebx one store later, so the body stays 379 bytes against retail's 378 and the fixup mask never applies; the three long stores through a pointer into the payload measure 19 (all three stores unfold), the type byte moved after them measures 21 (the store order follows the source), and the shared helper cache_record_take with its count's increment after the active store measures 16 and leaves 0x1e5e0 matching.
+// MiniMax C (11-17): no new form, no lower score (16): retail still folds the record base into the payload pointer one store earlier where this build stores through [eax + ebx + 0x28], so the body stays 379 bytes against retail's 378; the base comes out of the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -4159,6 +4162,7 @@ bool g_55e6bc;
 // MiniMax C (11-16): differ.
 // MiniMax R (11-17): no new form, no lower score (17): writing every product with the constant operand first does not move the bytes, so MSVC canonicalises the multiply's operands and keeps the row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still differ.
 // MiniMax S (11-17): no new form, no lower score (17): the far plane in a local of its own is hoisted to the function entry (18), the near and far planes each in a local used once score 10 (a match-only form, not kept), the two planes in locals with the far one first also score 18, and the depth-clip factor in a local of its own scores 129; what still differs is that retail loads the far plane into xmm2 from before the near-plane multiply while this build loads it after the near store, and that retail loads the fixed factor of the middle product of three of the four columns into the register while this build loads the row-relative one.
+// MiniMax C (11-17): no new form, no lower score (17): the far clip plane is still loaded into xmm1 after the near store where retail loads it into xmm2 before the near multiply, and three of the four middle products still load the row-relative factor into the register where retail loads the fixed one; the near and far planes each read into a local used once measure 10 but are a match-only form, and the products' operand order does not move the bytes.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -6241,6 +6245,7 @@ void function_1bd50(void *state);
 // MiniMax C (11-16): its own address.
 // MiniMax R (11-17): no new form, no lower score (13): the fallback index is still loaded as a masked dword where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the shared global g_4858b8's declared type is not this lane's to change and reading it as a word would need a cast of its own address.
 // MiniMax S (11-17): no new form, no lower score (13): the fallback index is still read as a dword and masked where retail reads a word and widens it with an xor; casting the shared global to a word gives retail's 204 bytes but the compiler emits movzx where retail has the xor and the word load, so the score rises to 15, and the shared global's declared type is not this lane's to change.
+// MiniMax C (11-17): no new form, no lower score (13): the fallback index is still loaded as a masked dword where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the shared global g_4858b8's declared type is not this lane's to change, and reading it as a word would need a cast of its own address.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {

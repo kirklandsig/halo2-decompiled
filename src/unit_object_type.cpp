@@ -2547,6 +2547,7 @@ void function_cfec0(long unit_index)
 // subsets 2/2/2/2/2/2/2; signed-range non-sentinel admission 92.
 // NOT kept: no exact separate NONE exit; original body and lazy saves restored.
 // MiniMax S (11-17): no new form, no lower score (1): the one difference left is still the branch at the NONE test, where this build's greater-than test gives jle and retail has je; the equality test with the body as the then arm gives retail's branch but folds the NONE exit's value into the constant (2), the same with the parameter copied into a local of its own (2), the equality test as an early return (92) and the one's complement form (96, which builds not/test instead of cmp); a local copy of the parameter that the body reassigns measures 46 and 47 and shortens the body to 247 bytes, so the copy goes to memory and the branch and the exit cannot both be had from one source shape.
+// MiniMax C (11-17): no new form, no lower score (1): the entry branch is still jle where retail has je; the equality spelling gives retail's je but VC folds the NONE exit to or eax, 0xffffffff again (2), and dropping the inner returns to one return at the end moves retail's lazy pushes into the prologue (62), so the jle spelling stands.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
