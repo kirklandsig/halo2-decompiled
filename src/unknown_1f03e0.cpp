@@ -1449,6 +1449,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // subsets, then a complete ground-adjusted magnitude result: 481/481/479/363/363/373/370/520.
 // NOT kept: all regress; native damping and raw/bounded homes remain. Original arithmetic,
 // observation boundaries, helper calls and complete body restored.
+// M3 lane 1 r113 (fast with 0x1f0450/0x24590, both MATCH; base 234): the general arm's `limited` declared, uninitialised, above
+// `desired` and assigned from delta later 234 (same code, homes unchanged); desired scaled in place with delta taken from it (no
+// `scaled`) 501 (3057 B); the low arm's cross taken from the `forward` copy 380 (3053 B); the direct arm's delta through the existing
+// vector2d_from_points2d from a speed-scaled 2-D `desired` 491 (3056 B); the low arm's cross written ahead of the forward copy 348
+// (3070 B). Seen in the listing: retail's general delta shares the flying arm's forward slot (0x2c) and limited shares desired's
+// (0x20), ours the reverse; the history block's change/relative/offset slots agree; the direct arm's `speed * rotated.x` keeps speed
+// as the destination in retail (`movaps xmm2, xmm3; mulss xmm2, xmm0`) where ours multiplies into the dying rotated.x.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
