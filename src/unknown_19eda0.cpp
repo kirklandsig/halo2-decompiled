@@ -579,6 +579,12 @@ real g_47ff94 = 1.5f;
 // on its lookup-array body 311 (the call is then retail's: two pushes, variant in EAX, group in ECX, tag in EDX).
 // Still differs: frame 0x34 against 0x30 (the step counter has a stack home and ours keeps &vertices[index].y in EBP where retail
 // keeps the step), the 0x4b2d0 call (held), and 0x1ccb0(59)/0x1cd90, which retail expands here (their file is /Ob1).
+// MiniMax D (11-17): no new form, no lower score (370): retail has no frame pointer here and takes its
+// first three arguments in registers (EAX into EBX, EDX into ESI, ECX into EDI), so its frame is 0x30 and
+// its argument homes are the register ones, while ours still takes them on the stack under a frame
+// pointer with a 0x34 frame; that transport is decided by this function's two callers, which this lane may
+// not edit. Retail also still reads its 1.5 factor from its own writable .data float before the frame
+// push, where ours materialises the literal, and still expands the two contributor helpers in place.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

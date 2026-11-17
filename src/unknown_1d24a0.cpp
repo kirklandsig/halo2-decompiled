@@ -479,6 +479,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // component and slot locals renamed to the other sort order 902 (same code); the angular pair read from the record at
 // each use (retail's [ebp+0x58]/[ebp+0x5c]) with a long scale counter 950 [357] (4220 B). Retail re-makes its zero
 // (`xorps`) and reloads every live XMM value after both 0x24590 calls although 0x24590 is pure x87.
+// MiniMax D (11-17): no new form, no lower score (902): the first difference is still the argument's
+// register (retail reads it into EAX and tests EAX, ours into ECX) and the frame (retail 0x1d4 against our
+// 0x1f0), so every later stack home differs by four bytes; retail's rolled scale loop is also still
+// unrolled into three multiplies with both vectors in memory, which is what decides the frame size here.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

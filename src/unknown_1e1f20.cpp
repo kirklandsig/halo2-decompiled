@@ -884,6 +884,10 @@ void swarm_leader_detach(long actor_index);
 // NOT kept (coordinator review, MiniMax D 11-15): 236 -> 216 rested on a bool flag set by one test and read by the
 // next (definition_bit = false; if (definition) definition_bit = ...; if (definition_bit)), a form kept only with
 // a byte match.
+// MiniMax D (11-17): no new form, no lower score (236): the first difference is still at +0x3, where retail
+// loads the record pool pointer into ECX and this build loads it into EAX, and the body is still 22 bytes
+// short of retail's 980 because retail expands 0x26ed40 into it; BLOCKED-BY 0x26ed40
+// (src/unknown_26e370.cpp), which this lane may not edit.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
