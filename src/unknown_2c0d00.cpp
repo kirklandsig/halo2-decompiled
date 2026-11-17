@@ -527,6 +527,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // (straight takes a dword of its own here), 0x14 -> 0x1c, 0x1c -> 0x24, bools 0x21/0x22/0x23 -> 0x22/0x21/0x23, actor 0x24
 // -> 0x14, 0x28 -> 0x28, 0x2c -> 0x30, 0x30 -> 0x34, raised 0x34 -> 0x40, range_min 0x40 -> 0x50, self_unit 0x44 -> 0x54,
 // range_max 0x48 -> 0x64, location 0x50 -> 0x58, block 0x58 -> 0x4c, ignore 0x60 -> 0x60. Body unchanged.
+// M3 lane 15 r93 (plain, 0x2c0d00 matched each time): the object radius test as `distance_squared > object_radius *
+// object_radius` 920; the combined flags computed inside the non-blocking arm 919; the object radius sum written radius
+// first 920; the sphere counter `long` 919 (3723 bytes; retail's counter is a short, `movsx eax, ax`); both of the 919 forms
+// together 919 (3721 bytes); the block-priority test with `aligned` first 920; the range test with `type != 0` first 920.
+// Both 919s are under the keep bar. Retail tail-merges the two 0x2c0d00 calls as ours does. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
