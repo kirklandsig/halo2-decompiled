@@ -449,6 +449,11 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // operand is the more complex one and, for two field reads, the offset (pointer arithmetic puts the index first);
 // every plain spelling, rename (data after entry), declaration order or integer sum keeps the offset first; only a
 // non-forwardable offset (a copy of the entry, a memcpy, or a reference to the result) puts the samples first.
+// M3 lane 13 r106 (fast with 0x10e480, matched throughout): the entry as a `const &` to the array element 2; the samples'
+// memcpy moved to the function's top 57 (142 bytes); the offset bound to a `long const &` at the sum 2; the sum through a
+// file-local forceinline (base, offset) address helper 2; `samples_address += offset` then the cast 8. Re-measured the
+// memcpy'd offset with plain samples 3: the samples load into EDX as retail, but the offset loads first, into the entry's
+// ESI in place, where retail loads it second into the data pointer's dying EDI.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
