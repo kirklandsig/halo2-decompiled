@@ -1080,6 +1080,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // declared after the model test 264 (814 B); the bit-30 test through object_get() 262 (same code); `sample` declared first
 // 262 (same code); the first and third together 266. Retail keeps input_matrices in EDX to the final_matrices store with
 // result as a separate EDI copy, so the +0xb3 byte takes BL; every form here coalesces result with the parameter.
+// M3 lane 10 r113 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): object_index typed
+// `dword` (definition and 0x137800's declaration) 240 (same code), on round 78's 194 lead 194 (same code); the early exits
+// returning input_matrices with final_matrices initialised from `result` 240; `sample` declared as the first local 239 (a
+// declaration move, one point); the node byte read twice (no `index` local) 240 (same code); the sample arm setting
+// `matrices` from final_matrices (no second final store) 281. Re-measured: the 0xbfe20 clear 262 (813 B), with bit 29/+0x34b
+// through header->object 194 (814 B). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1270,7 +1276,7 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
-// score 87 (was 87): earlier 97; retail is 2 bytes longer. Left: retail tests the node count for > 0 before
+// score 20 (was 87; b10C): earlier 97; retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // score 87 (was 87; 97 before): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
 // in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
@@ -1532,6 +1538,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // without /Ob1 that LTCG could inline here (headers: only slot_handler.h's object_node_matrix, already used; the
 // data_array.h datum helpers add checks retail lacks), so the no-model block is BLOCKED-BY 0xb8bd0 (inlined at this one
 // site in retail; both files /Ob1); the count > 0 guard stays match-only.
+// b10C (11-17) walk against retail, fast build on r841: statements, offsets, jcc senses, callee arguments (0x1d3920,
+// 0xbdb60, 0xbdc40, 0x142a60) and constants all compile to retail's bytes: no behaviour difference found. Kept,
+// retail's structure: the node loop sits inside `if (count > 0)`, as retail tests the count at 0xbd50f (`test eax, eax;
+// jle 0xbd5f5`) before the loop's own `mov esi, 1; cmp eax, esi`: 87 -> 20 (1399 bytes); 0xbc820, 0xbd020, 0xbee60,
+// 0xb8bd0 and 0xbfa40 stay MATCH. Left: the no-model lookup at 0xbd593-0xbd5c8, which is 0xb8bd0's own sequence
+// (0xb8bd0-0xb8bf8) without its `mov ecx, [0x4e0300]` (ecx still holds the pool from 0xbd1b2), with the index copied to
+// eax (`mov eax, esi`), `[ecx + 0x44]` re-read and the flag read from the same parent object; ours takes the index in
+// ecx and reloads the pool into edx. Re-measured on the guard, same code unless noted: the stored flag as a one-element
+// array 20, a `headers` local for the current and render-branch lookups 21, the no-model data field read through a
+// `byte *volatile const *` (as 0xb7740 does) 20, that with a pool local shared with the current lookup 292 (pool moves
+// to edi). Retail's `mov eax, esi` needs the index live past the lookup; no form here gives that.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
@@ -1637,13 +1654,16 @@ void __stdcall function_bd090(long object_index)
             }
             object_dispatch_adjust_root_matrix(object_index, (long)matrices);
         }
-        for (long node = 1; node < *(long *)(render_model + 0x48); node++)
+        if (*(long *)(render_model + 0x48) > 0)
         {
-            byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
-            if (!bit_vector_test(mask, node))
+            for (long node = 1; node < *(long *)(render_model + 0x48); node++)
             {
-                function_1421f0(&matrices[node], &orientations[node]);
-                function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);
+                byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
+                if (!bit_vector_test(mask, node))
+                {
+                    function_1421f0(&matrices[node], &orientations[node]);
+                    function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);
+                }
             }
         }
     }

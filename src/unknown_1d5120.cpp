@@ -93,6 +93,10 @@ void function_1d56f0(s_havok_component *component)
 // declaration keeps the count last, and a parameter order may not be changed, so the call site in src/bipeds.cpp
 // cannot match.
 // MiniMax S (11-16): no new form, no lower score (77); the rigid-body lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax I (11-17): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]` where
+// retail reads `[edx + eax + 0x40]`, and the member-of-s_havok_component spelling (76) is a gain of one, under the
+// keep bar, so it stays out; the success tail still pushes what retail hands over in EAX, EBX and ECX, which the
+// 0x1d0cf0 convention in another file decides: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // score 77 (was 77): no new form and no lower score; the rigid-body lookup still reads `[eax + edx + 0x40]`
 // where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX
 // and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
@@ -318,6 +322,17 @@ void function_1d56f0(s_havok_component *component)
 // M3 lane 3 r245 (measured, not kept): the count (EAX in retail) declared ahead of the rate, (..., count, rate, result), with the
 // declaration and the one call in 0xe0c70 (src/bipeds.cpp), whose retail call setup loads the rate pointer into EAX before the
 // count: 77 here (same code); 0xe0c70's gain from it needs a second object lookup at the call (see its note).
+// b10G (11-17) walk against retail, fast build on r841: no new form, no lower score (77, 824 bytes against 819). Walked
+// every statement against `disasm 1d5120` and align.py: _control87 masks (0x9001f/0x8001f, 0xfffff) and the mxcsr or/and
+// (0x1f80, 0xffffffc0), the count arriving in EAX (kept in EBX), the field offsets (+0x70 bodies, +0x3c motion, +0x80
+// transform rows, +8 object index, the filter shift), the flag/direction setup (`setg`, `lea ecx,[ecx+ecx-1]`), the loop
+// test senses (jge / jle), the presence callback (vtable 0x455970, found byte at +0x18, query vslot 0x30), the +-1.0
+// step constants (0x45dbc0 = 1.0, 0x45dbcc = -1.0), the dec/inc update and the world add/remove, release and cleanup
+// order: no logic difference; the 19 aligned differences are the lookup and the tail. Lookup: 0x1d517d reads
+// [edx + eax + 0x40], ours [eax + edx + 0x40]. Tail: retail keeps the component in EBX (reloaded at 0x1d53a3 after the
+// count store at 0x1d53a1, `mov edx,[ebp+0x1c]` at 0x1d5306) and calls 0x1d0cf0 at 0x1d53db with EAX = transform
+// (0x1d53cf), ECX = index, plain ret; ours loads the component at once and pushes component and index. Behaviour is
+// retail's. Both remain BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp), the convention picked over its call cycle.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

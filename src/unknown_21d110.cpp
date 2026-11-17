@@ -331,6 +331,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // retail expands it; the only form that reaches retail's shape (94 at 427 bytes, the state in EAX) needs the caller
 // 0x189fe0 in src/unknown_189010.cpp to move its request register, which loses ten matched functions:
 // BLOCKED-BY 0x189fe0.
+// MiniMax I (11-17): no new form, no lower score (181): retail still takes the state pointer in EAX and keeps it
+// in EBX with a four-byte frame, where this build reserves eight bytes and keeps the state in EDI, and the request
+// register is the caller's; the one form that reaches retail's shape (94 at 427 bytes) needs the caller 0x189fe0 in
+// src/unknown_189010.cpp to move its request register, which loses ten matched functions:
+// BLOCKED-BY 0x189fe0.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound
@@ -545,6 +550,19 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // through the force-inlined start helper too 94 (same code, 0x189fe0 135). Diagnostic (reverted): the 94 form with 0x221810
 // kept out of line (retail calls it at 0x189fe0's first lookup, ours expands it) puts both of 0x189fe0's arguments on the
 // stack (156 at 450 B), so that pairing is not retail's either. Still BLOCKED-BY 0x189fe0 (its request convention).
+// b9M (11-17) walk against retail, fast build on r840: no behaviour difference. Checked flag 0x100 -> +0x98 (0x21d117),
+// definition zeroed (0x21d135), count test (0x21d14e), failed allocation to the plain start (0x21d169 -> 0x21d251),
+// class flag 1 -> +0xd bit 0 (0x21d19c), the 0x78/0x79/0x7a availability bytes, reason NULL (0x21d1d0, 0x21d26e), the
+// type/sound_index/priority stores and 0x21d630(effect, 0) (0x21d21f-0x21d231), the delete's effect index in EBX
+// (0x21d240); all equal, and the `(short)` on the priority is redundant (both fields are short, same code). Retail
+// takes the state in EAX (0x21d113) and reads the tag from the stack (0x21d129, 0x21d16f, 0x21d1e3); its rate-limit
+// stage output is the tag's own dead stack slot (0x21d1e7, 0x21d281) and the listener shares the definition slot, so
+// its one four-byte frame is the slot the 94 form recovers. Re-measured, 0x21d110 94 at 427 B with state in EAX (both
+// starts through 0x125f70, delete out of line): 0x189fe0 135 and its ten callers differ by 1-16; moving this
+// function to the end of the file changes nothing. In ours-135 the request is not live across a call (the first
+// 0x221810 lookup is expanded) and stays in EDX; retail's call at 0x18a082 keeps it live in EBX (see lane 9's
+// noinline diagnostic above for why that alone is not enough). The 94 form still threads the rate-limited path
+// (retail 0x21d1f7 `or esi, -1; jmp 0x21d20f`) straight to the delete.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

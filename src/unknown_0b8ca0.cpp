@@ -690,6 +690,13 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax D (11-17): no new form, no lower score (165): the body is retail's 895 bytes and the lower-scoring forms
+// other lanes found all rest on forms this round excludes (a 'visible' flag tested after the cluster loop, a (real)
+// cast on the atan2 result, a comparison written the other way round, a goto and the 38-point restructure of the
+// query helper), so the body stands; what still differs is the byte flag's stack slot at +0x13 against retail's
+// +0xf, the pool step's link read (a load and a branch where retail branches first and reads EDX), the options
+// global in EDI where retail keeps EBX for the call's workspace, and the bit test's shift count and mask in EDX
+// where retail uses EAX and EDX.
 // MiniMax R (11-16): no new form, no lower score (165): re-measured in this round's nine-address set, the body is retail's 895 bytes; the first difference is the cleared byte at +0xf where retail clears +0x13, then the pool step's link read comes out as a load and a branch where retail branches first and reads EDX, the options global is loaded into EDI where retail keeps EBX for the call's workspace, and the bit test's shift count and its mask ride in EDX where retail uses EAX and EDX.
 // MiniMax I (11-16), on its not-kept 38 form (below; main stays 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
 // body lives in the cluster loop's found branch and the loop leaves it with a break, so the function has no goto
@@ -2042,6 +2049,10 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax D (11-17): no new form, no lower score (285): the body is still four bytes longer than retail's 1236 and
+// the head is retail's to +0x76, where the ancestry loop's match jump reaches this build's own epilogue and retail
+// jumps to its shared one; the marker pointer retail inlines belongs to 0xb8bd0 and the header's field read to
+// 0x142570, both /Ob1 bodies in files this lane may not edit. BLOCKED-BY 0xb8bd0, 0x142570.
 // MiniMax R (11-16): no new form, no lower score (285): re-measured in this round's nine-address set, the body is still four bytes longer than retail's 1236 and the head is retail's to +0x76; the ancestry walk's record read comes out in EDX where retail keeps EBX and adds the header's field at EBP+4, the object word's bit-7 test comes out as a shift and a mask on ECX where retail shifts the word in EDX by seven and masks it, and the object's byte lands in CL at +0x13 where retail keeps it in AL.
 // MiniMax C (11-16): no new form, no lower score (285): the head is retail's to +0x76, where the ancestry loop jumps to this build's own epilogue and retail jumps to its shared one; the body is still four bytes longer than retail's 1236.
 // MiniMax I (11-16): no new form, no lower score (285); the bit-7 test of the object word written in retail's

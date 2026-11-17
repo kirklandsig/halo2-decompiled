@@ -3019,6 +3019,16 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // else-if arm's own level just before the follow-up test, gives `mov eax, ebp`; -1, 2, 3, 4, 5, 0x40, 0x41, 0x7c, 0x98,
 // 0x101 and 0x10001, and stores in the first arm, the pending or compute arm, the follow-up, after it or in the second half
 // do not; dead or overwritten stores do nothing. Lead: a constant 1 whose use dominates the follow-up's `push 1`.
+// Round 128 (m3 lane 16, fast; each on the short trigger tail, 50 at 579 B, where the first follow-up's index reload is
+// the only real difference): the delay local scoped to the query arm 50; the follow-up (task start, then the event) as
+// an inline helper that tests the task, called from the pending arm and from the query arm's no-delay branch 206 (546 B,
+// kept out of line), forced inline 74 (578 B: the pending arm's task test folds and the two starts stay apart); the
+// squad byte pointer `byte *const` 50; both parameters `long const` 50; a redundant `0 <` guard before the trigger-entry
+// loop 51. The reload stays in each.
+// Coordinator review 11-17: the int/long trigger tail (MiniMax D, merged 11-15) is NOT kept: retail's tail is
+// 16-bit (`mov bp, [ebp+2]`, `cmp di, -1`) and the int/long width took 50 -> 29 through the scoring's alignment
+// only, a width picked by score; the short tail is back (50), whose one real difference is the first follow-up's
+// index reload (lane 16 r128).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3082,8 +3092,8 @@ void function_202be0(long arg_0, long arg_1)
                     local_7++;
                     if ((short)local_7 >= (short)local_8)
                     {
-                        int local_12 = *(short *)(local_6 + 2);
-                        long local_13 = local_12 == 0 ? (short)NONE : (short)(local_12 + 0x6e);
+                        short local_12 = *(short *)(local_6 + 2);
+                        short local_13 = local_12 == 0 ? (short)NONE : (short)(local_12 + 0x6e);
                         s_squad_actor_iterator local_14;
                         local_1[0x60] = true;
                         function_204d30(&local_14, arg_1);
