@@ -464,6 +464,7 @@ bool g_47f05b;
 // forms the address with a lea, and both follow from the shared constructors in include/unknown_146a20.h, which this lane
 // may not edit. BLOCKED-BY that header.
 // @retail 0x146a20
+// MiniMax E (11-17): no new form, no lower score (34): the 1 in EDX and retail's reload of the block on the constructed arm still never come together (the forms that keep the 1 read the block from a local, the forms that reload it read the global), and the abstract allocator's vtable store retail keeps still comes from the shared constructors in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY that header).
 // MiniMax C (11-17): no new form, no lower score (34): the abstract allocator's vtable store retail keeps is still dropped as a dead store, and the pool's placement is still loaded and added where retail reloads the block and forms the address with a lea; both follow from the shared constructors in include/unknown_146a20.h, which this lane may not edit, and the permuter's 53 variants in 310 s found nothing below the kept form. BLOCKED-BY that header.
 void function_146a20(void)
 {
