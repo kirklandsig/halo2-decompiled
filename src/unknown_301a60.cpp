@@ -193,15 +193,6 @@ __forceinline long read_3_301a60(unsigned char const *p)
 	return (high << 16) + (middle << 8) + low;
 }
 
-// the same, from a cursor passed by reference
-__forceinline long read_3_at_301a60(unsigned char const *const &p)
-{
-	long const high = p[0];
-	long const middle = p[1];
-	long const low = p[2];
-	return (high << 16) + (middle << 8) + low;
-}
-
 // the position as a copy that may be changed: the caller's at first
 __forceinline walk_3028c0 *writable_301a60(walk_3028c0 *&position, walk_3028c0 &copy)
 {
@@ -240,7 +231,11 @@ __forceinline void scale_301a60(__m128 &value, float factor)
 	value = _mm_mul_ps(_mm_shuffle_ps(single, single, 0), value);
 }
 
-// score 1 (was 9): the two three-byte reads of case 0x29 go through helpers that name
+// Matched (was 1): the command byte is kept as a byte and the switch value is made
+// from it, and the corner case shifts by the byte (retail's `mov ecx, eax` for the
+// count); the first three-byte read of case 0x29 then takes its address from a named
+// pointer instead of a cursor passed by reference.
+// Before, 1 (was 9): the two three-byte reads of case 0x29 go through helpers that name
 // each byte (the second read then loads its last byte first and adds into the low
 // byte's register), the first with the cursor by reference and the cell size through
 // an accessor. Left: `mov ecx, eax` in retail against `mov cl, al` for the corner
@@ -295,7 +290,8 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 	float high;
 	for (;;)
 	{
-		long const op = *commands;
+		unsigned char const code = *commands;
+		long const op = code;
 		long axis = 999;
 		switch (op)
 		{
@@ -495,7 +491,8 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		case 0x2b:
 		{
 			axis = op - 0x29;
-			float const from_low = ((float)read_3_at_301a60(commands + 1) * cell_scale()) * walk->scale - walk->offset.value.m128_f32[axis];
+			unsigned char const *const first = commands + 1;
+			float const from_low = ((float)read_3_301a60(first) * cell_scale()) * walk->scale - walk->offset.value.m128_f32[axis];
 			low = from_low - walk->reach.value.m128_f32[axis];
 			high = ((float)read_3_301a60(commands + 4) * inverse_cell_size) * walk->scale - walk->offset.value.m128_f32[axis] + walk->reach.value.m128_f32[axis];
 			commands += 7;
@@ -574,7 +571,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			corner.m128_f32[1] = (float)commands[2];
 			corner.m128_f32[2] = (float)commands[3];
 			corner.m128_f32[3] = 0.0f;
-			float const factor = (float)(1 << (unsigned char)op);
+			float const factor = (float)(1 << code);
 			__m128 const factor4 = splat_301a60(factor);
 			subtract_301a60(((segment_3028c0 *)segment)->start, corner);
 			subtract_301a60(((segment_3028c0 *)segment)->end, corner);
