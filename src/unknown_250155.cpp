@@ -1582,6 +1582,19 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // MiniMax S (11-15): no new form, no lower score (83): retail fills the unused tail of the index array with one
 // `rep stosd` of 16 minus the index count elements and keeps the mode in EBX and the counter in EDI, while ours moves the
 // mode to the stack and swaps the item_count and index_count homes whatever the declaration order.
+// b10B (11-17) walk against retail, fast build on r841: statement by statement the logic is retail's, no behaviour
+// difference: 0x251527-0x251538 mode/teams/values tests (`mode != 3 && (mode < 1 || teams)`), 0x25153a-0x251562 the
+// count > maximum choice (jg, item_count = count first, then maximum), 0x251565-0x25157b the 0x19a951 scan, 0x25159c
+// the 0x199ef8 result, 0x2515d3-0x251600 `mode == 1` query then `item_count = player_count` for every other mode,
+// 0x251600-0x25163a comparator (teams && values 0x251384, teams 0x2513fc, values 0x2513c9, neither: no qsort), rows at
+// 0x251659-0x25169e, then 0x24c0c4 and 0x24bd61 (c_widget::v11). Start 0x2514fd follows 0x2514d7's `jmp` at 0x2514f8
+// (packed, no padding): no fall-through. New trials (all reverted): player_count `volatile` (diagnostic) 156 (430
+// bytes); both index fills plus a `const` copy of index_count for the rows loop 172, and the fill as a while loop 172
+// (same code). With the index fills the fill bytes equal retail's (0x25157d-0x251595); only the allocation differs:
+// retail spills index_count to [ebp-8] at 0x251582 (rep stosd clobbers EDI), reloads it at 0x2515d0, keeps mode in
+// EBX and, in the rows loop, `this` in EBX with index_count read from memory (0x251659+); ours gives index_count EBX
+// for the whole body, spills mode and reloads `this` each pass. The branch-two reload after 0x19a9b4 (0x2515a6) is
+// that call's summary. Best match-only recipe: none reached MATCH; the pointer fills of the kept body (83) stand.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2882,6 +2895,19 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // counted in place of shown_count 288 (917 bytes); with it the four widget indices declared once at function
 // scope 84 (gain three, not kept; the slots stay one six-cycle off), plus the chained default arm 91.
 // Re-measured: the chained default arm alone 92.
+// b10B (11-17) walk against retail, fast build on r841: the logic is retail's statement by statement, no behaviour
+// difference: 0x250451-0x250458 list init, 0x25048d value7e into EDI for 0x2b01a2, 0x2504a2 the 16-byte copy to +0x48,
+// 0x2504c4-0x2504f5 team test (jl/jge senses, NONE arm), 0x25050a-0x250518 four-slot search, 0x25054e switch dispatch
+// (retail's table at 0x25079f right after `ret 0x18`; ours starts 3 bytes later, same layout), second loop 0x2505de-
+// 0x250708 with the mode switch at 0x250607-0x25064a (0/2, 1, default NONE), voice block 0x2506d8-0x2506fb
+// (`!0x53750(...)`, else 2), last loop 0x250713-0x250792 (five 0x22ee47 calls, kinds 6/6/8/8/9). Start 0x25042d
+// follows 0x2503c0's `ret 4` at 0x25042a: no fall-through. Kept differences: slots (shown_count -0xc, &players[i] -8
+// in retail), the reload `mov esi,[esi]` at 0x2506e6 (ours keeps the value across 0x53b40), and 0x25072e-0x25077d:
+// retail holds bitmap_a in EBX, text_b then the screen in EDI (reloaded at 0x25075c) and bitmap_b in [ebp+0x1c]; ours
+// keeps the screen in EBX and spills both bitmaps. Match-only recipe: players[i] through a volatile cast at the
+// 0x53750 call 89 (earlier round); still three causes short of a match. New trials (reverted): the last loop as a
+// do-while 92 (919 bytes); a loop-scope const copy of the screen 87 and a pointer to the screen parameter, unused or
+// used by the five calls, 87 (same code). No trial this round beat 87.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
