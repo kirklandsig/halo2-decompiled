@@ -682,6 +682,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P551: Standalone complete lowest-point replacement/retention outcomes in
 // bool/byte/short/long: 144/144/144/144/144/144/144/144. NOT kept: no exact frame/count-home repair;
 // original body restored. Candidate decisions, all lazy observations and compaction unchanged.
+// Round 252 (m3 lane 3, fast with 0x239d50/0x239b80, both matched; control 144). Main's candidate scan is retail's apart
+// from frame offsets; the outer region differs in who holds EBX (ours the count, reloaded after the scan; retail the hull
+// count, reloaded from +0x10) and in the widened count's frame slot. Main's closure as `if (!left_start ||
+// points2d_differ(...)) continue; goto finished;` on the two-counter loop 144 (same code); `hull_count = pass + 1;` ahead
+// of the index store 207; `dword hull_count` 144; `dword left_start` 144 (same code each); a `point2f const *origin =
+// &points[current];` local for the candidate scan's four reads 216. Re-measured lane 15 r83's one-counter `continue` form
+// 331 (695 B: the difference helper is then called out of line twice). Body unchanged.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
