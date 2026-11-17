@@ -1150,6 +1150,18 @@ real normalize2d(point2f *v);
 // P588: Fixed original actor/type/unit/selected-table/base-table bindings,
 // immutable retry speed, fixed requested-type and target inputs: eight 135 at
 // 923/935 bytes. NOT kept: no native DL or independent-return repair; original body restored.
+// b8J (11-17) walk against retail, fast build on r836 (score 135 before and after): the chosen-speed test is now
+// `!(base_speed * 1.2f >= chosen_speed)`. Retail does `comiss xmm0, xmm3` then `jae` to the shared exit (0x1f83f7,
+// 0x1f83fa), so an unordered compare (NaN chosen speed) falls through into the movement stores; the old
+// `base_speed * 1.2f < chosen_speed` compiled to `comiss xmm3, xmm0; jbe` and skipped them on NaN. A behaviour fix.
+// The other branches already agree with retail's polarity, NaN included: retry on `speed * 1.25f > minimum`
+// (0x1f82d9, 0x1f82de), vertical `> 1.2f` (0x1f8400, 0x1f8419), planar `> 0.0f` (0x1f843b, 0x1f843e), facing height
+// `!= 0.0f` (ucomiss/jnp 0x1f847a, 0x1f8489) and the normalized-facing test (0x1f849d, 0x1f84a0). Correction to the
+// 11-14 note above: the `mov al, byte ptr [esp + 0x50]` at 0x1f84c2 is the result, not an unwritten byte: three pops
+// (0x1f84af, 0x1f84b0, 0x1f84bd) precede it, so it reads frame +0x5c, the target slot that holds the trajectory result
+// (0x1f82c5, 0x1f8336); retry speed shares the force slot (0x1f82f6 `fstp [esp+0x6c]`). Our build reads the same slot.
+// Constants checked: 1.25f (0x45dc88), 0.03f (0x4508f8), 1.2f (0x45dce8). Offsets, call tuples and the force/fast and
+// scan logic agree statement by statement; no other logic difference found. Callers 0x1be8f0, 0x1f7c70 still MATCH.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1236,7 +1248,7 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
                 byte *globals = (byte *)g_4e034c;
                 if (globals && *(long *)(globals + 0xc8) > 0)
                     base_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80);
-                if (base_speed * 1.2f < chosen_speed)
+                if (!(base_speed * 1.2f >= chosen_speed))
                 {
                     actor->unknown464 = true;
                     actor->unknown466 = true;
