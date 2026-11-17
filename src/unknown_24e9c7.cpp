@@ -505,6 +505,17 @@ struct s_24e9c7_points
 // conversion (no long local) 125; the default bounds as two chained assignments 131.
 // P540: Complete scalar-SSE perpendicular/upper/side products and size addition, 258/264/262/273/282/282/297/321.
 // NOT kept: extra stack alignment and larger frame/extent; original complete source restored.
+// b8M (11-17) walk against retail, fast build on r836 (125, same as the control; 0x24e59f and 0x22a664 MATCH):
+// no logic, structure or behaviour difference found. Walked 0x24e9c7..0x24ecad block by block: every jcc is an
+// integer compare (kind 0x24e9ea/0x24e9f6, the -1 tests 0x24ea14/0x24ea1e, sequence_index 0x24ea61/0x24ea6d/0x24ea9d,
+// sprite_count 0x24ea7f, fallback 0x24eaa3/0x24eaaf, first_bitmap 0x24eabe), so no NaN direction can differ; field
+// offsets, the 1.0 at 0x45dbc0, the xorps zero, the pushes at 0x24ec91-0x24ec9d and the alpha arms (0x24ec3c-0x24ec81:
+// full = table * alpha, hidden = 0, else (1 - fade) * table * alpha) agree. The corner sums compile to retail's
+// tree: n0 = back + (up + origin), n1 = side + (up + origin), n2 = side + origin, n3 = back + origin.
+// Frame: at 0x24eb01 retail stores the across-j product to [ebp-8] although xmm5 (the 1.0) is already dead, so that
+// spill is not register pressure; the pair [ebp-0xc/-8] has x untouched and y with five references (0x24eb01,
+// 0x24eb75, 0x24eb95, 0x24eba9, 0x24ebcf), like ours' back pair but allocated above result. New (fast): `size *=
+// forward_i` as across j with `0.0f -` across i 138 (739 B); the same with unary minus 125 (same code).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
