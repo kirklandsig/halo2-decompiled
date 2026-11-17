@@ -1816,6 +1816,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // B458: Search-exit copies of the resolved mode/class/type, then mode+class/mode+type/class+type/all
 // for both optional stores and the second request. Last form ends the iterator scope at search exit.
 // Scores 828/828/828/828/828/828/828/828. The resolved-mode spill and candidate/result homes remain.
+// Late reuse of requested mode, class, type, or any combination for the resolved request 828 each.
+// Requested tuple from the iterator and resolved keys rebound for output and request 1016.
+// NOT kept: late assignments preserve the same homes; the iterator-tuple form shrinks the frame
+// to 0x28 and lengthens the body.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

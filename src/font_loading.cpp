@@ -869,6 +869,10 @@ static inline long font_character_pixel(long alpha, long color)
 // colour registers rotate), a dword pixel helper result (59), count += 2 as a literal (59), a dword run (60), and the
 // colour literal as (source[1] << 8) | source[2] (103, retail's length of 504 but three instructions where retail has
 // four: movzx ax, byte [edi+2]; xor ecx, ecx; mov ch, byte [edi+1]; or eax, ecx).
+// Raw header masked in pixel helper, byte/full-width parity 96/208; doubled-opacity mask
+// 161/232. Long and dword inputs give the same scores. NOT kept: the 504-byte forms regress;
+// full-width parity after raw masking recovers the pixel sequence but moves the run to EBP
+// and merges the fills.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
