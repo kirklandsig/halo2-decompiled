@@ -16,8 +16,10 @@ struct s_cache_file
 	byte unknown04[0x800];
 };
 
-s_cache_file g_557c90[6];
-long g_55aca8;
+#include <stddef.h>
+#include "cache_file_table.h"
+
+s_cache_file_table g_557c90;
 
 #include "async.h"
 
@@ -45,18 +47,18 @@ static inline long cache_location_file_type(dword location)
 
 static inline HANDLE cache_file_handle(long type)
 {
-	HANDLE handle = g_557c90[g_55aca8].handle;
+	HANDLE handle = g_557c90.files[g_557c90.current].handle;
 
 	switch (type)
 	{
 	case 0:
-		handle = g_557c90[2].handle;
+		handle = g_557c90.files[2].handle;
 		break;
 	case 1:
-		handle = g_557c90[0].handle;
+		handle = g_557c90.files[0].handle;
 		break;
 	case 2:
-		handle = g_557c90[1].handle;
+		handle = g_557c90.files[1].handle;
 		break;
 	}
 	return handle;
@@ -65,18 +67,18 @@ static inline HANDLE cache_file_handle(long type)
 // @retail 0x213760
 long function_213760(dword location, long size, void *buffer, dword *bytes_read, bool *done, long type, long priority)
 {
-	HANDLE file = g_557c90[g_55aca8].handle;
+	HANDLE file = g_557c90.files[g_557c90.current].handle;
 	long local_0 = cache_location_file_type(location);
 	switch (local_0)
 	{
 	case 0:
-		file = g_557c90[2].handle;
+		file = g_557c90.files[2].handle;
 		break;
 	case 1:
-		file = g_557c90[0].handle;
+		file = g_557c90.files[0].handle;
 		break;
 	case 2:
-		file = g_557c90[1].handle;
+		file = g_557c90.files[1].handle;
 		break;
 	}
 
@@ -148,7 +150,7 @@ struct s_cache_initial_path
 	s_cache_initial_path() { path[0] = 0; }
 };
 
-/* the 0x385c bytes at 0x557c90 (g_557c90, g_55aca8 and g_55acac): retail's
+/* the 0x385c bytes at 0x557c90 (g_557c90: the files, the current one and the copies): retail's
    static initializer at 0x377f00 constructs them with 0x2135c0, and 0x2136c0
    clears them with one memset */
 struct s_cache_initial_state
@@ -1796,12 +1798,12 @@ void function_213970(void)
     function_2138f0(6, 20);
     for (long index = 0; index < 6; index++)
     {
-        s_cache_file *file = &g_557c90[index];
+        s_cache_file *file = &g_557c90.files[index];
         char path[256];
         cache_file_path_from_slot(index, path, sizeof(path));
         dword expected_size = cache_file_size_limit(index);
         bool volatile done;
-        s_file_handle *handle = (s_file_handle *)&g_557c90[index].handle;
+        s_file_handle *handle = (s_file_handle *)&g_557c90.files[index].handle;
         function_1a0b40(path, 3, 3, 1, 0, 6, handle, &done);
         cache_wait_for_completion(&done);
         bool valid = false;
