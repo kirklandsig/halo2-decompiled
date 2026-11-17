@@ -44,9 +44,6 @@ public:
 	void function_303b80();
 };
 
-// score 86 (was 86): retail keeps the two counts in eax and ebx and the two
-// best indices in the stack slots 0x24 and 0x28; ours keeps the counts in ebx
-// and edi and swaps the two slots, so the whole tail differs
 // @retail 0x303b80
 void class_303360::function_303b80()
 {
@@ -69,7 +66,7 @@ void class_303360::function_303b80()
 		{
 			if (function_303360(&corners_b[i], (triangle_303360 *)corners_a, 0) == 7)
 			{
-				sources_b[0] = sources_b[i];
+				_mm_store_ps(sources_b[0].m128_f32, sources_b[i]);
 				corners_b[0] = corners_b[i];
 				count_b = 1;
 				return;
@@ -105,7 +102,8 @@ void class_303360::function_303b80()
 	if (edges_b == 3)
 	{
 		count_b--;
-		sources_b[g_4136b0[best_b]] = sources_b[count_b];
-		corners_b[g_4136b0[best_b]] = corners_b[count_b];
+		int const replace_b = g_4136b0[best_b];
+		sources_b[replace_b] = sources_b[count_b];
+		corners_b[replace_b] = corners_b[count_b];
 	}
 }

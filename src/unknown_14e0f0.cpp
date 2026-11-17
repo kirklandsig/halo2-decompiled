@@ -91,7 +91,7 @@ void __stdcall function_bef30(long object_index, long remove, long add, long sib
 void function_b8b70(long object_index);
 void __stdcall function_b9a50(long object_index);
 bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position,
-    point3f *result, long unknown, real radius, bool mode);
+    point3f *result, real unknown, real radius, bool mode);
 real function_30bf0(vector3f *vector);
 __declspec(noinline) void function_1420f0(transform4x3f *out, point3f const *position,
     vector3f const *forward, vector3f const *up);
@@ -200,7 +200,7 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
                 point3f placed;
 
                 transform_offset_point(&frame, offset_scale, &g_453918[(short)offset_index], &placed);
-                result = function_c5460(root, ignore, &placed, NULL, *(long *)&placement_radius, 1.0f, 0);
+                result = function_c5460(root, ignore, &placed, NULL, placement_radius, 1.0f, 0);
                 if (!result)
                 {
                     for (short attempt = 0; attempt < 8 && !result; ++attempt)
@@ -211,7 +211,7 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
                         candidate.x = random_offset.i * search_radius + placed.x;
                         candidate.y = random_offset.j * search_radius + placed.y;
                         candidate.z = random_offset.k * search_radius + placed.z;
-                        result = function_c5460(root, ignore, &candidate, NULL, *(long *)&placement_radius, 1.0f, 0);
+                        result = function_c5460(root, ignore, &candidate, NULL, placement_radius, 1.0f, 0);
                     }
                 }
             }

@@ -87,7 +87,13 @@ struct s_effect_particle_system_definition
 	word flag1 : 1;
 	word flag2 : 1;
 	word flag3 : 1;
-	word : 12;
+	word flag4 : 1;
+	word flag5 : 1;
+	word flag6 : 1;
+	word flag7 : 1;
+	word flag8 : 1;
+	word flag9 : 1;
+	word : 6;
 	byte unknown18[0x30 - 0x18];
 	long unknown30;
 	byte unknown34[4];

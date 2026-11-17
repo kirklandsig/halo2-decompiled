@@ -181,9 +181,38 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
-#pragma inline_depth(1)
+// MiniMax E (11-11): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc and the two
+// cached short axis locals are what costs the eight bytes - the form that drops them matches retail's frame and
+// length but scores 976 because the first difference moves earlier, so the 965 body stays.
+// MiniMax I (11-10): no new form, no lower score (965); the first difference is still the frame size (ours
+// 0x11d4 against retail's 0x11cc) together with the scene and surface records sitting in each other's stack
+// homes, and that rotation depends on 0x48e70 in another lane's file.
+// MiniMax G (11-11): no new form, no lower score (965): the first difference is at +0x7 - ours loads 0x11d4 where retail loads 0x11cc and keeps the argument in esi where retail moves it into edi; the body length agrees (4590 bytes both).
+// MiniMax A (11-13): no new form, no lower score (965); the frame is still 0x11d4 against retail's 0x11cc —
+// the two cached short axis locals cost those eight bytes — and the definition and surface records still sit
+// in each other's stack homes.
+// MiniMax B (11-14): no new form, no lower score (965); the gap opens in the first block, where retail loads the base pointer into
+// EDI and keeps the computed offset in EAX while ours uses ESI and EBX, and retail clears the frame dword with a single store
+// where ours zeroes a register first; the extent is retail's 4590 bytes, so only the block layout differs.
+// MiniMax S (11-14): no new form, no lower score (965): the two type changes that give retail's frame and
+// length were measured last round at 976, above the score here, so they were not taken again; the body was
+// re-measured after the comment edits and did not move.
+// score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
+// callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
+// reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
+// the vertex loop (0x1847e2); (2) full-width vertex counters (retail's count at [esp+0xb8] is a dword, pushed whole at
+// 0x185241, with pointer-stepped vertex stores at 0x18497a). Together they give frame 0x11cc and 4590 bytes as retail (the
+// 0x11d4 excess of the older rounds below came from the cached short axes), but score 976 because the first
+// difference moves from +0x7 to +0x10 and every later stack home still differs. The code here keeps the short axes. Still open: retail keeps the record/surface
+// pointers at [esp+0x98]/[esp+0xe0]/[esp+0xe4] from the start; retail tests the plane flag as movsx + `test dh,dh` (ours
+// zero-extends); retail's point/plane transforms read scalars (no vector copy); retail stores the four cell bounds as words
+// at +0x3c..+0x42. On the 976 form (opcode-normalized similarity vs retail, base 0.724 -> 0.741): bool local_29 (retail's
+// sete/test al at 0x184834) 1001; face bounds at the top of the iteration 997; both 993; plus plane transform on scalars
+// 967 (4567 bytes, frame 0x11c4); plus point scalars too 1007 (frame 0x11bc); point scalars alone 1028; test as `< 0` 1003;
+// long loop counters for the cells 993; cell bounds as a short rectangle 984/994; surface lookup as one && test 976;
+// record/list declarations swapped 976.
+// MiniMax S (11-10): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc, the definition and listener records sit in different stack slots and the falloff and bounds values are kept in separate homes.
 // MiniMax B (11-04): no new form, no lower score.
-// score 965 (was 965): Frame 0x11d4 versus 0x11cc and scene/surface geometry homes remain.
 // Earlier (965, was 977): the same frame and homes.
 // Round 419: scene field observations 983; effect record reference 977; scene field observations/effect
 // record reference 983; surface record reference 977; scene field observations/surface record reference
@@ -298,6 +327,9 @@ __forceinline bool function_184448(long arg_0)
 // AC489: Plain component traversals for normalization output, point input scale and world
 // bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
 // with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
+// MiniMax G (11-14): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
+// initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
+// 0x48e70 call, whose definition is in another machine's file.
 // m3 lane 11 r60 (fast 965): record/list pointer declarations swapped 965; both chosen by ternaries 998
 // (4608 bytes); NULL/list defaults then `if (arg_0 != NONE)` 978; 0x23a220 with its two point parameters
 // swapped (retail's three callers set the single point up in EBX before the polygon in EDX; definition and every
@@ -327,7 +359,45 @@ __forceinline bool function_184448(long arg_0)
 // after every 0x48e70 call, the pattern of a caller that does not see the callee's register usage (the 0x22750
 // effect on 0x22cf0, reproduced there by `inline` on that definition); ours keeps it in XMM2. 0x48e70's definition
 // is in machine 1's src/unknown_02b400.cpp.
+// Round 109 (m3 lane 12, fast; 965): the plane flip test as `field_0 < 0` 984 (4573 B, `test cx, cx; jge`); the flag
+// word read once into a long local for the index and the flip test 974 (gives retail's `movsx` load, registers move);
+// the recorded axes-at-each-use and long counters form re-measured 976 (frame 0x11cc), with that long flag word 992
+// (4593 B); the first record as an element pointer before its field read 965 (same code); the bounds compare written
+// count first (retail loads the count into EBX before the compare) 966. The file-scope
+// inline_depth pragma pair around this function removed: identical code (kept as a cleanup).
+// MiniMax D (11-14): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc; dropping
+// the 2D sample array to seven entries matches the frame size but reaches only 964 and needs a declaration change,
+// and the remaining difference is set by the 0x48e70 call, whose definition is in another machine's file.
+// MiniMax D (11-11): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc and the
+// initial surface pointer is still held in ESI where retail holds it in EDI; the remaining difference is set by the
+// 0x48e70 call, whose definition is in another machine's file.
+// M3 lane 10 r106 (fast; masked aligned count in brackets, base 454): retail's normalizes square each component with
+// memory operands (`fld [k]; fmul [k]`, sum k, j, i) and keep the root on the x87 stack for fabs; the double-product
+// helper here loads each component once and pops three leftovers. The zero-velocity copy and the force-record lookup
+// ahead of the sample normalize (retail schedules both inside its x87 block) 981 [430]; both normalizes through the
+// existing normalize_inline 982 [414] (4563 B; its squares come k, i, j); the helper as `(real)sqrt((double)(k*k + j*j +
+// i*i))` with the scale arm first 990 [415] (4563 B; the compile-only build gives retail's x87 block exactly); reorder plus
+// normalize_inline 958 [407] (4590 B, 994 instructions as retail; seven points, not kept); that plus the axis table read
+// at each use 967 [374] (frame 0x11cc, first difference +0x1c); plus a long vertex counter 1006 [396] (4622 B); plus a
+// long bounds index 991 [383]; reorder plus the float-sum helper 963 [393] (4596 B); reorder, normalize_inline and the
+// per-face bounds at the face-loop top 969 [412], the same on the axis form 969 [365]; reorder, normalize_inline and a
+// bool edge side 963 [397]. The positional count stays near 965 because the first block's registers shift every line.
+// MiniMax R (11-15): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, so the
+// worklist array sits at +0x1e0 where retail's sits at +0x1d8 and the interior slot layout differs throughout; the
+// initial surface pointer is still carried in ESI where retail carries it in EDI, and the surface list pointer in EBX
+// where retail carries it in ECX; the negated plane is still computed in the registers where retail stores it and reads
+// it back. New forms tried and dropped: the search condition with the element test first (971), the permuter's four
+// forms (969 with the cached worklist entry dropped and the sample store moved), the negation in the other order (964,
+// one point), and the prefix increment and the zero comparison (no change).
+// MiniMax S (11-15): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4 and the scene and
+// geometry homes are rotated, so every later load sits at a different offset; the endpoint, counter and width forms of the
+// earlier rounds all score 965 or worse.
+// MiniMax I (11-16): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the
+// worklist array and every later slot sit at a different offset and the scene and geometry homes are rotated; the
+// earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters)
+// scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 // @retail 0x184440
+// MiniMax C (11-17): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later slot sit at a different offset, and the scene and geometry homes are rotated (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx); the earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
     long local_0[1024];
@@ -537,4 +607,3 @@ void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, lo
         function_1895f0(&local_14, 1.0f, local_11->field_10);
     }
 }
-#pragma inline_depth(255)

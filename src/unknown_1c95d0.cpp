@@ -33,49 +33,7 @@ void __stdcall function_210180(long value);
 void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, long unknown3, s_1fbac0_event *event);
 long function_26b230(long clump_index, long prop_index);
 extern s_record_pool *g_502420;
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
-// score 3 (was 3): what is left is that retail stores the lookup's result
-// to its stack home after it reloads the object's field and compares it, ours
-// before (the barrier keeps the store above the reload).
-// Round 108 fast trials: swapped post-call tests 147; nested field-first tests 3;
-// complemented disjunction 3; two-use actor-index snapshot 3; lookup result declared early
-// uninitialized/initialized 3/3; const lookup result 3; actor/target pointer declarations before
-// the condition 3. Original restored; lookup-result store still precedes retail's field reload/compare.
-// Earlier (was 62): Retail's LTCG treats
-// the 0x1c9580 call as writing memory: with a global store added to that
-// callee (diagnostic) the reload and the late store come out as in retail;
-// BLOCKED-BY 0xbadc0, which ours sees as read-only. No barrier 165; callee
-// bool read through its address, no barrier 165; result kept in the second
-// parameter 3; result flag declared before the lookup 10.
-// Round 183 (lane 3, fast): the barrier before the lookup call 5; right after the call 4; the result
-// flag declared before the call (barrier after it) 10; the event record declared before the call 3; the
-// record declared before the barrier 3. Retail keeps g_4e0300 in ESI across the call but reloads the
-// object's field, so its 0x1c9580 is seen as writing through pointers only.
-// Round 37 (fast): result flag cleared after the barrier 4; result declared, flag cleared, then the
-// lookup 10; the `arg_2 != 9` test named first 3; event record before the lookup with the flag after
-// the barrier 4; flag after the event record 4; a read-only barrier (`_ReadBarrier`) is not an
-// intrinsic in this compiler (becomes a call, 172).
-// Round 120 (lane 7, fast): a second barrier before the lookup 8; the event record declared at function
-// scope 3 and at the field-test scope 3; the result flag declared at function scope and cleared after the
-// barrier 4 (aligned 1: only the result store left above the reload); the flag cleared after the barrier
-// and the record 4; the flag initialized at function scope 54; actor index read once into a local 3.
-// Round 150 (fast): lookup Boolean at entry 179/604; first event aggregate 180/627; named actor predicate 3;
-// object renamed with that predicate 3; read-only object pointer 3; object at function scope 3;
-// success flag before the event stores 7; nested team validation 3. Original restored.
-// Round 70 (m3 lane 1, no barrier; one-link harness, exact at 3 on this body, unless marked fast): the cause is the
-// lookup's memory summary, taken from its code before optimization. One store through a local pointer in 0x1c9580, in one
-// arm 0 (fast; 0x1c9580, 0x1c9c80 and 0x28fc50 stay matched) or all three 0; a reference to one member of a local record
-// 0 (fast); the same pointer store in 0xbadc0 0 (diagnostic). None kept: a pointer to a whole local, an invented struct.
-// Not seen as a store: an out-parameter helper for the choice 164 or for the lookup 164; a helper returning the value
-// 164; early returns 166 (0x1c9580 33); a cast of the local's own address 165 (fast); a 4-byte memcpy 165 (fast); a
-// read through a const field pointer 164; a source-field pointer 164 (0x1c9580 15); the bool or object index read
-// through its address 164/178 (0x1c9580 39); the result in the second parameter 164, its address read at the call or
-// at entry 164/168; a separate result with that read 164; the result or flag stored through a local pointer in this
-// function 164/164. The 0xbadc0 store leaves 0xd6c80 (206) and 0xdb110's inlining unchanged.
-// Round 215 (lane 3, fast): the lookup result bound to a const reference, no barrier 169 (585 bytes), with the barrier 20; the flag cleared first,
-// no barrier 173 (585); a const reference copied into a local, no barrier 165 (589); the second parameter reassigned and bound, no barrier 169 (585).
-// BLOCKED-BY 0xbadc0: its file stays untouched this round.
+/* reports an event from arg_1's responsible unit to the object's actor */
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {
@@ -86,8 +44,6 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
   {
    long local_1 = function_1c9580(arg_1, arg_2 != 9);
    bool local_2 = false;
-   /* retail reads the object's fields again after the lookup call */
-   _ReadWriteBarrier();
    s_1fb7e0_data local_3;
    if (local_0->field_12c != NONE && local_1 != NONE)
    {
@@ -152,4 +108,3 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
   }
  }
 }
-#pragma function(_ReadWriteBarrier)

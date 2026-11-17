@@ -1,22 +1,10 @@
 #include "unknown_11c920.h"
+#include "cache_copy_globals.h"
 // @flags /O2 /Ob1 /arch:SSE /Gr
 
-extern long g_55bd04;
-struct s_cache_copy_progress
-{
-	long completed;
-	volatile dword total;
-};
 
-s_cache_copy_progress g_55bcf8;
 
-struct s_cache_copy_request
-{
-	char map_name[256];
-	long priority;
-};
 
-extern s_cache_copy_request g_55be24[2];
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
@@ -26,24 +14,24 @@ bool function_2148b0(real *progress)
 	bool result = false;
 	real fraction = 0.0f;
 
-	if (g_55bd04)
+	if (g_55b4f0.state)
 	{
-		if (g_55bd04 < 11)
+		if (g_55b4f0.state < 11)
 		{
 			fraction = 0.0f;
 		}
-		else if (g_55bd04 > 12)
+		else if (g_55b4f0.state > 12)
 		{
 			fraction = 1.0f;
 		}
-		else if (g_55bcf8.total > 0)
+		else if (g_55b4f0.progress.total > 0)
 		{
 			// + 0.0f: kept only with the match (it loads the count before the total is reread, as retail)
-			fraction = ((real)g_55bcf8.completed + 0.0f) / (real)g_55bcf8.total;
+			fraction = ((real)g_55b4f0.progress.completed + 0.0f) / (real)g_55b4f0.progress.total;
 		}
 		result = true;
 	}
-	else if (g_55be24[1].map_name[0])
+	else if (g_55b4f0.requests[1].map_name[0])
 	{
 		fraction = 0.0f;
 		result = true;
@@ -58,7 +46,6 @@ bool function_2148b0(real *progress)
 
 long map_location_get(char const *map_name);
 bool map_names_equal(char const *map_name, char const *other_map_name);
-extern char g_55bd21[0x103];
 
 // @retail 0x214940
 real cache_copy_progress_for_map(char const *map_name)
@@ -72,7 +59,7 @@ real cache_copy_progress_for_map(char const *map_name)
 	}
 	if (location == 2)
 	{
-		if (map_names_equal(g_55bd21, map_name))
+		if (map_names_equal(g_55b4f0.path, map_name))
 		{
 			function_2148b0(&result);
 		}

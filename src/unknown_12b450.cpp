@@ -7,6 +7,7 @@
 #include <xtl.h>
 #include "globals.h"
 #include "main_globals.h"
+#include "cache_copy_globals.h"
 
 void function_2237d4(void);
 void __stdcall function_18f1c0(long reason);
@@ -57,7 +58,6 @@ extern void *g_51ea14;
 extern bool g_55c14d;
 extern long g_55c150;
 extern bool g_510819;
-extern bool g_55bd0c;
 extern bool g_509340;
 extern bool g_4d8ba0;
 extern c_class_93590 *g_510560;
@@ -106,7 +106,7 @@ void function_12b450(void)
 		function_121120();
 	font_cache_update();
 	g_4e28f0 = function_120bf0();
-	if (g_55bd0c)
+	if (g_55b4f0.done)
 		function_2141f0();
 	map_load_request_update();
 	if (!g_509340)

@@ -37,6 +37,7 @@ public:
 	// the dispatcher's own handler, put back when a caller is done
 	pair_handler_3173f0 own_handler;
 
+	void set_handler(pair_handler_3173f0 *value) { handler = value; }
 	void function_3728c0(pair_30d870 const *added, long added_count, pair_30d870 const *removed,
 		long removed_count, pair_listener_315a10 *listener);
 };
@@ -58,6 +59,8 @@ struct world_3173f0
 	dispatcher_3728c0 *dispatcher;
 	char unknown13c[0x238 - 0x13c];
 	long pair_capacity;
+
+	tolerance_3173f0 *get_tolerance() const { return tolerance; }
 };
 
 // one entry of the object's list
@@ -74,16 +77,23 @@ struct entries_3173f0
 	entry_3173f0 *data;
 	long size;
 	unsigned long capacity_and_flags;
+
+	entry_3173f0 *begin() const { return data; }
+	entry_3173f0 *finish() const { return data + size; }
 };
 
 struct member_3175e0;
 class sweep_3175e0;
 
-class collector_3173f0
+// what comes before the handler part of the object
+struct collector_head_3173f0
+{
+	char unknown0[0x1c];
+};
+
+class collector_3173f0 : public collector_head_3173f0, public pair_handler_3173f0
 {
 public:
-	char unknown0[0x1c];
-	pair_handler_3173f0 handler;
 	world_3173f0 *world;
 	char unknown24[0x30 - 0x24];
 	bool examined;
@@ -112,6 +122,49 @@ public:
 	void function_3175e0(void const *step, void const *input);
 };
 
+// sets the entries from a number of others; the room is already there
+inline void set_3173f0(entries_3173f0 &entries, vectors_30d9a0 const &from)
+{
+	entry_3173f0 *destination = entries.data;
+	long const count = from.size;
+	entries.size = count;
+	entry_3173f0 const *source = (entry_3173f0 const *)from.data;
+	for (long i = 0; i < count; i++)
+	{
+		destination[i] = source[i];
+	}
+}
+
+// Matched: the pair handler is a base of the collector (after the head part), the
+// dispatcher takes it through its setter, and the tolerance comes from the world's
+// accessor; the entries' begin and end are accessors too.
+// Before, 10 (was 48): the capacity sum and the released block are named
+// before use, the mask comes first in the released size, the dispatcher is
+// read once for the call, and the final size store follows the destination
+// read with the source advanced first. Left: the kept array's data loads
+// are scheduled earlier around the write store and the copy loop.
+// Earlier, at score 48 (was 82): Frame 0x14 agrees; pointer/count transfer reaches
+// extent 487. First +0x49 differs in the allocation argument carrier, with
+// further cursor publication and call setup differences. Pointer countdown 48;
+// restored dispatcher 82; increasing pointer count 73; named capacity 76;
+// end from saved read 82; combined empty test 82; direct listener 82;
+// byte-copy helper 118. The pointer countdown is confirmed by a plain check.
+// Round 94: sum reversed 48; array renamed 48; initial base named 48;
+// temporary base saved 62; outer branch 48; destination advanced in store
+// 48; source advanced in store 47; while countdown 48; source declared
+// first 48; input/output pointer names 48. NOT kept: 47 is below the
+// required gain; the allocation and call setup still differ.
+// Serial search: 17 variants, best 42. NOT kept: gain under eight; a
+// constant local, one-use count copies and type/operand changes.
+// Round 424: entry-count capture 42; world shared for listener/dispatch 48;
+// derived listener 48; capacity flags once 48; shared final count 48;
+// array lifetime scope 48; guarded memcpy 121; freed-block capture 40.
+// NOT kept: 42 gains six above 30; both captures are one-use field copies
+// without equality. The original body and native final transfer remain.
+// Round 426: complete capacity sum 42; write before end 46; later end
+// store 49; dispatcher reused 52; explicit listener branches 48; first
+// four-field copy 148; final four-field copy 72; named byte count 69.
+// NOT kept: six- and two-point gains above 30; original body restored.
 // @retail 0x3173f0
 void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pair_30d870 *removed, long removed_count)
 {
@@ -121,14 +174,16 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 	}
 	function_372b50(added, added_count);
 	function_372b50(removed, removed_count);
-	vectors_30d9a0 kept(entries.size + added_count);
-	read = entries.data;
-	end = entries.data + entries.size;
+	long const capacity = entries.size + added_count;
+	vectors_30d9a0 kept(capacity);
+	read = entries.begin();
+	end = entries.finish();
 	write = (entry_3173f0 *)kept.data;
-	tolerance = world->tolerance;
-	world->dispatcher->handler = &handler;
+	tolerance = world->get_tolerance();
+	world->dispatcher->set_handler(this);
 	pair_listener_315a10 *listener = world->pair_listener;
-	world->dispatcher->function_3728c0(added, added_count, removed, removed_count, listener);
+	dispatcher_3728c0 *const dispatcher = world->dispatcher;
+	dispatcher->function_3728c0(added, added_count, removed, removed_count, listener);
 	world->dispatcher->handler = &world->dispatcher->own_handler;
 	while (read < end)
 	{
@@ -141,34 +196,20 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 	{
 		if ((entries.capacity_and_flags & 0x80000000) == 0)
 		{
-			g_memory_2d88a0->release_block(entries.data, (entries.capacity_and_flags & 0x7fffffff) * sizeof(entry_3173f0), 0x12);
+			entry_3173f0 *const block = entries.data;
+			g_memory_2d88a0->release_block(block, (0x7fffffff & entries.capacity_and_flags) * sizeof(entry_3173f0), 0x12);
 		}
 		entries.data = (entry_3173f0 *)g_memory_2d88a0->allocate_block(kept.size * sizeof(entry_3173f0), 0x12);
 		entries.capacity_and_flags = kept.size;
 	}
-	entries.size = kept.size;
-	for (long i = 0; i < kept.size; i++)
-	{
-		entries.data[i] = ((entry_3173f0 *)kept.data)[i];
-	}
+	set_3173f0(entries, kept);
 }
 
 __forceinline void timer_add_3175e0(char const *label)
 {
-	timer_mark_2ebc80 *mark = (timer_mark_2ebc80 *)g_480154;
-	bool const room = (char *)mark < g_480158;
+	bool const room = g_480154 < g_480158;
 	if (room)
-	{
-		mark->label = label;
-		unsigned long time;
-		__asm
-		{
-			rdtsc
-			mov time, eax
-		}
-		mark->time = time;
-		g_480154 = (char *)(mark + 1);
-	}
+		timer_append_2ebc80(label);
 }
 
 // a box around a member's shape
@@ -249,7 +290,8 @@ void narrow_phase_317c00::function_3175e0(void const *step, void const *input)
 	bounds_3175e0 *bounds = (bounds_3175e0 *)stack_allocate_30d740(extent_bytes);
 	long const handles_size = (count * sizeof(handle_3175e0 *) + 15) & ~15;
 	handle_3175e0 **handles = (handle_3175e0 **)stack_allocate_30d740(handles_size);
-	float const tolerance = world->tolerance->distance * 0.5f;
+	tolerance_3173f0 const *world_tolerance = world->tolerance;
+	float const tolerance = world_tolerance->distance * 0.5f;
 	timer_add_3175e0("StCalcAabbs");
 	{
 		bounds_3175e0 *box = bounds;
@@ -266,12 +308,14 @@ void narrow_phase_317c00::function_3175e0(void const *step, void const *input)
 		}
 	}
 	timer_add_3175e0("St3AxisSweep");
-	sweep->sweep(handles, bounds, member_count, &added, &removed);
+	long const sweep_count = member_count;
+	sweep->sweep(handles, bounds, sweep_count, &added, &removed);
 	timer_add_3175e0("StExamine");
-	if (pending_count > 0)
+	long const pending_size = pending_count;
+	if (pending_size > 0)
 	{
 		long const old = added.size;
-		long const size = old + pending_count;
+		long const size = old + pending_size;
 		long capacity = added.capacity_and_flags & 0x7fffffff;
 		if (capacity < size)
 		{

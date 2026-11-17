@@ -56,45 +56,110 @@ public:
 	virtual void slot_4(void const *a, void const *b, void const *input, void *collector) {}
 };
 
+// a part's shape and key, set together
+struct geometry_2ea410
+{
+	shape_2ea410 const *shape;
+	long key;
+};
+
+// one side of a query whose shape and key are set together
+struct part_2ea410 : geometry_2ea410
+{
+	void const *placement;
+	body_2ea410 const *parent;
+};
+
+// the agent entries and their count, as an array
+struct entries_2ea410
+{
+	agent_entry_2ea410 *data;
+	long size;
+};
+
+// one past the last entry
+inline agent_entry_2ea410 *end_of_2ea410(entries_2ea410 &array)
+{
+	return array.data + array.size;
+}
+
+// score 0 (was 79): matched with the cursor set before the end, the end taken from the entry
+// array as a list, and each part's shape and key stored together as a geometry
+// record.
+// Before, 79 (was 79): Frame 0x114 agrees; extent 270 versus 274. First +0x13
+// saves this in ESI rather than EDI; the input stays live across the update,
+// and the traversal starts with another table load. Cursor before end 81;
+// input view earlier 79; traversal scope 79; parent first 79; indexed count 80;
+// indexed end 84; buffer declared first 79; while cursor 79.
+// NOT kept: none improves the original body.
+// Whole child initialization 89; input record copy 106; scratch inside loop 79;
+// record declaration before timing 79; direct input observations 79; immutable
+// container pointer 79; per-iteration child record 88; key before shape call 78.
+// NOT kept: key-before-call gains one, below threshold; other forms tie or regress.
+// P428: parent-field placement 79; end after child stores 79; end after
+// timing 78; mutable cursor 79; entry reference 79; vector scratch 79;
+// input reference 79; direct countdown 81. NOT kept: the one-point drop
+// shortens the body further; the other forms tie or regress.
 // @retail 0x2ea410
 void class_2ea410::function_2ea410(void const *a, void const *b, void const *input, void *collector)
 {
 	timer_add_2ebc80("LtBvTree");
 	((class_2e96a0 *)this)->function_2e96a0(a, b, input, function_2e90f0);
-	agent_entry_2ea410 const *const end = entries + entry_count;
+	agent_entry_2ea410 const *entry = entries;
+	agent_entry_2ea410 const *const end = end_of_2ea410(*(entries_2ea410 *)&entries);
 	body_2ea410 const *container_body = (body_2ea410 const *)b;
-	body_2ea410 part;
+	part_2ea410 part;
 	part.placement = container_body->placement;
 	part.parent = container_body;
 	timer_add_2ebc80("StNarrowPhase");
 	shape_2ea410 const *container = ((tree_shape_2ea410 const *)container_body->shape)->container;
 	__declspec(align(16)) char buffer[0x100];
-	for (agent_entry_2ea410 const *entry = entries; entry != end; entry++)
+	for (; entry != end; entry++)
 	{
-		part.shape = container->part(entry->key, buffer);
-		part.key = entry->key;
+		shape_2ea410 const *shape = container->part(entry->key, buffer);
+		geometry_2ea410 const geometry = { shape, entry->key };
+		static_cast<geometry_2ea410 &>(part) = geometry;
 		entry->agent->slot_4(a, &part, input, collector);
 	}
 	timer_add_2ebc80("lt");
 }
 
+// score 0 (was 25): matched with 0x2ea410's forms (cursor before the end, end from the entry
+// array as a list, parent stored before placement, shape and key together).
+// Before, 25 (was 25): Frame 0x114 and extent 272 agree; the end calculation
+// lacks the cursor copy, and the descriptor and virtual-call carriers differ.
+// Iterator before end 25; captured count 25; parent first 26; buffer first 25;
+// while traversal 25; named key 25; named agent 25; whole initialization 59;
+// end after descriptor 28; end after container 32; existing body type 25.
+// NOT kept: no match or qualifying gain; original body restored.
+// Round 94: mutable end 25; split end 25; vector buffer 25; mutable cursor
+// 25; finish name 25; child_body name 25; paired cursor scope 32; direct
+// parameter fields 25. NOT kept: these forms tie or regress.
+// Shared begin/end methods 25; NOT kept: no gain.
+// Serial search: 76 variants in 120 s, none below 25.
+// Round 424: parent reference 25; container reference 25; entry reference 25;
+// early parent view 25; scratch inside traversal 25; indexed end address 25;
+// scratch/child name order 25; early child declaration 25. NOT kept: no gain;
+// cursor/end staging and call carriers still differ.
 // @retail 0x2ea530
 void class_2ea530::function_2ea530(void const *a, void const *b, void const *input, void *collector, void *second_collector)
 {
 	timer_add_2ebc80("LtBvTree");
 	((class_2e9d90 *)this)->function_2e9d90(a, b, input, function_2e90f0);
 	timer_add_2ebc80("StNarrowPhase");
-	agent_entry_2ea410 const *const end = entries + entry_count;
+	agent_entry_2ea410 const *entry = entries;
+	agent_entry_2ea410 const *const end = end_of_2ea410(*(entries_2ea410 *)&entries);
 	body_2ea410 const *container_body = (body_2ea410 const *)b;
-	body_2ea410 part;
-	part.placement = container_body->placement;
+	part_2ea410 part;
 	part.parent = container_body;
+	part.placement = container_body->placement;
 	shape_2ea410 const *container = ((tree_shape_2ea410 const *)container_body->shape)->container;
 	__declspec(align(16)) char buffer[0x100];
-	for (agent_entry_2ea410 const *entry = entries; entry != end; entry++)
+	for (; entry != end; entry++)
 	{
-		part.shape = container->part(entry->key, buffer);
-		part.key = entry->key;
+		shape_2ea410 const *shape = container->part(entry->key, buffer);
+		geometry_2ea410 const geometry = { shape, entry->key };
+		static_cast<geometry_2ea410 &>(part) = geometry;
 		entry->agent->slot_3(a, &part, input, collector, second_collector);
 	}
 	timer_add_2ebc80("lt");

@@ -18,6 +18,7 @@
 #include "data_array.h"
 #include "unknown_0259d0.h"
 #include "unknown_19d220.h"
+#include "tag_links.h"
 
 class __single_inheritance c_class_1473c9;
 struct s_screen_parameters;
@@ -123,13 +124,6 @@ struct s_screen_value_block
 	byte unknown00[4];
 	long count;
 	long *values;
-};
-
-/* a tag reference of a tag block */
-struct s_tag_reference
-{
-	dword group_tag;
-	long tag_index;
 };
 
 /* a list's definition in its screen's pane */
@@ -537,36 +531,32 @@ public:
 	__forceinline c_class_1a2c81 *first_sibling()
 	{
 		c_class_1a2c81 *widget = this;
-		while (widget->previous)
+		while (true)
+		{
+			if (!widget->previous)
+				return widget;
 			widget = widget->previous;
-		return widget;
+		}
 	}
 	__forceinline c_class_1a2c81 *last_sibling()
 	{
 		c_class_1a2c81 *widget = this;
-		while (widget->next)
+		while (true)
+		{
+			if (!widget->next)
+				return widget;
 			widget = widget->next;
-		return widget;
+		}
 	}
 	/* the sibling after the widget, wrapping round to the first */
 	__forceinline c_class_1a2c81 *next_wrapped()
 	{
-		c_class_1a2c81 *result;
-		if (next)
-			result = next;
-		else
-			result = first_sibling();
-		return result;
+		return next ? next : first_sibling();
 	}
 	/* the sibling before the widget, wrapping round to the last */
 	__forceinline c_class_1a2c81 *previous_wrapped()
 	{
-		c_class_1a2c81 *result;
-		if (previous)
-			result = previous;
-		else
-			result = last_sibling();
-		return result;
+		return previous ? previous : last_sibling();
 	}
 
 	/* the old name of start_animation */
