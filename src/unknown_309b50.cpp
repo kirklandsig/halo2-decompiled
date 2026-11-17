@@ -283,11 +283,8 @@ __forceinline __m128 cross_309b50(__m128 const &a, __m128 const &b)
 __forceinline __m128 weighted_309b50(__m128 const *points, float const *weights)
 {
 	__m128 const w0 = _mm_set_ps1(weights[0]);
-	__m128 const w1 = _mm_set_ps1(weights[1]);
-	__m128 const w2 = _mm_set_ps1(weights[2]);
-	__m128 const second = _mm_mul_ps(w1, points[1]);
-	__m128 const third = _mm_mul_ps(w2, points[2]);
-	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(w0, points[0]), second), third);
+	__m128 const second = _mm_mul_ps(_mm_set_ps1(weights[1]), points[1]);
+	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(w0, points[0]), second), _mm_mul_ps(_mm_set_ps1(weights[2]), points[2]));
 }
 
 // the same point from weights spread after all three are read
@@ -303,42 +300,39 @@ __forceinline __m128 spread_weighted_309b50(__m128 const *points, float const *w
 // distance in `arg_0` (or nothing found by the first step), 2 when the
 // simplex can't grow or the hull fails too often, and from the hull, 1 when
 // it ran out of room
-// score 104 (was 441): the simplex cases fall through a switch; the separated
-// triangle's point spreads its weights after reading all three; the face room
-// is counted in steps; the second size is stored first; both hull failures
-// leave the face loop by `break` and are told from the out-of-room exit by
-// one test of `failed` after it, which puts the shared out-of-room block
-// right after the restart code. Naming the height mask, the face's three
-// points and the turned term before use would give 62 (one-use locals).
-// Still differs: retail merges the first step's return with the separated
-// triangle's (here: with the collapsed segment's), keeps delta at [esp+0x20]
-// and nudge at [esp+0x40] (here swapped; the separated triangle's square-root
-// temporary shares nudge's slot in retail, the normal's here), and the
-// one-point case and the first step use eax/ecx and edx where we use ecx/edx
-// and eax.
+// Matched (was 104): the simplex cases fall through a switch; the result
+// pointer is taken inside the retry loop; the one-point case reads its point
+// through a reference; the first step's success jumps to the separated
+// triangle's return; the collapsed segment has its own difference vector and
+// takes sizes with fabsf; the separated triangle's point spreads its weights
+// after reading all three; in the hull loop the face's points are bound by
+// reference and the first two copied before the next is fetched, the height
+// mask is named, the face room is counted in steps, and both hull failures
+// leave the loop by `break`, told from the out-of-room exit by one test of
+// `failed`; the found point names only the first weight and second product.
 // @retail 0x309b50
 long class_309b50::function_309b50(long arg_0)
 {
-	first_step_3094d0 *result = (first_step_3094d0 *)arg_0;
 	for (;;)
 	{
+		first_step_3094d0 *result = (first_step_3094d0 *)arg_0;
 		int grown = -1;
 		__m128 normal;
-		__m128 delta;
 		switch (simplex->count)
 		{
 		case 0:
 	first:
 		if (((search_3093e0 *)this)->function_3094d0(result).value)
 		{
-			return 0;
+			goto finished;
 		}
 		grown = 0;
 		case 1:
 	point:
 		{
+			__m128 const &only = differences[0];
 			float length_squared;
-			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(differences[0], differences[0])));
+			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(only, only)));
 			if (length_squared <= 0.001f * 0.001f)
 			{
 				if (grown >= 0)
@@ -384,13 +378,13 @@ long class_309b50::function_309b50(long arg_0)
 					// the simplex is a segment: a direction across it, and the point
 					// between its ends
 					result->distance = 0.0f;
-					delta = _mm_sub_ps(differences[0], differences[1]);
+					__m128 along = _mm_sub_ps(differences[0], differences[1]);
 					int across = 1;
 					int smallest = 0;
 					int other = 2;
-					float least = (float)fabs(delta.m128_f32[0]);
-					float const second = (float)fabs(delta.m128_f32[1]);
-					float const third = (float)fabs(delta.m128_f32[2]);
+					float least = fabsf(along.m128_f32[0]);
+					float const second = fabsf(along.m128_f32[1]);
+					float const third = fabsf(along.m128_f32[2]);
 					if (second < least)
 					{
 						least = second;
@@ -402,10 +396,9 @@ long class_309b50::function_309b50(long arg_0)
 						other = smallest;
 						smallest = 2;
 					}
-					float *direction = (float *)&result->direction;
-					direction[smallest] = 0.0f;
-					direction[across] = delta.m128_f32[other];
-					direction[other] = -delta.m128_f32[across];
+					result->direction.m128_f32[smallest] = 0.0f;
+					result->direction.m128_f32[across] = along.m128_f32[other];
+					result->direction.m128_f32[other] = -along.m128_f32[across];
 					result->direction = normalized_309b50(result->direction);
 					__m128 const magnitude = _mm_and_ps(differences[0], *(__m128 const *)g_455940);
 					float second_size;
@@ -434,6 +427,7 @@ long class_309b50::function_309b50(long arg_0)
 				function_308260(&g_4801e0, &differences[0], &differences[1], &differences[2], weights);
 				result->point = spread_weighted_309b50(simplex->points, weights);
 				result->field_24 = 0.5f;
+			finished:
 				return 0;
 			}
 			differences[simplex->count] = _mm_sub_ps(scored.support.first, scored.support.second_placed);
@@ -487,14 +481,20 @@ long class_309b50::function_309b50(long arg_0)
 				face = (face_30aac0 *)((list_309120 const *)&hull)->function_309120();
 				support_309300 support;
 				((pair_309300 const *)this)->function_309300(&face->normal, &support);
-				delta = _mm_sub_ps(support.first, support.second_placed);
+				__m128 delta = _mm_sub_ps(support.first, support.second_placed);
 				c_query_transform offsets;
-				offsets.axes[0] = _mm_sub_ps(delta, *face->edges[0].vertex);
-				offsets.axes[1] = _mm_sub_ps(delta, *face->edges[1].vertex);
-				offsets.axes[2] = _mm_sub_ps(delta, *face->edges[2].vertex);
+				__m128 const &a = *face->edges[0].vertex;
+				__m128 const first = a;
+				__m128 const &b = *face->edges[1].vertex;
+				offsets.axes[0] = _mm_sub_ps(delta, first);
+				__m128 const second = b;
+				__m128 const &c = *face->edges[2].vertex;
+				offsets.axes[1] = _mm_sub_ps(delta, second);
+				offsets.axes[2] = _mm_sub_ps(delta, c);
 				vector_2da6e0 heights;
 				heights.inverse_rotate(&offsets, &face->normal);
-				if (_mm_movemask_ps(_mm_cmplt_ps(heights.value, *(__m128 const *)g_461f20)) & 7)
+				int const below = _mm_movemask_ps(_mm_cmplt_ps(heights.value, *(__m128 const *)g_461f20));
+				if (below & 7)
 				{
 					goto found;
 				}
