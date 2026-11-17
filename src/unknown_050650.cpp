@@ -893,6 +893,9 @@ struct s_collision_result_buffer_1697c0
 // P590: Original incoming origin/forward/collision/yaw bounds/pitch bounds/output
 // fixed bindings: eight 299 at 1433/1423. NOT kept: no exact frame-bottom
 // magnitude/random/sine or axis/result recovery; original full body restored.
+// P592: Single in-place normalizer reference, direct/single/early exits, reciprocal and
+// immutable-magnitude variants: 299/305/296/301/299/307/298/301. NOT kept: native scratch/axis homes
+// unresolved; three-point best lengthens to 1451/1423. Original helper and full body restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
