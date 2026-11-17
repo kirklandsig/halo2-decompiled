@@ -3377,6 +3377,9 @@ real g_47ff30 = 2.5f;
 // the same with a mass-field binding 724 each. NOT kept: the field binding
 // recovers frame 0xfc but adds 20 bytes and raises the count. Acceleration,
 // velocity and scalar homes remain.
+// AC564: Scoped force coefficients, bank inputs and angular response, alone then
+// paired and together 672/672/673/672/673/673/673. All three with const force
+// coefficients 673. NOT kept: no gain. Frame 0x100 versus 0xfc and scalar homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6390,6 +6393,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // with a separate relative-rotation product 1027/1056/1056/1056. NOT kept:
 // every form shortens and raises the score. Frame 0xfc versus 0xd8, index
 // placement and matrix homes remain.
+// AC564: Angular errors staged in k, j, i order, state matrix copied before or
+// after subtraction, then component or shared scaling. Vector staging 1020 each.
+// Scalar staging 978/1045 before and 978/1045 after. NOT kept: no gain.
+// Frame 0xfc versus 0xd8, vehicle index and matrix homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
