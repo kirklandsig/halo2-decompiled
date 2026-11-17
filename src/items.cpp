@@ -802,6 +802,9 @@ struct s_item_collision_bsp
 // then paired plane-index field transfers: 198/198/198/198/198/198/198/198. NOT kept: no exact acquisition/frame-home
 // recovery; original complete body, plane interface, observations and arithmetic restored.
 // MiniMax C (11-16): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order; the marker's y is the one read, as retail does.
+// P591: Actual matrix receiver before the query/section derivation, ordinary/fixed
+// pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
+// 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

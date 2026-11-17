@@ -643,6 +643,9 @@ struct s_text_line_measurement
 // P580: Scalar memcpy at advance pixels/offset pixels/both/token/break byte/right bound/
 // start coordinate/reused running width: 77/77/77/77/77/79/79/79. NOT kept: native independent advance
 // copy and early width load remain; original observations, arithmetic and full body restored.
+// P591: Original incoming iterator/position/bounds fixed-binding subsets 1/2/4/3/5/6/7,
+// then immutable returned measurement: eight 77s. NOT kept: no independent advance web
+// or early-width recovery; original complete input/output bindings and body restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

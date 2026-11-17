@@ -3319,6 +3319,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // rejection, bool/byte/short/long: 791/770/768/787/791/770/768/787 reduced (control 694,
 // full 597). NOT kept: no equality or native true/flags recovery; original
 // initial state test, completion polarity and whole body restored.
+// P591: Complete reused start/resume classification after request-state adjustment,
+// bool/byte/short/long in both polarities: 755/755/746/727/755/755/746/727. NOT kept: all regress
+// against calibrated 597; original repeated tests and full body restored. Entry true/flags and record homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
