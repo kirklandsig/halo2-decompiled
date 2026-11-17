@@ -1269,6 +1269,18 @@ bool c_projectile_type::v8(long a, long b)
 // `(word)a` and the group index masked 49 (`movzx ecx, ax` shifts the head 5 bytes, but the object takes ESI and the flags
 // EDI as retail); the object looked up with `(dword)a % 0x10000` 12, the index masked with `0xffffL` 12. So ours swaps
 // the pair exactly when both lookups zero-extend with `and r, 0xffff`; retail has both and keeps the object in ESI.
+// M3 lane 13 r106 (fast; word read 5, mask 12), all with the full-width mask unless noted: `__assume(object != 0)` after the
+// lookup 12 (word read 5); the object bound to a `byte *&` 12; flags bound to a `dword &` of a copy of `b` 12; the masked
+// index as a `long const &` 12; the 0x800 test as `(flags >> 11) & 1` 12 (word read 5), as a `(bool)` of it 26 (187 bytes);
+// `result |= 1 << 11` 12; `result |= flags & 0x800` 25 (both arms 50); a dword result 12; the 0x800 test held in a named
+// bool 26 (187 bytes). Diagnostics (semantics changed, not kept): the 0x800 arm's `result |=` constant changed to 0x801 or
+// 0x1800, the 0x800 test changed to 0xc00, the group mask or the object mask changed to 0xfffe: 1 each (retail's object
+// ESI and flags EDI; only the changed constant differs); the 0x400 arm's constant changed 13, the 0x800 arm setting 0x400
+// 1, the 0x400 arm setting 0x800 13. So the flags win ESI only while the 0x800 arm tests and sets the same constant and
+// both lookups mask with the same 0xffff; the shift and bool spellings fold to that constant before allocation.
+// Also (fast, mask): the update flags as a local overlay (a dword and a 10/1/1/20 bitfield view), tested through
+// the bits, 12 (word read 5); the result as that overlay, its bits set through the fields 12, only the 0x800 bit
+// through its field 12 (the bitfield forms lower to the same test/or constants before allocation).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
