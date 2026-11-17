@@ -2501,7 +2501,8 @@ void __stdcall function_78880(void *p)
 void link_connection_connect(s_type_99af70 const *address, s_link_connection *connection, bool initiator);
 long function_75890(long time);
 
-// score 160 (was 180): no behaviour difference found. The prologue and the
+// score 8 (was 160; was 180 before that; the text up to the b15A paragraph describes the old 160 layout, which the
+// `due` form below removed): no behaviour difference found. The prologue and the
 // state-2/5/9 setup now match (retail reads observer->configuration separately in
 // each branch). Still differs: retail has three separate copies of the
 // forget_address(false, 0) + set_channel_state(1) tails (0x77840, 0x778ca, 0x778ec)
@@ -2514,6 +2515,17 @@ long function_75890(long time);
 // reordering the state-2/connect/out-of-range blocks (152, same layout).
 // Permuter (25 min on r663): 9 below its own baseline, only by duplicating the owner loop with channel_may_send's
 // arguments swapped in the copy (a behaviour change); not kept.
+// b15A (11-17) walk against retail, fast build on r848: every statement, offset and branch sense agrees; no behaviour
+// difference. The three tails stayed merged under every spelling (inline give-up helper, goto, `this`, casts: all 160,
+// 627 bytes). What retail shows is a `setge al / test al, al / je` after the 0x75890 call (0x77896): a bool with two
+// definitions, the cooldown compare and a constant false from the out-of-range arm (forget + state 1, own epilogue at
+// 0x778ca). `bool due;` set by `due = function_75890(time) >= delay` in range, and by `due = false` after the arm's
+// forget + state 1 out of range, then `if (due)` over the state-2 and connect arms: 657 bytes, score 8; the arms'
+// layout (0x77840, 0x778ca, 0x778ec, the 6/8 call at 0x7791f) is retail's. Left: ours loads attempts (mov ax) before
+// xor ecx / the time98 and time9c stores where retail stores first (0x77862-0x77874: also tried the stores swapped,
+// chained, attempts in a local), and the connection reload goes to eax with the lea after its push where retail uses
+// ecx and lea before push ecx (0x77900-0x77909: also tried an address local, connection fetched at the call 218).
+// Tried: if/else state local 188 (599), `next = 6; if (state != 5) next = 8` 187 (600), `if (!due) return;` 8.
 // @retail 0x776a0
 void s_network_observer::function_776a0(long channel_index)
 {
@@ -2579,32 +2591,35 @@ void s_network_observer::function_776a0(long channel_index)
 		}
 		channel->time98 = 0;
 		channel->time9c = 0;
+		bool due;
 		if (channel->attempts >= 0 && channel->attempts < count)
 		{
 			long delay = delays[channel->attempts];
-			if (function_75890(channel->time) >= delay)
-			{
-				if (channel->state == 2)
-				{
-					if (network_observer_channel_find_address(observer, channel_index))
-						network_observer_set_channel_state(observer, 3, channel_index);
-					else
-						network_observer_set_channel_state(observer, 1, channel_index);
-				}
-				else
-				{
-					link_connection_connect(&channel->address, connection, true);
-					if (channel->state == 5)
-						network_observer_set_channel_state(observer, 6, channel_index);
-					else
-						network_observer_set_channel_state(observer, 8, channel_index);
-				}
-			}
+			due = function_75890(channel->time) >= delay;
 		}
 		else
 		{
 			network_observer_channel_forget_address(observer, channel_index, false, 0);
 			network_observer_set_channel_state(observer, 1, channel_index);
+			due = false;
+		}
+		if (due)
+		{
+			if (channel->state == 2)
+			{
+				if (network_observer_channel_find_address(observer, channel_index))
+					network_observer_set_channel_state(observer, 3, channel_index);
+				else
+					network_observer_set_channel_state(observer, 1, channel_index);
+			}
+			else
+			{
+				link_connection_connect(&channel->address, connection, true);
+				if (channel->state == 5)
+					network_observer_set_channel_state(observer, 6, channel_index);
+				else
+					network_observer_set_channel_state(observer, 8, channel_index);
+			}
 		}
 	}
 }

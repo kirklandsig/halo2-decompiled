@@ -254,6 +254,16 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // normalisation written i = inverse * i, j = j * inverse, k = k * inverse (no change). Tried at
 // 133 (lane): shared normalization scale 133, relative scale 136, both scales 136, reciprocal-root
 // intrinsic 168, two-angle helper precision probe 119 (rejected).
+// b15H (11-17) walk against retail, fast build on r848: every statement, offset and branch sense matches (static
+// limits, frame, offset arithmetic, both sums, the atan2 pair, both clamps, the rotation call, the scale restore). Only
+// two spots differ. (1) The zero branch: retail 0x112f77-0x112f7d clears into xmm3, xmm1, xmm2 and stores i, j, k at
+// 0x112fa4-0x112fb0 (the out->x, y, z order of function_142700, whose body retail inlines here); ours stores j, k, i.
+// The register a component gets follows the first-assigned order (j, k, i gives retail's registers); every other
+// clearing order (i, j, k 91; i, k, j 83; j, i, k 83; k, i, j 88; k, j, i 82) or a point3f direction scores the same,
+// and the zero branch first as `== 0.0f` 110-116. (2) The scale: retail multiplies i into a copy of the factor
+// (0x112fd1) but j and k in place (0x112fd5, 0x112fd9); ours copies for j. No spelling of the three products moves it
+// (i = inverse * i, j * inverse, *=, every order), nor `real const inverse`, an initialised inverse or an inline
+// pointer helper (all 64). Calling function_142700 instead of the body: 329 (not inlined in the fast build).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
