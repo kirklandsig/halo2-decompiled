@@ -1259,6 +1259,12 @@ extern long *g_51e9cc;
 // block's first local and assigned at its call 2; the clamp as a block-local sum with two plain ifs (`< 0`, then `> 1`) 2; the
 // three wake calls (0xb9b90, 0xb7360, 0xbba20) as a forceinline helper 2; case 5 written flagged arm first (only the 0x35c
 // store) with all five stores in the other arm 2 (the same exact case 5 code as the both-arms form). The pair stays field first.
+// M3 lane 8 r181 (fast; base 10): a no-code read of the crouch field at the top 10; a no-code read of the change just
+// ahead of the sum 10; case 4's `found = true` ahead of its five stores 10; the sum in a named local with a nested
+// ternary clamp 10; the sum through a reference bound to the change (`real &crouch = crouch_change; crouch += field`)
+// 10 (all the same crouch pair). Diagnostic: the dd8e0 test inverted with an empty first arm 10. Retail inlines
+// 0xb77d0 here; its file (/Ob1, src/unknown_0b7740.cpp) is held by another lane this round, so the inlined-copy lead
+// was not re-run.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -6087,6 +6093,11 @@ real magnitude3d(vector3f const *v);
 // per-arm calls with the upright arm re-fetching the biped 254 (932 B); the actor test written `NONE != ...` 2 (same
 // code); per-arm calls as early returns 20. The seven magnitude3d callers that rose with `inline` hold the same baseline
 // scores as in round 101, so that lead is still blocked: BLOCKED-BY 0x24590.
+// M3 lane 8 r181 (fast; base 2): `falling` uninitialised and cleared in an else of the first probe 207; the angular
+// ternary as an if/else 2 (same code); a `char` event type 33; the second probe's result assigned straight to
+// `falling` (`!probe || normal.k <= 0.3f`) 98 (899 B); the upright test written `0.6f < vehicle->up.k` 2 (same code).
+// Still BLOCKED-BY 0x24590: magnitude3d's seven unmatched callers hold the scores they rose from in round 101 (542,
+// 749, 947, 590, 375, 902, 920).
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

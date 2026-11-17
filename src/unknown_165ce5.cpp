@@ -1839,6 +1839,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // scoped block around their two smoothing calls 220 (same code: they still share the spring slots); guard and block
 // together 220. Retail's g_510c54 reload after each look store still says those stores go through something that may
 // alias the global; the ESI/EDI save region stays BLOCKED-BY the build's stand-in caller (round 98).
+// M3 lane 8 r181 (fast; base 220): kept: the `goto overlay` dropped, the animation test folded into the 0.267 save's
+// condition (`no_zoom && no_scope && name == 0x400000c`; the same code, 220: the compiler threads the mismatch to the
+// overlay block as retail does). Tried: the clamped look values through a force-inline helper writing them through
+// two out pointers 220; the look values as const references bound to the clamps in a block with their two spring
+// calls 220; the user flags read and set in place without the flags local 220 (same code); zoom, no_zoom and no_scope
+// declared where computed 220 (same code). The reciprocal stays shared and the look values keep the spring_a/b slots.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1973,12 +1979,8 @@ void __stdcall function_166d75(long user_index)
 						!no_zoom && no_scope && weapon->channel98.unknown08 == 0x60000d8)
 					{
 						weapon->channel98.clear();
-						if (no_zoom && no_scope)
+						if (no_zoom && no_scope && weapon->animation.animation_name == 0x400000c)
 						{
-							if (weapon->animation.animation_name != 0x400000c)
-							{
-								goto overlay;
-							}
 							first_person_weapon_save_orientations(user_index, field_x11c898, 0.267f);
 						}
 					}
@@ -2001,7 +2003,6 @@ void __stdcall function_166d75(long user_index)
 					weapon->animation.overlay_play_for_class(&weapon->channel98, channel_flags, mode, 0x7000101, set);
 					first_person_weapon_save_orientations(user_index, field_x11c898, 0.1335f);
 				}
-overlay:
 				channel = &weapon->channelb8;
 				if (function_0b6760((s_index_pair *)channel))
 				{
