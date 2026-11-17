@@ -422,8 +422,19 @@ bool file_copy_open(s_saved_game_file *copy, bool *exists)
 done:
 	return result;
 }
-// score 19 (was 19): the second argument of the save call is a pointer held in a register here and
+// score 17 (was 19): the second argument of the save call is a pointer held in a register here and
 // the address of the local buffer in retail.
+// b13O (11-17) walk against retail, fast build on r846: kept: the language stored through a char pointer, retail's
+// store (0x2ad532) before the flags load (0x2ad535), 19 -> 17. A MATCH needs three forms together (alone: 19, 4, 2),
+// not kept: (1) the name buffer as a struct with a fill() wrapper (the shape of s_saved_game_name in
+// unknown_216b60.cpp, matched 0x215f40), so its address is not kept in edi across the 216da0 call and 0x2ad4f5 /
+// 0x2ad580 re-lea it (19 -> 4); (2) language stored through a char pointer, which keeps the store at 0x2ad532 ahead of
+// the flags load at 0x2ad535 (4 -> 2); (3) function_2168b0 parameters swapped to (flags, location), so the call site
+// loads flags (0x2ad535), then lea eax (0x2ad538), then pushes (0x2ad53b) (2 -> 0). Evidence for (3) is only that
+// call-site order, a register/stack split; without (1), (2) and (3) give 15. (1) copies a struct another file keeps
+// privately, so the match is recorded here, not built. Tried: location pointer local (43), flags local (17), *(long
+// *)file (4), helpers taking (location, flags) or doing store plus call (4, or 2 with the pointer), no (char) cast
+// (same).
 // @retail 0x2ad480
 void saved_game_file_copy_finish(s_saved_game_file *file, bool succeeded)
 {
@@ -438,7 +449,9 @@ void saved_game_file_copy_finish(s_saved_game_file *file, bool succeeded)
 		function_216da0(type, name, file->location.display_name, file->location.language);
 		XDeleteSaveGame(root, name);
 		saved_game_file_copy_display_name(file->location.display_name, file->display_name);
-		file->location.language = (char)get_current_language();
+		// a store through a pointer keeps retail's order against the flags load
+		char *language = &file->location.language;
+		*language = (char)get_current_language();
 		function_2168b0(&file->location, file->flags);
 	}
 	else
@@ -610,7 +623,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34; m3 lane 16 r130 at the end): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -1120,6 +1133,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // P588: Repeated file/signing-handle/phase field lvalues, seven subsets,
 // then all with mutable offset: 161/161/162/161/162/162/38/191. NOT kept:
 // no fresh-total/seek/size recovery; original body, scratch getter and record restored.
+// m3 lane 16 r130 (fast with 0x2adb10 and 0x2ada70, both MATCH; control 34), the contributor's rotation, guard and accessor
+// forms (#1225): the entry total's header size through a trivial inline accessor 36 (the loads turn header first); the
+// parameters view through a trivial inline accessor 34; on the no-total-local form (88) the signature sum's header size
+// through that accessor 88 (same code: no rotation shift); the byte count declared inside the not-cancelled block 34;
+// an implied `if (0 < body_size - body_offset)` guard before the buffer arms 179 (701 B, not folded).
 // M3 lane 9 r131 (fast; base 34; compile-only screen build/r131/scr.py, aligned counts in brackets, base [23]): re-measured
 // the total without its own local 88 [64] and that with a forceinline (file, position) seek helper in the signature case
 // 28 [17] (entry exact, every later block retail's but the body case, where size keeps ESI and position EDI and the

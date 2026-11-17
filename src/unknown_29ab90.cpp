@@ -39,6 +39,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
+// MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
+// [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
+// magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
+// zero path where retail uses the shared 0x2b400 helper in include/unknown_11cc90.h, a file this lane may not edit
+// (BLOCKED-BY 0x2b400), and a permuter over 23 tries on this body found nothing below 286, so the body stands;
 // MiniMax D (11-17): no new form, no lower score (286): the frame's homes are still permuted the way the notes
 // below describe (ours [esp+0x24] against retail [esp+0x1c] for the unit pointer, ours [esp+0x14] against
 // retail [esp+0x10] for the magnitude, and the working-vector group at [esp+0x3c]..[esp+0x64] where retail has
@@ -68,7 +74,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // MiniMax A (11-13): no new form, no lower score (286): the saved-direction homes, the planar operand order and the
 // xmm numbers of the floors differ; the callee that held this one back now matches, so what is left is the homes, the
 // operand order and the frame.
-// score 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// Earlier 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
 // actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
 // normalizations (j,i sum), 2922b0 call, 30bf0 == 0 fallback, 0x47c branch, floor/ceiling clamps, 29b2e0 call
@@ -466,6 +472,9 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // through the existing normalize2d 407 (1786 B: a call, its noinline declaration keeps 0x2c2a70's call). The history weight in a
 // local for the three rows with the complement still read from the field (retail loads it once into xmm6 and re-reads it for
 // 1 - weight) 321 (1867 B); the current sum through the existing vector3f_add 316 (1863 B, aligned 255).
+// Branch-owned direction/query adjustment/weighted motion, seven nonempty subsets, then all with aggregate clamping: 388/519/411/466/401/503/566/566.
+// NOT kept: every form regressed and moved the frame away from 0x64.
+// Original executable body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
