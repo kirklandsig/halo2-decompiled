@@ -9,6 +9,16 @@ matched 10643 of 11326 game functions (2048603 of 2786206 bytes, 73.53%)
 matched 1380 of 1436 Havok functions (215347 of 290362 bytes, 74.17%)
 ```
 
+0 new matches, none lost:
+- @andrewnakas's #1234: closer scores and notes, no new match.
+
+## 2026-11-16: 10643 functions match
+
+```
+matched 10643 of 11326 game functions (2048603 of 2786206 bytes, 73.53%)
+matched 1380 of 1436 Havok functions (215347 of 290362 bytes, 74.17%)
+```
+
 2 new matches, none lost:
 - @andrewnakas's #1232, #1233: `0x2fe830` and `0x307c40` match.
 
