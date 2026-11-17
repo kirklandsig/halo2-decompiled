@@ -462,6 +462,7 @@ void function_11bed0(s_location *location, point3f const *point);
 // not edit; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form.
 // BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
+// MiniMax C (11-17): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit, so the call boundary and the register homes that follow it stand; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form. BLOCKED-BY 0x11bed0.
 void looping_sound_update_locations(void)
 {
 	s_record_pool_iterator iterator;
@@ -2848,6 +2849,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // early scalar, primary and last-chunk homes still differ; this round's snapshot-locals and gain-local forms
 // scored 349 or worse, and the 321 form needs a bool flag the coordinator does not keep.
 // @retail 0x21c400
+// MiniMax C (11-17): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, so the track value and the source scale still sit in the wrong slots ([esp+0x44] and [esp+0x34] against retail's [esp+0x4c] and [esp+0x3c]), and the calls to 0x221810 and 0x12a420 are still expanded here while retail keeps them out of line; both callees are declared in files this lane may not edit (src/unknown_221490.cpp and src/unknown_124f90.cpp), and taking the two early snapshots into locals moves every slot (476).
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
 	s_looping_voice_view *voice = &((s_looping_voice_view *)g_4e6378)[voice_index];
@@ -3329,6 +3331,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // bool/byte/short/long in both polarities: 755/755/746/727/755/755/746/727. NOT kept: all regress
 // against calibrated 597; original repeated tests and full body restored. Entry true/flags and record homes remain.
 // @retail 0x21a250
+// MiniMax C (11-17): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the creation compare order, the source copied from edx to esi, the energy loop's padding and the start arm's shared tail also differ, and the earlier rounds' forms of these score 590 or more.
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
 {
