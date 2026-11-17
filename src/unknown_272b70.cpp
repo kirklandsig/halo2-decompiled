@@ -2985,6 +2985,10 @@ struct s_scenario_scripting_view
 // P590: Original packed incoming parameter lexical priorities against native
 // local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
 // or guarded-data recovery; original input name and complete body restored.
+// Round 611: guarded short-to-long selector with nested admission, negative exit,
+// original packed high word or narrow-selector commit 96/96/77/96; with the typed
+// candidate record 95/95/90/95. NOT kept: keeping the original high word broke
+// the wrapper, and the 77 form grew to 372 bytes. Actor and counter homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

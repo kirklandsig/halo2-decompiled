@@ -744,6 +744,10 @@ struct s_physical_block_iterator
 // dword: retail evaluates the candidate's age, then the best's, then multiplies candidate pages by the best's age
 // first (0x13d5f3) and best pages by the age second (0x13d5f6). Left (layout and registers only): clock in EDX vs
 // our EAX at 0x13d5cf, cases 0/1 in place (0x13d600, 0x13d60d), walk roles, data reload 0x13d7e1.
+// Round 611: three-way timestamp order, older/equal/newer-first and explicit
+// branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
+// NOT kept: no closer case-zero result or native size. Case-zero/case-one
+// placement and the weighted-age register allocation still differ.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
