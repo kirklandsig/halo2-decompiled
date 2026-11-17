@@ -494,6 +494,17 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // up/left alone (k, j, i) 152, both 151; not kept, as a twin of the file's helper. Also different, bit-identical: the
 // dot's i term copies forward.i (0x1d41f0), the cross's up.i * forward.k (0x1d42a2), the projection stores k, j, i
 // (0x1d4203, 0x1d4219, 0x1d422f), forward.k loaded at the join (0x1d4162, 0x1d417c). 0x1c4a80 stays MATCH.
+// m3 lane 11 r110, on the 2-form (the normalizer's squared length through dot3f, the dot written out with its k term
+// read from the matrix field; fast 2 at 922 B, 0x1c4a80 matched each time; match-only): the dot as
+// `i + (j + k)` 2 and `(j + k) + i` 2 (same code); `up` declared before `forward`, both assigned after 2 (same code);
+// the normalizer's i scale component-first 2 (same code); the forward pointer taken as `&local_1[0].forward` and
+// normalized through it (the only form whose i term copies forward's i) 16 (its j term, dot order and cross
+// products flip too). Compile-only screen on the 2-form (this file, /O2 /Ob1 /arch:SSE /Gr, which reproduces the
+// 2-form's two-line difference), scored against the 2-form listing with the i operands swapped: every pointer or
+// field access for each of the dot's six operands under four pointer setups (normalizer result or direct address,
+// for forward and up; 256 forms) best 2 (the 2-form itself), next 7 (up's i read from the field: the i term flips
+// but up's i loses its preload and one cross product flips); every pointer or field access for the projection's six
+// reads (64 forms) best 2. The i operands never flip without dropping a preload.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

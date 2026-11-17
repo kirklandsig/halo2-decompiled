@@ -609,6 +609,11 @@ struct s_1af5c6
 // 20 (same code); the mask local as `dword` 20 (same code); the two distance tests joined with `||` before `return 2` 35.
 // Re-measured by mistake: the second lookup indexed by `(word)` 132 (round 101). Still BLOCKED-BY 0x1c8df0's call-site
 // inlining (here this file is /Ob1; the files of the five callers retail calls it from out of line are /O2).
+// Round 103 (m3 lane 13, fast with 0x1af810, 0x1b2770 and 0x1c8df0, which read as the full build; control 20): the actor
+// pointer const 20 (same code); the actor's +0x26c bool read right after the actor lookup at the top 116 (first +0x2); the
+// result field's NONE store ahead of the cluster test 28; the prop node and derived lookups ahead of the actor lookup 34
+// (first +0x6); the result field's NONE store between the mask and the ray vector 27. Still BLOCKED-BY 0x1c8df0's
+// call-site inlining.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

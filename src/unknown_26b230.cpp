@@ -1840,6 +1840,12 @@ long function_26ace0(long object_index, long actor_index, short type)
 void function_269250(long clump_index, long actor_index);
 
 // score 87 (was 87): round 112 (m3 lane 12) note at the end.
+// M3 lane 6 r188 (fast with the file's functions and 0x1e46c0/0x268bb0/0x269580/0x2694d0/0x269250, control 87): on the
+// in-arm compare (126) every remaining difference follows from the selection held in EDI (the walk's found block after the
+// score block, the pool reloaded, the tail's merged `push edi`). On it: the actor's team read once before the walk 168 (497 B);
+// the walk as `for (;;)` with a top null test 126 (same code); the post-loop test written current-first 126 (same code);
+// the created clump through clump_get 126; diagnostic only, the selection `volatile` 145 (the frame moves; not the lever
+// alone). Kept on this body: the created clump through the existing clump_get, 87 (same code).
 // MiniMax I (11-15): no new form, no lower score (87); retail keeps the walk's pool in ebx, the selection on the stack and the two scores on the x87 stack, ours keeps the pool in memory, the selection in edi and compares with comiss; the in-arm compare (126) and the walk's datum index as the selection (128) both score worse, and the walk helpers are shared with four matched functions.
 // MiniMax G (11-14): no new form this round, unchanged (87; 89 on this build's reduced image): retail hoists the
 // walk's pool load into ebx and keeps the selection on the stack, ours keeps the pool in memory and the selection in
@@ -2228,7 +2234,7 @@ void function_2689d0(void)
 			{
 				if (actor->unknown07c != NONE)
 				{
-					s_clump_activity_view *group = (s_clump_activity_view *)(g_502420->data + (created & 0xffff) * sizeof(s_clump_activity_view));
+					s_clump_activity_view *group = (s_clump_activity_view *)clump_get(created);
 					group->center = actor->position;
 					function_269580(created, actor->unknown07c);
 					function_2694d0(actor->unknown07c, actors.actor_index);

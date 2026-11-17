@@ -899,6 +899,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // score 237 (was 237): MiniMax S (11-15), 252 -> 237: the squad entry index taken as a word (its low sixteen bits, the same ones the
 // mask kept) drops the separate mask load, so the entry address is built as retail builds it; the frame, the length and every
 // other home still agree, and the -1 sentinel still sits in EDI where retail keeps it in ESI.
+// M3 lane 6 r188 (fast with the file's functions, control 237): masked (registers and esp offsets), the one large difference
+// is the creation arm, laid out after the swarm arm here and after the actor block's case 2 in retail. The swarm failure as
+// `return NONE;` 345; the cleanup arm first 327; `if (!flags) return NONE;` 345. Round 78's loop (squad index in the guard and
+// the while, ternary break) on this body 346; with `(squad_index & 0xffff)` 298; plus probability declared between the bools
+// 298; with the squad bit started false and set under `if (squad)` 296; both 296 (masked: only the arm's position left). On
+// that: the palette count at each use 346 (1263 B); `grenade_index - 1 != NONE` at full width (retail's movsx/dec/cmp) 345
+// (1273 B); both 350; the creation arm as a forced-inline helper writing the unit through a pointer 418 (1334 B, arm unmoved).
 // Earlier 252 (was 252): frame 0x118 and length agree; the -1 sentinel in EDI (retail ESI, with the squad index reloaded into
 // ECX), retail's one shared spill slot for the squad pointer, the squad bit and the actor, and the unit arm's place remain.
 // M3 lane 8 r159 (fast; masked aligned 115 at 253): kept, the squad bit as `bool flag = squad && ((bits >> 10) & 1);`
