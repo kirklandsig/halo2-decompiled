@@ -1171,6 +1171,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P580: Promoted yaw/sine/cosine receiver storage, seven subsets then immutable reused yaw:
 // 126/342/341/343/336/341/348/348. NOT kept: no exact direction-j/length-zero recovery; original scalar domains,
 // real API-result conversions, helpers and complete body restored.
+// M3 lane 12 r133 (fast with 0x16c6f0 and 0x13cb40, both MATCH; control 126): diagnostic sweep of the plane length
+// written out (the dot3f body by hand; reverted): left-first k, j, i 394, j, k, i 397, normal-first k, j, i 394,
+// (k + j) + i 394, i + (k + j) 394, all 1700 bytes. Only j, k, i hoists retail's left.j load (into XMM1), but every
+// written-out form also reorders the plane-distance dot ahead of it (position z and y loads swap, the k operand is read
+// from the field instead of through the copied pointer), so the length/zero registers still do not follow. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

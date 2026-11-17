@@ -855,6 +855,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // MiniMax S (11-15): no new form, no lower score (42): the i row of both rotations sums the up product before the forward
 // one where retail sums the forward one first, the copy's second and third components swap, and the two saved registers are
 // reloaded in the other order after each property call; the rotation's term order is fixed by the shared helper's text.
+// M3 lane 12 r133 (fast with 0x173c10 and 0x2477b0, both MATCH; control 42): indexed definitions with scale first
+// re-measured 113 (1136 B; every integer line retail's, every rotation row reordered); on it the multiplier's flag tested
+// as the plain bitfield (`if (system->flag10)`) 265 (1118 B), the index stepped right after the definition is formed
+// instead of at the latch 236. On this body: the plain bitfield test 273 (1110 B); the frame call's location flag as
+// `TEST_FIELD_BIT(...)` 42 (same code); the scale default declared after the multiplier block 50. Body unchanged.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
