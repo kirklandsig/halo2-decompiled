@@ -1232,6 +1232,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax I (11-17): no lower score (94): a permutation run over this function's source (4 tries in 375 s) left the
+// score at 94; the total, the cursor and the flag in the orders total-cursor-flag, total-flag-cursor and
+// cursor-flag-total measure 94, 108 and 99, the channels walked by position with the flag read before the total
+// measure 120, and the channel value read into a named local compiles to the same code.
 // MiniMax R (11-16): no new form, no lower score (94): the identity flag still lands in BL where retail keeps it in AL, and the flag-first order moves the channels pointer into EBP and still leaves the flag in BL (111), so the kept mask, the value load and the accumulate follow that allocation; the flag, pointer and total order still reaches only 93.
 // MiniMax C (11-15): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, this build still sets the total to two and the channel pointer before the compare that retail does after it, and the inner channel blocks are still not unrolled.
 // MiniMax G (11-14): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in
@@ -2032,6 +2036,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
+// the function from 85 to 64; the three tests read only globals and have no side effects, so their order does not
+// change the result, and 0x54890, 0x53a20 and 0x53bb0 stay matched. Still differs: retail keeps the second port
+// flag query inline (the getter, the shift and the availability tests at the end of the loop body) where this build
+// calls the out-of-line copy, so the body is 12 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (85): retail loads both ready bytes before the first test and keeps the second in DL, while this build reloads it for the mode test and takes the mode in EAX; the remote mask rides in EDX here and in ESI there, and the flags held in locals are re-read from the globals at every use (96 to 104).
 // MiniMax C (11-15): no new form, no lower score (85): the availability bytes are still read into locals for the muted test and the mode helpers are still parameterised on them, so the second byte still loads lazily inside the muted test where retail loads both before it and keeps the remote mask in esi.
 // MiniMax G (11-14): no new form, no lower score (85): the availability bytes read into locals for the muted test
@@ -2244,7 +2253,7 @@ void function_55990(s_voice_player_values *values)
 				for (long j = 0; j < 16; j++)
 				{
 					if ((mask & (1 << j)) &&
-						(function_57d63(j, i) || voice_port_flag1(j) || voice_port_flag2(j)))
+						(voice_port_flag1(j) || voice_port_flag2(j) || function_57d63(j, i)))
 						mask &= ~(1 << j);
 				}
 				values->values[i] = mask;
