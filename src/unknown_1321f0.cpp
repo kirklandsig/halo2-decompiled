@@ -609,10 +609,13 @@ struct s_visibility_object_header
 	s_visibility_object *object;
 };
 
-// score 4: only the two bool locals' stack slots differ (behind/in_front at
+// score 4 (was 4): only the two bool locals' stack slots differ (behind/in_front at
 // esp+0x17 and esp+0x38). Permuter: 280 tries in 600 s, best 2 — but that form
 // swaps the two pointer arguments at the matched 0x132fd0 and leaves `index`
 // uninitialized, so it was not kept.
+// Secondary output update inside the visibility branch 170, mode conjunction 115, clear-only guard 152.
+// visibility predicate at plane call 276, visibility bool reused for front plane 67, fallback assignment 161.
+// duplicate guard with return 203, new-object guard with return 4. The plane outputs still exchange homes.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
@@ -790,16 +793,6 @@ void function_133390(s_bit_vector_pool const *arg_1)
 	}
 }
 
-// score 24 (was 24, fast build on r846): remaining diffs are register choices only (see walk below).
-// b13F (11-17) walk against retail, fast build on r846: fields, offsets, jcc senses (NaN included: jae 0x1335c3,
-// ja 0x1335da, jbe 0x13361d/0x133640, ja 0x13365b, jbe 0x133691), constants, the 0x1332f0 and 0x2cbf0 arguments,
-// the flag bits (0x40/1 by the 0x800 test at 0x13367c, 0x1008) and the loop shape agree; no behaviour difference found.
-// Remaining: retail reloads data->lists[3] after the 0x1332f0 call as ecx -> eax -> edx -> ax (0x1335df-0x1335ee),
-// ours ecx -> edx -> eax -> cx; the same swap recurs at 0x133672-0x13367c, the argument pushes at 0x1336a0-0x1336bf
-// and 0x1336da-0x1336e8. The volatile on arg_1 stays: without it ours keeps lists[3] in ebp across the call (134).
-// Tried: local_8 hoisted to five other places (38, 59, 129, 137), pointee-volatile cast on arg_1 (24, same code),
-// volatile local pointer (142), volatile on local_3 (50), local_3 reassigned after the call (134), the 0x800 test as
-// a ternary (128) or with the branches swapped (27).
 // @retail 0x133520
 void __stdcall function_133520(s_bit_vector_pool *arg_1)
 {
@@ -807,10 +800,9 @@ void __stdcall function_133520(s_bit_vector_pool *arg_1)
 	long local_2 = 0;
 	while (local_2 < arg_1->lists[3]->count)
 	{
-		c_entry_list *local_3 = arg_1->lists[3];
-		long local_4 = (short)local_3->longs_a[(short)local_2];
+		long local_4 = (short)arg_1->lists[3]->longs_a[(short)local_2];
 		s_visible_instance *local_5 = &local_1->instances[(short)local_4];
-		dword local_6 = function_1332f0(arg_1, local_3->shorts_b[(short)local_2]);
+		dword local_6 = function_1332f0(arg_1, arg_1->lists[3]->shorts_b[(short)local_2]);
 		point3f const *local_12 = &local_5->center;
 		real local_7 = local_12->z * g_4b9e38 + local_12->y * g_4b9e2c + local_12->x * g_4b9e20 + g_4b9e44;
 		if (!(local_7 >= 0.0f))
@@ -818,7 +810,7 @@ void __stdcall function_133520(s_bit_vector_pool *arg_1)
 		if (!(local_7 > 0.1f))
 			local_7 = 0.1f;
 		real local_9 = (local_5->radius / local_7) * g_4b9ed0 * 2.0f;
-		short local_8 = (*(s_bit_vector_pool *volatile *)&arg_1)->lists[3]->shorts_d[(short)local_2];
+		short local_8 = arg_1->lists[3]->shorts_d[(short)local_2];
 		if (local_5->radius < 0.13f)
 			local_9 *= 1.75f;
 		real local_10 = (local_9 - 25.0f) * (1.0f / 7.0f);
