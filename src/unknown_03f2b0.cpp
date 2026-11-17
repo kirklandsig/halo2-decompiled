@@ -1316,6 +1316,10 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax E (11-16): no new form tried this round, no lower score (93 on the full image, 355 on the reduced one): the plain
+// build's first difference is still at the 0x4bcc0 call, where retail loads the distance into EAX and this build loads it into
+// ECX, and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns are unchanged; the reduced
+// image's 355 is not the measure, because the globals it leaves out are not masked.
 // MiniMax H (11-13): no new form, no lower score (93 on the full image, 355 on the reduced one): the plain
 // build's first difference is at +0x21, where the call to 0x4bcc0 sets up its arguments - retail loads the
 // distance into EAX and pushes that, this build loads it into ECX and pushes that; what follows are the two

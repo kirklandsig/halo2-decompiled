@@ -21,37 +21,30 @@ struct bounds_2fe350
 	__m128 upper;
 };
 
-// score 31 (was 31): the same operations; retail reads the half extents before
-// the transform and the tolerance later, and keeps the mask in one register.
-// Products split from absolute 31; mask after third product 31; all three
-// products before absolute 31; broadcast intrinsic 43; half extents first 31;
-// mask at each use 31; delayed third absolute 31; separate splat steps 31.
-// NOT kept: no match or qualifying gain; original body restored.
-// Round 94: shared broadcast 31; named extent 39; extent accumulator 39;
-// extents at each use 31; columns first in products 43; mask first 51;
-// incoming tolerance load 52; complete x/y/z terms first 31.
-// NOT kept: no gain; the input load and SIMD register schedule still differ.
-// Serial search: 29 variants, best 27. NOT kept: a scalar cast, mixed
-// operand order and partial expression inlining without equality.
-// Round 424: aligned input load 31; intrinsic output stores 39; existing
-// vector members for all products/absolute 31, absolute alone 31, products
-// alone 31; tolerance scope 31; axis-vector names 31; separate scalar and
-// broadcast vectors 31. NOT kept: no gain; input and SIMD schedule differs.
+// score 0 (was 31): matched in the shape of 0x1ce210: the third column read into the variable that
+// then holds the z term, the tolerance broadcast with _mm_set1_ps, and the
+// y term written over the z product's variable.
 // @retail 0x2fe350
 void __cdecl function_2fe350(void const *query, const __m128 *half_extents, float tolerance, void *out)
 {
 	transform_2fe350 const *transform = (transform_2fe350 const *)query;
 	bounds_2fe350 *bounds = (bounds_2fe350 *)out;
-	__m128 const absolute = *(__m128 const *)g_455940;
+	__m128 *upper = &bounds->upper;
+	__m128 *lower = &bounds->lower;
 	__m128 const h = *half_extents;
-	__m128 z = _mm_and_ps(_mm_mul_ps(_mm_shuffle_ps(h, h, 0xaa), transform->columns[2]), absolute);
-	__m128 widen = _mm_set_ss(tolerance);
-	widen = _mm_shuffle_ps(widen, widen, 0);
+	__m128 const absolute = *(__m128 const *)g_455940;
+	__m128 z = transform->columns[2];
+	__m128 const widen = _mm_set1_ps(tolerance);
+	__m128 product = _mm_shuffle_ps(h, h, 0xaa);
+	product = _mm_mul_ps(product, z);
+	__m128 x = _mm_shuffle_ps(h, h, 0);
+	__m128 const y = _mm_shuffle_ps(h, h, 0x55);
+	z = _mm_and_ps(product, absolute);
 	z = _mm_add_ps(z, widen);
-	__m128 const y = _mm_and_ps(_mm_mul_ps(_mm_shuffle_ps(h, h, 0x55), transform->columns[1]), absolute);
-	__m128 const x = _mm_and_ps(_mm_mul_ps(_mm_shuffle_ps(h, h, 0x00), transform->columns[0]), absolute);
-	bounds->upper = _mm_add_ps(_mm_add_ps(x, y), z);
-	bounds->lower = _mm_xor_ps(bounds->upper, *(__m128 const *)g_4124a0);
-	bounds->upper = _mm_add_ps(bounds->upper, transform->translation);
-	bounds->lower = _mm_add_ps(bounds->lower, transform->translation);
+	product = _mm_and_ps(_mm_mul_ps(y, transform->columns[1]), absolute);
+	x = _mm_and_ps(_mm_mul_ps(x, transform->columns[0]), absolute);
+	*upper = _mm_add_ps(_mm_add_ps(x, product), z);
+	*lower = _mm_xor_ps(*upper, *(__m128 const *)g_4124a0);
+	*upper = _mm_add_ps(*upper, transform->translation);
+	*lower = _mm_add_ps(*lower, transform->translation);
 }

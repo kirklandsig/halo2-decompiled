@@ -11,6 +11,10 @@ struct s_visibility_bound_record
     byte transform_index;
     byte padding[3];
 };
+// MiniMax E (11-16): no new form tried this round, no lower score (443): the frame still agrees with retail's, and the first
+// difference is still at +0x10, where retail forms the entry address with a lea into ebx from a sign-extended index before the
+// register saves and this build forms it with a shifted copy added to the table after them; the part centre's body is inlined
+// from 0x142570, whose file this lane may not edit.
 // MiniMax H (11-13): no new form, no lower score (443).
 // MiniMax I (11-11): no new form, no lower score (443): the first difference is at +0x10, where retail forms the entry address as a sign-extended index scaled by the entry size and added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and we form it as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`); retail then keeps the tag table in esi and spills the entry at [esp+0x30], we keep the entry in a register.
 // MiniMax I (11-11): reading the entry's flags in each arm instead of through the `flags` local (retail loads
