@@ -302,6 +302,11 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // colour first, declarations direction/strength/colour 124, strength/direction/colour 124, colour/strength/direction 128,
 // strength/colour/direction 128 (the add stays load-first in every order); a const light pointer and entry read 121; the light
 // index declared ahead of the light-count test 121 (both the same code).
+// Round 171 (m3 lane 7, fast with 0x131c20; colour first re-measured 121 at 828 bytes): on colour first, the entry pointer read
+// before the light's entry-count test 131 (829 bytes); the direction seed through vector3f_assign of the zero vector's three
+// components 213 (841, the seed becomes SSE moves); the contribution declared once at the top of the lights branch 121 (same
+// code); a power local named inside the blend arm for the divide and the add (the test still reads the field) 188 (835: the
+// add goes in place, `addss xmm7, [esp + 0x28]`, but the power spills across the call); `strength = strength + power` 121.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

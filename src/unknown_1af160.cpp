@@ -160,6 +160,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // (same code); the marker pointer as a NULL default and an if 236 (982 bytes); the two opening tests nested 12 (same
 // code); the definition's range field named once for its three uses 65; the 0x265c30 flag declared inside the found
 // test 19. Body unchanged.
+// m3 lane 15 r93 (`--fast 0x1af160 0x1e1f20`, control 12; the same two swapped home pairs): the equal arm's two clears as one
+// chained `local_5 = actor_get(arg_0)->unknown040 = false;` 12 (same code); the saved-reference test with the macro's operands
+// swapped 13; the 0x261280 outputs declared bool before long, all three ahead of the scratch buffer 12 (same code); the search's
+// +0x59 flag as a ternary on the 0x1e4be0 result 222; the search's +0x698 bool stored before the +0x69a short 14. Still the
+// homes tie (0x260670, ours, is 440 at 3097 bytes against 3077, on the bool output's chain). Body unchanged.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

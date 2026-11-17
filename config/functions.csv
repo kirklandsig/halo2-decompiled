@@ -465,7 +465,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00041020,24,game,speed,a16 pad,,,00040f60,src/unknown_03bcb0.cpp,matched
 00041040,1089,game,speed,a16 pad,,,0001bf50 0001e2d0 00040de0 00040e10 00040e30 00137bd0,src/unknown_03bcb0.cpp,todo
 00041490,426,game,speed,a16 pad,,,0001bf50 0001e2d0 00040e10 00040e30 00137bd0,src/unknown_03bcb0.cpp,todo
-00041640,826,game,speed,a16 pad,,,0003ea30 0003f220 00040e30 0012de70 001321f0 00165010,src/unknown_0350e0.cpp,matched
+00041640,826,game,speed,a16 pad,,,0003ea30 0003f220 00040e30 0012de70 001321f0 00165010,src/unknown_0350e0.cpp,todo
 00041980,661,game,speed,a16 pad,,,0002dba0 0003e9c0 00042850 000429a0 000b8d30 000bad50 000be6d0 00320560,src/unknown_0350e0.cpp,matched
 00041c20,89,game,speed,a16 pad,,,00041980 00041c20 000d4cf0,src/unknown_0350e0.cpp,matched
 00041c80,54,game,speed,a16 pad,,,00041c20,src/unknown_0350e0.cpp,matched
@@ -6571,7 +6571,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 001c4c50,868,game,speed,a16 pad,,,000baf80 00183c60 001d1010 001d10b0 001d1160 001d1c10 001d1c60,src/unknown_1c25a0.cpp,near
 001c4fc0,113,game,speed,a16 pad,,,,src/unknown_1c25a0.cpp,matched
 001c5040,113,game,speed,a16 pad,,,,src/unknown_1c25a0.cpp,matched
-001c50c0,252,game,speed,a16 pad,,,0030cc60,src/unknown_1c25a0.cpp,todo
+001c50c0,252,game,speed,a16 pad,,,0030cc60,src/unknown_1c25a0.cpp,matched
 001c51c0,67,game,speed,a16 pad,,,001c4040,src/unknown_1c25a0.cpp,near
 001c5210,493,game,speed,a16 pad ebp,,,00279740 0030b6a0 0030bb50 0030e4b0 0030e5e0 003212c5 003212d6,src/unknown_1c25a0.cpp,matched
 001c5400,164,game,speed,a16 pad,,,,src/unknown_1c25a0.cpp,matched
@@ -7952,7 +7952,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002281a0,574,game,speed,a16 pad,,,00141590 001d08e0,src/impacts.cpp,matched
 002283e0,221,game,speed,a16 pad,,,,src/impacts.cpp,matched
 002284c0,267,game,speed,a16 pad,,,002285d0,src/impacts.cpp,todo
-002285d0,412,game,speed,a16 pad,,,0011bed0 0011c120 001883e0,src/impacts.cpp,todo
+002285d0,412,game,speed,a16 pad,,,0011bed0 0011c120 001883e0,src/impacts.cpp,matched
 00228770,1981,game,speed,a16 pad,,,00030bf0 001201a0 001d08e0 001d0a20 001d0bb0 002277b0 00227990 002281a0 00228f30 002294a0,src/impacts.cpp,todo
 00228f30,1274,game,speed,a16 pad,,,001d09d0 002273d0 00229430,src/impacts.cpp,todo
 00229430,108,game,speed,a16 pad,,,,src/impacts.cpp,matched
