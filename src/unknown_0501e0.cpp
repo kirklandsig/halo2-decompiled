@@ -37,7 +37,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // offset vectors and both views in the frame), the orthographic dot product still runs i, j, k where retail runs
 // j, k, i, and the scale is still applied in place where retail copies the raw offsets before the test; the source
 // permuter's search on this function was cut at its time limit before it scored any variant.
-// score 304 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// score 234 (was 304): see the last entry (each offset transformed in place). Earlier 304 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
 // MiniMax G (11-13): no new form, no lower score (206): the diff re-read this round puts the first difference in the frame size (ours 0x20, retail's 0x14), and the forms that change the two offset loops' order or the scale step measure at or above the body, so the body stands.
@@ -574,6 +574,23 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // scoped raw displacements with aggregate/staged stores/staged aggregate 278/304/278;
 // first/second displacement scoped to its transform with aggregate 279/270.
 // NOT kept: the lower scores have frame 0x2c versus 0x14, even at retail length.
+// M3 lane 17 r45 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; the kept form confirmed plain;
+// "sums" = the six view sums compared symbolically with retail's (forward*z + up*y) + right*x, build/r45/symtree.py). Kept: each
+// offset transformed in place by the unchanged helper, the views living in the offset vectors as in matched 0x30290, 304 -> 234
+// (1110 bytes, sums as retail). On it: the helper reading the camera's scale itself 231; scalar x, y, z copies in the helper 231,
+// with `scale * v->i` in the arm 231, with `*=` 231; the helper's rows written forward, up, right 231 but the sums become
+// (right*x + up*y) + forward*z; the depth limits in the condition 260; both offsets through vector3d_from_points3d 231 (with the
+// scale-reading helper; the same code as the loops); the second offset first 233 with other sums; each view right after its
+// offset 307; the orthographic segment in the second or the first vector 236/240 (frame still 0x20). Other in-place helpers: the
+// neighbour file's transform_vector declared here 260 with sums (right*x + up*y) + forward*z (an LTCG inline keeps the text
+// order of the sum, a same-file inline of direct globals reverses it); a camera-pointer parameter given &g_4b9e14 260, other
+// sums; a camera pointer that defaults to the global when NULL (0x30830's idiom) 286 at 1167 bytes with retail's 0x14 frame and
+// one coefficient held across both views, but other sums whichever way the rows are written; axis-pointer locals 280 (frame
+// 0x14, other sums). Diagnostic (not kept, the caller changed and restored): the camera as a fourth parameter of this function,
+// passed &g_4b9e14 by 0x4f7e0, 307: every first-view coefficient is then loaded before its product, as in retail (through EDX
+// where retail has absolute addresses), with retail's frame. Left: retail loads each first-view coefficient into a register
+// before multiplying where ours copies the variable and multiplies from memory, keeps right.i in XMM7 for the second view and
+// spills the second view's x and z.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
@@ -583,20 +600,18 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
         local_0.n[component] = arg_0[0].field_0.n[component] - g_4b9da0.n[component];
     for (long second_component = 0; second_component < 3; ++second_component)
         local_1.n[second_component] = arg_0[1].field_0.n[second_component] - g_4b9da0.n[second_component];
-    vector3f local_2;
-    vector3f local_3;
-    world_vector_to_view(g_4b9e14.scale, &local_0, &local_2);
-    world_vector_to_view(g_4b9e14.scale, &local_1, &local_3);
-    real first_depth_limit = local_2.k * local_2.k * 4.f;
-    real second_depth_limit = local_3.k * local_3.k * 4.f;
-    if (local_2.k < 0.f && local_3.k < 0.f &&
-        first_depth_limit > local_2.i * local_2.i &&
-        first_depth_limit > local_2.j * local_2.j &&
-        second_depth_limit > local_3.i * local_3.i &&
-        second_depth_limit > local_3.j * local_3.j)
+    world_vector_to_view(g_4b9e14.scale, &local_0, &local_0);
+    world_vector_to_view(g_4b9e14.scale, &local_1, &local_1);
+    real first_depth_limit = local_0.k * local_0.k * 4.f;
+    real second_depth_limit = local_1.k * local_1.k * 4.f;
+    if (local_0.k < 0.f && local_1.k < 0.f &&
+        first_depth_limit > local_0.i * local_0.i &&
+        first_depth_limit > local_0.j * local_0.j &&
+        second_depth_limit > local_1.i * local_1.i &&
+        second_depth_limit > local_1.j * local_1.j)
     {
-        real local_4 = 0.f - local_2.k;
-        real local_5 = 0.f - local_3.k;
+        real local_4 = 0.f - local_0.k;
+        real local_5 = 0.f - local_1.k;
         real local_6;
         if (arg_1)
             local_6 = 1.f / (local_5 + local_4);
@@ -614,8 +629,8 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
         arg_2->field_14 = arg_0[0].field_14;
         if (arg_1)
         {
-            real local_7 = (local_3.i * local_4 - local_2.i * local_5) * 2.f;
-            real local_8 = (local_3.j * local_4 - local_2.j * local_5) * 2.f;
+            real local_7 = (local_1.i * local_4 - local_0.i * local_5) * 2.f;
+            real local_8 = (local_1.j * local_4 - local_0.j * local_5) * 2.f;
             real local_9 = local_8 * local_8 + local_7 * local_7;
             if (local_9 >= 0.f)
                 arg_2->field_c = (real)(sqrt(local_9) * arg_2->field_c * local_6);

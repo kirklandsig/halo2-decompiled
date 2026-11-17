@@ -1077,6 +1077,13 @@ extern "C" void _ReadWriteBarrier(void);
 // parameter store and the call through one multi-use pointer to the parameters 28 (the no-barrier control); the memset
 // ahead of the globals and voice pointers, barriers kept, 25; the voice pointer by byte arithmetic from the voice array
 // 21 (same code); the room HF level from the clamp expression in place of the room level read back 112 (691 bytes).
+// Round 96 (m3 lane 2, fast with 0x220e00, which stays matched): the room level through a bound `long &room` to its field
+// (assigned, pinned, copied to the HF field) 21; the buffer bound once by const reference for both buffer calls 21;
+// decibels bound to a `real const &` for the attenuation call 21; the voice through a reference to its array element 21;
+// the attenuation bound by `real const &` to the call's result 21 (all the same code). Compile-only: the call's -64 and 0
+// built from their bits through the decibels type adds two register pushes (decibels EDX, every later register retail's);
+// a probe load before the memset or before the call gives every later register retail's and decibels EDX, one after the
+// call only the later ones, so the rotation follows code order and retail's memset zero takes no rotation step.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

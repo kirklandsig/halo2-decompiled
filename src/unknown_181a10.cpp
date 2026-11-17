@@ -961,6 +961,22 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Shared plane-side distance with aggregate normal or setter, plane/collector scope 337/349 each;
 // shared side predicate with the same publications and scopes 316/328 each. The shared publication
 // shortens the body and keeps the 0x40 frame. The second node still needs retail's +0x20 slot.
+// m3 lane 10 r115 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH throughout; control 238). KEPT, a
+// behaviour fix at the same count (238, 1247 B): the three plane-normal rows written forward, left, up. VC orders a
+// float sum's terms by its own ranking, not by the source: the old rows (up, left, forward) compiled to (forward +
+// left) + up, where retail adds (up * n.k + left * n.j) + forward * n.i (0x182556-0x1825b4), a different rounding; the
+// rows as written now compile to retail's association (checked on the listing's expression trees). Still different,
+// not kept (it raises the positional count by one): the plane distance compiles to ((z + y) + x) + scale * d, where
+// retail adds ((position.z * k + position.y * j) + scale * d) + position.x * i (0x1825bd-0x182608); written `((z + y)
+// + scale * d) + x` (or `x + (z + y + scale * d)`, or with the x term in its own `+=` statement: all the same code)
+// it compiles to retail's association at 239 (one positional line shifts; aligned 180 either way). The second arm's
+// side test already adds as retail does (0x18267b-0x1826a7). New classifier forms, all worse: the 1..16 clamp through
+// an inline pin taking const references and returning a const reference (the three reads then go through real stack
+// temporaries), on a cast temporary 374 (1287 B), with the arms written value-first 374 (same code), bound to the data
+// field 370 (1282 B), on a named local compared with itself 396 (1285 B), on a named local compared with the field 374
+// (1287 B, other code); the same pin returning by value 238 (same code as the body). Reading: retail's `mov edx,
+// [eax+8]` after the zero test, its constants in the result register and the unfolded `mov ecx, edx; cmp ecx, edx`
+// say the clamp read the data through a form the first test's read was not merged with; a reference return is not it.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
@@ -1001,9 +1017,11 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 				short plane_index = *(short *)(*(byte **)(definition + 0x9c) + surface * 8);
 				bsp3d_get_plane((s_bsp3d *)(definition + 0x70), plane_index, &plane);
 				transform4x3f *matrix = (transform4x3f *)instance;
-				real normal_i = matrix->up.i * plane.n.k + matrix->left.i * plane.n.j + matrix->forward.i * plane.n.i;
-				real normal_j = matrix->up.j * plane.n.k + matrix->left.j * plane.n.j + matrix->forward.j * plane.n.i;
-				real normal_k = matrix->up.k * plane.n.k + matrix->left.k * plane.n.j + matrix->forward.k * plane.n.i;
+				/* VC sums these three products last term first: written forward, left, up it adds (up + left) + forward,
+				   retail's order (0x182556-0x1825b4) */
+				real normal_i = matrix->forward.i * plane.n.i + matrix->left.i * plane.n.j + matrix->up.i * plane.n.k;
+				real normal_j = matrix->forward.j * plane.n.i + matrix->left.j * plane.n.j + matrix->up.j * plane.n.k;
+				real normal_k = matrix->forward.k * plane.n.i + matrix->left.k * plane.n.j + matrix->up.k * plane.n.k;
 				plane.d = matrix->position.z * normal_k + matrix->position.y * normal_j + matrix->scale * plane.d + matrix->position.x * normal_i;
 				plane.n.i = normal_i;
 				plane.n.j = normal_j;

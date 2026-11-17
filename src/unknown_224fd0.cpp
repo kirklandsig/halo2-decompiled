@@ -318,6 +318,13 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // (`axis->j*axis->i*(1.0f-cosine)`, all three) 219 (same code); with the axis product grouped (`(1.0f-cosine)*(axis->j*axis->i)`)
 // 424 (1788 B); the sine vector as a copy of the axis scaled in place 444 (1776 B); the jk pair stored left.k first 219; the ik
 // pair stored forward.k first 218 (one point, not kept).
+// M3 lane 7 r174 (fast, control 219): the rotation helper's two vectors declared sine first 219 (same code: the spill
+// homes do not follow their declaration); a file-private cross product for the four basis crosses with the products in
+// retail's register order (`b->k * a->j - a->k * b->j`, `a->k * b->i - b->k * a->i`, `b->j * a->i - a->j * b->i`) 219
+// (same code: the operand order is canonicalised; retail's case 1/2 cross loads forward.k first where ours loads up.j);
+// the first switch with no default (no `__assume`) 228 (range check added); case 0's forward copied whole then negated in
+// place 470 (1740 B); the rotation switch with the second-axis arm first 491 (1720 B). Re-measured: case 0's up copied
+// ahead of the negations 221.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

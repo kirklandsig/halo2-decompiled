@@ -583,6 +583,14 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // function 489/489, local_10 declared then assigned 489 (all the same code: local_8 stays at +0x8c, the squares k, j, i);
 // the 0.99 test's dot through the existing dot_product2d 661 (3499 B). Kept: the output scale as the existing
 // vector3f_scale(&local_6, local_27, &local_6) 489 (identical code).
+// M3 lane 13 r105 (fast with 0x1f38c0/0x29b990 matched, 0x2922b0/0x29b2e0 unchanged; control 489, register-masked aligned 79).
+// The normaliser's square order follows when each component of local_9 is first named: a no-code read names it early, and a
+// component named early also takes the scale-copy-first product (retail: squares i, k, j; products copy, load, load). Forms:
+// `(void)local_9.j; (void)local_9.k;` before normalize3d 756 (3486 B: the squares become retail's i, k, j but j and k turn
+// copy-first and the frame moves); a private normaliser summing `s = i*i; s += k*k; s += j*j` through a squared-length
+// helper 646 (3499 B, masked 85: squares and products as retail, other products elsewhere flip); the 0.99 test's dot
+// written `local_17.i * local_15.i + local_17.j * local_15.j` 491 (3506 B, masked 74: its i term loads local_15 first as
+// retail), only its i term swapped 491 (same code); local_28 declared after local_4 at the top 493.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
