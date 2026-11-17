@@ -1525,6 +1525,14 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // effect, so there is no behaviour difference to report; the remaining difference is the register assignment.
 // m3 lane 1 r115: no form run. The listing agrees with this note (convention as retail; the early ESI save and the late
 // compare chain that inlines 0x94420 are what is left), and every switch, parameter-order and lookup form found is listed.
+// M3 lane 13 r105 (all plain with every function of this file and 0x7afd0/0x92ef0/0x92d10/0x785d0; control 143, 0x7afd0
+// MATCH): the one retail-order switch with every case through its own `static __forceinline` wrapper (handler, address,
+// message) 915 (988 B: the handlers inline too; 0x7afd0 6); the one switch with a no-code `(void)address;` after case 18's
+// call 217 (420 B, the one-switch code; 0x7afd0 3), with `(void)address->ipv4_address;` there 217 (same code: no-code reads
+// fold before the convention is chosen). On the kept two-switch body, an unsigned `if ((dword)message_type > 24) return;`
+// ahead of the switches 111 (460 B; retail's prologue, delayed ESI save, two-pop range exit and jump table, 0x7afd0 MATCH;
+// left are case 18, which retail calls from its jump table where ours tests it late and inlines 0x94420; not kept: the test
+// is implied by the switches); that with 11 back in the late switch beside 18 121 (round 65's form re-measured).
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

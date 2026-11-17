@@ -672,6 +672,26 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the pass-tag lookup through the tag-data accessor too 8 (same code); the pass tag's data bound by reference 36; the pass
 // reference in its own block 8 (same code); the pass tag read through a by-value inline accessor 8 (same code), the pass
 // element passed straight to a by-reference accessor parameter 121 (no dead lea, like by value). Main body unchanged.
+// m3 lane 10 r115 (fast with 0x2243c0 and 0x224d90, both matched unless noted; control 117; main's body unchanged). Same
+// code as the body (not trials): one pointer local reused down the head, stage and pass elements, alone or on through the
+// pass and material definitions (five placements; VC splits the reassigned local, so a reused variable is not what gives
+// retail's unfused loads or its EAX reuse); the block accessor with its index, its block or all three parameters taken
+// by const reference; the accessor writing the element through an out parameter. New: the accessor returning a
+// one-member handle object by value (`.address` read at each use, unnamed or as named head/stage/pass locals) 123 (544
+// B, other code: the stage load is then retail's `lea` plus `movzx eax, word ptr [eax]`, the pass element still reads
+// through the `lea`). On the round 59 chain (rebuilt 8): those handle objects in place of the three `void const *const &`
+// element bindings 8, the same code, so the chain's reference bindings have a by-value handle spelling (still a
+// one-member wrapper, match-only). Tag lookups returning the same handle, re-measured in that spelling: the pass definition
+// 36, the material definition 92 (552 B), both 86 (545 B, 0x224d90 36), a second handle type for the tag lookups 86 (same
+// code). New on the chain with handles: the pass record read as element 0 of the definition's +0x1c block through the
+// accessor, on the pass handle 76 (546 B, 0x224d90 36), on the pointer tag accessor 36 (544 B, other code than the listed
+// 36); both definitions through handles with both their blocks through the accessor 81 (551 B); the pass through a
+// handle and the material through the pointer accessor, both blocks through the accessor 81 (551 B, other code); both
+// through the pointer accessor with both blocks 110; the pass handle with its block and the material handle 60 (551 B,
+// 0x224d90 36). A grid on the three handle leads (pass handle, pass pointer with its record block, material handle)
+// over the four group-test forms and three material-index forms (reference, accessor reference, plain), 33 builds: best
+// 79 (546 B), every other 86-135, none under the chain's 8. Left on the chain, as before: the pass definition takes EDX
+// where retail reuses EAX, the material tag ECX (EDX), the material definition EDX (EDI), the zero's `xor` late.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

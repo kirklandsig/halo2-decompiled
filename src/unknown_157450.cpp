@@ -482,6 +482,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax S (11-17): no new form, no lower score (32, was 32); the old team mask is still loaded and spilled as a dword where retail loads and spills a word, and every re-spelling of that pair (word local, word store, dword OR, reversed compares) scores 77 or more, so the body stays as it is.
 // MiniMax S (11-16): no new form, no lower score (32): the permuter over the four sources of the reduced image (3000 s, 60 tries) found nothing below the baseline, a bit local shared by the two accumulators scores 45 because the compiler folds the shift into the first use, and the only form below the baseline is a single-use bit local at 29, which the review drops as a one-use local; retail's changed block still stores the two masks before its not/and and reads the engine index at the head of the block.
 // MiniMax S (11-16): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, it is still read from memory at each use where retail keeps it in ECX across the tail, the present accumulator's update still lands in ESI where retail keeps it in EBX, and the engine index is still read after the stores where retail reads it at the head of the change block; the word mask alone scores 77, the non-volatile accumulator alone 102 and the two together 63.
 // MiniMax I (11-15): no new form, no lower score (32): the width-cast form MiniMax D measured (24) and the volatile word (24)
@@ -4858,6 +4859,10 @@ bool function_158eb0()
 // iterator call in the loop test 67 (120 bytes); re-measured a named player index after the flag 5 and
 // `g_4e6948->flag1128 ? 1 : 0` in the argument 38 (144 bytes). Still the
 // mode/index scratch pair (ours EDX/ECX, retail ECX/EDX): BLOCKED-BY 0x23f260 (its file is held this round).
+// Round 179 (m3 lane 8, fast with 0x23f260/0x19f240, both matched each time): `if (count == 1) return false;
+// return result;` 23; `return false;` in the loop with `return count != 1;` and no result 65 (126 bytes); a
+// short count 8 (147 bytes); the short count with the early return 22; the short count with the in-loop
+// return 64 (127 bytes). Still BLOCKED-BY 0x23f260.
 // @retail 0x158f50
 bool function_158f50()
 {

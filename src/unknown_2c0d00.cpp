@@ -20,6 +20,7 @@
 #include "props.h"
 #include "object_queries.h"
 #include "unknown_1428b0.h"
+#include "unknown_1cec30.h"
 
 inline void point2f_set(point2f *point, real x, real y);
 
@@ -213,6 +214,8 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
+// score 920 (was 920): frame 0x2cb4 versus 0x2cac; actor/unit retention, the deferred type-0 second branch and
+// type 1/7/11 arms, and the priority/query/marker homes remain (rounds below).
 // MiniMax S (11-15): no new form kept, no lower score (920 plain, 926 fast): the frame map was rebuilt this round
 // from both listings.  Retail's function-scope homes are the raised point at F+0x24, the range_min short at F+0x30,
 // the self-unit pointer at F+0x34, the range_max short at F+0x38, the location at F+0x40, the block_priority short at
@@ -224,7 +227,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // placement differs, our scalar area running eight bytes longer (frame 0x2cb4 against 0x2cac), which carries the
 // query array and the marker arrays eight bytes up.  The permuter cannot search this one in the reduced image (916
 // reduced against 910 full) and a full build per trial is too slow for the time allowed, so the body is unchanged.
-// score 920 (was 920): earlier 920 (was 923), 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
+// Earlier 920 (was 920): earlier 920 (was 923), 923 (was 923), 901 (was 901), 882 (was 882); frame 0x2cb4 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
@@ -532,6 +535,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // first 920; the sphere counter `long` 919 (3723 bytes; retail's counter is a short, `movsx eax, ax`); both of the 919 forms
 // together 919 (3721 bytes); the block-priority test with `aligned` first 920; the range test with `type != 0` first 920.
 // Both 919s are under the keep bar. Retail tail-merges the two 0x2c0d00 calls as ours does. Body unchanged.
+// M3 lane 15 r95 (plain): the two component reads through the existing havok_component_get (as matched 0x22a110
+// reads its component) 920 (same code, kept); the unit and definition no-obstacle bitfields with word storage (a
+// compile-only screen: `(bool)` on a word-storage bitfield gives retail's `mov al, byte; shr al, n; test al, 1`, byte
+// storage gives `test byte`) 937 (3708 bytes: a loop pad and a jmp drop); that with both volatiles dropped 958 (3687
+// bytes; register-masked aligned 172 -> 152); `if (object_count > 0)` around the object loop 920 (aligned 173);
+// `enabled` declared after the four per-object defaults (retail sets `dl = 1` ahead of the settings test) 920 (aligned
+// 171). Retail reads the actor's team once per arm (`xor esi, esi; mov si, [actor + 0x24]`, compared `cmp cx, si`)
+// where the volatile actor makes ours read the pointer and the field twice.
 // M3 lane 13 r103 (plain, the file's other matched functions stay matched; [exact, register/stack-masked] aligned counts by
 // opcode, base 920 [480, 172]): a redundant `if (object_count > 0)` guard around the object loop 920 [480, 173] (match-only
 // steering form, no change); skip_classification as `byte` 920 (same code); the skip flag declared after the two sphere flags
@@ -682,7 +693,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
         else if (type == 11)
         {
             long component_index = *(long *)(object + 0xb4);
-            if (component_index != NONE && *(char *)(g_51e9b8->data + (component_index & 0xffff) * 0xa0 + 0x1c) <= 1)
+            if (component_index != NONE && havok_component_get(component_index)->unknown1c <= 1)
                 continue;
         }
         vector3f offset;
@@ -716,7 +727,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
             {
                 long component_index = *(long *)(object + 0xb4);
                 if (component_index != NONE)
-                    priority = *(char *)(g_51e9b8->data + (component_index & 0xffff) * 0xa0 + 0x1c);
+                    priority = havok_component_get(component_index)->unknown1c;
                 if (!enabled)
                     continue;
             }
@@ -1937,6 +1948,12 @@ long function_1fa7f0(void);
 // 433, with the initialiser dropped 417) and the dead store of query+4 (0x2c22ed, 0x2c22f7) stay unreproduced;
 // 0x2c262d-0x2c2643 is 0x210850's inlined body, but a call to it stays out of line here (both conversions 514, 1680 B;
 // the end alone 474; the source alone 467), so the body stays written out.
+// M3 lane 8 r180 (fast, control 400; all restored): the emit reading the current step through points[index] with the step
+// pointer only at the top 473 (1758 B); the step pointer declared at the emit only 473 (1758 B); both corner queries
+// through a force-inline helper whose unused first argument is query+4 (retail's dead store) 452 (the store is not
+// produced); that helper reading the pathfinding pointer at +0x88 from its argument 400 (same code, folded); the
+// avoidance trace record at the loop-body scope 400 (same code). Diagnostics: `edge = 0xffff` at the scan hit 433 (the
+// second store appears, the edge stays in a slot); count's address taken, or count read through a pointer to it, 400.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

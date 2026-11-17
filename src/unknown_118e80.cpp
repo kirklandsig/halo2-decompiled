@@ -243,8 +243,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // (src/unknown_11eed0.cpp): its named `double s` (and `double angle`, and its acos helper's double
 // return) makes this function keep 8-byte stack parity under LTCG, so the frame stays 0x78 against
 // retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
-// score 218 (was 218; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
-// score 218 (was 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
+// score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
 // callee's double local makes this function keep 8-byte stack parity, so it pads its frame and cannot
@@ -395,6 +394,20 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // The world-up matrix sums stay a private helper: matrix_transform_vector (matrix_transform.h, not included here)
 // adds forward first, retail adds up, left, forward (0x11998b-0x1199a1), and vector3f_rotate_into_axes sums in
 // another order per component, so neither fits and neither is used. Nothing new: no new include, helper or double.
+// M3 lane 3 r255 (fast with 0x118700, 0x11f0d0 and 0xc60c0 in the image, which then agrees with the plain check; 46 confirmed
+// plain): lead, not kept (a new one-caller helper and block scopes need a match). In 0x11f0d0, the position step through a
+// file-local forceinline helper with a double distance parameter, with `real angle`: 0x11f0d0 stays 2, 0xc60c0 268 -> 127,
+// and this function 218 -> 220; on it the speed scale read from the definition at each use 211 (1037 B), block scopes
+// (the temporary velocity with world-up and both basis calls, each basis call's left in its own block, the position in
+// its own block) 84 (1030 B), both 50; then world-up's lookups straight from the pool 49 and the early 0x1faf80 exit as
+// if/else around the rest 46 (plain 46, 0x118700 45 unchanged; build/r255/lead-1197b0.patch in m3-lane3). Same or worse:
+// on 50 both dots local-first 50, the forward dot alone 50; on 49 new_forward declared first 49, up/new_forward in one
+// declaration 49, the final stores forward-first 50; on 46 the zero-limit copies swapped 51, turn_velocity declared before forward 46, the position at function
+// scope 85, world-up before the zero velocity 140, `2.0f * acceleration` 46. 0x1faf80 declared (object_index, facing,
+// settings, control, threshold, turn), as retail's call setup suggests, makes this call agree but unmatches 0x1faf80 (2):
+// reverted. Left at 46, all register or schedule: that call's setup, the zero-limit copy's pointer register, the second
+// 0x11f0d0 call's `mov esi, ebx` (retail `lea esi`), the forward dot's i product, the final up/forward copies (retail
+// interleaves them; ours copies forward through `lea ecx`) and the turn-velocity copy's register rotation.
 // MiniMax I (11-17): no new form, no lower score (241 fast, 218 plain): the frame is still 0x78 against retail's
 // 0x6c with the early esi save, and the 0x11ce20 call still takes its two arguments in the other order.
 // @retail 0x1197b0

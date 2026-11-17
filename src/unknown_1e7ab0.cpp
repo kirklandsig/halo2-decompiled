@@ -484,6 +484,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // and it is 0xd0590's parameter order in another file (round 197, 111 under that order); (2) case 23, retail loads
 // the table global (0x1e809c) before the unit index (0x1e80a5), ours the reverse, a scheduling choice, same values.
 // 0x1e83c0, 0x1e6bd0 (303 before and after), 0x1e8eb0, 0x1e7a10, 0x1e7a60, 0xd0590 and 0xd05c0 unchanged.
+// MiniMax C (11-17): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX; a getter whose first parameter is the table gives retail's lookup bytes
+// exactly, but the body grows to 2312 bytes against retail's 2308, so every later jump target moves (164), and
+// case 4's parent still sits in ECX where retail holds it in ESI (a hoisted parent read and the inlined
+// parent-unit expression do not move it).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

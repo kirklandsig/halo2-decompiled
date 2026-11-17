@@ -285,6 +285,13 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // initializer 378 [36]; the local_17 selection with its arms swapped and the test negated 378 (same code); the path offset named
 // as 0x29a190 writes it plus the local_16 dot through dot_product2d 380 [25] (both blocks then retail's); those two on the left
 // vector built `{-local_8.j, local_8.i, 0.0f}` 395 (2815 B) [21: frame 0x5b4 as retail, the two 12-byte vectors still swapped].
+// M3 lane 3 r255 (fast with 0x29c860/0x29cb10, both still matched; control 378): the left vector declared and built inside
+// the 0x299460 block just before the angle call 549 (2842 B); the side test written local_25 first 378; local_25 computed
+// before the 0x11cd20 call 378 (2814 B, first difference +0xab: frame 0x5b4 as retail, but the side test still reads
+// left_i's home, now +0x5c against retail's +0x54, and the products move); the side test through left_i itself 378; the
+// left vector stored component by component 378. Retail evidence: its side test reads the left vector's own home (+0x84),
+// so retail does not forward left_i into local_13 there (0x299460 receives &local_13; its retail body only reads it and
+// passes it to the matched 0x210770, as ours does).
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
