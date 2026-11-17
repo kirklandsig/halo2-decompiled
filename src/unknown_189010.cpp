@@ -176,7 +176,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // merges the two flag bits into one byte test; the first 0x221810 lookup is still expanded here where retail calls
 // it out of line and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a
 // register. BLOCKED-BY 0x221810 and 0x21d110.
-// score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
+// score 150 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
 // retail's convention move this function's request to EDX and cost its eight matched callers. Round 71:
@@ -398,6 +398,16 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // not stack; no caller lost in any form. Retail's 0x221810 has a stack argument (`ret 4`) and is called at every site, so it
 // behaves like a function LTCG never expands; ours is expanded at the first site here only.
 // MiniMax I (11-16): no new form, no lower score (110): this build still expands the first 0x221810 lookup inline where retail calls it out of line - that helper's inline-ness is set in src/unknown_221490.cpp - and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register, so the request copy's field order still differs; the priority read ahead of the copy reaches 106, a gain of 4 that is below the keep bar. BLOCKED-BY 0x221810 and 0x21d110.
+// b9G (11-17) walk against retail, fast build on r839: fields, offsets, test senses, the 0x221810/0x21d110 arguments,
+// the 0.001f rate (0x45dc70) and the sum order (duration * 0.001f) * rate agree; no behaviour difference found. Body now
+// takes retail's order: the priority is read from the request byte before the copy (0x18a012), the flag word is stored
+// (0x18a055) and the location copied after it (0x18a067), and the marker size is one if/else (0x28 arm 0x18a0ae, 0 arm
+// 0x18a0ba) where it was a store overridden by the arm. Fast build 150 at 487 bytes (was 110 at 473): header and marker
+// line up with retail and the rate/ticks temps now share its frame slots; the excess is the inlined first 0x221810 and
+// the 0x21d110 convention. Alone: priority from the request 106 (old order), if/else marker 135, both with the old
+// location-first order 134; retail's order with set-or-clear bits `? (flags |= 8) : (flags &= ~8)` (retail 0x18a035-
+// 0x18a04b) 166 (500 bytes). Still differing: retail reloads the flags from the state at 0x18a0da (its 0x221810 call
+// clobbers the address-taken state, ours forwards them), and tests bit 8 as a byte, bit 11 by shift (0x18a183-0x18a191).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -407,9 +417,8 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 	{
 		s_sound_play_tag *sound = (s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes;
 		s_sound_play_state state;
-		state.location = request->location;
 		// Retail also clears the padding after the priority field.
-		*(long *)&state.priority = state.location.audible ? 3 : 1;
+		*(long *)&state.priority = request->location.audible ? 3 : 1;
 		dword flags = (request->source ? 0x20 : 0) + 5;
 
 		if (request->object_index != NONE)
@@ -421,6 +430,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 			flags |= 0x100;
 		}
 		state.flags = flags;
+		state.location = request->location;
 		state.object_index = request->object_index;
 		state.source = request->source;
 		state.platform_playback = request->platform_playback;
@@ -430,11 +440,14 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 			state.location.flags |= 0x800;
 		}
 
-		state.source_data_size = 0;
 		if (request->marker)
 		{
 			state.marker = *request->marker;
 			state.source_data_size = sizeof(s_sound_marker);
+		}
+		else
+		{
+			state.source_data_size = 0;
 		}
 
 		char const *variant = request->variant;

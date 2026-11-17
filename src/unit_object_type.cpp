@@ -3100,6 +3100,7 @@ void function_c5740(long unit_index, bool start)
 // and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this
 // build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this
 // file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
+// MiniMax R (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3571,6 +3572,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // MiniMax C (11-16): tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat
 // MiniMax C (11-16): lookup are scheduled differently; a permutation run this round reached 85 in its own reduced image with forms the
 // MiniMax C (11-16): rules reject, so nothing was kept.
+// MiniMax R (11-17): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat lookup are scheduled differently.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4979,6 +4981,7 @@ void function_c50a0(long unit_index)
 // MiniMax C (11-16): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer
 // MiniMax C (11-16): from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp,
 // MiniMax C (11-16): so the tag's triple, the index's masking and the seat's fields land in the other registers.
+// MiniMax R (11-17): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp, so the tag's triple, the index's masking and the seat's fields land in the other registers.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -5496,6 +5499,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // MiniMax C (11-16): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here
 // MiniMax C (11-16): (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the
 // MiniMax C (11-16): other order.
+// MiniMax R (11-17): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the other order.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -7616,9 +7620,10 @@ public:
    counting a held weapon in a multiplayer engine mode 7 with option 0x20,
    for the dropped weapon of a player on a flagged team; retail expands both
    counts in place */
+// MiniMax D (11-17): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the slot loop's two induction registers and the frame slot layout follow that plan; the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line, and that file is not this lane's. BLOCKED-BY 0x106030.
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
-// score 492 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
+// score 508 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
 // spills, magazine flags, later register/slot choices and the expanded
 // 0x106030 call remain. The indexed magazine pass gives native pointer steps
 // and a countdown, confirmed by the ordinary whole-file check.
@@ -7673,6 +7678,21 @@ public:
 // P576: Slot pointer body step, twice-used magazine receiver and paired scan names 492/492/492;
 // rounds-accumulation/first-slot lifetimes 511/492; actual modes/dual memset 492/492; eager final mode admission 521.
 // NOT kept: ties or regressions. Native early object/tag spills, scan flag homes and query-call boundary remain; whole body restored.
+// MiniMax R (11-17): no new form, no lower score (492): the slot pointer body step, the twice-used magazine receiver and the paired scan names measure 492 each, and the native early object and tag spills and the query-call boundary still differ.
+// b9K (11-17) walk against retail, fast build on r840: every statement, jcc sense, offset, local type and callee
+// argument agrees (magazine pass, slot loop, hand loop, dual/first-slot/empty blocks, 0x1509e0 with the player in eax,
+// the 0x40 call with (player, weapon)); no behaviour difference found. Floats agree: held > weapon at +0x184 is
+// comiss+ja (0xcdbad), the == 1.0f test ucomiss/lahf/test ah,0x44/jnp (0xcddfb-0xcde06, 1.0 at 0x45dbc0). One change,
+// retail's statement order: modes[hand] and modes[hand + 2] are stored (0xcda24, 0xcda28) before the held-weapon
+// lookup (0xcda2b-0xcda4a); the loop head then has retail's opcodes and registers (pool in ebp, tag table in ebx,
+// 0xcd9ed-0xcda20; slot numbers differ) but modes is reloaded into eax after the loop where retail uses ebx: 492 ->
+// 508, 1799 against 1785 bytes. Measured, not kept: the held index through function_cbd50 (0xcbd50; retail's
+// 0xcda3e-0xcda4a is its body inlined, NONE first, and this file calls it elsewhere) 498, with the stores first 511;
+// the engine answer as a ternary, the definition looked up before the compare (0xcdc4c) 508 (no change); rounds set to
+// 0 before the tests (retail's xor edi,edi at 0xcdca4) with an if in place of the ternary 509; empty/loaded swapped,
+// unit after weapon 498. The rest is 0x106030: retail calls it at 0xcd96e (its four other callers too) and expands it
+// with 0x159dd0 at 0xcdcaf-0xcdd24; ours inlines the first site (cached definition index, extra state slot, shifted
+// frame).
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -7767,12 +7787,13 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 		*(dword *)modes = 0;
 		for (long hand = 0; hand < 2; hand++)
 		{
+			modes[hand] = true;
+			modes[hand + 2] = true;
+
 			s_unit *holder = UNIT_GET(unit_index);
 			short index = (&holder->current_weapon_index)[hand];
 			long held_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
 
-			modes[hand] = true;
-			modes[hand + 2] = true;
 			held[hand] = held_index;
 			if (held_index != NONE)
 			{
@@ -8114,6 +8135,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // 244/244; immutable control snapshots 244; shared two-request table
 // 391; full-hand rate storage 244. NOT kept: no native flag-home/frame repair;
 // original complete body restored. Positive-only bit construction repeats an earlier form and is excluded.
+// MiniMax R (11-17): no new form, no lower score (244): retail's native flag home and frame slots still differ from this build's, and the forms the earlier rounds recorded all measure 244 or worse.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -9603,6 +9625,7 @@ struct s_unit_melee_collision
 // P576: Range at each use on the material/provider graph 531; whole-fan collision and outer hit/damage/basis scopes 484/484/490/485;
 // existing ray/paired point producers 484/567; complete fan/trace names 484. NOT kept: ties or regressions;
 // frame 0x180/native 0x17c and native tag/pool/counter carriers remain. Original entire body restored.
+// MiniMax R (11-17): no new form, no lower score (484): the range at each use on the material and provider graph, the whole-fan collision and the outer hit, damage and basis scopes all measure 484 or worse, and this build's frame stays 0x180 against retail's 0x17c.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

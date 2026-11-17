@@ -709,6 +709,19 @@ void function_146de0(void)
 // success-only padding consumption 120 (held: the guard repeats the loop's own test). Separate
 // byte/char/word/dword/short/long remainders with short padding 134/134/136/146/136/146; byte/word
 // conditional padding 134/136.
+// b8O (11-17) walk against retail, fast build on r836: no behaviour difference found. Checked: early return
+// 0x146e3d; size > 0 0x146e64 and page_count > 0 (g_4e6464 + 0x30) 0x146e72; 12d2f0(size, 0, 0, 0)
+// 0x146e80-0x146e84; pumps < 90 0x146e9a, count stored 0x146e9f before the update calls from 0x146ea3 (unsigned tick
+// test jbe 0x146ebd, +200 0x146ec4, g_4e6484 cleared 0x146ed3); elapsed clamped to 0 at 0x146eef-0x146ef9; `fld 1.0`
+// (0x45dbc0), fcompi, jbe 0x146f0c leaves on seconds >= 1.0 or NaN and ours compiles the same jbe; g_47988c stored
+// every attempt 0x146f3f; halving test 0x146f47-0x146f4f. The one source/retail difference is the padding: retail
+// computes it after the loop, 32-bit, with no block test (0x146f5a-0x146f65, consumed 0x146f83, mask 0x146f85,
+// unaligned block stored 0x146f8b); this body keeps a short local with `if (block)` and `if (adjustment)` guards.
+// The values are equal for every block (aligned 0, NULL 0), so that is retail's evaluation order, not a behaviour
+// fix. The post-loop form (commit dbeab9e6e on agent/b8O) scores 147 with 0x12c600 and the six callers
+// (0x147110-0x147320, all MATCH) in the check, align ratio 0.945 (this body 0.769): left are the inlined update
+// (0x146e9c-0x146ed9) and `push 1` (0x146f9a) placed earlier; a local for the placement result 168. Not kept: 147 >
+// 120. The update's body written into function_80e14 (header restored) 202, as the 207 above.
 // @retail 0x146e30
 c_havok_abstract_allocator *function_146e30(void)
 {

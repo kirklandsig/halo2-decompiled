@@ -5855,6 +5855,12 @@ void __stdcall function_d6bc0(long object_index);
 // of the 0x15a090 call 209 (852 B); after the index read with the object block's `= 1` store through it too 178 (857 B);
 // no loop-top index local (the field read at each use) 172, on the kept body 167 (863 B); `entries` as a const pointer
 // parameter 172 (same code).
+// Round 102 (m3 lane 13, fast): label form re-measured 7 (869 B), with the field test 172 (858 B). Reading the 172 listing:
+// `entries` is not a whole-loop register; its reloads land in EDI and the loaded value is carried from the reset block into
+// the zero and index tests (retail reloads into EAX there), and the timer takes EBX. On the label + field-test form: the
+// loop-top index local at function scope 172; the object pointer declared before the index 172; `entries` copied into a
+// function-scope local 172; the default arm first 172. On the label form: case 1's bit through a trivial forced-inline
+// accessor 7 (same code; CL stays).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

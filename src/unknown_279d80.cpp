@@ -2034,6 +2034,11 @@ void function_27dd10(void)
 // test through the existing node flag test 2 (0x289580 78). Diagnostic: the kind-2 count clamp removed 2,
 // so the clamp's second definition of the count is not the tie. Retail has no float literal here (only
 // the blend's sign constant); matched 0x285750 references its 1.0f twice. All restored.
+// Round 253 (m3 lane 3, fast over all 78 functions of the file; 0x281b60 alongside): in function_288572 a
+// redundant `if (0 < count)` guard around the group loop 56 (0x281b60 97, 0x285750 56, 0x288570 51, 0x289580
+// 13, 0x28aaa0 10); the same guard around the inner loop 2 (same code); the bit flags bound to a `long &`
+// for the inner loop 2 (0x288570 120); the count bound to a `long const &` at the group clamp 2 (0x281b60
+// 39, 0x288570 120); the pass counters as a switch on the component 2 (0x288570 3, 0x289580 78). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2168,6 +2173,9 @@ void function_2818e0(void)
 // Round 174 (m3 lane 8, the shared-helper trials listed above 0x27dff0): const sign mask local 2; plain
 // inline apply 2; plain inline walk 1929 (out of line); flag test returning its expression 2; map test
 // through the node flag test 2. All restored.
+// Round 253 (m3 lane 3, the shared-walk trials listed above 0x27dff0): redundant group-loop guard 97;
+// inner-loop guard 2; bit flags by `long &` 2; count by `long const &` at the clamp 39; pass counters as a
+// switch 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
