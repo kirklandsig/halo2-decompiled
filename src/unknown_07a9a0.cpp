@@ -1052,7 +1052,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
-// score 942 (was 964): frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
+// score 942 (was 964): 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
+// Earlier: frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
 // coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
 // it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
@@ -1502,6 +1503,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `if (!balance_teams_by_count(...)) result = false;` 902 (2764 B: retail's exact `test al, al; jne; mov byte ptr [esp +
 // 0x13], al` after 0x91e30, but its direct form is main's `result &=`, so match-only); both 890 (2768 B). The same
 // conditional clear with the excess exit left as `return false` 917 (2736 B).
+// Round 455: overlaid native workspace, both memset clears 975, overlaid native workspace, first range
+// clear 960, overlaid native workspace, second range clear 970, overlaid native workspace, both range
+// clears 959, overlaid native workspace, first counted clear 971, overlaid native workspace, second counted
+// clear 969, overlaid native workspace, both counted clears 959, Independent native workspace, both range
+// clears 959. The native-width forms recover frame 0xb4 and shorten the body to 2656–2688 bytes against
+// retail's 2828. The opening lookup still expands. All scores rise. Restored the original machine-ID and
+// histogram storage and call sites.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

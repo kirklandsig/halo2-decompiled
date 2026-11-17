@@ -452,7 +452,8 @@ struct s_record_collision_view
 
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
-// score 45 (was 45; 71 before): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
 // (retail's cvtsi2ss/store/fld/mulss/fmul) and the frame now agree: the distance is computed in the trace call's
@@ -1002,6 +1003,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // crosses, best 43 (any cross ahead of the dot puts the direction's i in retail's XMM4, but j and k come out XMM5/XMM3 for
 // retail's XMM3/XMM5); the dot written k, i, j or j, k, i 45 (same code). The matched 0x1ecf50 sums the same helper's dot
 // (k + j) + i as this build does here, so retail's (j + i) + k at this site comes from the caller's context, not the helper.
+// Round 455: Axis rotation helper, named sine and cosine 45, Axis rotation helper, named sine 215, Axis
+// rotation helper, named cosine 59, Axis rotation helper, direct sine and cosine 215, Axis rotation helper,
+// named sine and cosine, direction copied by memcpy 45, Axis rotation helper, named sine, direction copied
+// by memcpy 215, Axis rotation helper, named cosine, direction copied by memcpy 59, Axis rotation helper,
+// direct sine and cosine, direction copied by memcpy 215. The alternate axis helper with both trigonometric
+// values named ties the opening score. The other call forms raise it. Restored the original rotation call
+// and direction copy.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
