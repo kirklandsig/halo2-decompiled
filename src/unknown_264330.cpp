@@ -1035,6 +1035,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
+// score 90 (was 90): retail's length, frame 0x20. Left (masked aligned count 20, registers and esp offsets masked): at the head ours
 // MiniMax G (11-10): no new form, no lower score (91).
 // MiniMax I (11-10): no new form, no lower score (163).
 // MiniMax B (11-04): no new form, no lower score.
@@ -1046,7 +1047,6 @@ real function_296600(long actor_index, long prop_ref_index);
 // 0x1c8df0 call keeps the root in a register where retail stores it into the squad's slot and evaluates !current
 // among the pushes.
 // MiniMax E (11-16): no new form, no lower score (90; the reduced image gives 91): the head still loads the object pool global before the game time, the suppressed and current byte homes are still swapped, and the first 0x1c8df0 call still keeps the root in a register where retail stores it into the squad's slot.
-// score 90 (was 90): retail's length, frame 0x20. Left (masked aligned count 20, registers and esp offsets masked): at the head ours
 // loads the object pool global before the game time and the object index, retail after them (so the object and table registers swap:
 // ours EAX/ECX, retail ECX/EAX, through the type-15 arm), the suppressed/current byte homes swapped, and the first 0x1c8df0 call, where retail
 // stores the root into the squad's slot at once, keeps current in AL and evaluates `!current` with `sete` among the pushes (CSE'd into the
@@ -1247,6 +1247,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // from [esp+0x1c] but the frame grows); a named `attached` bool before root / after not_current 276/270 (1275 B);
 // `volatile bool` current 311, suppressed 315. Left as before: the object/table registers, the 0x12/0x13 byte
 // homes, and root/`!current` evaluation at the first 0x1c8df0 call.
+// Still differing: object data and game-time load order, current/suppression bytes, and root/!current call homes.
+// Typed primary/other/both object getter roles 91/91/91, typed motion cluster 91,
+// separate range output in arm/at entry 230/308, typed cluster and distance fields 91,
+// call-local range output from suppression 230. Reduced control 91, full 90.
+// NOT kept: typed reads tie the reduced control and the separate output moves the native byte homes.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

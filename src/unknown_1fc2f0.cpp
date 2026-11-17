@@ -764,6 +764,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // &delta) with the output rows reading delta 32 (same code); the squared length declared with the other locals at the top and
 // assigned later 32 (same code); the limit through the rate local (`rate * 0.5f`) 90 (first +0x25: the rate stays live in
 // XMM3 and the tick conversion moves). Body unchanged.
+// Still differing: i/j velocity stores and the delta/correction SSE register homes.
+// Prediction-input scope 32, typed predicted point 32, point setter 57, velocity-write scope 32,
+// delta/limit scope 32, named correction denominator 46, point setter at the scale call 57,
+// separate producer and selection scopes 32. NOT kept: no qualifying gain or native store recovery.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
