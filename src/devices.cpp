@@ -2404,6 +2404,9 @@ bool function_0b6760(s_index_pair const *pair);
 // acceleration read at the top of the position-group block 118 (1510 B); the 0x40 update with the arms swapped 61. Same
 // code as the lead: the speed/acceleration or the target named just before the call, `state != NULL` / `!= false` in the
 // refresh, a `real position = 0.0f` argument, the group index in a local.
+// MiniMax D (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off, and the body is still
+// sixteen bytes short of retail's 1495.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {
