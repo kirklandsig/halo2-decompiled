@@ -5704,6 +5704,13 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
+// score 97 (was 97): The retail frame agrees, but the friend-query outputs and later
+// boolean predicates use different byte slots.
+// origin predicate scoped through join eligibility 97; request result scoped through
+// add-member eligibility 97; regular-player predicate scoped through membership
+// actions 97; friend-query outputs scoped through membership actions 97; independent
+// origin and request predicate scopes 97; origin predicate as a byte 97; request
+// result as a byte 97; regular-player predicate as a byte 97.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
