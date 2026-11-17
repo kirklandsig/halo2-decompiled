@@ -659,6 +659,21 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // arm's `sqrt(x * 0.9f)` before the direction copy and its normalize 1405 (6240 B, 945/568: retail computes and stores that
 // root first, then multiplies in SSE where ours keeps it on the x87 stack); root first with the direct return 1420, with
 // both other leads 1468. One to five unused locals on the plain-loop form 1397 each (unused locals do not move the phase).
+// M3 lane 11 r112 (fast = full at 1375; "aligned" = difflib-aligned differing lines with numbers masked, then with
+// registers masked too, control 901/537): the magnitude helper without its snapshot copy (read through the pointer) 1637 at
+// 5974 B, aligned 822/519: the frame drops to 0x590 (retail 0x58c; the five 12-byte copies were the extra slots) and every
+// magnitude reads its vector in place as retail does (`fld [v+8]; lea eax, [v]; fmul [v+8]`), but the body is 264 B short;
+// the existing cross3f for the first loop's torque cross 1417, for both torque crosses 1371 (6243 B; retail reloads the
+// second operand at each use there); the contact velocity's cross written straight into the contact's +0x4c field with
+// the base velocity added in place (no `contact_velocity` copy, as retail's `lea ebx, [edi + 0x4c]`) 1421 (6217 B,
+// aligned 831/443); that with the copy-free magnitude 1656 (5948 B, 775/436); with cross3f at both torque crosses 1401
+// (6201 B, 832/445); all three together 1626 (5980 B, aligned 700/427, build/r112/leads/lead-0x206090.patch). So those
+// forms are retail's but leave the body about 260 B short. Retail's contact loop also does no strength reduction (each
+// pass forms the contact, the +0x48 record and the query result with `imul` from the counter at +0x1c, the counter the
+// first loop also uses); ours steps all three as induction pointers. Compile-only screen of the loop: a `continue` for
+// the inactive contact, a `while` loop, the bound written first, `++local_38`, the counter declared outside or shared
+// with the first loop, a `dword` counter, a contact pointer local: all keep the pointers; only a `short` counter gives
+// the `imul`s (with a `movsx` and a second slot, not retail).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

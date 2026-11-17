@@ -711,6 +711,14 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // `vector3f_scale(forward, dot3f(up, forward), &scaled)` 18; `inverse` declared at the function top 8 (same code, real build);
 // the component test as an early return with its own failure stores 278 (941 B); the physics test the same way 104 (928 B,
 // head flips, 0xb7060 11). Re-measured: the dot named 8, dot3f(up, &entry->transform.forward) 14.
+// M3 lane 11 r112 (fast with 0xb7060; base 8): the dot through the existing basis_dot_xzy(&entry->transform.up,
+// &entry->transform.forward) 20 (head flips at +0x35); guard gotos to a label after the success return with the not-valid
+// path as `if (!entry->valid) return;` 172; both arms of the valid test ending in `return` 8 (same code); a redundant
+// `if (0 < component->count)` ahead of the search loop 110 (928 B, 0xb7060 11); diagnostic, a `real` return of the last
+// normalize (0.0f elsewhere, the caller's declaration with it) 15 (928 B: the not-valid path shares the failure's
+// `xorps`). Compile-only (keeps our tail): the valid block as do/while(0)-break, `for (; valid; ) ... break;` and
+// `switch (valid) case true:`. A scan of matched functions with this tail (0xf5ee0, 0x1b89d0, 0x7f8b0) finds it only
+// where each arm of the final test ends in code of its own, so the empty join after the valid block is the cause.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

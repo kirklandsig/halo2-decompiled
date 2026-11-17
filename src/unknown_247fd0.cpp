@@ -796,6 +796,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // velocity and position sums through vector3f_add, which this file doesn't use yet: both 342, velocity alone 341,
 // position alone 335, operands swapped 342 each (no behaviour change). The scale step has no helper without
 // normalize3d.h (a new include; 354 per r159). The raw reads (+0x16 bit 4, +0x78 == 8) and the volatile gate flag are lanes' score forms, left as is.
+// M3 lane 8 r180 (fast with 0x247fd0 and 0x248cc0, both matched throughout; control 334; all restored): the placement's NONE
+// store after the 0x137bd0 call, retail's order (0x247e3a), 334 (its slot +0x6c against retail's +0xbc). Diagnostics,
+// reverted at once: the gate record's address formed in integer arithmetic 334 (same code, still folded); the file with
+// /G7 in the link-time build 334 (same code; the compile-only test above was not the linked image); the gate byte
+// through a volatile read 378 (1665 B, still folded). Re-measured listed forms: the flag as a member of the local
+// record 351, the gate bit in one expression 334, the velocity as an if/else 334, the collision record first 334.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

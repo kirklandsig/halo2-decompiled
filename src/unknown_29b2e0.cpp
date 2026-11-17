@@ -544,6 +544,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // P569: Maximum-angle policy positive bool/byte/short/long outcomes 281/281/281/281;
 // complementary outcomes 287/287/287/287. NOT kept: no native storage equality;
 // original producer/body restored. Unity, root/yaw and rotation homes remain.
+// M3 lane 11 r111 (fast with 0x29b990, 0x11cc90, 0x11ce20 matched): the rotation dot's products with their factors in
+// each order (v first in i, in k, in both, k term first) 176 x4 (same code: products and sums are canonicalized); the two
+// pitch terms in their own block 176 (same code); single-exit normalizer re-measured 171, with that block 171; the
+// rotation vector or either input copy renamed (rotated, aim_direction, zz_direction, unit_facing, unit_target) 176 each:
+// names do not move retail's packing of the rotation vector into the first copy's slot.
 // M3 lane 4 r207 (fast with 0x29b990; masked = registers and stack offsets masked, aligned, base 176 at masked 114): the
 // rotations through the in-place helper 0x2551f0 and 0x117dd0 now share (include/axis_rotation.h) with the sine and
 // cosine as call arguments, or as locals before or after the copy: 244 (1694 B, frame 0x28, masked 97); with the second

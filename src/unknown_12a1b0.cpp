@@ -2393,6 +2393,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the range read through an s_short_bounds member at +2 246 (frame 0x12c, retail's `lea ebx, [..+2]`).
 // MiniMax I (11-17): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 and the
 // native request, range and pitch homes still sit at other offsets.
+// score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305 plain, 479 on the reduced image): the frame is
+// still 0x11c against retail's 0x128 and the native request, range and pitch homes still sit at other offsets; the second
+// pitch-range loop still hoists the datum index and the track index into EBX/EBP (one use each) and keeps &sounds[i] in EDI
+// with the active bit spilled, where retail holds NONE, the track definition and the active bit there and indexes
+// sounds[i] at each use, and the forms the earlier rounds list all measure 305 or more.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3357,6 +3362,12 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // two points and seven bytes short); conditional request stores 611; all
 // conditional stores 609; joined request stores 661; three-bit write 675.
 // Entry flags still occupy BL, and the record and track homes differ.
+// score 597 (was 597): MiniMax D (11-17): no new form, no lower score (597 plain, 694 on the reduced image): the track
+// loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp with the index and the
+// track definition in memory, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the
+// start arm's constant 1 still does not sit in ebx, the alternate compares still turn into int neg/sbb where retail
+// compares bytes, and the forms the earlier rounds list (the old-end fade's looping bit through the existing 0xbfe40
+// setter, the alternate inside the definition guard, one source pointer for every source use) measure 590 or more.
 // @retail 0x21a250
 // MiniMax C (11-17): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the creation compare order, the source copied from edx to esi, the energy loop's padding and the start arm's shared tail also differ, and the earlier rounds' forms of these score 590 or more.
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,

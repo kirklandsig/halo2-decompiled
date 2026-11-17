@@ -598,6 +598,12 @@ extern "C" void _ReadWriteBarrier(void);
 // is stale. Only evaluation differences remain: retail snapshots the high water in ESI (0x1fb53b) where ours re-reads
 // it per pass (the volatile scan, load-bearing for 0x1fb4c0/0x1fb6f0/0x1fb760); the frame and register split are
 // already recorded. No code changed.
+// M3 lane 15 r95 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, all MATCH; control 122, register-masked aligned 22): the
+// existing four-field s_data_datum_iterator stepped by data_datum_iterator_next_inlined (data_iterator.h), the element
+// read from iterator.datum, with a `pool` local feeding the iterator and the release: with the barrier 164 (463 bytes);
+// without it 150 (473 bytes, frame 0x14 and the first difference at +0xe: the pool is homed once at F+0 where retail
+// homes it at F+0 and F+8; aligned 16); the iterator set from the global, barrier kept, 162; the pool local only for
+// the iterator, release through the global, 162; the release through iterator.data 166 (463 bytes). Body unchanged.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

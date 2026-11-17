@@ -1141,6 +1141,13 @@ void function_1d1540(s_havok_component *component);
 // 88 (230 B); set copy, slot pointer fetched before the transformed block 85 (228 B); set copy, slot, direct refetch 90
 // (231 B); constructor copy, body pointer, getter/direct refetch 85/85 (220 B). /Gd first pass: component EBX in every
 // m_fixed-first form, EDI in flag5-first forms; only EDI ever becomes a register argument here.
+// MiniMax D (11-17): no new form, no lower score (65): the copy of the transform is still retail's four
+// memberwise SSE stores against our block copy, and the component still arrives on the stack instead of in
+// the register retail uses for it, so our frame is four bytes smaller and our return still pops an
+// argument; the memberwise copy through the existing hkTransform setter (65 -> 90 here and 38 -> 40 in
+// 0x1d0c20) and the slot-hoist, direct-index and outer-scope inverse forms (85, 88, 90) were all worse and
+// were restored. The component's transport is set by the call cycle 0x1d0cf0 -> 0x1d1260 -> 0x1d1540 ->
+// 0x2da3f0/0x2da5d0, whose bodies are in other files.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -1235,6 +1242,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
 // Permuter (25 min on #1044 round 2, about 650 variants): only a volatile transform pointer with a
 // (short) index argument gave 34; not kept (volatile without a match, and the cast narrows the index).
+// MiniMax D (11-17): no new form, no lower score (38): the wrapper is still retail's two calls in the same
+// order, and every remaining difference is the one 0x1d0cf0 has, because this function only passes the
+// index and the component on to it; the memberwise copy form of the callee (38 -> 40) was worse and was
+// restored. The component's transport is decided with 0x1d0cf0's own call cycle in other files.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
@@ -2672,6 +2683,15 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P592: Original body/component/output fixed pointer bindings, seven subsets,
 // then complete bindings with fixed speed: eight 91 at 1459/1454. NOT kept: no native
 // early velocity j/k or property-zero recovery; original full body and helpers restored.
+// MiniMax D (11-17): no new form, no lower score (91): the only difference left is the velocity's
+// normalisation, where retail keeps the velocity's j and k in registers across the epsilon branch and
+// multiplies them in place, while ours rebuilds each product from memory and reloads all three in the
+// degenerate arm; the length's x87 order differs too (our dot helper evaluates k, i, j and retail's is
+// k, j, i). The file's own length helper gives retail's order but the score stays 91 because the branch
+// still misses retail's two early loads; the same helper with the shared normalizer (175), the shared
+// normalizer alone (175), the velocity's components copied into three scalars (359, which also moved
+// the earlier normal loop's registers) and the three final products in named locals (91, same code)
+// were all worse or no better and were restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

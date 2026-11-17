@@ -300,6 +300,14 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // luminance order with the transform x row accumulating the left product first 92 (retail's emission order and
 // load forms for the row, the accumulator register swapped); the luminance order with the x row's first two
 // products in one expression 296 (2658 bytes).
+// M3 lane 15 r95 (fast; the plain baseline is 93: 28 of its lines are global, call and float-pool addresses, 24 the
+// transform rows): the four transforms through the existing out-of-line transform4x3f_apply_point (0x142570; it stays
+// a call) 1352 (1929 bytes); the transform rows each as one expression with `x = scale * x`, the spelling of 0x142570's
+// own body, 316 (2647 bytes); the scale written `scale * x` and the locals named x, y, z with a `sum` accumulator 93
+// (same code); the scale read once into a const local 226 (2657 bytes); the point read in an if/else of the scale test
+// 305 (2663 bytes); the test written `1.0f != scale` 98; the four locals in one declaration 93 (same code). Retail's
+// copies keep each product in its spelled operand order (`up.i * z` loaded, `y * left.i` copied, `left.j * y` loaded);
+// ours commutes those three whatever the spelling. Still BLOCKED-BY 0x17cfa0 for the call setup.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
