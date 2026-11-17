@@ -1310,6 +1310,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // copy 305; the element cleared through `&entries[i]` before the pointer is named 628 (2821 B); the cone scale written at
 // both uses with no scale local 580 (2797 B); the cone arm without `entry = entries;` 721 (2744 B: the reassignment is
 // retail's); the two true flags as one chained store 290 (same code). Body unchanged.
+// M3 lane 11 r109 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the cone arm
+// `entry = entries;` ahead of its memset, cleared through `entry` 290 (same score); in light_projection_point_ab the
+// pre-scale reciprocal renamed `inverse` (it shared the name `scale` with the perspective factor) 290 (names do not
+// move it); the three transformed rows as named scalars (no `transformed` vector) 539 (2801 B); the sphere arm's
+// reference copy declared at the arm's top, ahead of the radius and the tables, 418 (2831 B); the radius read at the
+// loop top ahead of the entry pointer and its memset 304. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
