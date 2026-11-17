@@ -2060,6 +2060,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // +8; the lead that reaches 177 (case 3's offsets ahead of the perpendicular) needs the shared helper 0x2e9e0
 // reworked against a callee that clobbers XMM7, and that helper is not in this lane's queue, so the pair stays
 // as it is.
+// Result zero used for projection admission 193; named scaled angle 193; entry double scale 167, with
+// named scaled angle 167 (NOT kept: qword spill and 0x20 frame against 0x18); zero projections for
+// default cases 194; split case-1 reference 220; case-3 Z first on the original projection order 182
+// (NOT kept: caller 492 to 572); both reference splits 220; entry real scale 193. The result still
+// shares the scale argument's home.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3063,6 +3068,11 @@ real magnitude3d(vector3f const *v);
 // the sine 178 (1028 B; without 0x1ecf50 in the fast image the helper stays a call, 388 at 820 B). Retail's rotation
 // writes each component's partial sums to +8 and the result into first's slot, sine at +0x10 and the cosine over the
 // angle at +0xc.
+// Separate lower/upper current magnitude stages 268, with exact widened minimum 268, with target
+// stages 283; widened minimum on repeated current magnitude 171; sign-selected dot magnitude 195,
+// inline 195, with staged current bound 274; both reciprocals defined before either normalized vector
+// 170. The raw length still shares the clamped slot and the dot keeps a promoted copy in the restored
+// body.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

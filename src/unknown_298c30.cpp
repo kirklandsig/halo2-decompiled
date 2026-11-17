@@ -486,6 +486,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Signed candidate count with staged y 469 (caller 684); scored calls postincrement 305;
 // separate fixed-turn scopes 305; captured x inputs 379; selected entry pointer 342;
 // upper angle published after wrap 309; two-arm endpoint side 355; role names 305.
+// Endpoint root compared wide with an immediate real distance 352; explicit wide numerator 305; wide
+// radius quotient through the upper bound 348; wide tangent dot through both bounds 350; float outer
+// bounds 398; wide near comparison with distant-arm rounding 384, with wide numerator 384; wide
+// quotient and dot with bounded real results 353. Near cosine still stays on x87 and the candidate
+// ordinal is still a byte.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1098,6 +1103,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Radius local at initial offsets 569, pivot offsets 569, trace scales 569, obstacle range 569;
 // wide obstacle displacement 574; upper range before root 642; explicit clearance arms 569;
 // scoped transform output with pivot height copy 562 (NOT kept: seven-point gain above 30).
+// Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
+// sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
+// bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
