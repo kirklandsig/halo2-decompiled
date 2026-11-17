@@ -1478,6 +1478,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `addss xmm2, [eax + 8]`, so the first arm keeps its own out.k store); vector3f_add(&limited, current, out) there 469 (same
 // code); on the body, the first arm clearing gravity as its first statement 233 (a one-point gain); all three together 468
 // (aligned 153, masked 55). Body unchanged.
+// M3 lane 2 r95 (fast with 0x1f0450/0x24590/0x30bf0/0x1f1e50/0x1f1ee0, all MATCH; base 234): the contact flags word as
+// 1-bit fields beside the dword (bits 0, 1, direct, gravity, damping) read through TEST_FIELD_BIT for the three entry
+// flags 232 (3050 B, entry unchanged: damping still in ECX); every flags test through the bits 599 (3025 B, first +0x6);
+// the bits with `gravity = false` ahead of the first arm's last add-scaled 231 (3050 B); the bits with the flags declared
+// flying, direct, damping, gravity 228 (3050 B, first difference +0x31: the damping bit then takes EDX as retail; under the
+// bar, a declaration order, not kept). On the 469 form (re-measured 469): the direct arm's `limited` renamed `bounded`
+// 469 (identical listing: names do not place the delta/limited slots, retail delta +0xc, limited +0x14, ours the reverse).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

@@ -413,6 +413,14 @@ static inline void quaternion_transform_vector(
 // the quaternion and transforms in a brace block ending before the 0x143120 test 205 (same code); the transforms reading
 // the identity global's rows into the matrix rows 250; the construction scale as `rotation.i *= scale` per field 260 (1303 B).
 // Diagnostic: 0x11d000 called through a function pointer (the quaternion's address escapes) 345, frame still 0x1c.
+// M3 lane 2 r95 (fast with 0x11d000/0x143120/0x30bf0, all MATCH; control 205): retail's first transform, read in full:
+// s = (w*w)*2 - 1 above the copy, the dot ((v.i*q.i + v.k*q.k) + v.j*q.j) * 2 with a fresh 2.0, 2w in place on w and
+// stored to +0x38 and +0x10, cross j then k (spilled to +0x14/+0x1c) then i, the i row (cross*2w + v*s) + q*dot, the
+// j/k rows (v*s + q*dot) + cross*2w, and s stored to +0x18 (never read) and +0x20. The transform's dot and rows with
+// those groupings in explicit parentheses 201 (1321 B; the up and left transforms group otherwise in retail, so one
+// fixed grouping is not retail's); the dot's grouping alone 241 (1320 B), the rows' alone 215 (1327 B); with the
+// cross j, k, i 250 (1324 B); with s first and the cross j, k, i 254 (1310 B). The half-angle pair scoped in a block
+// with the construction 205 (identical listing); plain halves in that block 267 (1297 B, the plain-halves count).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

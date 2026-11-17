@@ -1169,6 +1169,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // a statement order by score, under the keep bar); the turn test as nested ifs 114, the crosses declared new first 114,
 // `rotated` declared at the movement block's top 114, the moved-away dot's arguments swapped 114 (all same code). The
 // first difference is still inside the shared forceinline rotation helper, whose file is held by another lane this round.
+// M3 lane 2 r95 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114; rotate_direction's file is an Avoid file
+// again): the forward copy made ahead of the angle guard 137 (1389 B); the angle as `rotation = angle; rotation *= rate;`
+// 114 (same code); the state's scale bound as `real const &` for the velocity rows 201 (1373 B); the crosses declared
+// new, old 114 (same code); the side product named before the test 140 (1382 B, retail's length). Re-measured (listed):
+// the rotation angle computed before the forward copy 125. Retail inlines the same rotate-about-axis helper here as in
+// 0xd0080, 0xe3910, 0x1ff360 and 0x297d30, but not in 0x1ecf50, which shares rotate_direction with them in this build.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

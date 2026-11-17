@@ -1984,6 +1984,12 @@ struct s_actor_looking_structure_view
 // Round 91 (m3 lane 2, fast; control 23): the clamp product written fraction-first 23; best_index stored before
 // best_score 25; `real score;` declared at the loop-body top and assigned at the sum 23; the fraction as
 // `0.2f * trace.distance` 23; a const actor pointer 23 (the 23s the same code). Restored.
+// M3 lane 2 r95 (fast with 0x297660/0x2980d0, both MATCH; control 23): the loop score accumulated i, k, j through a
+// `real &sum` bound to it 65; the helper's projection accumulated j, i, k through a bound reference, then `*= 1 - cos`,
+// 153 (928 B; 0x296e60 308 fast); the helper's rows accumulated axis term, cosine term, cross term (0x23d260's row
+// spelling) 140 (928 B; 0x296e60 293 fast, where fast reads 391 for its 299); sine and cosine of the angle passed
+// straight to the in-place helper 147 (930 B). Same code (23): the helper's dot written j, i, k with the axis j first;
+// `fraction` declared beside the best pair and set at the loop top. Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
