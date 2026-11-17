@@ -230,6 +230,17 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // under the keep gate); the clamp applied to `consecutive` itself with no value local 106; the limits read from the
 // table at each use 116 (415 bytes); the maximum tested before the minimum 106. Still BLOCKED-BY 0x196960/0x1968b0
 // (src/unknown_1967d0.cpp, held) and the enable byte's aggregate in include/globals.h.
+// MiniMax C (11-17): no new form, no lower score (106): the counter's 15-bit read still uses movzx where retail
+// zeroes the register and loads the word, the old maximum's home stays EAX where retail holds it in ECX, and the
+// enable byte stays in DL where retail reloads it into AL, CL and DL; the flat all[] indexing that gives retail's
+// read form is the match-only form the coordinator rejected, and the permuter's best (80) adds volatile, a swapped
+// call argument and constant locals. The parameter layout is now known: LTCG gives this body player_index in EDX,
+// statistics at +0x4, threshold at +0x8 and code at +0xc (three stack arguments, ret 0xc), with ECX carrying only
+// the byte argument, so the remaining gap is codegen shape and not the convention: the old maximum nested into a
+// value local with a word intermediate 108, the maximum read written as a conditional assignment inside the enable
+// block 111, and the row addressed through a typed player pointer with the counter reached by its address 110 (the
+// prologue's register allocation shifts and EDI and EBP swap). The flat all[] indexing that gives retail's read
+// form stays a match-only form the coordinator rejected.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
