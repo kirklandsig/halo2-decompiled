@@ -1682,6 +1682,13 @@ static inline s_players_globals *players_globals_14f2e0()
 // test as an empty `if (unit_index == NONE) {} else` 43; `bool result` declared after `unit_index` 43; the outputs declared bare at
 // the top of the mode block, set and passed in a nested block 43; a const player pointer 43 (each the same code: the folded byte
 // compare keeps AL as its temp, so the -1 stays `mov eax, 0xffffffff`).
+// M3 lane 15 r94 (fast with 0xa9440 and 0x14d3a0, both MATCH; control 5): the outputs in the mode block with the mode read
+// through a forceinline accessor returning the options pointer 43; the mode as a reference-bound `char const &` local, in the
+// mode block 43 and ahead of it 5; the outputs declared in the mode block and set in a block of their own 43; re-measured:
+// the second output initialised from the first 5 (each the same code as its base). Code-changing, all worse: the kept-unit
+// block as a forceinline helper returning success 248 (1034 B), with the outputs in the mode block 250 (1036 B); the
+// second and third user-index tests merged into one 41 (1020 B); the reuse arm reading the unit through the `globals` local
+// throughout 225 (1019 B); the profile clamp as `profile_index >= starting_profile_count` 24 (1030 B).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

@@ -474,6 +474,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // share ECX with a copy into ESI); the same flag loop with `index = entry->next` 57; a guarded `do { ... } while (!result
 // && index != NONE);` 43 (same code). Lead: only a rotated loop testing the successor at the bottom can match, and the
 // flag forms keep the head test.
+// M3 lane 15 r94 (fast with 0x1a303b/0x2b393c, both MATCH in every trial): on the listed inline record predicate with early
+// returns (re-measured 40): with `if (index == NONE) return false;`, `while (true)`, a successor local, `return true` in the
+// found arm and `if (next == NONE) return false;` before `index = next` 63 (138 B); in main's result/break loop with a
+// successor local stepped at the end 48; in a successor loop with `return true` / `return false` 51; in `while (!result &&
+// index != NONE)` 56; that with a successor local and `else index = next` 56 (masked 17: the mask hoisted into AL and the
+// index scaled in place, but in ECX, the loop head-tested). Same code: a redundant `if (index != NONE)` guard around main's
+// loop 43; the predicate in a guarded do-while 40; the predicate as one `&&` expression 43. The predicate with the name
+// test as an early return as well: in the `!result` successor loop 57, in the `while (true)` latch loop 55 (133 B), in main's
+// loop 43 (same code).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
