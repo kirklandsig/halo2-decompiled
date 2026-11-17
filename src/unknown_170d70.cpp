@@ -1351,6 +1351,20 @@ struct s_pool_view_172840
 // zero-extending xor/mov); the g_4687dc rectangle copy is scheduled earlier in retail. Tried: other_cluster as long
 // (236), as a ternary short/long (240/246), no variable with next->value08 reused for the 173b00 call (257/259),
 // an extra short copy widened to long (246).
+// b8A (11-17) walk against retail, fast build on r836: no logic difference found. Field offsets, the four skip tests,
+// the four rectangle jb (0x1729a1-0x1729cd skip on below or unordered, as ours), the pool/point limits, the store
+// order, the flag tail and the register arguments left from earlier instructions (173380: eax/ecx from 0x17299b and
+// 0x17299e, ebx from 0x172a20; 173b60: esi from 0x172add) agree; there are no float constants or x87 rounding here.
+// Not matched: the entry block (push esi at 0x172849 before the cmp, `mov al, 1` at 0x17284d feeding the result
+// store, the zero-iteration je landing at 0x172b9d past the reload). Three forms together give every stack slot and
+// the size (868) of retail: `if (polygon) { ... } else projection_full = true` (retail's block order 0x172b20,
+// 0x172b39, 0x172b40); a `dword *` for next->unknown2c (retail reuses the lea at 0x172a9b as the base of the or at
+// 0x172aae); `long other_cluster = field_6 == cluster ? field_8 : field_6` (widened once: movsx 0x172a62, spill
+// 0x172a6d).
+// Together 241 (opcode alignment 0.875, was 0.792); alone 248, 221 and 246. The row score drifts after retail's push
+// esi, so they are not kept. An early `return true` before the flags: 139, frame 0x34 and a branchless tail (setne/
+// dec/and) against retail's three test/je, not kept. result as byte/long, flags reordered, storage declared later: no
+// change.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

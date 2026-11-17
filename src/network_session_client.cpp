@@ -845,6 +845,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // rotation, the folded mask read and the player loop's argument temporaries); that loop with the preset pair 108 (every
 // instruction up to the player loop retail's but the session ESI, both callers lost), with the variant before the pair
 // 108, plus a members base pointer 108, a players base pointer 109, walked member and address pointers 110.
+// M3 lane 8 r177 (fast with 0x6e910, 0x5c5c0 and both callers; control 22; aimed at the missing scratch temporary
+// between the opening and the summary): the variant through a new inline accessor returning `session->data4db0` 22;
+// the opening's two addresses through new inline accessors 22; the summary through a reference to a named result 22
+// (all three the same code: address accessors fold before allocation); the summary through a new inline wrapper of
+// get_data_4a00 154 (461 B, the getter stays a call; both callers lost); a plain `for` copy loop over a member count
+// bound through a `long &` 100 (477 B, both callers kept).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1219,6 +1225,13 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // the count 464 (453 B, not inlined under /Ob1); as a `__forceinline` helper with the indexed copy 209 (704 B), with the
 // walked destination 209; a `__forceinline` helper taking the destination and the count by reference 195; the
 // destination declared bare at the top and assigned in the branch 195 (state EBX, count spilled).
+// M3 lane 8 r177 (fast with 0x6fcc0, 0x6f940, 0x6fa60): the copy's source through a new inline accessor
+// `&session->players[index]` on the indexed form 195, on the `[count++]` form 40 (the copy still forms the
+// destination first); the destination named from `identities[count]` before the copy with `count++` after it 195;
+// identities declared ahead of the count on the indexed form 195; the indexed form's count through a `long &` bound in
+// the branch 195. Reading of the 195 listing: the count lives in memory for the whole function (`inc [esp+0xc]`), the
+// copy's two temporaries take EBX and EDI and the state is reloaded into EBX after the loop; retail splits the index
+// around each copy instead.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

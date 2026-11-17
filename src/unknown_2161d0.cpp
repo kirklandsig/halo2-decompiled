@@ -179,6 +179,11 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // and path at function scope with a `built` flag set after the path build and the read under `if (built)` after the whole
 // if/else 10 (threaded and merged: `mov edx, esi` stays). So separate store bases give the stores an alias chain that lifts
 // them, but no split leaves done alone; the path reuse (8 of the 10) is untouched by any of these.
+// Round 102 (m3 lane 13, fast with 0x2161d0, which stays matched): the read's path in a `char const *` taken before
+// the build 10; the build given `&path[0]`, `&location.name[0]` 10; progress stored before state 12 (the stores follow
+// source order); the location test inverted with an empty first arm 10; a multi-use `char *path` over the buffer for
+// the clear, the build and the read 10 (all but the third the same code). 0x2160b0, the path helper of the matched
+// 0x2174b0, has no language test, so it is not the builder inlined here.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

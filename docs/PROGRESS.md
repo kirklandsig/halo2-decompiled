@@ -2,6 +2,66 @@
 
 The newest entry comes first.
 
+## 2026-11-17: 10648 functions match
+
+```
+matched 10648 of 11326 game functions (2051151 of 2786206 bytes, 73.62%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- @coldspear's #1267: `0x1c8d20` match.
+
+## 2026-11-17: 10647 functions match
+
+```
+matched 10647 of 11326 game functions (2050948 of 2786206 bytes, 73.61%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+0 new matches, none lost:
+- @andrewnakas's #1265: closer scores and notes, no new match.
+
+## 2026-11-17: 10647 functions match
+
+```
+matched 10647 of 11326 game functions (2050948 of 2786206 bytes, 73.61%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- @coldspear's #1264: `0x174420` match.
+
+## 2026-11-17: 10646 functions match
+
+```
+matched 10646 of 11326 game functions (2049568 of 2786206 bytes, 73.56%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, lost 0x41640 only (the link-order-fragile function the maintainer accepted losing on 11-04):
+- @andrewnakas's #1262: `0x2285d0` match.
+
+## 2026-11-17: 10646 functions match
+
+```
+matched 10646 of 11326 game functions (2049982 of 2786206 bytes, 73.58%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- Machine 3's batch 289 (#1263): `0x1c50c0` match.
+
+## 2026-11-17: 10645 functions match
+
+```
+matched 10645 of 11326 game functions (2049730 of 2786206 bytes, 73.57%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1260: closer scores and notes, no new match.
+
 ## 2026-11-17: 10645 functions match
 
 ```

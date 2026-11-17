@@ -1182,6 +1182,12 @@ void function_1537f0(s_profile_record *record);
 // one chain through an entry reference 49 (NONE hoisted into EBP); `short *const links` 18. Diagnostic: the links set by a plain
 // counted loop through the pointer 38 (250 bytes): the loop becomes two dword -1 fills, and the base is then retail's +0x4c with
 // NONE not hoisted (EBP/EBX hold the record's two forwarded words as retail), so base and hoist follow the four word stores.
+// Round 171 (m3 lane 7, fast with 0x7f8b0 and 0x1537f0, both matched each time): the links cleared per list through an inline
+// helper taking the previous/next field pointers 49 (base +0x4c, NONE hoisted into EBP, the record's two forwarded zero words
+// merged into EBX), taking them by reference 49; one inline helper clearing the four through a pointer parameter 18 (same code);
+// the per-entry body (record, view, `entry->` links, flags) as a force-inline helper 49 (plain inline stays out of line, 67
+// bytes). Diagnostic: the head stores moved after the loop with the links through `entry` 72: NONE is still hoisted into EBP,
+// so the hoist is the loop's own four link stores, not their constant shared with the heads.
 // @retail 0x7f930
 void function_7f930(void)
 {
