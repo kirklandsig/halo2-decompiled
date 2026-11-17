@@ -1041,6 +1041,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // 62 (227 B); the current body with the count as `> 0` 62 (227 B). Diagnostic: probe stores of 1 / -1 at the top 92
 // (237 B), the second counter stays. Retail's shape reads as: the helper's first (unconditional) oldest test hoisted and
 // merged with the count's load, its second (conditional) newest test left in the loop, and no reduction.
+// P587: Existing shared head-selector empty/nonempty early exits, complete result branches,
+// named empty/occupied predicates and head-first override/conditional: 60/60/60/60/60/60/74/60.
+// NOT kept: no native induction repair; nonempty/override forms also regress shared users.
+// Original head/index helpers and complete executable body restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -78,6 +78,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
 // MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
 // MiniMax E (11-15): no new form, no lower score (106): the old maximum read as a nested if instead of the conditional expression 111 (the maximum stays in EAX against retail's ECX); retail keeps the enable byte in AL and the maximum in ECX, loads the counter's word with `xor eax,eax; mov ax,[...]` against our zero-extended load, increments `word ptr [eax+edx+0x16]` where we compute the row pointer first, and re-reads the enable byte into CL after the counter store where our build keeps it in DL across that store.
+// MiniMax D (11-16): no new form, no lower score (106): this round re-read the retail diff against ours and the
+// remaining delta is still the three homes and the counter read: retail keeps the old maximum in ECX and tests it with
+// `cmp cx, ax`, loads the 15-bit counter with retail's `xor eax, eax; mov ax, [mem]` idiom where this build zero
+// extends the word into EAX, increments `word ptr [eax + edx + 0x16]` and only then forms the row pointer where this
+// build forms the row first, and re-reads the enable byte after the store where this build keeps it in DL across that
+// store; the counter's type and the enable byte's home are in include/globals.h and the reload's aliasing in
+// src/unknown_1967d0.cpp: BLOCKED-BY both.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
@@ -621,6 +628,12 @@ struct s_object_damage_view
 // P578: Scalar memcpy at victim team/selection handle/assist handle/selected event/
 // selected amount/credited team/related player/related object: 353/353/353/353/371/353/353/353. NOT kept:
 // no exact scalar-home or history-cursor recovery; original complete body and observations restored.
+// m3 lane 8 r176 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0; control 353): the selection amount in a local under the
+// time test 454 (1578 B: retail's 0x2f0 cursor and damage_code's +0x1c slot, but `selected` loses EDI); read with the player
+// index at the body's top 418; both dedupe loops as a found flag with break 366 (1528 B: retail's exact dedupe exits, no test
+// after the loop, the rise is two pads; a flag, match-only); 0x197160's `code` typed byte (its only caller; retail loads the
+// code's dword once into ESI and pushes it for 0x197160 and 0x1ea5b0) 354 (retail's setup exactly, 0x197160 stays matched:
+// lead for a combined form); the two together 366.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

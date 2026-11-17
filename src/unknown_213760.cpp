@@ -1762,6 +1762,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P562: Whole dependency validity as valid/invalid bit sets in dword/long/word/byte:
 // 175/175/182/274/293/293/298/292. NOT kept: no exact native byte-table/stack-home
 // recovery; original validity bytes, all I/O and complete body restored.
+// M3 lane 12 r133 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33): round 53's 7 form rebuilt
+// at 7 (left exactly seven lines: the write's flags zero in EAX ahead of the handle load, retail's handle into EAX first
+// with the zero in ECX, and the checksum load in EDX for retail's EAX; both sit right after a header-string init). New
+// on the 7 form, each the same code as it: the asynchronous write count declared `dword volatile` 7, the resize result
+// `bool volatile` 7, the query size `dword volatile` 7 (all three outputs filled by the worker thread); the existing
+// async wait 0x120d50 (idle false) at all five waits in place of the file's wait helper 7; the header-string
+// initializer `__forceinline` 7. Body unchanged.
+// P588: Fixed file/handle/current-time/stored-time bindings, immutable expected
+// size, original file/handle/cleanup identities on the native handle graph:
+// eight 33 at 930/930. NOT kept: no query/count/write/checksum-home repair; original body restored.
 // @retail 0x213970
 void function_213970(void)
 {

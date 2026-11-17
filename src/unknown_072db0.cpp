@@ -2041,6 +2041,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // 703 (same code); through a two-use const reference to it 777; the identity through the existing 0x647a0 (the valid test
 // and the copy) 757 (called: its file is /Ob1, so it cannot inline here; retail's `lea edx, [ecx + 1]; mov eax, edx`
 // before the three-dword copy is that getter's xuid pointer inlined, a file-flag lead like the cmovne).
+// P587: Existing slot-converter direct result, empty/occupied early exits, complete
+// occupied/empty branches, occupied/empty conditionals and named pointer presence:
+// 782/748/748/748/748/782/782/782. NOT kept: all regress; original converter and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

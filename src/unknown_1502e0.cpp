@@ -922,6 +922,9 @@ struct s_tail_transfer_traits
 	s_tail_unit_state weapons[3];
 	byte grenades[2];
 };
+// MiniMax C (11-16): no new form, no lower score (144): after the two copies only the register assignment differs, the
+// record pointer and the selection index trading ebx, ebp and edi; the score 3 form below rested on a second lookup of
+// the same object and on locals holding NONE until set, both of which are match-only forms and so cannot be kept.
 // MiniMax I (11-15): score 3 (was 144): the players are walked with the existing 16-byte s_player_iterator (player_queries.h),
 // the two slot fields are read as shorts and the third weapon keeps its NONE preset; left: the three object lookups address
 // [data + offset + 8] where retail has [offset + data + 8].
@@ -1651,6 +1654,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // the getter reload of the unit index 5 (the player address still `mov edx, [edx + 0x44] ... add edx, eax`); the
 // definition moved to the end of the file 17; the unit looked up in place at both uses, no unit local, 17.
 // Diagnostic: a probe global store of 0, 1, -1 or 4 at entry leaves the unit index in ESI.
+// M3 lane 16 r126 (fast with 0x14f820): the e68c0 code named before the mode test 17 (same code); the hand written as
+// `!primary` at both uses (no hand local) 44 (143 B); the slot assigned inside the slot test 17 (same code); the e68c0 arm
+// as an early return with the a9030 arm falling through 36; the a9030 arm returning true directly 27. Diagnostic: the
+// `register` keyword on the slot 17 (ignored). Both of 0x14f820's retail calls are inlined in our build, with the
+// getter-reload lead as well (0x14f820 2742 B there).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1906,6 +1914,9 @@ void function_150820(dword *bits, bool local_only)
 // M3 lane 2 r92 (fast, control 43): the player as a const reference (`s_tail_player const &player`) 43; the unit as a
 // const reference 43; the slot as `char const &slot` 49 (207 B); the unit lookup with the index masked into a local and
 // the header array in a local first (0xce0c0's helper shape) 43; the hand from one read of `primary` through its address 43.
+// P582: Original-site hand/signed held-slot/selected-weapon scalar memcpy, seven
+// subsets, then complete scalar memmove: 43/43/43/43/43/43/43/170. NOT kept: no native ESI-player/EDI-hand equality;
+// original producers, signed conversions, complete body and game-call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

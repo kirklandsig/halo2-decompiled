@@ -462,6 +462,7 @@ void function_11bed0(s_location *location, point3f const *point);
 // not edit; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form.
 // BLOCKED-BY 0x11bed0.
 // @retail 0x21a100
+// MiniMax C (11-17): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit, so the call boundary and the register homes that follow it stand; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form. BLOCKED-BY 0x11bed0.
 void looping_sound_update_locations(void)
 {
 	s_record_pool_iterator iterator;
@@ -1372,6 +1373,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // `iterator.index` and an element local 24; the iterator built by a constructor in its declaration in both fade
 // functions 24; the index declared in the for statement 24. Diagnostic: a probe global store of 0, 1, -1 or 2 at entry
 // leaves the element in EDI.
+// M3 lane 5 r190 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): two unused leading parameters (the looping sound and the track index, the caller passing them) 24 (LTCG drops
+// them; 0x21a250 unchanged); the call under a redundant `index != NONE` 24; the outer NONE guard dropped (the iterator
+// yields NONE first anyway) 72 (194 B). Diagnostics: a store in an `else` arm of the state test 50 (221 B) and the next
+// helper without its index test 55 (205 B) both leave the index in ESI, so one use more or less does not flip the tie.
+// The permuter refuses it (its reduced image scores 57 against the full 24, with or without the four contexts).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -2040,7 +2047,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax E (11-05): no new form, no lower score.
 // At 307: extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
 // reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
-// score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
+// Earlier header detail: does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
 // retail's layout: the original body is restored.
 // Lane 14 r57 (plain, from 305): the range gain through the existing decibels_add 432 (1939 bytes); track_definition
 // renamed 305 (no slot moves); the two arrays declared at the update block's top 419 (and they would be filled
@@ -2368,6 +2375,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // values, their subsets and immutable full bounds: 469/502/518/458/468/503/522/522 reduced
 // (control 479, full 305). NOT kept: repeated native input observations and the
 // conditional upper-bound load do not match; original complete body restored.
+// P583: Actual paired created/replacement handle presence outcomes, positive/
+// complementary bool/byte/short/long: 479/479/479/479/479/479/479/479 (reduced control 479; full 305). NOT kept: no exact native
+// NONE/playback/frame recovery; original handle tests, request and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2839,6 +2849,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // early scalar, primary and last-chunk homes still differ; this round's snapshot-locals and gain-local forms
 // scored 349 or worse, and the 321 form needs a bool flag the coordinator does not keep.
 // @retail 0x21c400
+// MiniMax C (11-17): no new form, no lower score (339): the frame is 0x4b4 against retail's 0x4bc, so the track value and the source scale still sit in the wrong slots ([esp+0x44] and [esp+0x34] against retail's [esp+0x4c] and [esp+0x3c]), and the calls to 0x221810 and 0x12a420 are still expanded here while retail keeps them out of line; both callees are declared in files this lane may not edit (src/unknown_221490.cpp and src/unknown_124f90.cpp), and taking the two early snapshots into locals moves every slot (476).
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
 	s_looping_voice_view *voice = &((s_looping_voice_view *)g_4e6378)[voice_index];
@@ -3316,7 +3327,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // rejection, bool/byte/short/long: 791/770/768/787/791/770/768/787 reduced (control 694,
 // full 597). NOT kept: no equality or native true/flags recovery; original
 // initial state test, completion polarity and whole body restored.
+// P591: Complete reused start/resume classification after request-state adjustment,
+// bool/byte/short/long in both polarities: 755/755/746/727/755/755/746/727. NOT kept: all regress
+// against calibrated 597; original repeated tests and full body restored. Entry true/flags and record homes remain.
 // @retail 0x21a250
+// MiniMax C (11-17): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the creation compare order, the source copied from edx to esi, the energy loop's padding and the start arm's shared tail also differ, and the earlier rounds' forms of these score 590 or more.
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
 {

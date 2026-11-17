@@ -569,6 +569,21 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P561: Original negative duplicate-search flag in char/signed-char/byte/short/word/int/long/dword:
 // 846/846/846/915/915/846/846/846 at 3327/3327 bytes. NOT kept: no native entry zero/count/query
 // residence or exact bytes; original bool flag, helpers and complete executable body restored.
+// P582: Original-site scalar memcpy at completed query count/paired query indices/existing
+// candidate, seven subsets, then complete scalar memmove: 846/846/846/846/846/846/846/1144. NOT kept: no exact native entry-zero,
+// count/query/primary-home recovery; original scalar producers, helpers and complete body restored.
+// P585: Immutable existing range/fraction/blend/current/delta/active gain/inactive step,
+// then the complete scalar graph: eight 846 at 3327/3327. NOT kept: no entry-zero,
+// count/primary/query-home change; original scalar declarations and entire body restored.
+// P588: Fixed bindings of original BSP/choice-sound/repair-sound/fade-table/
+// choice/target/override/pool receivers: eight 846 at 3327/3327 bytes. NOT kept:
+// no native ESI entry-zero or count/query/primary-home recovery; original body restored.
+// P590: Original incoming BSP/listener/point/cluster/override/elapsed fixed bindings,
+// complete input binding graph and six parameter role names: eight 846 at 3327/3327.
+// NOT kept: no exact ESI-zero/count/query/primary-home recovery; original body restored.
+// P592: Completed count before conversion/override/existing append, subsets 1/2/4/3/5/6/7,
+// then full-width query/choice on the complete append graph: 926/871/860/929/914/880/917/947. NOT kept:
+// no exact native entry-zero/count/query-home recovery; original body and helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
