@@ -676,6 +676,17 @@ struct s_text_line_measurement
 // Iteration-entry width, bound accumulator, fitting-branch width accumulator 77.
 // Iteration-entry width, bound accumulator, fitting-branch width accumulator, advance starts that accumulator alone 77.
 // NOT kept: width snapshots and separate accumulators all compile to the baseline comparison. Original metric and update expressions restored.
+// Early origin and right edge 42; early right edge alone 77; early origin
+// alone 41; both between offset and advance 33; both with break admission
+// 42; projected origin before offset 31; early pair with width first 42;
+// early pair with running-width snapshot and accumulation 33. Comparison
+// accumulation from early origin 32, with early pair 35, with independent
+// accepted-width accumulator 30, with width first 30; pair between offset
+// and advance with comparison accumulation 33; origin after offset with
+// comparison accumulation and width first 28. Read offset before advance,
+// then scale after projected origin 31, with raw kerning first 31.
+// NOT kept: the lower scores move one-use field reads or the projected
+// origin earlier; the native independent advance register is still absent.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

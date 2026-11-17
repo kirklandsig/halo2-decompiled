@@ -187,6 +187,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // plain-name arm first 67, guarded entry range with recovered index 89,
 // conversion-terminated suffix 104. The entry-range form reaches frame 0x28
 // but spills the result rather than the entry base and grows to 224 bytes.
+// Indexed terminator with direct exits 83; plain exit first with indexed
+// formatted result 83; separate search cursor with direct exits 83;
+// skip unmatched entries before the direct exits 83; plain direct exit
+// and shared fallback 83; formatted direct exit and shared fallback 77;
+// indexed terminator with final concatenation result 85; shared plain-name
+// input with direct exits 98. The entry base still has no stack slot.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

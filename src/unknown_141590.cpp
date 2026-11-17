@@ -1391,6 +1391,11 @@ void function_143250(
 // Compound-assignment prefixes for third-band entries 28 1333.
 // Compound-assignment accumulation through the entire third-band entry 8 939.
 // Kept the complete six-term accumulation for entry 8, which restores the separate multiplies and the four-term spill. NOT kept: the prefix-only forms tie, regress or still fold the final pair.
+// Weighted squares produced together 1556; both cubic consumers at each
+// weighted square 1612; paired sqrt(35) components 1498, with derived squares
+// 1566; named entry-27 weighted product 939; const weighted products 939;
+// two-step weighted-component consumers and weighted cubic consumers 939/939.
+// The dedicated weighted product homes and the extra frame word still differ.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
