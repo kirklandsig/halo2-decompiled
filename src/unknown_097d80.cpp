@@ -528,6 +528,12 @@ struct c_aggregate : c_child
 // count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes
 // off; adding /GL- to this file's own flags line builds the body byte-exact (it matches exactly) but costs
 // 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56), so the flags line stays as it is.
+// M3 lane 3 r255 (fast with 0x97f60/0x97fe0/0x980d0, all still matched): re-measured, one function-scope output for v5's
+// count and the release query 31 (frame 0x8020, first difference +0x23; the output then sits at +0x1c where retail keeps
+// only the query's, and the {children base, inner count, block pointer} and {dispatch cursor, cleanup count} slots are
+// exchanged). On that form: the cleanup indexing blocks[k] directly 31, total declared before error 31, the output declared
+// just above the collection loop 31, the output declared first 31 (slots unchanged in all four), the cleanup over a block
+// pointer to &blocks[total] 104 (391 B). Still BLOCKED by the build flag (retail packs the escaped count with the temps).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -2663,6 +2663,12 @@ dword __cdecl function_131fc0(real alpha);
 // bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
 // them; the score also moves with the reduced image's source set, as the note above records.
 // MiniMax R (11-17): no new form, no lower score (140): the body's length matches retail's (1729 bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves them; the reload's order is decided by the callee at 0x131fc0 in src/unknown_131e50.cpp.
+// M3 lane 3 r255 (fast, single-function image, control 140): the short arm's last word as `preserve_alpha ? 0 : 0x18 << 8`
+// 145 (1728 B); as `(!preserve_alpha ? 0x18 : 0) << 8` 140 (same code); stored right after the combiner count, ahead of the
+// 0x131fc0 call 152 (1730 B); the texture-mode store moved into each arm 151 (1735 B); the 0x131fc0 result named before its
+// store 140 (same code). Reading of the flag difference: ours loads preserve_alpha once above the `simple` branch (CL, kept
+// across 0x131fc0) because both the test and the short arm read it; retail loads it after the global store into AL (the
+// call's result register), so it must load it again after the call (BL).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,

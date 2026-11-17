@@ -157,7 +157,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 846 (was 846; earlier 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
@@ -584,6 +584,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P592: Completed count before conversion/override/existing append, subsets 1/2/4/3/5/6/7,
 // then full-width query/choice on the complete append graph: 926/871/860/929/914/880/917/947. NOT kept:
 // no exact native entry-zero/count/query-home recovery; original body and helpers restored.
+// M3 lane 3 r255 (fast, control 846; aligned/register-masked lines 640/527): the listener tail with an early return
+// when the slot's sound already has the detail tag 846 (same code); the second loop's matched sound through a pointer
+// formed after the distance call 929 (3305 B); both fade times through a by-reference inline fade-time helper 846 (same
+// code); the definition table read inside the choice-to-target loop 927 (3309 B); on this base, the allocation through
+// the existing looping_sound_new_attached(tag, NONE, NONE, 0) 896 (3274 B). Diagnostic, reverted at once: 0x14b240
+// storing into its owner (its call then clobbers the bsp) 928, so retail's re-read of the sound table after that call
+// is not a callee summary. Nothing in retail takes 0x44a0b4's address (no immediate, no data pointer); the matched
+// 0x2195f0/0x2197f0 read it for a -64.0f literal, so its 14 reads are reloads of a literal, not an aliasing effect.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
