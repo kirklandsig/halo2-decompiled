@@ -439,6 +439,16 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // Round 91 (m3 lane 2, fast with 0x10e480): the plain sum with the scale first copied into a block local passed
 // to the call 8 (samples into EAX, the offset still the add's destination, the add ahead of the scale load); on
 // the copy body: const data, const entry and const sound pointers 2/2/2, a `long const` count 2 (same code). Restored.
+// Round 94 (m3 lane 2, fast with 0x10e480): the offset in a named local on the plain sum 8; the set's address field
+// bound by reference, assigned the samples, then `+= offset` 9 (the samples become the add's destination with the
+// offset in EDI as retail, but the offset loads first into EAX and the samples reuse EDI, ahead of the scale); the
+// same with the count stored first 11; the copied samples assigned to the field then `+= offset` 8 (the plain sum's
+// schedule returns); the samples copied with memcpy straight into the referenced field, then `+=` 9; the copied
+// samples assigned to the referenced field, then `+= offset` 9; a `dword &` bound to the copy, `+= offset`, then
+// stored 2 (same code). A compile-only screen (CL without /GL reproduces this body's tail) shows the add's first
+// operand is the more complex one and, for two field reads, the offset (pointer arithmetic puts the index first);
+// every plain spelling, rename (data after entry), declaration order or integer sum keeps the offset first; only a
+// non-forwardable offset (a copy of the entry, a memcpy, or a reference to the result) puts the samples first.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

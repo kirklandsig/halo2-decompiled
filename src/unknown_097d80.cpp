@@ -528,6 +528,10 @@ struct c_aggregate : c_child
 // count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes
 // off; adding /GL- to this file's own flags line builds the body byte-exact (it matches exactly) but costs
 // 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56), so the flags line stays as it is.
+// Round 94 (m3 lane 2, fast with the six file-mates, all still matched): the two address-taken counts renamed so
+// their names sort the other way (the cleanup query output as `information` or `status`, the produced count as
+// `written` or `amount`, both renamed) 31 each (frame 0x8024 in each; name order does not pack the escaped slot).
+// Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
