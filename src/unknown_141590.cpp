@@ -118,6 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// score 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
 // MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
 // full image (the reduced image agrees with the full one here). Still differs: the compiler's term
@@ -125,7 +126,6 @@ static inline void quaternion_transform_vector(
 // rows and sums the dot as i,k,j in the forward row and k,j,i in the left row) and retail's second store of 2w to
 // a slot nothing reads; the source forms tried do not decide the association.
 // MiniMax S (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24 and the quaternion and cross spills still overlap, so the body is 1326 bytes against retail's 1317; the quaternion halves are still two separate locals and the sine half still takes the matrix parameter's home slot.
-// score 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Earlier (200, was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
@@ -407,6 +407,12 @@ static inline void quaternion_transform_vector(
 // P573: Original-site basis-validation success/repair outcomes, bool/byte/short/long:
 // eight 246 (1312 bytes, frame 0x1c). NOT kept: frame 0x24 and separate quaternion/cross
 // spills remain absent; original complete body, geometry helpers and repair calls restored.
+// M3 lane 16 r127 (fast): retail reloads 2.0 for transform 1's dot and doubled scalar while s reuses the sine's 2.0
+// register above the copy. The helper's dot and doubled scalar with a double 2.0 303 (1282 B, x87 products); the copy and
+// three transforms as a private transform-from-rotation helper, plain inline 1074 (out of line), forceinline 240 (1318 B);
+// the quaternion and transforms in a brace block ending before the 0x143120 test 205 (same code); the transforms reading
+// the identity global's rows into the matrix rows 250; the construction scale as `rotation.i *= scale` per field 260 (1303 B).
+// Diagnostic: 0x11d000 called through a function pointer (the quaternion's address escapes) 345, frame still 0x1c.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

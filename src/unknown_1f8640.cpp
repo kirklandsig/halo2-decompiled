@@ -375,6 +375,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// score 182 (was 182; 182 before): earlier 182, 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
 // retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
 // route-found byte into AL; switching on the route word without the long copy measures 397 and returning the
@@ -386,7 +387,6 @@ struct s_1f8a70_actor
 // its failure block stores false into the frame byte, calls 0x1f8750 and reloads the byte, and its merged exit returns that
 // byte in AL where ours goes through BL; the permuter (fast, 5 tries in 394 s) found nothing below the 167 differing
 // instructions of the reduced image, so the body is the committed one.
-// score 182 (was 182; 182 before): earlier 182, 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
 // MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
 // MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): 188 then (was 188): no new form lowered it. The byte locals sit two bytes lower
@@ -830,6 +830,12 @@ struct s_1f8a70_actor
 // P558: Actual unit-value/route-result phase union, bool/byte/short/word outcomes in both member orders:
 // 400/400/398/398/303/303/303/303. NOT kept: unmatched phase overlay and unit capture; original
 // returned-unit temporary, independent two-result flow and complete body restored.
+// M3 lane 16 r127 (fast with the file's ten other functions, all MATCH throughout; control 182): the success test nested in
+// the route block returning route_found, `failed:` just before one shared 0x1f8750 call and `return route_found;`, with case 7's
+// node stored before its radius 411; that shared tail with the route switch's default as `goto failed;` 455; the default as
+// `goto failed;` on this body 322 (1620 B); the shared tail with the first exit's false assigned after its call 447; case 7's
+// node before its radius alone 360 (re-measure); one result variable (no route_found) with the success return nested and the
+// failure call falling into the first exit's final `return result;` 310 (1628 B: the first exit still folds to `xor al, al`).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
