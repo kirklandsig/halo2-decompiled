@@ -152,7 +152,7 @@ struct s_contrail_structure_bsp
 
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 void function_11bed0(s_location *location, point3f const *point);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 
 /* the leaf and cluster of the structure bsp a point is in */
 static inline void contrail_location_from_point(s_location *location, point3f *point)
@@ -608,7 +608,7 @@ void function_17c0e0(long contrail_index, short count, bool force)
 						point->state_time = 0.0f;
 						point->state_rate = 0.0f;
 						point->scale = contrail->scale;
-						random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, cone_angle);
+						random_vector_in_cone(&g_4e7408->seed, &marker->matrix.forward, &direction, 0.0f, cone_angle);
 						point->position = marker->matrix.position;
 						contrail_location_from_point(&point->location, &point->position);
 						function_ba1d0(contrail->object_index, &velocity, 0);
