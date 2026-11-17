@@ -1368,6 +1368,14 @@ void function_143250(
 // extra 4 bytes are one more scalar spill home below it (0x23c bytes against 0x238). s5 folded into `s5_s15 =
 // (real)sqrt(5.0) * s15` 1728 (10712 B); the nine rotation reads as `real const` 1333 (same code); band one's negatives as
 // unary minus 1333; the matrix declared after the rotation reads 1333; band three's s2 declared beside s35 1333.
+// Round 96 (m3 lane 2, fast with 0x22850/0x23690; control 1333, register/stack/global-masked aligned 171): every scalar
+// local renamed so the names sort in the reverse order 1333 (same score: names do not order these homes); a table per
+// band declared in its band's block 1420 (10716 B); band three's table alone in its block (bands one and two sharing a
+// 25-entry table) 1333; the ten products bands two and three share declared once ahead of band two 2031 (10475 B: retail's
+// paired stores go); `result[0] = coefficients[0]` after band one's table fill 1333 (re-measured: the matrix declared
+// after the rotation reads 1333). Diagnostic: `#pragma optimize("s", on)` around the body 3394 (9134 B, an EBP frame), so
+// retail's source-order schedule is not the size preference either. Retail's band-three entry 8 is the source's
+// left-to-right sum, with its partial sum spilled once to a scalar home.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

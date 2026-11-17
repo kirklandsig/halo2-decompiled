@@ -2040,6 +2040,14 @@ bool function_17afd0(long effect_index, long value);
 // on that, the owner NONE-defaulted then set 121 (495 B: effect index EDI as retail, owner ESI), the owner as one ternary 56
 // (same code); same_view from the owner pair then `if (!available) same_view = false;` 135 (508 B). Permuter on the 56 form
 // (900 s, 97 tries): best 56. Body unchanged.
+// M3 lane 16 r131 (fast; base 12): the plain conjunction after the availability re-measured 138 (510 B: its temporary takes BL,
+// the availability spills); the same as an if/else 138 (same code); diagnostic, same_view written through a forceinline pointer
+// setter 138 (the address folds); the true default after the availability re-measured 141 (513 B); a false default before the
+// availability, set true by one owner/view/availability test, 119 (502 B: availability BL and same_view on the stack as retail,
+// but the owner leaves EBP for EDI and NONE takes EBX); the true value set after the owner tests and cleared when unavailable
+// (`if (owner ok) { same_view = true; if (!available) same_view = false; }`) 149 (519 B: retail's `test bl; mov [x], 1; jne`
+// shape, but same_view takes BL), that with a false default before the availability 129 (506 B, owner in EDI). Permuter on the
+// 12 form (600 s, 61 tries): best 12. Body unchanged.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

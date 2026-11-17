@@ -620,6 +620,18 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // test. Helper rule: the private dot_product2d (point, vector), magnitude3d and function_x697631 are not written-out
 // bodies of a shared helper that this file may include (magnitude3d's shared form needs slot_handler.h, a new include;
 // recorded above at 244); no new local, helper, double or include.
+// M3 lane 17 r45 (fast with the file's other functions and 0x15f3a0, all MATCH throughout; control 244; goto form = the held form
+// rebuilt on this body with lane 2 r82's tail orders, 32 at 1605 B, the held form itself 34). On the goto form: the line as one
+// 12-byte aggregate, written as a local plane type {vector2f n; real d} or as a vector3f whose i, j hold the planar normal (copied
+// through the planar view) and whose k holds the offset, 304 at 1612 B each (the same code: nested or flat makes no difference). On
+// either, the slots are retail's (previous sector 0x30, normal 0x34/0x38, offset 0x3c) and the cross's row j then loads direction.i
+// first as retail does, but the magnitude still sums k, i, j, the three loop registers stay normal j, normal i, offset (retail:
+// offset, normal j, normal i, the descending order of the aggregate's fields) and the second distance loads point1.x instead of
+// multiplying normal i in place. The vector3f line with its normal copied by members 390 (1593 B); the line as a copy of the whole
+// normal with k then overwritten by the offset 393 (1621 B). A compile-only screen (no LTCG) is not usable here: its
+// floating-point stream is 130 lines from the fast build of the same source. Retail's exit block is laid out as: the two
+// two-level exits enter at 0x26caff (reload distance, success = 0), the four entry guards at 0x26cb0d (reload direction), the
+// failed magnitude test and the loop's own exit at 0x26cb14, so only the two-level exits run the success store. Body unchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
