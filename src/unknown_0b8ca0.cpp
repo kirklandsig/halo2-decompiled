@@ -294,6 +294,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // before the three tests, 4 (sunk into the arm); the index test and the lookup through the havok object view
 // (`havok_object_get(object_index)`, the matched data-first 0x1c4b00's spelling) 4 (CSE'd with `object`); the type
 // local renamed `object_type` 4; a `bool const enable = !disable` for the two tests 55 (205 B).
+// M3 lane 14 r107 (fast with 0xb73b0/0x1ed340/0x1d1c60/0xb7360, all matched each time), the #1225 scratch-rotation
+// idea (a no-code accessor shifting which scratch register the pool data takes): the getter given the index through a
+// forced-inline accessor 4, the accessor also in the NONE test 4; the lookup written out over a typed components local
+// with the accessor's index 4; the pool data through a forced-inline data accessor 4; the pool through a forced-inline
+// pool accessor 4 (all the same code: the data still loads after the scaling into EAX).
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
