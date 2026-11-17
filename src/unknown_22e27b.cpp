@@ -469,6 +469,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // (frame < 0) ... else ...`) 60 (661 bytes); the second boundary as `frame >= value8` 1 (`jl` for `jne`, still past the
 // restart test); both boundary restarts as `expr ? true : restart` 197 (645 bytes); restart as the element of a one-element
 // bool array 1 (same code); restart as the member of a one-member local aggregate 1 (same code).
+// Round 102 (m3 lane 13, fast): the in-range frame as an empty middle arm (`else if (frame != value8) {} else`) 1;
+// the loop test as `next_time <= time` with a direction-first frame sum 5; the flag-8 test reading the field 1;
+// `!type` in both loop restart tests 1; the frame count in a named local for both boundary compares 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

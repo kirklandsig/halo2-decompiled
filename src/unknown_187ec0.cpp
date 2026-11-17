@@ -699,6 +699,11 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48); no form of this file's own body keeps the
 // call out of line, and the only known lever ("/Ob1" on src/unknown_175bd0.cpp) is in a file this lane may not
 // edit: BLOCKED-BY that file.
+// MiniMax R (11-17): no new form, no lower score (165): adding /d2inlT60 and then /d2inlT0 to this file's own flag
+// line leaves the score at 165, because the threshold that decides the inline comes from the generated ballast and
+// not from this file, so that lever is out of reach here; what still differs is that this build expands 0x1765e0 into
+// the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body is
+// in src/unknown_175bd0.cpp.
 // score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
 // expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
 // src/unknown_175bd0.cpp: BLOCKED-BY that file.

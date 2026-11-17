@@ -1590,6 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
+// score 270 (was 270): see the forms below.
 // MiniMax R (11-16): no new form, no lower score (270); the prologue still reads the cs pool global before the actor pool and takes arg_0 into ESI after the pushes where retail reads the actor pool first and takes arg_0 into EBP, and the case-10 flag store still follows the selector compare where retail stores the flag first; the permuter's best (221) swaps the arguments of the call to 0x1fb360, but retail's call site passes the unit index in EAX, the second argument in ECX and the constant on the stack, so the swap would change what the call does.
 // MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
 // reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
@@ -1604,7 +1605,7 @@ void function_b7360(long object_index);
 // MiniMax I (11-15): score 261 (was 270): the 1/19 arm sets field_3 |= 0x40 before it copies the point into the output, so the
 // flag byte is stored before the point copy where retail stores it after; the body stays 1848 bytes long and the other
 // functions in this file keep their scores.
-// score 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
+// Earlier 270 (was 270; 270 before; 301 before r88; 301 before): 1848 bytes as retail, with retail's success-test layout (return 0 after the test, the failure block
 // last). Left: arg_0 in ESI and the output in EBP where retail has EBP and ESI (ours holds the point reference across 0x25ab50 at the
 // 1/19 site and case 5, retail reloads it), the prologue's pool order, the table-first lookups in cases 7 and 13, case 10's +0x8c
 // clear after the selector load and case 5's store order.
@@ -2066,6 +2067,11 @@ void function_b7360(long object_index);
 // lookups (cases 7 and 13) load the pool's data pointer before the index in retail (EBX/EDX), after it here.
 // The two point reads (1/19 arm, case 5) through `cs_get(arg_3)` in place of local_1 506 (1876 bytes); that with the
 // 1/19 arm's test through it too 523 (1888 bytes).
+// M3 lane 4 r206 (fast, control 270): the 1/19 arm as if/else (unit test's arm, else the point copy, one break) 270 (same
+// code); the same arms swapped with `== NONE` first 302 (1860 bytes); the perception guard's switch as a nested `if (type
+// != 1 && type != 4) return 2;` 309 (1852 bytes); case 10's selector read into a block-scoped short ahead of the +0x8c
+// clear 272; case 7's dot with its operands swapped 276; the actor looked up first re-measured 487 (1852 bytes; the
+// guard's `return 2` gets its own epilogue). Body unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
