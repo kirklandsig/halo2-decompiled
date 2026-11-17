@@ -280,7 +280,7 @@ struct s_physics_model_material
 /* the sort routines (unknown_13dcd0.cpp); the third parameter is never read.
    impact_sort_compare returns a long (retail sets all of eax) */
 typedef bool (__stdcall *t_sort_4byte_compare_function)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_sort_4byte_compare_function compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_sort_4byte_compare_function compare, const void *context);
 void impact_type_update(long impact_index, long rigid_body_index_a, long rigid_body_index_b, s_impact *impact);
 long impact_new(s_impact_data const *data, long type);
 long __stdcall impact_sort_compare(long impact_index_a, long impact_index_b, void *context);
@@ -2308,7 +2308,7 @@ void function_227280(void)
 	{
 		long temporary;
 
-		sort_4byte(g_50213c, count, &temporary, (t_sort_4byte_compare_function)impact_sort_compare, NULL);
+		sort_4byte(&temporary, g_50213c, count, (t_sort_4byte_compare_function)impact_sort_compare, NULL);
 	}
 	for (i = 0; i < count; i++)
 	{

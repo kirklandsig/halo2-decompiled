@@ -1674,6 +1674,10 @@ long function_10f5f0(long object_index);
 // `or eax, ecx`); all three together 586 at 2288 bytes, aligned 268. None kept: each raises the positional count.
 // Still BLOCKED on build flags for a byte match: retail expands 0x10f5f0 here and calls 0x113e40, and 0x10f5f0's file
 // is /Ob1 in this tree.
+// Round 611: three axis bounds and three-by-two endpoints at the bounds call,
+// steering block and entry, plus axis bounds with separate velocity outputs and
+// call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
+// 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3376,6 +3380,10 @@ real g_47ff30 = 2.5f;
 // field reference 724; direction-square scale and both result setters 712.
 // NOT kept: the mass reference and pointer recover frame 0xfc and first difference +0x66, but grow to 3264 bytes
 // and regress. The weighted-vector forms also regress.
+// Complete directional squares, immediate/phased/immutable/weighted, 672 each;
+// the same with a mass-field binding 724 each. NOT kept: the field binding
+// recovers frame 0xfc but adds 20 bytes and raises the count. Acceleration,
+// velocity and scalar homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4566,6 +4574,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // three in-place member statements store i, j, k as retail does (0xf4721-0xf474d) and reload as its final cross does,
 // but score 118 at 800 bytes: not kept. Retail's shared tail starts at the sine load 0xf4713 after a per-arm
 // `cosine * up.i` (0xf468d default arm, 0xf470b case arms); cases 1 and 2 join at 0xf46ae: cross-jumped copies.
+// Returned projection, mutable/read-only and outer/scoped, with member stores
+// or the complete setter 116 each, first +0x108. On that form the vehicle cross
+// 129 and sequential rotated-up stores 121. NOT kept: two-point gain only on
+// the projection forms. First cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4808,6 +4820,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // MiniMax C (11-17): score 24 (was 48): the two marker counts are summed into a 16-bit local and the
 // loop bound is that local widened to 32 bits - the capacities the two calls are given (15 and
 // 16 - primary_count) bound the sum, so the value is unchanged - and the sum's sign extension then
@@ -4841,7 +4854,6 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
 // operands swapped both leave the second count's sign extension in EAX.
 // MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
-// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
 // loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
 // block), plus the 0x146320 set-up pair (its declared order, BLOCKED-BY 0x146320: seed declared
@@ -4898,6 +4910,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // secondary_count; i++)` 43 (`add edi, eax` and the zero store as retail, but movsx eax and shifted loop registers);
 // `long count = (short)(primary_count + ...)` 22 (loop body clean, but the pre-call code and the colour constant
 // differ); `long count = f(); short primary_count = count;` 141.
+// Still differing: the signed marker total in EAX rather than EDI and the subsequent scratch registers.
+// Index initialized before/between fills 60/47, short-index while 240,
+// scoped short secondary result 46, scoped secondary with primary accumulation 46,
+// array-derived short remaining capacity 46, scoped facing before parameters 46,
+// parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -5646,6 +5663,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // re-derives the row as the expanded 0xf78e0 does). Besides the case-order lead above, a byte match is BLOCKED-BY
 // 0x24590: retail re-zeroes XMM2 after each magnitude3d call and loads 1.0 at each use, so retail's link treats
 // 0x24590 as clobbering every XMM register (a build-flag question for its file).
+// Round 611: paired speed, turn, steering and all limit records 756/773/751/757;
+// with the entry kind/spin/engine definition 1037/1032/1023/1046.
+// NOT kept: the entry forms collapse separate lookups and shorten the body.
+// Entry definition in EBP, zero/result registers and per-site unity still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -6383,6 +6404,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // index and default-and-assignment flip mode 1168.
 // NOT kept: the typed header accessor and three flip-mode result forms tie 978. Masked-index forms regress.
 // Every variant retains frame 0xfc against retail 0xd8.
+// Returned tensor input/result/both and scoped transform 1019/1063/1063/1063;
+// with a separate relative-rotation product 1027/1056/1056/1056. NOT kept:
+// every form shortens and raises the score. Frame 0xfc versus 0xd8, index
+// placement and matrix homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

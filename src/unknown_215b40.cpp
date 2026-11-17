@@ -229,7 +229,7 @@ void __stdcall function_217080(s_game_variant const *variant)
 }
 
 typedef bool (__stdcall *t_location_compare)(long, long, void const *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_location_compare compare, void const *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_location_compare compare, void const *context);
 bool function_1249f0(long memory_unit, char *drive_letter);
 
 // @retail 0x2163d0
@@ -318,7 +318,7 @@ void __stdcall function_215900(long controller, long type, word *capacity, long 
 						(1 << 21) | ((generation & 0x1ff) << 22);
 				}
 			}
-			sort_4byte(indices, count, &cached_count, function_2163d0, NULL);
+			sort_4byte(&cached_count, indices, count, function_2163d0, NULL);
 		}
 	}
 	*capacity = (word)count;

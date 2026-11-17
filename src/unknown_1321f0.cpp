@@ -65,7 +65,7 @@ struct s_132d60
 
 #include "cluster_marks_storage.h"
 short __stdcall function_14a5b0(short cluster_index, point3f const *point, real radius, short maximum_count, short *clusters);
-void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdcall *compare)(long, long, const void *), const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, bool (__stdcall *compare)(long, long, const void *), const void *context);
 
 // @retail 0x132d60
 void function_132d60(s_132d60 *data)
@@ -102,7 +102,7 @@ void function_132d60(s_132d60 *data)
 		*(short *)&entry->unknown02[0] = 0;
 		data->context->order[i] = i;
 	}
-	sort_4byte(data->context->order, data->context->count, &radius, function_134950, data->context);
+	sort_4byte(&radius, data->context->order, data->context->count, function_134950, data->context);
 }
 
 /* ---- bit vector pools ---- */
