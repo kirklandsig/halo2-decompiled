@@ -215,6 +215,13 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // the sound tag read inline where the classes table is indexed (no tag local) 116; the marker declared at the positioned arm's top with
 // the description 116; the started test from a bool set just before 0x189340 116. Plain: tag in EDI, object in EBP, the
 // spatialization spilled (frame 0xa4); retail keeps the tag in EBP and the spatialization in EDI (frame 0xa0).
+// M3 lane 5 r193 (plain; every object read plain, no reference): an ignored trailing parameter on 0x189340 passed the tag
+// index (its other callers NONE; diagnostic) 116, the same code: LTCG drops the argument before allocation, so round 80's
+// dropped-argument lead does not add a use; the object index as a by-value one-long class-type parameter (converting
+// constructor, declarations updated; diagnostic) 116, promoted like a long, and the five callers lose their matches; the
+// description flag tested as `spatialization && (spatialization->flags & 7)` (one more spatialization use; diagnostic)
+// 131 (540 bytes; the object keeps EBP); the description declared at the slot block's scope 116; the request arm in a
+// forceinline helper taking the tag, scale, label and slot 116.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

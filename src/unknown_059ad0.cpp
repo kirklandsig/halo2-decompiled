@@ -3573,6 +3573,7 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // overwrites ECX, so that argument is dead there) and the channel index in EAX - while our declaration of that
 // callee takes two parameters, so ours loads the observer into ECX, pushes it and calls; that parameter list
 // lives in include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
+// MiniMax C (11-17): no new form, no lower score (101, was 101): the frame still agrees (0x3c), but retail still loads the session's value10 and spills it and splits the member-state lea before its timeout call, which needs the unread owner parameter on 0x769a0 whose definition is in src/unknown_075870.cpp, and the identifier/reply allocation still differs: BLOCKED-BY 0x769a0.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -3753,6 +3754,11 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // MiniMax D (11-16): no new form, no lower score (101).
 // MiniMax S (11-16): no new form, no lower score (101): the timeout owner still comes from a parameter of
 // 0x769a0 whose declaration is in another file, so the owner spill before that call cannot be settled from here.
+// M3 lane 7 r173 (fast with 0x769a0, control 101 [aligned 38]): the outer member tests as nested ifs 101 [38] (same
+// code); the three announcement flags as `for (long flag = 0; flag < 3; flag++) message.flags[flag] = 1;` 92 [32] (419
+// bytes; NOT kept: the loop compiles to a 0x01010101 word-and-byte fill where retail stores three bytes, so the drop is
+// alignment); the host comparison written `(host = session->member_index) != member` 102 [39]; `session->value44 ==
+// member` 102 [39]; `long host;` declared ahead of `state` 101 [38]. Still BLOCKED-BY 0x769a0 (its held file).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4442,6 +4448,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // homes stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and the 0x769a0 call misses
 // retail's third argument for the same reason as in 0x5e3f0; that parameter list lives in
 // include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
+// MiniMax C (11-17): no new form, no lower score (305, was 305): the frame (0xd8) and the length agree, but the boolean homes are still a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail still reads the acceptance byte back where this build folds it to a constant, and the same timeout spill as 0x5e3f0 needs 0x769a0, whose definition is in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

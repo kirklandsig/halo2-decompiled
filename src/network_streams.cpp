@@ -148,6 +148,13 @@ static __forceinline void function_94bf7(s_sequence_window *arg_0)
 
 // score 2 (was 2): retail reloads the address-taken loop counter before it
 // stores fragment->data = 0, ours stores the zero first.
+// b14C (11-17) walk against retail, fast build on r847: every other statement agrees (both window loops, the
+// get_info calls at 0x94c7b/0x94d55, release via [edx] at 0x94c9a/0x94d72, final window clears); the first loop's
+// info slot and the second loop's counter share [esp + 0xc] in retail, as ours do. Only the order at 0x94d7b/0x94d7f
+// differs (mov edi, [esp + 0xc] before mov [ebp + 4], 0). Tried, all 2 unless noted: ++work; while loop; the
+// file's free_block helper (second loop only; both loops 8: frame 0xc not 8); store through a local void **;
+// unreliable_stream_get_fragment for the element pointer; non-address-taken counter (8, extra stack slot);
+// increment placed before the store in both branches (34).
 // @retail 0x94bf0
 void function_094bf0(s_network_stream_header *header)
 {
@@ -1045,6 +1052,21 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // named empty/occupied predicates and head-first override/conditional: 60/60/60/60/60/60/74/60.
 // NOT kept: no native induction repair; nonempty/override forms also regress shared users.
 // Original head/index helpers and complete executable body restored.
+// M3 lane 3 r254 (fast with the file's 28 functions; control 60, 0x94bf0 at 2 throughout, the rest MATCH): the window
+// pointer declared ahead of the send call and passed to the existing count helper (`sequence_window_count(window)`, not
+// written out), `long oldest = window->oldest;` named in the shared index helper (test and offset), the index through the
+// window pointer and the bound read in the loop test as `m_message_window.newest` 44 (226 B; lead, not kept: the bound's
+// member read beside the window pointer is a pointer/member mix); that with the helper's newest named too 44 (same code);
+// the count through `&m_message_window` with the window pointer for the index only 89 (221 B); everything through
+// `&m_message_window` with the helper's oldest named 89 (221 B: the loop body is retail's, the newest test reads memory
+// each pass and no second counter, but the count folds oldest into `sub eax, [edi + 0x34]` and the preheader reloads it);
+// the 44 form with main's `long newest = window->newest;` bound 117 (197 B); the 44 form with the index through
+// `&m_message_window` 89.
+// M3 lane 7 r173 (fast with 0x96510/0x94df0, control 60): `long next = m_next_sequence; while (++next < newest)` 60; the
+// shared window-head helper as `count != 0 ? head : NONE` 60 (and 15 of the file's matched users lose: reverted at once);
+// the window pointer declared at the top (before the send call) for the bound local and the index, the count through
+// the member, 60; the bound compare written `newest > next` 60; a guarded do-while (`if (next < newest) do {...} while
+// (++next < newest);`) on the window-pointer form 60. All the same code: the offset is still strength-reduced.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

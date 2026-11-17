@@ -478,6 +478,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // retail, but start arrives in EDI unsaved); the same with `start += (long)string` after the clamp 40 [match] (start arrives
 // in ECX and stays there, walk EDI, counter EDX); with the early source 27 [match] (re-measure). In retail the counter is
 // coloured ahead of start (start is moved out of its arrival ECX); here start keeps ECX whenever nothing else claims it.
+// M3 lane 5 r193 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the source named before the scan 37
+// [84] (250-byte caller); the definition moved below its caller 0xb5f10 21 [match] (same code); a trivial inline accessor
+// around the scan's string 21 [match], around start in the compare of the natural body 28 [6] (both fold away); the
+// natural body with the destination parameter volatile too 50 (92 bytes) [6]. Re-measured listings: the natural body 28
+// (start EDX for life, walk EDI, the sum `mov eax, string; add eax, edx` where retail adds the string into start's EDI);
+// `start += (long)string` 40 (start ECX for life, the string folded as `add ecx, [esp + 0x14]` where retail loads it
+// into EAX first); a plain string with `start +=` 41 (104 bytes, string ECX -> EBX, the scan byte in AL and two exits).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

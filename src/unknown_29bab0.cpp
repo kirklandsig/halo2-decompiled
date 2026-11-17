@@ -62,6 +62,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
+// MiniMax I (11-17): no new form, no lower score (489): the body is 3503 bytes against retail's 3499 and the slot homes still differ (local_8 at +0x8c against retail's +0x80, with local_14 the other way round), which needs the declarations moved; the normaliser still squares k, j, i where retail has i, k, j, and the retail grouping through normalize_inline for local_9 scores 775; the body is unchanged.
 // score 489 (was 489; 679 before m3 lane 4 r203): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
@@ -577,6 +578,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // reading field_64 at each use with the complement product first 663 (3499 B); the velocity-frame cross through the
 // existing cross3f_staged 489 (same code). Re-measured: the side ternary written in each coordinate 573 (3500 B: two
 // separate ternaries, not retail's per-arm y with the x part after the join); the flip as `== local_22` 658. Body unchanged.
+// M3 lane 14 r105 (fast = full 489 here): the normaliser's input copied component by component 765 (3486 B); that copy
+// made before the 0xb9dd0 call 500; local_13 declared before local_11 489, local_8 or local_9 declared first in the
+// function 489/489, local_10 declared then assigned 489 (all the same code: local_8 stays at +0x8c, the squares k, j, i);
+// the 0.99 test's dot through the existing dot_product2d 661 (3499 B). Kept: the output scale as the existing
+// vector3f_scale(&local_6, local_27, &local_6) 489 (identical code).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -753,9 +759,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					*arg_6 = false;
 				}
 				if (local_27 > local_20) local_27 = local_20;
-				local_6.i *= local_27;
-				local_6.j *= local_27;
-				local_6.k *= local_27;
+				vector3f_scale(&local_6, local_27, &local_6);
 				if (local_2->field_68 > 0.0f)
 				{
 					vector3f const *local_28 = (vector3f const *)((byte *)local_1 + 0x7c);

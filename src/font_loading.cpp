@@ -273,6 +273,11 @@ static inline void font_copy_wait(bool volatile *done)
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
+// b14F (11-17) walk against retail, fast build on r847: the instructions match; the 4 differing lines are only the
+// three arrays' frame offsets (retail 0x121c5e, 0x121ca3, 0x121e4d: old 0xf70, source 0x1b20, destination 0x26d0).
+// Declaration order and scope of the arrays, the delete loop's spelling and the parse order change nothing. Only an
+// extra use of the old array in the pointer loop `old_file < old_files + old_count` (score 227) moves it first, with
+// different loop code.
 // @retail 0x121b00
 bool function_121b00(void)
 {
@@ -853,6 +858,17 @@ static inline long font_character_pixel(long alpha, long color)
 // P594: Separate word-store/cursor-advance boundaries at packed first/second/both, single,
 // literal, single-literal, all packed and all stores: 59/59/59/59/59/59/59/59. NOT kept: no exact native
 // parity/literal/run-two recovery; original scalar helper and complete decoder restored.
+// MiniMax S (11-17): no new form, no lower score (59): the shared helper without the byte cast on the low alpha bit (the
+// lead's form) makes all three decode sites match retail's parity (xor ecx, ecx; mov cl, al; and ecx, 1) and the pixel
+// blocks are retail's, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX (and the fill's
+// duplicated pixel in EBX where retail has EBP), so the body shifts (203); the base keeps retail's registers (EBX run,
+// EBP duplicated pixel) with the sixteen bit parity. Measured with the cast dropped: a dword run (200), a dword run of
+// the type 0/1 branch (200), a dword colour (203), a word pixel in the type 0/1 fill (200), a word fill pixel (203), a
+// pointer walk fill (187), a literal count of two (203) - every one keeps the run in EBP. On the base: a byte alpha
+// parameter (205), a long pixel local at a decode site (226 and 234, the parity is retail's there but the output and
+// colour registers rotate), a dword pixel helper result (59), count += 2 as a literal (59), a dword run (60), and the
+// colour literal as (source[1] << 8) | source[2] (103, retail's length of 504 but three instructions where retail has
+// four: movzx ax, byte [edi+2]; xor ecx, ecx; mov ch, byte [edi+1]; or eax, ecx).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

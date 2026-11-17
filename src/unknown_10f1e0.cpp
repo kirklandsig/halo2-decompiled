@@ -254,6 +254,16 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // normalisation written i = inverse * i, j = j * inverse, k = k * inverse (no change). Tried at
 // 133 (lane): shared normalization scale 133, relative scale 136, both scales 136, reciprocal-root
 // intrinsic 168, two-angle helper precision probe 119 (rejected).
+// b15H (11-17) walk against retail, fast build on r848: every statement, offset and branch sense matches (static
+// limits, frame, offset arithmetic, both sums, the atan2 pair, both clamps, the rotation call, the scale restore). Only
+// two spots differ. (1) The zero branch: retail 0x112f77-0x112f7d clears into xmm3, xmm1, xmm2 and stores i, j, k at
+// 0x112fa4-0x112fb0 (the out->x, y, z order of function_142700, whose body retail inlines here); ours stores j, k, i.
+// The register a component gets follows the first-assigned order (j, k, i gives retail's registers); every other
+// clearing order (i, j, k 91; i, k, j 83; j, i, k 83; k, i, j 88; k, j, i 82) or a point3f direction scores the same,
+// and the zero branch first as `== 0.0f` 110-116. (2) The scale: retail multiplies i into a copy of the factor
+// (0x112fd1) but j and k in place (0x112fd5, 0x112fd9); ours copies for j. No spelling of the three products moves it
+// (i = inverse * i, j * inverse, *=, every order), nor `real const inverse`, an initialised inverse or an inline
+// pointer helper (all 64). Calling function_142700 instead of the body: 329 (not inlined in the fast build).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -675,6 +685,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // read named 41 (545 B); the two markers as one two-element array 2 (same code); `found` as a long 81 (546 B); the target
 // name declared bare at the loop top 2 (same code). Probe stores of 0, 1, -1, 2, 4 through the nodes pointer (diagnostic,
 // reverted) leave the table first; no loop callee is opaque (all matched C or the naked 0x142a60).
+// M3 lane 14 r105 (fast, all the same code at 2): the state read once per pass through a const pointer to the
+// parameter 2; the loop under a redundant `if (target_index != NONE)`, `if (object_index != NONE)` or `if (weight >
+// 0.0f)` 2/2/2, under a repeated node-count test 96; `s_animation_state &animation = *state;` in the loop body or
+// ahead of the loop for the arms' reads 2/2; `s_graph_pair_iterator &pair = *iterator;` for the pair reads 2. Retail's
+// 0xb8ca0 (reached through the first query) passes 0x10cf50's argument in ECX, so it is link-time compiled too.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -3130,6 +3145,10 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // path only 96 (223 B); a result flag for both failures (the lookup un-nested, `index != NONE && 0x114520`) 57 (249 B:
 // index ESI and priority EBP as retail, the result's zero takes EBX and NONE falls to EAX, so retail's NONE ranks like a
 // function-long variable, not a discounted constant); the extra pointer as a typed local named at entry 16 (copy-propagated).
+// Round 134 (m3 lane 12, fast; combinations the list has only singly): request priority as long with entry_index
+// reassigned as the index 16; the request record at function scope with the default fill storing the flags first 17;
+// the index from a ternary with one NONE test and request priority as long 16; the default arm first (`if (!extra)`)
+// with the sound index stored before the delay 36; the default fill storing the object index first 16. Roles unchanged.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -4236,6 +4255,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // declarations changes nothing (12); the flags moved between the lookup read and the animation measure 204 at 682
 // bytes, and the permuter cannot search the function at all, because its reduced image scores 202 against the full
 // image's 12.
+// MiniMax I (11-17): no new form, no lower score (12): the control and definition homes stay the other way round
+// (retail +0x1c and +0x20) - declaring the definition first or the control after the state leaves them as they are
+// (20) - and the two flag bytes are still cleared after the lookup branch where retail clears them before it.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

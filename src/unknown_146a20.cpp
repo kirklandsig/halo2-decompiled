@@ -444,6 +444,10 @@ bool g_47f05b;
 // constructor in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY); the pool's placement is
 // read from g_479888 on both sides, so the rest is retail's reload of the block with a lea for the pool against
 // this build's load and add at the join.
+// MiniMax I (11-17): no new form, no lower score (34): re-measured the baseline; the abstract allocator's vtable
+// store retail keeps is still dropped as a dead store, and the pool's placement is still loaded and added where
+// retail reloads the block and forms the address with a lea; both follow from the shared constructors in
+// include/unknown_146a20.h, which this lane may not edit, so the body stands.
 // score 34 (was 34): unchanged this round: the abstract allocator's dead vtable store and the reload of the backing
 // pointer on the successful arm are still missing; the shared constructor bodies they follow are in another file.
 // Another round, unchanged at 34: the abstract allocator's vtable store and the backing pointer's reload
@@ -552,6 +556,13 @@ void function_146b80(void)
 // it after the other arguments are pushed; here the callee takes it in DL, so the
 // byte is loaded into DL before the other byte is stored. The callee lives in
 // src/unknown_1c25a0.cpp and is far from retail.
+// b14H (11-17) walk against retail, fast build on r847: every instruction matches except the call setup at
+// 0x146c8e..0x146ca8 (statement by statement: the bool `recent` stored at [esp+0x1c] and read back as a dword for the
+// even_if_unknown push at 0x146c96/0x146c9a, push -1, then `mov al, byte ptr [esp + 0x1b]` at 0x146ca1 AFTER the
+// pushes). The values, the push order and the loop and flag logic are retail's; ours reads the active byte into dl
+// before the pushes (3 instructions out of step, 5 differing lines). Retail's callee 0x1c4040 tests al at 0x1c4043
+// and ours tests dl (fast check of 0x1c4040: 8), so the register comes from that body, which sits outside this lane.
+// No change is made to this function.
 // @retail 0x146bf0
 void function_146bf0(void)
 {

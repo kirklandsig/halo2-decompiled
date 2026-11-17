@@ -1618,6 +1618,17 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // P587: Eight independent original iterator-workspace identities with all original
 // receiver names and publication scopes: eight 32 at native 846-byte extent.
 // NOT kept: no handle-before-scaling or leave/request/slot-home repair; full body restored.
+// b13E (11-17) walk against retail, fast build on r846: logic agrees (every difference is scheduling or register
+// choice). Three spots remain, and two cancel in the byte count (ours leaves out retail's `mov ecx, eax` 0x274cc7 and
+// adds `mov eax, esi`, so 846 = 846 hides it): the append's `mov ecx,[esp+0x94]` 0x274aef sits before the movsx in
+// retail; retail computes the leave type in eax (0x274cb5-0x274cc7, `push ecx` after the setne, no other caller of
+// 0xe68c0 has that shape); the slot stores run seat 0x274d2c, vehicle 0x274d38, flags 0x274d41 with ax for the seat.
+// New: writing function_274a51's body out at the call with candidate_actor->unit_index passed directly gives retail's
+// append order (only the leave block, the unit load at 0x274ce0 after the seat reads, and the seat register ax remain)
+// but scores 72 (68 with the slot seat, vehicle, flags order; 67 vehicle, seat, flags): a 2-byte shift moves every
+// branch target. With the unit in a local before or after the type store it is 41/44 and the append order returns.
+// Not kept: no match, and Kirk undoes a written-out helper. Also 32 each: 0x1d + (load ? 1 : 0), (load != 0) + 0x1d,
+// 0x1d + !!load, a forced-inline leave wrapper (same bytes as the plain call).
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -1853,7 +1864,7 @@ inline short ai_random_range(short lower, short upper)
 
 /* gives the actors an ai index names a random number of grenades of their
    current type, by their character */
-// score 21 (was 21): only the grenade tail differs. Ours keeps actor->unit_index
+// score MATCH (was 21): only the grenade tail differs. Ours keeps actor->unit_index
 // (read once after the seed store) in esi through the count lookup and the add,
 // so g_4e0300->data is hoisted above the imul and the unit goes in ebp; retail
 // reads [actor+0x18] again for the add and keeps the actor in ebp. No store sits
@@ -1864,6 +1875,12 @@ inline short ai_random_range(short lower, short upper)
 // parameters (21), random_next() for the seed step (21), an early-return count
 // helper (21), no unit_index local (21), the tail as one inline helper (not
 // inlined, 257).
+// b13E (11-17) walk against retail, fast build on r846: logic already agreed (flag stores 0x27595e and 0x275979, seed
+// step 0x275989-0x2759a5, count lookup 0x2759cb, add 0x275a17). The 21 came from retail reading [ebp+0x18]
+// (actor->unit_index) a third time for the add (0x2759f6) with the actor kept in ebp, though no store sits between
+// that read and the count's (0x2759b7). A volatile read of the actor's unit for the add reproduces it: MATCH, with
+// 0x2a5720 and the three callees still MATCH. A plain read is shared with the count's, which frees ebp for the unit
+// and moves the data load above the imul. No other form was tried; the volatile is the match-only recipe.
 // @retail 0x2758b0
 void function_2758b0(long ai_index)
 {
@@ -1886,7 +1903,10 @@ void function_2758b0(long ai_index)
 				short count = ai_random_range(grenades->minimum_count, grenades->maximum_count + 1);
 				short current_count = unit_get_current_grenade_count(actor->unit_index);
 				if (current_count < count)
-					unit_add_grenades(actor->unit_index, grenades->grenade_type, (char)(count - current_count));
+					/* volatile: retail reads the actor's unit again for the add, keeping the actor in ebp, though
+					   no store sits between the two reads; the plain read is shared with the count's */
+					unit_add_grenades(((volatile s_actor_datum *)actor)->unit_index, grenades->grenade_type,
+						(char)(count - current_count));
 			}
 		}
 	}

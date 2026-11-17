@@ -421,6 +421,14 @@ inline real item_real_random_range(real lower, real upper)
 // Product-first range span/sample/offset named subsets 1..7: 2/76/76/61/61/61/61;
 // scalar offset accumulator 61. Original range producer and complete body restored;
 // frame 0x14 and last add/third owner-field load scheduling remain.
+// b14E (11-17) walk against retail, fast build on r847: the body matches retail statement by statement (both ITEM_GET
+// reloads, the seed store, the owner stores in the order unknown4/unknown0/unknown8, the 0.0f/NULL pushes). The one
+// difference is 0x10d583 `fadd st(1)` (the delay's final add), which retail issues between the c4 field load (0x10d57d)
+// and the c2 load `mov cx` (0x10d585); ours issues the c2 load first. Tried, same 2: each field read through
+// ITEM_GET(item_index) (the loads fold into one pointer); `owner` declared before `delay` or before `owner_item`;
+// `location_c2` as word; the helper returning `lower + span * sample`. Worse: the c2 copy before c4 (5, register
+// assignment changes), brace-initialising the owner {c4, c8, c2} (6, c4 loaded first), the helper with a named sample
+// local (76, SSE). No behaviour difference found against retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -2081,6 +2089,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P540: Eight coordinated contact-provider orders at its definition and both callers, 140 each. NOT kept: no return-byte/release/event-home recovery; original contracts, calls, helper and entire body restored.
 // MiniMax C (11-16): no new form, no lower score (140): retail still clears the release flag with one byte read-modify-write where this build splits it into a load, an and and a store, and retail still keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where
+// retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf, and retail still
+// keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

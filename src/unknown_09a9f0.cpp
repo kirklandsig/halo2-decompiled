@@ -1247,6 +1247,13 @@ bool c_projectile_type::v8(long a, long b)
 // `(a & 0xffff) * 12` as matched 0xa1f70 and 0x9d450 read theirs 12; a `long` flags local 12; the group value as a
 // const reference to the masked entry's +4 15; a `byte *` state local for the four accesses 12; both copies written as
 // dword moves 12. Matched 0xa02e0 gets flags ESI and object EDI from the same head, as the mask form does here.
+// M3 lane 12 r134 (fast; word read 5, mask 12), all with the full-width mask unless noted: flags as a `long &` bound to
+// `b` 12; the object read through an OBJECT_HEADER pointer 12; the call's mask from `b` with the tests through a
+// `dword const &` to `b` 12; the index as a `dword const &` 12. Diagnostics: the index as a value local with the word
+// read 10 (`movzx eax, si`: the object keeps ESI there too, the index takes ESI after it); the object looked up with
+// `(word)a` and the group index masked 49 (`movzx ecx, ax` shifts the head 5 bytes, but the object takes ESI and the flags
+// EDI as retail); the object looked up with `(dword)a % 0x10000` 12, the index masked with `0xffffL` 12. So ours swaps
+// the pair exactly when both lookups zero-extend with `and r, 0xffff`; retail has both and keeps the object in ESI.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

@@ -758,6 +758,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P588: Repeated state-velocity/output-velocity/state-location field lvalues,
 // seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
 // NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.
+// M3 lane 13 r103 (fast with the file's five matched functions, all kept; [exact, register/stack-masked] aligned control [25, 9]):
+// the tick count read before the rate 32 (same code); the rate local dropped with the global passed to vector3f_add_scaled on
+// this body's j, i, k deltas 32 (same code); the correction scaled in place in `delta` through local_scale3d(&delta, scale,
+// &delta) with the output rows reading delta 32 (same code); the squared length declared with the other locals at the top and
+// assigned later 32 (same code); the limit through the rate local (`rate * 0.5f`) 90 (first +0x25: the rate stays live in
+// XMM3 and the tick conversion moves). Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

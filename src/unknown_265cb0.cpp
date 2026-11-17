@@ -825,6 +825,24 @@ real function_30bf0(vector3f *vector);
 // P592: Original incoming origin/actor/point/endpoint/posture/mode/facing/output fixed
 // bindings: eight 84 at 1310/1308. NOT kept: no native result/range/projection-home
 // or cross-product operand recovery; original complete body restored.
+// M3 lane 1 r114 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH): retail's 4-byte homes are result, facing primary,
+// facing secondary, the clip amount, scale and range (frame 0, 4, 8, c, 10, 20); declaring facing primary, facing secondary
+// and scale ahead of range at the settings block's top 84 (same code), `range` given a longer name 84 and `result` another
+// name 84 (same code: neither names nor declaration order move these homes); the facing pair as one
+// two-element array (primary [0], secondary [1]) 103; the seat loop counter as long 173 (1308 B).
+// b12K (11-17) walk against retail, fast build on r846: every statement, field offset (+7, +0x26c,
+// +0x2a8/+0x2b4/+0x2c0, seat object +0x13c/+0x18c..+0x194, settings +0/+4), argument and constant checked
+// (0.0025f, 0.0f as a memory operand at 0x26399c, 1.0f, 0.3f, 0.7f shared with the scaled secondary at 0x263cc6,
+// 36.0f) and every jcc sense: jbe at 0x263911, 0x26398e, 0x26399c, 0x263a14, 0x263a66, 0x263c9a, 0x263ca7,
+// 0x263cf0 skip NaN and ja at 0x263981 lets it through, as ours does; the shared out-of-range tail 0x263d0c, the
+// `test ax,ax; jle` seat guard at 0x263adb and the dword result with `mov ax, word` reloads agree. No behaviour
+// difference found, so the body is unchanged. New measurements (fast, with 0x263740/0x25c9d0/0x26d370): both seat
+// crosses written out as component expressions 148, the second alone 84 (same code as cross3f), the first alone
+// 148, and ten of the twelve products' source operand order flipped one at a time 148 each: the emitted operand
+// side does not follow source order. The emission still differs from retail in the first cross's world-up.i *
+// forward.k and world-up.j * forward.i (retail loads the up component first, 0x263b57 and 0x263b7d) and in the
+// second's side.j * forward.k and side.i * forward.k (retail copies the register first, 0x263bd2 and 0x263bf7);
+// the second cross's two are the 2 extra bytes. Best match-only recipe: none (84).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2609,6 +2627,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // instructions against 695: not kept. Facing lives only in xmm1 (0x266f39); the stack zero at 0x266c51 is what the
 // not-visible arms reload (0x266f9f, 0x26705f), as ours `facing = 0.0f`. The far-and-slow exit 0x266f8e skips the score
 // test; ours reads `score > 0` on the same paths. Body unchanged.
+// M3 lane 2 r95 (fast with 0x25d810/0x26be00/0x25d740, all MATCH; control 168): retail's positive arm keeps the decay arm's
+// `[0x320] = ax; [0x31c] = slot` tail and the reset arm (laid out after the join) jumps back into it, so its unmerged
+// layout had the reset arm first. The reset arm written first (`if (slot == NONE) reset; else { mismatch continue;
+// decay; }`) 174 (2880 B: the merge direction is then retail's, reset jumping to the decay's 0x320 store, but the reset
+// block stays ahead of the decay where retail places it after the join); with the slot search's counter long as well 175;
+// the slot store written in both arms 481 (2896 B, first difference +0x35, the duplicate store kept), the same with the
+// reset arm first 481; the approach maximum as `approach = value > approach ? value : approach;` 168 (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {

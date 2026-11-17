@@ -543,6 +543,8 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
 // forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
 // velocity copy's eax/ecx and two x87 operand orders in the atan2 sums.
+// xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
+// x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
 // MiniMax C (11-10): the score is 126 (was 126); the entry magnitude is added after the velocity copy where retail adds the two squares before the square root, so the 1.0 constant lands in xmm2 instead of xmm3 and the x87 operand order of the sums differs.
 // MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
 // MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
@@ -3325,6 +3327,15 @@ real g_47ff30 = 2.5f;
 // observations, masks 0/1/2/4/3/5/6/7: 672/693/767/738/776/701/785/773.
 // Typed field alone preserves 672; NOT kept: all coefficient reloads regress or shorten
 // away from native. Original observations, helpers, matrices and full math graph restored.
+// Round 178 (m3 lane 8, fast): `boost * *(real *)(definition + 0x1f4)` for the maximum 672 (same code: the compiler keeps
+// its operand order); the turn rates as a named `real const *rates` pointer for the approach and the turn fraction 672
+// (same code); the three force products with their operands reversed 672 (same code: the multiply chain is reordered
+// either way, `state->unknown6c` first where retail keeps source order). LEAD: the final force and torque scaling as
+// `vector3f_scale(&force, vehicle->unknown25c, &force); vector3f_scale(&torque, vehicle->unknown25c, &torque);` (retail
+// reads +0x25c again for each, `scale * component`) recovers retail's frame 0xfc and moves the first difference to +0x66,
+// but 710 (the rest reshuffles); the same two calls with the mass local 672 (same code). Retail keeps the 0x22c rates
+// pointer in EDX across both 0x2053c0 calls and the state pointer in EBX for the force block (ours the other way round),
+// and its SSE values sit one register higher (the constant 1 in xmm7, ours xmm6).
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6295,6 +6306,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P551: Complete backward flipped-matrix/desired-forward/quaternion-axis/state-rotation
 // transfers, then corresponding uninitialized object transfers: 1041/1078/1112/1107/1041/1083/1112/1107.
 // NOT kept: no exact native frame/index/matrix ownership recovery; original copies restored.
+// Round 178 (m3 lane 8, fast): the signed pitch term named, `real tilt = PIN(...) * dive; climb = tilt * g_4678d8 * ...`,
+// 1034 (the climb multiplies then follow retail's dive-first order, the rest shifts); the flip check and the 0xf44a0 call
+// in a forced-inline helper with its own index parameter (diagnostic, to give retail's short-lived index register) 1061
+// (5075 bytes, the index still EDI); re-measured on 978: the first 0x142eb0 product into a block-local `difference`
+// matrix 1032 (5062 bytes, frame 0xdc), with bool boosting 1142 (5046 bytes, frame 0xdc); a redundant `0 < count`
+// guard around the tail's point loop (diagnostic) 981. Retail reads: index ESI only up to 0xf44a0 (then stack reloads,
+// ESI becomes the forward pointer), offset EDI spilled to +0x28; the reversal loop stores every pass with the
+// acceleration sign as a byte and the target sign as a dword.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

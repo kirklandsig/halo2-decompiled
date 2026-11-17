@@ -906,7 +906,7 @@ void *function_24490(long key, s_24490_definition *definition, long entry_key)
 }
 
 // @retail 0x1d6b0
-__inline real *table_entry_data(
+real *table_entry_data(
 	long handle)
 {
 	byte *base = NULL;
@@ -1257,7 +1257,7 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
     }
 }
 
-// score 12 fast (was 16 fast, 13 full): only the mode 1 exit differs: retail
+// score 9 fast (was 12 fast on the earlier base; 16 fast, 13 full before that): only the mode 1 exit differs: retail
 // tests `jne` to the shared false exit and falls into its own `mov al, 1`
 // return, ours jumps back to case 0's identical return and falls into the false
 // exit. The fraction multiplies last only when it is written first (g*s*f and
@@ -1266,6 +1266,13 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
 // false after the switch 18; one shared `return true` after the strength block
 // 16; the fraction inlined 73 or declared before the strength 26. The old
 // `(void)&` parameter line changed nothing (the marker keeps them on the stack).
+// b14K (11-17) walk against retail, fast build on r847: every other statement matches (case 0 call, the case 2 and 3
+// stores, the strength block 0x29a10-0x29ad8, the jump table); the 9 is the mode 1 tail alone: retail 0x29adb
+// `cmp esi, 1; jne 0x29ae6` falls into its own `mov al, 1; pop esi; ret` (0x29ae0) and shares the false exit with the
+// `ja` at 0x29914, ours branches `je` back to case 0's identical return (0x29943). Retried on r847: `if (mode == 1)
+// return true; goto failed` 9; `if (mode == 1) return true; return false;` and `if (mode != 1) return false; return
+// true;` 8 (but `cmp; sete al` with a private false exit for default, not retail's jne form); `return mode == 1` 16;
+// the strength test inverted (`if (strength == 0.0f) {...}` first, then the block) 48. No change kept.
 // @retail 0x298f0 standard
 bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -2407,6 +2414,7 @@ void function_144f0(short stage, long fallback, long tag, short fallback_index, 
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
+// MiniMax E (11-17): no new form, no lower score (140): the flag byte is still loaded into cl before the branch where retail loads it into al after it, and the value stored to the global still comes after that load where retail stores it first; the body's length matches retail's (1729 bytes).
 
 // MiniMax E (11-16): no new form, no lower score (140): the body's length matches retail's, but this build still hoists the preserve_alpha load above the `simple` branch where retail loads it after, and the callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
@@ -2818,6 +2826,7 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
+// MiniMax E (11-17): no new form, no lower score (330): the first difference is still at +0x52, where retail takes a level's -1 with a lea and this build decrements the register, and the body is still 1591 bytes against retail's 1543.
 // MiniMax C (11-11): no new form, no lower score (364); retail keeps the second copy of 0x235a0 out of line because of its call-site frequency (the call appears 17 times in retail), and the sample block's second test and the allocator still differ; the forms tried here score 401 and above.
 // MiniMax I (11-10): 364 (was 401): the sample flag is written the way retail writes it (0 at 0x23716 before the
 // admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
@@ -3074,6 +3083,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[0] = ((x * cosine - y * sine) * scale + 1.0f) * 0.5f;
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
+// MiniMax E (11-17): no new form, no lower score (54): the x87 chain's store still comes before the SSE subtract where retail takes the subtract first and stores after it, and the scheduler still places the x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527).
 
 // MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
 // MiniMax C (11-15): no new form, no lower score (54): the body is retail's length and the first difference is at +0x527, where this build places each x87 coordinate step one slot ahead of retail's in both corner sets, so what is left is the inlined rotation's schedule.

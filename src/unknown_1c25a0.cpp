@@ -949,6 +949,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // Round 129 (m3 lane 9, fast): `if (function_1c4040(...)) continue;` ahead of the retry step 1; `attempt <= 1` 3; a const
 // component parameter 1; the retry test inverted with the force step first (`if (attempt >= 2) { if (!force) ... } else
 // attempt++;`) 8; the call's result in a named bool 1. The force flag stays DL (0x1c4040's default convention).
+// Round 189 (m3 lane 6, fast): `if (attempt >= 2 && !force) {...} else if (attempt < 2) attempt++;` 8; a byte attempt 40
+// (81 B, 0x1c39c0 41); `if (call || force && attempt >= 2) continue; if (attempt < 2) { attempt++; continue; }` then the
+// force step 28 (75 B); the force step as `attempt = force ? attempt : 0; force = true;` in a plain else 5; the result
+// compared `!= true` 3. Same code (not counted): `if (g_47f050 > 0x34e)` around the loop, that guard with a do-while,
+// an empty then-arm on the call's result. No body form reaches the convention (0x1c4040's note).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1231,6 +1236,10 @@ struct s_1c4040
 // effect pointer declared in the detach arm 88; an early `return false` when nothing was found 119; the mode arm's flag
 // store through the object local 8; the custom body (array store without its cast, fixed island through g_51e9a4) with
 // function_146bf0 declared before function_278f00 here, fast over 59 cycle members 17 (still DL, nothing else moves).
+// Round 189 (m3 lane 6, fast with the file and 0x1c39c0/0x146bf0; the 8 are all the DL/AL convention): `if (0 <
+// island->m_entity_count)` around the fixed-island loop 56 (539 B); the result byte set true at the top of the found
+// block 99; no result byte, `return local_0.field_8 != NONE;` 111; the island-array store after the other three initial
+// stores 23; the detach written in both arms of the `unknown` test 77 (566 B).
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
