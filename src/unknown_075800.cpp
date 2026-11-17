@@ -1533,6 +1533,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // ahead of the switches 111 (460 B; retail's prologue, delayed ESI save, two-pop range exit and jump table, 0x7afd0 MATCH;
 // left are case 18, which retail calls from its jump table where ours tests it late and inlines 0x94420; not kept: the test
 // is implied by the switches); that with 11 back in the late switch beside 18 121 (round 65's form re-measured).
+// ESI is saved before the range check. Retail calls case 18 out of line.
+// case 0 before terminal case 18 194; case 0 after terminal case 18 194; case 2 before terminal case 18 196;
+// case 2 after terminal case 18 196;
+// case 3 before terminal case 18 191; case 3 after terminal case 18 191; case 4 before terminal case 18 199;
+// case 4 after terminal case 18 199.
+// NOT kept: best reduced score 191 against reduced control 196, a five-point gain. It still saves ESI before
+// admission. Full baseline is 143.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -3369,6 +3369,13 @@ real g_47ff30 = 2.5f;
 // but 710 (the rest reshuffles); the same two calls with the mass local 672 (same code). Retail keeps the 0x22c rates
 // pointer in EDX across both 0x2053c0 calls and the state pointer in EBX for the force block (ours the other way round),
 // and its SSE values sit one register higher (the constant 1 in xmm7, ours xmm6).
+// Native frame 0xfc, acceleration and velocity homes still differ.
+// mass field reference 724; mass field pointer 724; direction-weighted mass aggregate 679; direction-weighted
+// mass setter 697;
+// scaled direction-square vector 712; force result setter with field reference 724; torque result setter with
+// field reference 724; direction-square scale and both result setters 712.
+// NOT kept: the mass reference and pointer recover frame 0xfc and first difference +0x66, but grow to 3264 bytes
+// and regress. The weighted-vector forms also regress.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -6369,6 +6376,13 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // guard around the tail's point loop (diagnostic) 981. Retail reads: index ESI only up to 0xf44a0 (then stack reloads,
 // ESI becomes the forward pointer), offset EDI spilled to +0x28; the reversal loop stores every pass with the
 // acceleration sign as a byte and the target sign as a dword.
+// Native frame 0xd8, object-header displacement and vector/matrix homes still differ.
+// shared masked dword index 1168; shared word index 1172; typed header accessor 978; conditional-initializer
+// flip mode 978;
+// conditional flip mode 978; default-and-assignment flip mode 978; early timer and shared index 1154; shared
+// index and default-and-assignment flip mode 1168.
+// NOT kept: the typed header accessor and three flip-mode result forms tie 978. Masked-index forms regress.
+// Every variant retains frame 0xfc against retail 0xd8.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
