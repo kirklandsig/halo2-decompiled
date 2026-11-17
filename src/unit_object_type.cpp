@@ -845,6 +845,9 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // 23 (100 bytes); that with the +0x10a clear as a byte subscript too 23; the byte subscript with `!unit->type` 12 (92 bytes, gain
 // below four, not kept); the type test inverted with an early return 13; `(1u << unit->type) & 1u` 13. Still BLOCKED-BY
 // 0xe4bd0 (EAX convention and tail call), itself BLOCKED-BY 0xe5930 (contributor file): our link expands 0xe5930 there.
+// Round 128 (m3 lane 16, fast with 0xe4bd0 and 0xe5930): 0xe4bd0's biped through object_header_get 13 (0xe4bd0 91);
+// 0xe4bd0's index `long const` 13; its 0xe18d0 flag written `1` 13; the first clear as `&= (byte)~4` 13; this
+// function's index `long const` 13 (all the same code). Still BLOCKED-BY 0xe5930 (expanded inside 0xe4bd0).
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {

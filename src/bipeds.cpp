@@ -6042,6 +6042,11 @@ real magnitude3d(vector3f const *v);
 // while this caller sees no register summary); the single call through it 2; an `inline` prototype of magnitude3d in
 // this file alone 20. Lead: retail had two identical bodies folded into 0x24590 (r167 lead-e3380-icf.patch); keeping
 // it needs a ruling on such a copy.
+// Round 128 (m3 lane 16, fast with 0x24590 and 0x1fb7e0): two event calls split by the upright test (the magnitude
+// ternary in one, `falling ? 0x54 : 0x56` in the other) 40 (900 B); per-arm calls with the actor bound by reference 20;
+// per-arm calls with the upright arm re-fetching the biped 254 (932 B); the actor test written `NONE != ...` 2 (same
+// code); per-arm calls as early returns 20. The seven magnitude3d callers that rose with `inline` hold the same baseline
+// scores as in round 101, so that lead is still blocked: BLOCKED-BY 0x24590.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
