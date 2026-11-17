@@ -648,6 +648,19 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // P576: Actual scalar acquisitions through memcpy, head/stage/pass subsets 1/2/4/3/5/6/7: 142/141/117/172/142/141/172;
 // all three through memmove 255. NOT kept: no byte equality; word acquisitions expand the native frame, pass copy ties.
 // Original full body/helper/includes restored. Fallback EDX normalization, stage/pass homes and unfused loads remain.
+// b9P (11-17) walk against retail, fast build on r840: every statement, offset, immediate (compared as a multiset
+// on the side-by-side, relocations aside) and jcc sense agrees: group test 0x224dd1/0x224dd8 (je to the shared
+// path), 0x1ff and 0xffff masks, strides 2/2/10 with the pass tag at +4 (0x224e3d), 0x132/0x232/0x100, 10000.0f
+// (0x224f15), arg_1..arg_4 at esp+0x70..0x7c, ret 0x10. Callee arguments agree: 0x1bbf0 (0x224f12-0x224f20: tag
+// re-read from +0x1c in EDI, 0, arg_3, arg_4, 1, 10000.0f), 0x175610 (0x224faf-0x224fc1: arg_1, arg_2, callback
+// 0x224fd0, &local_0, cache in EDI), 0x173ba0, 0x1c590/0x1c620 registers; the cache tests are the compare-and-
+// clear of 0x175610's own head (0x175628-0x175657). No behaviour difference found. Evaluation order: retail reads
+// arg_0+0xd8 at 0x224f85, after both cache tests (matched sibling 0x2243c0 reads it just before 0x173ba0); ours
+// reads it before the search loop. The late spelling (flag local declared just before 0x173ba0) 149 with arg_0 in
+// EBP, so stack-passed (ret 0x14), 0x224d90 36; with the context's `field_0 = arg_0` store also moved down (after
+// the loop, or right before the flags) 143, 0x224d90 kept, arg_0 in EBX: neither is kept (retail stores the
+// context at 0x224f25). Ours reads its in-file copy of g_43f408 (identical to unknown_01cf50.cpp's); retail reads
+// the one at 0x43f408 (0x224ec6): no code effect.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
