@@ -449,6 +449,7 @@ void function_11bed0(s_location *location, point3f const *point);
 // MiniMax H (11-14): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while
 // retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
 // not edit, so the call boundary and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
+// MiniMax E (11-17): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail keeps it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit (BLOCKED-BY 0x11bed0).
 // score 93 (was 93): unchanged this round: the location query 0x11bed0 is still expanded where retail calls it
 // out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // M3 lane 7 r161 (fast with 0x11bed0/0x11be90/0x14a280/0x1d48f0/0x125920/0x1e1500/0x1697c0/0x17c0e0/0x16bc00): round 88's
@@ -2722,6 +2723,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // stack slots are still not a shifted copy of each other (ours has homes at 0x74, 0x78 and 0x94 that retail does
 // not use, and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not), so retail carries two more dword locals
 // in a different order; the inlined 0x221810 and 0x12a420 stay as they are, in other files. BLOCKED-BY 0x221810.
+// MiniMax E (11-17): no new form, no lower score (339): the frame is still 0x4b4 where retail's is 0x4bc, because retail zeroes 0xb and 0x111 dwords where this build zeroes 0x11e dwords at another offset; the permuter (27 tries) found no better variant.
 // score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword

@@ -956,6 +956,8 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // register; retail's caller 0x7e210 hands the player count over in eax and the extra count in edx, so the
 // register home is the caller's, in src/unknown_07a9a0.cpp, which this lane may not edit:
 // BLOCKED-BY the caller.
+// M405: First/last extra slot seeded, then loop/standard fill/counted fill/scalar copy from it.
+// Scores 80/61/61/80/80/74/61/80. NOT kept: ties or regressions; original body restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

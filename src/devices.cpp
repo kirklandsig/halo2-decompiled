@@ -1565,6 +1565,12 @@ bool function_108530(long device_index, long name)
 // passed in xmm7/xmm6) [19/34]; with the half ramp-up named first 171 (485 B) [19/34]; the cruise time first, then all
 // seven inner stores, then the half times 144 (509 B) [26/28]; the ramp-down minimum under a redundant
 // `if (ramp_down_time > 0.0f)` 133 [31/13]; the position pin through a trivial inline accessor 121 (same code).
+// MiniMax D (11-17): no new form, no lower score (121): the full image measures the same 121 as the reduced one, and a
+// permuter run (27 tries over the body) finds nothing below the baseline; retail's callee takes the initial velocity in
+// xmm6 with five stack floats and returns with ret 0x14, while this build passes it on the stack and returns with
+// ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7, retail's
+// in xmm5) and the ramp-down value stays in a register here where retail keeps it in its stack slot; the split between
+// xmm6 and the stack is the callee's own convention, set by the definition that the six float signature may not change.
 // MiniMax S (11-17): no new form, no lower score (121): retail's callee takes the initial velocity in xmm6
 // with five stack floats and returns with ret 0x14, while this build passes it on the stack and returns with
 // ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7,
