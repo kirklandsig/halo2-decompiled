@@ -603,6 +603,12 @@ struct s_1af5c6
 // if/else (`!flag && field != NONE`) 123 (585 bytes); the 0x1e3b00 arm first (`(short)arg_3 != 0`) 39; the source record's
 // NONE store after the point copy 23; 0x2640c0 given the prop node's field directly 39. Still BLOCKED-BY 0x1c8df0's call-site
 // inlining (src/unknown_1c8df0.cpp is another lane's file this round).
+// Round 93 (m3 lane 15, fast with the file's functions, 0x1af810, 0x1b2770 and 0x1c8df0; control 20): the probe's source and
+// target points named once as const pointers for both differences and the probe 24 (only the magnitude's x87 order moves);
+// the tail as one short category started at 4 and set to 2 by a combined test 110 (604 bytes); the probe result in a named bool
+// 20 (same code); the mask local as `dword` 20 (same code); the two distance tests joined with `||` before `return 2` 35.
+// Re-measured by mistake: the second lookup indexed by `(word)` 132 (round 101). Still BLOCKED-BY 0x1c8df0's call-site
+// inlining (here this file is /Ob1; the files of the five callers retail calls it from out of line are /O2).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

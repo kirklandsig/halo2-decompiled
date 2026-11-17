@@ -126,6 +126,11 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // Round 188 (m3 lane 5, fast): no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair
 // (ours the entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`, and the palette
 // loads that follow). BLOCKED-BY 0x17e670 (contributor code); held patch unchanged.
+// Round 93 (m3 lane 15, fast; the reduced image agrees with the full 16): the palette globals pointer named at the top 102
+// (first +0x14); the point passed as the entry pointer cast to `point3f const *` 16 (same code); yaw and pitch `real const`
+// 16 (same code); the cosine products written yaw first 16 (same code); the entries block named at the inner loop's top for
+// the tag and the entry 30 (353 B). Re-measured by mistake: the mask bits as named bools 40 (round 120). Still BLOCKED-BY
+// 0x17e670 (the call's register pair); held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

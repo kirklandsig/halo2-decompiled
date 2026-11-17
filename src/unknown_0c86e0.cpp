@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
+// where this build merges the two fetches, because that callee writes no memory, and the callee's body is in
+// src/unknown_0bad50.cpp, which this lane may not edit; the alternative that tests the weapon index against NONE
+// before function_100f70 reaches 100, under the keep-bar. BLOCKED-BY 0xbadc0.
 // MiniMax S (11-16): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70), but retail looks the unit up again after the two calls where this build merges the two fetches into one, because 0xbadc0 writes no memory; that callee's body is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // MiniMax E (11-16): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70); retail looks the unit up again after those two calls because its link knows that callee writes memory, while this link knows it writes none and merges the two fetches, so the entry saves and every later register differ; that callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax E (11-15): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70), so the difference is still 0xbadc0's memory summary, whose definition is in src/unknown_0bad50.cpp. BLOCKED-BY 0xbadc0.

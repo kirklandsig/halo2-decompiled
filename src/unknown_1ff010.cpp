@@ -534,6 +534,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // `magnitude * turned.j` 77 (the same code), and the tail (the velocity stores and the speed products) still matches
 // retail byte for byte; what still differs is inside the rotation expansion (src/unknown_1eb8a0.cpp) and the
 // normalisation (include/unknown_11cc90.h), neither of which is this lane's file.
+// MiniMax I (11-17): no new form, no lower score (77): the first difference is still the block layout after the
+// direction copy, and the two helpers that set it are in other files - the normalisation (include/unknown_11cc90.h)
+// multiplies by the reciprocal where retail multiplies the reciprocal into the copy, and the rotation
+// (src/unknown_1eb8a0.cpp) is called out of line here where retail expands it: BLOCKED-BY both.
 // score 77 (was 77): frame 0x20 agrees; retail tests the planar length after the scale products, keeps the
 // test zero in xmm0, multiplies the facing components as registers and stores the velocity directly, while
 // ours zeroes xmm6 above the divide, multiplies x * scale and carries that zero through the inlined turn.
