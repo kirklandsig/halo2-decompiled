@@ -92,7 +92,7 @@ public:
 class segment_2ddfc0
 {
 public:
-	void function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out);
+	void function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out) throw();
 };
 
 // a segment cast at an end cap, as the sphere's cast takes it
@@ -157,7 +157,14 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 150 (was 194): the axis is normalized by the single-value inverse square
+// score 12 (was 150): the closest-point callee is declared `throw()` (the caller's
+// frame then keeps `closest` at retail's home), the squared distance and the ray
+// are declared before the two end points (retail's four stores before the first
+// query), and the side blend multiplies `b` by the scale and adds the two products
+// second first, which gives the blend retail's seven instructions and length.
+// Left: retail spills `entry` after the dot product's multiply, not before, and in
+// the side blend forms `scale * b` before it loads the ones.
+// Before, 150 (was 194): the axis is normalized by the single-value inverse square
 // root helper, the normal is formed before the length is stored, and the start
 // fraction divides the named along value directly.
 // Before, 194 (was 257): the single-value inverse square root is its own
@@ -193,12 +200,12 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 		}
 	}
 
+	float distance_squared = 3.40282347e+38f;
 	__m128 end = segment->end;
+	__m128 ray = _mm_sub_ps(end, start);
 	__m128 const a = vertices[0];
 	__m128 const b = vertices[1];
-	__m128 ray = _mm_sub_ps(end, start);
 	__m128 axis = _mm_sub_ps(b, a);
-	float distance_squared = 3.40282347e+38f;
 	float ray_fraction;
 	{
 		float axis_fraction;
@@ -252,9 +259,9 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 		// the side
 		s_1c58f0 const fraction(entry_along / axis_length);
 		__m128 const scale = _mm_shuffle_ps(fraction.field_0, fraction.field_0, 0);
-		__m128 const second = _mm_mul_ps(scale, b);
+		__m128 const second = _mm_mul_ps(b, scale);
 		__m128 const first = _mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a);
-		__m128 const on_axis = _mm_add_ps(first, second);
+		__m128 const on_axis = _mm_add_ps(second, first);
 		__m128 const outward = _mm_sub_ps(entry, on_axis);
 		__m128 const inverse = inverse_sqrt_2de1b0(length_squared_2de1b0(outward));
 		hit->normal = _mm_mul_ps(_mm_shuffle_ps(inverse, inverse, 0), outward);
