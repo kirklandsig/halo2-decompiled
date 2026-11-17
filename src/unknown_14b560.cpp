@@ -1275,6 +1275,11 @@ bool function_14ed80(void)
 // 0x14cad0) as an inline helper taking and returning the index 8, taking the index by pointer 8, that force-inline
 // 8; the bound test and both reads in an inline helper taking the globals as a parameter and writing first/third through
 // pointers 8; both outputs through an inline `if (output) *output = value;` setter 8 (all the same code: globals EDX, first ESI).
+// M3 lane 12 r137 (fast): the globals local declared at the top, between first and third, after third or after the player, with
+// one of its three uses (clamp, bound test or element) read from the global directly: 52 at each placement and use, 53 after
+// the player with the bound test direct (the direct read merges with the local, which then ranks last, EDI; first takes EDX
+// as retail, third ESI); the outputs as one `long tags[2]` initialised to NONE 8; first or third bound to a `long &` over a
+// plain local 8/8 (all the same code as main).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
