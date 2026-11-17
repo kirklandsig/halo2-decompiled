@@ -137,9 +137,8 @@ public:
 	void function_3072f0(class_308180 *manifold);
 };
 
-// score 20 (was 97): entry setup, float stores and loop-step registers differ.
-// Earlier 107 to 97 work left the two saved pointer registers exchanged;
-// those registers now agree.
+// score 97 (was 107): retail keeps the manifold in ebx and the entry pointer
+// in edi, ours keeps the entry pointer in ebx and the manifold in edi.
 // The passing test's arm first 97; array reference 107; array reference member 107;
 // contact reference 107; direct append argument 107; a named test result 129;
 // output and array references 107; both array and contact references 107;
@@ -156,13 +155,6 @@ public:
 // entry uses 193; cursor in for scope 96; ordinal declared first 96; while
 // loop 97; one int for kind 182; retained entry-array base 97. NOT kept:
 // the 96 forms gain only one. Opening executable source restored.
-// Separate steps in the three passing arms reduced 97 to 20. The branch
-// placement and saved pointer registers now agree; entry setup, float stores
-// and the ordinal update still differ.
-// P584: ordinal step first 21; fresh array refs 20; second entry cursor 22;
-// id from entry 187; full selector in second arm 112; direct selectors 112;
-// early array refs 38; named products 20; id address at loop head 20;
-// stored bound on left 22. NOT kept: no byte match or lower score; original body.
 // score 12 (was 20): the entry is addressed from the index at the top of each
 // pass instead of being stepped beside it. Only the order of the distance
 // stores against the next-slot loads remains.

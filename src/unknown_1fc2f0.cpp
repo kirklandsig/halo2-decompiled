@@ -749,6 +749,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P564: Complete lazy correction admission set by its test, bool/byte/short/long then
 // complementary defaults, direct tracked argument: 99/99/99/99/99/99/99/99. NOT kept: no exact
 // native entry/store recovery; original parameter storage, prediction and entire body restored.
+// P588: Repeated state-velocity/output-velocity/state-location field lvalues,
+// seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
+// NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

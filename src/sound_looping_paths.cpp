@@ -575,6 +575,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P585: Immutable existing range/fraction/blend/current/delta/active gain/inactive step,
 // then the complete scalar graph: eight 846 at 3327/3327. NOT kept: no entry-zero,
 // count/primary/query-home change; original scalar declarations and entire body restored.
+// P588: Fixed bindings of original BSP/choice-sound/repair-sound/fade-table/
+// choice/target/override/pool receivers: eight 846 at 3327/3327 bytes. NOT kept:
+// no native ESI entry-zero or count/query/primary-home recovery; original body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

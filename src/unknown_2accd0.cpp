@@ -1110,6 +1110,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // bound as `dword const &total` to the sum 34; both seek positions bound as `dword const &position` to their sums 34. The
 // remaining flagged constant lines (`fadd [2^32]`, `movss [1.0]`) are only the one-byte shift of the signature sum (ours
 // `add esi, ecx`, retail `lea esi, [ecx + edx]`).
+// P588: Repeated file/signing-handle/phase field lvalues, seven subsets,
+// then all with mutable offset: 161/161/162/161/162/162/38/191. NOT kept:
+// no fresh-total/seek/size recovery; original body, scratch getter and record restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

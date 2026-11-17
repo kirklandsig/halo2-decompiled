@@ -1762,6 +1762,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P562: Whole dependency validity as valid/invalid bit sets in dword/long/word/byte:
 // 175/175/182/274/293/293/298/292. NOT kept: no exact native byte-table/stack-home
 // recovery; original validity bytes, all I/O and complete body restored.
+// P588: Fixed file/handle/current-time/stored-time bindings, immutable expected
+// size, original file/handle/cleanup identities on the native handle graph:
+// eight 33 at 930/930. NOT kept: no query/count/write/checksum-home repair; original body restored.
 // @retail 0x213970
 void function_213970(void)
 {
