@@ -980,6 +980,19 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P591: Actual half-axis ordinal signed-byte/byte/short/word/int/uint/dword domains,
 // then long equality termination: 176/176/176/176/45/45/45/176. NOT kept: narrow domains and equality
 // regress; wide domains tie. Native rotation j/k roles and marker timing remain; original body restored.
+// M3 lane 9 r133 (fast with the file's other 13 functions and 0x1ecf50, all matched each time; users of the shared rotation
+// measured too: 0xe3910 79, 0xd0080 58, 0x1e5bb0 114, 0x1ff360 77 at control): the shared rotate_direction's dot staged as
+// dot_product2d of the planar parts plus k*k 45 (identical code here and in every user: the held twin's staging only acts
+// in a same-file copy, and in this build not even there: the held twin with either declaration order 41/39); that plus the collision record and entry pointer declared at
+// the top of the trace's success block, entry first, 41; the collision record and its marker store first, then the entry
+// pointer, there 39 re-measured (a declaration move, kept only with a match; only the rotation block is left on it); the
+// shared helper with its crosses ahead of the dot (cross_j, dot, cross_i, cross_k or cross_i, cross_j, dot, cross_k) 43
+// each, but 0x1ecf50 MATCH -> 139 and every user worse (e3910 123, d0080 67, 1e5bb0 154, 1ff360 127), so retail's helper
+// computes the dot first. On the 39 form: the direction declared then assigned 39 (same code); angle, sine and cosine
+// before the copy 233 (1104 B). Diagnostic (scratch same-file copy, not kept): all 24 orders of the dot and the three
+// crosses, best 43 (any cross ahead of the dot puts the direction's i in retail's XMM4, but j and k come out XMM5/XMM3 for
+// retail's XMM3/XMM5); the dot written k, i, j or j, k, i 45 (same code). The matched 0x1ecf50 sums the same helper's dot
+// (k + j) + i as this build does here, so retail's (j + i) + k at this site comes from the caller's context, not the helper.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
