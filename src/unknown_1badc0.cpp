@@ -39,6 +39,11 @@ real normalize2d(point2f *arg_0);
 // MiniMax G (11-12): no new form, no lower score (171): retail computes the centre-minus-actor and centre-minus-point differences in
 // the prologue and the point-minus-actor difference at its use, while ours still forms the point-minus-actor difference first; every
 // reordering of the three difference blocks regresses (219, 219, 221, 231, 231) and the squared length's sum order makes no difference.
+// MiniMax D (11-16): no new form, no lower score (171): the length (1025) and the frame agree, and every block, field
+// offset, constant and call argument still checks out against retail; what is left is the register colouring of the
+// vector block (retail sums the two squares into XMM2 and divides by XMM2 where this build sums into XMM3 and divides
+// by XMM3) and the opening (retail takes arg_2's y through the local at esp+0x2c after the centre copy where this
+// build subtracts the actor's y first), which is the allocation and scheduling the earlier rounds already tried.
 // score 171 (was 171): MiniMax R (11-15): no new form, no lower score; a 300 s permuter run over the reduced image
 // searched 41 variants and left the baseline where it was, and the only known better form (130) rests on three
 // statement moves picked by score and on `inline` for 0x30c60, whose body is in src/unknown_030290.cpp:
@@ -460,6 +465,20 @@ real normalize2d(point2f *arg_0);
 // difference as a vector2f through the existing vector2d_from_points2d 171 (same code). Re-measured on the 171 base: the
 // tail through the existing 0x26d0e0 with 0x1fa7f0's result (no dead slot, the callers now keep their match) 264 (992 B);
 // `inline` on 0x30c60's definition with the centre and radius through it 183 (1021 B), and 0x3d7f0 62 -> 218.
+// b7P (11-17) walk against retail, fast build on r830: every block, branch sense (jbe), field offset, call argument
+// (eax/ecx/edx/edi and stack) and float constant (1.2 at 0x1baef7, 1.1 at 0x1baf5e, 1e-4 at 0x1bafca, 4.0 at
+// 0x1bafdd, 0.0 at 0x1bb050, 2.0 at 0x1bb059), each rounding (fstp 0x1bb021, sqrt) and each unordered compare (comiss
+// then jbe) matches; the far path (0x1bb113-0x1bb1b0) and the flag stores match. No behaviour difference found. Known
+// evaluation-order differences left (not new): retail forms `2.0f - local_11` after the second normalize2d (0x1bb059,
+// 0x1bb061) and sets `mov al, 1` ahead of the optional index store (0x1bb0fd); on this form the first alone 242, with
+// the second 237 (fast). The actor-to-point difference reads the +0x28 copy (0x1bae54, 0x1bae88, 0x1bae93), which the
+// source spells as the second copy from arg_2: from it 170 (1027 bytes). Two written-out bodies now call the helper
+// this file already uses (squared length, second dot): 171 with each and with both, 171 written out. Also measured,
+// with the clearance, result and copy-source moves plus the centre vector ahead of the radius read: 132 (130 written
+// out), kept in commit 431af560a, not here, since only the first two moves have retail evidence and those were known.
+// The dead [esp+0xc] store (0x1bb0b9, 0x1bb0c9) is 0x26d0e0's unused third arg (volatile local_15); centre and radius
+// (0x1bae2a, 0x1bae25) are 0x30c60 inlined, written out here; `(long *)arg_3` is 0x26d100's `long *unknown` (the
+// output point record), a declaration type only.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
@@ -480,7 +499,7 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         vector3d_from_points3d((point3f const *)&local_6, &local_3, &local_6);
         vector3f local_centre;
         vector3d_from_points3d(&local_0->position, &local_3, &local_centre);
-        real local_7 = local_5.i * local_5.i + local_5.j * local_5.j;
+        real local_7 = dot_product2d((vector2f const *)&local_5, (vector2f const *)&local_5);
         if (local_7 > 0.0f)
         {
             real local_8 = dot_product2d((vector2f const *)&local_centre,
@@ -509,7 +528,7 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
                         vector3f local_12;
                         local_12.i = 0.0f - local_6.j;
                         local_12.j = local_6.i;
-                        if (0.0f > local_10.j * local_6.i + local_12.i * local_10.i)
+                        if (0.0f > dot_product2d((vector2f const *)&local_10, (vector2f const *)&local_12))
                         {
                             local_12.i = 0.0f - local_12.i;
                             local_12.j = 0.0f - local_12.j;

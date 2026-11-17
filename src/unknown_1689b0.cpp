@@ -1571,13 +1571,13 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// score 606 (was 606): earlier 610, 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
 // Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
 // where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
 // retail's homes (+0x5c, +0x64, +0x68) and the second sits four bytes high (+0x54, +0x58, +0x60 against retail's
 // +0x50, +0x54, +0x60). The successor index and the second point's address taken before the first reconstruction were
 // not re-tried: both move a one-use value ahead of a call.
-// score 606 (was 606): earlier 610, 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
 // m3 lane 3 r250 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380, control 606): the nearest reset ahead of the
 // plane distance 605 (one store moves); `real offset = 0.0f - distance;` named for the three projected rows 617 (2905 B);
 // the nearest reset and `inside` both at the top of the prism loop 605; relative and edge both through the existing
@@ -1983,6 +1983,16 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // P538: Unrounded direction-root/contact-root/paired absolute API producers, subsets
 // 1/2/4/3/5/6/7 then complete immutable: 667/667/667/669/667/667/659/659.
 // NOT kept: frame and extent move away; original real consumers, observations, helpers and full geometry restored.
+// M3 lane 16 r127 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0, control 606): composites of the listed match-only
+// forms. Lane 6's second-vertex pointer first re-measured 544; with the ray arms as `if (use_normal) { normal } else { edge }`
+// 525 (2867 B); that plus `radius * radius` at its use 577; plus 0x120790's one-store ternary tail 598 (0x120790 still matched,
+// 0x17dd80 453 unchanged); plus the nearest reset right after the distance 522; on that, a named next index in place of the
+// vertex pointer 595 (frame changes at +0x1); `inside = true` set before the distance 521. Left on 521: retail reads the axis
+// before the early `inc`/`idiv` and keeps the remainder as an index in EDX (the pointer form takes EDI), loads plane.j
+// early for projected.y (load-first product), and the sum homes (face, nearest, edge) still differ.
+// P583: Consumed first-vertex postincrement/second-vertex preincrement with
+// long/int/short/word edge ordinals: 607/607/616/616/598/598/609/609. NOT kept: no exact native early
+// remainder, accumulator or query-zero recovery; original full body and increments restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

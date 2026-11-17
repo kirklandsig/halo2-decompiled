@@ -1252,6 +1252,11 @@ extern long *g_51e9cc;
 // const *` to the velocity 2; the dd8e0 result in a bool tested after 2; the crouch read through a fresh BIPED_GET at the add
 // (diagnostic) 410 (1504 B, the lookup is redone). Re-measured: the two changes as a two-element array 4 (the crouch pair stays
 // field first; the physics byte moves), so the change's memory residence is not what orders the pair.
+// M3 lane 13 r101 (fast; base 10, the 2-form re-measured 2, only the crouch pair): on the 2-form, the damage block (0xd6660 to
+// 0xd7b80 under the game-mode test) as a forceinline helper taking the biped index 2; the change declared uninitialised as the
+// block's first local and assigned at its call 2; the clamp as a block-local sum with two plain ifs (`< 0`, then `> 1`) 2; the
+// three wake calls (0xb9b90, 0xb7360, 0xbba20) as a forceinline helper 2; case 5 written flagged arm first (only the 0x35c
+// store) with all five stores in the other arm 2 (the same exact case 5 code as the both-arms form). The pair stays field first.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1592,6 +1597,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 2828; the dword the frame is short of is the gravity argument's, and the inline accessor that would supply it is a new function
 // in this call graph, which flips the matched 0x54590.
 // MiniMax B (11-13): no new form, no lower score (566); the frame is still 0xf8 against retail's 0xfc, and the call to 0x1e5bb0 still passes 17 values where retail passes 21, which the callee's own declaration decides.
+// MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
+// the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
+// facing homes stay four bytes out of retail's, so the body stands.
 // score 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
 // walking-speed preload and planar square transport remain. Earlier 585, 588 with frame 0xf8: position, ground,
 // MiniMax S (11-15): no new form, no lower score (566): retail's frame is still 0xfc against this build's 0xf8 - the
@@ -1946,6 +1954,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P561: Existing entry tag/animation/state/component pointer spill names, four isolated,
 // three pairs and the complete graph: eight 203. NOT kept: pure renames do not
 // recover native pointer/material homes or schedule; original full body restored.
+// P581: Rounded speed/boost/planar-length promoted receiver storage, seven subsets and
+// immutable planar receiver: 613/659/432/587/611/681/606/606. NOT kept: no exact native tag/material/animation homes
+// and walking/planar schedule; original real producers, shared helpers and complete body restored.
+// P585: Scalar lexical homes on the repaired 0xfc frame: airborne/speed/boost/turning/
+// movement/distance/paired size/all, eight 203. Earlier scalar-name checks used the
+// older 0xf8 frame. NOT kept: no tag/material/animation-home or schedule change; body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3158,6 +3172,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // [esp+8] and a byte store into +0x3aa) where this build's is the long of 0x1d5120's declaration, and retail
 // passes the settling count in EAX with six stack arguments, so the call setup follows 0x1d5120's count-first
 // order, whose definition lives in another file.
+// P587: Fixed original biped/tag/component pointer bindings in seven subsets,
+// then all with the native body producer immutable: eight 63 at 245 bytes.
+// NOT kept: no EBP/count/body or byte-mask repair; original full body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4332,6 +4349,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // (reduced control 614, full 548). NOT kept: no improvement or native result/flight-home
 // equality; original complete executable source restored.
 // MiniMax S (11-16): no new form, no lower score (548): this build's frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx with a home at +0x18 that the rate then reuses where this build keeps it in ebp with a home at +0x1c, so every later home sits four bytes high; the flight call's arguments are still one register out.
+// P583: Actual paired aim/look validation-call outcomes, positive/complementary
+// bool/byte/short/long: 638/638/638/638/638/638/638/638 (reduced control 612; full 548). NOT kept: no exact frame/result/flight-home
+// recovery; original nested calls, tests and complete body restored.
+// MiniMax C (11-16): no new form, no lower score (548): our frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx, spills it to its frame slot and reloads it after the flight call where this build keeps it in ebp for the whole body, so the biped, state and definition homes sit four bytes apart and the flight call's arguments are still one register out.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4598,6 +4619,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
+// MiniMax E (11-16): no new form, no lower score (336); the frame 0x12c and retail's 1937-byte length still agree, but
+// the stack homes stay ours: the origin sits at esp+0x44 against retail's 0x40, the matrix at 0x60 against 0x50 and the
+// 16-byte placed object at 0x88 against 0x84.
 // MiniMax D (11-11): no new form, no lower score (371); the frame still agrees at 0x12c and the length still
 // matches retail's 1937, but the stack homes are still ours: the origin sits at esp+0x44 against retail's 0x40,
 // the matrix at 0x60 against 0x50 and the 16-byte placed object at 0x88 against 0x84, and every home from 0x94
@@ -4898,6 +4922,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // 344/343/348/346/344; pivot/scaled/coordinate scalar names 336/336/336.
 // NOT kept: no native matrix/origin/property-home recovery or exact bytes;
 // original alias-safe helper and complete executable body restored.
+// P582: Rounded distance/clearance/collision-fraction promoted receiver storage, seven
+// subsets, then immutable original-site distance/clearance: 344/345/379/342/379/371/376/376. NOT kept: no exact native
+// matrix/origin/property/pivot-home recovery; original real receivers and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5881,6 +5908,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax C (11-15): no new form, no lower score (79): retail keeps the first product in xmm1 alive across the
 // block and computes the next value into xmm2, where this build spills xmm1 to [esp+0x10] and reloads it later;
 // the reduced check has to list 0x1ecf50 and 0x30bf0 as well, or it reports 621 against the 79.
+// P586: Immutable actual angle/cosine/sine producer subsets 1/2/4/3/5/6/7, then
+// complete producers with immutable biped receiver: 79/79/79/79/79/79/79/79.
+// NOT kept: first-rotation spill/operand and final-cross reload gaps remain; original body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

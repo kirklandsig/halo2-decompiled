@@ -1389,6 +1389,7 @@ bool __stdcall function_26ccb0(s_pathfinding_data const *pathfinding, s_obstacle
 bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start, long sector_index,
     s_type_c3b527 const *end, long target_sector_index, long location, s_path_trace_result *trace);
 long function_1fa7f0(void);
+// MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
 // score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
@@ -1915,6 +1916,19 @@ long function_1fa7f0(void);
 // through the existing vector3d_from_points3d with the written-out sum 400 (other code), with length_sq3f as well 400 (kept: the
 // two existing helpers replace their written-out bodies, plain-confirmed, the file's other functions unchanged); on it a named
 // squared distance 400, start/end declared with delta 400.
+// b7F (11-17) walk against retail, fast build on r830 (control 400): every block compared statement by statement, no
+// behaviour difference found. Checked: entry (0x2c206c-0x2c20ad: 0x1fa7f0 inlined, radius = float of source + 0.05
+// double), the count <= 1 copy (0x2c26ff), the scan and candidate loop (0x2c217d-0x2c229c: direction, 1e-4 and 0 tests,
+// all 14 arguments of 0x26ccb0 in order, stop_at_goal on the last point), the edge/next tests (0x2c22b4-0x2c22da), the
+// two corner calls (left into corners[0] first, 0x2c2302/0x2c2326; `right && left` order, 0x2c232b-0x2c2339), previous
+// and endpoint (0x2c233f-0x2c2368), the attempt loop (side, other side, expanded radius in both tangent calls, the
+// 0x26c4e0 pair, sector from the first trace, output index from the next step; 0x2c23b8-0x2c24ef), emit
+// (0x2c253f-0x2c25b3), the 400.0 test (0x2c269d) and the tail (0x2c26e2); constants 0.05 (double), 1e-4, 0.0, 1.0,
+// 400.0 as in source. Left, none behavioural: retail's sum is (z*z + y*y) + x*x (0x2c268a-0x2c2699), ours compiles (x*x
+// + y*y) + z*z (six term orders give one code); the second `mov ebx, 0xffff` (0x2c219e: `edge = 0xffff` in the scan
+// 433, with the initialiser dropped 417) and the dead store of query+4 (0x2c22ed, 0x2c22f7) stay unreproduced;
+// 0x2c262d-0x2c2643 is 0x210850's inlined body, but a call to it stays out of line here (both conversions 514, 1680 B;
+// the end alone 474; the source alone 467), so the body stays written out.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

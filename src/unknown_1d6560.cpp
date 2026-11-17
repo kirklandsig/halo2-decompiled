@@ -100,11 +100,17 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data
+// loaded first, which every keepable form here either repeats in both branches or pays for with the caller's register
+// pair (see Round 252 below).
 // MiniMax G (11-14): no new form kept, no lower score (96): a single type read shared by both kind routes reaches 68
 // only with a one-use absolute-index local and a score-picked declaration order, and the one-use-free form scores 98
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
 // reads the type once.
-// score 96 (was 96; m3 lane 8 r166 and r172 near the end): no local frame; retail reads the type once before the kind test (one type read shared by
+// MiniMax S (11-16): score 96 (was 96): no new form kept; the 24-point form (the type read once, the headers in
+// ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach its
+// score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
+// Earlier at 96 (was 96; m3 lane 8 r166 and r172 near the end; a score line, moved below the first in round 252): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
 // preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
@@ -444,6 +450,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // The member form changes neither the colouring nor the incoming pair of any of these bodies. Body unchanged at 96.
 // P563: Eight alternate main-case source orders on the retained two-type-read dispatch:
 // 97/96/98/98/98/101/102/104. NOT kept: no native entry/type recovery or exact equality; original case order, full body and matched caller convention restored.
+// Round 252 (m3 lane 3, fast with the caller 0x1d5bf0 in brackets; main 96 [0]). Round 118's form rebuilt (object_index,
+// absolute_index, rigid body, headers, byte type; case 0 through `headers[component->object_index & 0xffff]` with main's
+// shift spelling) 28 at 256 B [0]; on it: no type local (both switches on `headers[absolute_index].type`) 93 (264 B) [13];
+// the kind test inverted with the main switch first 95 [0]; `dword absolute_index` 28 (same code); the parameters as
+// (component, owner, level, kind, index), definition and call together, 28 (same code) [0]; as retail's register order
+// (component, index, kind, owner, level) 28 (same code) [0]. The parameter order moves nothing on that form either.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

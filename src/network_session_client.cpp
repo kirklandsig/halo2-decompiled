@@ -835,6 +835,16 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // tests fold away), as a plain `inline` helper 530 (kept out of line); the opening as a `stored` bool set from the flag
 // and the two addresses 218 (361 bytes); the tail's 0x5dd0 test ahead of the live test 29; the address copy through
 // walked member and address pointers 102 (477 bytes). Both callers are lost in the 218 and 530 forms.
+// Round 102 (m3 lane 14, fast with 0x6e500 and 0x72700): diagnostic probes (a global load and store, reverted): between
+// the opening test and the summary getter (before or after the variant) the summary and mask temporaries take retail's
+// registers; at the top, before the opening or after the summary they do not, so one expression temporary is missing
+// there. Forms: the two stored addresses named before the three-test opening 22 (same code); the preset pair with the
+// variant between the pair and its test 152 (495 B, session ESI); the summary's result named before its cast 22; the
+// machine copy through memcpy 22; the copy loop as `while (members_remaining-- > 0)` with its own index and no guard 100
+// (477 B: session EBX, callers match, the copy loop and its spill are retail's; left the opening lea, the summary/mask
+// rotation, the folded mask read and the player loop's argument temporaries); that loop with the preset pair 108 (every
+// instruction up to the player loop retail's but the session ESI, both callers lost), with the variant before the pair
+// 108, plus a members base pointer 108, a players base pointer 109, walked member and address pointers 110.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1205,6 +1215,10 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // unsigned `dword` player index 192 (721 B); a byte array filled by `memcpy(identities + count * 12, ...)` (0x6fa60's
 // matched spelling) 195; the indexed form with the else arm, the call's arguments and the final store through a typed
 // view of the state (`entry_count`, `entries`, `part`, `unknown104`) 195.
+// Round 102 (m3 lane 14, fast with 0x6fcc0, 0x6f940, 0x6fa60): the player loop as a `static inline` helper returning
+// the count 464 (453 B, not inlined under /Ob1); as a `__forceinline` helper with the indexed copy 209 (704 B), with the
+// walked destination 209; a `__forceinline` helper taking the destination and the count by reference 195; the
+// destination declared bare at the top and assigned in the branch 195 (state EBX, count spilled).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
