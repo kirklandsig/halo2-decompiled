@@ -1252,6 +1252,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // separate range output in arm/at entry 230/308, typed cluster and distance fields 91,
 // call-local range output from suppression 230. Reduced control 91, full 90.
 // NOT kept: typed reads tie the reduced control and the separate output moves the native byte homes.
+// MiniMax D (11-17): no new form, no lower score (90 in the full-program check, unchanged); retail keeps the object pool
+// base in EAX and the object index in ECX where ours keeps the pool base in ECX, so the whole type-15 arm differs, and the
+// permuter found nothing in 300 s.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

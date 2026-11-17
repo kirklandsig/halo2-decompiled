@@ -851,6 +851,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // (all three the same code: address accessors fold before allocation); the summary through a new inline wrapper of
 // get_data_4a00 154 (461 B, the getter stays a call; both callers lost); a plain `for` copy loop over a member count
 // bound through a `long &` 100 (477 B, both callers kept).
+// Round 194 (m3 lane 5, fast with 0x6e500 and 0x72700; control 22): the preset NULL pair set under the flag 46 (session
+// ESI, both callers lost); on it the call's 0x49c8 value through a new inline accessor 46 and the mask test through a
+// new inline `session_player_present(session, index)` 46 (accessor copies are propagated before the ranking); a const
+// preset pair with the variant named after the summary getter 46; the three-test opening on the arrays
+// (`!session->data4f24.data`) 22 (same code).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1232,6 +1237,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // the branch 195. Reading of the 195 listing: the count lives in memory for the whole function (`inc [esp+0xc]`), the
 // copy's two temporaries take EBX and EDI and the state is reloaded into EBX after the loop; retail splits the index
 // around each copy instead.
+// Round 194 (m3 lane 5, fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9): `memcpy(identities[count], ...); count++;`
+// re-measured 195; on it the mask test through a new inline `session_player_present(session, index)` 195, plus the
+// source through a new inline `&session->players[index]` accessor 195; `count += 1` 195; `long index = count;` copy
+// then `count = index + 1` 195; `long index = count++;` before the copy 205 (727 B); the else arm reading the entry
+// count again for the copy size 195; `memcpy(identities[count++], ...)` re-measured 40. Reading: only the forms whose
+// count step comes before the copy in the source keep the count in EBX; retail's copy has the step after it.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

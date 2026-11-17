@@ -564,6 +564,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // n declared right before the `for` 2; the part context declared at the top of the entry test's body 2; material declared at
 // the function top and assigned NONE where it was declared 2 (all four the same code). Re-measured: first declared then
 // assigned with `n + first` 2.
+// M3 lane 11 r112 (fast with 0x404b0; base 2): the loop body in 0x3fdf0's spelling (failed entry test and missing geometry
+// as `continue`, `index` named ahead of `entry`) 2, the same with `entry` named first 2 (both the same code); a redundant
+// `if (0 < count)` ahead of the `for` 159 (494 B); the block's count through a `short const &` bound once and used at all
+// four reads 2 (same code); a `dword` material 2 (same code). The permuter was skipped (the round's full check took about
+// 16 minutes).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -2004,6 +2004,16 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // stores both counts and both radii before the call, at interleaved homes count/radius/count/radius, so the gain is a
 // declaration move and not kept); the two sum copies after the query 614 (0xc2d00 and 0x17a380 break in the fast
 // image); counts and radii declared as edge/face pairs 606 (same code); `++count` ahead of the radius minimum 623.
+// M3 lane 3 r256 (fast with 0x16a440, 0x120790, 0x2469b0, 0xc2d00, 0x17a380; control 606, the four matched callees stay
+// MATCH): `radius * radius` written at its use 612 (2895 B); the squared radius declared at the top of the prism loop
+// body 606 (other code, same count); a redundant `if (0 < shapes.counts[2])` around the prism loop with the squared
+// radius inside it 610 (the square then follows the count test as in retail, but the test reloads the count into AX
+// and the zero stays in EBX), with the square at its use 614 (2895 B); the edge loop as `for (edge_index = 0; edge_index
+// < count; )` with `long next_index = edge_index + 1;` at the top (the modulo's input) and `edge_index = next_index;` at
+// the end 637 (2922 B). Reading: retail's edge loop keeps the index in EAX from the back-edge compare into the loop
+// head, so `inc`/`idiv` run first and the successor is stored at once; ours keeps the successor in EBP across the body.
+// Retail tests the edge count and zeroes the index with fresh literals (`test ecx, ecx`, `xor eax, eax`), so its
+// function-level zero dies into the prism cursor (ESI) while ours keeps it in EBX for the edge loop's start.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

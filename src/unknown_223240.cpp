@@ -362,6 +362,17 @@ void function_2232a0(void)
 // dispatch base from initializer return 48, initializer inside dispatch argument 48,
 // terminal pointer local 47, first entry shared at the tail 183, dispatch base from final cursor 134.
 // NOT kept: no qualifying gain or native terminal stores.
+// score 47 (was 47): MiniMax D (11-17): no new form, no lower score (47 plain and on the reduced image): the record setup
+// can be reproduced byte for byte in the reduced image by hoisting the four field stores into the two callers and leaving
+// the helper with the field_0 store, the 0x2f800 call and the memcpy - that form matches retail's instructions exactly up
+// to +0x17e, and its only difference is that retail materializes the record pointer with `lea eax, [eax + 0x47f0f8]` after
+// the six folded stores where this build folds every use of the same address into the displacement, so it scores 56 there
+// and is not kept; the pointer's spelling does not steer that choice (pointer parameter, local pointer, `g + index`,
+// byte-pointer arithmetic, an intptr cast, a member pointer and a helper returning the pointer all fold the pointer's uses
+// the same way). The full build tells a different story: there the block materializes the pointer early with
+// `add eax, <base>` and keeps the six stores off that register, so the first difference is at +0x13a and the score is 47
+// with the hoisted form as well - the reduced image's shape is not the full build's. BLOCKED-BY 0x2b5d0 and 0x16f3a0's
+// noinline declaration (tail stubs in another file).
 // @retail 0x2234e0
 void function_2234e0(void)
 {
