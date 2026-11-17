@@ -594,7 +594,10 @@ public:
 // child cell, split the walk where the sphere spans both sides of a plane
 // (the first side by recursion), cut it off where the sphere misses a slab,
 // move the key base, or give a key to add to the list
-// score 4 (was 375): case 0x60 reads its byte before stepping and storing; cases
+// score 3 (was 4): case 0x20 keeps the axis value in the function's position
+// variable (retail's base/index order). Left: case 0x29's first three-byte read
+// accumulates in the other register (an allocation tie).
+// Before, 4 (was 375): case 0x60 reads its byte before stepping and storing; cases
 // 0x23 and 0x20 name the box's radius between the bounds they declare, in
 // retail's load order. Left: one base/index order in case 0x20 and the
 // accumulating register of case 0x29's first three-byte read.
@@ -726,15 +729,15 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		{
 			long const plane = node[1];
 			long const reach = box->radius;
-			long const along = box->centre[op - 0x20];
+			position = box->centre[op - 0x20];
 			node += 3;
-			if (along + reach < plane)
+			if (position + reach < plane)
 			{
 				continue;
 			}
 			long const skip = node[-1];
 			node += skip;
-			if (along > reach + plane + 1)
+			if (position > reach + plane + 1)
 			{
 				continue;
 			}
@@ -932,7 +935,10 @@ found:
 
 // the sphere's centre and radius in the tree's fixed-point grid, and the
 // walk of the tree from its root
-// score 65 (was 65): Frame 0x28 and extent 213 agree; first +4 exchanges
+// score 0 (was 65): matched with the node array bound by a constant reference
+// to the tree's member (retail forms its address early in esi), the keys stored
+// after it, and the box filled in field order.
+// Before, 65 (was 65): Frame 0x28 and extent 213 agree; first +4 exchanges
 // argument registers, followed by different saved registers and spill homes.
 // Tree view after publication 65; direct vector lanes 65; box declared first 65;
 // command pointer renamed 65; direct command argument 65; const helper input
@@ -950,23 +956,23 @@ found:
 void class_3008d0::function_3008d0(void const *tree_, const __m128 *sphere, s_surface_key_array *keys_)
 {
 	tree_3008d0 const *tree = (tree_3008d0 const *)tree_;
+	unsigned char const *const &nodes = tree->nodes;
 	keys = keys_;
 	float const *sphere_centre = (float const *)sphere;
-	unsigned char const *const nodes = tree->nodes;
 	centre[0] = round_3008d0((sphere_centre[0] - tree->origin[0]) * tree->scale) - 1;
 	centre[1] = round_3008d0((sphere_centre[1] - tree->origin[1]) * tree->scale) - 1;
 	centre[2] = round_3008d0((sphere_centre[2] - tree->origin[2]) * tree->scale) - 1;
 	radius = round_3008d0(sphere_centre[3] * tree->scale);
 	cell_box_300290 box;
 	box.centre[0] = centre[0] >> 16;
-	box.radius = (radius >> 16) + 1;
 	box.centre[1] = centre[1] >> 16;
+	box.centre[2] = centre[2] >> 16;
+	box.radius = (radius >> 16) + 1;
 	box.corner[0] = 0;
 	box.corner[1] = 0;
 	box.corner[2] = 0;
 	box.key_base = 0;
 	box.values[0] = 0;
-	box.centre[2] = centre[2] >> 16;
 	box.shift = 0x10;
 	function_300290(&box, nodes);
 }
