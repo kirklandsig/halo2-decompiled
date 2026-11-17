@@ -1372,6 +1372,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // `iterator.index` and an element local 24; the iterator built by a constructor in its declaration in both fade
 // functions 24; the index declared in the for statement 24. Diagnostic: a probe global store of 0, 1, -1 or 2 at entry
 // leaves the element in EDI.
+// M3 lane 5 r190 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): two unused leading parameters (the looping sound and the track index, the caller passing them) 24 (LTCG drops
+// them; 0x21a250 unchanged); the call under a redundant `index != NONE` 24; the outer NONE guard dropped (the iterator
+// yields NONE first anyway) 72 (194 B). Diagnostics: a store in an `else` arm of the state test 50 (221 B) and the next
+// helper without its index test 55 (205 B) both leave the index in ESI, so one use more or less does not flip the tie.
+// The permuter refuses it (its reduced image scores 57 against the full 24, with or without the four contexts).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

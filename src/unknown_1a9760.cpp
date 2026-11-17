@@ -251,6 +251,11 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 187 (m3 lane 6, fast): the direction copied field by field 196 (1001 bytes); the flag stored through a raw byte
 // offset 4; the rows read through `real *` casts of each vector 4; `position`/`velocity`/`origin` field pointers taken
 // at entry and used in the row loop 4, with the flag store after the loop 18 (the store still sinks below the rows).
+// M3 lane 5 r190 (fast with 0x30bf0, 0x1f5110, 0x1e4290 and 0x25d700): a 600 s annealing permuter run (seed 1190, 56
+// tries, reduced image equal at 4) none below 4; the row loop, then the flag, then the direction copy 18 (retail's x87/SSE
+// interleave, the flag store sinks below the row stores as in the flag-after-loop form); the same with the rows written out
+// by field 192 (1001 B); the flag, the rows, then the copy 4 (same code: the copy's place does not matter, only the flag's
+// against the rows); the flag written at the end of both arms of the prop test 4 (tail-merged back, same code).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

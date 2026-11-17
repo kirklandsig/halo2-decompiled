@@ -283,6 +283,12 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // lookup as a forced-inline const member getter on a view of the pool 4; the component index assigned inside the
 // NONE test 4; a forced-inline getter taking the index field by const reference 4. Retail's other data-first caller
 // 0x1c4b00 crosses the same block edge with the index in EAX, but its next load takes EAX.
+// M3 lane 5 r190 (fast with 0xb7360, 0xb73b0, 0x1d1c60 and 0x1ed340, all matched each time): a 600 s annealing permuter
+// run (seed 190, 58 tries, reduced image equal at 4) none below 4; the lookup written out at the call without the getter
+// 4; as byte arithmetic on the pool data, `data + (index & 0xffff) * 0xa0`, 4 (both the same code). Diagnostic: the
+// masked index in a local stored again after the call 93 (224 B): the data still loads after the scaling into EAX, so the
+// index's live range is not what makes retail load the data first. The getter given `havok_object_get(object_index)->
+// havok_component_index` (the physics view the matched data-first 0x1c4b00 uses) 55 (211 B: the object is looked up again).
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -1859,6 +1865,16 @@ done:
 // index takes ESI and the type EDX); main's body with only the size as a long 27 (236 bytes: the index is
 // sign-extended into EAX, pushed and used as the imul destination, where retail extends it in place in EDI), with
 // the product written size first 27 (same code); main's body with the palette formed at the call 37 (240 bytes).
+// M3 lane 5 r190 (fast with 0xbf0f0/0xbf090): the 27 form re-measured 27 (236 B: type ESI, definition ECX, size read
+// first, no copy). Palette and block through local helpers of 0xb7300's shape (palette first, out-parameter size) 23
+// (re-measured: scenario ESI, index BX, a dead block add, no copy). Long palette offset local with the size read inline in
+// the call's datum expression 33 (236 B): the definition then loads into EAX as retail's does, but the scenario moves to
+// ECX, the index to SI and the type to EDX; long palette offset and size locals with the placement offset read inline in
+// the placements load 32 (definition EAX again; size EBX, the index extended into EAX and used as the product's
+// destination after its push); the same with the product written size first 32 (same code); the same with a named datum
+// before the call 27 (the 27 form's code: once the datum is named the definition avoids EAX). Reading: retail's
+// definition-in-EAX-then-ESI copy needs the size's EAX claim to appear only after the definition is placed, with the
+// product still formed ahead of the pushes; no tried form gives both.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

@@ -150,6 +150,13 @@ PRIVATE __forceinline long texture_floor(real value)
 // tag through a `long const &` used for the NONE test, the count lookup and the call 4; the frame field through a
 // `real const &` for the magnitude test and fmod 4; the entry's level through a `real &` for the test and the store 4;
 // the tag and level references together 4 (all the same code; the clear keeps EDX).
+// M3 lane 5 r190 (fast with 0x143c0, which matched in each; diagnostics, all reverted): no level store after the call
+// 46 (380 B), clear still EDX; the bit-scan asm replaced by a field read 120 (383 B), still EDX; the floor helper as a
+// plain C truncation at both sites 181 (324 B): the clear takes EAX; only the second (level) site as C 123 (356 B): EAX;
+// only the first (bitmap) site as C 112 (362 B): still EDX. So the second floor's inline asm block, not the loop's
+// skeleton or the call, is what pushes the clear's temporary into EDX on this full LTCG build. The floor helper written
+// with the compiler's SSE intrinsics (truncate, convert back, compare not-equal and less-than, mask, subtract) 141
+// (423 B: a `movaps` before the conversion, the constant in a register), so retail's floor is this asm too.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

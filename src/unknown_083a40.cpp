@@ -815,6 +815,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // last record's reads then agree; the key sum is (offset + cursor) + (collection + 4)), that pointer taken before the
 // update 30; a const `collection` defined before the second loop 276 (1072 bytes: the key then gets its own pointer
 // induction variable in a stack slot, which retail does not have, so retail's collection is not loop-invariant).
+// M3 lane 5 r190 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all matched each time): the swap callee as (collection,
+// player, update, other) at definition, declaration and call, re-measured 32 (the swap call and the occupied block's head are
+// retail's; left is the occupied key, ours (inverse + cursor) + collection + 4 against retail's (collection + inverse) + cursor
+// + 4, and the ECX/EDX trades that follow it). On that order: `collection` defined (non-const) just before the second loop
+// 276 (1072 B), at the function top after the session 221 (1088 B), both giving the key its own induction variable; the key
+// as `(byte *)collection->players + offset` with a named `offset = i * size` 32, as `(byte *)collection + (i * size + 4)`
+// 32 (both the same code: every spelling is canonicalised with the scaled index first). Restored to main's order.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
