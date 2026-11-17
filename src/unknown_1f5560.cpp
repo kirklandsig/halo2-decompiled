@@ -1150,6 +1150,18 @@ real normalize2d(point2f *v);
 // P588: Fixed original actor/type/unit/selected-table/base-table bindings,
 // immutable retry speed, fixed requested-type and target inputs: eight 135 at
 // 923/935 bytes. NOT kept: no native DL or independent-return repair; original body restored.
+// b8J (11-17) walk against retail, fast build on r836 (score 135 before and after): the chosen-speed test is now
+// `!(base_speed * 1.2f >= chosen_speed)`. Retail does `comiss xmm0, xmm3` then `jae` to the shared exit (0x1f83f7,
+// 0x1f83fa), so an unordered compare (NaN chosen speed) falls through into the movement stores; the old
+// `base_speed * 1.2f < chosen_speed` compiled to `comiss xmm3, xmm0; jbe` and skipped them on NaN. A behaviour fix.
+// The other branches already agree with retail's polarity, NaN included: retry on `speed * 1.25f > minimum`
+// (0x1f82d9, 0x1f82de), vertical `> 1.2f` (0x1f8400, 0x1f8419), planar `> 0.0f` (0x1f843b, 0x1f843e), facing height
+// `!= 0.0f` (ucomiss/jnp 0x1f847a, 0x1f8489) and the normalized-facing test (0x1f849d, 0x1f84a0). Correction to the
+// 11-14 note above: the `mov al, byte ptr [esp + 0x50]` at 0x1f84c2 is the result, not an unwritten byte: three pops
+// (0x1f84af, 0x1f84b0, 0x1f84bd) precede it, so it reads frame +0x5c, the target slot that holds the trajectory result
+// (0x1f82c5, 0x1f8336); retry speed shares the force slot (0x1f82f6 `fstp [esp+0x6c]`). Our build reads the same slot.
+// Constants checked: 1.25f (0x45dc88), 0.03f (0x4508f8), 1.2f (0x45dce8). Offsets, call tuples and the force/fast and
+// scan logic agree statement by statement; no other logic difference found. Callers 0x1be8f0, 0x1f7c70 still MATCH.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1236,7 +1248,7 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
                 byte *globals = (byte *)g_4e034c;
                 if (globals && *(long *)(globals + 0xc8) > 0)
                     base_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80);
-                if (base_speed * 1.2f < chosen_speed)
+                if (!(base_speed * 1.2f >= chosen_speed))
                 {
                     actor->unknown464 = true;
                     actor->unknown466 = true;
@@ -1392,6 +1404,11 @@ real function_50650(real cosine);
 // 1.0 entry stores are still the other way round (ours +0x10 then +0x1c, retail +0x1c then +0x10) and the length is
 // 1326 against retail's 1324; retail's own call site takes the object index first and the same function is declared
 // in four other files: BLOCKED-BY those declarations.
+// MiniMax R (11-17): no new form, no lower score (120): retail holds the actor in edi and the object in esi and
+// scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the pool first
+// and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
+// velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
+// order (object index first) is fixed by four other files.
 // score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before

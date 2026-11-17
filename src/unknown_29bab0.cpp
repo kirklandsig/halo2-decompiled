@@ -62,7 +62,7 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
-// score 489 (was 679): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// score 489 (was 489; 679 before m3 lane 4 r203): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
 // local_14 the other way round, local_2 at +0x30 for retail's +0x1c between local_5 and local_6, local_6/local_7/local_15
@@ -570,6 +570,13 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
 // shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
 // NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
+// M3 lane 11 r109 (fast, control 489 as the full build): local_8 renamed body_position (a name sorting ahead of the
+// shared 12-byte home's names) 489 (same code: names do not order these two homes either); the side point written in both
+// arms of `if (local_22)` (the negated distance named in the else arm) 751 (3538 B, frame 0x8c; the arms are not
+// tail-merged, the point gets a stack home); the k clamp as one ternary assignment 489 (same code); the three blend rows
+// reading field_64 at each use with the complement product first 663 (3499 B); the velocity-frame cross through the
+// existing cross3f_staged 489 (same code). Re-measured: the side ternary written in each coordinate 573 (3500 B: two
+// separate ternaries, not retail's per-arm y with the x part after the join); the flip as `== local_22` 658. Body unchanged.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

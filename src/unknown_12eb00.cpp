@@ -194,6 +194,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // element through the entry's array at each use (no element pointer) 215; the lookup helper as one conditional
 // expression 73. Re-measured, not counted: the clusters parameter walked in the for step 305 (1174 bytes); `1.0f -
 // local_7` named after the copy 98 (1208 bytes).
+// Round 128 (m3 lane 16, fast; both builds end `ret 8`): a redundant `if (count > 0)` around the cluster loop (real
+// build) 11; a const cluster pointer `clusters + i` for the index read and the previous-index store 11; the result
+// declared `register` 11; the count test joined to the table guard 11; const parameters 11 (all the same code).
+// Diagnostic (repeat): the result declared after the offset table 72 (1181 bytes) keeps the result at 0x18.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

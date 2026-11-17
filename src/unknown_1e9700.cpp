@@ -85,6 +85,13 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // build forms the row first, and re-reads the enable byte after the store where this build keeps it in DL across that
 // store; the counter's type and the enable byte's home are in include/globals.h and the reload's aliasing in
 // src/unknown_1967d0.cpp: BLOCKED-BY both.
+// MiniMax R (11-17): no new form, no lower score (106): spelling the old maximum as a nested double assignment (the
+// outer test, then the inner test) scores 108 and was restored; what still differs is that retail keeps the old
+// maximum in ecx and reads the fifteen-bit counter with the sixteen-bit idiom (xor eax, eax; mov ax, [mem]) where this
+// build keeps the maximum in eax and zero-extends the word, and retail reloads the enable byte after the counter store
+// where this build holds it in dl across that store; the reload needs one object for the enable byte and the counters
+// (include/globals.h and src/unknown_1967d0.cpp) and the maxima's homes follow the held helpers 0x196960 and 0x1968b0
+// in src/unknown_1967d0.cpp: BLOCKED.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
