@@ -3040,6 +3040,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // word-wide 50 (same code each); the second half's pending test read as a word 52 (580 B). Re-measured, listed: the
 // query result in its own task local with local_4 set in the else 50, the second half's index named 50, the delay named
 // 50. The first follow-up still reloads the index from its home.
+// After-scan action via trigger list, event encoding, completing condition or actor options
+// 50/80/50/50. Remaining qualifying count, normalized count and short/long
+// pre-decrement tests 90/141/100/137. First follow-up reload stays on tied forms.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
