@@ -401,6 +401,16 @@ void c_xbox_live_message_list::v20(c_class_1a2c81 *item, long unused)
 bool function_19acc6(XUID const *xuid);
 bool online_title_is_this_title(DWORD title_id);
 
+// score 173 (was 173): Retail outlines the lower-priority flag branches and shares
+// the item12 clear after classification.
+// flag-10 fallback branch written first 173; flag-11 fallback branch written first
+// 173; flag-12 fallback branch written first 173; all three fallback branches written
+// first 173; default-class filter after classification 173; default item set before
+// its optional-item filter 173; defer session negation to the matching class 184;
+// positive same-title predicate in both item selections 193; default item derived
+// from recognition result 168 (NOT kept: form requires a byte match); last optional-
+// item flag assigned after exclusion tests 166 (NOT kept: form requires a byte
+// match).
 // @retail 0x2c6b65
 void c_xbox_live_message_list::set_message(s_online_message_view *message)
 {
@@ -1581,7 +1591,8 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 {
 }
 
-// score 15 (195 bytes against retail's 194): retail tests
+// score 15 (was 15):
+// (195 bytes against retail's 194): retail tests
 // `definition->string_list_index` through a register it loaded once
 // (`mov eax, [ebx + 0xc]; cmp eax, -1`) and reuses it for the first 0x1a0180
 // call, while ours folds the test into a memory compare and reloads for the
@@ -1590,6 +1601,9 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // `*(volatile long *)&buffer[0] = 0;`, a four-byte store into a two-byte
 // buffer element: a type-widening store, so it was not kept; a volatile word
 // store changes nothing.
+// Conditional list index with description refresh 51; guarded assignment, explicit fallback and memcpy
+// index with description refresh 69 each; one-word memset for both buffers 55 and title only 50; copy the
+// empty wide string 15; fetch the title string id before clearing 71.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -1689,6 +1703,11 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // Copy-only forwarding 35, default-button forwarding 2, conditional button selector 27,
 // button equalities 9, typed settings assignment 2, non-button guard/shared result 2,
 // non-button switch default 2, named short-circuit cancellation 9.
+// inherited handler qualified through immediate base 2; base call inside the changed-
+// settings branch 29; button guard with base call inside the changed-settings branch
+// 29; copy sequenced in the changed-settings return 23; restore result assigned by
+// the button dispatch 28; back case before cancel case 2; non-cancel button breaks
+// the event case 9; combined restore predicate with copy-path return 28.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
@@ -2181,6 +2200,10 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 // Early null return 7, typed pointer test 7, success-path request value initialization 62,
 // function-scope value initialization 64, callback local 49, separate request-mode test 54,
 // split selector dispatch 45, selector read after setup 58, shared word flag setter 14.
+// Retail clears ESI before comparing the pool result, then uses it in the parameter setup. Ours tests EAX
+// first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
+// tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
+// clear before selector 14 each.
 // @retail 0x2c8719
 void c_controller_settings_edit_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -3057,7 +3080,8 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
-// score 30 (was 29): ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
+// score 30 (was 29):
+// ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
 // the iterator stack slots (ebp-0x10..-4) and the calls to 0x6b380, 0x19c5f0 and 0x24c515 are retail's. The old
@@ -3068,6 +3092,10 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // assignment inside the test; iterator initialised before the load (29, same ebx load); dword local; copy of the
 // local; reversed ==; a found flag (40); a parameter helper (no change); an inline accessor for the global (29, spills
 // the local like the volatile form).
+// Iterator aggregate initialization 15, NOT kept: added a datum clear retail lacks and grew from 80 to 84
+// bytes against retail's 81. Pool-first and chained sentinel writes 29 each, NOT kept: one-point gains
+// only. Chosen datum after loop 31; use the iterator's result for loop and selection 56; named lookup
+// definition and pool read ahead of the guard 30 each; mismatch continue and hit return 33.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
@@ -3674,6 +3702,12 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 // Shared word flag setter after/before the clear 9/12, shifted word 35,
 // controller object reference 9, clear after setup 16, callback local 125,
 // shared ordinary-edit mode 116, mask through the request field 118.
+// only the EAX/EDX roles in the `1 << controller_index` mask and the
+// aggregate initialization of screen parameters 184; byte-zero initialization of
+// screen parameters 173; only field_c zeroed with memset 168; controller flags
+// initialized in the request field 111; field_c memset followed by compound short
+// mask shift 169; missing datum returns before the create partition 9; screen path
+// before the create path 178; named create result with nested file tests 138.
 // @retail 0x2c5897
 void c_game_engine_variant_category_list::handle_item(s_controller_reference **controller, long *item)
 {

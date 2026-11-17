@@ -372,8 +372,8 @@ long function_23f260(long mode, long player, long excluded_team)
 
 typedef bool (__stdcall *score_compare_player)(long, long, const void *);
 typedef bool (__stdcall *score_compare_team)(word, word, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, score_compare_player compare, const void *context);
-void sort_2byte(word *elements, unsigned long count, void *unused, score_compare_team compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, score_compare_player compare, const void *context);
+void sort_2byte(void *unused, word *elements, unsigned long count, score_compare_team compare, const void *context);
 
 /* whether the current game engine plays in teams */
 PRIVATE inline bool score_has_teams(void)
@@ -412,7 +412,7 @@ void function_23f3e0(s_score_display *display, long mode, bool fallback)
 	s_score_sort_context player_context;
 	player_context.criteria = criteria;
 	player_context.fallback = fallback;
-	sort_4byte(display->players, display->player_count, &fallback, function_23fbe0, &player_context);
+	sort_4byte(&fallback, display->players, display->player_count, function_23fbe0, &player_context);
 	for (long i = 0; i < display->player_count; i++)
 		display->player_ranks[i] = (char)function_23fc40(mode, display->players[i], display);
 	if (score_has_teams())
@@ -431,7 +431,7 @@ void function_23f3e0(s_score_display *display, long mode, bool fallback)
 		s_score_sort_context team_context;
 		team_context.criteria = criteria;
 		team_context.fallback = fallback;
-		sort_2byte((word *)display->teams, display->team_count, &fallback, function_23fc10, &team_context);
+		sort_2byte(&fallback, (word *)display->teams, display->team_count, function_23fc10, &team_context);
 		for (long j = 0; j < display->team_count; j++)
 			display->team_ranks[j] = (char)function_23fd10(mode, display->teams[j], display);
 	}
