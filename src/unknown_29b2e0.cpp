@@ -544,6 +544,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // P569: Maximum-angle policy positive bool/byte/short/long outcomes 281/281/281/281;
 // complementary outcomes 287/287/287/287. NOT kept: no native storage equality;
 // original producer/body restored. Unity, root/yaw and rotation homes remain.
+// M3 lane 11 r111 (fast with 0x29b990, 0x11cc90, 0x11ce20 matched): the rotation dot's products with their factors in
+// each order (v first in i, in k, in both, k term first) 176 x4 (same code: products and sums are canonicalized); the two
+// pitch terms in their own block 176 (same code); single-exit normalizer re-measured 171, with that block 171; the
+// rotation vector or either input copy renamed (rotated, aim_direction, zz_direction, unit_facing, unit_target) 176 each:
+// names do not move retail's packing of the rotation vector into the first copy's slot.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

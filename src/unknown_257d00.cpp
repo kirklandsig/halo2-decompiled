@@ -2072,6 +2072,10 @@ void function_b7360(long object_index);
 // != 1 && type != 4) return 2;` 309 (1852 bytes); case 10's selector read into a block-scoped short ahead of the +0x8c
 // clear 272; case 7's dot with its operands swapped 276; the actor looked up first re-measured 487 (1852 bytes; the
 // guard's `return 2` gets its own epilogue). Body unchanged.
+// M3 lane 11 r111 (fast with 0x259e70, 0x259ec0, 0x25ab50 matched): a const reference to the +0x28 point reference for
+// the 1/19 check and copy 272, for case 5's check and point 272, both 270 (the reference folds back, the read stays held
+// across 0x25ab50); case 4's unit test as `arg_1 == local_0->unknown018` 271; case 10's +0x8c clear through a byte
+// pointer 270 (same code: the selector load still moves above the clear); case 7's dot sides swapped 276 (a repeat).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

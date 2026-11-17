@@ -412,6 +412,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // P564: Separate per-query playing/stopped results in both original playback arms,
 // bool/byte/short/long: 534/534/534/534/536/536/536/536. NOT kept: native frame/stream/gain homes and
 // unrounded math expansion remain; original queries, guards, calls and complete body restored.
+// M3 lane 11 r111 (fast with 0x21f8a0 matched): `#pragma optimize("p", off)` around the body 534 (identical code, a
+// repeat of round 54's diagnostic); the cached gain stored as `*(long const *)&gain` 534, the mixbin gain passed as
+// `*(s_decibels const *)&gain` 534, both 534 (same code: the reference folds back to gain_bits, so the stream/gain
+// register swap stays); `stream` declared before `input` 534 (same code); `direct` declared before `mode` 533.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
