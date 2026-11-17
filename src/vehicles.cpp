@@ -4915,6 +4915,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // scoped short secondary result 46, scoped secondary with primary accumulation 46,
 // array-derived short remaining capacity 46, scoped facing before parameters 46,
 // parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
+// Y616: Span-derived capacity 144, span-derived total 166, marker cursor
+// with short ordinal 113, pointer bounds and split 147, count-role names 46,
+// missing-tag guard 46, in-place facing 126, second colour from first 46.
+// The marker sum and scratch registers still differ at retail length.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
