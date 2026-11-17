@@ -40,6 +40,8 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// score 440 (was 528): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
+// Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // MiniMax I (11-17): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and this build
 // cannot pack the two flag bytes into one home, so every home sits four bytes above retail's (the reference at 0x18 where
 // retail has 0xc) and the tail's length follows from that; the two call sites still differ (retail calls 0x2600a0 in the
@@ -177,6 +179,9 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // as bytes 439 (same code, our LTCG build still gives each its own dword); the evaluator loop with the proc test at its
 // head 460; the `selected == NONE` test moved after the if/else (retail's flow, re-measured from round 75) 547; one delta
 // for both deltas 630. The permuter (300 s) found no variant better than the base.
+// Probe source/probe settings/fallback source scope, seven nonempty subsets, then all with search-local records: 577/442/442/577/577/442/577/577.
+// NOT kept: phase-local records regress and keep the 0x8a8 frame and 3097-byte extent.
+// Original executable body restored.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
