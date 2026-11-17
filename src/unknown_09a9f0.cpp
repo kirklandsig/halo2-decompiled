@@ -242,6 +242,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
 // loads the object table's data pointer again for the object read, where ours shares one address between
 // the two reads and keeps the result in EBP.
+// MiniMax E (11-16): no new form, no lower score (49); retail keeps the result in BL from before the creation call
+// and reloads the object table's data pointer between the flag test and the object read; the spellings that hold the
+// result in a bool measure 64 to 77.
 // MiniMax G (11-14): no new form, no lower score (49): retail keeps the false result in bl and sets it only after the
 // attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
 // between the header flag test and the object read, ours shares one address between the two reads.
@@ -1215,6 +1218,10 @@ bool c_projectile_type::v8(long a, long b)
 // masked address written at the compare and at the store) 15; that local with the group value read once into a named local
 // used twice 24; flags declared before the object 12; the 0x400 test and compare nested 12; a `long group` local with an
 // entry pointer 12.
+// Round 174 (m3 lane 8, fast with 0xa5e70; control 5), all with the full-width mask: the object through an offset local
+// `(a & 0xffff) * 12` as matched 0xa1f70 and 0x9d450 read theirs 12; a `long` flags local 12; the group value as a
+// const reference to the masked entry's +4 15; a `byte *` state local for the four accesses 12; both copies written as
+// dword moves 12. Matched 0xa02e0 gets flags ESI and object EDI from the same head, as the mask form does here.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

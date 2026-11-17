@@ -548,6 +548,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 1/2/4/3/5/6/7, then all plus nearest result: 483/505/473/526/454/495/523/561.
 // NOT kept: native narrow selection homes remain unrecovered; wider storage
 // changes frame/extent and regresses. Original signed producers and full body restored.
+// P580: Independent scalar coordinate memcpy in existing squared-first/second/both,
+// length-first/second/both, both first-inputs and all metric inputs:
+// 428/425/470/553/553/777/594/865. NOT kept: no exact selected-home/x87 recovery; original private
+// metrics, all observations, bitmaps, traversals and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

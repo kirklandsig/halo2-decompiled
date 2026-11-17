@@ -892,6 +892,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // P565: Zero-seeded standard forward/lateral/alignment whole-coordinate reductions,
 // seven nonempty subsets, then complete explicit operators: 246/227/215/232/170/221/218/255.
 // NOT kept: no native unit-argument/scalar-home repair or equality; original full body restored.
+// P579: Scalar memcpy at lazy unit/readiness/state inputs, target handle, radius, object type,
+// request target and request side: 40/87/227/87/121/87/87/87. NOT kept: no exact unit-argument/scalar-home
+// recovery; original complete body, all observations and request publications restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -128,12 +128,23 @@ __forceinline __m128 inverse_sqrt_2de1b0(__m128 const &value)
 	return _mm_mul_ss(_mm_mul_ss(half, estimate), _mm_sub_ss(three, _mm_mul_ss(_mm_mul_ss(value, estimate), estimate)));
 }
 
+// the same, for a single value
+__forceinline __m128 inverse_sqrt_single_2de1b0(__m128 const &value)
+{
+	__m128 const half = _mm_set_ss(0.5f);
+	__m128 const three = _mm_set_ss(3.0f);
+	__m128 const estimate = _mm_rsqrt_ss(value);
+	return _mm_mul_ss(_mm_mul_ss(half, estimate), _mm_sub_ss(three, _mm_mul_ss(_mm_mul_ss(value, estimate), estimate)));
+}
+
 // the point a fraction of the way from a to b
 __forceinline __m128 interpolate_2de1b0(__m128 const &a, __m128 const &b, float fraction)
 {
-	__m128 scale = _mm_load_ss(&fraction);
-	scale = _mm_shuffle_ps(scale, scale, 0);
-	return _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a), _mm_mul_ps(scale, b));
+	__m128 const scale = _mm_set_ps1(fraction);
+	__m128 const rest = _mm_sub_ps(*(__m128 const *)g_412420, scale);
+	__m128 const second = _mm_mul_ps(scale, b);
+	__m128 const first = _mm_mul_ps(rest, a);
+	return _mm_add_ps(first, second);
 }
 
 class capsule_2de1b0
@@ -146,7 +157,10 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 257 (was 340): Earlier callee placement reduces the frame from 0xd8
+// score 194 (was 257): the single-value inverse square root is its own
+// helper, the blend's two products are named in retail's order, the pulled-back
+// distance is named before it is subtracted, and the sphere is scoped to the call.
+// Before, 257 (was 340): Earlier callee placement reduces the frame from 0xd8
 // to 0xc8 (retail 0xb8), reaches 1435 bytes and keeps the input vectors live.
 // Stack homes and later scalar instructions still differ. Shared inverse 398;
 // placement 257; shared dot 344; endpoint names 257; direct vertices 347;
@@ -219,8 +233,9 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 	float const along = -dot3_2de1b0(ray, normal);
 	ray = _mm_add_ps(ray, _mm_mul_ps(_mm_set_ps1(along), normal));
 	float inverse_length;
-	_mm_store_ss(&inverse_length, inverse_sqrt_2de1b0(length_squared_2de1b0(ray)));
-	ray_fraction -= (float)sqrt(radius * radius - distance_squared) * inverse_length;
+	_mm_store_ss(&inverse_length, inverse_sqrt_single_2de1b0(length_squared_2de1b0(ray)));
+	float const back = (float)sqrt(radius * radius - distance_squared) * inverse_length;
+	ray_fraction = ray_fraction - back;
 	if (ray_fraction > 1.0f)
 	{
 		return answer_2deda0(false);
@@ -234,7 +249,9 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 		// the side
 		s_1c58f0 const fraction(entry_along / axis_length);
 		__m128 const scale = _mm_shuffle_ps(fraction.field_0, fraction.field_0, 0);
-		__m128 const on_axis = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a), _mm_mul_ps(scale, b));
+		__m128 const second = _mm_mul_ps(scale, b);
+		__m128 const first = _mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a);
+		__m128 const on_axis = _mm_add_ps(first, second);
 		__m128 const outward = _mm_sub_ps(entry, on_axis);
 		__m128 const inverse = inverse_sqrt_2de1b0(length_squared_2de1b0(outward));
 		hit->normal = _mm_mul_ps(_mm_shuffle_ps(inverse, inverse, 0), outward);
@@ -267,6 +284,8 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 	}
 	cap.start = start;
 	cap.end = end;
-	c_2def90 sphere(radius);
-	return ((sphere_2deda0 const *)&sphere)->function_2deda0((segment_2deda0 const *)&cap, hit);
+	{
+		c_2def90 sphere(radius);
+		return ((sphere_2deda0 const *)&sphere)->function_2deda0((segment_2deda0 const *)&cap, hit);
+	}
 }

@@ -925,7 +925,7 @@ struct s_tail_transfer_traits
 // MiniMax I (11-15): score 3 (was 144): the players are walked with the existing 16-byte s_player_iterator (player_queries.h),
 // the two slot fields are read as shorts and the third weapon keeps its NONE preset; left: the three object lookups address
 // [data + offset + 8] where retail has [offset + data + 8].
-// score 144 (was 144; 153 before): the third weapon comes from the selection paths without a NONE preset and the no-seat
+// score 144 (was 144): Earlier 153. the third weapon comes from the selection paths without a NONE preset and the no-seat
 // slot lookups go through a pool copy, so retail's object-table reloads appear; from the selection loop on the
 // traits pointer still comes back in EBP where retail keeps it in EAX, and the counter sits at +0x1c against
 // retail's +0x18.
@@ -1122,6 +1122,9 @@ struct s_tail_transfer_traits
 // addresses data + index, here retail loads the data first and addresses index + data); both weapons through the existing
 // 0xcbd50 with the slots read through one pool copy 170 (835 bytes); primary through the existing unit_get_current_weapon
 // and secondary through 0xcbd50 161 (816 bytes). Body unchanged.
+// P581: Original-site scalar memcpy at unit handle/paired signed no-seat slots/scan
+// weapon, seven subsets, then complete scalar memmove: 144/144/144/144/144/144/144/252. NOT kept: no exact
+// selected-traits/unit/NONE homes or no-seat reload recovery; original complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1247,7 +1250,8 @@ long function_cbd50(long unit_index, short weapon_index);
 // the pending lookup ahead of the held one, the weapon's own flags read once ahead of the slot loop, the mode clears
 // chained) all regress or leave the same code, and the grouping that moves the tag table's home is not a form the
 // review keeps.
-// score 215 (was 215; the 144 once on this line was 0x152660's): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// score 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
+// Earlier header correction: the 144 once on this line belonged to 0x152660.
 // m3 lane 3 r250 (fast with 0x151aa0/0xcbd50, control 215): retail loads the tag table lazily in both arms of the hand
 // loop (ECX at the loop exit) and the weapon_index parameter lazily in the slot copies (EBP, reloaded at the joins),
 // where ours hoists both to dominating points; retail's held arm reads the weapon through the first lookup's unit but
@@ -1454,6 +1458,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // final first and final pending outputs: 215/215/227/215/276/235/215/230. NOT kept:
 // no exact result-lifetime repair; native player/pool retention, lazy tag-table
 // acquisition and frame 0x18 versus 0x1c remain. Original full body restored.
+// P581: Original-site scalar memcpy at full flag/tag ordinal/inventory weapon, seven
+// subsets, then complete scalar memmove: 215/215/215/215/215/215/215/325. NOT kept: no exact native frame/player/
+// pool/tag ownership; original private flag producer, all observations and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

@@ -92,6 +92,7 @@ void function_1d56f0(s_havok_component *component)
 // retail's own parameter order puts the settling count in EAX with six stack arguments while this build's
 // declaration keeps the count last, and a parameter order may not be changed, so the call site in src/bipeds.cpp
 // cannot match.
+// MiniMax S (11-16): no new form, no lower score (77); the rigid-body lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // score 77 (was 77): no new form and no lower score; the rigid-body lookup still reads `[eax + edx + 0x40]`
 // where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX
 // and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
