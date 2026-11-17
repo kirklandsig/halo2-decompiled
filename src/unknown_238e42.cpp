@@ -1249,6 +1249,14 @@ bool __stdcall function_2399da(long controller_index)
 // may-change flag as `(flags & 0x800) != 0` 90; the permission compare as `(long)member.dwPrivileges < own_rank` 91; the
 // rank read once through its own address at the dispatch 90, and through its address at each of the four uses 90 (all
 // but the third the same code): taking the parameter's address does not move it off the colouring tie.
+// Round 454: memcmp for the selected user ID with static zero 134, memcmp for the member user ID with
+// static zero 163, memcmp for the selected and member user ID with static zero 180, std::equal for the
+// selected user ID with static zero 134, std::equal for the member user ID with static zero 163, std::equal
+// for the selected and member user ID with static zero 180, memcmp for the selected and member user ID with
+// local zero 189, std::equal for the selected and member user ID with local zero 189. The library
+// comparisons increased code size and score in all eight forms. The selected identity and requested rank
+// still compete for EAX. The original integer comparisons, callee interfaces and complete body are
+// restored.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
