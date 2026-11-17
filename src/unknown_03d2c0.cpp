@@ -392,6 +392,18 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // P586: Four-copy counter int/dword/short/word/char/byte/signed-eight-byte/unsigned-eight-byte:
 // 77/77/77/77/77/77/130/127. NOT kept: no cached-hit/merge/trailing-return recovery;
 // wide counters also grow frame/extent. Original memcpy loop and complete body restored.
+// M3 lane 7 r172 (fast with 0x3db00/0x3dd10, both MATCH; control 77, aligned 20 of 159 instructions): the walk as a
+// `for` over the iterator (init, test, step in the header) 77; the age clamp as `age = age < 0.0f ? 1000.0f : age;` 77;
+// the merge test as `NONE != result` 77; `initialize` declared ahead of `result` 77 (all the same code); `oldest`
+// declared at the top of the allocation arm, ahead of the allocation, 83. The aligned difference is only the merge
+// block (our found path enters the test, so the join reloads the result into EAX; retail tests ESI and reloads after
+// it), the walk's NONE return (inline and folded to `or eax, esi`; retail a trailing epilogue with `mov eax, esi`) and
+// one loop pad.
+// M3 lane 13 r104 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the walk's NONE exit returning the walk
+// iterator 119 (506 B: the exit jumps to the end as retail's, but into the main epilogue, and the walk's registers change);
+// no walk exit with `initialize = result != NONE;` closing the else arm 116 (495 B); the walk's exit as `return NONE;` 77
+// (same code); the tail nested as `if (initialize) { record; if (result != NONE) ... }` 166 (497 B); no flag (the found
+// path returning the cached index, the record setup unconditional after the allocation and walk) 186 (474 B).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

@@ -2725,6 +2725,12 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // the cases reading its fields 506 (2008 bytes, the vector goes through the stack); cases 8 and 9 as `1.0f < z` and
 // `-1.0f > z` 3; the selector local declared at function scope and assigned in place 3; the outer x, y, z in one
 // declaration statement 3 (all same code). No cross-file helper has retail's z, y, x sum (devices.cpp's is file-local).
+// M3 lane 12 r135 (fast; control 3): the helper's differences as a load then `-=` (`real dz = a->z; dz -= b->z;`, all
+// three) 435 (1960 B: the outer x, y, z stop CSE-ing with the helper); same code (3): the case 6/7 dot products written
+// i, j, k; the two positions in one declaration; the helper's last square added in its return; the selector local
+// declared after the outer x, y, z. The permuter (fast, annealed, 605 s, 61 tries) stays at 3. The outer y alone computed
+// ahead of the helper call 422 (y then takes XMM1 and is copied); the outer locals' order only moves the case 6/7 dot
+// products' term order (z, x, y: 15, re-measured).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

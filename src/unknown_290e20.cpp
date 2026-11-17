@@ -541,6 +541,17 @@ struct s_ai_scene_assignment
 // copy of the role for the scorer argument only, on the direct maximum, 100 (the copy takes a callee-saved register); a
 // short copy of the maximum defined at the loop head for both compares and the recursion 59 (propagated); the maximum on
 // the left of both compares 59 (the head compare becomes `cmp ax, word ptr [ebx]`).
+// M3 lane 15 r94 (one-file LTCG harness, exact at 12 and 59; the 17 confirmed with --fast): the last-role flag typed long
+// 122 (367 B), on the direct maximum 122; the kind's three cases as an if / else-if chain on a short local 107 (364 B); the
+// leaf's next assignment address taken with the increment ahead of the bound test 17; that with the copy from
+// `local_0[-1]` 25 (347 B); a count test ahead of the iterator 105 (364 B), on the direct maximum 96. Same code: a
+// reference-bound maximum (59), a reference-bound role in the found arm, forceinline actor-index and role accessors, a
+// named count local in the leaf, the scorer outputs declared the other way round, a named short kind for the switch.
+// Diagnostics on the direct maximum: without the role's entry uses, with one or two of the four stores, or without the
+// role in the recursion the role still takes ESI (106/114/96/88/99); with the scorer's role argument read through a
+// volatile cast (reverted at once, not allowed) 2 at 347 B: the maximum takes ESI with retail's dword load and only the
+// found block's two loads stay swapped. Retail's scorer argument is a plain load of the role's slot that is not counted
+// as a use of the role; no natural form found that gives that.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

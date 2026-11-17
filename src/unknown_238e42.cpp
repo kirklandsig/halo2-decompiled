@@ -888,6 +888,9 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax R (11-17): no new form, no lower score (90): an annealed permutation search over this body (1500 s,
+// one job, seed 11) lowered the baseline of 88 only to 86, and the have_member block written the other way
+// round measures 114, so the body stands.
 // MiniMax R (11-14, run 65): no new form, no lower score (90): the whole difference is still the colouring of the
 // two values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the
 // requested rank into ecx, so the removal call needs no copy, while this build keeps the pointer in ecx and the

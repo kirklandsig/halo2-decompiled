@@ -79,10 +79,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
 // still hoist and spill the sine products where retail keeps them in registers, and the jump table
 // still sits four bytes earlier than retail's.
-// score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax G (11-05): the rotation helper with retail's statement order gives 342, with forward.i moved ahead of the cross products and the products re-associated 228, and with scalar locals for the squares and the sine products 342/418/510; the case bodies' scheduling and the four-byte table placement stay unmatched; no new form, no lower score.
 // MiniMax S (11-06): moving the shared tail's two outputs out of the rotation helper into the caller scores 352 against the baseline's 244 in the fast check; no lower score, the helper and the body stay.
 // MiniMax S (11-01): no new form, no lower score.
@@ -314,6 +314,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // code); both 219 (same code); ik as `(1.0f-cosine)*axis->i*axis->k` 219 (same code: VC canonicalises the inner product
 // order); the helper's statements in retail's second-case flow (k^2, s*j, i*s, s*k, i^2, forward.i, ij, left.i, forward.j,
 // j^2, left.j, ik, up.i, forward.k, up.k, jk) 368 (1824 B). Body unchanged.
+// M3 lane 12 r135 (fast, control 219): in the rotation helper, the cross terms with the complement last
+// (`axis->j*axis->i*(1.0f-cosine)`, all three) 219 (same code); with the axis product grouped (`(1.0f-cosine)*(axis->j*axis->i)`)
+// 424 (1788 B); the sine vector as a copy of the axis scaled in place 444 (1776 B); the jk pair stored left.k first 219; the ik
+// pair stored forward.k first 218 (one point, not kept).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

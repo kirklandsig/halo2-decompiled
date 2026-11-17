@@ -742,6 +742,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // stores at 0x14ae63/0x14ae9a (dropped as dead) and the swapped flag and result slots. The else path reads an
 // unset range at 0x14ad52, harmless (section NULL). The 0x16e1b0 homes and the 0x11e800 registers are unchanged:
 // BLOCKED-BY 0x11e800.
+// MiniMax S (11-17): no new form, no lower score (172): retail still holds the BSP global in ebx and pushes
+// ebx first while this build keeps the BSP in ebp and defers the ebp and esi pushes, and the 0x11e800 call
+// still takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee's body
+// being in another file: BLOCKED-BY 0x11e800.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {

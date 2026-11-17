@@ -1894,6 +1894,16 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // preservation byte, owner/distribution captures, complete input and complete transfer graphs:
 // 56/51/81/81/80/79/121/133. NOT kept: no native state/mode recovery; original six-byte
 // transfer, scalar snapshots, calls and full body restored.
+// M3 lane 9 r131 (fast; base 34): new spellings on the state local, all without the dead subtract: a switch with
+// `case 2: mode = state;`, cases 3-5 giving 4 and `default: __assume(0);` 59 (172 B, the lead's code); `state == 2 ? state
+// : 4` 59 (172 B); `mode = 4; if (state == 2) mode = state;` 56 (176 B); a one-case switch (`case 2: mode = state;`,
+// default 4) 58 (180 B, mode in memory). Compile-only screen (about 200 switch shapes: case sets 0-9, merged or separate
+// arms, assume or default, long or char mode, preset or not): every one- or two-case switch lowers to `sub reg, 2; jne`
+// with mode in memory, three or more cases with `__assume(0)` fold to the lead's cmp/setne, none leaves a dead
+// subtract beside a setne. Diagnostic only, reverted: an unused second parameter on the stdcall callee 0x68e20 fed
+// `state - 2` keeps the argument (`add eax, -2; push eax`, 29 at 176 B), so a dropped-argument origin is untested.
+// Also the switch straight on the field (no state local), case 2 giving 2, cases 3-5 giving 4, `default: __assume(0);`
+// 62 (172 B, state in EDX).
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {

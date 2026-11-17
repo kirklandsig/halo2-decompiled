@@ -1016,6 +1016,15 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // the components 6; a `const &` flag element with double `(real)(cos * cos)` trig and `&flag.position` passed inline 6; a
 // `const *const` flag with a `real const` pitch cosine named first and the position inline 6; the position re-subscripted
 // from the table at the call 41 (98 bytes; 0x2a1120 8). Permuter (seed 101, 600 s, fast, anneal): 35 tries, none below 6.
+// M3 lane 5 r193 (fast with 0x2a1120, which stays matched but where noted): the up-vector global read into a local first 6;
+// that with a const flag and the position named after the components 6; the flag as `flags + index` from a named
+// table local 6; a named pitch cosine with the position passed inline 6; re-measured, the element subscripted at each
+// field use 76 (125 bytes; 0x2a1120 8). Diagnostic (value-wrong, reverted): the call given `&flag->yaw` as its point
+// 8, with the ESI and EBX saves both ahead of the add and both `push 1` ahead of the first fld as in retail (the yaw
+// address then shares ESI with the x87 loads). So the ESI save goes early only when the ESI value feeds the x87 chain;
+// retail's position pointer does not, yet its save still precedes the add.
+// Then the flag's position and angles read through a pointer to a position-plus-angles view at +0x24 39 (97 bytes;
+// 0x2a1120 8; the loads become `[eax + edx + 0x34]`).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

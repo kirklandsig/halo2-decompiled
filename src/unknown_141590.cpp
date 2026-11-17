@@ -118,6 +118,13 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
+// MiniMax I (11-17): no new form, no lower score (205): re-measured the baseline; the first difference is still the
+// frame (ours 0x1c, retail's 0x24) and the rest follows from the stack offsets that move with it: retail keeps the
+// quaternion's sixteen bytes in the same absolute place as this build but spills the transform's terms into the
+// matrix parameter's home slot and the two slots above it, while this build spills the cross terms into the
+// quaternion's own bytes; the three rows' term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up
+// rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and retail's second store of the
+// doubled scalar to a slot nothing reads are still not reproduced by any source form tried. The body stands.
 // score 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
 // MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
@@ -413,6 +420,14 @@ static inline void quaternion_transform_vector(
 // the quaternion and transforms in a brace block ending before the 0x143120 test 205 (same code); the transforms reading
 // the identity global's rows into the matrix rows 250; the construction scale as `rotation.i *= scale` per field 260 (1303 B).
 // Diagnostic: 0x11d000 called through a function pointer (the quaternion's address escapes) 345, frame still 0x1c.
+// M3 lane 2 r95 (fast with 0x11d000/0x143120/0x30bf0, all MATCH; control 205): retail's first transform, read in full:
+// s = (w*w)*2 - 1 above the copy, the dot ((v.i*q.i + v.k*q.k) + v.j*q.j) * 2 with a fresh 2.0, 2w in place on w and
+// stored to +0x38 and +0x10, cross j then k (spilled to +0x14/+0x1c) then i, the i row (cross*2w + v*s) + q*dot, the
+// j/k rows (v*s + q*dot) + cross*2w, and s stored to +0x18 (never read) and +0x20. The transform's dot and rows with
+// those groupings in explicit parentheses 201 (1321 B; the up and left transforms group otherwise in retail, so one
+// fixed grouping is not retail's); the dot's grouping alone 241 (1320 B), the rows' alone 215 (1327 B); with the
+// cross j, k, i 250 (1324 B); with s first and the cross j, k, i 254 (1310 B). The half-angle pair scoped in a block
+// with the construction 205 (identical listing); plain halves in that block 267 (1297 B, the plain-halves count).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -901,16 +916,6 @@ vector3f *function_1427f0(
 inline bool function_a0190(vector3f const *vector);
 __declspec(noinline) bool function_a0200(real a, real b);
 
-static __forceinline real basis_dot_xzy(vector3f const *a, vector3f const *b)
-{
-	real result = a->i * b->i;
-	result += b->k * a->k;
-	real side = a->j;
-	side *= b->j;
-	result += side;
-	return result;
-}
-
 static __forceinline real basis_dot_xzy_vertical(vector3f const *a, vector3f const *b)
 {
 	real result = a->i * b->i;
@@ -1358,6 +1363,11 @@ void function_143250(
 // its two products 1656 (10698 B); band three's r6_r3 the same 1663 (10700 B); band two's entry 18 stored last, just ahead of its
 // 0x143250 call (retail stores it after the call's pushes) 1544 (10755 B); r5_r2_s105_s2_s21 and r5_r5_s21_s35 written at their uses
 // 1333 each (same code). Body unchanged.
+// M3 lane 1 r114 (fast with 0x22850/0x23690, both at their baseline): the convention is already retail's (rotation EAX,
+// coefficients ECX, result ESI, order on the stack, ret 4); the 49-entry matrix tops the frame in both, so retail's
+// extra 4 bytes are one more scalar spill home below it (0x23c bytes against 0x238). s5 folded into `s5_s15 =
+// (real)sqrt(5.0) * s15` 1728 (10712 B); the nine rotation reads as `real const` 1333 (same code); band one's negatives as
+// unary minus 1333; the matrix declared after the rotation reads 1333; band three's s2 declared beside s35 1333.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1993,6 +1993,17 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // P583: Consumed first-vertex postincrement/second-vertex preincrement with
 // long/int/short/word edge ordinals: 607/607/616/616/598/598/609/609. NOT kept: no exact native early
 // remainder, accumulator or query-zero recovery; original full body and increments restored.
+// M3 lane 7 r172 (fast with 0x16a440/0x120790/0xc2d00/0x17a380/0x2469b0; control 606, aligned 574, masked 397): nothing kept.
+// The counts and radii declared interleaved (edge count, edge radius, face count, face radius) 606, face pair first 606 (same
+// code each); the sums by one chained assignment `face_sum = edge_sum = *g_468788;` 608; `nearest_squared_local` declared
+// between the two sums (retail's face/nearest/edge homes) 606 (same code); both square roots through the existing out-of-line
+// magnitude3d (0x24590, plain check, LTCG inlines it) 606 (same code: the inlined copy still starts with k on the x87 stack);
+// both squared sums written j, k, i 606 (k still first). Retail stores k with fstp and sums i, k, j from memory.
+// M3 lane 13 r104 (fast with 0x16a440/0x120790/0x2469b0/0xc2d00/0x17a380; control 606): the two count declarations
+// moved after the 0x16a440 query 590 (2874 B), the two radius declarations moved there instead 590 (same listing; retail
+// stores both counts and both radii before the call, at interleaved homes count/radius/count/radius, so the gain is a
+// declaration move and not kept); the two sum copies after the query 614 (0xc2d00 and 0x17a380 break in the fast
+// image); counts and radii declared as edge/face pairs 606 (same code); `++count` ahead of the radius minimum 623.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

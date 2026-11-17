@@ -26,6 +26,18 @@ static inline void cross3f_staged(vector3f const *a, vector3f const *b, vector3f
 	result->k = k;
 }
 
+/* the dot product a . b summed i, then k, then j (the order 0x143120 and
+   0x1f2a80 sum it in) */
+static __forceinline real basis_dot_xzy(vector3f const *a, vector3f const *b)
+{
+	real result = a->i * b->i;
+	result += b->k * a->k;
+	real side = a->j;
+	side *= b->j;
+	result += side;
+	return result;
+}
+
 /* input scaled by a double factor, each component rounded back to real;
    input and output may be the same vector */
 static inline vector3f *scale_vector_by_double(vector3f const *input, double scale, vector3f *output)
