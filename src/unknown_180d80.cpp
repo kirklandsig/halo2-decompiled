@@ -107,6 +107,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
+// argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
+// still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
+// after them), the count loop's sign extension where retail zero-extends the word, and the swapped slots of the count
+// sum and the vertex cursor.
 // MiniMax S (11-15): no new form, no lower score (93): the three field sums spelled as a load and an accumulate
 // give 290 (the body then loses 21 bytes and every row moves), the same sums spelled the other way round compile to
 // the same code, the luminance red, blue, green gives 91, a gain under the review threshold, and the vertex cursor

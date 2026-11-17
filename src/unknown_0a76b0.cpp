@@ -865,6 +865,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax I (11-16): no new form, no lower score (92): the body is still four bytes longer than retail's 1699 and the frame
+// homes are permuted - the projectile index sits at 0x24 against retail's 0x30, the grenade type at 0x20 against retail's
+// 0x2c, and the block-vector group at 0x48..0x50 against retail's 0x54..0x5c - and the blended direction still travels in
+// xmm5/xmm6/xmm7 instead of retail's registers.
 // MiniMax C (11-16): no new form, no lower score (92): the frame is still a permutation of retail's - the grenade tag and the seat index sit 0xc below retail's homes and the shared block-vector slot 0xc above them - and the body is still four bytes longer than retail's 1699; the declaration order does not reach those homes.
 // MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
 // build, so the source stands.

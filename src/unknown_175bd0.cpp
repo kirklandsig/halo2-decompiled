@@ -2484,6 +2484,10 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax I (11-16): no new form, no lower score (63): retail still adds the record base into the scaled index before its
+// first load and still reads the object's index again from the effect after the 0xbadc0 validity call, where this build
+// keeps the index in ESI across the call; the bodies of 0xbadc0 and 0xbaf80 are in src/unknown_0bad50.cpp, which this
+// lane may not edit: BLOCKED-BY 0xbadc0, 0xbaf80.
 // MiniMax S (11-16): no new form, no lower score (63): the head's load still folds into the datum address where retail adds the record base into the scaled index before its first load, and the object's index is still cached across the 0xbadc0 validity call where retail reads it again from the effect; the body of 0xbadc0 and 0xbaf80 is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0, 0xbaf80.
 // MiniMax C (11-15): no new form, no lower score (63): the body stands as found.
 // MiniMax D (11-14): no new form, no lower score (63): the head still reads the object's index through the
