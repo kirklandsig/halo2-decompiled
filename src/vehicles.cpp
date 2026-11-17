@@ -533,6 +533,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax D (11-17): no new form, no lower score (126): the frame, the length and the layout are retail's and what is
+// left is the register colouring and two x87 shapes - the velocity copy's i in ECX where retail has EAX, the 1.0
+// constant in xmm2 against retail's xmm3 (retail adds the entry magnitude's first two squares before the square root)
+// and the reversing compare's ja against retail's fxch and jb; the velocity copy the other way round (130), the blend
+// rows' additions the other way round (126), the reversing test written as >= (218), the magnitude read from the
+// vehicle's own fields (128) and the permuter's tries all score no lower.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
@@ -1411,6 +1417,11 @@ long function_10f5f0(long object_index);
 // the permuter ran over the body (four tries in 317 s) without beating 561. This file's build flags were also tried
 // without LTCG (the @flags line with /GL-), which leaves this function at 596 and the other two of this file at 191 and
 // 843, so the file stays /GL.
+// MiniMax D (11-17): no new form, no lower score (561): the frame is still 0x1990 against retail's 0x1984 (retail
+// keeps the velocity and the six-float buffer in one home, which needs the velocity in a narrower scope than the
+// buffer's), retail's six bit results still go to a byte slot at esp+0x13 that this build drops, and the point sum is
+// still unrolled four times where retail counts down; the countdown form (597), the pointer-to-value form (579), the
+// bit test's own local (577) and the permuter's tries all score no lower.
 // score 561 (was 561): earlier 562; frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // earlier at 561 (was 562). Frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
 // stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
@@ -5306,6 +5317,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // not the linker's knowledge of the callees. Every case label here was also checked against retail's own dispatch
 // tree: the forty labels of this switch are retail's forty, five of them (0x13000588, 0x18000593, 0xa00001a,
 // 0xd000586 and 0xe000583) reached through retail's subtract chains rather than by a compare.
+// MiniMax D (11-17): no new form, no lower score (749): the frame (0x18) and the length are retail's and what is left
+// is retail's four-push prologue with the definition pointer in EBP (this build re-derives it from the tag table at
+// every site, and it is rematerialised even from a local), the zero and the result in XMM2/XMM1 against this build's
+// XMM4/XMM5, and retail's per-site 1.0 against this build's hoisted constant; a definition local for all thirty-four
+// sites (999), the same as a const local (999) and the seven-site form (1027) all score no lower.
 // score 749 (was 749): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain (was 765 before round 180).
 // MiniMax S (11-10): no new form, no lower score (749); the definition pointer is re-derived from the tag table at each use while retail keeps one copy in a callee-saved register (used at seven of its sites) and re-derives it at nine others; the zero and the result take different SSE registers and the 1.0 is loaded once per site here.
 // MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.
