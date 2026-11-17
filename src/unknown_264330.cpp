@@ -1255,6 +1255,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // MiniMax D (11-17): no new form, no lower score (90 in the full-program check, unchanged); retail keeps the object pool
 // base in EAX and the object index in ECX where ours keeps the pool base in ECX, so the whole type-15 arm differs, and the
 // permuter found nothing in 300 s.
+// Shared source handle through root, ancestry or both 321/328/329. Both with the existing object
+// getter 329. With the checked parent handle through byte reads or the getter 415/415.
+// Cached header base with shared source, without or with checked parent 329/415.
+// NOT kept: the initial object registers recover on the shared form, but the extra spill and
+// displaced time and null homes lengthen it.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

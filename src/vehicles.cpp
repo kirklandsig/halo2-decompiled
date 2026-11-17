@@ -1674,6 +1674,9 @@ long function_10f5f0(long object_index);
 // steering block and entry, plus axis bounds with separate velocity outputs and
 // call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
 // 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
+// Integration branch before bounds branch, with branch-owned state, separate integration/damage velocity
+// and final request scope. All eight combinations score 561. NOT kept: 0x1990 frame and distinct
+// bounds/velocity slots persist. The flag-byte stores remain absent.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

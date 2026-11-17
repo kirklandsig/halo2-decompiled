@@ -533,7 +533,7 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 132 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
+// score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
@@ -680,6 +680,11 @@ void function_3dd10(long object_index, bool force);
 // Typed tint and model access 132; explicit variant outcomes/named predicate/direct conditional 227/227/227;
 // separate invalid cases/nested conditional 231/231; separate blend seed with conditional/explicit outcomes 227/227.
 // The typed fields retain the same code. The other forms move the saved registers and lengthen the body.
+// Output/delta registers and the remainder store relative to the byte comparison still differ.
+// Post-blend typed model variants 132, with the native object byte 132. Single checked model handle
+// 146, with the object byte 146. Native variant block 132, with checked handle 146.
+// Typed lookup under nested guards 132. Checked lookup with entry reference 147.
+// NOT kept: the rounded result still stores before the byte comparison on the later read forms.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
