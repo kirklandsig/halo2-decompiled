@@ -4914,6 +4914,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // scoped short secondary result 46, scoped secondary with primary accumulation 46,
 // array-derived short remaining capacity 46, scoped facing before parameters 46,
 // parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
+// Index initialized after the second fill and before the sum 47, dual-use split marker pointer 113,
+// prefix-relative ordinal bound 71, cursor relative to the second range 134, full-width prefix with a
+// short cutoff and capacity input 52, indexed end-distance bound 167, indexed end-pointer comparison
+// 143, split pointer supplying the short cutoff 155, aggregate effect clear 46, tag read before owner
+// stores 46. NOT kept: none puts the native signed total in EDI with a lower score.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

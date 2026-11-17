@@ -1043,6 +1043,11 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // inline helper taking the object index and returning the pointer, 316 with an early-return helper); left are the same
 // retail inlines of 0x1ccb0/0x1cd90 (0x116d0b-0x116d3a), 0x4b2d0's register convention, and the stack homes of the
 // scans.
+// Record reference 322, object index before the definition lookup 300, with null-first lighting 296,
+// embedded vertex base at the record, after lighting, or after Begin 316 each, strip element
+// references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use
+// object-index local. Retail reads the definition first. Other forms gain fewer than eight or tie.
+// The record spill, material-call convention and state expansion remain.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

@@ -2424,7 +2424,8 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // logic agrees (offsets, constants, condition directions, call arguments, result values and the final colour
 // stores all match), but the status, mesh, colour and sample homes still sit in other stack slots and the
 // selective helper expansion still differs.
-// score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// score 542 (was 542): frame 0x90 agrees. The status, mesh, color and sample homes and selective helper expansion differ.
+// Earlier score 555.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the
 // final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
@@ -2710,6 +2711,10 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax I (11-17): no new form, no lower score (542): re-measured in the batch; the result long still sits at
 // +0x30 where retail keeps it at +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30
 // lookup still expands here where retail calls it (that body lives in another file).
+// Typed bitmap entry 542, per-branch typed entry 542, separate bitmap table and index join 760,
+// entry reference 543, typed entry with named material index 543, named part-array base 543,
+// typed colour group and bitmap entry 542, typed entry with signed short/byte locals 735.
+// NOT kept: no qualifying score gain. Status/part and mesh still use +0x30/+0x2c instead of +0x24/+0x20.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

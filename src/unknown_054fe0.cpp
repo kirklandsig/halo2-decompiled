@@ -1859,6 +1859,11 @@ struct s_summary_player_sort_entry
 // keepable form: the same four with `short state = 0; if (initialized) state = ...;` and this file built without /Ob1 and with
 // /arch:SSE 377 (frame 0xaa0, aligned 106, register-masked 65: retail's cmovne and the early member-index store come, the
 // membership pointer and the type pointer still have no homes); those flags alone on this body 339 (same code). Body unchanged.
+// Player source cursor 359, collected-entry cursor 339, both cursors 374, source-end test with
+// array-derived ordinal 433, indexed player base 375, physical source range with collected-entry
+// cursor 374, map defaults on query failure 357, map stores selected by query success 398.
+// NOT kept: the source cursor adds one frame word and reaches 1292 bytes, but raises the score.
+// Failure-path map defaults reach 1291 bytes and raise the score. The type and membership homes remain.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {
