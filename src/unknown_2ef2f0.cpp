@@ -73,7 +73,7 @@ public:
 
 	query_2ef260(long a, long b, long c, long d, long e, long f, __m128 const &from_, long g, __m128 const &to_, float radius_);
 	void function_3080a0(class_308180 *manifold);
-	void function_307f90(answer_307f90 *found, contact_307f90 *contact);
+	answer_307f90 *function_307f90(answer_307f90 *found, contact_307f90 *contact);
 };
 
 // a box: a radius it is grown by, and its half extents

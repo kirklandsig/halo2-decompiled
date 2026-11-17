@@ -37,6 +37,7 @@ public:
 	// the dispatcher's own handler, put back when a caller is done
 	pair_handler_3173f0 own_handler;
 
+	void set_handler(pair_handler_3173f0 *value) { handler = value; }
 	void function_3728c0(pair_30d870 const *added, long added_count, pair_30d870 const *removed,
 		long removed_count, pair_listener_315a10 *listener);
 };
@@ -58,6 +59,8 @@ struct world_3173f0
 	dispatcher_3728c0 *dispatcher;
 	char unknown13c[0x238 - 0x13c];
 	long pair_capacity;
+
+	tolerance_3173f0 *get_tolerance() const { return tolerance; }
 };
 
 // one entry of the object's list
@@ -74,16 +77,23 @@ struct entries_3173f0
 	entry_3173f0 *data;
 	long size;
 	unsigned long capacity_and_flags;
+
+	entry_3173f0 *begin() const { return data; }
+	entry_3173f0 *finish() const { return data + size; }
 };
 
 struct member_3175e0;
 class sweep_3175e0;
 
-class collector_3173f0
+// what comes before the handler part of the object
+struct collector_head_3173f0
+{
+	char unknown0[0x1c];
+};
+
+class collector_3173f0 : public collector_head_3173f0, public pair_handler_3173f0
 {
 public:
-	char unknown0[0x1c];
-	pair_handler_3173f0 handler;
 	world_3173f0 *world;
 	char unknown24[0x30 - 0x24];
 	bool examined;
@@ -112,7 +122,23 @@ public:
 	void function_3175e0(void const *step, void const *input);
 };
 
-// score 10 (was 48): the capacity sum and the released block are named
+// sets the entries from a number of others; the room is already there
+inline void set_3173f0(entries_3173f0 &entries, vectors_30d9a0 const &from)
+{
+	entry_3173f0 *destination = entries.data;
+	long const count = from.size;
+	entries.size = count;
+	entry_3173f0 const *source = (entry_3173f0 const *)from.data;
+	for (long i = 0; i < count; i++)
+	{
+		destination[i] = source[i];
+	}
+}
+
+// Matched: the pair handler is a base of the collector (after the head part), the
+// dispatcher takes it through its setter, and the tolerance comes from the world's
+// accessor; the entries' begin and end are accessors too.
+// Before, 10 (was 48): the capacity sum and the released block are named
 // before use, the mask comes first in the released size, the dispatcher is
 // read once for the call, and the final size store follows the destination
 // read with the source advanced first. Left: the kept array's data loads
@@ -150,11 +176,11 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 	function_372b50(removed, removed_count);
 	long const capacity = entries.size + added_count;
 	vectors_30d9a0 kept(capacity);
-	read = entries.data;
-	end = entries.data + entries.size;
+	read = entries.begin();
+	end = entries.finish();
 	write = (entry_3173f0 *)kept.data;
-	tolerance = world->tolerance;
-	world->dispatcher->handler = &handler;
+	tolerance = world->get_tolerance();
+	world->dispatcher->set_handler(this);
 	pair_listener_315a10 *listener = world->pair_listener;
 	dispatcher_3728c0 *const dispatcher = world->dispatcher;
 	dispatcher->function_3728c0(added, added_count, removed, removed_count, listener);
@@ -176,15 +202,7 @@ void collector_3173f0::function_3173f0(pair_30d870 *added, long added_count, pai
 		entries.data = (entry_3173f0 *)g_memory_2d88a0->allocate_block(kept.size * sizeof(entry_3173f0), 0x12);
 		entries.capacity_and_flags = kept.size;
 	}
-	entry_3173f0 *destination = entries.data;
-	entries.size = kept.size;
-	entry_3173f0 const *source = (entry_3173f0 const *)kept.data;
-	for (long remaining = kept.size; remaining > 0; --remaining)
-	{
-		*destination = *source;
-		source++;
-		destination++;
-	}
+	set_3173f0(entries, kept);
 }
 
 __forceinline void timer_add_3175e0(char const *label)
