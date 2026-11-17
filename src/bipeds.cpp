@@ -1466,6 +1466,7 @@ void __stdcall function_e5d50(long arg_159e6d, long target_index, vector3f *offs
 vector3f *function_11d090(vector3f const *v, vector3f *out);
 void function_df380(long unit_index, point3f *position, vector3f *forward, vector3f *up);
 void __stdcall function_df5f0(long object_index, point3f *center, real *height, real *radius);
+void function_cb7e0(long unit_index, vector3f *vector);
 void function_e59e0(long arg_159e6d, vector3f *velocity, point3f *position);
 struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
@@ -1602,6 +1603,27 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
 // the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
 // facing homes stay four bytes out of retail's, so the body stands.
+// score 183 (was 203): m3 lane 4 r208 (plain; every function of this file checked). KEPT 203 -> 185: the alternate
+// facing through the existing function_cb7e0(arg, &facing) (retail expands 0xcb7e0 there; the copy itself is the same
+// code, the gain is case 6's inlined 0xe5d50 dot products, which take retail's XMM registers; listed below as "same
+// code" on the old 0xf8-frame body). KEPT 185 -> 183: 0x183670 called with the biped's own component first (retail
+// loads biped+0xb4 into EAX, the matched 0x183670's component_a, and the root's into ECX; a value-order fix now that
+// 0x183670 matches; the distance and the planar length are symmetric). Left: the dword homes. Retail keeps the
+// definition at 0x14 (sharing with case 6's distance; ours puts material there and the definition at 0x70), the
+// animation flags at 0x70, position/facing/target at 0x74/0x80/0x8c (ours facing/target/position at 0x78/0x84/0x90),
+// boost 0x98, material 0x9c, the two flag bytes 0xa0/0xa4 and the gravity dword 0xac (ours byte 0x9c, boost 0xa0,
+// gravity 0xa4, byte 0xac); airborne 0x38, velocity 0x3c, the index offset 0x60 and the component 0xa8 agree. Also
+// left: the walking speed's ESI preload, case 1's division scheduled first, case 6's x87 squares (retail squares dx
+// in place and keeps dy), 0xe59e0's EBX/ESI setup order. Tried on 183, none kept: `facing` renamed 183 (same code);
+// position/velocity/facing declared in the reverse order 183 (same code); material declared before speed_scale 182
+// (only the two entry stores exchange, a declaration move); the facing selection moved above the 0xb9dd0 call 224
+// (homes unchanged); position typed vector3f 183 (same homes); material as a `byte const *` local 183 (same code);
+// the target position declared at function scope 183 (same code); 0xe59e0 declared (index, position, velocity) at
+// its definition and call (retail sets EBX before ESI; a contributor's function, diagnostic) 182 with 0xe59e0 still
+// MATCH. Two lifetime diagnostics (not source forms): with case 1 not reading the definition, the animation flags
+// take retail's 0x70 and the definition goes to 0x9c (492, 2816 bytes); with material read again in case 2 nothing
+// moves (185). So the homes follow lifetimes, not names, types, scopes, declaration order or first use.
+// Earlier at 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
 // MiniMax C (11-17): no new form, no lower score (203, was 203): the frame (0xfc) and the 2828-byte extent agree, but the tag, material and animation homes, the entry scheduling, the walking-speed preload and the planar square transport still differ.
 // score 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
 // walking-speed preload and planar square transport remain. Earlier 585, 588 with frame 0xf8: position, ground,
@@ -1997,7 +2019,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	}
 	else
 	{
-		facing = biped->unknown168;
+		function_cb7e0(arg_159e6d, &facing);
 	}
 	if (biped->unknown34c == 1)
 	{
@@ -2078,7 +2100,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 
 				function_b9dd0(biped->unknown390, &target_position);
 				function_ba1d0(root_index, &velocity, NULL);
-				if (function_183670(root->havok_component_index, biped->havok_component_index, &nearest_a, &nearest_b,
+				if (function_183670(biped->havok_component_index, root->havok_component_index, &nearest_a, &nearest_b,
 					&distance))
 				{
 					point3f point;
@@ -4362,6 +4384,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // bool/byte/short/long: 638/638/638/638/638/638/638/638 (reduced control 612; full 548). NOT kept: no exact frame/result/flight-home
 // recovery; original nested calls, tests and complete body restored.
 // MiniMax C (11-16): no new form, no lower score (548): our frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx, spills it to its frame slot and reloads it after the flight call where this build keeps it in ebp for the whole body, so the biped, state and definition homes sit four bytes apart and the flight call's arguments are still one register out.
+// MiniMax S (11-17): no new form, no lower score (548): this build's frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx with a home at +0x18 that the rate then reuses where this build keeps it in ebp with a home at +0x1c, so every later home sits four bytes high, and the flight call's arguments are still one register out.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

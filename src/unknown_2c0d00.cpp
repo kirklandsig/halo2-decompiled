@@ -1948,6 +1948,12 @@ long function_1fa7f0(void);
 // 433, with the initialiser dropped 417) and the dead store of query+4 (0x2c22ed, 0x2c22f7) stay unreproduced;
 // 0x2c262d-0x2c2643 is 0x210850's inlined body, but a call to it stays out of line here (both conversions 514, 1680 B;
 // the end alone 474; the source alone 467), so the body stays written out.
+// M3 lane 8 r180 (fast, control 400; all restored): the emit reading the current step through points[index] with the step
+// pointer only at the top 473 (1758 B); the step pointer declared at the emit only 473 (1758 B); both corner queries
+// through a force-inline helper whose unused first argument is query+4 (retail's dead store) 452 (the store is not
+// produced); that helper reading the pathfinding pointer at +0x88 from its argument 400 (same code, folded); the
+// avoidance trace record at the loop-body scope 400 (same code). Diagnostics: `edge = 0xffff` at the scan hit 433 (the
+// second store appears, the edge stays in a slot); count's address taken, or count read through a pointer to it, 400.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

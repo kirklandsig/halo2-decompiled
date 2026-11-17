@@ -48,6 +48,7 @@ static __forceinline long floor_to_long_inline(real value)
 		sub eax, ecx
 	}
 }
+// MiniMax D (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, the kind's shift still lands in the copy to esi where retail shifts the call's result in eax, and the pool's argument copy still sits below the jbe; the two masked words are the only part of the body that still differ, so the chain's operand order and the shift's target are the whole of the remaining difference.
 // MiniMax E (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind's shift still lands in the copy to esi where retail shifts the call's result in eax; the pool's argument copy still sits below the jbe.
 // MiniMax A (11-12): no new form, no lower score (10): the OR chain written right-nested and the pool pointer typed as the pool (the cast moved to the active check) both give byte-identical code, and shifting the kind in place (kind = kind << 29) rebuilds the body at 79, so the first word still reads the entry own word before the flags term where retail reads the flags first, the kind shift still comes after the copy to esi where retail shifts before it, and the pool argument is still copied to edx inside the branch where retail copies it before the jbe.
 // MiniMax G (11-14): no new form, no lower score (10): the first word's OR chain written in retail's order (the category's shift, the flags' mask, then the entry's own word) and the same chain through a named local rebuild the body byte for byte, so the chain's terms are re-ordered by the compiler and the entry's own word is still read first; the kind word written as a dword local shifted in place puts the shift in the call result's register as retail has it, but the chain is then re-ordered the other way and the tag's register moves, so the body rebuilds at 79 and the two-statement form stays at 10.
@@ -363,6 +364,7 @@ static __forceinline long floor_to_long_inline(real value)
 // MiniMax C (11-16): where retail shifts eax and copies it; a permutation run this round (74 tries) and a swap of the OR operands both
 // MiniMax C (11-16): leave the bytes unchanged.
 // MiniMax R (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind word's shift still lands in esi before the copy where retail shifts eax and copies it.
+// MiniMax S (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind word's shift still lands in esi before the copy where retail shifts eax and copies it.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

@@ -581,6 +581,12 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // compare, yet the result stays EBP and the game-time pointer EBX), so the tie is result against game-time pointer:
 // ours ranks ticks, pointer, result; retail ticks, result, pointer; one more result read (listed 88) overshoots to
 // result, ticks, pointer.
+// Round 116 (m3 lane 1, fast with 0x110ab0 and 0x1ae440; control 15): the result bound as a `*const &` to the call 15;
+// the interval field through a force-inline accessor 82 (417 bytes, the load hoists above the 0x18 call); a repeated
+// `if (local_2)` guard around the chance block 15; the result's two later reads through a `const &` to the pointee 15
+// (all same code but the second); the ticks bound as `long const &` to the clock field 77 (read after the 0x18 call):
+// diagnostic, the prologue then is retail's (`push ebp` first, NONE in EBP, EBX pushed late) but the result takes EDI and
+// the pointer EBX, so with a ticks value across the call retail ranks ticks, result, pointer and ours ticks, pointer, result.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

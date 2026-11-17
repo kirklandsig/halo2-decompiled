@@ -280,6 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// score 214 (was 214; earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
 // matrix is taken in a named local inside the transform block, and the side bits are extracted with
 // an unsigned shift so retail's shr/and survives instead of our sar/xor fold; still differs: the
@@ -288,7 +289,6 @@ void function_245400(s_source_245400 const *source, long index,
 // arguments of the call to 0x244de0 (retail's push order differs because retail's declaration of
 // 0x245540 has its matrix and source the other way round); a one point gain, dropped. Declaring the
 // plane table after the point difference scores 207 again and a mask-test side bit scores 208.
-// score 214 (was 214; earlier noted 209 (was 209), 214 since B6G's j-row fix): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax G (11-05): no new form, no lower score; declaring the plane table after the point
 // difference scores 203 in the reduced and in the full build (a gain of six, below the keep
 // threshold, so the body is restored); the source receiver, the frame and the stack homes still
@@ -711,12 +711,25 @@ void function_245400(s_source_245400 const *source, long index,
 // of the long codes (`local_2 < 0`) 207, of the short codes 207 (same code: `setl` pairs, a seven-point gain from layout, not
 // retail's `shr; and bl, 1`, under the keep bar), with named plane indices used for the pointers and the compare 207; the
 // side bits from an unsigned shift `((dword)local_2 >> 15) & 1` 214 (`shr`, still fused into `xor al, dl`). Body unchanged.
+// m3 lane 16 r130 (fast with 0x245aa0, 0x244de0 and 0x245400, all MATCH; control 214): retail's call in 0x245aa0 sets
+// EAX (index) before ECX (source), so the source-first declared order stands. The second material read first, the plane
+// table after the edge vector and dword-shifted side bits together 221 (768 B, source then in EDX, 0x245aa0 3); the masked
+// plane indices through `long &` references masked in place 224 (767 B, 0x245aa0 6); the transformed point picked by a
+// ternary after the rotation block as 0x245400 writes it 211 (a one-use local); the edge vector from the vertex
+// records read in its call, the start point named after it 218 (793 B, 0x245aa0 100); both material codes through an
+// inline accessor taking the record by const reference 214 (same code). Re-measured: a block-local matrix copy 207
+// (was 213); dword codes 214; dword codes with byte sides 214; cross3f_staged 214 (was 209); the final call's material
+// fields read through the source 223 (0x245aa0 107).
 // M3 lane 9 r131 (fast with 0x245aa0; base 214): the plane table read after the edge vector, re-measured, 220 (768 B, and
 // 0x245aa0 then 3); the side bits as `byte` 214 (same code); the matrix read once through its own address at its test
 // (`transform4x3f const *const *ref = &arg_2;`) 229 (763 B: the matrix leaves EBP but the body shortens), with the plane
 // table after the edge vector 225 (762 B, 0x245aa0 3), with unsigned-shift side bits 229 (763 B). Retail still computes
 // both side bits ahead of the plane-index compare (byte slot plus BL) where ours folds them into one xor in the branch.
 // Also the side bits shifted from the short material codes (`(first_material >> 15) & 1`) 213 (positional noise only).
+// MiniMax C (11-17): score 206 (was 214): the two material codes are now read in retail's order (the surface's second
+// code at field_0a first, then the one at field_08) and the two side bits are sign tests of the sign-extended codes.
+// Left: retail's 0x2c frame with the source copied to ESI, its matrix read from its stack slot at the test instead of
+// kept in EBP, its shr/and side bytes and the cross-product register order.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -725,8 +738,8 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 	s_surface_245400 const *local_0 = &arg_1->field_34[arg_0];
 	long local_1 = local_0->field_08;
 	s_material_245400 const *materials = arg_1->field_2c;
-	short first_material = materials[local_1].field_00;
 	short second_material = materials[local_0->field_0a].field_00;
+	short first_material = materials[local_1].field_00;
 	if (first_material != second_material)
 	{
 		plane3f const *local_7 = arg_1->field_0c;
@@ -738,8 +751,8 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 		long local_3 = second_material;
 		plane3f const *local_8 = &local_7[local_2 & 0x7fff];
 		plane3f const *local_9 = &local_7[local_3 & 0x7fff];
-		bool local_10 = (bool)((local_2 >> 15) & 1);
-		bool local_11 = (bool)((local_3 >> 15) & 1);
+		bool local_10 = local_2 < 0;
+		bool local_11 = local_3 < 0;
 		if ((local_2 & 0x7fff) != (local_3 & 0x7fff))
 		{
 			vector3f local_12;

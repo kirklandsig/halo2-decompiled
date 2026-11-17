@@ -169,6 +169,18 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
+// score 67 (was 67): Retail spills the entry-array base and recomputes the indexed
+// terminator after the string calls.
+// independent read cursor and indexed terminator 84; cursor search condition with
+// indexed result after loop 59 (NOT kept: extra count test and no retail base spill);
+// cursor search saves the found index 72; plain-name result assigned before the
+// suffix guard 66 (NOT kept: gain below eight); opaque entry base with typed indexing
+// at each use 84; found entry reference with indexed terminator 90; appended result
+// from the last concatenation 60 (NOT kept: form requires a byte match); read-only
+// cursor for all source fields 79; writable cursor with separate indexed terminator
+// 84; writable while-loop cursor with indexed terminator 83; cursor with plain-name
+// guard before the suffix 84; opaque base and writable cursor with indexed terminator
+// 84.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

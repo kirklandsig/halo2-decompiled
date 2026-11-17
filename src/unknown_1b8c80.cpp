@@ -830,6 +830,11 @@ extern "C" void _ReadWriteBarrier(void);
 // through a const reference to the slot, declared after the actor, 44; the flags through a const
 // reference in the NONE block 44; the actor pointer bound to a const reference 46 (212). Diagnostic
 // (reverted): probe stores of 1 and 0 at the top leave the slot load after the branch (48).
+// Round 106 (m3 lane 14, fast): the state as a reference to the slot parameter itself, with/without the
+// barrier 6/44 (208 bytes); the NONE test in a named bool ahead of the barrier 51 (212); a second barrier
+// between the state and the actor lookup 6; the actor as a typed array element of the pool's data 6; the
+// state as a reference-bound local (the copy not folded back), with/without the barrier 6/44 (the copy is
+// still propagated and the slot loaded after the branch).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

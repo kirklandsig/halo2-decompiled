@@ -1862,6 +1862,12 @@ void function_195e90(void);
 void function_68c00(s_simulation_world_owner *owner, void *definitions,
  s_simulation_distribution *distribution, c_class_6a600 *world);
 
+/* an authority world (state 2 or 4) is set up again from its saved owner, distribution and address, and the
+   simulation's mode follows its state. The states share one arm with no reachable default, as 0x6aee0's switch has
+   for the other two (3 and 5): the only caller, 0x83220, calls this for a world that 0x67e10 reports as an authority
+   (not 3 or 5) and that is not idle (1). Retail's `mov ecx, eax; sub ecx, 2` with no jump after it is what is left of
+   that switch's first case test. */
+// MiniMax S (11-17): no new form, no lower score (34, was 34); about 95 spellings of the mode expression (switches on the state and on state - 2 with two to five cases, dead and live results, ternary and arithmetic forms, inlined helpers and assume arms) left no dead `sub ecx, 2` beside the setne, the lead form `state != 2 ? 4 : state` is retail's code instruction for instruction apart from that five-byte dead subtract (59 at 172 bytes), and the one open origin (an extra argument on the stdcall callee 0x68e20) would change a declaration this lane may not change, so the body stays as it is.
 // score 34 (was 34): earlier 35. Retail computes the mode as `xor ebx, ebx; cmp eax, 2; setne bl;
 // lea ebx, [ebx + ebx + 2]` after a dead `mov ecx, eax; sub ecx, 2` (5 bytes, perhaps
 // left by a lowered switch; no switch tried here gives it), and loads its fields in the
@@ -1907,22 +1913,31 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {
- long mode = 4 - 2 * (world->state == 2);
- s_simulation_world_owner *owner = world->owner;
- s_simulation_distribution *distribution = world->distribution;
- long local = *(long *)((byte *)world + 0x14);
- s_machine_address address = world->local_address;
- byte preserve = world->unknown2f;
- function_68e20(world);
- if (g_510ca0) g_510ca0 = false;
- g_4e6948->mode = mode;
- g_4cf778 = false;
- function_68c00(owner, (void *)g_4cf784, distribution, world);
- world->local_address = address;
- world->unknown0c = true;
- *(long *)((byte *)world + 0x14) = local;
- function_6a770(world);
- if (preserve) world->unknown2f = true;
+ switch (world->state)
+ {
+ case 2:
+ case 4:
+ {
+  long mode = world->state == 2 ? 2 : 4;
+  s_simulation_world_owner *owner = world->owner;
+  s_simulation_distribution *distribution = world->distribution;
+  long local = *(long *)((byte *)world + 0x14);
+  s_machine_address address = world->local_address;
+  byte preserve = world->unknown2f;
+  function_68e20(world);
+  if (g_510ca0) g_510ca0 = false;
+  g_4e6948->mode = mode;
+  g_4cf778 = false;
+  function_68c00(owner, (void *)g_4cf784, distribution, world);
+  world->local_address = address;
+  world->unknown0c = true;
+  *(long *)((byte *)world + 0x14) = local;
+  function_6a770(world);
+  if (preserve) world->unknown2f = true;
+ }
+  break;
+ default: __assume(0);
+ }
  return true;
 }
 
@@ -2073,7 +2088,7 @@ void function_195a40(void);
 // retail's whole prologue and its function_68c00 call setup; what is left is
 // the place of the world load, which comes before the mode comparison here
 // and after it in retail.
-// score 3: only the place of the mode read against the flag stores is left.
+// Earlier: only the place of the mode read against the flag stores is left.
 // The two flags are adjacent bytes; this body's bool stores come out as two
 // byte writes. A `*(volatile bool *)&g_4cf771` cast on each forces retail's
 // stores and reaches a byte match, but docs/DECOMPILING.md forbids volatile on
@@ -2099,6 +2114,13 @@ void function_195a40(void);
 // scan finds only direct loads and stores), which keeps the mode read behind the stores, as matched 0x196390's
 // flag store (its byte sits in an address-taken record) keeps its state read behind it. Taking a shared global's
 // address is not allowed, so the barrier stands in.
+// Round 179 (m3 lane 8, fast; control 3): a rescan of every retail code and data section finds no pointer
+// into 0x4cf760..0x4cf790, only direct operands, so the address-taken cause stays dropped code: BLOCKED.
+// Without the barrier: the two flags as one two-byte aggregate global (diagnostic) 5 (the pointer load
+// moves first as retail, the mode read still hoists); the distribution declared ahead of the stores 5;
+// the options pointer named ahead of the stores with mode read after them 5. With it: the watcher read
+// once into a local for the call and the stores 18. Diagnostic: a probe taking only g_4cf771's address 4
+// (the read stays behind that store, g_4cf772's sinks below it), so both flags must be address-taken.
 // @retail 0x67ee0
 void function_67ee0(void)
 {
