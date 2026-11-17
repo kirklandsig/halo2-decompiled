@@ -799,6 +799,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // 239; point setter for in-place velocity scale 235; point setter for forward copy 118; point setter for
 // heading copy 122; point setter for input rotation 120; point setter for both perpendiculars 116; point
 // setter for heading blend 218; point setter for all three vehicle vector copies 247.
+// N405: Speed scope, initial-velocity scope, heading scope, nested speed scope,
+// work points declared at first store, separate producer scopes and reversing
+// scope all score 116. Tag lookup after the first velocity copy scores 141.
+// NOT kept: none recovers the first velocity-copy receivers or early unity.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1691,6 +1695,10 @@ long function_10f5f0(long object_index);
 // 561/567/561/567, vertical range value with either binding and point difference 559 each.
 // Range value with separate initial velocity 559, all three separate velocity outputs 558.
 // NOT kept: 0x1988 frame is four bytes larger than retail and the three-point gain is below threshold.
+// Shared two-vector bounds workspace for the initial, boundary and falling
+// velocity outputs, alone and combined, and the fully shared workspace declared
+// before the physics state: eight at 561. NOT kept: sharing puts the bounds
+// and velocity at +0x24 and separates the request names. Frame still 0x1990.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

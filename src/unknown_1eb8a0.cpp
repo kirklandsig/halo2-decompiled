@@ -187,10 +187,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and the first clamp
 // still computes t before the 12/8 factor is selected; a named local copy of q at the function entry (732) and
 // one just before the output copy (665) both score worse and both leave d in EBX, so the body is unchanged.
-// score 603 (was 622; 636 before the settle factor): m3 lane 14 r105 put the settling align through the existing dot3f
+// score 603 (was 622): m3 lane 14 r105 put the settling align through the existing dot3f
+// The score was 636 before the settle factor.
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // MiniMax I (11-17): no new form, no lower score (622 plain, 614 fast): retail keeps q, the fourth stack argument, in EBX from the activation block on (its fallback is the cmove ebx, [0x4687a4]) and reads d from its stack slot at each of its five uses, this build keeps d in EBX and reloads q, and d is used here four times against q's three, so the choice is not reachable from the source; the body is unchanged.
 // Earlier at 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// Earlier score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
 // selected before t in each clamp, xmm homes and coefficient schedules.
@@ -636,6 +638,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // producing both coefficients 709; direct guarded bound with shared mode
 // 689; preselected multiplier with guarded rate 708; preselected multiplier
 // with the direct bound 675. The sample still needs retail's EBX home.
+// Direct component loops for supplied-direction fallback at activation, refresh,
+// and the angle guard, subsets 1 through 7, 684/673/689/673/685/674/689. All
+// with the opening sample copy as a loop 690. Frame 0x24 and matched caller
+// transport survive. The supplied direction stays in EBX and the zero moves
+// ahead of the register saves.
+// Shared normalize-or-copy and its guard form, vector and state refresh, each inline/forceinline
+// 603/603/603/603/672/672/671/671. The full refresh forms keep frame 0x24 and move zeroing ahead
+// of the register saves. The sampled-velocity register and stack direction reads still differ.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

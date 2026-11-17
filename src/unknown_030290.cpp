@@ -557,6 +557,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // transform output in the scale branches, read Z per row 281.
 // NOT kept: Whole-point/scalar and three Z-only forms recover frame 0x2c but still regress, including
 // unresolved inverse homes.
+// N405: Signed displacement selection inside the transform as component
+// branches, captured origin updates, a complete point or component conditionals
+// 255/307/263/307. Explicit expansion repeats those four scores.
+// NOT kept: the transform still needs the native X/Z and inverse allocation.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

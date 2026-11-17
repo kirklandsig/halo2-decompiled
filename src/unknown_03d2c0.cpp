@@ -410,6 +410,17 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // oldest-age sentinel failure 128, conditional initialization on the replacement 94, hit bypass on the separate
 // replacement form 110. NOT kept: the branch-owned result reaches 518 bytes but raises the score. The conditional
 // initialization form shortens to 504 bytes and diverges earlier.
+// Round 401 tested cache-hit index unchanged, stale cache index reset, or result initialized then invalidated, with index/initial-age/negative-age exhaustion as applicable: 103/81/77/103/81/148/134/148.
+// The frame agrees but the cache-hit bypass and trailing register return remain. Original body restored.
+// Conditional record before initialization, before or after the flag test, 80/101;
+// record assigned under the result guard 102; record carried from both paths 149;
+// owner through the carried hit record 172; miss-only record with two/one returns
+// 173/178; initialization within the miss path 176. NOT kept: the native cache-hit
+// bypass and trailing register return remain.
+// N405: Seed the eviction choice from the first occupied datum as the shared
+// result, shared result before cursor, separate successful choice, or immutable
+// first index with separate choice 106/106/169/168. The for walk repeats these.
+// NOT kept: cache-hit bypass, trailing ESI return and native length still differ.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

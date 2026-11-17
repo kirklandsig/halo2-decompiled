@@ -1592,6 +1592,7 @@ void function_b7360(long object_index);
 #pragma inline_depth(2)
 // score 270 (was 270): Retail loads both pools early and reloads the packed reference after validation. Actor and output occupy the opposite registers.
 // see the forms below.
+// actor-pool acquisition and actor/output registers differ. Point references stay live across validation.
 // MiniMax R (11-16): no new form, no lower score (270); the prologue still reads the cs pool global before the actor pool and takes arg_0 into ESI after the pushes where retail reads the actor pool first and takes arg_0 into EBP, and the case-10 flag store still follows the selector compare where retail stores the flag first; the permuter's best (221) swaps the arguments of the call to 0x1fb360, but retail's call site passes the unit index in EAX, the second argument in ECX and the constant on the stack, so the swap would change what the call does.
 // MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
 // reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
@@ -2092,6 +2093,11 @@ void function_b7360(long object_index);
 // state view at payload dispatch 272; capture actor unit before validation 272.
 // NOT kept: all regress. Pool acquisition, actor and output registers, and the
 // packed-point reload after validation still differ.
+// N408: Actor first with a shared Boolean-based return, explicit result, or default rejection 648/639/578.
+// Per-case result codes with actor/command first 553/527. Positive admission with those result codes
+// 522/523. Actor first with positive admission and the original success state 307. Explicit result branches
+// before/after the shared exit 464/464. NOT kept: all regress and move length away from 1848 bytes.
+// Actor/output register ownership and the post-validation point-reference reloads remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2502,6 +2508,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
 // score 479 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
 // m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
+// frame 0x1c and entry agree. Dispatch span, planar copy and request flag stores differ.
+// Earlier m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // / `return 0;` 483 (re-measured on this base); one `turn_facing` pointer for case 2's copy and publish (same code); case
 // 2's aggregate copy, case 4's facing reads and case 18's and case 21's targets held across 0x25ab50, together 636
 // (re-measured), with the plain returns 640; case 2 + case 4 only 639; cases 18 + 21 only 619. Each still gives the
@@ -2900,6 +2908,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // result-tested iterator and missing-target guard 479; inactive and missing
 // guards 488; inactive guard with existing target first 487; clear completion
 // from active-search or wait state 479. NOT kept: tied or longer forms.
+// N408: Planar input transfers into animation/turn/fallback workspaces, memcpy 474/474/474,
+// memmove 578/507/491. Animation pair through its named actor field 474. All three memcpy 474.
+// Request bit setter for 0x29/0x48/both 453/445/452. NOT kept: copy forms tie or regress versus the
+// reduced control 474. Setters increase length to 2416-2432/2396 bytes and give different store sequences.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

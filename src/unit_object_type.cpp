@@ -9664,6 +9664,10 @@ struct s_unit_melee_collision
 // scales 457; grid ray plus shared scaled aim 486; aim address after center 484; height after across scale 496.
 // NOT kept: the 474 and 457 forms retain the once-loaded range where retail reads it in each ray expression.
 // Moving only the height read scores 496. Frame 0x180 and the different fan register assignment remain.
+// N404: Current-slot query and its resolved-unit helper 544/484, range once per row/ray 491/481,
+// ordinary cross 528, exclusive fan counters 485, separate scaled basis 572, selected object type
+// read once 485, long surface type 487. NOT kept: ray-local range restores the 0x17c frame but
+// gains only three and shortens the body to 2201 bytes. Native unit, tag and loop counter homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

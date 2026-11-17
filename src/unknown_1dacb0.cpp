@@ -1093,6 +1093,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // M3 lane 8 r164 and r166 forms appear at the end.
 // Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain. See also lane 8 r164 and r166 below.
+// Earlier trials from m3 lane 8 rounds 164 and 166 follow below.
 // m3 lane 3 r250 (fast with 0x1dd560/0x1dd9d0, control 828; masked = registers and stack offsets masked, aligned):
 // ours homes iterator_mode in found_mode's argument slot where retail homes the per-pass candidate there. The candidate
 // dropped with `result = named ? named->animation_id : c_type_709360();` 978; the same as if/else 977 (retail's 2825 B,
@@ -1426,6 +1427,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // mode-class/mode-type/class-type 1056/1056/1056, all three 1075, with entry declared
 // in the loop condition 1075. NOT kept: the independent values grow the frame to
 // 0x30/0x34/0x38 and the body beyond retail. Original complete body restored.
+// Resolved mode/class/type copied after search for both optional publication
+// and resource requests, all seven subsets 828 each. All three after closing the
+// iterator scope 828. The iterator-output and candidate homes still differ,
+// and the inheritance loop still lacks a persistent zero.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

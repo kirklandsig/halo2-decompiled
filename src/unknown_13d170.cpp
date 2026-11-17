@@ -771,6 +771,10 @@ struct s_physical_block_iterator
 // P598: Advance the ring ordinal after prefetch/after accumulation/before prefetch 250/355/273.
 // While scan with early advance 250, with undersized entries skipped 355. Conditional
 // best record/pointer/reference 248/248/248. The case-zero Boolean still needs its retail join.
+// Eager tie mask, eager earlier-or-smaller mask, guarded mask and eager complement, then the four
+// with symmetric age clamps 231/227/195/232/222/223/236/217. NOT kept: the 195 guard gains six,
+// is 19 bytes short and still misses the native case-zero join. Case-zero materialization and the
+// native weighted-age homes still differ.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

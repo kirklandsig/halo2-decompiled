@@ -2085,6 +2085,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // default cases 194; split case-1 reference 220; case-3 Z first on the original projection order 182
 // (NOT kept: caller 492 to 572); both reference splits 220; entry real scale 193. The result still
 // shares the scale argument's home.
+// N404: Both reference sources produced inside the perpendicular helper after its first cross
+// component, between crosses, or after the first or second perpendicular component: scalar
+// displacement stores 312/312/581/581, vector setter 312/312/316/316. Four forced-inline
+// counterparts reach 178 at 812 bytes with frame 0x18 and result at +8. NOT kept: the caller
+// measures 572 against 492, and the cross and displacement still have different XMM allocation.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3774,6 +3779,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // index and the found flag first) are listed above and measure the same, so the body stands.
 // Retained-boundary cursor through the paired, fallback, creation and first-sort phases scored
 // 422/440/479/479 with the paired flag and 425/451/485/485 with cursor equality.
+// N404: Creation-pass admission in either loop-test order 351/417, conditional empty start 244,
+// exclusive creation-pass boundary with revisit/advance-on-retention/unsigned ordinal/left
+// bound/short ordinal 381/379/374/379/362. NOT kept: the conditional start recovers early
+// EDX/EBP roles at 1324 bytes, but adds a manufactured out-of-range start and comparison on
+// the path retail skips directly. Counter homes and the decay base still differ.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
