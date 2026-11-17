@@ -340,6 +340,11 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // block-local unit, same code); the unit accessor returning `long const &` 3 (same code as the body); unit and object
 // accessors together 4; the seat through an accessor returning `short const &` 3 (same code), with the unit accessor
 // 3, with the object accessor 3. Restored.
+// M3 lane 15 r96 (fast with 0x1b8eb0/0x11b0c0/0x11ade0, which stay matched): a redundant `if (0 < count)` guard around the
+// loop 101 (388 bytes); a trivial inline accessor for the 0x1b8d80 object argument 3 (same code); a `const &` to the seat in
+// an else block for both unoccupied-arm calls 99 (368 bytes); the unit index read once at function scope with `unknown3b4
+// != 0` 109 (389 bytes); both unoccupied-arm tests through an inline helper taking the seat by `const &` 95 (frame 0x310: the
+// seat address is no longer spilled, its fields read through ESI). Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
