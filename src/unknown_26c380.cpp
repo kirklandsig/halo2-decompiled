@@ -620,6 +620,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // test. Helper rule: the private dot_product2d (point, vector), magnitude3d and function_x697631 are not written-out
 // bodies of a shared helper that this file may include (magnitude3d's shared form needs slot_handler.h, a new include;
 // recorded above at 244); no new local, helper, double or include.
+// One accepted-edge break, cutoff/advance first 244/244; qualified hit and
+// narrowed raw hit 413/469; qualified hit with either shared break 413/413;
+// edge exhaustion with original/shared break 386/386. NOT kept: ties or
+// regressions. Success/first-byte homes and the common final tail still differ.
 // M3 lane 17 r45 (fast with the file's other functions and 0x15f3a0, all MATCH throughout; control 244; goto form = the held form
 // rebuilt on this body with lane 2 r82's tail orders, 32 at 1605 B, the held form itself 34). On the goto form: the line as one
 // 12-byte aggregate, written as a local plane type {vector2f n; real d} or as a vector3f whose i, j hold the planar normal (copied

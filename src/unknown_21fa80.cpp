@@ -73,6 +73,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// MiniMax C (11-17): score 534 (was 534): no new form, no lower score. The frame stays 0x22c against retail's
+// 0x224, retail keeps the stream pointer in EBX and the gain bits in EBP where ours keeps them the other way
+// round, and the changed/direct/mode locals sit at -0x13/-0x1b/-0x1c against retail's -0xf/-0xe/-0x10; retail's
+// body was built without /Op, which the file's flags rule out.
 // score 534 (was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
 // /Op file still calls the CRT for them, and this build's frame is 0x22c against retail's 0x224.
 // MiniMax R (11-16): the level's square root taken in double, as retail's inline fsqrt keeps the extended

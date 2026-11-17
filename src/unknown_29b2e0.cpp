@@ -51,6 +51,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax C (11-17): score 176 (was 176): no new form, no lower score. The first normalizer's magnitude still spills
+// to -0x10 where retail spills it to -0xc (the vector homes differ too), the unity constant still loads into XMM5
+// against retail's XMM4; the length from the helper's return (263), the shared length slot (422) and the length local
+// declared first (176) were measured and dropped.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-12): no new form, no lower score (176); the permuter's 129 tries find nothing better than the
 // baseline (172 on its reduced image), and retail keeps the unity vector in XMM4 where ours keeps it in XMM5

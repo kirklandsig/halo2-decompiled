@@ -588,6 +588,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
 // rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
 // this lane may not edit.
+// MiniMax E (11-17): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, and the rotation helper (0x170d70) is defined in src/unknown_170d70.cpp, which this lane may not edit.
 // score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
 // `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
 // MiniMax S (11-15): no new form, no lower score (13): only the j and k rows of the inlined rotation differ, where the

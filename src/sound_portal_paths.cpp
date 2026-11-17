@@ -72,7 +72,7 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 long function_2197f0(real gain);
 long __stdcall function_18ae50(long a, long b, real const *values);
 typedef bool (__stdcall *t_portal_path_compare)(long, long, void const *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_portal_path_compare compare, void const *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_portal_path_compare compare, void const *context);
 extern real g_44a0b4;
 
 static inline void portal_path_set_bit(dword *bits, long index)
@@ -176,7 +176,7 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 			distances[i] = FLT_MAX;
 	}
 	real scratch;
-	sort_4byte(order, bsp->sound_count, &scratch, (t_portal_path_compare)function_18ae50, distances);
+	sort_4byte(&scratch, order, bsp->sound_count, (t_portal_path_compare)function_18ae50, distances);
 	if (count)
 		*count = 0;
 	long limit = bsp->sound_count < 64 ? bsp->sound_count : 64;
@@ -270,7 +270,7 @@ void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point
 			distances[i] = FLT_MAX;
 	}
 	real scratch;
-	sort_4byte(order, bsp->environment_count, &scratch, (t_portal_path_compare)function_18ae50, distances);
+	sort_4byte(&scratch, order, bsp->environment_count, (t_portal_path_compare)function_18ae50, distances);
 	if (count)
 		*count = 0;
 	long limit = bsp->environment_count < 2 ? bsp->environment_count : 2;

@@ -1591,7 +1591,8 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 {
 }
 
-// score 15 (195 bytes against retail's 194): retail tests
+// score 15 (was 15):
+// (195 bytes against retail's 194): retail tests
 // `definition->string_list_index` through a register it loaded once
 // (`mov eax, [ebx + 0xc]; cmp eax, -1`) and reuses it for the first 0x1a0180
 // call, while ours folds the test into a memory compare and reloads for the
@@ -1600,6 +1601,9 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // `*(volatile long *)&buffer[0] = 0;`, a four-byte store into a two-byte
 // buffer element: a type-widening store, so it was not kept; a volatile word
 // store changes nothing.
+// Conditional list index with description refresh 51; guarded assignment, explicit fallback and memcpy
+// index with description refresh 69 each; one-word memset for both buffers 55 and title only 50; copy the
+// empty wide string 15; fetch the title string id before clearing 71.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -2188,6 +2192,11 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 	delegate_register(&item_handlers, &handler);
 }
 
+// score 7 (was 7):
+// Retail clears ESI before comparing the pool result, then uses it in the parameter setup. Ours tests EAX
+// first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
+// tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
+// clear before selector 14 each.
 // @retail 0x2c8719
 void c_controller_settings_edit_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -3064,7 +3073,8 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
-// score 30 (was 29): ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
+// score 30 (was 29):
+// ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
 // the iterator stack slots (ebp-0x10..-4) and the calls to 0x6b380, 0x19c5f0 and 0x24c515 are retail's. The old
@@ -3075,6 +3085,10 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // assignment inside the test; iterator initialised before the load (29, same ebx load); dword local; copy of the
 // local; reversed ==; a found flag (40); a parameter helper (no change); an inline accessor for the global (29, spills
 // the local like the volatile form).
+// Iterator aggregate initialization 15, NOT kept: added a datum clear retail lacks and grew from 80 to 84
+// bytes against retail's 81. Pool-first and chained sentinel writes 29 each, NOT kept: one-point gains
+// only. Chosen datum after loop 31; use the iterator's result for loop and selection 56; named lookup
+// definition and pool read ahead of the guard 30 each; mismatch continue and hit return 33.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
