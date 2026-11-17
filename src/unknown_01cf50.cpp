@@ -498,8 +498,9 @@ bool function_0158f0(short format, byte linear, long width, long height,
 	long levels, long usage_index, D3DTexture **out);
 bool function_0159b0(long edge, short format, long levels, long usage_index,
 	D3DCubeTexture **out);
-bool function_015a60(short format, long width, long height, long depth,
-	long levels, long usage_index, D3DVolumeTexture **out);
+// usage_index first (11-17): the register setup order of 0x1d0e0 and 0x1d000 (see 0x15a60's note)
+bool function_015a60(long usage_index, short format, long width, long height, long depth,
+	long levels, D3DVolumeTexture **out);
 // MiniMax D (11-14): no new form, no lower score (72): the call to 0x359e0 still passes its arguments in another order than retail (retail keeps the height in dx, stores it as a word and passes the width in ecx with the depth in ax, ours keeps the width in di), and that callee's parameter order is declared in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
 // MiniMax H (11-11): no new form, no lower score (72); the height is still spilled as a dword where retail stores a word, the depth still lands in AL so the linear flag has to be reloaded from the stack, and the texture pointer still sits in a register where retail keeps it in EDI; this round typing the texture slot as a texture pointer shrinks the frame to retail's 0xc and moves the pointer into EBX but leaves the score at 72, dropping the volatile height stops the spill altogether (80), and a copy of the flags byte folds away (72), so the body stands.
 // MiniMax I (11-10): no new form, no lower score (72); the width still lives in DI where retail keeps it in BX, and the first 16-bit height store is still a dword in ours.
@@ -610,7 +611,7 @@ bool function_1d000(byte *bitmap)
 			return function_0158f0(format, linear, width, height, levels, 0,
 				(D3DTexture **)texture);
 		case 1:
-			return function_015a60(format, width, height, depth, levels, 0,
+			return function_015a60(0, format, width, height, depth, levels,
 				(D3DVolumeTexture **)texture);
 		default:
 			return function_0159b0(width, format, levels, 0,
@@ -2444,7 +2445,7 @@ extern dword g_4b8348;
 extern real g_4b8494;
 void function_35aa0(void);
 typedef bool (__stdcall *t_sort_2byte_compare_function)(word, word, void const *);
-void sort_2byte(word *elements, unsigned long count, void *unused, t_sort_2byte_compare_function compare, void const *context);
+void sort_2byte(void *unused, word *elements, unsigned long count, t_sort_2byte_compare_function compare, void const *context);
 
 struct s_depth_sort_record
 {
@@ -2545,8 +2546,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // inlined device call's second rep movsd; the body was re-measured at 4 (359 bytes, as retail's). BLOCKED-BY the
 // sorter in src/array_sort.cpp.
 // MiniMax R (11-15): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
-// score 4 (was 4): the subtraction of the stream count must come before the last push of the
-// sorter call, and the add of the stipple stride must follow the second rep movsd of the
+// score 2 (was 4): the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
 // MiniMax D (11-06): no new form, no lower score: the scratch argument's local at function scope
 // (11) and the count in a local or read from the global all keep the subtraction after the sorter's
@@ -2574,6 +2574,18 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // MiniMax C (11-16): inline, so both orders are fixed outside this file.
 // MiniMax R (11-17): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd where retail puts it after; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
 // MiniMax S (11-17): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd where retail puts it after; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
+// b16C (11-17) walk against retail, fast build on r852: logic equals retail statement by statement (index loop, sort
+// call, callback loop 0x1e3d0-0x1e404, g_4b8348 store 0x1e40d, fabs/ja test 0x1e418-0x1e436, clamp 0x1e44a-0x1e463).
+// FIXED the first difference (4 -> 2) in the sorter's declaration: sort_2byte now takes (unused, elements, count,
+// compare, context) like its sibling sort_4byte (0x13de30). The callee's bytes are unchanged (0x13df80 MATCH); retail's
+// caller sets the stack scratch up with `lea edx,[esp+0x18]` (0x1e3ab) before the count's `sub eax,edi` (0x1e3af) and
+// pushes it last (0x1e3b1), as 0x23f3e0 does at 0x23f666. Both callers (0x23f3e0 stays 4) and 0x13df80 were updated,
+// and 0x23f6e0/0x15b330 stay MATCH. Left: retail inlines D3DDevice_SetStipple here (the body of 0x3f8cc0, whose own add
+// 0x84 also follows its rep movsd at 0x3f8d09) and keeps `rep movsd` 0x1e4be before `add eax, 0x84` 0x1e4c0; ours adds
+// first. The bytes `mov [eax], 0x801480` occur only at 0x1e4ae and in 0x3f8cc0, so this is the one inlined copy; it is
+// the SDK library's code, rescheduled by LTCG. Tried (all 2 or worse): the pattern in a local pointer, the 1.0f store
+// before the call (26), `16.0f` literal, `opacity` const local, `&g_487288[index][0]`, and calling function_1c290(1.0f)
+// instead of the written-out fistp block (134: not inlined, call 0x1c290 stays; also with its __asm removed).
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2584,7 +2596,7 @@ void function_1e370(void)
 		indices[i - first] = (word)i;
 	{
 		long scratch;
-		sort_2byte(indices, g_4b6280.count - first, &scratch, function_1e700, g_4b6280.records);
+		sort_2byte(&scratch, indices, g_4b6280.count - first, function_1e700, g_4b6280.records);
 	}
 	for (long i = 0; i < g_4b6280.count - (long)g_4b6280.unknown04; ++i)
 	{
@@ -3881,7 +3893,8 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // src/unknown_0158f0.cpp and homes its arguments differently, so the difference cannot be moved from this file;
 // re-measured at 2 (441 bytes, as retail's). BLOCKED-BY the callee.
 // MiniMax R (11-15): no new form, no lower score (2): the call to 0x15a60 still zeroes ecx before it loads 9 into eax where retail loads 9 first; the register homes of that call come from the callee's declaration in src/unknown_0158f0.cpp, which this lane may not edit.
-// score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
+// score MATCH (was 2; b16A's walk below): the setup of the call to
+// 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
 // MiniMax D (11-06): no new form, no lower score: the callee at 0x15a60 takes its first argument
@@ -3905,11 +3918,20 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // MiniMax C (11-16): body in src/unknown_0158f0.cpp decides.
 // MiniMax R (11-17): no new form, no lower score (2): the second call's two register setups still come in the opposite order (this build sets ecx before eax, retail sets eax before ecx), and that order follows the callee's register homes, which 0x15a60's body in src/unknown_0158f0.cpp decides; a permutation run this round found nothing (2).
 // MiniMax S (11-17): no new form, no lower score (2): the second call's two register setups still come in the opposite order (this build sets ecx before eax, retail sets eax before ecx), and that order follows the callee's register homes, which 0x15a60's body in src/unknown_0158f0.cpp decides.
+// b16A (11-17) walk against retail, fast build on r852: logic matches statement by statement (the three texture
+// creations, the three zero tests, the 16/64/16 word fills with colors {0x0f00,0xf0f0}, lock and unlock calls). The
+// setup of the 0x15a60 call (mov eax,9 at 0x1d112, then xor ecx,ecx at 0x1d117) follows the callee's parameter order:
+// retail's callee reads usage_index in ecx (0x15a61) and the format in ax (0x15a79), and 0x1d000 sets its registers
+// the same way (0x1d095, 0x1d097), so 0x15a60 now declares usage_index first (src/unknown_0158f0.cpp, this file's
+// declaration and both calls updated). With that the call setup is retail's; fast build 117 -> 115 (the fast image
+// builds this body as 425 bytes, retail 441: loop alignment padding and the null-test registers differ in both the
+// old and the new run, so the full-build 2 should now read 0, to be confirmed). 0x1d000 fast 72 -> 73, only through
+// the diff's alignment: its call setup now equals retail's (0x1d095 mov eax,ebp then xor ecx,ecx); 0x359e0 blocks it.
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
     bool result = function_0158f0(9, 0, 4, 4, 0, 0, (D3DTexture **)&g_485ae4) &&
-        function_015a60(9, 4, 4, 4, 0, 0, (D3DVolumeTexture **)&g_485ae8) &&
+        function_015a60(0, 9, 4, 4, 4, 0, (D3DVolumeTexture **)&g_485ae8) &&
         function_0159b0(4, 9, 0, 0, (D3DCubeTexture **)&g_485aec);
     if (result)
     {
