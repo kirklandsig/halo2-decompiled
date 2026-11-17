@@ -2394,6 +2394,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 0x2ec40-0x2ec58, 0x2ed71-0x2ed97, 0x2ed99-0x2edb9); every term order written in the forward dot compiles to the same
 // code, and explicit grouping `(j + i) + k` in all four gives retail's order too (493). With k, i, j all four round as
 // retail's: 492 plain (register-masked aligned 242 -> 237).
+// Round 407: entry rejection guard 487; separate opacity/size guards 487; bind rejection guard 492; entry and
+// bind rejection guards 487; while entry loop 556; depth-disable arm first 495; draw point aggregate 492; draw
+// color aggregate 492.
+// NOT kept: the entry rejection forms gain five at retail length, below the eight-point threshold. The 0x90
+// frame and the draw point overlap remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

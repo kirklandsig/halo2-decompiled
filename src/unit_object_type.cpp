@@ -5445,6 +5445,11 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // MiniMax C (11-16): other order.
 // MiniMax R (11-17): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the other order.
 // MiniMax S (11-17): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the other order.
+// Round 407: yaw before vertical projection 169; aggregate local projection 169; named horizontal length 169;
+// angle aggregate 169; angle record with yaw before vertical projection 169; input vector snapshot 229; scoped
+// projection with angle record 169; complete yaw phase first 190.
+// NOT kept: the projection rewrite ties in six forms. The complete yaw phase reaches 767 bytes with a different
+// frame and scores 190. The first cross schedule and x87 forward-scale lifetime remain.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -6955,6 +6960,11 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // then inlines 0xcbd50 at the mode 3/4 site, which retail (and this body) call out of line: that inline is the 12 extra
 // bytes. On it: assigned after a bare declaration 290; TEST_FIELD_BIT on +0x12c too 290; mode 4's inner readiness exit
 // dropped 301; mode 6's dropped 296; both 307. Lead: the admission form with the mode 3/4 0xcbd50 call kept out of line.
+// Round 407: saved masked unit slot 298; word unit slot 298; both masked slots at entry 321; masked unit
+// provider 304; both masked providers 311; shared secondary-mode predicate 316; flat setup chain 298; shared
+// immediate-raise predicate 323.
+// NOT kept: the word slot reaches 1052 bytes at the same score. The other forms tie or regress. The early
+// weapon/mode register assignment and readiness stores still differ.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -9590,6 +9600,11 @@ struct s_unit_melee_collision
 // frame 0x180/native 0x17c and native tag/pool/counter carriers remain. Original entire body restored.
 // MiniMax R (11-17): no new form, no lower score (484): the range at each use on the material and provider graph, the whole-fan collision and the outer hit, damage and basis scopes all measure 484 or worse, and this build's frame stays 0x180 against retail's 0x17c.
 // MiniMax S (11-17): no new form, no lower score (484): the frame is still 0x180 against native 0x17c and the native tag, pool and counter carriers remain; the forms that moved them were reverted and the original body stands.
+// Round 407: impact point/normal names 484; masked incoming unit provider 484; masked providers throughout 484;
+// early weapon-admission predicate 484; seat arm first 496; range after both basis scales 474; sequential basis
+// scales 457; grid ray plus shared scaled aim 486; aim address after center 484; height after across scale 496.
+// NOT kept: the 474 and 457 forms retain the once-loaded range where retail reads it in each ray expression.
+// Moving only the height read scores 496. Frame 0x180 and the different fan register assignment remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
