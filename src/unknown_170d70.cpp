@@ -1136,6 +1136,14 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 // last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
 // `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
 // Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
+// b13N (11-17) walk against retail, fast build on r846: logic equals retail (no sort_4byte call here; the maintainer's
+// lane 6 sort_4byte change does not touch this function). Both jbe senses (0x1738d0 fabs <= 1/64 goes inside, 0x1738e9
+// distance < 0 gives 1) and the 3 / 0 / 1 / 2 results match. Remaining: the x term's fld [ecx] / fmul [edx] at
+// 0x1738b6, and retail's single `xor eax, eax` block at 0x1738d9 sits right after the jg at 0x1738d7 and is reused by
+// the jle at 0x173907; ours keeps it last. Also 23: `if (*inside || state > 0) return 3; return 0;` for the inside
+// arm, nested ifs, assignment in the condition, the x term as its own statement, the sum right-associated (first 11 of
+// 48 orders), plane->d in a local. Worse: both arms returning 1/0/3 in full (38), inside arm first (27), one shared
+// state test (75), origin declared first (52), origin->position.x spelled out (47).
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {
