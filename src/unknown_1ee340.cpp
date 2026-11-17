@@ -243,6 +243,10 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // and the index is still loaded first, so the entry order is not an aliasing effect of a .data load. A scan of the
 // retail image finds 0x47f068 referenced only here and never written; its .data neighbours 0x47f05c and 0x47f074 are
 // globals other files already define (src/impacts.cpp, src/unknown_1c2d40.cpp).
+// Round 91 (m3 lane 2, fast with 0x1ee4d0/0x1ee500, both matched throughout): a `real *const` vertex pointer 6; the
+// transformed point declared at function scope 6; const surface and edge pointers 6; the count advanced with `+= 1`
+// 6; `if (matrix != NULL)` 6 (all the same code). Re-measured by mistake (listed): a long side 97, the tag through a
+// `long *` view of the array 6. Restored.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
