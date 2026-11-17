@@ -2609,6 +2609,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // instructions against 695: not kept. Facing lives only in xmm1 (0x266f39); the stack zero at 0x266c51 is what the
 // not-visible arms reload (0x266f9f, 0x26705f), as ours `facing = 0.0f`. The far-and-slow exit 0x266f8e skips the score
 // test; ours reads `score > 0` on the same paths. Body unchanged.
+// M3 lane 2 r95 (fast with 0x25d810/0x26be00/0x25d740, all MATCH; control 168): retail's positive arm keeps the decay arm's
+// `[0x320] = ax; [0x31c] = slot` tail and the reset arm (laid out after the join) jumps back into it, so its unmerged
+// layout had the reset arm first. The reset arm written first (`if (slot == NONE) reset; else { mismatch continue;
+// decay; }`) 174 (2880 B: the merge direction is then retail's, reset jumping to the decay's 0x320 store, but the reset
+// block stays ahead of the decay where retail places it after the join); with the slot search's counter long as well 175;
+// the slot store written in both arms 481 (2896 B, first difference +0x35, the duplicate store kept), the same with the
+// reset arm first 481; the approach maximum as `approach = value > approach ? value : approach;` 168 (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
