@@ -452,7 +452,7 @@ struct s_record_collision_view
 
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
-// score 45 (was 71): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// score 45 (was 45; 71 before): Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
 // (retail's cvtsi2ss/store/fld/mulss/fmul) and the frame now agree: the distance is computed in the trace call's
@@ -964,6 +964,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // inline in the body 204). Not kept: a private twin of an existing helper with a body picked by score (twin
 // ruling 10-30); the shared rotate_direction with the crosses before the dot 47 and loses 0x1ecf50 (160).
 // Patch: build/r250/held-26d570.patch (lane 3's worktree).
+// M3 lane 16 r126 (fast with 0x1ecf50, which stays matched): the collision record and its marker store at the top of
+// the spoke loop 259 (1109 B); the entry pointer alone at the top of the trace's success block 43; the collision record
+// and marker alone there 44; the world point declared there 45 (same code); trace.distance read at each use (no local)
+// 67 (1088 B). Left as before: the rotation's dot order and XMM3/4/5 roles inside the shared rotate_direction (its file,
+// src/unknown_1eb8a0.cpp, was another lane's this round) and the marker/entry stores before 0x2104b0. Lead for that file:
+// the shared helper's dot staged as the planar dot_product2d plus k*k (the held copy's only difference), checking its
+// other users 0x1ecf50 and those in bipeds.cpp, unit_object_type.cpp and unknown_1ff010.cpp.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

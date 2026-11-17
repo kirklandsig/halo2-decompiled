@@ -1160,6 +1160,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P571: Final policy enabled/disabled result at its original producer, bool/byte/short/long:
 // 395/395/395/395/395/395/395/395. NOT kept: all regress and grow to 1700/1696 bytes; direction-j preload
 // and length/zero homes remain. Original policy query, projection and complete body restored.
+// M3 lane 16 r126 (fast): the yaw offset through the existing vector3f_scale (forward times distance) and then each
+// component taken from zero 129 (products first, but the zero still XMM1); the distance's negation stored ahead of the
+// three offset rows 127; the offset's k row chained into the command's k store 126 (same code); the squared length as
+// dot3f(left, plane normal) 394 (1700 B); the plane offset as dot3f(normal, position) 126 (same code).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -536,6 +536,11 @@ struct s_ai_scene_assignment
 // role through a const pointer to the parameter 59 (350 bytes, the read folds); no role-pointer local (the address
 // written at the switch and the scorer) 118 (363 bytes); the scorer's two outputs declared ahead of the head test 12.
 // Re-measured: the recursion passing the parameter with the compares on the int copy 76 (354 bytes).
+// M3 lane 16 r126 (fast; direct maximum control 59 at 350 B): the four role stores through a file-local static helper
+// (assignment, role, actor, score, name, variant) on the direct maximum 59 and on the int copy 12 (same code each); an int
+// copy of the role for the scorer argument only, on the direct maximum, 100 (the copy takes a callee-saved register); a
+// short copy of the maximum defined at the loop head for both compares and the recursion 59 (propagated); the maximum on
+// the left of both compares 59 (the head compare becomes `cmp ax, word ptr [ebx]`).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

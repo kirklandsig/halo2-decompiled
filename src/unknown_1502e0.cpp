@@ -1631,6 +1631,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // the getter reload of the unit index 5 (the player address still `mov edx, [edx + 0x44] ... add edx, eax`); the
 // definition moved to the end of the file 17; the unit looked up in place at both uses, no unit local, 17.
 // Diagnostic: a probe global store of 0, 1, -1 or 4 at entry leaves the unit index in ESI.
+// M3 lane 16 r126 (fast with 0x14f820): the e68c0 code named before the mode test 17 (same code); the hand written as
+// `!primary` at both uses (no hand local) 44 (143 B); the slot assigned inside the slot test 17 (same code); the e68c0 arm
+// as an early return with the a9030 arm falling through 36; the a9030 arm returning true directly 27. Diagnostic: the
+// `register` keyword on the slot 17 (ignored). Both of 0x14f820's retail calls are inlined in our build, with the
+// getter-reload lead as well (0x14f820 2742 B there).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
