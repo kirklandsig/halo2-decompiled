@@ -4245,6 +4245,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // declarations changes nothing (12); the flags moved between the lookup read and the animation measure 204 at 682
 // bytes, and the permuter cannot search the function at all, because its reduced image scores 202 against the full
 // image's 12.
+// MiniMax I (11-17): no new form, no lower score (12): the control and definition homes stay the other way round
+// (retail +0x1c and +0x20) - declaring the definition first or the control after the state leaves them as they are
+// (20) - and the two flag bytes are still cleared after the lookup branch where retail clears them before it.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

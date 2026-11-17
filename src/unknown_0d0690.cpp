@@ -2028,6 +2028,12 @@ real function_30bf0(vector3f *vector);
 // sine/dot interleave, the normalize's j/k operand order and direction0 written through a pointer register.
 // MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
 // 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
+// MiniMax I (11-17) measured the mobile flag cleared in its own store ahead of the length (362)
+// and the squared length summed as (k, i, j) (356), neither kept (see below); left are the frame (0x4c against retail's 0x40), the zero and
+// the one constant in other registers and the normalize's j and k operand order.
+// NOT kept (review 11-17): the mobile flag as a test-set (bool mobile = false; if (...) mobile = true;) took 378
+// -> 362, but a test-set flag is kept only with a byte match; the squared length summed as (k, i, j) took 362 ->
+// 356, under the 8-point keep bar on a function still over 30. Both measured, code back to main.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2688,6 +2694,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
 // status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
 // still expands here where retail calls it.
+// MiniMax I (11-17): no new form, no lower score (542): re-measured in the batch; the result long still sits at
+// +0x30 where retail keeps it at +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30
+// lookup still expands here where retail calls it (that body lives in another file).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

@@ -2391,6 +2391,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // there in this build (retail: `or ebx, -1` before the loop). On the 246 form: `dword sounds[9]` 246; the whole 0x2000
 // block as a forceinline helper 246 (same code); gain copy and sum before the entry lookup 246; the 0xa0 request with
 // the range read through an s_short_bounds member at +2 246 (frame 0x12c, retail's `lea ebx, [..+2]`).
+// MiniMax I (11-17): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 and the
+// native request, range and pitch homes still sit at other offsets.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

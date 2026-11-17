@@ -1238,6 +1238,9 @@ static __forceinline long real_to_long(real value);
 // the view pointer into ESI instead of adding 0x2c to it, the actor handle is still re-read from the
 // stack instead of the actor record, and the velocity block still multiplies different operands.
 // MiniMax A (11-11, second pass): no new form, no lower score (382); the entry tests returning false straight away (the body outside them) makes our build fold the result byte away and shrink the frame to 0x54 (508), so retail's two exits - the false one at 0x1aac35 with its own epilogue and the true one reloading the result byte from the stack - are still not both there: ours ends the rejection path at the false exit at the end of the body instead of retail own epilogue, and in the velocity block ours still forms the facing pointer in ESI from the view call while retail keeps the view pointer in EAX, reads the facing field through it and forms the facing pointer late with lea esi, [eax+0x2c] with the actor in ESI.
+// MiniMax I (11-17): no new form, no lower score (382): the rejection path still ends at a copy of the final exit
+// at the end of the function instead of retail's own epilogue between the inner test's arms, and the helper retail
+// keeps out of line is still expanded here; an early exit for the three flags folds the result byte away and reads 508.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
