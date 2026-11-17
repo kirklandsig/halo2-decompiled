@@ -428,6 +428,11 @@
 // stores through a pointer the compiler cannot separate from the camera global, s1 is computed first and stored to a float
 // home exactly as retail; so retail's wave values are materialised because something between their definitions and their
 // uses may alias that global (s0 still folds in that form).
+// M3 lane 7 r172 (fast with 0x4a1e0; control 536 = plain; the full build already returns with `ret 0x20` as retail): v1
+// selected by an if/else in place of the ternary 704 (2652 B); s0 halved as `/ 2.0f` 536 (same code); the sine arguments
+// read through a `point3f const &` bound to the camera point 537; the first `w8e` switch as `if (w8e == 1) ... else`
+// 574; the component maximum as one expression (no named partial maxima) 673 (2690 B). Retail's case-1 arm selects the
+// up vector by pointer again (`mov ecx, 0x4b9dac`), as the `up` local does.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -1467,6 +1467,19 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // from its slot); with `long histogram[16]` 894; the single exit 984 (2948 B); forceinline with `result` first 866; with
 // the loop's variant through 0x192e60 957; all with 0x73530 at 8. Kept: the capacity test through the matched 0x193300 in
 // place of this file's copy of its body, 964 (same code). Lead: the top 0x192e60 out of line with the capacity switch inline.
+// M3 lane 7 r172 (fast with 0x71730/0x73530/0x6fa60/0x192e60/0x193300/0x631f0/0x63220; control 964, aligned 862; ours
+// already returns with `ret 4`, the session in EAX). Behaviour: retail's second 0x1931a0 call in the player loop takes the
+// group's highest rating (ECX, 0x7e4a9; it is 0x63220's MAX evaluating 0x1931a0(highest) twice), where this body passes
+// `lower`, the first evaluation's result; the two differ when lower <= field_51c[lower - 1] < highest. Passing `highest`
+// 966 (the extra `mov ecx, eax`: our called 0x631f0 returns the highest in EAX, retail's inline copy keeps it in ECX); the
+// clamp as `adjusted > f(highest) ? adjusted : f(highest)` 990 (2652 B, both calls out of line). Re-measured: `long
+// histogram[16]` 984 (2640 B, frame 0xb4). New: the top 0x192e60 after the summary and capacity reads 966 (0x73530 1).
+// LEAD (loses 0x73530, so not kept; build/r172/lead-0x7e210-t7.patch in the m3-lane7 worktree): the single exit (the
+// opening and excess tests set `result = false`, the rest under `if (result)`), the player value through the real 0x63220
+// and `long histogram[16]` 924 (2892 B, frame 0xb4; 0x63220 inlines with its nested 0x192e60/0x631f0/0x1931a0 as retail);
+// with the opening test split into an else-if 924 (same code); with the type-5 scan inside `if (result)` and the body under
+// a second `if (result)` 914 (2900 B, aligned 763). In all three the top 0x192e60 still inlines (its pointer takes EDI) and
+// `out` takes EBX, so the session goes to EBP and stays a stack argument: 0x73530 8, 0x71730 387 -> 402.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -640,6 +640,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P583: Advance-before-admission signed point/contact/query-initialization ordinals,
 // seven subsets, then both collected-prefix searches: 1375/1375/1375/1375/1375/1375/1375/1375. NOT kept: no exact
 // native frame/indexed-contact recovery; original loops, helpers and complete body restored.
+// M3 lane 7 r172 (fast prints the reduced-image CAVEAT: fast control 1392 at 6211 B, aligned 1379; plain control 1375,
+// aligned 1402): nothing kept. Plain: the result returned directly as `return !local_34 && ... && ...;` (no flag) 1376
+// (6243 B, aligned 1384: retail's tail exactly, `mov eax, 1` / `xor eax, eax` exits with the pops before the tests, but one
+// over the control; fast 1384); the last loop as a counted `for` testing the impact count in its condition (no `for (;;)` and
+// break) 1397 (6264 B; fast 1378); the contact velocity formed in place (the cross straight into field_4c, local_4 added
+// there, no copy local) re-measured 1421 (6217 B). Fast: the steering sign folded into local_11's initialiser 1433; the
+// impact offset scale written into the vector3f_add_scaled call (no named local_71) 1392 (same as the fast control).
+// Retail's impact record sits at 0xd4 below ours (0x11c against 0x160 on the listing), so the whole 0x44 frame excess
+// lies below it; retail lays the found-search loop out after the impact loop.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
