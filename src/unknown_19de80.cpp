@@ -694,6 +694,13 @@ static inline bool teams_enabled_19e1c0()
 // MiniMax E (11-15): no new form, no lower score (390): the extra dword in our frame is the length temporary at +0x14
 // beside the volatile result at +0x10, and retail's first name case stores the buffer's zero word before taking its address
 // while its second case takes the address first, so retail's two copy tails stay apart where ours merge.
+// M3 lane 10 r113 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B, frame
+// 0x204 as retail): retail's result is a register (ESI, clamped with cmovle), `remaining` is EBP for the whole function and
+// the token is reloaded from its slot for each compare; the plain result enregisters the token (EDI) instead and its case
+// bodies come out identical and merge. On the plain result: the cause team read once into a local ahead of the opponent
+// scan 693 (1169 B); the scoring mode read at each use (no `mode` local) 691 (same code); the local-team value as `long` 693
+// (1169 B). On the volatile result: the cause-team local ahead of the scan 415 (1436 B); the local-team value as `long` 393
+// (1436 B). Body unchanged.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
