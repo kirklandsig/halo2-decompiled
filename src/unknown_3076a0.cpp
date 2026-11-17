@@ -20,6 +20,8 @@ struct bool_3058b0
 	{
 		value = value_;
 	}
+
+	bool is_set() const { return value; }
 };
 
 struct s_3058b0_pair;
@@ -330,7 +332,13 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	}
 	((pair_305790 *)this)->function_305790((manifold_305790 *)table, first_mask, second_mask);
 }
-// score 24 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
+// Matched: the loop is endless and its last statement returns 0 when the tries run
+// out, which puts the shared `return 2` after the first arm as retail has it.
+// Before, 5 (was 24): the answer is tested through its is_set() member, which
+// makes the one-byte result an aggregate for the frame (retail's esp+0x2c)
+// and lines up every four-byte home. Left: which arm's exit the third arm's
+// return shares.
+// Before, 24 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
 // below the saved this instead of above the two side inputs. The remaining
 // 4-byte stack homes are shifted by four; two distance/return schedules
 // also differ. A prior common result gave 19 in the plain check, then was
@@ -356,7 +364,7 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_305f60 *feature)
 {
 	int tries = 8;
-	do
+	for (;;)
 	{
 		float best_separation = separations[0];
 		int best = 0;
@@ -433,12 +441,15 @@ int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_3
 				}
 			}
 			bool_3058b0 const found = function_306f80(feature);
-			if (found.value)
+			if (found.is_set())
 			{
 				return 2;
 			}
 		}
 		separations[best] = -3.40282347e+38f;
-	} while (--tries > 0);
-	return 0;
+		if (--tries <= 0)
+		{
+			return 0;
+		}
+	}
 }
