@@ -2634,6 +2634,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // block stays ahead of the decay where retail places it after the join); with the slot search's counter long as well 175;
 // the slot store written in both arms 481 (2896 B, first difference +0x35, the duplicate store kept), the same with the
 // reset arm first 481; the approach maximum as `approach = value > approach ? value : approach;` 168 (same code).
+// M3 lane 3 r256 (fast with 0x25d810, 0x26be00, 0x25d740, all MATCH; control 168): the players iterator started through a
+// file-local inline setter of its three fields (data, then NONE index and datum index) 168 (same code: the table pointer
+// still takes ECX); the first normalize through the header's inline normalize3d 405 (2954 B), the relative one 507 (2967 B);
+// approach and facing in two declarations 168 (same code); the player pointer as `if (index == NONE) player = NULL; else
+// player = &...;` 374.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
