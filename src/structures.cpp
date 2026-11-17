@@ -417,6 +417,18 @@ static __forceinline bool structure_bsp_collision_available()
 // test), so forms that keep the parameter in memory: `(void)&source;` 53 (same code); the flag set in if/else arms with
 // the collision re-read in the else arm and `if (excluded) return result;` 62, with `(void)&source;` 62, with the re-read
 // at the join 62, the join re-read through `&source.collision` 62 (all threaded, 286 bytes).
+// b11D (11-17) walk against retail, fast build on r843: fields, offsets, branch senses, argument order and requery
+// arguments agree statement by statement (type 1/3 at 0x14b176-0x14b186, object 0x14b191-0x14b1a8, 0x10a0b0 `cmp ax, 2`
+// 0x14b1b8, 0xbf9a0 stack pair +0xc/+0x10 0x14b1c2-0x14b1ce, 0x14a8e0 fed the unmodified source collision 0x14b225,
+// 0x1697c0 args 0x14b1df-0x14b1f8, 0x14ac60 0x14b20b-0x14b20d): no behaviour difference found. Why the result sits in
+// memory: BL is taken by the flag, a byte local then has no callee-saved byte register; a `bool` result drops the setne
+// (the un-threaded forms below are 286 bytes with it). Un-threaded flag forms (declared `bool excluded`/`bool modeled`,
+// `!(excluded | modeled)` as 0x14af40) all keep retail's `test` but allocate worse: NONE takes a callee-saved register
+// (its pushes become `push reg`, `or reg, -1` after 0xbf9a0, retail uses `push -1`) and the flag is spilled into the
+// dead source slot [esp+0x70]: object_index read before `found` 76, as is a function-scope flag or `modeled`, a
+// literal -1 in the requery 76; found first 81; long flag 81; byte result 79-81 (290/291 bytes); collision only
+// through source 81; flag by if-set 82; `!excluded` alone 93 (262 bytes); a plain collision pointer parameter 109.
+// Best match-only recipe: none under 76. Needed: NONE in ECX only, flag in BL, source.collision spilled, not the flag.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {

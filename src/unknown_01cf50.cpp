@@ -4348,7 +4348,7 @@ void function_1eb00()
 // MiniMax I (11-14): no new form, no lower score (79): replacing the zeroed 24-float array's initializer with an explicit memset scores 119 (the body shrinks to 732 bytes against retail's 763), so the initializer stays; the rest of the difference is retail's four shader programs, which are built from tables this project does not have.
 // MiniMax R (11-15): no new form, no lower score (79): retail's four shader programs still come from tables and caches this project does not have, and the body is still 25 bytes shorter than retail's 763.
 // MiniMax R (11-16): no new form, no lower score (79): the two counters' ratio is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and the body is still 25 bytes shorter than retail's 763.
-// score 79 (was 79): this round found no gain - retail's body builds four shader programs from tables and
+// score 136 (was 64): this round found no gain - retail's body builds four shader programs from tables and
 // caches that this project does not have, so the difference is a knowledge difference, not a local form.
 // MiniMax C (11-08): no new form, no lower score.
 // MiniMax D (11-14): no new form, no lower score (79): the body is still 25 bytes shorter than retail's 763, the
@@ -4363,6 +4363,20 @@ void function_1eb00()
 // MiniMax S (11-15): no new form, no lower score (79): retail's four shader programs still come from tables and
 // caches this project does not have, so the body stays 25 bytes shorter than retail's 763, and the ratio of the two
 // counters is still divided into xmm3 where retail divides into xmm2.
+// b11A (11-17) walk against retail, fast build on r843: the render-state values, the 0x485b48 reset, the 20-float block
+// and both 0x3f7330 uploads (0x367c0, 0x367e9) agree; the inline shader bind stays. Found: (1) retail clears the whole
+// descriptor before its eight field stores: 0x367ee-0x367fa is `xor eax,eax; mov ecx,0x3c; mov edi,0x484f68; rep stosd`
+// (240 bytes), so the "no clear" reading above was wrong and ours left stale fields of g_484f68: memset restored (a
+// behaviour fix). (2) extra[24] is zeroed by one 24-dword `rep stosd` at [esp+0x5c] (0x36710-0x3671d), no leading
+// store: `memset(extra, 0, sizeof(extra))` compiles to it, the `{ 0.0f }` initializer gives movss + 23 dwords. (3)
+// Retail's evaluation order is x, then -1-x and x*2 (0x366e3, 0x366ea), then y (0x36701): y is declared after
+// constants[4], which puts x in xmm2 and the early stores where retail has them. Still differing: the two int
+// differences (retail loads both y operands into ecx/edx at 0x366bc/0x366c2 and subtracts in registers; ours folds the
+// second as a memory operand) and, new with the memset, a hoisted `mov ebx, 1` (six uses of 1) where retail uses esi
+// and immediates, which shifts every stack offset by 4: score 136 (was 64, which lacked the clear). Dropping one use of
+// 1 removes the ebx hoist (probe only). Best match-only recipe: the g_484f68 memset before the 86 upload (89, no ebx,
+// but not retail's order). Also tried (136): a local pointer to g_484f68, memset(.., 0xf0), PSCombinerCount stored
+// last, short/long/word locals for the int differences.
 // @retail 0x36580
 void function_36580()
 {
@@ -4376,14 +4390,15 @@ void function_36580()
     function_0222d0(D3DRS_ZBIAS, 0);
     function_0222d0(D3DRS_CULLMODE, 0);
     real x = 1.0f / (short)(g_48564e - g_48564a);
-    real y = 1.0f / (short)(g_48564c - g_485648);
-    real extra[24] = { 0.0f };
     real constants[20];
     constants[0] = x * 2.0f;
     constants[1] = 0.0f;
     constants[2] = 0.0f;
     constants[3] = -1.0f - x;
     constants[4] = 0.0f;
+    real y = 1.0f / (short)(g_48564c - g_485648);
+    real extra[24];
+    memset(extra, 0, sizeof(extra));
     constants[5] = y * -2.0f;
     constants[6] = 0.0f;
     constants[7] = y + 1.0f;
@@ -4402,6 +4417,7 @@ void function_36580()
     D3DDevice_SetVertexShaderConstant(81, constants, 5);
 
     D3DDevice_SetVertexShaderConstant(86, extra, 6);
+    memset(&g_484f68, 0, sizeof(g_484f68));
     g_484f68.PSRGBOutputs[0] = 0xc0;
     g_484f68.PSAlphaOutputs[0] = 0xc0;
     g_484f68.PSTextureModes = 0;
@@ -9924,6 +9940,19 @@ extern bool g_485a74;
 // out-of-line callee sees a different stack. `inline` over-inlines every caller
 // (above), so reproducing the per-caller inlining pattern is the prerequisite,
 // not a local frame tweak.
+// b11A (11-17) walk against retail, fast build on r843: statement by statement (h2.py disasm, align.py) there is no
+// logic difference: struct offsets (target +0, clear_flags +4, colour +8, depth +0xc, stencil +0x10, cull +0x18, group
+// +0x1c, stride 0x24), the 0xbffdee mask, the 2/8/17 gate (0x443b2-0x443e3), the 0x467130/34/38 stores, the mode-10
+// target and clear tests (g_4ba014 bits 4 and 5), the g_485a75/76 guards, the 4..7 cull test (0x444b2-0x444cc), the
+// case 10/11/17/3/16 tail and 0x15370's (mode == 3 || mode == 1) all agree, with the same jcc senses. What differs: (1)
+// the 0x14b60 flags travel in eax in retail (0x44476 -> 0x444ad, 0x4449b `mov eax, ebx`, 0x444a8 `mov eax, 0x60`) but
+// the stub is __stdcall, so ours pushes at three sites (483 vs 479 bytes) and the jump table moves: BLOCKED-BY 0x14b60
+// (the disabled body above collides with the @stub marker in lane_w.cpp). (2) Retail stores enabled = 1 to [esp+0xf]
+// (0x4438e) before the sources lea (0x44392); ours after. (3) Cull arms: retail lays out `cmp 4; jl cull; cmp 7; jle
+// zero; cull: mov ax,[+0x18]; jmp; zero: xor eax,eax` (0x444b7-0x444cc), ours puts `xor eax,eax` first (`jg`).
+// Measured, none kept: if/else in both senses (85), three ternary senses on one call (85), nested ifs (95), `short
+// cull_mode = cond ? settings->cull_mode : 0` (88), `short cull = 0; if (...) cull = ...` (84, set-then-override, still
+// xor first). Source unchanged.
 // @retail 0x44370
 bool __stdcall function_44370(long mode)
 {
