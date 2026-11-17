@@ -762,6 +762,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // cosine 66 (847, best recipe; the zero folds); axis x vector with `+ cross * sine` 101-107; dot-first and cross-first
 // permutations 77/78. The test zero is still hoisted above the divide and the scale products are x * scale (retail
 // `scale * x`), so no match.
+// M405: Planar/turned/both length cutoffs; those tests with both sides negated; mixed cutoff and negation in both orders.
+// Scores 68/78/69/165/111/183/117/165. NOT kept: retail tests the planar length against zero after the scale products; original body restored.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
