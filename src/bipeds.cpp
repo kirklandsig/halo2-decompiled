@@ -4041,7 +4041,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 												change.i = direction.i * scale;
 												change.j = direction.j * scale;
 												change.k = direction.k * scale + lift;
-												havok_component_rigid_body_linear_velocity_change(i, component, &change);
+												component->rigid_body_linear_velocity_change(i, &change);
 											}
 											pushed = true;
 										}
@@ -4054,8 +4054,8 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 									change.i = g_4687bc->i * 2.0f;
 									change.j = g_4687bc->j * 2.0f;
 									change.k = g_4687bc->k * 2.0f;
-									havok_component_rigid_body_linear_velocity_change(
-										function_0b67a0((s_small_index const *)component), component, &change);
+									component->rigid_body_linear_velocity_change(
+										function_0b67a0((s_small_index const *)component), &change);
 								}
 							}
 							word_flags_set(&biped->flags_348, 8, false);

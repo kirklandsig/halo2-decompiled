@@ -1610,7 +1610,6 @@ hkBool c_contact_rule_filter::accepts(void const *query, s_contact_body_view con
 
 
 long function_183c60(long object_index, long node_index);
-void havok_component_rigid_body_linear_velocity_change(long index, s_havok_component *component, vector3f const *change);
 void havok_component_rigid_body_point_impulse_apply(long index, s_havok_component *component, point3f const *point, vector3f const *change);
 
 struct s_contact_scale_definition
@@ -1810,7 +1809,7 @@ selected:
       i = local_0;
      }
      else if (change_a)
-      havok_component_rigid_body_linear_velocity_change(index, component, &a);
+      component->rigid_body_linear_velocity_change(index, &a);
      if (change_b && !TEST_FIELD_BIT(component->flag1))
       component->rigid_body_linear_velocity_add(index, &b);
      if (havok_component_main_rigid_body_index_get(component) == index)
