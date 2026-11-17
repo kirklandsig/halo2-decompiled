@@ -825,6 +825,31 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // flagged arm as `result = false;` before the reset 50; `if (object_index != NONE)` in place of `if (result)` 76 (189 B);
 // the attach given `entity->object_index` 52; the long result computed before the entity store 49 (same code); the flagged
 // arm returning false at once (no `result = false;`) 48 (one point, under the bar).
+// M3 lane 1 r113 (fast with 0xa5b10/0x108e10, matched throughout; control 49): on the early bool result set after the attach
+// (re-measured 77, f still cached in EBP from entry), the header test indexed through `(word)object_index` 72 (176 B: the object
+// read's index is recomputed as in retail, `movzx` in the test where retail has `and`, the data pointer still shared, so no EBP
+// window), the object read through the word cast instead 71, the word-cast test with the object read through the entity's stored
+// index 72; on the long result: the word-cast test 54 (182 B), the field store and attach through `entity->object_index` 52.
+// Retail needs both a recomputed index and a reloaded data pointer before the object read; with only the first, EBP stays free for f.
+// M3 lane 12 r132 (fast with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 49), all on retail's shape (bool
+// false first, true after the attach, NONE stored in the flagged else; 77 alone): the flag test in an inline predicate
+// that fills its bool in an if/else 77, the same predicate forced inline 77 (its join is threaded and its loads merged
+// before CSE either way); the store and attach through the existing 0xbb780 alone 77 (it inlines and its lookup is
+// merged); the flagged arm first 75; both lookups as array-element reads (`table[index & 0xffff].flags` and its object field)
+// with no address-of 77. The header address stays shared and EBP caches f in every form.
+// b11C (11-17) walk against retail, fast build on r843: every statement, offset and jcc agrees (d copied to the stack
+// local 0xa5a67, v29 +0x74 with &value 0xa5a7d, entity+8 stored before the NONE test 0xa5a96, flag 0x10 at header+2
+// 0xa5ab0, field0 to object+0xd4 0xa5aca/0xa5ace, `mov ebx, eax` 0xa5acc then 0x108e10 0xa5ad4, value tested from its
+// slot 0xa5add, true set before that test 0xa5adf, v31 with entity+8 re-read 0xa5af0, NONE store 0xa5b01): no behaviour
+// difference, nothing to fix. The score is the head only: retail's BL result (0xa5a8a) and the EBP window
+// 0xa5aa9-0xa5ab5, with the second lookup rebuilt from the global in EDX 0xa5ab8-0xa5ac6. New match-only measurements,
+// all on the early bool result set after the attach (77): `_ReadWriteBarrier()` after the flag test 42 (retail's EBP
+// window and data reload, the index product still shared as `shl ecx, 2`); with the object read indexed
+// `(word)object_index` 39 (movzx where retail has mov+and); with it read through `entity->object_index` 16 (177 bytes:
+// index recomputed as retail, but the barrier makes the load real, `mov ecx, [esi+8]` for retail's `mov ecx, eax`
+// 0xa5abb, and this/entity swap to EDI/ESI); `_ReadBarrier` 66/80, `_WriteBarrier` 77. With the barrier, the second
+// index spelled `% 0x10000`, `<< 16 >> 16`, `| 0`, `* 12`, `*4*3`, `<<2*3`, or both lookups as forceinline getters: 42
+// (all canonicalised and shared); a volatile header flag read 77. Not kept: a barrier is no match.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

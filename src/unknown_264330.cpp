@@ -722,6 +722,19 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // named once for the maximum test and store 412 (same code); `p` fetched first with `node` cast from it 412 (same code);
 // `byte *const actor` 412 (same code); the list head read through the held actor pointer 442 (1616 B, re-measure of
 // round 46's form). Body unchanged.
+// b7A (11-17) walk against retail, fast build on r829: every condition, offset, call argument (register-passed ones
+// too: 0x263670 reads only ESI, 0x2683f0/0x1e2150/0x25ac00 take the actor in EBX) and constant (0x45dbc0 1.0, 0x45e1f4
+// 0.33f, 0x43ff08 1.5, 0x45dbd8 0.0, 0x45dc00 10.0) agrees with retail except one BEHAVIOUR FIX in case 2: retail
+// releases the prop (0x262f27 calls 0x25c860) when the squared planar distance between the known state and the object
+// exceeds 1.0 (0x262f1a comiss against 1.0, 0x262f21 `jbe 0x2630a4` skips the release when it is <= 1.0; a missing view
+// or a zero timer at 0x262edc/0x262ee6 also reach it), where the old source broke out when the distance exceeded 1.0
+// and released when it did not (`ja`). Now `if (!(y * y + x * x > 1.0f)) break;` compiles to retail's `comiss xmm2,
+// [1.0]; jbe` (412, 1620 bytes, unchanged: that is a positional count); the `<= 1.0f` spelling gives 424 (1624 bytes:
+// it loads the 1.0 into xmm0 and uses `jae`). Also tried: retail's code order of the cases (0x262d70, 0x262e2a,
+// 0x262e81, 0x262f35, 0x262fad = 0/4/2/1/3) 422 (1624 bytes); the final `current != NONE` guard split in two as
+// retail's second `cmp esi, -1` at 0x26316c 412 (the compiler folds the second test); both reverted but the fix. No new
+// include, helper or double. Checked with the file's callers/callees (0x1e34e0 25, 0x264b50 91 as before; the rest
+// MATCH).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -783,7 +796,7 @@ void function_262ba0(long actor_index)
 					byte *state = (byte *)function_25d690(node);
 					real y = *(real *)(state + 8) - position.y;
 					real x = *(real *)(state + 4) - position.x;
-					if (y * y + x * x > 1.0f) break;
+					if (!(y * y + x * x > 1.0f)) break;
 				}
 				function_25c860(index);
 			}
@@ -1220,6 +1233,20 @@ real function_296600(long actor_index, long prop_ref_index);
 // MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
 // pointer still lives in edi where retail keeps it in ebx.
 // MiniMax S (11-14): no new form, no lower score (91): the actor pointer still lives in EDI where retail keeps it in EBX, and retail's `sete` for !current still sits between the first call's pushes.
+// b10D (11-17) walk against retail, fast build on r841: no logic difference found. Checked: the head (actor[9]
+// test, squad 0x264b7e-0x264baa, tracking view 0x264bd0-0x264be8), the sense of every jcc (the 25.0f test at
+// 0x264e1f-0x264e2b skips on NaN as ours: `comiss; jbe`; constant 0x45e0d8 reads 25.0), the register and stack
+// arguments of both 0x1c8df0 calls, 0x25c9d0, 0x25cb60, 0x263810 and 0x26bfa0, the unit/root selection
+// (0x264d8c-0x264d9b), the type-15 arm's copies and 4-valued stores, the nested MAX (0x264f9e-0x264fb6), the `== 1
+// && state >= 1` bump and the tail's `>= 2` / `> 0` signed tests. Retail reuses the unit's slot [esp+0x24] for the
+// CSE'd `!current` byte (store at 0x264de7, reload at 0x264edd). Fast recipe that reproduces the full build's code
+// (91, 1268 B): check 0x264b50 with 0x1c8df0's other callers (0x1b0400 0x1b2770 0x1be120 0x25f7b0) plus the
+// callees; without them the reduced image misbuilds it (225, 1259 B). Not kept (91 base): the prop/time/object
+// lookups in the other five orders 93/326/328/94/323 (three of them 1264 B); a named object index before the prop,
+// before the object, or one use only 91 (same code); `volatile long root` 275 (1281 B, retail's two root reads
+// from [esp+0x1c] but the frame grows); a named `attached` bool before root / after not_current 276/270 (1275 B);
+// `volatile bool` current 311, suppressed 315. Left as before: the object/table registers, the 0x12/0x13 byte
+// homes, and root/`!current` evaluation at the first 0x1c8df0 call.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

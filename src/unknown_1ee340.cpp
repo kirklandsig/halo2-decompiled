@@ -243,6 +243,10 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // and the index is still loaded first, so the entry order is not an aliasing effect of a .data load. A scan of the
 // retail image finds 0x47f068 referenced only here and never written; its .data neighbours 0x47f05c and 0x47f074 are
 // globals other files already define (src/impacts.cpp, src/unknown_1c2d40.cpp).
+// Round 91 (m3 lane 2, fast with 0x1ee4d0/0x1ee500, both matched throughout): a `real *const` vertex pointer 6; the
+// transformed point declared at function scope 6; const surface and edge pointers 6; the count advanced with `+= 1`
+// 6; `if (matrix != NULL)` 6 (all the same code). Re-measured by mistake (listed): a long side 97, the tag through a
+// `long *` view of the array 6. Restored.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
@@ -287,6 +291,12 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // in src/unknown_239b80.cpp and in the declarations of src/unknown_170d70.cpp, src/unknown_184440.cpp and this file,
 // which this lane may not edit; the frame map follows from it (retail's polygon at +0x50 in a 0x90 frame where ours
 // is at +0x44 in a 0x84 frame, retail spilling the direction and the ray start that we keep in registers).
+// MiniMax D (11-16): no new form, no lower score (192): this round compared retail's body with ours instruction by
+// instruction and the remaining delta is unchanged: retail's frame is 0x90 and it keeps the ray's origin x and y and
+// the two edge vectors in stack homes while ours keeps them in registers in a 0x84 frame, and the point-in-polygon
+// query still has to have the points before the point, which is the helper 0x23a220's argument order - the polygon
+// count's 32-bit type is declared short in src/unknown_239b80.cpp and in the headers this lane may not edit:
+// BLOCKED-BY 0x23a220 and those declarations.
 // score 192 (was 192): no new form and no lower score; the frame is still 0x84 against retail's 0x90 with the
 // origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points
 // before the point: BLOCKED-BY 0x23a220 (src/unknown_239b80.cpp).
@@ -542,6 +552,19 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // m3 lane 6 r181: no new form, no lower score (192): the first steps of the round 59 chain still need 0x23a220's points
 // parameter ahead of its point (src/unknown_239b80.cpp is on this round's avoid list), and every in-function form left
 // (start/end copies, count local, clamp, field_c literal, hit-block order, axis width) is listed above at 192 or worse.
+// b7N (11-17) walk against retail, fast build on r830: no behaviour difference found, source unchanged (192 control,
+// 1007 bytes against retail's 1001). Walked every block: the ray end - start at 0x1edf62..0x1edf82 and the two edges
+// from vertex 0 (0x1edf8f..0x1edff6), the cross product (components and operand order), the normalize (float rounding
+// of the length at 0x1ee068, skip below 1e-4 at 0x1ee074/0x1ee078, scale 1.0f / length at 0x1ee07a..0x1ee0a3), d = 0
+// at 0x1ee0b5, the offset from the start, `dot != 0` (0x1ee0fe..0x1ee105: equal skips, unordered computes), the -1.0f
+// / dot fraction (0x1ee113..0x1ee12b), `fraction < result->fraction` (0x1ee148/0x1ee14b), the clamp and its
+// ordered-equal test (0x1ee151..0x1ee16d), `n[axis] > 0` (0x1ee185..0x1ee18e), the three hit-point sums from the
+// fraction (not the clamped value), the table at 0x440b94 (18 shorts read from the XBE equal g_440b94), the dword
+// count and its loop (0x1ee202..0x1ee2c3), the call (push 0 = epsilon, push edx = count; the callee reads the count as
+// a word, so short is right) and the hit block (0x1ee2e9..0x1ee316: fraction, normal, field_c = the zero in xmm6,
+// result + 0x10 untouched). All of it agrees in field, direction, constant and rounding. Only the known non-behaviour
+// deltas remain: frame 0x84 against 0x90, the dead second movsx at 0x1ee182, the count pushed as a dword at 0x1ee2c7,
+// retail's store of plane.d at 0x1ee0b5.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

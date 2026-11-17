@@ -484,6 +484,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // angle duplicate and then the axis copy with the trigonometry, so the only difference left is where the flag's OR and store sit
 // around the angle duplicate; the axis is copied through the shared normalizer's pointer, which pins its memory home, and the flag
 // store follows that copy instead of the source order of the statements.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
 {
@@ -1145,6 +1146,7 @@ real function_30bf0(vector3f *v);
 // differ from the first instruction; splitting the gravity test from the horizontal test, so that the z difference is computed
 // after the gravity comparison the way retail orders it, measures 255, and a permuter run of 300 s over the body found nothing
 // below the baseline.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1448,6 +1450,7 @@ extern vector3f *g_4687ac;
 // MiniMax S (11-16): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
 // MiniMax C (11-16): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, so every later offset is
 // shifted, and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1920,6 +1923,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax C (11-16): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40
 // call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66 missing bytes and the pool, tag and
 // seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2224,6 +2228,7 @@ real function_17c900(short function_type, real input);
 // MiniMax C (11-16): no new form, no lower score (348): the frame is retail's 0x30 but the body is four bytes long, with the
 // index in eax where retail keeps it on the stack, and the normalization and the rotation are still scheduled in another order;
 // the shared normalizer's own callers pin that helper, so it cannot be spelled differently here.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -3078,7 +3083,7 @@ void function_f8eb0(long projectile_index, vector3f *displacement)
 
 real function_11ce20(vector3f const *a, vector3f const *b);
 real function_1201a0(vector3f *v, vector3f const *fallback);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 struct s_globals_element;
 s_globals_element *function_188690(short index);
 void function_184060(long unknown3c, long unknown59, s_type_1e6529 *data, long unknown50);
@@ -3213,6 +3218,7 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // MiniMax C (11-16): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity still
 // arrives on the stack where retail takes it in eax, and retail's own parameter order for the callee 0xfd7d0 differs from this one;
 // changing a parameter order is a form the rules forbid, so retail's order is reported instead.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)
@@ -3486,7 +3492,7 @@ no_effects:
 	}
 
 	if (response->angular_noise > 0.0f)
-		random_vector_in_cone(velocity, velocity, &g_4e7408->unknown0, 0.0f, response->angular_noise);
+		random_vector_in_cone(&g_4e7408->unknown0, velocity, velocity, 0.0f, response->angular_noise);
 	if (response->velocity_noise != 0.0f)
 	{
 		real length = function_30bf0(velocity);

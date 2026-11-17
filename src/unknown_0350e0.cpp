@@ -1828,6 +1828,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->j = direction->i * cross.k - direction->k * cross.i;
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
+// score 193 (was 193): see the forms below.
 // MiniMax D (11-14): no new form, no lower score (193): retail's four cases still compute their cross products with
 // their own temporaries - its frame is 0x18 against this build's 0x14 and it stores the zero result to its slot before
 // the jump table - and the helper form that reaches 177 raises the caller 0x2e9e0 to 573, while that caller's 492
@@ -1847,7 +1848,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // reference copy still differ, and the permuter's best variant turned the atan2 arguments round, which changes the
 // behaviour, so the body stands.
 // MiniMax R (11-16): no new form, no lower score (193): the permuter's lower variants (178 on its own count) rest on banned forms - a volatile x, a constant-only temporary, one-use locals, a disguised zero test and a score-picked statement order - so they were reverted; retail keeps the zero result in its own slot at [esp+8] with a 0x18 frame where this build promotes it (0x14), and the cross terms' order and the case-1 reference copy still differ.
-// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
+// Earlier: the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax B (11-11): no new form, no lower score (193): the helper forms that reach 177 and 182 still raise the
 // caller to 573, so the body stays as it is.
 // MiniMax R (11-10): no new form, no lower score (193): the three cross terms' order and the place of the case 1 reference copy still differ, and the forms tried before (each index ahead of the helper, the term orders and the copy ahead of the helper) all measured at or above the body above.
@@ -2033,6 +2034,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // holds five, and retail keeps the result in the stack slot at +8 while this build keeps it in a register.
 // MiniMax C (11-16): no new form tried this round, no lower score (193): the body is still 792 bytes against retail's 812, so a block is
 // MiniMax C (11-16): still shorter here; the earlier rounds' forms are recorded above.
+// M3 lane 4 r206 (fast with 0x2e9e0 and 0x497a0; control 193/492): `short mode` 189 (796 bytes: adds a `movsx ecx, cx`
+// retail does not have, and mode moves to ECX; the caller already widens the field); `dword mode` 193 (same code); the
+// result as `(real)atan2(y, x) * scale * ...` 193 (same code). On round 73's case-3-offsets-first lead (re-measured 177
+// at 812 bytes, 0x2e9e0 573 at 2232 bytes, frame 0x90 against 0x94): 0x2e9e0's far distance read at each use 177/573
+// (same code); with 0x2e9e0's `!(visibility > 0.0f)` (retail's `comiss xmm0, xmm6; jbe`) 177/572. Body unchanged.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2104,6 +2110,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax R (11-16): no new form, no lower score (496 in this round's nine-address set, 492 in the single-function set): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order; no form tried this round moves them.
 // MiniMax C (11-16): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the tag, position, direction, colour, alpha, amount and scale slots stay in another order; tried the context alpha before the time (526), the context alpha declared without its initialiser (492), the visibility after the context alpha and the selected colour at function scope (533, a scope move and so reverted), and none of them moves the slots.
 // MiniMax R (11-16): no new form, no lower score (492): the body is retail's 2285 bytes; the frame is still 0x90 against retail's 0x94, so the ratio, the definition, the source, the scale and the vertex homes sit four bytes below retail's, and the tag, position, direction, colour, alpha, amount and scale slots are in another order. The permuter over this body (600 s, twelve tries) found no form below the baseline.
 // score 492 (was 492): earlier 492 (was 492), 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
@@ -3422,6 +3429,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// score 317 (was 317): see the forms below.
 // MiniMax E (11-16): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax S (11-14): no new form, no lower score (317): the permuter's search over this body (29 tries, 304 s, reduced image and full image) found nothing below the baseline's 317; retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two read the stack slots in the other order, so the frame's shape and the register plan have to change together.
 // MiniMax B (11-13): no new form, no lower score (317): retail zeroes edx and keeps the block's base in ebp where this build zeroes ebp and keeps it in edx, and the two then read the stack slots in the other order; the frame's shape and the register plan have to change together.
@@ -3437,7 +3445,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // first/i slots here, and what is left is the frame's homes, which the compile-only copy reproduces as they stand;
 // re-measured at 317 (1324 bytes, as retail's).
 // MiniMax R (11-16): no new form, no lower score (317): retail keeps the admission counter in edx and the entries base in ebp where this build keeps them the other way round, and the two read their stack homes in the other order, so the frame's shape and the register plan have to change together; the names and the declaration order cannot move the first/i slots.
-// score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
+// r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
 // `entries = state->entries` base local for every access 317.
@@ -3636,6 +3644,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // MiniMax E (11-15): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation: retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped.
 // MiniMax C (11-16): no new form tried this round, no lower score (317): the body's length matches retail's (1324 bytes) and the blocks'
 // MiniMax C (11-16): order still differs in the ways the notes above record.
+// M3 lane 4 r206 (fast with 0x4b160, control 317): pass 2 ended by the found flag in its own test (no break, no
+// `if (!found)`) 394; the clamp as a value-returning helper at both loops 383 (1287 bytes); pass 1's `++first; found =
+// true;` ahead of the swap 360; pass 3's two tests as nested ifs 317 (same code); pass 3's tail as `swap(entry,
+// &entries[last]); --i; --last;` 316 (only the tail's instruction order moves). Body unchanged.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

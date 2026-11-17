@@ -943,6 +943,12 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // MiniMax C (11-16): opposite eax and edx roles, and the definition-plus-call-site convention that decides them is held in
 // MiniMax C (11-16): src/unknown_07a9a0.cpp, a file this lane may not edit.
 // MiniMax D (11-16): no new form, no lower score (34).
+// M3 lane 5 r191 (fast with 0x91e30/0x7e210): the fill value read through `long const &fill = next_party;` 34;
+// a redundant `if (0 < player_count)` around the copy loop 34; `if (player_count < total)` around the fill 34; the
+// maximum updated through `long &largest = next_party;` 34; that reference also as the fill value 34 (all the same
+// code, the player count still in EDX). Retail's caller sets up EAX (player count), ECX (parties), EDX (extra
+// count) last, so the setup order points at (extra_count, party_indices, player_count), listed at 35.
+// MiniMax R (11-17): no new form, no lower score (34): the first and third register-carried counts still reach the callee in the opposite eax and edx roles, and that order follows the caller's register home in src/unknown_07a9a0.cpp; a permutation run this round found nothing (34).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

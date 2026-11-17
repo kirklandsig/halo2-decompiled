@@ -138,6 +138,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 
 // score 607 (was 607): frame 0x4820, clears and metadata cursor agree; first +0x15f spans the loop; provider/NONE, palette/record and zero/SIMD homes differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// MiniMax S (11-16): no new form, no lower score (607): the palette slot is still sign-extended and read as a word where retail reads the byte unsigned at each use, and the 0x130f60 result still stays in EAX where retail moves it to EDX and keeps NONE in EAX; the native byte palette measures 611 and the signed short 616 in this build, and that register home is set by the clamp in the three-scalar helper in this file, whose other callers keep their own match.
+// score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
 // sign extension and the helper differences in the notes below are unchanged. Body unchanged.
 // MiniMax H (11-12): no new form, no lower score (607); the palette slot is still sign-extended and compared 16-bit where retail compares the byte with -1.
@@ -655,6 +657,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // palette radius/both best identities/both best weights/all source-weight publications:
 // 607/607/607/747/668/607/821/831. NOT kept: no exact provider/NONE or palette/SIMD recovery; original
 // source observations, alias-safe helpers, arithmetic and complete body restored.
+// M3 lane 8 r175 (fast with 0x12e5e0/0x130f60/0x131030/0x1317a0, all MATCH; control 607): the char slot re-measured
+// on this body 700 (3828 B; retail's `cmp cl, al`, but the 0x130f60 result stays in EAX with NONE in ECX, slot in BL);
+// on it the palette record's NULL declared at the loop top 700 (same code), the handled flag declared before the 0x130f60 call
+// 702, a `long palette_index = palette_slot;` for the table test and lookup 751 (3842 B, first difference +0x2e); on the
+// short slot, the tag arm's radius read from the field at each use (as the palette arm reads its own) 610 (3835 B).
+// Body unchanged.
 // P591: Incoming binding masks 1/2/4/8/3/5/9/15: eight 607s; seven pointer forms
 // excluded for unresolved caller 24. Original-site count/radius/contribution/fraction/
 // reciprocal/coefficient bindings: seven 607s. NOT kept: native homes unchanged; all restored.

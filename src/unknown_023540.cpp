@@ -2662,6 +2662,7 @@ dword __cdecl function_131fc0(real alpha);
 // MiniMax C (11-16): no new form tried this round, no lower score (140): the body's length matches retail's (1729
 // bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
 // them; the score also moves with the reduced image's source set, as the note above records.
+// MiniMax R (11-17): no new form, no lower score (140): the body's length matches retail's (1729 bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves them; the reload's order is decided by the callee at 0x131fc0 in src/unknown_131e50.cpp.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2955,6 +2956,7 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
 // MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3315,6 +3317,19 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // give 54 or worse.
 // MiniMax C (11-16): no new form tried this round, no lower score (54): the block's own order of the loads and its call setup still differ
 // MiniMax C (11-16): from retail in the ways the notes above record, and no form of this file's own moves them.
+// MiniMax R (11-17): no new form, no lower score (54): the block's own order of the loads and its call setup still differ from retail in the ways the notes above record, and no form of this file's own moves them.
+// b11B (11-17) walk against retail, fast build on r843: no logic difference found. Every instruction from 0x29b00 to
+// the first fcos (0x29fb4) equals retail's, so the early exits, the screen/target call, the stage loop (0x29cf0), the
+// render-state and shader constants, both alpha clamps (jbe targets 0x29ddf/0x29e43, NaN stored as is), the maximum (ja
+// target 0x29ee8), the zero tests (jp targets 0x29f93/0x29fa8) and the bounds block are retail's. readf.py: 0x45dbc0
+// 1.0, 0x45dbbc 0.5, 0x45dbcc -1.0, 0x45dbd8 0.0, 0x45dc38 255.0, 0x45e490 320.0, 0x45e2b4 240.0 match the source; the
+// 91 ours-to-retail address operands pair one-to-one. Corner region 0x29fb4-0x2a1f4: the same 121 instructions as
+// retail's (ours has fmul [esp+0x8c] where retail, after its push 7 at 0x2a1c9, has [esp+0x90]); only the schedule
+// differs, first at 0x2a027 (ours stores x87 coordinate 3 before `subss xmm1, [esp+0x90]`). The second set's store
+// order is retail's (coordinates 0,3,1,4,2,6,7,5); the first set's is 0,3,4,7,1,6,2,5 in retail and 0,3,4,6,7,1,2,5 in
+// ours. Tried, all 54 (same code): outputs by reference, `/ 2.0f`, u and v as two helpers; with each of a set's 8
+// statements written separately: retail's first-set order 219, single swaps in one set 54-225 (none under 54), 6 random
+// orders 96-247. Nothing kept: the body is as on r843.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3927,6 +3942,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // both): `long input = small + 4;` 961 (the input then lives in ESI and small is reloaded); the definition cleared before
 // `fixed` 954 (4844 bytes); a named attenuation before each gain 9 (same code); the alpha input word as the stored RGB word
 // `| 0x8000` with no shifted local 948; `small` initialised from its condition 1182 (4840 bytes). All restored.
+// Round 93 (m3 lane 2, fast, base 9): the offset clamp as one nested ternary 1072 (the listed pin form); `allow_small`
+// typed bool 9 (same code); each mode's gain as one expression 85 (the span/power quotient is evaluated first and
+// every gain register moves; the pairs stay constant first); both selectors defaulted then set under one `if (small)`
+// 948. Diagnostic: mode zero's blending and depth-bias writes without the skip test 894 (4816 bytes): the reloads
+// right after the call are still 1.0f first, so the join is not what orders them.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

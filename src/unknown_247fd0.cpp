@@ -771,9 +771,31 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // P565: Effect/allocation/child ordinal/child handle/tag/event/flags eight-byte
 // logical storage, each then all: 445/450/378/338/356/354/357/540. NOT kept: native values
 // are narrow and no split-address/home equality; original complete body restored.
+// M3 lane 5 r191 (fast with 0x247fd0/0x248cc0, both matched throughout): the gate test without the volatile flag
+// local 394 (frame moves); the first random sample in the shared `last_sample` local re-measured 392 (it only lines up
+// once the gate's unfolded `add eax, edx` is also there, retail being one instruction ahead from the gate on); the
+// velocity pointer through a named effect pointer inside an `if` 348 (frame moves); one function-scope effect pointer
+// for the gate and the velocity 414 (1633 bytes); the gate flag as the named effect's `flag3` bitfield 334 (same code).
+// Retail forms both effect addresses unfolded (gate `add eax, edx; mov dl, [eax + 2]`, velocity `add eax, edx; add
+// eax, 0x30`) where ours folds them into one operand or `lea`; no pointer-returning getter exists in retail to call.
 // P589: Original incoming system/settings/flags/blend/step/scale/link/cache parameter
 // identities, eight independent forms: 334/334/334/334/334/334/334/334. NOT kept:
 // no split effect-address or gate/settings-home recovery; complete original body restored.
+// MiniMax S (11-16): no new form, no lower score (334): the gate's byte is still read with the base and the
+// index in one operand where retail adds the index to the base first and reads the byte from it, and the flag
+// byte and the settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
+// b7H (11-17) walk against retail, fast build on r830: all of 0x247950-0x247fc1 read against ours, no behaviour
+// difference. Matched: gate 0x247971-0x247994, five seed steps (0x2479f6 0x247a2a 0x247a6e 0x247ab2 0x247af6),
+// constants (0x45dc50, 0x45dca4 65535, 0x45dbc0 1.0, 0x45dbcc -1.0, 0x45e21c 0.005), cache test 0x247b44-0x247b74,
+// scale and age 0x247baf-0x247be6, velocity default 0x247bf8-0x247c2e, blend sums 0x247c32-0x247c86 (v34*a+v40*(1-a)),
+// probe 0x247cbf-0x247d2b (z + 1.0 at 0x247d15, call args), offset 0x247d34-0x247d7d, else arm 0x247dd7-0x247e17,
+// child loop 0x247e4b/0x247f4b-0x247f54, reciprocals 0x247f10-0x247f3d, final dispatch order 0x247f5e-0x247fb2.
+// Differences left: retail inlines the tag lookup in the child loop (0x247e81-0x247ebb) where ours calls 0x137bd0
+// (same body as particle_object_for_tag): the inline form 371 at 1696 B, 378 with the two helpers below, not kept;
+// retail stores the placement's NONE at 0x247e3a after that call, ours before it (no effect). Not kept: the
+// velocity and position sums through vector3f_add, which this file doesn't use yet: both 342, velocity alone 341,
+// position alone 335, operands swapped 342 each (no behaviour change). The scale step has no helper without
+// normalize3d.h (a new include; 354 per r159). The raw reads (+0x16 bit 4, +0x78 == 8) and the volatile gate flag are lanes' score forms, left as is.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

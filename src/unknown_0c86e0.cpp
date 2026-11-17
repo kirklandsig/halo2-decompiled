@@ -92,6 +92,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
+// where this build merges the two fetches, because that callee writes no memory, and the callee's body is in
+// src/unknown_0bad50.cpp, which this lane may not edit; the alternative that tests the weapon index against NONE
+// before function_100f70 reaches 100, under the keep-bar. BLOCKED-BY 0xbadc0.
+// MiniMax S (11-16): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70), but retail looks the unit up again after the two calls where this build merges the two fetches into one, because 0xbadc0 writes no memory; that callee's body is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0.
 // MiniMax E (11-16): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70); retail looks the unit up again after those two calls because its link knows that callee writes memory, while this link knows it writes none and merges the two fetches, so the entry saves and every later register differ; that callee's memory summary is in src/unknown_0bad50.cpp, which this lane may not edit. BLOCKED-BY 0xbadc0.
 // MiniMax E (11-15): no new form, no lower score (107): the call boundaries agree with retail's (0xbadc0 twice and 0x100f70), so the difference is still 0xbadc0's memory summary, whose definition is in src/unknown_0bad50.cpp. BLOCKED-BY 0xbadc0.
 // MiniMax C (11-15): no new form, no lower score (107): the unit is still fetched once and kept across the two
@@ -107,7 +112,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // weapon lookup through that second fetch, while this link knows the callee writes no memory and merges the
 // two fetches, so the entry saves, the unit index's register and every later register differ; the callee's
 // memory summary is in a file this lane may not edit.
-// score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
+// score 110 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
 // again after the two 0xbadc0 calls (its link treats that callee as writing memory) and does the weapon lookup
 // through the second fetch; our link merges it into the entry fetch, so the entry saves, the unit index's
 // register and every later register differ. Earlier rounds below.
@@ -327,12 +332,23 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // view 107 (same code); the user index declared long on its own 110 (359 bytes); the reset test written
 // `!(keep_weapon_zoom && weapon_zoomed)` 107 (same code); the user index as one conditional initializer 107
 // (same code).
+// b9Q (11-17) walk against retail, fast build on r840: every statement, field offset and jcc sense agrees with retail
+// (0xc86e0..0xc8855): unit fetch first (0xc86ee), the two player queries (0xc8701, 0xc871c: null unit or player -1
+// gives NONE; & 0xffff, * 0x21c, word at +0x28), slot byte +0x212 and weapon dword +0x218 (0xc8755, 0xc8769), the
+// 0x100f70 call only for a weapon (0xc877b), reset when !keep || !zoomed (0xc8786..0xc878c), stores +0x240, +0x241,
+// +0x26c (0xc87a0..0xc87ae) with the entry's +0x2e/+0x89 under the user test (0xc87ce, 0xc87d4), then the sound arms
+// (weapon: tag +0x278 at 0xc881e; globals +0x134/+0xd0 at 0xc8826) and 1.0f (0x45dbc0, 0xc8844) into 0x1896c0.
+// No behaviour difference found. One type change kept: retail's user index is 32-bit (movsx ebx, word [+0x28] at
+// 0xc8743, cmp ebx, -1 at 0xc879d and 0xc87db, mov ecx, ebx at 0xc87c2), so it is `long`: 107 -> 110 here (was bp,
+// cmp bp, -1, movsx ecx, bp); no behaviour change; callers ca0b0 62, e7fb0 19, 102fb0 643, fdfb0 1420 unchanged, the
+// other 13 MATCH. Left: the second fetch (0xc8748), saves, was_zoomed in dl (0xc8784), keep reloaded into al (0xc87e8),
+// the weapon-NONE jump to the epilogue (0xc87f3; ours sets eax = -1 first): BLOCKED-BY 0xbadc0 above.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
 	bool was_zoomed = false;
 	s_zoom_unit *unit = ZOOM_UNIT_GET(unit_index);
-	short user_index;
+	long user_index;
 	if (unit_get_player_index(unit_index) == NONE)
 		user_index = NONE;
 	else

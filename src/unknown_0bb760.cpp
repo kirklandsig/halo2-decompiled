@@ -446,6 +446,12 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax D (11-17): no new form, no lower score (84): the body is retail's 1034 bytes and the first difference is
+// still the order of the 1.0f load and the zero xorps before the first clamp; the blend still sits at [esp+0x38]
+// where retail keeps it at [esp+0x1c], the first scan still leaves on inequality where retail leaves on a signed
+// less-than, and with the inverse computed inside the found block (132) the not-found path joins the clamp entry's
+// load instead of carrying its own copy of the one.
+// MiniMax S (11-16): no new form, no lower score (84): the first difference is still the order of the 1.0f load and the zero xorps before the first clamp, the blend keeps its frame slot at +0x38 where retail has +0x1c, and the first scan still exits on inequality where retail exits on less-than; the scan as a do-while measures 221, with a short counter 270, the inverse inside the found block 132, and dropping the seed variable 84 (the same code).
 // MiniMax E (11-16): no new form, no lower score (84): the three differences are the same ones as before - the clamp entry still materialises the 1.0 before the zero where retail zeroes first and loads the 1.0 after, the blend still sits at [esp+0x38] where retail keeps it at [esp+0x1c] with the choices pointer in the other slot, and the first scan still leaves on inequality where retail leaves on a signed less-than; every spelling of that bound tried in earlier rounds makes the build unroll the scan by four, so the body stands.
 // MiniMax E (11-15): no new form, no lower score (84): the blend's stack slot and the choices pointer's slot are still the other way round, and the 1.0 load still comes before the zero xorps where retail loads it after.
 // MiniMax S (11-15): no new form, no lower score (84).
@@ -525,7 +531,7 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
+// score 132 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
@@ -656,6 +662,19 @@ void function_3dd10(long object_index, bool force);
 // MiniMax R (11-10): no new form, no lower score; the choice scan still exits on inequality where retail exits on less-than (a scan bounded by less than is unrolled here at 637, and as a do-while 221), the choice count test still skips on zero where retail skips on zero or less, and the blend still sits at esp+0x38 where retail keeps it at esp+0x1c with the choices pointer in the other slot.
 // MiniMax A (11-11): no new form, no lower score (84); the first difference is still the order of the 1.0f load and the zero xorps before the first clamp; the three clamps written as if/else, in the reversed test order or through locals measure 267, 201 and 245.
 // MiniMax D (11-15): no new form, no lower score (84): the first difference is still the order of the 1.0f load and the zero xorps before the first clamp, the blend keeps its frame slot at +0x38 where retail has +0x1c, and the first scan still exits on inequality where retail exits on less-than; a 43-try permuter run (309 s) found nothing below 84.
+// b10A (11-17) walk against retail, fast build on r841: every field offset (+0x64/0x68/0x6c, +0x124/0x126, +0xb1, def
+// +0x38/+0xb0, model +0x54 stride 0x38), the float constants (0x45df34-0x45df44, 0x45dbbc 0.5, 0x45dbc0 1.0, fmod's
+// double 1.0 at 0x45dcc0), the seed's sum order, every jcc sense (NaN included: 0xbe467 `jbe`, 0xbe49f `jae`, 0xbe509
+// `jbe`, 0xbe532 `jbe`), the argument registers of 0x1318d0/0x131a00 and 0x3dd10(object, 1) agree; no behaviour
+// difference. Retail computes `1.0 - blend` only on the found path (0xbe4ba-0xbe4d2: xmm5 = 1.0, xmm6 = blend, xmm4 =
+// xmm5 - xmm6, after the break test and before the two 0x1318d0 calls), so `inverse` now sits there: retail's
+// evaluation order, 132 (was 84 with the subtraction before the loop; that placement only schedules better). Left on
+// it: retail's own `movss xmm5, 1.0` at the not-found exit 0xbe4a9 (ours joins the clamp entry's load, 8 bytes short),
+// blend's fstp after the variant byte compare (0xbe3d0), its slot [esp+0x1c] (ours 0x38), and the first scan's `jle
+// 0xbe408`/`jl 0xbe44d` exits. New: a redundant `if (choice_count > 0)` around the do-while folds (221, 1006 bytes); a
+// volatile weight with a `<` scan gives retail's jle/jl exits and 1034 bytes but swaps the weight/mask homes
+// ([esp+0x70]/[esp+0x10]) 102, with the inverse in the found block 145; declaration orders of the four scan locals
+// 102-104/146-147; volatile last 131, eligible 248, j 259, last+eligible 283. Best match-only recipe: 102, not kept.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
@@ -707,7 +726,6 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 }
                 if (eligible && weight > 0.0f)
                 {
-                    real inverse = 1.0f - blend;
                     real cumulative = 0.0f;
                     real target = selection * weight;
                     long j = 0;
@@ -720,6 +738,7 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                             if (j == last || cumulative >= target)
                             {
                                 hsv3f a, b, mixed;
+                                real inverse = 1.0f - blend;
                                 function_1318d0(&choice->lower, &a);
                                 function_1318d0(&choice->upper, &b);
                                 if (fabs(a.hue - b.hue) > 0.5f)
@@ -785,7 +804,7 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 
-// score 91 (was 91): retail keeps the destination pointer in EBX and
+// score 89 (was 91): retail keeps the destination pointer in EBX and
 // retail keeps the destination pointer in EBX and the source pointer only in its stack
 // slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
 // at the end of this note.
@@ -914,6 +933,16 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // loop then reuses for its function cursor, so the source is written to the stack and reloaded at every loop
 // end. The permuter's best (83) only moves constants into locals and moves the source step ahead of the
 // result store, so it was not kept.
+// b10A (11-17) walk against retail, fast build on r841: offsets (+0x1c flag, +0xb0 entries stride 0x10, function
+// stride 0x28 with blend_name +0x24 and scale_name +0x20, flags +4, lower +8, upper +0x14), count (0xaaaaaaab unsigned
+// /12 then signed /2), the count <= 0 and flag-clear exits (result in CL), the inlined 0xbe8b0 (value 0 on a false
+// 0xbab40; value in xmm5, flags in EAX, lower/upper in ECX/ESI, result in EDI at 0xbe9d1-0xbe9df), the three-component
+// scale, the clamp and the hoisted `result = true` ([esp+0x13], 0xbe959) all agree; no behaviour difference, so only
+// register roles remain: retail's destination lives in EBX and is copied to EDI before the call (0xbe9dd `mov edi,
+// ebx`), its source only in [esp+0x1c] and the entry offset in [esp+0x18] (0xbe954/0xbe95e), while ours puts the
+// destination in EDI and the source in EBX. New: the blend output passed as the expression `base + count` instead of
+// `current` 89 and a separate `out` alias for the clamp 89 (both identical code). Measured 89 on r841 (fast), 581
+// bytes vs retail's 580: retail pads one loop head (`lea ebx, [ebx]`, 0xbea0a), ours two (`lea esp, [esp]`).
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

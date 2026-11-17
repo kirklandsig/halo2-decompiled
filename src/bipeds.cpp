@@ -1252,6 +1252,11 @@ extern long *g_51e9cc;
 // const *` to the velocity 2; the dd8e0 result in a bool tested after 2; the crouch read through a fresh BIPED_GET at the add
 // (diagnostic) 410 (1504 B, the lookup is redone). Re-measured: the two changes as a two-element array 4 (the crouch pair stays
 // field first; the physics byte moves), so the change's memory residence is not what orders the pair.
+// M3 lane 13 r101 (fast; base 10, the 2-form re-measured 2, only the crouch pair): on the 2-form, the damage block (0xd6660 to
+// 0xd7b80 under the game-mode test) as a forceinline helper taking the biped index 2; the change declared uninitialised as the
+// block's first local and assigned at its call 2; the clamp as a block-local sum with two plain ifs (`< 0`, then `> 1`) 2; the
+// three wake calls (0xb9b90, 0xb7360, 0xbba20) as a forceinline helper 2; case 5 written flagged arm first (only the 0x35c
+// store) with all five stores in the other arm 2 (the same exact case 5 code as the both-arms form). The pair stays field first.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -6037,6 +6042,11 @@ real magnitude3d(vector3f const *v);
 // while this caller sees no register summary); the single call through it 2; an `inline` prototype of magnitude3d in
 // this file alone 20. Lead: retail had two identical bodies folded into 0x24590 (r167 lead-e3380-icf.patch); keeping
 // it needs a ruling on such a copy.
+// Round 128 (m3 lane 16, fast with 0x24590 and 0x1fb7e0): two event calls split by the upright test (the magnitude
+// ternary in one, `falling ? 0x54 : 0x56` in the other) 40 (900 B); per-arm calls with the actor bound by reference 20;
+// per-arm calls with the upright arm re-fetching the biped 254 (932 B); the actor test written `NONE != ...` 2 (same
+// code); per-arm calls as early returns 20. The seven magnitude3d callers that rose with `inline` hold the same baseline
+// scores as in round 101, so that lead is still blocked: BLOCKED-BY 0x24590.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

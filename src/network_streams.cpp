@@ -1034,6 +1034,13 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // window->oldest), the loop bound re-read as m_message_window.newest instead of the newest local, and an oldest
 // local in the shared sequence_window_index helper. Expanding an existing accessor is never kept; the helper's
 // local alone gives 90 (fast).
+// M3 lane 2 r92 (fast with 0x96510/0x94df0, control 60): the window as a const reference (`s_sequence_window const &`)
+// for the bound local and the index 60 (same code); declared ahead of the send call and used for the count, the bound
+// and the index 80 (223 B: the count's newest and oldest both kept, EBX/EBP); with the bound read from it in the loop
+// test 60 (same code: the reference read joins the index helper's newest, both hoisted); that with the count as `> 0`
+// 62 (227 B); the current body with the count as `> 0` 62 (227 B). Diagnostic: probe stores of 1 / -1 at the top 92
+// (237 B), the second counter stays. Retail's shape reads as: the helper's first (unconditional) oldest test hoisted and
+// merged with the count's load, its second (conditional) newest test left in the loop, and no reduction.
 // P587: Existing shared head-selector empty/nonempty early exits, complete result branches,
 // named empty/occupied predicates and head-first override/conditional: 60/60/60/60/60/60/74/60.
 // NOT kept: no native induction repair; nonempty/override forms also regress shared users.

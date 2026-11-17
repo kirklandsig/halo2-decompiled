@@ -888,6 +888,12 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // copies at the compare and the store 14 (the inlined helper's loop depth is not what colours the font first). A
 // `long const &` to the font's field used for the header call, the compare and the store 14. The font takes EBX
 // and the mask EBP in every form.
+// Round 132 (m3 lane 12, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each): an early `return true`
+// when the header exists, the search at function level 72 (the returns laid out first, same registers); matched
+// 0x23f260's scan shape (a private early-return scan and a forced-inline step over a cursor local, the stack parameter
+// EBP and the mask EBX there) 14, with the mask as a named local under two names sorting either side of the font's
+// 14/14 (register ties do not follow names); a found flag with `break` and the allocation under `if (!found)` 14;
+// the prediction's two fields read into named locals before the compare 14. All the same code as the body.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

@@ -20,6 +20,12 @@ public:
 	void remove_two(int first, int second);
 };
 
+// how many boxes a sweep holds
+inline long box_count_2e29b0(class_2e1090 const &sweep)
+{
+	return sweep.elements.size;
+}
+
 // where `value` sits in the cell's list of boxes, or -1
 __forceinline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
 {
@@ -51,9 +57,11 @@ __forceinline void mark_holding_x_2e24b0(class_2e1090 *sweep, int count, int low
 		{
 			cell_2e1090 *cell = &sweep->cells[slot - 1];
 			flip_bit_2e1090(bits, cell->box);
-			int remaining = cell->boxes.size - 1;
 			unsigned short *held = cell->boxes.data;
-			for (; remaining >= 0; remaining--)
+			int remaining = cell->boxes.size;
+			int &left = remaining;
+			left--;
+			for (; left >= 0; left--)
 			{
 				flip_bit_2e1090(bits, *held);
 				held++;
@@ -121,7 +129,7 @@ __forceinline void report_added_2e24b0(class_2e1090 *sweep, long *owner, int ind
 			}
 			if (found & 1)
 			{
-				unsigned long const apart = apart_yz_2e1090(*other, box);
+				unsigned long const apart = apart_yz_2e1090(box, *other);
 				if (!apart)
 				{
 					if ((other->owner & 1) == 0)
@@ -151,7 +159,7 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	pair.first = owner;
 	element_2e1090 *group = sweep->elements.data;
 	long *word = bits;
-	long *end = bits + (sweep->elements.size >> 5) + 1;
+	long *end = bits + (box_count_2e29b0(*sweep) >> 5) + 1;
 	for (; word < end; group += 32, word++)
 	{
 		element_2e1090 *other = group;
@@ -187,7 +195,11 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	}
 }
 
-// score 49 (was 106): the y/z test reads the box's lower word first
+// score 39 (was 49): the marking helper's cell walk counts down through a reference bound
+// to its counter, and its y/z test takes the box first. Left: in the pair scan's preheader
+// retail allocates the end pointer before the word pointer (ours the reverse), and the
+// y/z test's four loads come in another order.
+// Before, 49 (was 106): the y/z test reads the box's lower word first
 // (apart_yz_2e1090; 75 reading it last, every other user unchanged), and the
 // held count is read before the held list (77 the other way). Earlier: the
 // quantizing (two-level helper, its steps as separate
@@ -238,7 +250,11 @@ __forceinline void drop_endpoints_2e29b0(class_2e1090 *sweep, element_2e1090 *da
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 130 (was 160): the grid test is one condition, the element array is
+// score 102 (was 130): the scan's end pointer takes the box count through
+// box_count_2e29b0, and the overlaps size and the mark call use the count directly instead
+// of a second local. Left: retail keeps `this` in esi and the box index in edi (ours the
+// reverse), and the scan's word and end pointers as in 0x2e24b0.
+// Before, 130 (was 160): the grid test is one condition, the element array is
 // read before the endpoints are dropped (a helper takes it), and the cell's box
 // is removed at the index a lookup returns. this and the box pointer still take
 // each other's registers.
@@ -279,10 +295,9 @@ void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 	unsigned long const index = *owner;
 	element_2e1090 &box = elements.data[index];
 	{
-		int const inner_count = elements.size;
-		longs_2e1ab0 overlaps((inner_count >> 5) + 4);
+		longs_2e1ab0 overlaps(((int)count >> 5) + 4);
 		long *bits = overlaps.data;
-		mark_holding_x_2e24b0(this, inner_count, axes[0].data[box.slots[4]].value, box.slots[4], box.slots[5], bits);
+		mark_holding_x_2e24b0(this, (int)count, axes[0].data[box.slots[4]].value, box.slots[4], box.slots[5], bits);
 		report_removed_2e29b0(this, owner, index, bits, box, pairs);
 	}
 

@@ -749,6 +749,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P564: Complete lazy correction admission set by its test, bool/byte/short/long then
 // complementary defaults, direct tracked argument: 99/99/99/99/99/99/99/99. NOT kept: no exact
 // native entry/store recovery; original parameter storage, prediction and entire body restored.
+// M3 lane 12 r133 (fast with 0x1fc660 and the file's four other functions, all MATCH; control 32): the i/j deltas
+// through the existing planar vector2d_from_points2d with the k delta after 69 (+0x4a: the chains follow), the k delta
+// first then the planar helper 56 (+0x20); the prediction through the existing vector3f_scale + vector3f_add (with
+// normalize3d.h) 98 (377 bytes); every `tracked` use (location tests, final copies) through the parameter reference 57
+// (369 bytes, the copies reload it); the output defaulted to the prediction ahead of the clamp test, the else arm
+// dropped 93 (368 bytes). Body unchanged.
 // P588: Repeated state-velocity/output-velocity/state-location field lvalues,
 // seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
 // NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.

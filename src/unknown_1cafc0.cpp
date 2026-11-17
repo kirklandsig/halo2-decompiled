@@ -1045,6 +1045,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax E (11-17): no new form, no lower score (210): the two id slots are still swapped (retail keeps the animation id at frame+0x18/0x1a with its -1 stores at the entry and the transition id at frame+0x14/0x16 with its stores in the block); four declaration and scope orderings measured at 210 or 211, and moving the transition id to function scope gives retail's slots but leaves its constructor at the entry (353).
 // MiniMax E (11-15): no form kept. The permuter's best variant (195, same in both images) swaps the first and
 // fourth arguments of the transition channel's set() call, which would put the animation set name into the
 // channel's graph tag index instead of the state's graph tag index that retail loads from [edi+0x68] at

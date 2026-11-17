@@ -100,6 +100,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data
+// loaded first, which every keepable form here either repeats in both branches or pays for with the caller's register
+// pair (see Round 252 below).
 // MiniMax G (11-14): no new form kept, no lower score (96): a single type read shared by both kind routes reaches 68
 // only with a one-use absolute-index local and a score-picked declaration order, and the one-use-free form scores 98
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
@@ -107,7 +110,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // MiniMax S (11-16): score 96 (was 96): no new form kept; the 24-point form (the type read once, the headers in
 // ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach its
 // score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
-// score 96 (was 96; m3 lane 8 r166 and r172 near the end): no local frame; retail reads the type once before the kind test (one type read shared by
+// Earlier at 96 (was 96; m3 lane 8 r166 and r172 near the end; a score line, moved below the first in round 252): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
 // preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
@@ -447,6 +450,23 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // The member form changes neither the colouring nor the incoming pair of any of these bodies. Body unchanged at 96.
 // P563: Eight alternate main-case source orders on the retained two-type-read dispatch:
 // 97/96/98/98/98/101/102/104. NOT kept: no native entry/type recovery or exact equality; original case order, full body and matched caller convention restored.
+// Round 252 (m3 lane 3, fast with the caller 0x1d5bf0 in brackets; main 96 [0]). Round 118's form rebuilt (object_index,
+// absolute_index, rigid body, headers, byte type; case 0 through `headers[component->object_index & 0xffff]` with main's
+// shift spelling) 28 at 256 B [0]; on it: no type local (both switches on `headers[absolute_index].type`) 93 (264 B) [13];
+// the kind test inverted with the main switch first 95 [0]; `dword absolute_index` 28 (same code); the parameters as
+// (component, owner, level, kind, index), definition and call together, 28 (same code) [0]; as retail's register order
+// (component, index, kind, owner, level) 28 (same code) [0]. The parameter order moves nothing on that form either.
+// b9J (11-17) walk against retail, fast build on r839: no behaviour difference found. Checked statement by statement
+// against 0x1d69d0-0x1d6ad0: the stack args (owner [esp+0xc] then level, `ret 8`), the owner->model (+0x48) ->
+// rigid_bodies (+0x3c) walk at 0x1d69df-0x1d69e6 and the 0x90 stride (0x1d69ef-0x1d69f9), the header data (+0x44) with
+// its 12 byte stride and the type at +3 (0x1d69ff), `cmp edi, 7` / `cmp edi, 6` (equality, no NaN), the kind-7 route
+// (type 1 -> 0xc, else 1, 0x1d6a0b-0x1d6a1b), case 11 (`jg` = level <= 1 -> 4; `setge` = level >= 5 -> 5, else 3), cases
+// 1 and 7 (`(flags & 8 | 0x30) >> 2` = 12/14 and `>> 3` = 6/7 on the +0x18 byte), case 0 (object at +8 of the element,
+// byte at +0x10a, bit 2, 9/11), the byte index table 0x1d6ac4 and the 4+1 entry jump table (null entry = the
+// `__assume(0)` default); no float code, no callee. Not kept (96, same score, round 60's form): case 0's flag as the
+// word bitfield `flag2` at +0x10a through a local copy of s_object_view (unknown_0a58d0.h, not included) gives
+// retail's `shr al, 2` at 0x1d6a7c where ours has `shr eax, 2`, but needs a duplicate struct. Left: header data loaded first (EDX), the owner chain in EBP and
+// `mov esi, ecx` before the object index (0x1d69d0-0x1d69f2), and the single type read (0x1d69ff) before the kind test.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

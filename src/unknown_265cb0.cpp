@@ -363,6 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
 // score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax H (11-12): no new form, no lower score (84): the result long still lands at [esp+0xc] where retail
 // keeps it at [esp+8], the clip's amount out-parameter sits at [esp+0x10] against retail's [esp+0x1c] and
@@ -2105,11 +2106,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // [43]); two beside the iterator also do; one gives EDX: the iterator's register is a rotation step, not its statements.
 // MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
 // uses EAX, and the entry loop's index compare and the iterator's setup still differ.
-// Earlier first line: score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
+// Earlier first line: 194, was 194: frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
-// Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
-// Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
+// Earlier first line: 502, was 502: Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// Earlier status 502, was 502: frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
 // the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
 // frame is 0x84 against 0x80 since the visible flag became a stack byte, and the result/level slots,
@@ -2592,6 +2593,22 @@ real function_2683f0(long actor_index, long node_index, short type)
 // index on the table (diagnostic) 168 (same code); the start through the `actor` local 559 (retail reloads the table); the
 // relative and facing dots through dot3f (`dot3f(&relative, &direction)`, `dot3f(&direction, &forward)`) 168 (same code:
 // the direction stays in memory); `direction` declared at the players-loop top 168 (same code).
+// M3 lane 1 r112 (fast with 0x25d810 listed, equal to plain): the slot search with a long counter 169 (2880 B: the loop
+// is then retail's exactly, masked 35 -> 32; plain 169 too); with `player = NULL` declared ahead of the first search
+// 376 (the not-found exit threads past the index test); with a long copy of the short index for its NONE test and
+// subscript (`long table_index = player_table_index;`) 375 (masked 30: the search is retail's but for where `xor edi,
+// edi` sits); with the player as one ternary 184; the facing dot's products written forward-first 168 (same code).
+// b8E (11-17) walk against retail, fast build on r836 (168, 2880 B, as before): no logic, offset, field, callee or
+// constant error found. Walked: the prop walk 0x2666b0-0x2668c8 (`!prop` skips the strongest test at 0x266743, a failed
+// unknown5e test does not, 0x266755; 0x2672e0 returns its view in EAX, 0x26679f `mov edi, eax` feeds 0x267700, ours
+// passes `view`); the flags 0x2667c7-0x266899; the tail 0x2668cd-0x26690a; the 0xa8/0xa9 events 0x26690f-0x266a5b; the
+// gates 0x266a5b-0x266b5d; the players loop 0x266b70-0x267147 (every constant read; every jcc sense equals ours, NaN
+// included, except one). That one: the decrease test `else if (distance <= 3.5f)` compiles `comiss 3.5, d; jb` (NaN
+// skips) where retail 0x266fcc is `comiss d, 3.5; ja` (NaN enters); NaN cannot reach it (0x266db3 `jbe 0x26713c` drops
+// it), so no behaviour differs. `!(distance > 3.5f)` there gives retail's sense and measures 239 (fast, r836), 701
+// instructions against 695: not kept. Facing lives only in xmm1 (0x266f39); the stack zero at 0x266c51 is what the
+// not-visible arms reload (0x266f9f, 0x26705f), as ours `facing = 0.0f`. The far-and-slow exit 0x266f8e skips the score
+// test; ours reads `score > 0` on the same paths. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -417,6 +417,18 @@ static __forceinline bool structure_bsp_collision_available()
 // test), so forms that keep the parameter in memory: `(void)&source;` 53 (same code); the flag set in if/else arms with
 // the collision re-read in the else arm and `if (excluded) return result;` 62, with `(void)&source;` 62, with the re-read
 // at the join 62, the join re-read through `&source.collision` 62 (all threaded, 286 bytes).
+// b11D (11-17) walk against retail, fast build on r843: fields, offsets, branch senses, argument order and requery
+// arguments agree statement by statement (type 1/3 at 0x14b176-0x14b186, object 0x14b191-0x14b1a8, 0x10a0b0 `cmp ax, 2`
+// 0x14b1b8, 0xbf9a0 stack pair +0xc/+0x10 0x14b1c2-0x14b1ce, 0x14a8e0 fed the unmodified source collision 0x14b225,
+// 0x1697c0 args 0x14b1df-0x14b1f8, 0x14ac60 0x14b20b-0x14b20d): no behaviour difference found. Why the result sits in
+// memory: BL is taken by the flag, a byte local then has no callee-saved byte register; a `bool` result drops the setne
+// (the un-threaded forms below are 286 bytes with it). Un-threaded flag forms (declared `bool excluded`/`bool modeled`,
+// `!(excluded | modeled)` as 0x14af40) all keep retail's `test` but allocate worse: NONE takes a callee-saved register
+// (its pushes become `push reg`, `or reg, -1` after 0xbf9a0, retail uses `push -1`) and the flag is spilled into the
+// dead source slot [esp+0x70]: object_index read before `found` 76, as is a function-scope flag or `modeled`, a
+// literal -1 in the requery 76; found first 81; long flag 81; byte result 79-81 (290/291 bytes); collision only
+// through source 81; flag by if-set 82; `!excluded` alone 93 (262 bytes); a plain collision pointer parameter 109.
+// Best match-only recipe: none under 76. Needed: NONE in ECX only, flag in BL, source.collision spilled, not the flag.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -715,6 +727,21 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
 // MiniMax C (11-16): no new form, no lower score (172): retail still holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
+// MiniMax I (11-17): no new form, no lower score.
+// b8B (11-17) walk against retail, fast build on r836: fields, offsets, branch senses, loop shape and callees
+// agree (type 1 at 0x14acb5, type 3 at 0x14acee, loop 0x14ad82-0x14aee0, fill 0x14aef4); no behaviour error
+// found. Order differences, both measured above and not applied: retail zeroes the result byte at 0x14aca2,
+// before the type test's jne at 0x14acb3, and clears the definition once at 0x14ac9d with no clear in the type-1
+// block or the else path; ours does both after the type test. Retail returns the byte raw (0x14aee6, 0x14af28)
+// where ours adds test/setne; `bool result` measures 182 (726 bytes), not kept. Retail tests only the first
+// vertex's fetch (0x14ae25 reads a byte at esp+0x12 that no path initialises; 0x14ae1e/0x14ae63/0x14ae9a set it
+// to 1) and calls 0x11e800 at 0x14aebb whatever the second and third fetches gave, with stale vertices; ours
+// skips the triangle when any fetch fails (NULL data at 0x14adf6, bad strip index). `if (!get(v0)) continue;
+// get(v1); get(v2);` with a defined failure measures 182 (192 with a bool result); with the getter's result left
+// unset on a miss and a bool result 200 (731 bytes), its vertex block equals retail's in opcodes except the
+// stores at 0x14ae63/0x14ae9a (dropped as dead) and the swapped flag and result slots. The else path reads an
+// unset range at 0x14ad52, harmless (section NULL). The 0x16e1b0 homes and the 0x11e800 registers are unchanged:
+// BLOCKED-BY 0x11e800.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -976,6 +1003,8 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // (p, a, b, c, u, v) reorder re-measured (fast, restored at once): MATCH here, 0x11e800 129 -> 126, 0x14ac60 172 -> 172; the
 // diff is in build/r124/held-14a8e0.patch. BLOCKED-BY 0x11e800 (contributor).
 // Round 169 (m3 lane 7): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
+// M3 lane 8 r177: baseline listing (full build, 4) still differs only in 0x11e800's four argument registers (ours a/b/c/point
+// in eax/esi/edx/ecx, retail eax/edx/ecx/esi); 0x11e800 is still contributor code; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

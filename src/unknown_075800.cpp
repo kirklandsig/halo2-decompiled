@@ -1511,6 +1511,18 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P578: Per-case connection-link scalar memcpy at cases 5/6/7, seven subsets,
 // then the actual case-4 receiver transfer: 193/193/195/235/236/236/253/196 fast. NOT kept: no exact delayed ESI
 // save or terminal expansion repair; original classifiers, receivers and full body restored.
+// b8I (11-17) walk against retail, fast build on r836: no logic or structure error found; fast 196 (444 B, retail 444),
+// the full-build 143 above is unchanged and no code was edited. Every case body was compared instruction by instruction
+// with 0x938f9..0x93a33: the same callee and the same argument loads in each case; only esi (ours) against edi (retail)
+// as the home of the address differs, which is the convention difference listed above. Case 4 loads this->unknown10
+// (0x93922, [edx+0x10]) and pushes message, address, handler for 0x785d0 (0x93928). Cases 5/6/7 read the link from
+// [edx+4], pass the address in EAX and 0 in ECX to 0x92ef0, and compare with -1 (0x939eb, 0x93a09, 0x93a25). Case 5
+// loads the message into EDX (0x939f0) because 0x94ae0 reads [edx] (0x94b01); case 6 loads nothing before 0x93a0e
+// because 0x94b40 reads the message from EBX (0x94b5f); case 7 pushes it (0x93a2a), 0x94bb0 reading [esp+4] (0x94bc7);
+// case 2 passes only the handler (0x93908) because 0x93fa0 reads [ebx] (0x93fac). Ours matches each of these. The range
+// check is unsigned in both (retail `ja` at 0x938eb), the in-band types 1/15/16/17/19/20/21 and every type above 24
+// do nothing in both, and the late 18 test with the inlined 0x94420 body (retail calls it at 0x939c4) has the same
+// effect, so there is no behaviour difference to report; the remaining difference is the register assignment.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -179,10 +179,12 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax S (11-16): no new form, no lower score (201): the default arm still clamps both ages as retail does, but the age lands in EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead of loading it into EAX; clamping the second age as well measures 209 in this build, worse, and the case 0 and case 1 blocks still sit after the loop instead of in place between the default arm and the merge, so the merge's block placement is what differs.
 // score 201 (was 201): MiniMax I (11-16, round 2): no new form, no lower score: clamping the second age as well
 // (`MAX(physical->time - best.time, 0)`) measures 209, worse - the clamp restores retail's mask, but the age lands in
 // EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead
 // of loading it into EAX; the 194 form in the notes below is a seven-point gain under the bar. Body unchanged.
+// Earlier at 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; a second score line, merged in round 252): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // Earlier header detail: 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax R (11-15): score 194 (was 201): the default arm matches retail instruction for instruction now (both ages
 // clamped with cmp/sbb/and, the two products in the same registers), but the case 0 and case 1 blocks still sit after
@@ -717,9 +719,31 @@ struct s_physical_block_iterator
 // P567: Standard logical disjunction/conjunction/both, relational providers and their
 // disjunction/conjunction/both/complementary-retention boundaries: 213/209/252/362/369/358/400/423.
 // NOT kept: no native policy-result, clamp or placement equality; original complete body restored.
+// Round 252 (m3 lane 3, fast with 0x13d320, MATCH each time; control 201). Retail clamps both ages (`x > 0 ? x : 0` on the
+// unsigned difference, cmp/sbb/and) with the clock in EDX, each difference in EAX and each clamp in the register of the
+// value that dies (age ECX, best age EDX), then loads best.pages into EAX for its product. A `dword now` clock local for
+// both differences with both ages as `MAX(now - ..., 0)` 209 (1228 B: both clamps retail's, but the candidate time and
+// the first age take EAX, so `best.pages * age` folds the stack slot); its products written `age * best.pages >
+// best_age * candidate->pages` 209 (same code); the products named in retail's order (`candidate_weight` then
+// `best_weight`) 209 (same code); case 0 as `if (older, or the same time and fewer pages) better = true;` on main 201
+// (1214 B), with the two clamps and the clock local 209. Case 0 stays threaded into the take test. Body unchanged.
 // P582: Original policy Boolean scalar memcpy at case zero/case one/default, seven
 // subsets, then complete scalar memmove: 286/201/201/286/286/201/286/273. NOT kept: no exact native common-result materialization,
 // age-mask/product or policy placement recovery; original comparisons and complete body restored.
+// b9L (11-17) walk against retail, fast build on r840: no behaviour difference found, no new form, score unchanged
+// (201). Walked every statement, field offset, jcc sense, constant and callee argument. Agrees: pages and the 0..8
+// clamp (0x13d3a3, 0x13d3b3-0x13d3ce), limit test (jl 0x13d3da, jg 0x13d3de) and the failure update (cmovg
+// 0x13d423); ring fields (previous +0, time +4, offset +8, pages +0xc) stored in retail's order (0x13d465-0x13d46c);
+// expiry adds the `type` argument [esp+0x1070], not limit_index, unsigned (0x13d4e0-0x13d4e4); oldest test unsigned
+// (jae 0x13d4f9); `head = tail` on busy (0x13d537); scan compares: time unsigned (jbe 0x13d5a1), pages signed (jl
+// 0x13d5b6); switch 0/1/default (0x13d5c7-0x13d5cd); case 0 unsigned time then signed pages (0x13d616-0x13d620);
+// case 1 call 0x13d606 with ECX physical, ESI candidate, EDI &best as the matched 0x13d320 reads them; the walk's
+// tests (jge 0x13d738, jle 0x13d747, handle built from the salt before the tests); oldest/best.previous fix-up
+// (0x13d6ea-0x13d701); allocation failure to the limit update (je 0x13d76e); the three link arms (0x13d790,
+// 0x13d7d6, 0x13d816). Retail's clamps are unsigned (cmp 0,x / sbb / and, 0x13d5d9-0x13d5ed), so identity on a
+// dword: retail evaluates the candidate's age, then the best's, then multiplies candidate pages by the best's age
+// first (0x13d5f3) and best pages by the age second (0x13d5f6). Left (layout and registers only): clock in EDX vs
+// our EAX at 0x13d5cf, cases 0/1 in place (0x13d600, 0x13d60d), walk roles, data reload 0x13d7e1.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

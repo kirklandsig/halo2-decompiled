@@ -721,7 +721,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// score 163 (was 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// score 235 (was 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1242 bytes (retail 1229), frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax H (11-11): no new form, no lower score (163); the state dot still takes its registers from XMM4-6 where retail uses
 // XMM5-7, and the rotation block still schedules its products differently.
 // score 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
@@ -929,6 +929,17 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // `rotate = !(dot > 0.0f); if (rotate) axis = *old_up;` 163 and `bool rotate = true;` before the axis cross 163 (both the same
 // code). Re-measured: `angle` declared before `limited` 173. Also: the inactive arm's forward built in a local and stored once
 // with the up store after it 311 (1242 bytes, 0x1e5af0 43); the state test as `0.0f < dot` 163 (same code).
+// b8G (11-17) walk against retail, fast build on r836: every block agrees with retail (flag test 0x1f146b-0x1f1476,
+// first cross, the == 0 test 0x1f151e, the > 0 state test and axis = old up fallback 0x1f1557-0x1f156f, sin/cos of
+// the unrounded angle 0x1f157b-0x1f15f3, rotation rows, acceptance test 0x1f16f7 with jbe so NaN skips, forward
+// crosses, both == 0 tests, the g_4687b0/g_4687a8 fallbacks, result store order 0x1f18a7-0x1f18bb, flag-clear arm
+// 0x1f18c5-0x1f1925) except the sum order of three dots. Retail sums each (k + j) + i: state dot 0x1f1544/0x1f1550,
+// rotation dot 0x1f15ce/0x1f15d9, acceptance dot 0x1f16ef/0x1f16f3. The old source compiled the state dot (i + k) + j
+// and the other two (i + j) + k, so the last bit could differ and flip the dot > 0 or the acceptance test. Retail's
+// evaluation order, now kept: state dot written i, j, k (retail's tree, 162 alone), rotation and acceptance dots
+// parenthesized (k + j) + i: 235 with all three (1242 B; 0x1e5af0 and 0x30bf0 MATCH), +72 points and 13 bytes, the
+// rotation dot's limited.i folds from memory. With the state fix: rotation only 235, acceptance only 175; axis-first
+// products 236, dot scaled in a second statement 235, (1.0f - cosine) first 235. Left: up in XMM4-6, retail XMM5-7.
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
@@ -942,9 +953,10 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
         bool rotate = true;
         if (function_30bf0(&axis) == 0.0f)
         {
-            real dot = old_up->j * up.j +
-                old_up->k * up.k +
-                old_up->i * up.i;
+            // retail sums this dot (k + j) + i (0x1f1544, 0x1f1550); written i, j, k it compiles to that tree
+            real dot = old_up->i * up.i +
+                old_up->j * up.j +
+                old_up->k * up.k;
             if (dot > 0.0f)
                 rotate = false;
             else
@@ -956,14 +968,16 @@ void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f 
             real angle = g_510c54->rate * 5.235987663269043f;
             real sine = (real)sin(angle);
             real cosine = (real)cos(angle);
-            real dot = (limited.k * axis.k + limited.j * axis.j + limited.i * axis.i) * (1.0f - cosine);
+            // (k + j) + i as retail (0x1f15ce, 0x1f15d9); the unparenthesized sum compiles to (i + j) + k
+            real dot = ((limited.k * axis.k + limited.j * axis.j) + limited.i * axis.i) * (1.0f - cosine);
             vector3f cross;
             contact_cross(&limited, &axis, &cross);
             limited.k = axis.k * dot + limited.k * cosine - cross.k * sine;
             limited.i = dot * axis.i + limited.i * cosine - cross.i * sine;
             limited.j = axis.j * dot + limited.j * cosine - cross.j * sine;
             contact_cross(&limited, &up, &cross);
-            if (cross.k * axis.k + cross.j * axis.j + cross.i * axis.i > 0.0f)
+            // (k + j) + i as retail (0x1f16ef, 0x1f16f3), likewise
+            if ((cross.k * axis.k + cross.j * axis.j) + cross.i * axis.i > 0.0f)
                 up = limited;
         }
         vector3f const *old_forward = (vector3f const *)(state + 0xf4);
@@ -1449,6 +1463,21 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // subsets, then a complete ground-adjusted magnitude result: 481/481/479/363/363/373/370/520.
 // NOT kept: all regress; native damping and raw/bounded homes remain. Original arithmetic,
 // observation boundaries, helper calls and complete body restored.
+// M3 lane 1 r113 (fast with 0x1f0450/0x24590, both MATCH; base 234): the general arm's `limited` declared, uninitialised, above
+// `desired` and assigned from delta later 234 (same code, homes unchanged); desired scaled in place with delta taken from it (no
+// `scaled`) 501 (3057 B); the low arm's cross taken from the `forward` copy 380 (3053 B); the direct arm's delta through the existing
+// vector2d_from_points2d from a speed-scaled 2-D `desired` 491 (3056 B); the low arm's cross written ahead of the forward copy 348
+// (3070 B). Seen in the listing: retail's general delta shares the flying arm's forward slot (0x2c) and limited shares desired's
+// (0x20), ours the reverse; the history block's change/relative/offset slots agree; the direct arm's `speed * rotated.x` keeps speed
+// as the destination in retail (`movaps xmm2, xmm3; mulss xmm2, xmm0`) where ours multiplies into the dying rotated.x.
+// M3 lane 8 r175 (fast with 0x1f0450/0x24590/0x2b400/0x30bf0/0xa75d0, all MATCH; control 234, difflib-aligned 158, register-
+// masked 59): the direct arm's output as three statements, i, j, then k (retail computes and stores them in that order, ours
+// evaluates vector3f_assign's arguments k first) 543 (aligned 191, masked 81: that arm and the first arm's shared out.k store
+// become retail's, but the flying arm's second cross block moves); with the general arm's output through the existing
+// vector3f_add(current, &limited, out) 469 (aligned 153, masked 55; only its k row still commutes into limited's register,
+// `addss xmm2, [eax + 8]`, so the first arm keeps its own out.k store); vector3f_add(&limited, current, out) there 469 (same
+// code); on the body, the first arm clearing gravity as its first statement 233 (a one-point gain); all three together 468
+// (aligned 153, masked 55). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

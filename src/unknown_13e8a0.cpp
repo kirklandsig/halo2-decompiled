@@ -504,6 +504,8 @@ struct s_text_line_measurement
 
 // score 77 (was 77): frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// MiniMax S (11-16): no new form, no lower score (77): retail reloads the width into xmm4 right after the scale and copies the advance product with movaps, so the sum lands in xmm5 and the bound in xmm0, where this build sinks the width's reload past the three products and sums into xmm4 with the bound in xmm5; copying the width into a local right after the kerning call is the same code, the sum in a local before the can_break test 75, the can_break block before the products 85, and a permuter run found nothing below 77.
+// score 77 (was 77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
 // XMM0 and XMM3 colouring (retail moves the width into xmm4 early and copies xmm0 into xmm3, ours accumulates the
 // advance in xmm0 and moves the width late) and the one-use width local the rules drop. Body unchanged.
 // MiniMax S (11-16): no new form, no lower score (77): the remaining differences are still the XMM0/XMM3 colouring (this build gives XMM0 to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps inside the update arm while ours run ahead of the test; the summed-width spelling that reached 65 is not kept, a one-use local being kept only with a byte match.
@@ -643,6 +645,13 @@ struct s_text_line_measurement
 // P580: Scalar memcpy at advance pixels/offset pixels/both/token/break byte/right bound/
 // start coordinate/reused running width: 77/77/77/77/77/79/79/79. NOT kept: native independent advance
 // copy and early width load remain; original observations, arithmetic and full body restored.
+// M3 lane 8 r175 (fast with 0x13f700/0x13f0e0, both MATCH; control 77): `count &&` ahead of the bound test 76 (416 B); the new
+// width named before the test with `count++` ahead of `width = next_width;` 71 (one-use local, not kept); the test's first pair
+// commuted (`advance + position->x`, exact) 77 and the update's (`offset + advance`) 77 (both re-sorted); the whole test sum named
+// before the can_break block 75 (one-use local). Diagnostics re-measured: 0x13f5a0 declared `inline` 42 at 418 B (the width
+// is then re-read in the can_break arm and at the test; only the alignment of the tail improves); the listed next-width forms
+// before the test 65 and before the can_break block 68 (the second gives retail's copy right after the products, but the
+// adds stay ahead of the branch, where retail runs them in the update arm). Body unchanged.
 // P591: Original incoming iterator/position/bounds fixed-binding subsets 1/2/4/3/5/6/7,
 // then immutable returned measurement: eight 77s. NOT kept: no independent advance web
 // or early-width recovery; original complete input/output bindings and body restored.

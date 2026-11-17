@@ -976,6 +976,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // then long/short while: 369/369/367/367/371/371/369/367. NOT kept: intermediate grouping and
 // changed lifetime do not match native ingress/frame; six forms raise caller 286 to 313.
 // Original helpers and complete body restored.
+// M3 lane 2 r92 (fast with 0x270400 and 0x270d90; control 218): the corner pointers in a, b, c, d order re-measured 287
+// (1284 B: actor_index loaded into EAX first thing and pathfinding homed in EBX, but it then arrives in EDX); the
+// parameters as (entry, pathfinding, surface_index, ...), the order retail's caller sets them up in read last to first
+// (ECX surface, EAX pathfinding, EDI entry), with the declaration and the call in src/path.cpp changed for the trial
+// and put back: 218 (same code), on the a, b, c, d form 287 (pathfinding still in EDX); (pathfinding, entry,
+// surface_index, ...) on the a, b, c, d form 287; the surface as a const reference 218 (same code). Diagnostic: on the
+// a, b, c, d form an actor copy declared after the surface 295 (still EDX). Retail's 270400 calls take the actor in
+// EAX; its case 5 compares the entry-loaded EAX first.
 // P586: Actual final interpolation argument table, long/dword/short/word/byte/char for,
 // then long/short while: 369/369/408/408/408/408/369/408. NOT kept: argument grouping and
 // traversal miss native entry/frame/extent; original scalar outputs and complete body restored.
