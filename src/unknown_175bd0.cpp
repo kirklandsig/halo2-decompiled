@@ -2212,6 +2212,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // MiniMax S (11-15): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system
 // in ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it reads the location mode from the
 // definition again for each call.
+// MiniMax D (11-17): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system in
+// ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it loads the location mode into EAX where
+// ours uses ECX; the multiplied query inlined gives 135, colour A read early with it 146, and both queries inlined 146.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3685,6 +3688,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // ESI and its successor in EDI where ours has them the other way round until the colour call, it spills colour A to a frame
 // home of its own instead of re-reading the effect, and it reads the location mode from the definition again for each call;
 // the form that reads the mode per call reaches retail's frame but flips the entry parameter placement.
+// MiniMax D (11-17): no new form, no lower score (93): retail's frame is 0x54 against our 0x4c, it keeps the particle system in
+// ESI and its successor in EDI where ours has them the other way round, it spills colour A to a frame home of its own with
+// colour B in EDI, and it re-reads the location mode from the spilled definition on every cursor call; the mode-per-call form
+// reaches retail's frame but flips the entry parameter placement (108), the two DATUM statements swapped give 114, and a 300 s
+// permuter run stays at 92.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
