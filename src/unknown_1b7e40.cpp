@@ -343,6 +343,18 @@ bool function_25d9b0(long prop_index);
 // MiniMax B (11-14, run 75): no new form, no lower score (49); the body is left as it was. What still differs: retail branches on the
 // busy call's result to its own priority epilogue and keeps the shared zero exit ahead of the fallback block, while this build if-converts
 // the two returns into a mask select and puts the zero exit last, which is why this build is 6 bytes longer than retail's 551.
+// b11F (11-17) walk against retail, fast build on r843 (checked with
+// 0x25d690/0x25d810/0x25d9b0/0x26ed40/0x26f060/0x26f0c0/0xba1d0/0x1b8070): every statement, offset, jcc sense (NaN
+// included), callee argument and constant agrees with retail through the busy call at 0x1b8015: loop guard 0x1b7eb7,
+// joint/participant reads 0x1b7ec0-0x1b7f68, decline push of the whole iterator dword 0x1b7f18, the float tests
+// 0x1b7fb4/0x1b7fe5/0x1b7ff4/0x1b8002, state byte 0x1b8008, fallback jump past the priority gate 0x1b8055; no
+// behaviour fix found. Only the tail differs (49, 557 vs 551 bytes): retail branches on the busy result (0x1b801c je
+// 0x1b805a), keeps its 32-bit `xor eax, eax` exit (0x1b8021) ahead of the fallback (0x1b802a) and the `mov ax, si`
+// epilogue (0x1b805b) last; this build if-converts the two returns. New: `switch (busy) { case 0: return priority;
+// default: return 0; }`, `while (busy) return 0; return priority;` and `if (busy) return 0; goto done;` with `done:
+// return priority;` after `return 0;` all 49 (select kept); `if (!busy) goto done;` with `return 0; done: return
+// priority;` 65 (success inline, actor/node swap); fallback textually after the evaluation with gotos 120; `volatile
+// bool busy` (match-only) 63 (569 bytes). No match-only recipe below 49.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

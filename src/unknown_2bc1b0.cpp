@@ -227,7 +227,7 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
-// score 54 (was 62): MiniMax S (11-05): the countdown is kept as an int holding the same signed
+// score 46 (was 54): MiniMax S (11-05): the countdown is kept as an int holding the same signed
 // byte value, so the expiry test drops the unsigned byte cast, and the tally is counted before the
 // timer is reset. Still different: retail builds the ceiling in esi and keeps the state pointer in
 // ebx, ours builds the ceiling in ebx and keeps the state in esi; retail copies the timer into cl,
@@ -309,6 +309,16 @@ struct s_item_object_2bc1
 // the local decremented separately (both orders), `field = timer - 1; timer--` and `field = timer - 1; if (--timer <= 0)`
 // 91 each; a byte timer tested `(char)timer <= 0` (two spellings) 65/65, `(char)(timer - 1)` 69; int/long countdown tested
 // `<= 0` 91/90/90 (543). Every form decrements in AL in place; none gives the copy pair.
+// b11I (11-17) walk against retail, fast build on r843: fields, offsets, jcc senses (ticks `cmova`/`jae` unsigned, NONE
+// tests) and callee arguments (register arguments, 0x1972a0's value04 and 3) all agree with retail; no behaviour
+// difference found. One order fix: retail resets the timer (0x2bcb2a `mov [eax+ebp+0x18], dl`) before it loads and
+// increments the tally (0x2bcb2e `mov bl, [esi]`); ours loaded the tally first and sank the reset. Written first via
+// a local pointer to the field (`char *timer_slot`, as 0xe18d0) the reset stays first and the tally block is identical:
+// 54 -> 46 (plain reset-first, no pointer: 55). Not kept: the pointer used for the timer's load and decrement too 79;
+// state declared at the top 46 (same); a separate local for the tally block's state 46 (same); maximum computed after
+// the 0x10da60 call 144. Left: state/maximum swap ebx/esi (0x2bc9d4-0x2bc9dc, `push esi; lea esi`) and the copy pair
+// (0x2bcaef-0x2bcaf3). The existing `countdown == 0 || countdown < 0` is score-steered (`<= 0` is 91, same 542 bytes,
+// one `jg` as retail): kept as merged, flagged for review. No match-only recipe found.
 // @retail 0x2bc990
 void __stdcall function_2bc990(long team)
 {
@@ -366,8 +376,9 @@ void __stdcall function_2bc990(long team)
 					function_1972a0(entry->player_index, 3, entry->value04);
 					function_2bce70(entry->player_index);
 					state = (s_state_2bc1 *)g_51ecc4;
+					char *timer_slot = &state->point_timers[team];
+					*timer_slot = (char)g_510c54->field_2_3;
 					state->point_tallies[team]++;
-					state->point_timers[team] = (char)g_510c54->field_2_3;
 					function_15b930(entry->player_index, function_15eaf0(), 0x17, 1);
 					if (state->point_tallies[team] % 5 == 0)
 					{
