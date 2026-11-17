@@ -221,7 +221,12 @@ __forceinline void scale_301a60(__m128 &value, float factor)
 	value = _mm_mul_ps(_mm_shuffle_ps(single, single, 0), value);
 }
 
-// score 68 (was 806): rebuilt in the shape of its sibling 0x3009e0: commands are
+// score 21 (was 68): the four-byte key (case 0x53) is built in two statements through
+// a reference to `key`, as in 0x3009e0; the key base is added before the shape is
+// read, and the body is read once into a local for the hit record. Left: scheduling
+// only (the times-three lea, the two three-byte reads of case 0x29, one xmm register,
+// `mov ecx, eax` against `mov cl, al`).
+// Before, 68 (was 806): rebuilt in the shape of its sibling 0x3009e0: commands are
 // stepped before their operands are read (cases 0x20, 0x23, 0x60), the corner
 // math uses in-place subtract/scale helpers, the bounds reuse the function's
 // a/b, the walk's vectors are copied member by member through a wrapper with its
@@ -614,8 +619,12 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			key = READ_3_301A60(commands + 1);
 			goto reached;
 		case 0x53:
-			key = (READ_2_301A60(commands + 1) << 16) + READ_2_301A60(commands + 3);
+		{
+			long &sum = key;
+			sum = READ_2_301A60(commands + 1) << 16;
+			sum += READ_2_301A60(commands + 3);
 			goto reached;
+		}
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
@@ -634,8 +643,8 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 
 reached:
 	{
-		shape_301a60 *shape = input->body->holder->shape;
 		key += walk->key_base;
+		shape_301a60 *shape = input->body->holder->shape;
 		if (!input->dispatcher->filter->slot_0(input->dispatcher, input->swept, input->body, shape, key).value)
 		{
 			return;
@@ -643,8 +652,9 @@ reached:
 		char buffer[0x100];
 		leaf_301a60 *leaf = shape->leaf_at_key(key, buffer);
 		hit_info_301a60 info;
-		info.body = input->body;
-		info.field_8 = input->body->field_8;
+		body_301a60 const *body = input->body;
+		info.body = body;
+		info.field_8 = body->field_8;
 		info.leaf = leaf;
 		info.key = key;
 		long const type = leaf->leaf_kind();
