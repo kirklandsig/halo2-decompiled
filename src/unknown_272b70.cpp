@@ -1633,6 +1633,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // explicit busy outcomes 32/150/150; nested admission indexed/reference 32/150.
 // NOT kept: ties or regressions. Iterator-handle acquisition, leave selector
 // and request/slot publication still differ.
+// DH391: Combined flag mask with all six flag/seat/vehicle store orders, 32/34/51/41/52/41;
+// split clear/set around seat and vehicle stores 51/52. NOT kept: tie or regression.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2993,6 +2995,9 @@ struct s_scenario_scripting_view
 // original packed high word or narrow-selector commit 96/96/77/96; with the typed
 // candidate record 95/95/90/95. NOT kept: keeping the original high word broke
 // the wrapper, and the 77 form grew to 372 bytes. Actor and counter homes remain.
+// DH391: Shared tag-array views for scripting data, point sets and points in seven
+// subsets, then all with a typed point payload, eight at 80. NOT kept: no actor,
+// counter or guarded-data scheduling change.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -3596,6 +3596,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // per-arm load. The copies through a file-local inline record-copy helper holding the five field assignments, `inline`
 // or forced, with or without the source locals, 91 each (same code as the body: the offsets still fold).
 // MiniMax S (11-17): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat lookup are scheduled differently; the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once.
+// DH391: Typed seat marker, typed acceleration source, both, named and direct
+// acceleration copies 91/91/91/91/91; typed full-record assignment 132, aggregate
+// snapshot 250, typed sources with byte result 85 (396 bytes). NOT kept: best gains
+// six and merges the retail's three epilogues.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -6701,6 +6705,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // NOT kept: all regress; tables add a frame and transfers lose the native extent;
 // original header addressing, scratch plan and three return blocks remain.
 // MiniMax D (11-15): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's five camera copies keep the source in ecx and the destination in edx where retail has them the other way round.
+// DH391: References to the initial, animation-check and refreshed unit records in
+// seven subsets, then all with a separate initial reset scope, eight at 59.
+// NOT kept: the header SIB and success-arm scratch allocation are unchanged.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
