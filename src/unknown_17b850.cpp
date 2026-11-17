@@ -152,7 +152,7 @@ struct s_contrail_structure_bsp
 
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 void function_11bed0(s_location *location, point3f const *point);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 
 /* the leaf and cluster of the structure bsp a point is in */
 static inline void contrail_location_from_point(s_location *location, point3f *point)
@@ -382,9 +382,14 @@ void contrail_update(long contrail_index, bool detach, real dt)
 	contrail->unknown2c += dt;
 }
 
+// score 4 (was 6): a shared `one` local for the three literal 1s (the
+// 0x17c0e0 count, the flags03 bit and the index step) fixes the two locals'
+// EBX/EDI load order. The remaining differences are the two `frame_time`
+// updates' remaining/elapsed XMM registers.
 // @retail 0x17bc40
 void function_17bc40(real dt)
 {
+	long one = 1;
 	long contrail_index = data_datum_index(g_4ea944, function_16bc00(g_4ea944, 0));
 
 	while (contrail_index != NONE)
@@ -403,7 +408,7 @@ void function_17bc40(real dt)
 				real scale = contrail->scale;
 
 				contrail->scale = 0.0f;
-				function_17c0e0(contrail_index, 1, true);
+				function_17c0e0(contrail_index, one, true);
 				contrail->scale = scale;
 			}
 			if (active)
@@ -441,7 +446,7 @@ void function_17bc40(real dt)
 			}
 
 			real a = definition->unknown24;
-			if (definition->flags03 & 1)
+			if (definition->flags03 & one)
 				a = contrail->scale * a;
 			contrail->unknown1c -= a * elapsed;
 
@@ -463,7 +468,7 @@ void function_17bc40(real dt)
 			function_17c880(contrail_index);
 			record_pool_release(g_4ea944, contrail_index);
 		}
-		contrail_index = data_datum_index(g_4ea944, data_find_index(g_4ea944, contrail_index == NONE ? 0 : (contrail_index & 0xffff) + 1));
+		contrail_index = data_datum_index(g_4ea944, data_find_index(g_4ea944, contrail_index == NONE ? 0 : (contrail_index & 0xffff) + one));
 	}
 }
 
@@ -603,7 +608,7 @@ void function_17c0e0(long contrail_index, short count, bool force)
 						point->state_time = 0.0f;
 						point->state_rate = 0.0f;
 						point->scale = contrail->scale;
-						random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, cone_angle);
+						random_vector_in_cone(&g_4e7408->seed, &marker->matrix.forward, &direction, 0.0f, cone_angle);
 						point->position = marker->matrix.position;
 						contrail_location_from_point(&point->location, &point->position);
 						function_ba1d0(contrail->object_index, &velocity, 0);

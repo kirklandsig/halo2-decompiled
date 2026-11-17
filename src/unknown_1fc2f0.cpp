@@ -9,6 +9,7 @@
 #include "unknown_1cec30.h"
 #include "unknown_1946f0.h"
 #include "object_default_placement.h"
+#include "vector_products.h"
 #include <math.h>
 
 void function_1d4360(s_havok_component *component, transform4x3f *volatile result);
@@ -200,13 +201,47 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
+// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
+// MiniMax C (11-16): no new form, no lower score (32): the correction through the existing vector3f_add_scaled straight
+// into the output 97 (348 bytes) and the deltas i, j, k (79 in the earlier rounds: retail's velocity stores and its
+// (k + j) + i sum, but the rate chains and tick products then run i, j, k) leave the chain order tied to the component
+// the first delta reads, so retail's j, i, k chains with its i, j, k deltas still have no source form in this file.
+// MiniMax I (11-14): no new form, no lower score (32): retail's rate chains and tick products run j, i, k while its velocity stores and deltas run i, j, k and the squared length sums (k + j) + i; our deltas j, i, k keep retail's chains but the stores and the sum follow the delta order, and deltas i, j, k give retail's stores and sum but move the chains to i, j (79), so one source order cannot give both.
+// MiniMax B (11-13): no new form, no lower score (32): retail's tick products run j, i, k while its velocity stores run i, j, k, and the inlined scaled-difference helper keeps the two together (the deltas written i, j, k give retail's stores and its (k + j) + i sum but move the products to i, j, k, 79); the deltas in the order k, i, j measure 30 and the copy-then-subtract form 29, but both are statement orders picked by score and were reverted by the coordinator on 11-09, and the permuter (fast, 7 tries in 390 s) found nothing below the 32 differing instructions of the reduced image, so the body is the original one.
+// MiniMax G (11-12): no new form, no lower score (32); the deltas written i, j, k give retail's velocity stores (i, j, k)
+// and its (k + j) + i sum, but the scaled difference then runs i, j, k with them (79), so the helper's component order and
+// the store order stay coupled; retail's tick products run j, i, k with its stores i, j, k.
+// MiniMax G (11-11): no new form, no lower score (32); retail takes the scaled difference in the order j, i, k but its
+// deltas in the order i, j, k, and one source order cannot give both: writing the deltas i, j, k (79) moves the scaled
+// difference to i, j, k with them, so the difference stays inside the inlined helper and its component order.
+// MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
+// MiniMax R (11-09): the squares written out by hand in the three orders give 29 with the same code, and the store order whose
+// operations match retail's still shuffles the registers against it, so the difference stays inside the inlined length helper.
+// MiniMax R (11-08): the deltas assigned i, j, k 79, i, k, j 55, j, k, i 52, k, j, i 72 and k, i, j 30; the delta
+// copied i, k, j and then subtracted k, i, j 29 (366 bytes; not kept: an order picked by score, reverted by the coordinator 11-09), the other thirty-five copy and subtract orders 32 to
+// 79; the tick stage written out per component with the deltas i, j, k 55, and the prediction written out per component
+// in j, i, k 63 (369 bytes). What still differs: retail stores the velocity i, j, k, takes the squares j, k, i and sums
+// them as (k + j) + i, while here the stores and the squares run j, i, k and the sum is (j + k) + i.
+// MiniMax H (11-06): no new form, no lower score; the first difference is at +0x59, retail converting the ticks
+// into xmm3 (the register the rate arrived in) where ours converts them into xmm4, and retail's tick products
+// run j, i, k while its deltas run i, j, k; here the chain order follows the first delta's component and the
+// delta order follows the tick products' order, so that combination has no source form: the deltas i, j, k 79,
+// the chain statements j, i, k with the deltas i, j, k 73, the same with the tick products j, i, k 77, a
+// separate scaled vector 83 and 77 with the chains j, i, k, the tick products j, i, k alone 32 (same code), the
+// tick conversion after the chains 73, the tick conversion and the deltas interleaved 79, and the conversion
+// written at each product 73. Putting the conversion after the chains does put the ticks in xmm3 as retail has
+// them, but the products then copy that register instead of scaling in place, and the conversion at the top of
+// the body scales in place but takes xmm4.
 // MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
 // i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
 // run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
 // (XMM3 as retail, but the chains run k, j, i and the products copy the tick register); the velocity
 // copied before the subtractions 34; the deltas i, j, k 79.
-// score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
-// into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
+// MiniMax D (11-07): the prediction runs through the existing vector3f_add_scaled into a predicted point and
+// the ticks through the existing scaled_difference3f (the same arithmetic as the hand-written chains): 32, with
+// the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked
+// by score; i, j, k with the helpers 79).
 // Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
@@ -580,6 +615,155 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // `long ticks` local converted at the call 32, `delta` declared before `velocity` 32 (all the same code: the sum is
 // reassociated to (k + i) + j for deltas j, i, k). On this body: the tick products written `tick_scale * v` 32 (same
 // code); the else arm's copy per component 89 (352 bytes).
+// Round 57 (m3 lane 2, fast with 0x1fc660): the fallback copy as memcpy 32 (same code); on round 46's helper prediction
+// (vector3f_add_scaled into a predicted point, scaled_difference3f with the ticks, deltas k, i, j; re-measured 30): the
+// prediction computed in place in velocity (no predicted point) 58 (369 bytes); the correction sums written correction
+// first 30 (same code); rate and tick scale named before the helpers 61 (the ticks leave XMM3 again); the predicted point
+// copied from +0x38 and scale-added in place 126 (395 bytes). Diagnostic, reverted at once: the limit's rate read through a
+// volatile field cast 32 (ticks still XMM4: the rate local's live range is not what holds XMM3; the conversion's place is).
+// Round 140 (m3 lane 7, fast with 0x1fc660): new: the delta through vector3d_from_points3d together with the
+// correction through vector3f_add_scaled 78 (352 bytes). Re-measured (listed): the delta through vector3d_from_points3d
+// 80 (stores, deltas and the (k + j) + i sum as retail, but the rate chains then run i first and the ticks leave XMM3);
+// the delta as a plain component loop 80 (round 203); the correction through vector3f_add_scaled 97 (348 bytes); the
+// velocity as vector3d_from_points3d then an in-place scale by the ticks (local_scale3d), deltas j, i, k or i, j, k
+// 73/73 (369 bytes; listed with vector3f_scale).
+// Round 100 (m3 lane 12, fast with 0x1fc660): the squared length through the existing k, j, i statement-sum helper of reciprocal_normalize.h 78
+// (first +0x2f); that with the deltas through scaled_difference3f at 1.0f 82, with deltas i, j, k and the existing in-place scale helper plus
+// vector3f_add for the correction 77, with both helpers and the 1.0f delta 80; the in-place scale helper and vector3f_add alone 57 (369 bytes).
+// All restored.
+// Round 78 (m3 lane 13): the compile-only /Gr harness reproduces this float block exactly (only the parameter registers
+// differ). Scored against retail's 54-instruction block from the tick conversion to the correction stores (aligned misses,
+// base 36): deltas i,j,k 33, i,k,j 33, j,k,i 35, k,i,j 32, k,j,i 36; delta copied then subtracted i,j,k / j,i,k 46/46;
+// vector3d_from_points3d delta 36. All are listed families (none new); the chain order still follows the delta order.
+// Idiom scan of every matched retail function for retail's `mulss a, t; mulss b, t; movss [m], b; subss b, ...` (the
+// second product stored and subtracted first): no hit outside this function, so no matched source shows the form.
+// Harness, with normalize3d.h added: the correction through vector3f_scale + vector3f_add with deltas i,j,k / j,i,k
+// 36/37, vector3d_from_points3d delta with them 36. Fast, on this body (those forms were listed on the 39/43/47 bodies
+// only): correction through the existing vector3f_scale with the three adds 32 (same code); vector3f_scale +
+// vector3f_add 57 (369 bytes); local_scale3d + vector3f_add 57; the delta scaled in place by vector3f_scale then
+// vector3f_add 57; the adds written correction first 32 (same code).
+// Round 165 (m3 lane 6, fast with 0x1fc660): the output rows written j, i, k 32 (masked 13 -> 18) and k, j, i 32 (masked
+// 21); the correction added through vector3f_add(&state->velocity, &correction, ...) 57 (369 bytes, listed) and with the
+// operands swapped 57 (same code); the delta scaled straight into the output, then `+= state->velocity` per component
+// 101 (384 bytes); the scale's divisor through the rate local 82 (372 bytes). Retail's deltas end in XMM4/XMM2/XMM3
+// (i/j/k) where ours end in XMM4/XMM3/XMM2: the j and k homes are swapped.
+// M3 lane 10 r88 (fast with 0x1fc660, 0x1fc350, 0x1fc2f0; base 32, aligned 29, masked 13): the squared length written out
+// `j*j + k*k + i*i` on these deltas 32 (same code); `i*i + (j*j + k*k)` 78 (first +0x2f: the grouping moves the chain order); deltas
+// defined j, k, i with `i*i + j*j + k*k` 52 (+0x20), k, j, i 72; deltas i, j, k (re-measured 79) with `j*j + k*k + i*i`, `(k*k + j*j) + i*i`
+// or `i*i + (k*k + j*j)` 79 each (same code). Retail squares j first, then k, adds, then i, with the chains j, i, k and the
+// stores i, j, k.
+// Lane 12 r104 (fast with the file's functions, control 32): the deltas through scaled_difference3f at 1.0f with the
+// correction through the existing vector3f_add_scaled 78 (352 bytes); the deltas i, j, k with that correction 99 (348);
+// the call given `tracked` with the one read through the parameter's address moved to the location test 32 (same code);
+// the tick count read after the prediction helper 32 (same code); the root named before the scale 46 on this body
+// (listed as 33 on an earlier one). Re-measured as listed: the delta as an aggregate initialiser 79; limit declared
+// at its assignment 32. The squared length through reciprocal_normalize.h's k, i, j statement-sum helper 32 (same code).
+// Round 169 (m3 lane 6, fast with the file's five matched functions; masked = aligned count with registers and stack
+// offsets masked, base 11): a 600 s permuter run (60 tries) reached 29 only through a volatile read of the rate (not used).
+// The squared length accumulated k, j, i on the j, i, k deltas 78 (the stores, deltas and (k + j) + i sum as retail, but
+// the prediction chains then run i, j, k); that with deltas i, j, k 79, j, k, i 54 (masked 4), k, j, i 54, i, k, j 79,
+// k, i, j 76; `k*k + j*j` then `+= i*i` 78, `j*j + k*k` then `+= i*i` 78, `k*k` then `+= j*j + i*i` 32; accumulated
+// j, k, i on the j, i, k deltas 30 (chains as retail, stores j, i), with `s = k*k + s` for the second term 30, with deltas
+// k, i, j 29, i, j, k 55, i, k, j 55, j, k, i 55 (369 bytes), k, j, i 55 (369 bytes). Retail's chain order and its store
+// order come from different sum forms here; no form gives both. On the 29 form: the first output row written
+// `correction.i + state->velocity.i` 29, `sqrt((real)length_squared)` 29, `0.5f * rate` for the limit 29, `delta`
+// declared before `velocity` 29 (all the same code), the output through vector3f_add 57 (369 bytes).
+// M3 lane 1 r90 (fast with 0x1fc660, 0x1fc350, 0x1fc2f0, 0x1fc710, 0x1fc620; aligned/register-masked control 32 [29/13]):
+// a 600 s permuter run on this body (61 tries, one confirming full build) found nothing below 29, and its 29 needs the
+// rate read through a volatile cast: that cast alone gives 29 [26/15] (diagnostic, reverted at once; the limit's rate
+// is then reloaded), so the variant's other parts (the first correction add written correction first, the limit
+// declared ahead of delta, the tick count assigned after its declaration, a `(real)` on the squared length) add
+// nothing; the first add's operands swapped alone 32 (same code). No untried natural form is left (as lane 18 r17
+// found): the store/delta order and the rate-chain order stay coupled through the delta statements.
+// M3 lane 12 r113 (fast with the file's five other functions, all kept): re-measured on this body, the call without the
+// parameter reference 99 (frame 0x14; tracked no longer arrives in EAX), so it stays; the deltas assigned i, j, k 79 (stores,
+// early dj square and (k + j) + i sum then retail's; left the tick products i, j for retail's j, i and the delta homes
+// di/dj/dk XMM3/XMM4/XMM2 for retail's XMM4/XMM2/XMM3). No unlisted form; body unchanged.
+// M3 lane 12 r115 (fast with 0x1fc660): the velocity rows spelled k, j, i or j, k, i with the deltas through the existing
+// vector3d_from_points3d 53/53 (row-order variants of the listed per-component tick stage); the squared length
+// accumulated j, k, i 30 (-2, a written-out length_sq3f), k, j, i 78; velocity and delta declared at their first use 32
+// (same code); the prediction straight into velocity with the scaled difference in place 57 (369 bytes); the limit
+// computed before the squared length 46. A compile-only screen of 700 prediction, delta, length
+// and correction spellings (a copy of this file reproduces this listing) found nothing closer; the correction is
+// retail's only through local_scale3d (vector3f_add_scaled or spelled rows lose the copy-then-scale).
+// M3 lane 4 r190 (fast with 0x1fc660): the squared length through the existing dot3f(&delta, &delta) 32 (same code);
+// the deltas through the existing vector3d_from_points3d 80 (the listed i, j, k deltas); both 80; both plus the correction
+// through the existing vector3f_add 87; dot3f with the correction through vector3f_add 57 (369 bytes, the listed vector3f_add
+// form). New forms: the limit as `rate / 2.0f` 32, `real const limit` declared where computed 32, the root's product
+// rate-first 32 (all three the same code); the location tests state-first 36. Body unchanged.
+// M3 lane 2 r77 (fast with 0x1fc660, control 32): no unlisted natural form found for the coupled delta/store order: delta
+// and length orders, the prediction and tick stages through the existing helpers or written per component, in-place forms,
+// declaration places and the limit spellings are all listed above. Body unchanged.
+// M3 lane 7 r156 (fast with the file's five matched functions and 0x1e55d0): the squared length summed from the raw velocity
+// differences with the delta formed in the then-branch only 83 (378 B); the deltas j, i, k kept for the correction with the
+// length summed from raw differences i, j, k 77 (371 B; the sum is then not reassociated), the same k, j, i 77; the correction
+// written back into `velocity` with one output copy after the if 50 (366 B); the root through the existing magnitude3d(&delta)
+// 46 (366 B: inlined, its sum CSE'd with the squared length; chains i, j, k with stores i, j, k), with the deltas i, j, k 64,
+// i, k, j 64, k, i, j 38, j, k, i 59, k, j, i 54; the squared length through the existing out-of-line distance_sq3f
+// (0x24550, inlined) of state->velocity and velocity with the deltas j, i, k kept 103 (386 B: the differences are formed
+// twice), the deltas formed in the then-branch only 83 (374 B), the deltas i, j, k 98 (382 B). Body unchanged.
+// M3 lane 5 r179 (fast with 0x1fc660/0x1fc350/0x1fc2f0/0x1fc710/0x1fc620): re-measured round 508's vector setter for the
+// delta, now with the parameter-address read kept, 90 (352 bytes). No untried natural form (lane 1 r90, lane 2 r77,
+// lane 12 r113). Body unchanged.
+// M3 lane 16 r116 (fast with 0x1fc660): the existing vector3f_assign (unknown_0259d0.h) for the delta 90 (352 bytes; the
+// listed vector setter), for the correction output 32 (same code), both 94 (352 bytes); the timing globals through one
+// named pointer local for the rate, ticks, limit and root 46 (first difference +0x20); the squared length through
+// length_sq3f at both uses (no local, diagnostic) 46. Body unchanged.
+// m3 lane 14 r93: no trial run; lane 18 round 17 above records that no untried natural form is left, and this round found
+// none outside the listed statement-order, helper and width families. Body unchanged.
+// m3 lane 12 r125 (fast with the file's five matched functions): a 2000 s permuter run with a new seed (245 tries)
+// found nothing below 32 but the listed 29 through a volatile read of the rate (not used); the rate read at its use 32,
+// the tick field read at its use 32, both 32, `predicted` declared with the other vectors 32, the length test written
+// `length_squared < limit * limit` 32 (all the same code).
+// M3 lane 3 r243 (fast with 0x1fc660, matched throughout; base 32 [register-masked aligned 9]): the deltas assigned i,
+// j, k re-measured 79 [16] (the stores, deltas and the (k + j) + i sum then follow retail, but the chains and tick
+// products run i, j, k). On that form: the tick scale converted at the top as a named real 85; the correction through
+// the existing vector3f_add_scaled straight into the output 99 (348 B); the call taking `tracked` directly 107 (352
+// B); the limit computed before the squared length 64 [18]; the rate local dropped (the global passed to
+// vector3f_add_scaled) 79 (same code). On the body: the limit computed right after the rate and tick reads 85. Body
+// unchanged.
+// M3 lane 11 r104 (fast with 0x1fc660, matched): the deltas through the existing scaled_difference3f(state velocity,
+// velocity, 1.0f) alone (correction kept through local_scale3d) 83; the deltas i, j, k with the squared length as the
+// k, j, i statement sum 79; `delta = velocity;` then the three in-place subtractions i, j, k 129 (393 bytes); the squared
+// length as the one expression k*k + j*j + i*i on the j, i, k deltas 32 (same code); `delta` declared ahead of
+// `velocity` 32 (same code: the name/declaration-order slot tip does not move this frame).
+// P516: Complete correction admission, including both lazy location comparisons, carried in
+// bool/byte/short/long, then complemented: 46/46/46/46/46/46/46/46 (366 B; first +0x20).
+// NOT kept: all regress; original limit/location gate, prediction, delta and correction helpers restored.
+// M3 lane 2 r87 (fast with 0x1fc660/0x1fc2f0/0x1fc350/0x1fc620/0x1fc710): the tick stage and the deltas fused in one
+// plain component loop 80 (first +0x2f), that with a named tick scale 80; the deltas as a component loop with dot3f for
+// the length 80; prediction, tick stage and deltas in one loop 94 (first +0x17); the delta loop accumulating the squared
+// length 79. Original body restored.
+// P544: whole-object standard forward fallback/velocity-history/location-history
+// copies 107/93/101; backward copies 107/94/101; standard inner-product squared
+// length, default/explicit real operations 113/131, all with direct tracked input.
+// NOT kept: all regress and lose the native frame/transport; original parameter
+// storage, helpers, j-first delta graph and complete body restored.
+// Round 112 (m3 lane 10, fast): the deltas through a plain component loop 80; velocity and delta in one component loop (the
+// tick helper's body written out) 80; the tick count as `short` 77 (368 bytes); the prediction written into the velocity
+// local with the tick stage in place (`scaled_difference3f(2c, velocity, ticks, velocity)`) and the deltas i, j, k 53:
+// the ticks then convert into retail's XMM3 (the 79 form takes XMM5) and the stores, deltas and (k + j) + i sum are
+// retail's, leaving the rate/tick chains i, j against retail's j, i and one movaps fewer (retail parks dj in XMM2 and
+// dk in XMM3 for the correction); the same in-place form with the deltas j, i, k 57 (369 bytes). Diagnostic: deltas
+// i, j, k with the squares summed by hand k, j, i 79 (the sum order is not the cause). All restored.
+// P564: Complete lazy correction admission set by its test, bool/byte/short/long then
+// complementary defaults, direct tracked argument: 99/99/99/99/99/99/99/99. NOT kept: no exact
+// native entry/store recovery; original parameter storage, prediction and entire body restored.
+// M3 lane 12 r133 (fast with 0x1fc660 and the file's four other functions, all MATCH; control 32): the i/j deltas
+// through the existing planar vector2d_from_points2d with the k delta after 69 (+0x4a: the chains follow), the k delta
+// first then the planar helper 56 (+0x20); the prediction through the existing vector3f_scale + vector3f_add (with
+// normalize3d.h) 98 (377 bytes); every `tracked` use (location tests, final copies) through the parameter reference 57
+// (369 bytes, the copies reload it); the output defaulted to the prediction ahead of the clamp test, the else arm
+// dropped 93 (368 bytes). Body unchanged.
+// P588: Repeated state-velocity/output-velocity/state-location field lvalues,
+// seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
+// NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.
+// M3 lane 13 r103 (fast with the file's five matched functions, all kept; [exact, register/stack-masked] aligned control [25, 9]):
+// the tick count read before the rate 32 (same code); the rate local dropped with the global passed to vector3f_add_scaled on
+// this body's j, i, k deltas 32 (same code); the correction scaled in place in `delta` through local_scale3d(&delta, scale,
+// &delta) with the output rows reading delta 32 (same code); the squared length declared with the other locals at the top and
+// assigned later 32 (same code); the limit through the rate local (`rate * 0.5f`) 90 (first +0x25: the rate stays live in
+// XMM3 and the tick conversion moves). Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
@@ -591,22 +775,9 @@ void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_
 	function_1fc660(*tracked_reference, state, output);
 	real rate = g_510c54->rate;
 	long ticks = g_510c54->field_2_3;
-	real tick_scale = (real)ticks;
-	velocity.i = state->velocity.i;
-	velocity.j = state->velocity.j;
-	velocity.k = state->velocity.k;
-	velocity.i *= rate;
-	velocity.i += state->unknown38.x;
-	velocity.i -= state->unknown2c.x;
-	velocity.j *= rate;
-	velocity.j += state->unknown38.y;
-	velocity.j -= state->unknown2c.y;
-	velocity.k *= rate;
-	velocity.k += state->unknown38.z;
-	velocity.k -= state->unknown2c.z;
-	velocity.i *= tick_scale;
-	velocity.j *= tick_scale;
-	velocity.k *= tick_scale;
+	vector3f predicted;
+	vector3f_add_scaled((vector3f const *)&state->unknown38, &state->velocity, rate, &predicted);
+	scaled_difference3f(state->unknown2c.n, predicted.n, (real)ticks, velocity.n);
 	delta.j = velocity.j - state->velocity.j;
 	delta.i = velocity.i - state->velocity.i;
 	delta.k = velocity.k - state->velocity.k;

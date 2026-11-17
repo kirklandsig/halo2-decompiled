@@ -1,4 +1,6 @@
 import os
+import signal
+import subprocess
 
 import pytest
 
@@ -181,6 +183,40 @@ def test_standard_marker_gives_the_outside_callers_address_escape():
 ])
 def test_standard_marker_is_only_for_decompiled_functions_and_methods(text):
     with pytest.raises(SystemExit, match='"standard" marks'):
+        scan(text, 'src/x.cpp')
+
+
+def test_abstract_marker_calls_the_constructor_on_the_buffer():
+    text = ('// @retail 0x31bbd0 abstract\nc_base::c_base(s_description const *description)\n{\n}\n'
+            '// @retail 0x2010\nc_other::c_other(long a)\n{\n}\n')
+    marked = scan(text, 'src/a.cpp')
+    assert [(m.retail, m.kind, m.abstract) for m in marked] == [
+        (0x31bbd0, 'constructor', True), (0x2010, 'constructor', False)]
+    tu = build.tu_source('/abs/src/a.cpp', marked, 'a', {'s_description'}, set(), set())
+    # no instantiation of the abstract class, an explicit call instead
+    assert '::new ((void *)standin_a_arguments) c_base(' not in tu
+    assert 'void standin_a_0(void) { ((c_base *)standin_a_arguments)->c_base::c_base(' in tu
+    # other constructors keep their placement-new stand-in
+    assert 'void standin_a_1(void) { ::new ((void *)standin_a_arguments) c_other(' in tu
+
+
+def test_standard_marker_on_a_stdcall_method_names_the_convention_in_its_escape():
+    text = ('// @retail 0x6fe90 standard\nbool __stdcall c_state::join(bool all, bool reserve)\n{\n}\n'
+            '// @retail 0x1010 standard\nbool c_list::has(long a) const\n{\n}\n')
+    marked = scan(text, 'src/s.cpp')
+    assert [m.convention for m in marked] == ['__stdcall', '']
+    tu = build.tu_source('/abs/src/s.cpp', marked, 's', set(), set(), set())
+    assert 'bool (__stdcall c_state::*volatile standin_s_outside_0)(bool, bool) = &c_state::join;' in tu
+    assert 'bool (c_list::*volatile standin_s_outside_1)(long) const = &c_list::has;' in tu
+
+
+@pytest.mark.parametrize('text', [
+    '// @retail 0x1000 abstract\nc_list::~c_list()\n{\n}\n',
+    '// @retail 0x1000 abstract\nvoid __stdcall plain(long a)\n{\n}\n',
+    '// @stub 0x1000 abstract\nc_list::c_list(long a)\n{\n}\n',
+])
+def test_abstract_marker_is_only_for_decompiled_constructors(text):
+    with pytest.raises(SystemExit, match='"abstract" marks'):
         scan(text, 'src/x.cpp')
 
 
@@ -479,6 +515,50 @@ def test_d3d_objects_need_the_library_and_every_member(tmp_path, monkeypatch):
     fake_lib_tool(monkeypatch, [f'obj\\i386\\{stem}.obj' for stem in build.D3D_OBJECTS if stem != 'pusher'])
     with pytest.raises(SystemExit, match='no member named pusher.obj'):
         build.d3d_objects(str(tmp_path), str(xdk))
+
+
+def test_run_tool_retries_once_after_a_timeout(tmp_path, monkeypatch):
+    """A wedged Wine tool is killed after TOOL_TIMEOUT and tried once more,
+    rather than stalling the whole build."""
+    xdk = tmp_path / 'xdk'
+    (xdk / 'bin' / 'vc71').mkdir(parents=True)
+    calls = []
+
+    def fake_once(command, cwd, env):
+        calls.append(command)
+        if len(calls) == 1:
+            raise subprocess.TimeoutExpired(command, build.TOOL_TIMEOUT)
+        return 0, 'ok', ''
+
+    monkeypatch.setattr(build, '_run_tool_once', fake_once)
+    assert build.run_tool('CL.Exe', [], str(tmp_path), str(xdk)) == 'ok'
+    assert len(calls) == 2
+
+
+def test_running_a_tool_times_out_its_whole_process_group(tmp_path, monkeypatch):
+    """The tool is started in its own session and a timeout kills the group,
+    so a wedged wineserver cannot survive into the retry."""
+    started = {}
+
+    class Hung:
+        pid = 4242
+
+        def communicate(self, timeout=None):
+            if timeout is not None:
+                raise subprocess.TimeoutExpired('CL.Exe', timeout)
+            return '', ''
+
+    def fake_popen(command, **kwargs):
+        started.update(kwargs)
+        return Hung()
+
+    killed = []
+    monkeypatch.setattr(build.subprocess, 'Popen', fake_popen)
+    monkeypatch.setattr(build.os, 'killpg', lambda pid, sig: killed.append((pid, sig)))
+    with pytest.raises(subprocess.TimeoutExpired):
+        build._run_tool_once(['CL.Exe'], str(tmp_path), {})
+    assert started['start_new_session'] is True
+    assert killed == [(4242, signal.SIGKILL)]
 
 
 def test_build_refuses_a_source_named_like_a_d3d_member(tmp_path):

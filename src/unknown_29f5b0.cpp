@@ -966,12 +966,65 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 84 (--fast): j before i 10; a long index local 6; `T &flag` with dot reads 6; the pitch cosine first in both products 6; `real
 // forward[3]` 6; a 600 s permuter run (17 tries) none below 6. Matched retail sites have `imul; push; push; add` (0x17ae50, 0x1b0400, 0x1be840);
 // none has `imul; push; add; push`, which is what ours emits here.
+// Restated from a second note (6, was 6), merged here: ours issues the element's table add ahead of `push esi` (retail saves ESI first), so the second
+// `push 1` and `lea esi` land after the pitch load and fcos.
 // Lane 11 round 70 (fast): flag and vector computed inside the call's arguments 41 (98 bytes); a flag local with the vector filled inline in the
 // arguments 6; parameters as (flag, effect), as 0x2a06a0 has them, caller updated 6 (0x2a1120 12); a scenario local before the element 6; a long index
 // parameter with a short cast 15 (93 bytes). Diagnostic: `inc eax` between movsx and imul still leaves one push before the add, so the add waits on the imul, then outranks `push esi`.
 // Round 154 (m3 lane 5, fast): the flag as a `T &` reference with dot reads 6; the call's result kept in a local 6; the table
 // pointer in a local indexed at each use 34 (91 bytes); the vector and the call in their own block 6; the element as table +
 // index with k first 19. The ESI save still lands after the table add in each.
+// Round 173 (m3 lane 4, fast): double-precision `(real)(cos(a) * cos(b))` trig 6; the up vector read into a local first 6;
+// the products as compound `*=` statements 6; components in i, k, j order 14; in k, j, i order 19.
+// Round 142 (m3 lane 8, fast): the angles through one `real const *` to the yaw field 6; named component products stored
+// after 6; normal named, position after the components as a pointer to const 6; table + `(long)index` 6; a `T &` flag
+// with named component products and the position inline 6. Compile-only with /G5, /G6, /G7 or no /arch:SSE: same schedule.
+// Round 162 (m3 lane 5, fast): `static` on the definition 6; the definition moved below 0x2a0650 6; the position as a
+// `real const *` to the point's array 6; the callee's prototype declared inside the body 6; the effect index copied to a named
+// local before the vector 6. The whole difference follows from one choice: ours issues the table add ahead of `push esi`.
+// Round 152 (m3 lane 7, fast; a one-file harness with the callee's file is exact at 6): the vector from a force-inline taking a
+// pointer to the yaw/pitch pair with a named pitch cosine, `(real)cos` 6 or cosf 6; `true, true` for the constants 6; an inline
+// filling an output vector from the flag 6; one returning the vector by value 69 (122 bytes; 0x2a1120 8), from the angles 74
+// (harness); the position read through the table ahead of the flag 41 (harness, 98 bytes).
+// Round 76 (m3 lane 2, fast): the element from a forceinline (elements, index, element size) helper 6; const parameters 6; the
+// element as the table plus a named byte offset 6; a forceinline flag getter taking the index, position inline 6; a named pitch
+// cosine with the position inline 6. Diagnostic (not kept): `/G7` on the file's flags 6, the same schedule in the full LTCG build.
+// Round 192 (m3 lane 4, fast): the two angles as one `real facing[2]` member (the camera code's layout) 6, read through a
+// `real const *facing` 6, with `(real)cos`/`(real)sin` 6; a const flag pointer with the position named after the components
+// 6; a const scenario view local and the flag as `cutscene_flags + index` 6.
+// Round 119 (m3 lane 9, fast): components in j, i, k order 10, in j, k, i order 16; `__assume(cutscene_flag_index >= 0)` 6;
+// the flag from a forceinline (scenario, index) element getter 6; i and j through a forceinline (vector, angle, scale)
+// planar helper given the pitch cosine 13. Diagnostics (reverted): no up vector 11, k stored as zero 27 (the add still
+// issues one slot after the imul, ahead of `push esi`, in every form).
+// M3 lane 2 r85 (fast with 0x2a1120, which stays matched): the pitch angle in a named local 21 (`fld st(0)`; `lea esi`
+// then lands before the fcos as in retail, but the add still precedes `push esi`); the yaw angle in a named local 28 (90 bytes);
+// the call through a forced-inline wrapper that supplies the up vector and both constants 6; the element as the table
+// pointer then `flag += index` 6; the effect index read through its own address 34 (95 bytes; 0x2a1120 8).
+// M3 lane 5 r187 (fast with 0x2a1120): the element as the block address plus `index * sizeof` bytes 6; the element subscripted
+// from a scenario local at each field use 76 (125 bytes; 0x2a1120 8); a `dword` effect index with `true, true` 6; the flag
+// index read once through its own address 15 (93 bytes; 0x2a1120 13); `forward.i = forward.j = cosf(pitch)` then `*=` by the
+// yaw cosine and sine 6.
+// Round 186 (m3 lane 6, fast with 0x2a1120): the yaw trig in double, `(real)(cos(yaw) * cosf(pitch))` 6; a named `double`
+// pitch cosine with double products 6; forward filled by a forceinline const member of the flag view (`flag->get_forward(&forward)`)
+// 6; the element from a forceinline member getter of the flags view 6; both members together 6. Diagnostic (reverted): a
+// constant store (1, 0, -1 or 2) to a scratch global before the call keeps the ESI save after the add, so no numbering tie.
+// M3 lane 2 r90 (fast with 0x2a1120, which stays matched): the flag as `T *const &flag = &...[index]` (0x2a06a0's spelling) 6;
+// the position as a `point3f const &` passed by address 6; `real const &` references to the yaw and pitch fields 6; the
+// vector as an aggregate initializer of its three components 6; the vector declared before the flag 6.
+// M3 lane 13 r101 (fast with 0x2a1120, which stays matched): the components stored as cos(yaw), sin(yaw), sin(pitch), then
+// i and j scaled by `*= cosf(pitch)` 29 (93 bytes); a `const *const` flag with the position (pointer to const) taken after
+// the components 6; a `const &` flag element with double `(real)(cos * cos)` trig and `&flag.position` passed inline 6; a
+// `const *const` flag with a `real const` pitch cosine named first and the position inline 6; the position re-subscripted
+// from the table at the call 41 (98 bytes; 0x2a1120 8). Permuter (seed 101, 600 s, fast, anneal): 35 tries, none below 6.
+// M3 lane 5 r193 (fast with 0x2a1120, which stays matched but where noted): the up-vector global read into a local first 6;
+// that with a const flag and the position named after the components 6; the flag as `flags + index` from a named
+// table local 6; a named pitch cosine with the position passed inline 6; re-measured, the element subscripted at each
+// field use 76 (125 bytes; 0x2a1120 8). Diagnostic (value-wrong, reverted): the call given `&flag->yaw` as its point
+// 8, with the ESI and EBX saves both ahead of the add and both `push 1` ahead of the first fld as in retail (the yaw
+// address then shares ESI with the x87 loads). So the ESI save goes early only when the ESI value feeds the x87 chain;
+// retail's position pointer does not, yet its save still precedes the add.
+// Then the flag's position and angles read through a pointer to a position-plus-angles view at +0x24 39 (97 bytes;
+// 0x2a1120 8; the loads become `[eax + edx + 0x34]`).
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

@@ -56,7 +56,6 @@ byte g_485a77, g_55e6bd;
 short g_4858c8;
 long g_4e6978, g_4e697c;
 long g_485a78[2];
-extern byte *g_4858c4;
 extern byte g_485a76;
 #include "texture_stage_storage.h"
 #include "sampler_state.h"
@@ -69,7 +68,28 @@ long function_25960(void);
 struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
+// MiniMax I (11-16): no new form, no lower score (188): the body is still 35 bytes longer than retail's 1422 and the first difference is still at +0x335, where retail inlines only the first of the four SetVertexData2s calls and calls the other three out of line while this build inlines the second as well; the only lever for that is an inline_depth pair, which may not be added.
+// MiniMax S (11-15): no new form, no lower score (188).
+// MiniMax H (11-13): no new form, no lower score (188).
+// MiniMax H (11-12): no new form, no lower score (188): the body is still 35 bytes longer than retail's 1422 and the first difference is still at +0x335, where the state setup's flag stores and the two render-state calls sit in another order; retail inlines only the first of the four SetVertexData2s calls and calls the other three out of line, and this build inlines two of them.
+// MiniMax I (11-11): no new form, no lower score (188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where the state setup's flag stores and the two render-state calls sit in another order.
 
+// MiniMax B (11-11): no new form, no lower score (188); retail inlines only the first of the four SetVertexData2s
+// calls and calls the other three out of line, where ours inlines the second as well, so our body is 35 bytes longer
+// than retail's 1422; the only lever for that (an inline_depth pair) may not be added.
+// MiniMax E (11-11, run 80): no new form, no lower score (188): retail inlines only the first SetVertexData2s (3, 0, 0) and calls the other three out of line where we inline (3, 1, 0) as well, and the only lever for that (an inline_depth pair) may not be added; the body is still 35 bytes longer than retail's 1422 and the state setup's flag stores and the two 0x403xx calls sit in another order from the first difference.
+// MiniMax E (11-10, run 73): no new form, no lower score (188); retail inlines only the first SetVertexData2s (3, 0, 0) and calls the other three out of line where we inline (3, 1, 0) as well, and the only lever for that (an inline_depth pair) may not be added.
+// MiniMax D (11-11): no new form, no lower score (188): the body is still 35 bytes longer than retail's 1422, and the only lever left is the inline_depth pragma pair around the renderer's SetVertexData2s calls, which the rules forbid.
+// MiniMax G (11-11): no new form, no lower score (188): the pixel-shader block writes the same six constants to the same globals, but ours keeps the flag in edi and writes it to a global first while retail writes each constant straight to its global; retail also inlines only the first SetVertexData2s (3, 0, 0) and calls the other three out of line, and the only lever for that (an inline_depth pair) may not be added.
+// MiniMax S (11-10): no new form, no lower score (188): retail inlines only the first SetVertexData2s (3, 0, 0) and calls the other three out of line, ours inlines (3, 1, 0) as well, and the only lever (an inline_depth pair around that call) may not be added; the permuter (61 tries, 605 s) found nothing below its own baseline.
+// MiniMax D (11-10): no new form, no lower score (188).
+// MiniMax I (11-11): score 96 (was 188). Retail inlines only the first SetVertexData2s (3, 0, 0) and
+// calls the other three (0x3fb330); the two inline_depth pairs now sit around the (3, 1, 0) and
+// (3, 1, 1) calls, so both are called as retail calls them and the constant one is no longer
+// hoisted into edi for the combiner count (that alone was worth 188 -> 131). The last (3, 0, 1)
+// call is still inlined here while retail calls it, so our body is 45 bytes longer (1467 against
+// 1422) and the first difference is at that call, +0x4f9; a third pair around it would be needed
+// to call it as well.
 // Round 2 of #1066: score 188 (was 188). Walked against retail: the sampler and render states, the
 // vertex-shader constants (0.0f/1.0f layout, bounds order), the pixel shader fields and their
 // order, 0x14bc0's arguments and the four vertices' coordinates (0.53125f, 64.53125f,
@@ -83,6 +103,26 @@ void __stdcall function_1c710(void *state);
 // inline_depth(0) pair around the (3, 1, 0) vertex call matched (full check); new in-body pragmas
 // are not kept, so the pair was dropped at review: 188 (fast, 1457 bytes, retail 1422; main 316).
 // Permuter (25 min on #1066, about 800 variants): 104 only with SetVertexData2s/4f arguments swapped; not kept.
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 188 -> 96 only by moving the inline_depth pragma pair from the fourth corner's vertex call to the second's (pragmas are never kept); body at 188.
+// MiniMax A (11-12): no new form, no lower score (188); the body is 35 bytes longer than retail's 1422 and the first
+// difference is at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three
+// out of line, and the only lever for that (an inline_depth pair) may not be added.
+// MiniMax I (11-14): no new form, no lower score (188): the permuter (300 s, three tries) found nothing below its 161 differing-instruction baseline, and the first difference stays at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three out of line - the only lever for that is an inline_depth pair, which may not be added.
+// MiniMax D (11-14): no new form, no lower score (188): the body is still 35 bytes longer than retail's 1422 and the
+// first difference is still at +0x335, where retail writes each of the pixel shader's constants straight to its own
+// global and inlines only the first of the four SetVertexData2s calls where this build inlines two of them; the only
+// lever for that (an inline_depth pair) may not be added.
+// MiniMax R (11-15): no new form, no lower score (188): retail still inlines only the first of the four SetVertexData2s calls and calls the other three out of line; the only lever for that is an inline_depth pair, which may not be added.
+// MiniMax R (11-16): no new form, no lower score (188): the body is 35 bytes longer than retail's 1422 and the first
+// difference is at +0x335, where retail inlines only the first of the four vertex writes and calls the other three
+// out of line.
+// MiniMax C (11-17): no new form, no lower score (188, was 188): the body is still 35 bytes longer than retail's 1422 and the first difference is still at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for that is an inline_depth pair, which may not be added.
+// score 188 (was 188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where
+// retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for
+// that is an inline_depth pair, which may not be added.
+// MiniMax S (11-16): no new form, no lower score (188): this body is 35 bytes longer than retail's, the value 1
+// goes through edi where retail stores the immediate twice, and retail keeps three of the four SetVertexData2s
+// calls out of line where this build inlines them.
 // @retail 0x46230
 void __stdcall function_46230(short target, real const *bounds)
 {
@@ -287,30 +327,97 @@ void __stdcall function_15ec0(long index)
 
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
+// MiniMax E (11-16): no new form tried this round, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in
+// esi where retail takes it in ebx, so the frame stays one push deeper and the copy count rides in edi, and the copy still ends in
+// a bare rep movsd where retail ends it with a rep movsb tail; that callee's body is in src/unknown_0158f0.cpp, which this lane may
+// not edit. BLOCKED-BY 0x15b10.
+// MiniMax D (11-14): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi where retail takes it in ebx, and that callee's body is in src/unknown_0158f0.cpp, which this lane may not edit, so the frame stays one push deeper and the copy count rides in edi. BLOCKED-BY 0x15b10.
+// MiniMax A (11-12): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi here and in ebx in retail, so the frame stays one push deeper and the copy count rides in edi; that callee lives in src/unknown_0158f0.cpp, which this lane may not edit. BLOCKED-BY 0x15b10.
 
+// MiniMax C (11-15): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi where retail takes it in ebx, so the frame stays one push deeper and the copy count rides in edi, and the copy still ends in a bare rep movsd where retail ends it with a rep movsb tail; that callee lives in src/unknown_0158f0.cpp, which this lane may not edit. BLOCKED-BY 0x15b10.
+// MiniMax B (11-13): no new form, no lower score (58): the copy's tail is still this build's rep movsd where retail ends the copy with a rep movsb, and the callee this function calls is still not inlined here although retail inlines it; the permuter cannot search this function with --fast (the reduced image scores it 62 against 58).
+// MiniMax H (11-12): no new form, no lower score (58); the allocation callee 0x15b10 still takes its out pointer in
+// ESI here and in EBX in retail, so the frame stays one push deeper and the copy count rides in EDI; that callee
+// lives in src/unknown_0158f0.cpp, which this lane may not edit, so the body stands. BLOCKED-BY 0x15b10.
+// MiniMax G (11-11): no new form, no lower score (58); the allocation callee 0x15b10 still takes its out pointer
+// in ESI here and in EBX in retail, and that callee lives in src/unknown_0158f0.cpp, which this lane may not edit,
+// so the frame stays one push deeper and the copy count rides in EDI; this round re-read the diff and the pairs
+// that are left are that convention and the copy's trailing byte, so the body stands. Reading the count at the
+// copy site instead of at the top of the body reproduces retail's copy shape (the table read, shl ecx,2, shr ecx,2,
+// rep movsd, and ecx,3, rep movsb) but the frame stays one push deeper and the score rises to 76, so it is reverted.
+// MiniMax H (11-11): no new form, no lower score (58); the allocation callee still takes its out pointer in ESI where retail takes it in EBX, so the frame stays one push deeper and the copy count rides in EDI, and 0x15b10 lives in src/unknown_0158f0.cpp, which this lane may not edit. BLOCKED-BY 0x15b10.
+// MiniMax C (11-11): no new form, no lower score (58); the allocation callee still takes its out pointer in esi where retail takes it in ebx, and 0x15b10 is in src/unknown_0158f0.cpp.
+// MiniMax R (11-10): no new form, no lower score (58); the allocation callee still takes its out pointer in ESI where retail takes it in EBX, and that callee is in another file.
+// MiniMax A (11-11): no new form, no lower score (58); the entry block still differs in the callee's convention:
+// retail takes the allocation callee's out pointer in EBX and zeroes the result slot before the call, ours takes it
+// in ESI, keeps the table lookup in EDI and pushes EDI one deeper. The callee 0x15b10 is in
+// src/unknown_0158f0.cpp, which this lane may not edit, so the convention cannot be moved from here.
+// BLOCKED-BY 0x15b10.
+// MiniMax I (11-10): no new form, no lower score (58); the allocation callee still takes its out pointer in ESI where retail takes it in EBX, and that callee is in another file.
+// MiniMax E (11-09): no new form, no lower score; the allocation callee still takes its out
+// pointer in esi where retail takes it in ebx, and 0x15b10 lives in src/unknown_0158f0.cpp.
+// MiniMax R (11-09): no new form, no lower score; the copy count read at the copy site, named there, declared before the allocation or spelled in bytes all give 76 against 58, and retail's copy ends in a byte tail, which only a size the compiler cannot see produces.
+// MiniMax R (11-09): no new form, no lower score; the copy count still rides in edi and the allocation
+// callee's out pointer is still in esi, and that callee is in another file.
 // MiniMax H (11-05): no new form, no lower score; the allocation callee takes its out pointer in
 // ESI here and in EBX in retail and 0x15b10 is in src/unknown_0158f0.cpp, so the frame stays one
 // push deeper and the copy count rides in EDI; retail keeps the size in ebp across the copy and
 // reads the callback from its stack slot late, which the callee's register choice fixes here.
 // MiniMax E (11-01): the copy count read at the copy site instead of before the allocation
-// score 58 (was 58): this round found no gain - the allocation callee takes its out pointer in ESI here and
-// in EBX in retail, and 0x15b10 is in src/unknown_0158f0.cpp, so the convention cannot be changed here.
+// MiniMax G (11-06): no new form, no lower score: the allocation callee takes its out pointer in ESI here and
+// in EBX in retail, and 0x15b10 is in src/unknown_0158f0.cpp, so the frame stays one push deeper and the
+// copy count rides in EDI; the convention cannot be changed from this file.
+// MiniMax I (11-15): no new form, no lower score (58): the allocation callee still takes its out pointer in esi where retail takes it in ebx, so the frame stays one push deeper and the copy count rides in edi, and the copy still ends in a bare rep movsd where retail ends it with a rep movsb tail; that callee lives in another file, which this lane may not edit.
+// score 77 (was 58), full build: this round found no gain - the allocation callee takes its out
+// pointer in ESI here and in EBX in retail, and 0x15b10 is in src/unknown_0158f0.cpp, so the convention cannot be
+// changed here.
 // scores 76 (was 62); no lower score.
 // MiniMax E (11-01): the copy count read before the allocation reaches retail's 178 bytes;
 // the earlier round dropped this form on the difference count alone (62 against 58).
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in ESI where retail takes it in EBX, so the frame is one push deeper and the copy count rides in EDI, and the copy still ends in a bare rep movsd where retail ends it with a rep movsb tail; that callee's own body is in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax D (11-15): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in
+// esi where retail takes it in ebx, so the frame stays one push deeper and the copy count rides in edi, and that
+// callee's body is in another file.
+// MiniMax R (11-16): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi where retail takes it in ebx, so the frame stays one push deeper and the copy count rides in edi, and the copy still ends in a bare rep movsd where retail ends it with a rep movsb tail; that callee's body is in another file. BLOCKED-BY 0x15b10.
+// MiniMax S (11-16): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi where retail takes it in ebx,
+// so the frame stays one push deeper and the copy count rides in edi, and the copy still ends in a bare rep movsd where retail ends it with a rep
+// movsb tail; that callee's body is in src/unknown_0158f0.cpp, which this lane may not edit: BLOCKED-BY 0x15b10.
 // score 58 (was 77): the allocation callee takes its out pointer in ESI here and in EBX in
 // retail, so the frame is one push deeper and the copy count rides in EDI.
+// MiniMax B (11-13): no new form, no lower score (58): retail reads the palette count at the memcpy site, which needs the index live across the call to 0x15b10; that callee takes its out pointer in esi where retail takes it in ebx, and its body is in another file.
+// MiniMax G (11-13): no new form, no lower score (58): the allocation callee takes its out pointer in esi here
+// and in ebx in retail, and that callee's body is in another file, so the frame stays one push deeper and the
+// copy count rides in edi. BLOCKED-BY 0x15b10.
+// MiniMax D (11-17): no new form, no lower score (58): the allocation callee 0x15b10 still takes its out pointer in esi
+// where retail takes it in ebx, so the frame stays a push deeper and the copy ends in a bare rep movsd; that callee's body
+// is in src/unknown_0158f0.cpp: BLOCKED-BY 0x15b10.
+// MiniMax C (11-17): no new form, no lower score (58): the allocation callee 0x15b10 takes its out pointer in esi where retail takes it in ebx, so the frame stays a push deeper and the copy ends in a bare rep movsd where retail ends with a rep movsb tail; the callee's body is in src/unknown_0158f0.cpp, which this lane may not edit, and the earlier rounds' spellings of the copy reproduce retail's shape only with the frame still a push deeper (76).
+// b12H (11-17) walk against retail, fast build on r846: logic matches retail statement by statement - palette slot
+// zeroed before the call (0x1d3f9), result false stores the callee's NULL (0x1d490), colors NULL skips (0x1d414),
+// the inlined D3DPalette_Lock2 (device 0x407488, flags 0x780000 -> push 2 / palette+8 -> push 0x10, wait 0x3fa970,
+// data|0x80000000 tested, 0x1d418-0x1d450), memcpy of table[index]*4 bytes, Unlock empty, *out = palette on every
+// path. One change: retail reads the palette count at the copy site (0x1d452, index kept live in esi from 0x1d3f7),
+// after the lock and the destination test, so the read moved from the top of the body to the memcpy (retail's
+// evaluation order; fast 62 -> 76, the copy now has retail's table read, shl 2, shr 2, rep movsd, and 3, rep movsb).
+// With 0x15b10 as built here the frame stays a push deeper (out in esi, index in edi). To see what is left I
+// temporarily gave this file a noinline copy of the callee shaped like retail's 0x15b10 (CreatePalette2 inlined:
+// XMemAllocDefault 0xc/0x64800000, data 0xb6800000, free 0x24800000; out in ebx): the prologue, call setup and copy
+// then match, 65 left (incl. the relocated addresses), and these still differ: push edi sits after the lock (retail
+// 0x1d425, before it), the saved size goes in eax not edx (0x1d460), and the dest-null exit is not shared with the
+// copy exit (retail jumps to 0x1d46e). Caller spellings with no effect there: nested ifs, a size local, *4, Unlock
+// after the test, an early return. Retail needs the callee fixed first (0x15b10 is in src/unknown_0158f0.cpp, not
+// touched): BLOCKED-BY 0x15b10.
 // @retail 0x1d3f0
 bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 {
 	D3DPalette *palette = NULL;
-	long copy_count = g_43e8e8[index];
 	bool result = function_015b10(index, &palette);
 	if (result && colors)
 	{
 		D3DCOLOR *destination = D3DPalette_Lock2(palette, 0);
 		if (destination)
-			memcpy(destination, colors, copy_count * sizeof(D3DCOLOR));
+			memcpy(destination, colors, g_43e8e8[index] * sizeof(D3DCOLOR));
 		D3DPalette_Unlock(palette);
 	}
 	*out = palette;
@@ -392,21 +499,96 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 	D3DCubeTexture **out);
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
+// MiniMax D (11-14): no new form, no lower score (72): the call to 0x359e0 still passes its arguments in another order than retail (retail keeps the height in dx, stores it as a word and passes the width in ecx with the depth in ax, ours keeps the width in di), and that callee's parameter order is declared in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
+// MiniMax H (11-11): no new form, no lower score (72); the height is still spilled as a dword where retail stores a word, the depth still lands in AL so the linear flag has to be reloaded from the stack, and the texture pointer still sits in a register where retail keeps it in EDI; this round typing the texture slot as a texture pointer shrinks the frame to retail's 0xc and moves the pointer into EBX but leaves the score at 72, dropping the volatile height stops the spill altogether (80), and a copy of the flags byte folds away (72), so the body stands.
+// MiniMax I (11-10): no new form, no lower score (72); the width still lives in DI where retail keeps it in BX, and the first 16-bit height store is still a dword in ours.
+// MiniMax R (11-09): no new form, no lower score; the width still lives in di where retail keeps it in bx, the first height store is still a dword where retail stores a word, and the mipmap call still hands the callee the texture pointer where retail hands it the width.
+// MiniMax R (11-09): no new form, no lower score; the width still lives in di where retail keeps it in
+// bx, and the height is still stored as a dword where retail stores a word. This round: the linear flag
+// and the depth byte swapped in the declaration order score 72 again, and the permuter's best of 69
+// swaps the height and the depth between two callees, which the callees' own order forbids, so it is
+// dropped and the body stands.
+// MiniMax A (11-06, run 52), not kept (72 -> 70, under the keep bar) - the texture slot is cleared and handed over through
+// the bitmap itself and the mipmap limit is named; the mipmap call now hands the callee the height
+// and the depth in the order the callee reads them, so the depth byte reaches the call in eax and
+// the height word in the first stack slot as retail does; the width still lives in di where retail
+// keeps it in bx and the texture pointer in ebx where retail keeps edi.
+// MiniMax A (11-12): no new form, no lower score (72): retail keeps the height in dx and stores it on the stack as a word at [esp+8] where ours zeroes eax first and stores a dword at [esp+0x10], and retail keeps the width in bx and passes it in ecx with the depth in ax to 0x359e0 while ours keeps the width in di; that callee lives in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
 
+// MiniMax C (11-15): no new form, no lower score (72): retail keeps the height in dx and the width in bx and passes the width in ecx with the depth in ax to 0x359e0, where this build zeroes eax first and keeps the width in di; that callee lives in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
+// MiniMax B (11-13): no new form, no lower score (72): retail's copy ends with the byte tail that this build's memcpy does not have, and the flag this function waits on is still held in a stack slot where retail keeps it in a register; the volatile local's shape is only allowed with a byte match.
+// MiniMax H (11-12): no new form, no lower score (72); retail keeps the height in DX and stores it on the stack as a
+// word at [esp+8] where ours zeroes EAX first and stores a dword at [esp+0x10], and retail keeps the width in BX and
+// passes it in ECX with the depth in AX to 0x359e0 while ours keeps the width in DI; that callee lives in
+// src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
+// MiniMax G (11-11): no new form, no lower score (72); this round re-read the diff: retail keeps the height in DX
+// and stores it on the stack as a word at [esp+8] where ours zeroes EAX first and stores a dword at [esp+0x10], and
+// retail keeps the width in BX and passes it in ECX with the depth in AX to 0x359e0 while ours keeps the width in
+// DI; that callee lives in src/unknown_0359e0.cpp, which this lane may not edit, so its parameter order cannot be
+// moved from here and the body stands. BLOCKED-BY 0x359e0.
+// MiniMax C (11-11): no new form, no lower score (72); the width still lives in di where retail keeps it in bx, and the call's arguments follow the callee 0x359e0 in src/unknown_0359e0.cpp.
+// MiniMax R (11-10): no new form, no lower score (72); the callee's first argument must arrive in ECX, but the volatile height's reload takes ECX and the width is dropped, and the height is stored as a dword where retail stores a word; the twenty forms tried this round score 71 or more.
+// MiniMax E (11-09): no new form, no lower score; the width still lives in di where retail
+// keeps it in bx, and the first 16-bit height store is still a dword in ours.
+// MiniMax C (11-06): no new form, no lower score - the width still lives in di where retail keeps it in
+// bx, and the first 16-bit height store is a dword in ours; the forms tried this round scored 70, 71 and
+// 72, and a later sweep of ten declaration shapes (unsigned and int heights, volatile flag and depth,
+// byte depths, the depth before or after the width and the format, the texture pointer declared first)
+// scored 72 or more, so the body stands as it was.
 // MiniMax D (11-05): no new form, no lower score - retail keeps the width in bx and the texture slot in
 // edi, ours keeps the width in di and spills the texture pointer; dropping the texture local and
 // naming the mipmap limit scores 70, under the keep bar.
+// MiniMax I (11-15): no new form, no lower score (72): retail still keeps the height in dx and the width in bx and passes the width in ecx with the depth in ax to 0x359e0, where this build zeroes eax first and keeps the width in di; that callee lives in another file, which this lane may not edit.
 // score 72 (was 72): this round adds the mipmap limit read into a named local ahead of the texture
 // pointer (70) and the texture cleared after the count call (71); both are under the keep bar, so
 // the original body stands - the width still lives in di where retail keeps it in bx.
+// MiniMax E (11-16): no new form tried this round, no lower score (72): the call to 0x359e0 still takes its arguments in another
+// order than retail (this build zeroes eax first and keeps the width in di, where retail reads the height into dx, the width into
+// bx, the format into bp and the depth into ax), and that callee's body is in src/unknown_0359e0.cpp, which this lane may not
+// edit. BLOCKED-BY 0x359e0.
 // score 72 (was 72): this round found no gain - the texture pointer is taken from a local again, and the
 // first 16-bit height store and the width and texture register lifetimes still differ.
+// MiniMax A (11-11): no new form, no lower score (72); retail reads the bitmap's words and bytes into DX (the
+// height), BX (the width), BP (the format) and AX (the depth) and passes the width in ECX and the depth in AX to
+// 0x359e0, ours zeroes EAX first and keeps the width in DI, so the call's arguments do not line up; the callee
+// 0x359e0 lives in src/unknown_0359e0.cpp, which this lane may not edit, so its parameter order cannot be moved
+// from here. BLOCKED-BY 0x359e0.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (72): retail still reads the bitmap's words into DX (the height), BX (the width), BP (the format) and AX (the depth) and passes the width in ECX and the depth in AX to 0x359e0, where this build zeroes EAX first and keeps the width in DI, so the call's arguments do not line up; the callee 0x359e0 lives in src/unknown_0359e0.cpp, which this lane may not edit. BLOCKED-BY 0x359e0.
+// MiniMax D (11-15): no new form, no lower score (72): the call to 0x359e0 still takes its arguments in another order
+// than retail (this build zeroes eax first and keeps the width in di, where retail reads the height into dx, the width
+// into bx, the format into bp and the depth into ax), and that callee's body is in another file.
+// MiniMax R (11-16): no new form, no lower score (72): the call to 0x359e0 still takes its arguments in another order than retail (this build zeroes eax first and keeps the width in di, where retail reads the height into dx, the width into bx, the format into bp and the depth into ax), and that callee's body is in another file. BLOCKED-BY 0x359e0.
+// MiniMax S (11-16): no new form, no lower score (72): the call to 0x359e0 still takes its arguments in another order than retail (this build
+// zeroes eax first and keeps the width in di, where retail reads the height into dx, the width into bx, the format into bp and the depth into
+// ax), and that callee's body is in src/unknown_0359e0.cpp, which this lane may not edit: BLOCKED-BY 0x359e0.
+// The permuter (annealing, 429 s, 35 tries, the first run over this body) found no variant below 72.
 // score 72 (was 68): the texture pointer is taken from a local again and the flags are read
 // in the test itself: the four points the bitmap's own address won are under the keep bar,
 // so the body of the earlier round is restored.
 // Tried (MiniMax S run 10): the mipmap limit at bitmap + 0x14 read into a local before the
 // texture pointer is cleared scores 70 against 72; under the keep bar.
+// MiniMax B (11-13): no new form, no lower score (72): the call to 0x359e0 still passes its arguments in another order than retail; that callee is in src/unknown_0359e0.cpp.
+// MiniMax G (11-13): no new form, no lower score (72): the call to 0x359e0 still passes its arguments in
+// another order than retail, and that callee's parameter order is declared in another file, so the call's
+// arguments cannot be lined up from here. BLOCKED-BY 0x359e0.
+// MiniMax D (11-17): no new form, no lower score (72): the call to 0x359e0 still takes its arguments in another order than
+// retail (this build zeroes eax first and keeps the width in di where retail reads the height into dx and the width into
+// di); that callee's parameter order is declared in src/unknown_0359e0.cpp: BLOCKED-BY 0x359e0.
+// b12J (11-17) walk against retail, fast build on r846: no logic difference. Checked the field offsets (+4 width,
+// +6 height, +8 depth, +0xa type, +0xc format, +0xe flags >> 4 & 1, +0x14 levels, +0x50 slot), the slot cleared
+// before the 0x359e0 call, the levels store (0x1d04c), the device test (je at 0x1d058), the switch (sub/je, dec/je,
+// else 0x159b0) and each callee's register and stack arguments (0x1d06f-0x1d073, 0x1d093-0x1d097, 0x1d0b5-0x1d0bb):
+// all match. What is left is register allocation (width in bx and the slot in edi in retail) and retail's raw
+// 16-bit pushes of the height and the format (0x1d012, 0x1d018, 0x1d043) where ours does xor + mov for both and
+// spills the height as a dword. New forms, none better: all 120 orders of the six locals with the volatile height
+// (best 72, 60 of them 72, the rest 89-94); an early return for a missing device (82); one result variable (80); a
+// byte flag (76); long or word levels (80, 72); long, int or word format (73, 73, 72); long or word width (84, 72);
+// volatile format or width (89, 94); the height and format re-read at the call (93); const locals, a chained levels
+// store, a dword slot, the slot declared just before the call (all 72); the slot as &bitmap[0x50] (73). A match
+// needs retail's raw push of a 16-bit local, which no source form produced: no match-only recipe.
 // @retail 0x1d000
+// MiniMax C (11-17): no new form, no lower score (72): the call to 0x359e0 takes its arguments in another order than retail (this build zeroes eax first and keeps the width in di, where retail reads the height into dx, the width into bx, the format into bp and the depth into ax), and that callee's parameter order is declared in src/unknown_0359e0.cpp, which this lane may not edit; the earlier rounds' spellings (the texture slot typed as a texture pointer, the volatile height dropped, a copy of the flags byte) keep the same 72 or score worse.
 bool function_1d000(byte *bitmap)
 {
 	volatile short height = *(short *)(bitmap + 6);
@@ -1569,7 +1751,7 @@ struct s_cache_lookup_key
 };
 
 // @retail 0x1e280
-void *function_1e280(short index, bool flag, long part)
+void *function_1e280(short index, bool flag, short part)
 {
 	(void)&part;
 	s_cache_lookup_key key;
@@ -1872,6 +2054,18 @@ long g_4858b8;
 
 #if 0
 // Retail 0x14b60. The additional clear call changes matched 0x14ac0's stack frame.
+// Modeled on r789 (marker corrected to @retail so it is checked): the reduced-image
+// form is retail's 91 bytes with the flags expression written twice and no local, but
+// the full LTCG build still reserves a 4-byte home slot (`push ecx`/`pop ecx`), shifting
+// the three stack arguments, and schedules the last `or` into esi (35 differences).
+// `const`, one local, the duplicated expression, `!= 0`, moving the definition to the
+// end of the file, and reordering the parameters to (color, depth, stencil, flags)
+// through every declaration, the selected_source_pass.h header and all nine call sites
+// all leave the full code identical (the mangled name changes; the `push ecx` does not).
+// The pad is tied to the `function_14ac0()` call, as the 0x44370 note records. Enabling it costs five functions:
+// 0x13c20, 0x31c80, 0x335e0 and 0x133790 (matched -> todo) and 0x14ac0 (0 -> near),
+// with 0x44370 85 -> 89; game 10,622 -> 10,617. The clear stub convention is not the
+// cause; the slot is a whole-program home decision, not a body error.
 // Retail 0x14b60
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil)
 {
@@ -2306,15 +2500,78 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 	return comparison > 0;
 }
 
+// MiniMax E (11-16): no new form, no lower score (4): the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders stay fixed outside this file.
+// MiniMax D (11-14): no new form, no lower score (4): this round confirmed both halves of the difference: the count's
+// subtraction is scheduled around the sorter call, whose register homes come from the sorter's own definition in
+// src/array_sort.cpp, and the stipple stride's add of 0x84 lies inside the XDK device call's inline. BLOCKED-BY the
+// sorter in src/array_sort.cpp.
+// MiniMax E (11-14): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last
+// push here and before it in retail, and the stipple stride's add still lands before the inlined device call's second rep
+// movsd where retail puts it after; the sorter's argument order is fixed by its own declaration in src/array_sort.cpp and
+// the stipple block lies inside the XDK inline, so both stay as they are.
+// MiniMax B (11-13): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push here and before it in retail, and the stipple stride's add still lands before the inlined device call's second rep movsd where retail puts it after.
+// MiniMax H (11-12): no new form, no lower score (4): the count hoisted into a local before the call still has its subtraction placed after the sorter's last push where retail has it before, the permuter's 39 tries found no better variant, and the stipple stride's add still sits before the block copy that lies inside the XDK device call.
+// MiniMax I (11-11): no new form, no lower score (4): the count read from the global and the count as an unsigned local both keep the subtraction after the sorter's last push, and the stipple stride's add still sits before the block copy, which lies inside the XDK device call.
+// MiniMax D (11-11): no new form, no lower score (4): the sorter 0x13df80 matches on its own check, so what is left is this caller's scheduling - the count's subtraction lands after the sorter's last push here and before it in retail, and the stipple block's add of 0x84 lands before the second rep movsd here and after it in retail.
+// MiniMax S (11-10): no new form, no lower score (4): retail takes the count's subtraction before the sorter's last push and ours after it, and retail adds the stipple stride after the second rep movsd where ours adds it before; the count as a local, at the call and at function scope, all compile to the same code.
+// MiniMax A (11-10): no new form, no lower score (4): retail's sorter 0x13df80 takes the count in
+// eax and the elements in ecx and takes the count's subtraction before its last push; that register
+// home is fixed by the sorter's own declaration in src/array_sort.cpp, and the stipple block's add of
+// 0x84 lies inside the XDK device call.
+// MiniMax D (11-14): no new form, no lower score (4): retail takes the count's subtraction between the scratch's lea and
+// the scratch's push of the sorter call and this build takes it after the push, and retail adds the stipple stride
+// 0x84 after the inlined device call's second rep movsd where this build adds it before; the count in a local before
+// the call gives the same code and the same 4, and the stride's add lies inside the XDK inline.
+// MiniMax R (11-10): no new form, no lower score (4): retail takes the count's subtraction before the sorter's last push of the 0x13df80 call and adds 0x84 inside the XDK D3DDevice_SetStipple inline, while ours adds it after the block; the sorter's argument order is fixed by its own declaration.
 // MiniMax G (11-05): no new form, no lower score; the count as an unsigned local, as an unsigned cast and read from the global all keep the subtraction after the sorter's last push.
 // MiniMax D (11-01): a local that holds the count once does not move the subtraction before the
 // last push either, and the stipple block's order lies inside the XDK macro.
 // MiniMax D (11-01): no new form, no lower score.
 // MiniMax A (11-03): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
+// MiniMax E (11-10): no new form, no lower score: retail takes the count's subtraction before the
+// sorter's last push and adds 0x84 after the second rep movsd, ours does both the other way round;
+// the stipple block lies inside the XDK inline.
+// MiniMax G (11-12): no new form tried this round, no lower score (4): the count's subtraction is still after the
+// sorter's last push and the stride's add still before the second rep movsd of the inlined device call.
+// MiniMax H (11-13): no new form, no lower score (4); the subtraction of the stream count comes after the last push here and before it in retail.
+// MiniMax S (11-14): no new form, no lower score (4): the sorter takes the elements in ecx and the count in eax,
+// so the count is a register argument and the scratch's address a stack argument, and the two are independent of
+// each other; the order between them follows the order of the arguments in the declaration, and that declaration
+// is shared with the other caller of the sorter.
+// MiniMax D (11-14, run 90): no new form, no lower score (4): the stream count's subtraction still comes after
+// the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the
+// inlined device call's second rep movsd; the body was re-measured at 4 (359 bytes, as retail's). BLOCKED-BY the
+// sorter in src/array_sort.cpp.
+// MiniMax R (11-15): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
+// MiniMax D (11-06): no new form, no lower score: the scratch argument's local at function scope
+// (11) and the count in a local or read from the global all keep the subtraction after the sorter's
+// last push, and the permuter run on this function reached its time limit without a measured variant.
+// MiniMax E (11-08): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the block copy, ours does both the other way round.
+// MiniMax E (11-09): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the second rep movsd, ours does both the other way round; the stipple block lies inside the XDK inline.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 4 (359 bytes, as retail's); the whole difference is that retail takes the count's subtraction between the scratch's `lea` and the scratch's push while we take it after the push. This round: the count in a local before the call, the count in a local outside the call's block, the scratch behind a pointer local, the count cast to unsigned long and the `first` local declared as an int all score 4 with the same code, and a count computed before the loop scores 97. MSVC sinks the count's expression into the call's argument setup, and the argument's order (the scratch's address before the count) puts the subtraction last.
+// MiniMax R (11-09): no new form, no lower score (4): retail takes the count's subtraction before the sorter's last push of the 0x13df80 call, ours after it, and retail adds 0x84 after the second rep movsd of the stipple block, ours before it; the count in a local and the stipple block inside the XDK inline were measured and keep both orders.
+// MiniMax A (11-13): no new form tried this round, no lower score (4): the stream count's subtraction still
+// comes after the sorter's last push here and before it in retail, and the stipple stride's add still lands
+// before the inlined device call's second rep movsd where retail puts it after; MSVC sinks the count's
+// expression into the call's argument setup, and the argument's order (the scratch's address before the count)
+// puts the subtraction last.
+// MiniMax C (11-15): no new form, no lower score (4): the sorter's count reaches the callee in EAX in both
+// builds (retail's sorter compares it with 2 there), so the register home is not what differs; what still differs
+// is that retail takes the count's subtraction between the scratch pointer's lea and the sorter's last push, and
+// retail's add of 0x84 sits inside the XDK D3DDevice_SetStipple inline, which is in a header this lane may not
+// edit.
+// MiniMax S (11-15): no new form, no lower score (4): the count's subtraction still comes after the sorter's last
+// push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's
+// second rep movsd; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline.
+// MiniMax C (11-16): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail
+// MiniMax C (11-16): takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd
+// MiniMax C (11-16): where retail puts it after; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK
+// MiniMax C (11-16): inline, so both orders are fixed outside this file.
+// MiniMax R (11-17): no new form, no lower score (4): the stream count's subtraction still comes after the sorter's last push where retail takes it before, and the stipple stride's add of 0x84 still lands before the inlined device call's second rep movsd where retail puts it after; the sorter's declaration is in src/array_sort.cpp and the stipple block is inside an XDK inline, so both orders are fixed outside this file.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2353,6 +2610,31 @@ void function_1e370(void)
 	}
 }
 
+// MiniMax E (11-16): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp, and the base comes out of the shared helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax D (11-14): no new form, no lower score (8): two more forms of the shared helper cache_record_new measured
+// this round: the record table in a local of its own gives 21 and the record pointer taken before the count's store
+// gives the same 8, both with the base still in edi where retail keeps it in ebp; both were restored and the helper
+// keeps its body.
+// MiniMax D (11-14): no new form, no lower score (8): the record pool's base still rides in edi here and in ebp in
+// retail, and the payload copy then saves the register that choice leaves free; the base comes from the shared helper
+// cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax E (11-14): no new form, no lower score (8): the record table's base still rides in EDI here and in EBP in
+// retail, and the payload copy then saves the other register. This round: calling the matched 0x1e2d0 is not inlined
+// under this file's /Ob1 and the helper's base and count as locals are both worse, so the shared helper
+// cache_record_new keeps its body and the base stays in EDI.
+// MiniMax B (11-13): no new form, no lower score (8): the record table's base still rides in EDI here and in EBP in retail, and the payload copy then saves the other register; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax H (11-12): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp, and the payload copy still needs the other register; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax H (11-11): no new form, no lower score (8): the body is retail's length and the only difference is the pair of saved registers: the record pool's base rides in edi here and in ebp in retail, and the payload copy then needs the other register; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax I (11-11): no new form, no lower score (8): the record pool's base still rides in edi here and in ebp in retail, and the payload copy's count then needs a register of its own; the base comes from the shared helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax D (11-11): no new form, no lower score (8): the pool's base still lands in edi where retail keeps it in ebp; this round the index in a local in the allocator (8), the count's store before the pointer (8) and the payload copy before the delta (33) all leave the base in edi.
+// MiniMax S (11-10): no new form, no lower score (8): retail holds the record pool's base in ebp and pushes it around the payload copy where ours keeps it in edi; the base comes from the shared one-caller helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax A (11-10): no new form, no lower score (8): retail's parameter order is (size, position,
+// callback, data) - the size arrives in ecx, the position in edx and the callback and the data follow
+// on the stack; our declaration and the only caller, in src/unknown_173b90.cpp, use another order,
+// which the rules forbid changing. Retail also keeps the record pool's base in ebp.
+// MiniMax E (11-10): no new form, no lower score: the record pool's base is held in edi here and in
+// ebp in retail, and the copy's count then needs a register of its own.
+// MiniMax R (11-10): no new form, no lower score (8): retail holds the record pool's base in ebp and pushes and pops it around the payload copy, ours keeps it in edi; the base comes from the shared one-caller helper cache_record_new, whose body the rules forbid writing out by hand.
 // MiniMax H (11-05): no new form, no lower score; the record pool's base is held in edi here and in ebp in retail, and moving the two address-taken parameters to the end of the body only ties at 8; the allocator's store order (the active store before the count increment) ties at 8 as well, so the committed index form of the count store stays.
 // MiniMax H (11-04): no new form, no lower score; the record pool's base is held in edi here and in ebp in retail, and the allocator helper's own choice decides that.
 // MiniMax D (11-01): the permute run on this function was stopped at its time limit without a
@@ -2360,10 +2642,46 @@ void function_1e370(void)
 // MiniMax D (11-01): the allocator's statement order, an early count store and a records local in
 // the allocator all tie or regress at 8 differences; no lower score.
 // MiniMax A (11-03): the allocation from the shared helper scores 60 and the permute run was stopped; no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (8): the record pool's base is still in edi
+// where retail keeps it in ebp, and the base comes from the shared helper, whose body the rules forbid rewriting.
+// MiniMax H (11-13): no new form, no lower score (8); the record table's base rides in EDI here and in EBP in retail, and the payload copy then saves the other register; this function's only caller is in another file.
+// MiniMax S (11-14): no new form, no lower score (8): the record pool's base lands in edi because the
+// file-local allocator keeps it there, and that allocator is shared with the payload copier, so moving
+// the base to ebp would move it in the other caller's code too.
+// MiniMax D (11-14, run 90): no new form, no lower score (8): the record pool's base still rides in edi where
+// retail keeps it in ebp, and the payload copy then saves the other register; the base comes from the shared
+// helper cache_record_new, whose body the rules forbid writing out by hand; re-measured at 8 (241 bytes, as
+// retail's).
+// MiniMax R (11-15): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp, and the payload copy then saves the register that choice leaves free; the base comes out of the shared helper cache_record_new, whose body the rules forbid writing out by hand.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
 // copy of the payload saves and restores the register that choice leaves free.
+// MiniMax D (11-06): no new form, no lower score: the payload copy before the delta (33), the records
+// pointer in a local in the allocator (17) and the address-taken parameters left out (8) all keep the
+// pool's base in edi.
+// MiniMax E (11-08): no new form, no lower score: the record pool's base is held in edi here and in ebp in retail, and copying the payload after the callback's store makes it worse (57).
+// MiniMax E (11-09): no new form, no lower score: the record pool's base is held in edi here and in ebp in retail, and the copy's count then needs a register of its own.
+// MiniMax D (11-09): no new form, no lower score: the record pool's base and the fold of the record
+// into eax are fixed by the shared one-caller helpers cache_record_new and cache_record_take, whose
+// bodies the rules forbid writing out by hand, so the edi/ebp difference stays.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 8 (241 bytes, as retail's); the record pool's base is held in edi here and in ebp in retail, and the payload copy's count then needs a register of its own, so the two choices cannot be made at once from this source.
+// MiniMax R (11-09): no new form, no lower score (8): the record pool's base is held in edi here and in ebp in retail, and the copy of the payload saves and restores the register that choice leaves free; the allocator's store order and the records pointer in the allocator were measured and all tie at 8.
+// MiniMax A (11-13): no new form tried this round, no lower score (8): the record table's base still rides in
+// EDI here and in EBP in retail, and the payload copy then saves the other register; the base comes from the
+// shared helper cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax C (11-15): no new form, no lower score (8): the shared helper cannot be swapped either - taking
+// cache_record_take instead of cache_record_new measures 60 (238 bytes against retail's 241) - so the pool's base
+// still rides in edi where retail keeps it in ebp.
+// MiniMax S (11-15): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it
+// in ebp, and the payload copy then saves the other register; the base comes out of the shared helper
+// cache_record_new, whose body the rules forbid writing out by hand.
+// MiniMax C (11-16): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; this round
+// MiniMax C (11-16): changed the one-caller helper cache_record_new twice (the base in a local of its own, and the active store before the
+// MiniMax C (11-16): count's increment) and those forms measure 21 and 60, so the helper keeps its body.
+// MiniMax R (11-17): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; changing the one-caller helper cache_record_new twice (the base in a local of its own, and the active store before the count's increment) measures 21 and 60, so the helper keeps its body.
+// Parameter order (size, position, callback, data): retail's one caller, 0x174420, loads EDX with the position (0x1748c3)
+// before ECX with the size (0x1748c7), and the body reads them there.
 // @retail 0x1e4e0
-bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
+bool function_1e4e0(long size, point3f const *position, t_1e4e0_callback callback, void const *data)
 {
 	(void)&callback;
 	(void)&data;
@@ -2434,21 +2752,8 @@ DWORD const g_43fdc0[5] = {1, 2, 5, 8, 6};
 bool g_47fe85 = true;
 typedef void (__stdcall *t_4b220_fill)(void *, long, void *);
 
-// MiniMax G (11-04): score 8 (was 8): retail's callee takes the count in ecx and reads the zero
-// it is given at [esp + 4] before it saves ebx, ours takes the count in eax and reads the same
-// argument at [esp + 8]; the only form that puts the zero back on the stack (its address taken)
-// moves the count to eax as well, and the form that moves the count into ecx passes the zero in
-// a register and costs this function its score. Later in the round: the early-return shape gives
-// retail's length but puts the exit block first, a copy of the mode in a local and a volatile
-// pointer to it leave the body as it is, and declaring the function __fastcall changes nothing,
-// since LTCG gives the count eax either way.
-// Later still: retail's callee never reads eax, so the eax slot is spent on an argument its body
-// does not use and the count sits in ecx; retail's source therefore has a parameter before the
-// count that LTCG does not promote, and none of the forms here reproduce that: a mode declared
-// as a pointer (a change to the declaration, which this lane may not make) lowers 0x35b00 to 1
-// but still passes the mode in eax, a volatile mode moves the count into ecx but drops this
-// function to 57, and mentioning the mode directly while its address is taken keeps the mode on
-// the stack but leaves the count in eax.
+// Draws an immediate-mode primitive into the D3D push buffer.
+// Uses the fill callback to write vertex data when the request fits.
 // @retail 0x4b220
 long function_4b220(long count, long mode, long primitive, long stride, t_4b220_fill fill, void *context)
 {
@@ -2460,8 +2765,7 @@ long function_4b220(long count, long mode, long primitive, long stride, t_4b220_
 	(void)&context;
 	if (!*mode_reference)
 	{
-		long bytes = count * stride;
-		dword words = (dword)bytes >> 2;
+		dword words = (dword)(count * stride) >> 2;
 		long requested = words + 5;
 		if (requested < 2048)
 		{
@@ -2470,7 +2774,7 @@ long function_4b220(long count, long mode, long primitive, long stride, t_4b220_
 			*push++ = D3DPUSH_ENCODE(D3DPUSH_SET_BEGIN_END, 1);
 			*push++ = g_43fdc0[primitive];
 			*push++ = D3DPUSH_ENCODE(D3DPUSH_INLINE_ARRAY | D3DPUSH_NOINCREMENT_FLAG, words);
-			fill(push, bytes, context);
+			fill(push, count * stride, context);
 			push += words;
 			*push++ = D3DPUSH_ENCODE(D3DPUSH_SET_BEGIN_END, 1);
 			*push++ = 0;
@@ -2516,6 +2820,13 @@ void function_152a0(long handle, long index)
 
 long function_4cb80(long element_index, long tag_index);
 
+// Prefetch walk of 0x4d830 (retail 0x4d920-0x4d927); it advances the caller's pointer, as retail keeps it in esi.
+PRIVATE __inline void prefetch_table_lines(byte *&data, long size)
+{
+	for (long i = size / 32; i > 0; --i, data += 32)
+		_mm_prefetch((char const *)data, _MM_HINT_T0);
+}
+
 struct s_render_transform_record
 {
 	dword unknown00;
@@ -2525,7 +2836,46 @@ struct s_render_transform_record
 	byte unknown10[0xc];
 	transform4x3f const *transform;
 };
+// MiniMax D (11-14): no new form, no lower score (51): retail calls the transform table's lookup 0x1d6b0 out of line while this build inlines it at both sites, and that helper's inline-ness is declared in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
+// MiniMax A (11-12): no new form, no lower score (51): the body is still eleven bytes longer than retail and keeps the transform table lookup result in eax where retail copies it to edx before the cmp edx, -1 test, because retail calls 0x1d6b0 out of line at the second site while this build inlines it at both; that helper inline-ness is decided in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
 
+// MiniMax C (11-15): no new form, no lower score (51): retail calls the transform table's lookup 0x1d6b0 out of line at the second site and this build inlines it at both, which makes the body 400 bytes against retail's 389; that helper's inline-ness is decided in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
+// MiniMax B (11-13): no new form, no lower score (51): retail inlines the 0x1d6b0 call where this build calls it out of line, and the body is 400 bytes against retail's 389; the callee's inline-ness is decided in the file that defines it, so the call line here cannot reach it.
+// MiniMax H (11-12): no new form, no lower score (51); retail calls the transform table's lookup (0x1d6b0) out of line
+// at the second site and this build inlines it at both, which makes our body eleven bytes longer and leaves the
+// lookup's result in EAX where retail copies it to EDX before the `cmp edx, -1` test; that helper's inline-ness is
+// decided in src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY 0x1d6b0.
+// MiniMax G (11-11): no new form, no lower score (51); retail calls the transform table's lookup (0x1d6b0) out of
+// line at the second site and this build inlines it at both, which makes our body eleven bytes longer and leaves the
+// lookup's result in EAX where retail copies it to EDX before the `cmp edx, -1` test; that helper's inline-ness is
+// decided in src/unknown_023540.cpp, which this lane may not edit, and writing its body out by hand or adding a
+// noinline twin is barred, so the body stands. BLOCKED-BY 0x1d6b0.
+// MiniMax H (11-11): no new form, no lower score (51); retail still calls the transform table's lookup (0x1d6b0) out of line at the second site and this build still inlines it at both, which makes our body eleven bytes longer and leaves the lookup's result in EAX where retail copies it to EDX before the test; that helper's inline-ness is decided in another file, so it cannot be changed from here. BLOCKED-BY 0x1d6b0.
+// MiniMax C (11-11): no new form, no lower score (51); the transform table's lookup is still inlined here and called out of line in retail, and that helper's inline-ness is set in src/unknown_023540.cpp.
+// MiniMax R (11-10): no new form, no lower score (51); retail calls the transform table's lookup out of line at the second site and this build inlines it at both, and that helper's inline-ness is set in another file.
+// MiniMax A (11-11): no new form, no lower score (51); the body is still eleven bytes longer than retail's and
+// keeps the lookup's result in EAX where retail copies it to EDX before the `cmp edx, -1` test, because retail
+// calls the transform table's lookup (0x1d6b0) out of line at the second site while this build inlines it at both
+// sites; that helper's inline-ness is decided in src/unknown_023540.cpp, which this lane may not edit.
+// BLOCKED-BY 0x1d6b0.
+// MiniMax I (11-10): no new form, no lower score (51); retail calls the transform table's lookup out of line at the second site and this build inlines it at both, and that helper's inline-ness is set in another file.
+// MiniMax D (11-10): no new form, no lower score; retail calls the transform table's lookup out of
+// line (0x1d6b0) at the second site and inlines it at the first, and this build inlines it at both.
+// This round: making the helper a plain inline in src/unknown_023540.cpp, and adding inline to both
+// of this file's declarations of it, each leave the body at 400 bytes and score 51 and keep 0x1d6b0,
+// 0x152a0 and 0x24040 matching, so the link-time inliner inlines the helper at both sites whatever
+// the source says; reaching retail's shape would need the helper's body written out by hand or a
+// noinline twin, both barred, so the body stands.
+// MiniMax E (11-09): no new form, no lower score; retail calls the transform table's lookup
+// out of line (0x1d6b0) and we inline it, which also makes our body eleven bytes longer, and
+// MiniMax E (11-16): no new form tried this round, no lower score (51): retail still calls the transform table's lookup 0x1d6b0 out
+// of line at the second site where this build inlines it at both, which also makes the body eleven bytes longer than retail's,
+// and the result comes back in edx where retail keeps it in eax; that helper's inline-ness is declared in
+// src/unknown_023540.cpp, which this lane may not edit. BLOCKED-BY the table lookup.
+// that helper's inline-ness is set in src/unknown_023540.cpp.
+// MiniMax R (11-09): no new form, no lower score; the transform table's lookup is still inlined here and called out of line in retail, and dropping the inline keyword from that helper's definition, which is in src/unknown_023540.cpp, leaves this score at 51 with 0x1d6b0 and 0x24040 still matching, because the compiler inlines the call at both sites either way.
+// MiniMax R (11-09): no new form, no lower score; the transform table's lookup is still inlined here and
+// called out of line in retail, and the helper's inline-ness is set in another file.
 // MiniMax D (11-06): no new form, no lower score; retail calls the transform table's lookup out of line
 // (0x1d6b0) where we inline it, and the helper's inline-ness is set in src/unknown_023540.cpp, so the call
 // cannot be made from this file; this round the lookup through a handle local and through a byte pointer
@@ -2537,13 +2887,47 @@ struct s_render_transform_record
 // whole body (111), so the region stays around the 0x4cb80 call alone.
 // MiniMax D (run 37): no new form, no lower score; the second table_entry_data lookup has to
 // stay out of line like retail's, and that is decided in src/unknown_023540.cpp (not my file).
-// score 51 (was 51): this round found no gain - retail calls table_entry_data out of line for the
+// MiniMax G (11-06): no new form, no lower score: retail calls table_entry_data out of line for the
+// transform table while we inline it, and that helper's `__inline` is declared in
+// src/unknown_023540.cpp, so it cannot be changed from this file; a function pointer to the helper
+// rebuilds the body (133).
+// MiniMax I (11-15): no new form, no lower score (51): retail still calls the transform table's lookup out of line at the second site where this build inlines it at both, which makes the body 400 bytes against retail's 389; that helper's inline-ness is declared in another file, which this lane may not edit, and an inline_depth pragma around the second lookup (which the rules would not allow either) does not help: the helper is __inline there, so it is inlined regardless and the score rises to 111.
+// score MATCH (was 51): this round found no gain - retail calls table_entry_data out of line for the
 // transform table and we inline it, which also makes our body eleven bytes longer; that helper's
 // inline-ness is decided in src/unknown_023540.cpp.
-// score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (51): retail still calls table_entry_data out of line at the second site where this build inlines it at both, which also makes our body eleven bytes longer, and the result comes back in EDX where retail keeps it in EAX; the inline-ness of that helper is decided in src/unknown_023540.cpp, which this lane may not edit.
+// MiniMax D (11-15): no new form, no lower score (51): retail still calls the transform table's lookup 0x1d6b0 out
+// of line at the second site where this build inlines it at both, which also makes the body eleven bytes longer, and
+// the result comes back in edx where retail keeps it in eax; that helper's inline-ness is declared in another file.
+// MiniMax R (11-16): no new form, no lower score (51): retail still calls the transform table's lookup 0x1d6b0 out of line at the second site where this build inlines it at both, which also makes the body eleven bytes longer than retail's, and the result comes back in edx where retail keeps it in eax; that helper's inline-ness is declared in another file. BLOCKED-BY the table lookup.
+// MiniMax S (11-16): no new form, no lower score (51): retail still calls the transform table's lookup 0x1d6b0 out of line at the second site where
+// this build inlines it at both, which also makes our body eleven bytes longer than retail's, and the result comes back in edx where retail keeps
+// it in eax; that helper's inline-ness is declared in src/unknown_023540.cpp, which this lane may not edit: BLOCKED-BY the table lookup.
+// score MATCH (was 51): retail calls table_entry_data out of line for the transform table, and we
 // inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
 // that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
+// MiniMax B (11-13): no new form, no lower score (51): the body is still eleven bytes longer than retail's because retail inlines 0x1d6b0 at the first lookup and calls it out of line at the second; that cannot be changed from this file, since declaring the helper inline or plain extern here leaves the body unchanged and a noinline twin of it is a form the rules bar.
+// MiniMax G (11-13): no new form, no lower score (51): retail calls the transform table's lookup out of line
+// where this build inlines it, and that helper's inline-ness is declared in src/unknown_023540.cpp, which this
+// lane may not edit. BLOCKED-BY the table lookup.
+// MiniMax D (11-17): no new form, no lower score (51): retail calls the transform table's lookup 0x1d6b0 out of line at the
+// second site where this build inlines it at both, so the body is eleven bytes longer than retail's; that helper's inline-ness
+// is declared in src/unknown_023540.cpp: BLOCKED-BY the table lookup.
+// b12E (11-17) walk against retail, fast build on r846: fields, offsets, every jcc sense, the 12-float copy order
+// (0x4d830-0x4d8de), the prefetch size and shift (0x4d8fe-0x4d91e), the tag/flags tests, the 0x4cb80 call (0x4d948),
+// the 0x1d6b0 lookup (0x4d956) and the 0x152a0 fallback (0x4d9aa) all agree with the old body; no behaviour difference.
+// What differed was inlining and registers: retail inlines the first table lookup and the prefetch walk, calls 0x1d6b0
+// for the second (0x4d956), keeps the 0x4cb80 result in edx across that call (0x4d94d, 0x1d6b0 only touches eax/ecx)
+// and leaves 0x4cb80 out of line. Two changes give MATCH (fast build, 400 -> 389 bytes, 51 -> 0): table_entry_data
+// loses `__inline` in src/unknown_023540.cpp (retail's 0x1d6b0 is a plain function; alone this stays 51, and 0x45ce0
+// then calls it out of line as retail does at 0x45e8b: 982 -> 997 bytes, 239 -> 255), and the prefetch loop moves into
+// `prefetch_table_lines(byte *&data, ...)`, whose inline cost makes the inliner leave the second lookup out of line.
+// Other helper spellings: by-value pointer leaves it in ecx (30), loop plus size in the helper is not inlined (106),
+// forceinline 111. The inline_depth pair around the 0x4cb80 call is no longer needed (MATCH without it).
+// Matched 0x24040, 0x241c0, 0x152a0, 0x4cb80, 0x44ac0, 0x44c90 and 0x1d6b0 stay MATCH; 0x4d0b0 stays 380.
 // @retail 0x4d830
+// MiniMax C (11-17): no new form, no lower score (51): retail calls the transform table's lookup 0x1d6b0 out of line at the second site where this build inlines it at both, so the body is eleven bytes longer than retail's and the result comes back in edx where retail keeps it in eax; the callee's inline eligibility is declared in src/unknown_023540.cpp, which this lane may not edit, and declaring it inline or plain extern here leaves the body unchanged, while writing its body out by hand or adding a noinline twin is barred.
 void function_4d830(s_render_transform_record const *record)
 {
 	if (record->transform)
@@ -2572,14 +2956,11 @@ void function_4d830(s_render_transform_record const *record)
 		long size = 0;
 		if (entry_count > 0)
 			size = entry_count * 48 + 0x44;
-		for (long i = size / 32; i > 0; --i, data += 32)
-			_mm_prefetch((char const *)data, _MM_HINT_T0);
+		prefetch_table_lines(data, size);
 		dword flags = record->flags;
 		if ((flags & 0xe0000000) == 0x20000000)
 		{
-#pragma inline_depth(0)
 			long index = function_4cb80((flags >> 9) & 0x1ff, record->tag);
-#pragma inline_depth()
 			if (index != NONE)
 			{
 				s_shader_transform_table *table = (s_shader_transform_table *)table_entry_data(record->handle);
@@ -2609,16 +2990,88 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
     return result;
 }
 
+// MiniMax E (11-16): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register; two new spellings of the shared helper maximum_25ca0 (the second parameter overwritten in place, and the else form that keeps the second argument) give retail's compare order with the result in the wrong register, and a permutation run of 30 tries found nothing below 26.
+// MiniMax D (11-14): no new form, no lower score (26): retail keeps the maximum in the second loaded register and
+// compares the first loaded against it (comiss xmm0, xmm1 and a copy into xmm1) where this build keeps it in the first
+// loaded register and compares the second against it (comiss xmm1, xmm0 and a copy into xmm0); the reciprocal is still
+// folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call
+// setup where retail repeats it. Only a per function floating point switch reaches that shape and the rules forbid it.
+// MiniMax E (11-14): no new form, no lower score (26): the sibling 0x174f80 in src/unknown_173b90.cpp carries retail's
+// exact shape for the same source pattern - the maximum's compare, the explicit multiply and the repeated call setup -
+// and that file only reaches the shape under a per-function optimisation switch which the rules forbid adding here;
+// without the divisor's round trip through the stack this build folds the reciprocal into a division and scores 47.
+// MiniMax B (11-13): no new form, no lower score (26): the comparison against 0.0001f still has its operands the other way round and its result in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register, and both arms still share one call setup; the body's volatile anchor is the only thing that keeps the reciprocal's explicit mulss, and the body without it folds into a division and scores 47.
+// MiniMax H (11-12): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and both branches still share one call setup; the body also still carries a volatile cast on the stack temporary, which the rules forbid.
+// MiniMax H (11-11): no new form, no lower score (26): retail keeps the maximum in the second loaded register and compares the first loaded against it, multiplies g_4b9ff8 by the reciprocal with an explicit mulss and repeats the call setup in each branch; without the divisor's round trip through the stack the reciprocal is folded into a division (47) and with the multiply's operands reversed the body grows to 173 bytes (37), so the body stands.
+// MiniMax I (11-11): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup.
+// MiniMax D (11-11): no new form, no lower score (26): the value is g_4b9ff8 times the maximum's reciprocal and the compiler's floating-point mode folds that into a division by the maximum, where retail has an explicit mulss; the maximum's compare also keeps its operands the other way round, and only a per-function pragma would stop the folding, which the rules forbid.
+// MiniMax S (11-10): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup; the maximum and the reciprocal as locals, the enabled branch first and the plain maximum all score 47 or worse, and the permuter's run reached its time limit without a measured variant.
+// MiniMax A (11-10): no new form, no lower score (26): the body is unchanged at 169 bytes, as retail's; in the default floating-point mode the compiler keeps the maximum in the first-loaded register and compares the second-loaded against it, while retail keeps the maximum in the second-loaded register and compares the first-loaded against it, so the compare's operand order, the copy's direction and the branch's polarity all follow from that one choice; the swapped-arms ternary (`first <= second ? second : first`) does reach retail's loads and `comiss xmm0, xmm1` but still copies into the first-loaded register and branches with `jae` where retail has `jbe`, and it scores 26 as well; a per-function precise-floating-point pragma (which the rules forbid) reaches retail's length and its maximum's compare and copy, but the call setup is still hoisted above the branch and the padding still differs, so it would still score 16.
+// MiniMax A (11-10): no new form, no lower score (26): the maximum's compare reaches retail's operand
+// order (`comiss xmm0, xmm1`) with the ternary spelling, but the copy then goes the other way and the
+// branch is `ja` where retail has `jbe`; the divisor's round trip through the stack is what makes the
+// length 169 (without it the body is 154 bytes and scores 50).
+// MiniMax E (11-10): no new form, no lower score: the maximum's compare has its operands swapped
+// and lands in the other register, the divisor makes a round trip through the stack where retail
+// keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches
+// share one call setup where retail repeats it.
+// MiniMax G (11-13): no new form tried this round, no lower score (26): the maximum's comparison still has its
+// operands the other way round and its result in the other register, the divisor still makes a round trip through the
+// stack where retail keeps it in a register, and the two branches still share one call setup where retail repeats it.
+// The value of constants[3] is read back through the volatile anchor already in the body, and no further volatile
+// anchor may be added, so the spelling that reaches retail's shape (the one the coordinator rejected for its
+// per-function pragma) cannot be kept.
+// MiniMax R (11-10): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register; the forms tried this round (the destination compared with the constant, the constant on the left of the compare, the less-than and less-or-equal spellings, the two-local forms with either declaration order and the four if/else spellings) measured 26, 27 and 28, never below the body above.
 // MiniMax H (11-05): no new form, no lower score; without the divisor's round trip through the stack the multiply is explicit again (a mulss by g_4b9ff8) but the maximum still lands in the other register, the reciprocal's register order differs and the two branches still share one call setup; the four forms of the maximum all give that same 47, the round trip with an explicit multiply gives 35, and the maximum's registers follow the live ranges rather than the source order.
 // MiniMax H (11-04): no new form, no lower score; the maximum's comparison operand order, the divisor's round trip through the stack and the shared call setup still differ.
 // MiniMax D (run 37): no new form, no lower score; the maximum as `first <= second ? second : first` gives retail's comiss operand order but still scores 26, the maximum without the round trip through the stack scores 47, the four forms of the maximum (the two ternary orders, the if/else and the initial-value form) score 47 or 48, and retail's own phi copies the maximum into g_4b9fa4's register while ours keeps it in 0.0001f's.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (26): the 0.0001f comparison still has its
+// operands the other way round, the divisor still makes a round trip through the stack, and the branches still
+// share one call setup.
+// MiniMax H (11-13): no new form, no lower score (26); the comparison against 0.0001f has its operands the other way round, the divisor makes a round trip through the stack and both arms share one call setup.
+// MiniMax S (11-14): no new form, no lower score (26): the body was re-measured after the other edits in
+// this file and did not move; the shared maximum helper was left alone because it has a second caller,
+// and the flag local stays a byte because retail's own home is a byte as well.
+// MiniMax D (11-14, run 90): no new form, no lower score (26): retail keeps the maximum in the second loaded
+// register and compares the first loaded against it, multiplies g_4b9ff8 by the explicit reciprocal and repeats the
+// call setup in each branch, where this build keeps the maximum in the first loaded register, folds the multiply into
+// a division and shares one call setup; this round six new spellings of the maximum helper (the if/else with the
+// second argument as the then value, the swapped arms and the init-and-if forms) all give 26, the lowest of them 25
+// only by computing the minimum instead of the maximum, so that one was not kept; the body stands at 26 (169 bytes,
+// as retail's).
+// MiniMax R (11-15): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, and the two branches still share one call setup where retail repeats it in each of them.
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
 // Coordinator review (MiniMax C): the lane's 16 needed a #pragma optimize("p") pair around
 // the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
 // divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
+// MiniMax D (11-06): no new form, no lower score.
+// MiniMax E (11-08): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
+// MiniMax E (11-09): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
+// MiniMax D (11-09): no new form, no lower score: the maximum's ternary and its if/else spelling
+// both give retail's `comiss` operand order, but the result then lands in xmm0 where retail keeps it
+// in xmm1; the 26-scoring body stays.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 26 (169 bytes, as retail's); the maximum's comparison has its operands in the other order, the divisor makes a round trip through the stack where retail keeps it in a register, and both branches share one call setup where retail repeats it; the only form that reached retail's shape needed a per-function #pragma, which the rules forbid.
+// MiniMax R (11-09): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the divisor still makes a round trip through the stack where retail keeps it in a register and multiplies by g_4b9ff8 with an explicit mulss, the clamp still reloads 1.0f, and the two branches still share one call setup where retail repeats it in each of them. This round: the enabled branch first gives 29 and was restored, the reversed multiply gives 32 and was restored, and the round trip with an explicit multiply, the maximum in a local and the four forms of the maximum were all measured and all score worse or the same.
+// MiniMax A (11-13): no new form tried this round, no lower score (26): the comparison against 0.0001f still
+// has its operands the other way round and its result in the other register, the divisor still makes a round
+// trip through the stack where retail keeps it in a register, and both arms still share one call setup; the
+// body's volatile anchor is what keeps the reciprocal's explicit mulss, and the body without it folds into one.
+// MiniMax C (11-15): no new form, no lower score (26): retail's 1.0f comes from a memory load and its multiply
+// by the reciprocal is an explicit mulss, so giving that 1.0f a name of its own (a const real g_45dbc0 = 1.0f
+// in this file) keeps the multiply only in the one-expression form, which measures 47 (157 bytes), and with the
+// present body it measures 29; the maximum's compare also keeps the other way round (comiss xmm1, xmm0 and a
+// copy into xmm0 where retail has comiss xmm0, xmm1 and a copy into xmm1) whatever order the source writes.
+// MiniMax S (11-15): no new form, no lower score (26): the body is unchanged; what still differs is the maximum's
+// compare operand order and the register its result lands in, the divisor's round trip through the stack, and the
+// one call setup that the two branches share.
+// MiniMax C (11-16): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the
+// MiniMax C (11-16): other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit
+// MiniMax C (11-16): reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function
+// MiniMax C (11-16): floating point switch, which the rules forbid.
+// MiniMax R (11-17): no new form, no lower score (26): the maximum's compare still has its operands the other way round and lands in the other register, the reciprocal is still folded into a division where retail multiplies g_4b9ff8 by an explicit reciprocal, and both arms still share one call setup where retail repeats it; the fold only stops under a per-function floating point switch, which the rules forbid.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -2692,20 +3145,8 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
-// MiniMax G (11-05): no new form, no lower score; the count's register is the callee's choice, so the call site cannot move the load of [esi + 0x14] into ecx.
-// MiniMax H (11-04): no new form, no lower score; the count reaches the 0x4b220 call in eax here and in ecx in retail, and that callee's own body in this file decides it (six body variants keep the count in eax).
-// MiniMax D (11-01): both builds push the five stack arguments and only the count's register
-// differs, which 0x4b220's own declaration fixes.
-// MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
-// seventh parameter to give its count retail's register home.
-// MiniMax A (11-03): no new form, no lower score.
-// MiniMax G (11-04): no new form, no lower score; retail's 0x4b220 takes the count in ecx and
-// reads the zero it is given at [esp + 4], ours takes the count in eax; the callee is in this
-// file, but the form that moves the count into ecx also moves the zero into a register and
-// costs the callee its score; declaring the mode as a pointer lowers this function to 1 (the
-// caller then differs only in xor eax, eax against push 0), but that changes the declaration.
-// score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
-// in ecx.
+// Processes a queued draw request, resets render state, and selects
+// the vertex format before drawing with optional begin/end callbacks.
 // @retail 0x35b00
 void __stdcall function_35b00(void *payload)
 {
@@ -2857,12 +3298,72 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
+// MiniMax E (11-16): no new form, no lower score (16): retail still folds the record base into the payload pointer one store earlier, and the base comes out of the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
+// MiniMax D (11-14): no new form, no lower score (16): the fold of the record base into the payload pointer comes out
+// of the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte, so the helper's
+// shape is pinned by that match and the fold cannot be moved from here. BLOCKED-BY 0x1e5e0 (matched).
+// MiniMax D (11-14): no new form, no lower score (16): retail folds the record's base into eax before the store at
+// +0x28 where this build stores through [eax + ebx + 0x28] and adds ebx one store later, so this build's store is a
+// byte longer and the body 379 bytes against retail's 378; the base comes from the shared two caller helper
+// cache_record_take, whose body the rules forbid writing out by hand.
+// MiniMax E (11-14): no new form, no lower score (16): retail still folds the record base into the payload pointer one
+// store earlier than this build does; the base comes from the shared helper cache_record_take, whose body the rules
+// forbid writing out by hand and whose two callers keep it as it is.
+// MiniMax B (11-13): no new form, no lower score (16): retail still folds the record base into the payload pointer one store earlier than this build does; the base comes from the shared helper cache_record_take, whose body the rules forbid writing out by hand.
+// MiniMax H (11-12): no new form, no lower score (16): retail still folds the record base into the payload pointer before the store at +0x28 where we store through [eax + ebx + 0x28] and add ebx afterwards, and the count's store still comes after the index's move; the fold comes from the shared helper cache_record_take, whose two callers keep it as it is.
+// MiniMax H (11-11): no new form, no lower score (16): retail folds the record base into the payload pointer before the store at +0x28 where ours stores through [eax + ebx + 0x28] and adds ebx afterwards, and the count's store comes after the index's move where retail has it before; the fold comes from the shared helper cache_record_take, whose two callers keep it as it is.
+// MiniMax I (11-11): no new form, no lower score (16): retail folds the record base into eax after the payload's type byte and we fold it after the payload's first long; three new forms (the longs through the payload pointer, the type byte through the record's payload array and the longs through a long view of the payload) score 19, 16 and 19.
+// MiniMax D (11-11): no new form, no lower score (16): retail folds the record base into the payload pointer before the store at +0x28 where we store through [eax + ebx + 0x28] and add ebx afterwards; this round the first two payload stores swapped (18) and the type byte stored through the record's payload array (16) both keep the fold after the second store.
+// MiniMax S (11-10): no new form, no lower score (16): retail folds the record's address into EAX before the dword store at +0x28 where ours stores through [eax+ebx+0x28] and adds EBX afterwards; the permuter was stopped at its 600 s time limit without a measured variant.
+// MiniMax A (11-10): no new form, no lower score (16): retail folds the record base into the payload
+// pointer one store earlier than we do; that fold comes from the shared helper cache_record_take,
+// which has two callers (0x1e5e0 and 0x429a0), so its body cannot be specialised for this one.
+// MiniMax G (11-12): no new form tried this round, no lower score (16): retail still folds the record base into
+// the payload pointer one store earlier, and that fold comes from the shared helper, which has two callers.
+// MiniMax H (11-13): no new form, no lower score (16); retail folds the record base into the payload pointer one store earlier than this build does.
+// MiniMax S (11-14): no new form, no lower score (16): the payload copy goes through the same file-local
+// record helper as the copier, so folding the base into the pointer one store earlier is not reachable
+// from this function alone; the body stands as it was after re-measurement.
+// MiniMax D (11-14, run 90): no new form, no lower score (16): retail folds the record base into the payload pointer
+// one store earlier than this build does; the base comes out of the shared helper cache_record_take, whose body the
+// rules forbid writing out by hand, and the other caller of that helper (0x1e5e0) already matches retail, so the
+// helper cannot change; re-measured at 16 (379 bytes, against retail's 378). BLOCKED-BY the shared helper.
+// MiniMax R (11-15): no new form, no lower score (16): retail still folds the record base into the payload pointer one store earlier than this build does, and the body is still one byte longer than retail's; the base comes out of the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
+// score 16 (was 16): retail folds the record base into the payload pointer one store earlier than we
+// do, the body is one byte longer than retail's, and the callback's address is a build address the
+// comparison cannot map.
+// MiniMax E (11-10): no new form, no lower score: retail folds the record base into the payload
+// pointer one store earlier than we do, and the callback's address is a build address the
+// comparison cannot map.
+// MiniMax R (11-10): no new form, no lower score (16): retail folds the record base into the payload pointer one store earlier than we do; that fold comes from the shared one-caller helper cache_record_take, whose body the rules forbid writing out by hand.
 // MiniMax H (11-05): no new form, no lower score; the record base is still folded into the payload pointer one store later than retail does (the type byte stored after the longs, the type byte written through the payload array, the longs written through a long view and a struct that holds the payload's fields in place all score 16); the type byte written through the payload array gives byte-identical code, and the permuter's 26 tries leave the same difference.
 // MiniMax H (11-04): no new form, no lower score; retail folds the record base into the payload pointer one store before ours does (three variants: 16 each).
 // MiniMax A (11-03): the allocation from 0x1e4e0's helper scores 97; no lower score.
 // MiniMax D (run 37): no new form, no lower score; the only real difference is that retail
 // folds the record base into the payload pointer one store earlier than we do, the rest of
 // the fast differences are the reduced image's addresses for the globals and the constant.
+// MiniMax D (11-06): no new form, no lower score: retail folds the record base into the payload
+// pointer one store earlier than we do, and the address the record's callback holds is a build
+// address that the comparison cannot map.
+// MiniMax E (11-08): no new form, no lower score: retail folds the record base into the payload pointer one store earlier than we do, and the callback's address is a build address the comparison cannot map.
+// MiniMax E (11-09): no new form, no lower score: retail folds the record base into eax one store earlier than we do, and the callback's address is a build address the comparison cannot map.
+// MiniMax D (11-09): no new form, no lower score: the fold of the record's base into eax is fixed by
+// the shared one-caller helper cache_record_take, whose body the rules forbid writing out by hand;
+// the 16-scoring body stays.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 16 (379 bytes against retail's 378); the only real difference is the fold of the record's base into eax, which retail takes after the payload's type byte and we take after the payload's first long, one store later; the rest of the difference is the reduced image's addresses for the globals and the callback.
+// MiniMax R (11-09): no new form, no lower score (16): retail folds the record base into the payload pointer one store earlier than we do, our body is a byte longer than retail's so the relocation mask stops applying, and the callback's address is a build address the comparison cannot map; the three variants that move that fold were measured and all tie at 16.
+// MiniMax A (11-13): no new form tried this round, no lower score (16): retail still folds the record base into
+// the payload pointer one store earlier than this build does; the base comes from the shared helper
+// cache_record_take, whose body the rules forbid writing out by hand. The body is also one byte longer than
+// retail's (379 against 378), so the linker's fixup mask stops applying near the end and the callback's
+// address (0x4b7890 here, 0x508d0 in retail) is counted in the score.
+// MiniMax C (11-15): no new form, no lower score (16).
+// MiniMax S (11-15): no new form, no lower score (16): retail still folds the record base into the payload pointer
+// one store earlier than this build does, and the body stays one byte longer than retail's; the base comes out of
+// the shared helper cache_record_take, whose other caller 0x1e5e0 matches retail byte for byte.
+// MiniMax C (11-16): no new form, no lower score (16): the globals are still loaded once and kept in registers where retail reloads each of
+// MiniMax C (11-16): them at its use and keeps the constant 1 in ecx across the block.
+// MiniMax R (11-17): no new form, no lower score (16): the globals are still loaded once and kept in registers where retail reloads each of them at its use and keeps the constant 1 in ecx across the block.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3179,23 +3680,114 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
+// MiniMax C (11-17): no new form, no lower score (62): retail's own call is the XDK's D3D::PixelJar::FindSurfaceWithinTexture with five out-pointers, so I called that directly (with the XDK's D3D::BlockOnResource before it) and passed the pixel pointer as a void* so that the 0xf0000000 flag is set in memory as in retail: that form matches retail's shape (the flag in memory, the pointer reloaded from the frame in every row, the row base advanced by the pitch) but measures 81 to 88, because this build gives the void* local and its byte cast an extra frame slot, so the five out-pointers and the description sit four bytes above retail's; the macro form stands.
+// MiniMax E (11-16): no new form tried this round, no lower score (62): the locked rectangle's pointer and pitch still sit in the
+// other order in the frame (retail keeps the pointer at [esp+0xc] and the pitch at [esp+0x10], ours the other way round), which
+// comes from the locked-rectangle type in the XDK header, which this lane may not edit, and retail still ORs the 0xf0000000 flag
+// into the pointer in memory where this build sets it in a register.
+// MiniMax D (11-14): no new form, no lower score (62): the locked rectangle's pointer and pitch still sit in the other order in the frame (retail keeps the pointer at [esp+0xc] and the pitch at [esp+0x10], ours the other way round), which comes from the locked-rectangle type in the XDK header, which this lane may not edit.
+// MiniMax H (11-11): no new form, no lower score (62); the locked rectangle's frame slots still sit four bytes lower than retail's, the 0xf0000000 flag is still set in a register where retail sets it in the frame, and the field order comes from the locked-rectangle type in the XDK header, which this lane may not edit.
+// MiniMax A (11-11): no new form, no lower score (62); retail ORs the 0xf0000000 flag into the locked
+// rectangle's pointer in memory (`or dword ptr [esp + 0xc], 0xf0000000`) and reads it again, while ours holds the
+// pointer in a register, and retail's four frame slots for {the surface, the rectangle, the LockRect arguments} sit
+// four bytes above ours. This round: the flag set on the rectangle's own pBits member (62, 383 bytes) and a
+// separate pointer local with the flag set on it (63, retail's 399 bytes) give the same results as the earlier
+// rounds, and re-reading the pointer, the row offset and the pitch in every row (68, 383 bytes) is worse. All
+// reverted; the body stands.
+// MiniMax R (11-09): no new form, no lower score; retail keeps the row's destination pointer in edx over a row base in ebp, while ours counts the destination in esi over a base in ebx and adds one store and a nop that retail does not have.
+// MiniMax D (11-10): no new form, no lower score; retail ORs the 0xf0000000 flag into the locked
+// rectangle's pointer in memory and rereads it, this build holds the pointer in a register. This
+// round: setting the flag on the rectangle's own pBits member instead of through the pointer gives
+// 62 and 383 bytes, the same score as the baseline, and a separate pointer local with the flag set
+// on it gives retail's 399 bytes but scores 63; both reverted, and the rectangle's frame slots still
+// sit four bytes lower than retail's.
+// MiniMax R (11-09): no new form, no lower score; the flag is still set in a register where retail sets it
+// in the frame, and the locked rectangle's frame slots stay four bytes lower.
+// MiniMax A (11-06, run 52), not kept (62 -> 60, under the keep bar) - the destination column is now recomputed for each
+// column from the screen address as retail does and the rectangle's fields are read off the
+// rectangle itself; what is left is the frame slots of the locked rectangle, retail's in-memory OR
+// of the flag into the rectangle and the order of the two inner-loop increments. A running row
+// offset reproduces retail's length (399) and its shape but moves the source pointer into ebp
+// (67), so it was dropped.
 
+// MiniMax A (11-12): no new form, no lower score (62): retail keeps the locked rectangle pointer at [esp+0xc] and its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where ours keeps the pitch at [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register; the inner loop also adds the x offset to the source side where ours adds it to the destination pixel pointer, and the locked rectangle field order comes from the XDK type, which this lane may not edit.
 
+// MiniMax C (11-15): no new form, no lower score (62): retail keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where this build keeps the pitch at [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register.
+// MiniMax B (11-13): no new form, no lower score (62): the locked rectangle's fields are still laid out with the pitch before the pointer in this build and with the pointer first in retail, so the inlined lock's stack homes and the copy's field order cannot match (the body is 383 bytes against retail's 399).
+// MiniMax H (11-12): no new form, no lower score (62); retail keeps the locked rectangle's pointer at [esp+0xc] and
+// its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where ours keeps the pitch at
+// [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register; the inner loop also adds the x offset to the
+// source side where ours adds it to the destination's pixel pointer.
+// MiniMax G (11-11): no new form, no lower score (62); retail keeps the locked rectangle's pointer at [esp+0xc] and
+// its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where ours keeps the pitch at
+// [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register; the flag set on the rectangle's own pBits
+// member and a separate pointer local carrying the flag were measured at 62 and 63 before, so the body stands.
+// This round mapped the inner loop as well: retail adds the x offset to the source side and keeps the row offset
+// separate, while this build adds it to the destination's pixel pointer, so the two bodies compute different
+// pointers and retail's is 16 bytes longer (399 against 383), which also moves every branch to the end.
+// MiniMax C (11-11): no new form, no lower score (62); the locked rectangle's pointer and pitch still sit inthe other order, which comes from the locked-rectangle type in the XDK header, which this lane may not edit.
+// MiniMax C (11-11): no new form, no lower score (62); the locked rectangle's pointer and pitch still sit in the other order, which comes from the locked-rectangle type in the XDK header, which this lane may not edit.
+// MiniMax R (11-10): no new form, no lower score (62); the locked rectangle's frame slots still sit four bytes lower than retail's, the flag is still set in a register where retail sets it in memory, and the row counter and the surface pointer still sit four bytes lower.
+// MiniMax I (11-10): no new form, no lower score (62); the locked rectangle's frame slots still sit four bytes lower than retail's, the flag is still set in a register where retail sets it in memory, and the row counter and the surface pointer still sit four bytes lower.
+// MiniMax E (11-09): forms tried, none lower: the locked rectangle used directly (63) and the
+// row kept as an offset with the pointer read again in every row (67, and the same with the
+// pointer form); our frame slots for the locked rectangle still sit four bytes lower than
+// retail's, so the pointer and the pitch swap places.
+// MiniMax C (11-06): no new form, no lower score - reading the rectangle's fields straight off the
+// rectangle instead of through the pointer scores 63; retail keeps the pointer in the lower slot and
+// the pitch above it, our build keeps them the other way round, and that field order comes from the
+// locked-rectangle type in the XDK header, which this lane may not edit.
 // MiniMax D (11-05): no new form, no lower score - retail ORs the flag into the locked rectangle in
 // memory and rebuilds each row from a running pointer; seven new source shapes all score worse (the
 // pointer's row offset 61, the rectangle used directly 63, the components in retail's order 82), and
 // the pointer's slot stays above the pitch slot in every one of them.
+// MiniMax I (11-15): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10] and ORs the 0xf0000000 flag into the pointer in memory, where this build keeps the pitch at [esp+0xc], the pointer at [esp+0x10] and sets the flag in a register; the locked rectangle's field order comes from the XDK's own layout.
 // score 62 (was 62): this round's fields read straight off the locked rectangle (63) and the row
 // kept as an offset instead of a pointer (67) both score worse; the rectangle still sits four
 // bytes lower than retail's and the pitch slot stays below the pointer slot.
+// score 62 (was 62): retail's locked rectangle keeps the pointer at [esp+0xc] and the pitch at
+// [esp+0x10] and sets the 0xf0000000 flag in memory at the pointer, ours keeps the pitch at
+// [esp+0xc] and the pointer at [esp+0x10] and sets the flag in a register; the row counter and
+// the surface pointer sit four bytes lower than retail's (at [esp+0x10] and [esp+0x14]), and the
+// description is at [esp+0x24] in both.
 // score 62 (was 62): this round found no gain - our frame slots for the locked rectangle sit four bytes
 // lower than retail's, and retail builds each row from a running pointer while we recompute it from
 // the row base.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10] where this build has the pitch first, and that field order comes from the XDK's D3DLOCKED_RECT, which this lane may not change; this build also holds pBits in a register and sets the flag there where retail sets it in memory.
+// MiniMax D (11-15): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc]
+// and its pitch at [esp+0x10] where this build has the pitch first (the locked-rectangle type in the XDK header fixes
+// that order), and retail still sets the flag in memory while this build holds the pointer in a register.
+// MiniMax R (11-16): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10] where this build has the pitch first (the locked-rectangle type in the XDK header fixes that order), and retail still sets the flag in memory while this build holds the pointer in a register; using the locked rectangle directly instead of through the pointer to it measures 63, so the pointer form stands; retail's own call is the XDK's D3D::PixelJar::FindSurfaceWithinTexture with five out-pointers (the pointer and the pitch plus three more), so retail passed separate locals rather than the locked rectangle, and calling that way measures 127 here (the three extra locals widen the frame and the compiler hoists the pointer load out of the row loop, which is where retail reloads it); the XDK's D3D::PixelJar::LockSurface, whose parameters are exactly the game's pointer, pitch and width, is not among the linked library members, so it cannot be inlined here, and it measures 104.
+// MiniMax R (11-16): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10] where this build has the pitch first (the locked-rectangle type in the XDK header fixes that order), and retail still sets the flag in memory while this build holds the pointer in a register; using the locked rectangle directly instead of through the pointer to it measures 63, so the pointer form stands.
+// MiniMax S (11-16): no new form, no lower score (62): retail still keeps the locked rectangle's pointer at [esp+0xc] and its pitch at [esp+0x10]
+// where this build has the pitch first (the locked-rectangle type in the XDK header fixes that order), and retail still sets the 0xf0000000 flag
+// in memory while this build holds the pointer in a register; reading the fields straight off the locked rectangle measures 63, so the pointer
+// form stands.
 // score 62 (was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
 // so the surface pointer and the LockRect arguments are stored at other offsets; we hold pBits in a
 // register and set the flag there, where retail sets it in memory and keeps the pointer in the frame;
 // our loop hoists the left edge and counts the destination pointer up, where retail loads the left
 // edge from the global in every row and adds the pitch to the destination pointer.
+// MiniMax B (11-13): no new form, no lower score (62): retail keeps the locked pBits in memory where ours holds it in a register, and the XDK's D3DLOCKED_RECT has Pitch before pBits while retail has pBits first.
+// MiniMax G (11-13): no new form, no lower score (62): retail's locked rectangle keeps pBits below Pitch,
+// while the XDK's D3DLOCKED_RECT has Pitch first, so the inlined lock's slot order cannot be reproduced from
+// this source; reading the fields straight off the locked rectangle gives 63.
+// MiniMax D (11-17): no new form, no lower score (62): retail keeps the locked pBits in memory where this build holds it in a
+// register, and the XDK's D3DLOCKED_RECT has Pitch before pBits while retail has pBits first, so the inlined lock's slot order
+// cannot be reproduced from this source.
+// b12G (11-17) walk against retail, fast build on r846: every test, sense and field matches (13d90-13dbb: left, top,
+// right <= 640, bottom <= 480 with jl/jl/jg/jg; 13e4b or+je; 13e7b jle; 13e95 jle on the width), and no statement is
+// missing; the 16 bytes are code shape. Retail's row loop is the strength-reduced form of index source: top * pitch
+// once (13e81 imul), then per row the left edge from the global (13e99), pBits from the frame (13ea4), a guard on the
+// width before the pixel pointer, and ebp += pitch / ebx += width (13ef6, 13ef8). Measured: that form written as
+// `((dword *)(bits + (top + y) * Pitch))[left + x] = ...` with `source[y * width + x]` compiles to retail's row loop
+// (lea edx,[ebp+eax*4]; add edx,pBits; both adds) but scores 135 (419 bytes); with a running row_offset and
+// `source += width` it scores 76 (401), and an explicit `if (width > 0)` 136 - not kept, the original body is 62.
+// What stays: this build forwards the OR'd pBits into a register and a 4-byte temp (frame 0x38, pBits in edi, surface
+// spilled elsewhere), retail ORs in memory (13e4b) and reloads it each row with the surface in edi (13eea). Also
+// tried, no gain: volatile locked rectangle (126, 150), volatile OR cast (98), `*(dword *)&pBits |=` and a
+// (byte *)rect + 4 spelling (same as plain: the compiler sees through them), a byte *bits local (118).
 // @retail 0x13d80
 void function_13d80()
 {
@@ -3238,6 +3830,34 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax E (11-16): no new form, no lower score (2): the call to 0x15a60 still sets ecx before eax where retail sets eax before ecx, and that order comes from the callee's register homes in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax D (11-14): no new form, no lower score (2): the whole difference is still the setup of the call to 0x15a60,
+// where retail loads 9 into eax before it zeroes ecx and this build zeroes ecx first; that callee's register homes are
+// fixed in src/unknown_0158f0.cpp, which this lane may not edit, so the order is reported here rather than changed.
+// MiniMax E (11-14): no new form, no lower score (2): retail's callee 0x15a60 reads the format from AX, the usage index
+// from ECX and the out pointer from EBX, the same homes as here, and the two setups hold the same values in the same
+// registers; retail emits the format's load before the usage index's zeroing and this build emits them the other way
+// round. The plain check gives the same 2, so it is not an artefact of the reduced image, and the order is the callee's
+// to decide - its source lives in src/unknown_0158f0.cpp, which this lane may not edit. This round: the format through
+// a local and the result assigned after its declaration both keep the order, and the permuter's 8 tries found no
+// better variant.
+// MiniMax B (11-13): no new form, no lower score (2): the setup of the call to 0x15a60 still zeroes ECX after it loads 9 into EAX here, retail does the reverse; that register home belongs to the callee 0x15a60, which lives in another file.
+// MiniMax G (11-13): no new form tried this round, no lower score: the whole difference is still the 0x15a60 call's
+// setup, where retail loads 9 into eax before it zeroes ecx and we zero ecx first; the callee 0x15a60 and its
+// parameter home live in src/unknown_0158f0.cpp, which this lane may not edit, so the setup stays as it is. The
+// reduced check builds this body differently from the plain one (425 bytes against retail's 441 there), so the plain
+// build is the judge of this function.
+// MiniMax H (11-12): no new form, no lower score (2): the whole difference is still the 0x15a60 call's setup, where retail loads 9 into eax before zeroing ecx and we zero ecx first; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax H (11-11): no new form, no lower score (2): the whole difference is still the 0x15a60 call's setup, where retail loads 9 into eax before zeroing ecx and we zero ecx first; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit, and the reduced image builds this body differently, so the full check is the judge here.
+// MiniMax I (11-11): no new form, no lower score (2): the whole difference is still the 0x15a60 call's setup, which retail orders eax before ecx and we order ecx before eax; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax D (11-11): no new form, no lower score (2): the three texture helpers 0x158f0, 0x159b0 and 0x15a60 each score 24 in src/unknown_0158f0.cpp, so the 0x15a60 call's setup order is that callee's to decide.
+// MiniMax S (11-10): no new form, no lower score (2): the whole difference is the 0x15a60 call's setup, where retail loads 9 into eax before zeroing ecx and we zero ecx first; that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax A (11-10): no new form, no lower score (2): the body is unchanged at 441 bytes, as
+// retail's; the whole difference is the 0x15a60 call's setup, which retail orders eax before ecx and
+// we order ecx before eax.
+// MiniMax E (11-10): no new form, no lower score: the 0x15a60 call's registers are set ecx then
+// eax here and eax then ecx in retail, and the callee's parameter home lives in another file.
+// MiniMax R (11-10): no new form, no lower score (2): the whole difference is the 0x15a60 call's setup, which retail does eax then ecx and we do ecx then eax; the callee's declaration lives in src/unknown_0158f0.cpp, so its parameter order is reported here rather than changed.
 // MiniMax G (11-05): no new form, no lower score; the two constants of the 0x15a60 call keep the callee's order, so the setup still zeroes ecx before it loads 9 into eax.
 // MiniMax H (11-04): no new form, no lower score; the callee 0x15a60 takes its first argument in ecx in retail and in eax here, and that callee lives in another file.
 // MiniMax D (11-01): the setup's order follows the callee's parameter home in
@@ -3245,9 +3865,40 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // MiniMax D (11-01): no new form, no lower score.
 // MiniMax A (11-03): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (2): the whole difference is still the
+// 0x15a60 call's setup, whose parameter home is fixed in src/unknown_0158f0.cpp, a file this lane may not edit.
+// MiniMax H (11-13): no new form, no lower score (2); the setup of the call to 0x15a60 zeroes ECX after it loads 9 into EAX here, retail does the reverse.
+// MiniMax S (11-14): no new form, no lower score (2): the whole gap sits in one call's setup, and the
+// argument order there follows the callee's declaration in another file, so nothing in this file steers
+// it; the two texture calls before it already match.
+// MiniMax D (11-14, run 90): no new form, no lower score (2): the setup of the call to 0x15a60 still zeroes ecx
+// after this build loads 9 into eax where retail zeroes it first; the callee at 0x15a60 lives in
+// src/unknown_0158f0.cpp and homes its arguments differently, so the difference cannot be moved from this file;
+// re-measured at 2 (441 bytes, as retail's). BLOCKED-BY the callee.
+// MiniMax R (11-15): no new form, no lower score (2): the call to 0x15a60 still zeroes ecx before it loads 9 into eax where retail loads 9 first; the register homes of that call come from the callee's declaration in src/unknown_0158f0.cpp, which this lane may not edit.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
+// MiniMax D (11-06): no new form, no lower score: the callee at 0x15a60 takes its first argument
+// before the third one is cleared, and that callee is defined in src/unknown_0158f0.cpp, so its
+// parameter order is reported here rather than changed.
+// MiniMax E (11-08): no new form, no lower score: the 0x15a60 call's registers are set ecx then eax here and eax then ecx in retail, and the callee's body in another file fixes that order.
+// MiniMax E (11-09): no new form, no lower score: the 0x15a60 call's registers are set ecx then eax here and eax then ecx in retail, and the callee's parameter order lives in another file.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 2 (441 bytes, as retail's); the whole difference is the 0x15a60 call's setup, which retail orders eax before ecx and we order ecx before eax, and that callee's parameter home is fixed in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax A (11-13): no new form tried this round, no lower score (2): the call to 0x15a60 still zeroes ECX
+// after it loads 9 into EAX here and retail does the reverse; the caller emits the callee's register homes in
+// reverse declaration order (checked on 0x158f0, 0x159b0 and 0x15a60), so retail's callee declares usage_index
+// before format and ours declares format first: the fix belongs to src/unknown_0158f0.cpp, which is not this
+// lane's file: BLOCKED-BY 0x15a60.
+// MiniMax C (11-15): no new form, no lower score (2): the reduced check has to list 0x15a60 as well, or the
+// reduced image builds this body differently (425 bytes and 117 against the plain build's 441 and 2).
+// MiniMax S (11-15): no new form, no lower score (2): the whole gap is still the one call's setup, where retail
+// loads 9 into eax before it zeroes ecx and this build zeroes ecx first; the argument order follows the callee's
+// declaration in src/unknown_0158f0.cpp, which this lane may not edit.
+// MiniMax C (11-16): no new form, no lower score (2): the second call's two register setups still come in the opposite order (this build
+// MiniMax C (11-16): sets ecx before eax, retail sets eax before ecx), and that order follows the callee's register homes, which 0x15a60's
+// MiniMax C (11-16): body in src/unknown_0158f0.cpp decides.
+// MiniMax R (11-17): no new form, no lower score (2): the second call's two register setups still come in the opposite order (this build sets ecx before eax, retail sets eax before ecx), and that order follows the callee's register homes, which 0x15a60's body in src/unknown_0158f0.cpp decides; a permutation run this round found nothing (2).
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
@@ -3349,7 +4000,26 @@ void __stdcall function_1e930(long opaque)
 }
 
 bool g_55e6bc;
+// MiniMax S (11-14): no new form, no lower score (17): the far clip plane is still loaded into xmm1 after the near store where retail loads it into xmm2 before the near multiply, and the middle products of three of the four columns still load the row-relative factor into the register where retail loads the fixed one; reading the near and the far plane into a local of their own reaches 10, but that form reads each value once and so is kept only for a byte match, and the two factors of the near-plane product change nothing in the code.
+// MiniMax D (11-14): no new form, no lower score (17): this round measured the depth-clip block and the matrix loop against retail. The far clip plane is still loaded into xmm1 after the near store where retail loads it into xmm2 before the near multiply: the near factor in a local of its own gives 133 (the multiply becomes a register-register mul), the far plane in a local gives 18 (its load is hoisted to the function entry above the scale branch) and both planes in locals gives 18 as well, while swapping the two factors of the near-plane product changes nothing. The middle products of three of the four columns still load the row-relative factor into the register where retail loads the fixed one, and that split does not follow the source order here, so it cannot be reached by swapping the operands. The permuter (600 s) found no variant below its own baseline.
+// MiniMax C (11-11): no new form, no lower score (76 with this file's other addresses, 17 on its own); the far plane is still loaded after the near-plane multiply and the three row products are still summed in a rotated order, and the inlined depth-clip call in this image pushes the segment size and its half where retail pushes only the half.
+// MiniMax D (11-10): no new form, no lower score; the body is unchanged at 87 measured on its own (587 bytes),
+// but in a reduced image that holds other addresses as well it is 127 at 571 bytes, so the score of this function
+// depends on what else is checked beside it.
+// MiniMax S (11-09): no new form, no lower score (87): retail keeps the near-plane product at the
+// source position with the depth-clip global folded into the multiply, ours sinks the product into
+// the inlined call and keeps the global in a register of its own; the six near-plane spellings
+// tried this round all score 87, and the matrix loop's row base, cursor and counter still sit in
+// different registers from retail's.
+// MiniMax D (11-09): no new form, no lower score (87); retail still sums the three products of each
+// output row in the source order while this build sums them rotated with one operand swapped, and retail
+// still loads the far plane before the near-plane multiply while this build multiplies first.
+// MiniMax A (11-06, run 52): no new form, no lower score (87) - retail sums the three products in
+// source order and pops esi after the matrix loop, ours sums them rotated and pops esi early.
 
+// MiniMax E (11-16): no new form, no lower score (17): the near and far plane values still load in the other order, and MSVC canonicalises the multiply's operands, so the source order does not reach the three products.
+// MiniMax C (11-15): no new form, no lower score (17): the far clip plane is still loaded after the near-plane multiply here and into xmm2 before it in retail, and three of the four middle products still load the row-relative factor where retail loads the fixed one; measured this round, swapping the two factors of a product leaves the code unchanged, the three products written as one expression score 25, and the near plane's factor swapped leaves 17, so the operand choice is not the source's to make; the last test split into two nested tests measures 17 as well, and a permuter run with annealing (900 s) left the body at 17, its best variant holding the constant 4 in a local, which measures 19 here and is a form the rules do not allow.
+// MiniMax B (11-13): no new form, no lower score (17): the far clip plane is still loaded after the near-plane multiply here and into xmm2 before it in retail, and three of the four middle products still load the row-relative factor where retail loads the fixed one.
 // MiniMax D (11-05): no new form, no lower score - retail sums the three products in source order and pops esi after the matrix loop, ours sums them rotated and pops esi early; rotating the terms, an accumulator and the near-plane spelling all score 87.
 // MiniMax H (11-04): no new form, no lower score; the output stores written through an index give
 // 143, 144, 143 and 145, and the near-plane block in six orders gives 119, 109, 93, 87, 131 and 117
@@ -3357,36 +4027,141 @@ bool g_55e6bc;
 // MiniMax H (11-03): no new form, no lower score; retail keeps the projection base in ecx, the row counter in edi and the row base in esi, where ours uses one cursor in ecx and the counter in edx, and retail folds the depth-clip global into the multiply where ours keeps it in a register.
 // MiniMax E (11-01): index-based output stores score 143 and a separate near factor ties 87;
 // no new form, no lower score.
-// score 87 (was 87): retail keeps the projection base in ECX and the row counter in EDI and splits
+// MiniMax C (11-06): no new form, no lower score - the near-plane product still folds the global into
+// the multiply only in retail, and the three matrix products are still summed in a rotated order with esi
+// popped early; the source forms tried this round scored 117, 109 and 87, and a later sweep of the
+// near-plane as a matrix-shaped local (150), the same with a row base and an advancing cursor (the body
+// grew to 1307 bytes) and the near-plane product with the global first (119) scored no better, so the
+// body stands as it was.
+// MiniMax E (11-10): no new form, no lower score (87 alone, 127 with this file's other addresses); the near
+// plane folded into one product with the global (114), the far plane declared first (122) and a row base with
+// constant indices (951) all score worse, and the row's three products are still summed in a rotated order.
+// MiniMax H (11-12): no new form, no lower score (17): retail still loads the far clip plane into xmm2 before the near-plane multiply while this build loads it after the near store, and retail still loads the fixed factor of the middle product of three of the four columns into the register where this build loads the row-relative factor.
+// MiniMax H (11-13): no new form, no lower score (17); the far clip plane is still loaded after the near-plane multiply here and before it into xmm2 in retail, and the three middle products still load the row-relative factor where retail loads the fixed one.
+// MiniMax D (11-14, run 90): no new form, no lower score (17): the far clip plane is still loaded after the
+// near-plane multiply here and into xmm2 before it in retail, and the middle products of three of the four columns
+// still load the row-relative factor where retail loads the fixed one; eleven variants were measured this round (the
+// far plane and the near plane each read into a local, the factor selected into a local, the products' operands
+// swapped): all give 17 or worse, and the only form that reached 10 reads each plane into a local used once, which
+// is a match-only form the coordinator rejected; the body stands at 17 (587 bytes, as retail's).
+// MiniMax D (11-15): no new form, no lower score (17): retail still loads the far clip plane into xmm2 from before the
+// near-plane multiply where this build loads it after, and the middle products of three of the four columns still load
+// the row-relative factor where retail loads the fixed one; a run of the source permuter over this body (30 tries) found
+// nothing below 17.
+// MiniMax I (11-15): no new form, no lower score (17): the far clip plane is still loaded after the near-plane multiply here and into xmm2 before it in retail, and three of the four middle products still load the row-relative factor where retail loads the fixed one; a permuter run (600 s, --anneal) reached 8 only by exchanging the two clip-plane arguments and by a local holding the constant 4, so it was reverted (retail's own code stores the scaled near plane in the first plane slot).
+// MiniMax I (11-15): score 10 (was 17): the near and far planes are each read into a local of
+// their own before the depth-clip call, so the far plane's load lands in xmm2 at the branch join
+// where retail takes it and both plane stores match retail's; what still differs is that retail
+// loads the far plane just before the near-plane multiply and this build loads it just after it,
+// and four of the eight products load their operands the other way round (the middle products of
+// the first, second and fourth columns and the third product of the fourth column); swapping the
+// operands of those four products in the source leaves the code unchanged, so the order of a
+// product's two factors does not follow the source, and the far plane's load only lands before
+// the near-plane multiply if the near factor is split into a local of its own, which the rules
+// do not allow.
+// score 10 (was 87): the matrix base, the row base, the advancing cursor and the row counter sit
+// in the registers retail uses, each row's three products are summed in the source order, and the
+// near and far planes are now computed into locals of their own, so the far plane's load lands at
+// the branch join where retail takes it; what is left is that retail loads the far plane just
+// before the near-plane multiply and this build loads it just after, and four products whose
+// operands this build loads the other way round.
+// sit in the registers retail uses, and each row's three products are summed in the source order;
+// what is left is the far plane's load, which retail takes before the near-plane multiply into
+// xmm2 and ours takes afterwards into xmm1, and three products whose operands this build loads
+// the other way round.
+// MiniMax B (11-10): the projection matrix is now a local of its own, so the base lands in ECX
+// and the varying row pointer in EAX, the output is written through a row base and an advancing
+// cursor as retail does, each row's three products are summed through an accumulator so the sum
+// keeps the source order, the near plane is multiplied with the global at the call and the far
+// plane is passed as it stands: 87 -> 17, plain and fast alike.
 // the output into a row base (ESI) and an advancing cursor (EDX); ours uses one cursor in ECX, the
 // counter in EDX, and multiplies the near plane in a register where retail folds the global into
 // the multiply.
+// MiniMax E (11-09): no new form, no lower score (87); the order around the bounds check still differs:
+// retail multiplies the near plane before it reads the buffer's begin and end and writes the three shared
+// render globals (the near plane, the far plane and the flag word) after the check, where ours multiplies
+// after the compare and writes them before it.
+// MiniMax B (11-11): no new form, no lower score (17); retail keeps the far clip plane in xmm2 from before the
+// near-plane multiply while this build loads it after the near store, and retail loads the fixed factor of the
+// middle product of three of the four columns into the register while this build always loads the row-relative
+// factor there: swapping those products' operands, giving each column an accumulator of its own and moving the
+// scale into the selecting ternary all leave the score at 17 or worse.
+// MiniMax B (11-11): no new form, no lower score (17); the depth-clip arguments swapped score 10 but hand the
+// device the wrong plane (the inlined call stores its first argument in the lower plane register, as retail's own
+// stores show), so it was reverted; a local for the far plane hoists its load to the function entry (18), and the
+// three products stay as they are because this build keeps the higher-addressed factor in the register whatever
+// order the source uses (the swapped row scores the same 17, one row written as a single expression 27).
+// MiniMax B (11-11): no new form, no lower score (17); the operand order of a product does not come from the
+// source here: this build loads the row-relative factor first however the product is written (the first column's
+// middle product written with the fixed factor first scores the same 17), so retail's three products that load the
+// fixed factor first cannot be reached by swapping the operands; what still differs is that retail keeps the far
+// clip plane in xmm2 from before the near-plane multiply while this build loads it after the near store, and
+// retail loads the fixed factor of the middle product of three of the four columns into the register.
+// MiniMax B (11-11): the plain build gives 17 (587 bytes, the same length as retail); a reduced image that
+// holds this round's other nine functions as well builds this function differently (76 differences, 573
+// bytes), because link-time inlining changes with the set of functions in the image, so a fast measurement
+// of this function is only meaningful in an image that holds it alone.
+// MiniMax E (11-11), NOT kept (coordinator 11-11): 17 -> 10 only from the near and far planes each read into a local used once before the depth-clip call (match-only form); body at 17.
+// MiniMax A (11-12): no new form, no lower score (17); the far clip plane read into a local before the call is hoisted
+// to the function entry (18), the near and far planes each read into a local used once scores 10 but is a match-only
+// form, and selecting the depth-clip factor into a local before the call scores 133; the near plane in a local of its
+// own keeps the far load late (17), the depth-clip call after the projection selection gives 122 (573 bytes), and the
+// middle products written with pointer arithmetic (19, 25) move other columns' operands instead of this one's. What
+// still differs is that retail loads the far clip plane into xmm2 from before the near-plane multiply while this build
+// loads it after the near store, and that retail loads the fixed factor of the middle product of three of the four
+// columns into the register while this build always loads the row-relative factor there. Reading the fixed factor
+// through a second pointer name for the matrix gives 23, the product parenthesised gives 21, and the loop counter as
+// int, unsigned or short changes nothing; a toy compile with the SDK's compiler shows that the order of the two
+// factors of a product does not follow the source, so the three products retail loads the other way round are not
+// reachable from the source order.
+// MiniMax A (11-13): no new form tried this round, no lower score (17): the far clip plane is still loaded
+// after the near-plane multiply here and into xmm2 before it in retail, and three of the four middle products
+// still load the row-relative factor where retail loads the fixed one.
+// MiniMax I (11-16), NOT kept: 10 (was 17) with the depth clip planes in two one-use locals (near_plane = (scaled
+// ? 0.15f : 1.0f) * g_485adc; far_plane = g_485ae0) passed to D3DDevice_SetDepthClipPlanes; one-use locals are
+// kept only with a match.
+// MiniMax R (11-16): no new form, no lower score (17): retail still loads the far clip plane into xmm2 from before the
+// near-plane multiply where this build loads it after the near store, and retail still loads the fixed factor of the
+// middle product of three of the four columns into the register where this build loads the row-relative factor; a toy
+// compile with the SDK's compiler shows that the order of the two factors of a product does not follow the source, so
+// those three products are not reachable from the source order.
+// MiniMax C (11-16): no new form, no lower score (17): this round wrote every product with the constant operand first (matrix[3] *
+// MiniMax C (11-16): matrix[38 + i] and the rest) and the bytes did not move, so MSVC canonicalises the multiply's operands and keeps the
+// MiniMax C (11-16): row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still
+// MiniMax C (11-16): differ.
+// MiniMax R (11-17): no new form, no lower score (17): writing every product with the constant operand first does not move the bytes, so MSVC canonicalises the multiply's operands and keeps the row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still differ.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
     real constants[16];
-    real near_plane = scaled ? 0.15f : 1.0f;
-    real far_plane = g_485ae0;
-    near_plane *= g_485adc;
-    D3DDevice_SetDepthClipPlanes(near_plane, far_plane,
+    D3DDevice_SetDepthClipPlanes((scaled ? 0.15f : 1.0f) * g_485adc, g_485ae0,
         D3DSDCP_SET_VERTEXPROGRAM_PLANES);
-    if (!projection)
-        projection = g_48568c;
+    real const *matrix = projection ? projection : g_48568c;
     if (!output)
         output = constants;
     real scale = 16777215.0f / g_48565c;
+    real *row = output;
     real *next = output;
     for (long i = 0; i < 4; ++i)
     {
-        *next++ = (projection[38 + i] * projection[3] + projection[1] * projection[30 + i]
-            + projection[34 + i] * projection[2]) * scale;
-        *next++ = (projection[38 + i] * projection[6] + projection[30 + i] * projection[4]
-            + projection[34 + i] * projection[5]) * scale;
-        *next++ = (projection[38 + i] * projection[9] + projection[8] * projection[34 + i]
-            + projection[30 + i] * projection[7]) * scale;
-        *next++ = (projection[38 + i] * projection[12] + projection[11] * projection[34 + i]
-            + projection[30 + i] * projection[10]) * scale;
-        next[-1] += projection[42 + i] * scale;
+        real value = matrix[38 + i] * matrix[3];
+        value += matrix[30 + i] * matrix[1];
+        value += matrix[34 + i] * matrix[2];
+        *row = value * scale;
+        value = matrix[38 + i] * matrix[6];
+        value += matrix[30 + i] * matrix[4];
+        value += matrix[34 + i] * matrix[5];
+        *++next = value * scale;
+        value = matrix[38 + i] * matrix[9];
+        value += matrix[8] * matrix[34 + i];
+        value += matrix[30 + i] * matrix[7];
+        *++next = value * scale;
+        value = matrix[38 + i] * matrix[12];
+        value += matrix[11] * matrix[34 + i];
+        value += matrix[30 + i] * matrix[10];
+        *++next = value * scale;
+        row = ++next;
+        next[-1] += matrix[42 + i] * scale;
     }
     if (scaled)
         for (long j = 0; j < 16; ++j)
@@ -3469,6 +4244,32 @@ bool function_14600()
     return result;
 }
 
+// MiniMax E (11-16): no new form, no lower score (32): the XDK's device-call inline still hoists the flag byte into al before the two divisions, so this build takes the width difference in dx and the width quotient in xmm0 where retail takes them in ax and xmm2, and retail's four shader programs still come from tables this project does not have.
+// MiniMax D (11-14): no new form, no lower score (32): the XDK's device-call inline still hoists the flag byte into al
+// before the two divisions, so this build takes the width difference in dx and the width quotient in xmm0 where retail
+// takes them in ax and xmm2, and retail's four shader programs still come from tables this project does not have.
+// MiniMax E (11-14): no new form, no lower score (32 in this lane's measurement set; the earlier note records 40 under
+// its own set): the XDK's device-call inline still takes the width difference in dx and the width quotient in xmm0 where
+// retail takes them in ax and xmm2, and retail's four shader programs still come from tables this project does not have.
+// MiniMax B (11-13): no new form, no lower score (32): the XDK's D3DDevice_SetVertexShaderConstant hoists its flag byte into al, so this build takes the width difference in dx and the width quotient in xmm0 where retail takes them in ax and xmm2, and retail's four shader programs still come from tables this project does not have.
+// MiniMax H (11-12): no new form, no lower score (32): retail still takes the width difference in ax and the height difference in ecx and turns both into floats before the divisions where we take the width difference in dx and turn them into floats after the first division; retail's four shader programs also come from tables this project does not have.
+// MiniMax H (11-11): no new form, no lower score (32): retail takes the width difference in ax and the height difference in ecx and turns both into floats before the divisions, ours takes the width difference in dx and turns the two into floats after the first division; retail's four shader programs also come from tables this project does not have, and an XDK inline helper hoists the flag byte into al here where retail tests it in memory.
+// MiniMax I (11-11): no new form, no lower score (32): retail divides the width's quotient into xmm2 and multiplies it into xmm0 where we divide into xmm0 and multiply into xmm3, and the flag byte is still tested in memory in retail where an XDK inline helper hoists it into al here, so ax is taken.
+// MiniMax D (11-11): no new form, no lower score (32).
+// MiniMax S (11-10): no new form, no lower score (32): retail divides the width's quotient into xmm2 and multiplies it into xmm0 where we divide into xmm0 and multiply into xmm3, and retail tests the flag byte in memory where an XDK inline helper hoists it into al, so ax is taken.
+// MiniMax A (11-10): no new form, no lower score (32): retail writes the render-state cache slots
+// and pushes the D3D push-buffer commands itself, copies the twenty constants to the shadow at
+// 0x408248 unless bit 4 of the device's flag byte at 0x404fe8 is set, and builds a draw structure
+// with its own command word that this project does not have.
+// MiniMax E (11-10): no new form, no lower score: retail keeps the width quotient in xmm2 and the
+// scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other
+// stack slots.
+// MiniMax R (11-10): no new form, no lower score (32): the ratio block's order and the two divisions agree with retail, but the XDK's D3DDevice_SetVertexShaderConstant inline hoists the flag byte into al before the divisions here while retail tests that byte in memory, so ax is taken, and retail's four shader programs come from tables this project does not have.
+// MiniMax R (11-09): score 32 (was 40): the ratio block now runs in retail's order - the width
+// ratio is computed first, the -1.0f is taken off it before the double, and the height ratio is
+// divided only after that; what still differs is that the width quotient lands in xmm0 where
+// retail divides into xmm2, the -1.0f lands in xmm2 where retail keeps it in xmm3, and the flag
+// test reads al here and the flag byte in memory in retail.
 // MiniMax H (11-05): no new form, no lower score; retail's ratio block keeps the width difference
 // in EDX and the height difference in EAX and reuses xmm2 for the height quotient, ours uses the
 // other pair of registers and xmm0, so the two blocks stay different whatever the source order.
@@ -3479,9 +4280,44 @@ bool function_14600()
 // before the width; the gain is under the keep bar, so the original body stands.
 // score 40 (was 40): this round found no gain - retail computes the width ratio first and keeps it in
 // xmm2; declaring x before y gives 74 and reordering the constants gives 78, so the original order stands.
-// score 40 (was 73): retail loads the width pair first and only then the
+// MiniMax G (11-12): no new form tried this round, no lower score (32): the width quotient still lands in xmm0
+// where retail keeps it in xmm2, and retail's four shader programs come from tables this project does not have.
+// MiniMax S (11-14): no new form, no lower score (32): the four shader programs come from tables the
+// project does not have, and the hoisting of the flag byte happens inside an XDK header rather than in
+// this file, so the rest of the gap is not reachable from here.
+// MiniMax D (11-14, run 90): no new form, no lower score (32): retail loads the width pair first and only then the
+// height ratio, while this build computes the quotient into xmm0 and loads the height later; what is left of the
+// difference sits in the callee at 0x221810, whose frame this file cannot change; re-measured at 32 (612 bytes, as
+// retail's). BLOCKED-BY 0x221810.
+// MiniMax R (11-15): no new form, no lower score (32): the XDK's device-call inline still hoists the flag byte into al before the two divisions, so this build takes the width difference in dx and the width quotient in xmm0 where retail takes them in ax and xmm2, and retail's four shader programs come from tables this project does not have.
+// score 32 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
+// MiniMax D (11-06): no new form, no lower score.
+// MiniMax E (11-08): no new form, no lower score: retail keeps the width quotient in xmm2 and the scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other stack slots.
+// MiniMax E (11-09): no new form, no lower score: retail keeps the width quotient in xmm2 and the scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other stack slots.
+// MiniMax D (11-09): the score-32 body still differs in two places: retail takes the width's
+// difference in ax and keeps the width's quotient in xmm0, while we take the difference in dx and
+// keep the quotient in xmm2; the cause is the XDK's D3DDevice_SetVertexShaderConstant inline, which
+// hoists the flag byte into al before the two divisions in our build, while retail tests that byte
+// in memory, so ax is taken.
+// MiniMax D (11-09): score 32 (was 40): the width's ratio comes first, the third constant is stored
+// before the first and the height's ratio is declared after the fourth constant; the length is now
+// retail's 612 bytes and the two divisions run in retail's order.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 40 (613 bytes against retail's 612); the width and height differences are read as thirty-two bits in retail and the quotient and the scaled value live in xmm2 and xmm3, while ours reads them another way and uses xmm4 and xmm0; six forms of the ratio block (the reciprocals together, the height first, the signed dimensions first, the height's end first, the constant array's initializer and the width first) all score worse or tie.
+// MiniMax B (11-13): no new form, no lower score (32): the XDK's D3DDevice_SetVertexShaderConstant hoists its flag byte into al, so our width difference lands in dx and the width quotient in xmm0 where retail takes them in ax and xmm2; an explicit float cast, the ratio written out at each use and the ratio kept in a separate float local all give the same 32, both ratios declared first give 78, the zero-th constant before the third gives 75, and the permuter cannot search this function (the reduced image scores it 170 against 32).
+// MiniMax G (11-13): no new form, no lower score (32): the XDK's D3DDevice_SetVertexShaderConstant hoists its
+// flag byte into al, so this build takes the width difference in dx and the width quotient in xmm0 where retail
+// takes them in ax and xmm2; the forms in the note below all give the same 32.
+// MiniMax C (11-15): no new form, no lower score (32).
+// MiniMax S (11-15): no new form, no lower score (32): the ratio of the two counters is still divided into xmm0
+// where retail divides into xmm2 and takes the second ratio's constant early, and the inlined vertex-constant helper
+// still loads its flag into al before the test where retail tests the memory directly; that helper is in an XDK
+// header this lane may not edit.
+// MiniMax C (11-16): no new form, no lower score (32): the XDK inline still hoists its flag byte into al, which takes the width difference
+// MiniMax C (11-16): into ax where retail keeps it in dx, and retail's four shader programs still come from tables this project does not
+// MiniMax C (11-16): have.
+// MiniMax R (11-17): no new form, no lower score (32): the XDK inline still hoists its flag byte into al, which takes the width difference into ax where retail keeps it in dx, and retail's four shader programs still come from tables this project does not have.
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -3493,13 +4329,13 @@ void function_1eb00()
     function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x6c), 0);
     function_1c710(g_51f0f0);
     real constants[20];
-    real y = 1.0f / (short)(g_48564c - g_485648);
     real x = 1.0f / (short)(g_48564e - g_48564a);
+    constants[3] = -1.0f - x;
     constants[0] = x * 2.0f;
     constants[1] = 0.0f;
     constants[2] = 0.0f;
-    constants[3] = -1.0f - x;
     constants[4] = 0.0f;
+    real y = 1.0f / (short)(g_48564c - g_485648);
     constants[5] = y * -2.0f;
     constants[6] = 0.0f;
     constants[7] = y + 1.0f;
@@ -3525,17 +4361,90 @@ void function_1eb00()
     g_4b6298 = 0;
     g_4b6294 = true;
 }
+// MiniMax C (11-16): no new form, no lower score (79): retail's four shader programs still come from tables and caches this project does not have, so the body stays 25 bytes shorter than retail's 763 and the ratio of the two counters is still divided into xmm3 where retail divides into xmm2.
+// MiniMax S (11-15): no new form, no lower score (79).
+// MiniMax H (11-11): no new form, no lower score (79); the body is still 25 bytes shorter than retail's, the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and retail's body builds four shader programs from tables and caches that this project does not have, so the difference is a knowledge difference rather than a local form.
+// MiniMax A (11-11): no new form, no lower score (79); the body is still 25 bytes shorter than retail's (738
+// against 763) and the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail
+// divides into xmm2 and multiplies into xmm0; retail's body builds four shader programs from tables and caches that
+// this project does not have, so the difference is a knowledge difference rather than a local form. The original
+// body is kept.
+// MiniMax R (11-09): no new form, no lower score; the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and retail's body still builds four shader programs from tables this project does not have.
+// MiniMax R (11-09): no new form, no lower score; the width quotient is still divided into xmm3 where
+// retail divides into xmm2 and multiplies into xmm0.
+// MiniMax A (11-06, run 52): no new form, no lower score (79) - retail copies the first five constants
+// into its own locals in a different order.
+// MiniMax A (11-12): no new form, no lower score (79): retail body builds four shader programs from tables and caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference rather than a local form and the body stands.
 
+// MiniMax D (11-17): score 64 (was 79): the shader program is now bound with the XDK's
+// D3DDevice_SetPixelShaderProgram(&g_484f68) instead of the call to this file's function_1ccf0; the XDK's
+// inline expands into retail's three stores at the device's +0x924 and its call to 0x3fa3d0, and the memset
+// of g_484f68 is gone because retail does not clear the descriptor before writing its eight fields, so the
+// body is retail's 763 bytes. What still differs: the two ratios are still divided into xmm3 and
+// multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, because the XDK's
+// D3DDevice_SetVertexShaderConstant inline hoists its flag byte into al before the divisions here while
+// retail tests that byte in memory, and the width and height differences are still converted in a
+// different order.
+// MiniMax R (11-16): no new form, no lower score (100 in this round's nine-address set, 79 in the single-function set): the body is 736 bytes against retail's 763; the first real difference is at +0xa2 and the rest are the vertex loops' register choices (the half-word count shifts in EAX where retail shifts ECX, and the word and dword reads move between AX, EDX and ECX), with retail's four shader programs still coming from tables this project does not have.
+// MiniMax E (11-14): no new form, no lower score (79): retail's body still builds four shader programs from tables and
+// caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
+// into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference.
+// MiniMax H (11-13): no new form, no lower score (79).
+// MiniMax H (11-12): no new form, no lower score (79); retail's body builds four shader programs from tables and
+// caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
+// into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference rather
+// than a local form and the body stands.
+// MiniMax G (11-11): no new form, no lower score (79); retail's body builds four shader programs from tables and
+// caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and
+// multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge
+// difference rather than a local form and the body stands.
+// MiniMax C (11-11): no new form, no lower score (79); the ratio of the two counters is still computed with the other operand order, and retail's body builds four shader programs from tables this project does not have.
+// MiniMax R (11-10): no new form, no lower score (79); the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and retail's body builds four shader programs from tables this project does not have.
+// MiniMax I (11-10): no new form, no lower score (79); the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and retail's body builds four shader programs from tables this project does not have.
+// MiniMax E (11-09): no new form, no lower score; retail's body builds four shader programs
+// from tables and caches that this project does not have, and the ratio of the two counters is
+// still computed with the other operand order.
 // MiniMax D (11-05): no new form, no lower score - retail copies the first five constants into a
 // different global than the SDK helper writes and builds the pixel shader program through a device
 // field, so the difference sits in the D3D helper, not in this body.
+// MiniMax C (11-06): no new form, no lower score - retail still builds four shader programs from tables
+// and caches that this project does not have, so the difference is a knowledge difference, not a local
+// form; the ratio of the two counters is still computed with the other operand order.
 // MiniMax H (11-03): no new form, no lower score; SDK SetPixelShaderProgram inline: 763 bytes but merges the flag's 1 with the render-state argument into ebx (155), cross-module helper 155, helper call 167.
 // MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
 // tables and caches that this project does not have.
-// score 79 (was 79): this round found no gain - retail's body builds four shader programs from tables and
+// MiniMax I (11-14): no new form, no lower score (79): replacing the zeroed 24-float array's initializer with an explicit memset scores 119 (the body shrinks to 732 bytes against retail's 763), so the initializer stays; the rest of the difference is retail's four shader programs, which are built from tables this project does not have.
+// MiniMax R (11-15): no new form, no lower score (79): retail's four shader programs still come from tables and caches this project does not have, and the body is still 25 bytes shorter than retail's 763.
+// MiniMax R (11-16): no new form, no lower score (79): the two counters' ratio is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, and the body is still 25 bytes shorter than retail's 763.
+// score 136 (was 64): this round found no gain - retail's body builds four shader programs from tables and
 // caches that this project does not have, so the difference is a knowledge difference, not a local form.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax D (11-14): no new form, no lower score (79): the body is still 25 bytes shorter than retail's 763, the
+// ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and
+// multiplies into xmm0, and retail still builds four shader programs from tables this project does not have.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
 // ours divides into xmm3 and multiplies xmm4, retail divides into xmm2 and multiplies xmm0.
+// MiniMax B (11-13): no new form, no lower score (79): retail's body builds four shader programs from tables and caches
+// that this project does not have, so the difference is a knowledge difference and not a local form; the ratio of the two
+// counters is still computed with the other operand order.
+// MiniMax E (11-15): no new form, no lower score (79): retail builds four shader programs from tables this project does not have, so the difference is a knowledge gap rather than a source shape.
+// MiniMax S (11-15): no new form, no lower score (79): retail's four shader programs still come from tables and
+// caches this project does not have, so the body stays 25 bytes shorter than retail's 763, and the ratio of the two
+// counters is still divided into xmm3 where retail divides into xmm2.
+// b11A (11-17) walk against retail, fast build on r843: the render-state values, the 0x485b48 reset, the 20-float block
+// and both 0x3f7330 uploads (0x367c0, 0x367e9) agree; the inline shader bind stays. Found: (1) retail clears the whole
+// descriptor before its eight field stores: 0x367ee-0x367fa is `xor eax,eax; mov ecx,0x3c; mov edi,0x484f68; rep stosd`
+// (240 bytes), so the "no clear" reading above was wrong and ours left stale fields of g_484f68: memset restored (a
+// behaviour fix). (2) extra[24] is zeroed by one 24-dword `rep stosd` at [esp+0x5c] (0x36710-0x3671d), no leading
+// store: `memset(extra, 0, sizeof(extra))` compiles to it, the `{ 0.0f }` initializer gives movss + 23 dwords. (3)
+// Retail's evaluation order is x, then -1-x and x*2 (0x366e3, 0x366ea), then y (0x36701): y is declared after
+// constants[4], which puts x in xmm2 and the early stores where retail has them. Still differing: the two int
+// differences (retail loads both y operands into ecx/edx at 0x366bc/0x366c2 and subtracts in registers; ours folds the
+// second as a memory operand) and, new with the memset, a hoisted `mov ebx, 1` (six uses of 1) where retail uses esi
+// and immediates, which shifts every stack offset by 4: score 136 (was 64, which lacked the clear). Dropping one use of
+// 1 removes the ebx hoist (probe only). Best match-only recipe: the g_484f68 memset before the 86 upload (89, no ebx,
+// but not retail's order). Also tried (136): a local pointer to g_484f68, memset(.., 0xf0), PSCombinerCount stored
+// last, short/long/word locals for the int differences.
 // @retail 0x36580
 void function_36580()
 {
@@ -3549,14 +4458,15 @@ void function_36580()
     function_0222d0(D3DRS_ZBIAS, 0);
     function_0222d0(D3DRS_CULLMODE, 0);
     real x = 1.0f / (short)(g_48564e - g_48564a);
-    real y = 1.0f / (short)(g_48564c - g_485648);
-    real extra[24] = { 0.0f };
     real constants[20];
     constants[0] = x * 2.0f;
     constants[1] = 0.0f;
     constants[2] = 0.0f;
     constants[3] = -1.0f - x;
     constants[4] = 0.0f;
+    real y = 1.0f / (short)(g_48564c - g_485648);
+    real extra[24];
+    memset(extra, 0, sizeof(extra));
     constants[5] = y * -2.0f;
     constants[6] = 0.0f;
     constants[7] = y + 1.0f;
@@ -3584,7 +4494,7 @@ void function_36580()
     g_484f68.PSAlphaInputs[0] = 0x20140000;
     g_484f68.PSFinalCombinerInputsABCD = 0xc;
     g_484f68.PSFinalCombinerInputsEFG = 0x1c00;
-    function_1ccf0(&g_484f68);
+    D3DDevice_SetPixelShaderProgram(&g_484f68);
     function_1cc60(0);
 }
 
@@ -3760,8 +4670,47 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax E (11-16): no new form tried this round, no lower score (285): the frame is still 0x38 bytes against retail's 0x34 because
+// retail reuses the position's slots for the corner coordinates, the definition's flag byte is still copied into bl where retail tests
+// the byte where it lies, and the 1.0 constant still takes xmm0 where retail holds it in xmm3.
+// MiniMax R (11-16): no new form, no lower score (285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
+// position's slots for the corner coordinates and keeps the area in the dead argument's home, so every slot above the position sits
+// four bytes higher; the 1.0 constant still takes xmm0 where retail holds it in xmm3, and the three byte-to-float conversions still
+// start at xmm1 where retail starts them at xmm0.
+// MiniMax E (11-15): no new form, no lower score (285): the frame is still 0x38 bytes against retail's 0x34 because retail reuses the position's slots for the corner coordinates, and the 1.0 constant still takes xmm0 where retail holds it in xmm3.
+// MiniMax S (11-15): no new form, no lower score (285).
+// MiniMax H (11-13): no new form, no lower score (285): the permuter ran on this function for 600 s over the reduced
+// image and left the baseline where it was (270 differing instructions in both the reduced and the full image), so no
+// permutation of the body beats it; the frame is still 0x38 bytes against retail's 0x34 (retail reuses the position's
+// slots for the corner coordinates), the 1.0 constant still takes xmm0 where retail holds it in xmm3, and the three
+// byte-to-float conversions still start at xmm1 where retail starts them at xmm0.
+// MiniMax G (11-13): no new form, no lower score (285): the diff re-read this round puts the first difference at the 1.0 constant's register (XMM0 here, XMM3 in retail) and shows our frame slots above retail's from the definition pointer on, with the masked tag kept in EBX in retail and no copy of it here, so the body stands.
+// MiniMax B (11-11): no new form, no lower score (285); retail's frame is 0x34 bytes and ours 0x38 because retail
+// reuses the position's stack slots for the corner coordinates and keeps the area in the dead argument's home, so
+// every slot above the position sits four bytes higher, and the 1.0 constant takes xmm0 here and xmm3 in retail.
+// MiniMax I (11-11): score 272 (was 285); the four corner coordinates now share the position's slots and the frame is 0x34 bytes as in retail, and the three offsets are computed as three scaled values with the 1.0 subtracted afterwards, which drops thirteen bytes of code; the 1.0 constant still takes XMM0 where retail holds it in XMM3, the three conversions still take XMM1..XMM3 where retail takes XMM0..XMM2, and the definition pointer is still loaded once where retail loads it twice.
+// MiniMax E (11-11, run 80): no new form, no lower score (285): the frame is still 0x38 against retail's 0x34 (retail reuses the position's slots for the corner coordinates and keeps the area in the dead argument's home), the 1.0 constant still takes XMM0 where retail holds it in XMM3, and the three byte-to-float conversions still start at XMM1 here and at XMM0 in retail; the corner slots in retail's order and the four products of the 0x480a0 body in retail's order were tried by earlier rounds and score 285 and 213.
+// MiniMax E (11-10, run 73): no new form, no lower score (285); retail's frame is 0x34 bytes and ours 0x38 because retail reuses the position's slots for the corner coordinates and keeps the area in the dead argument's home, so every slot above the position sits four bytes higher, and the 1.0 constant still takes XMM0 where retail holds it in XMM3.
+// MiniMax D (11-11): no new form, no lower score (285): the frame is still 0x38 against retail's 0x34, because retail's frame holds thirteen dwords (the two extents, the position's three, the bottom corner, and the screen that shares the sizes' seven) while ours holds twelve and homes the bottom corner in the dead argument slot instead, so every slot sits four bytes higher; the three byte-to-float conversions still take XMM1..XMM3 where retail takes XMM0..XMM2; reusing the position's slots for three of the corners with the bottom corner separate, the same with the bottom corner at the outer scope, and the same with the area declared ahead of the bottom corner all score 287; the bottom corner declared ahead of the other three corners scores 285 again, the three offsets computed after the scale instead of before it scores 299, and the four products of the 0x480a0 body computed in retail's order (the width's cosine product first) scores 213 instead of 125.
+// MiniMax G (11-11): no new form, no lower score (285): retail's frame is 0x34 bytes and ours 0x38 (the area's slot), the 1.0 constant takes xmm0 here and xmm3 in retail, retail keeps the definition pointer in ebx and reloads it for the second flag test where we keep one lookup, and the three byte-to-float conversions start at xmm0 in retail and xmm1 here; returning the area directly and dropping the result local scores 286 and is reverted.
+// MiniMax S (11-10): no new form, no lower score (285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the position's slots for the corner coordinates and keeps the area in the dead argument's home, ours gives the corners slots of their own and holds the area in a local, so every slot above the position sits four bytes higher.
+// MiniMax D (11-10): no new form, no lower score (285): the 1.0 constant still takes XMM0 where retail holds it in XMM3, and naming it as a constant local compiles the same; both switch arms now add to x, then z, then y, as retail's stores do.
+// MiniMax D (11-10): no new form, no lower score (285): the 1.0 constant still takes XMM0 where retail holds it in XMM3, and naming it as a constant local compiles the same.
 // MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
 // MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
+// MiniMax H (11-12): no new form, no lower score (285): the frame is still 0x38 bytes against retail's 0x34, the 1.0 constant still takes xmm0 where retail holds it in xmm3, and the three byte-to-float conversions still start at xmm1 where retail starts them at xmm0.
+// MiniMax B (11-13): no new form, no lower score (285): retail loads its two constants (2/255 into xmm4, 1.0 into
+// xmm3) before the three byte conversions and keeps the conversions in xmm0..xmm2, so the constant and the
+// conversion registers are the compiler's own order and not the source's; the frame is still 0x38 against retail's
+// 0x34 because retail reuses the position's slots for the four corners.
+// MiniMax I (11-14): no new form, no lower score (285): the frame is still 0x38 against retail's 0x34, because retail reuses the position's slots for the four corners, and the definition's flag byte is still copied into a register here where retail tests it where it lies.
+// MiniMax D (11-14): no new form, no lower score (285): retail's frame is still 0x34 bytes against our 0x38, the
+// definition's flag byte is still copied into bl where retail tests the byte where it lies, and the position's
+// stack slots are still ours alone where retail reuses them for the corner coordinates.
+// MiniMax S (11-16): no new form, no lower score (285): the frame is still 0x38 against retail's 0x34 because retail reuses the position's stack slots
+// for the four corners, the definition's flag byte is still copied into bl where retail tests the byte where it lies, and the 1.0f constant still
+// rides in xmm0 where retail holds it in xmm3; the permuter (annealing, 433 s, 37 tries, the first run over this body)
+// found no variant below 285.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
@@ -3773,7 +4722,19 @@ extern long g_485898;
 // merges the two loads; retail's size table shares the slots of the screen values. Tried: if/else for scale (288, layout
 // matches retail's diamond), the 0x40 test on its own lookup with the definition taken inside the if (294), the table
 // cached in a local (301), position copied after the scale test (304). None lower than 285, none kept.
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 285 -> 272 from three one-use scaled locals, the scale as a ternary re-reading the definition, and the four corners in a bounds[4] array (stack-home steer); body at 285.
+// MiniMax A (11-12): no new form, no lower score (285); this build frames 0x38 bytes against retail's 0x34 because
+// retail reuses the position's stack slots for the corner coordinates while this build gives the corners slots of
+// their own, so every slot above the position sits four bytes higher, and the 1.0 constant still takes xmm0 where
+// retail holds it in xmm3.
+// MiniMax C (11-15): no new form, no lower score (285).
+// MiniMax D (11-15): no new form, no lower score (285): the frame is 0x38 against retail's 0x34, the 1.0f constant rides in xmm0 here and in xmm3 there, and the first home sits at +0x18 where retail has +0x10.
+// MiniMax D (11-17): no new form, no lower score (285): the frame is still 0x38 against retail's 0x34 because retail reuses the
+// position's stack slots for the corner coordinates, the definition's flag byte is still copied into bl where retail tests the
+// byte in place, and the 1.0f constant still rides in xmm0 where retail holds it in xmm3; the forms tried before (a shared
+// scaled local, a ternary scale, the four corners in an array) are under the keep bar or rebuild the body.
 // @retail 0x2e540
+// MiniMax C (11-17): no new form, no lower score (285): the frame is 0x38 bytes against retail's 0x34 because retail reuses the position's slots for the corner coordinates, the definition's flag byte is copied into bl where retail tests the byte where it lies, and the 1.0 constant takes xmm0 where retail holds it in xmm3; the array-shaped corner form that reached 272 is a banned stack-home steer, so the body stands.
 long __stdcall function_2e540(s_slot *slot, byte *data)
 {
     long result = 0;
@@ -3801,14 +4762,14 @@ long __stdcall function_2e540(s_slot *slot, byte *data)
             {
             real negative_radius = -radius;
             position.x += negative_radius * g_4b9dac.i;
-            position.y += negative_radius * g_4b9dac.j;
             position.z += negative_radius * g_4b9dac.k;
+            position.y += negative_radius * g_4b9dac.j;
             }
             break;
         case 1:
             position.x += offset.i * (radius * 1.4142135381698608f);
-            position.y += offset.j * (radius * 1.4142135381698608f);
             position.z += offset.k * (radius * 1.4142135381698608f);
+            position.y += offset.j * (radius * 1.4142135381698608f);
             break;
         }
         real screen[4], extent[2];
@@ -3882,6 +4843,19 @@ void function_2dd30()
 short function_1358c0(short format);
 void *function_135a30(s_type_7ba8e9 const *bitmap, short mipmap_index, short x, short y);
 
+// score 191 (was 195), fast build (b6M walk, 11-06): the surface read for front_value is the depth-stencil
+// surface (retail 0x13fad loads device + 0x1a08 and 0x13fb3 tests it; it was GetRenderTarget, device + 0x1a04),
+// and the explicit BlockUntilNotBusy call is gone (retail has the one call at 0x14049, made by the inlined
+// LockRect). The right and bottom limits are compared as 32-bit sums (0x13f44 add, 0x13f52 cmp) before the
+// short result is formed; the soft display filter is read as a byte (0x1411d, 0x14169, 0x14175); the bitmap's
+// format is read again before the pitch call (0x1407f) instead of kept in a local. The 64-bit frame counter
+// at the end matches. Still differing: retail copies the screen rectangle to the frame as two dwords (0x13f37,
+// 0x13f46) and reads the left and right edges from the registers but the top and bottom from the copy
+// (0x13f4a, 0x13f60); ours keeps all four in registers, and the frame slots after it sit four bytes apart.
+// Tried (fast build): the old 16-bit sum compare (192), the rectangle read straight from the global (196),
+// a named rectangle type for the copy (198), the global's two dwords as an s_buffer_pair (199, casts the
+// global's address), swapping the two filter stores (194), keeping the format local (193). The (byte) cast on
+// front_value stays: retail tests a byte (0x13f9f), but the callers declare (long, long), so the type is not changed.
 // @retail 0x13f10
 void function_13f10(long bitmap_value, long front_value)
 {
@@ -3890,31 +4864,29 @@ void function_13f10(long bitmap_value, long front_value)
     {
         short_rect_pair rectangle_pair;
         rectangle_pair.a = g_485a8a.a;
-        short right = (short)(rectangle_pair.a.v1 + *(short *)(bitmap + 4));
-        if (rectangle_pair.a.v3 <= right) right = rectangle_pair.a.v3;
-        short bottom = (short)(rectangle_pair.a.v0 + *(short *)(bitmap + 6));
-        if (rectangle_pair.a.v2 <= bottom) bottom = rectangle_pair.a.v2;
+        long right_limit = rectangle_pair.a.v1 + *(short *)(bitmap + 4);
+        short right = rectangle_pair.a.v3 <= right_limit ? rectangle_pair.a.v3 : right_limit;
+        long bottom_limit = rectangle_pair.a.v0 + *(short *)(bitmap + 6);
+        short bottom = rectangle_pair.a.v2 <= bottom_limit ? rectangle_pair.a.v2 : bottom_limit;
         long width = right - rectangle_pair.a.v1;
         long height = bottom - rectangle_pair.a.v0;
-        short format = *(short *)(bitmap + 0xc);
-        if ((format == 11 || format == 10) && *(short *)(bitmap + 0x14) == 0)
+        if ((*(short *)(bitmap + 0xc) == 11 || *(short *)(bitmap + 0xc) == 10) && *(short *)(bitmap + 0x14) == 0)
         {
             D3DSurface *surface;
             if ((byte)front_value != 0)
-                D3DDevice::GetRenderTarget(&surface);
+                D3DDevice_GetDepthStencilSurface(&surface);
             else
                 D3DDevice::GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &surface);
             D3DSURFACE_DESC description;
             D3DSurface_GetDesc(surface, &description);
             if (description.Size == description.Width * description.Height * 4)
             {
-                D3DResource_BlockUntilNotBusy(surface);
                 D3DLOCKED_RECT locked;
                 D3DSurface_LockRect(surface, &locked, NULL, 0);
                 byte *source = (byte *)((dword)locked.pBits | 0xf0000000);
                 if (source)
                 {
-                    long size = function_1358c0(format) * width / 8;
+                    long size = function_1358c0(*(short *)(bitmap + 0xc)) * width / 8;
                     for (long y = 0; y < height; ++y)
                     {
                         memcpy(function_135a30((s_type_7ba8e9 *)bitmap, 0, 0, (short)y), source, size);
@@ -3929,11 +4901,11 @@ void function_13f10(long bitmap_value, long front_value)
     D3DDevice_SetBackBufferScale(1.0f, 1.0f);
     D3DDevice_Swap(0);
     D3DDevice_SetBackBufferScale(1.0f, 1.0f);
-    if (g_467008 != g_485acc || g_46700c != g_485ad0)
+    if (g_467008 != g_485acc || g_46700c != (byte)g_485ad0)
     {
         D3DDevice_SetFlickerFilter(g_485acc);
-        D3DDevice_SetSoftDisplayFilter(g_485ad0);
-        g_46700c = g_485ad0;
+        D3DDevice_SetSoftDisplayFilter((byte)g_485ad0);
+        g_46700c = (byte)g_485ad0;
         g_467008 = g_485acc;
     }
     ++g_485aa0;
@@ -4007,8 +4979,35 @@ long function_184000(long index, long bit);
 // MiniMax D (11-05): the permuter run on this function ended with a candidate that only swaps two
 // argument lists and adds a volatile qualifier, so it is not keepable; no new form, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
-// transform lookup and the outlined helper's argument order still differ from retail's.
+// MiniMax E (11-06): the bias term is now tested as a byte and masked again for the value, and the
+// transform lookup writes the three floats separately in each of its two paths, as retail does. With
+// the volatile `out` read also dropped this is 301, but the caller 0x44ac0 then loses its match
+// (0 -> 58), so the read stays.
+// b6T walk (11-06, against retail 0x45ce0-0x460c2, fast build, base r727 845b9213e): every block was compared
+// with retail and the logic agrees: field offsets, conditions, callees and arguments (1e280 gets the part and
+// the plane flag, 184000 the instance and bit), the three float stores of each transform path and the
+// bias term. No behaviour difference was found. Spelling changes that moved the score (fast build):
+// the instance test as TEST_FIELD_BIT((unknown00 >> 12) & 1), as retail's shr 0xc / test dl,1 (303 -> 299);
+// the definition read straight from each of the three paths instead of through a section local, retail
+// 0x45d49 and 0x45d7a (299 -> 275); the body inside `if (definition)` with one `return false` after it, so the
+// null path joins the common tail as at 0x45d82 -> 0x45f0f (275 -> 271); 0x1e280's third parameter as `short`
+// (271 -> 239): retail loads the caller's `part` slot as a whole dword (0x45d88, again at 0x45e2e) and pushes it
+// unextended at 0x45f24 for both calls, where a `long` parameter needs a movsx, and 0x1e280 only uses the low
+// word (0x1e291-0x1e29d); 0x1e280 still matches and has no other caller.
+// MiniMax C (11-17): score 239 (was 239): no lower score; our definition pointer is still allocated in eax where
+// retail uses ecx, so al is live at the null test and retail's `xor al, al` there and its dead `mov cl, 1` /
+// `mov byte [esp+0xf], cl` are missing, which shifts every later instruction; retail also keeps the visibility
+// byte raw in cl where we store a setne result, and keeps the tag record in edx across the table_entry_data call
+// where we keep it in ebx and compute the section after the call. Tried: bool and raw-call forms of
+// function_184000 (316), the visibility byte assigned in both branches (241), the early-return null path (275),
+// the call before the section load (239) and five spellings of the definition load (239).
+// score 239 (was 303): our body is 15 bytes shorter than retail's (982 against 997); retail keeps `visible` in
+// cl and the stack slot (0x45da9, 0x45e32-0x45e36) where we store a setne result, returns cl for a failed
+// visibility test (0x460be) where we return a constant, and keeps the tag record in edx across the
+// table_entry_data call (0x45e7d) where we use ebx. Tried: `bool function_184000` (no setne) 277,
+// `byte visible` 315, `bool result = false` with one `return result` 313 (these three at 271), the commuted material sum,
+// every order of the four terms of the plane sum (all the same score), dropping the volatile `out` read 323
+// (callers 0x44ac0 and 0x44c90 lose their match: 0 -> 58 and 53).
 // @retail 0x45ce0
 bool function_45ce0(short index, byte *out, short part, short transform_index)
 {
@@ -4024,82 +5023,92 @@ bool function_45ce0(short index, byte *out, short part, short transform_index)
     else
     {
         byte *structure = (byte *)g_4e0348;
-        byte *section;
-        if (!(entry->unknown00 & 0x1000))
-            section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
+        if (!TEST_FIELD_BIT((entry->unknown00 >> 12) & 1))
+            definition = *(byte **)(*(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0 + 0x50);
         else
         {
             byte *instance = *(byte **)(structure + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
-            section = *(byte **)(structure + 0x13c) + *(short *)(instance + 0x34) * 0xc8;
+            definition = *(byte **)(*(byte **)(structure + 0x13c) + *(short *)(instance + 0x34) * 0xc8 + 0x50);
         }
-        definition = *(byte **)(section + 0x50);
     }
-    if (!definition) return false;
-    byte *record = *(byte **)(definition + 4) + part * 0x48;
-    *(real *)(out + 0x10) = 0.0f;
-    *(real *)(out + 0x28) = *(real *)(record + 0x2c) > 0.0f ? *(real *)(record + 0x2c) : 1.0f;
-    byte *material;
-    bool visible = true;
-    if (entry->tag != NONE)
-        material = *(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x64) + *(short *)(record + 4) * 32;
-    else
+    if (definition)
     {
-        material = *(byte **)((byte *)g_4e0348 + 0xa8) + *(short *)(record + 4) * 32;
-        long instance = (entry->flags >> 18) & 0x7ff;
-        if (instance == 0x7ff) instance = NONE;
-        long bit = material[0x1c] == 0xff ? NONE : material[0x1c];
-        visible = (byte)function_184000(instance, bit) != 0;
-    }
-    *(long *)out = *(long *)(material + 0xc);
-    out[0x14] = false;
-    if (!visible) return visible;
-    if (entry->tag != NONE)
-    {
-        long section_index = (entry->flags >> 9) & 0x1ff;
-        if (section_index == 0xff) return false;
-        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
-        byte *section = *(byte **)(tag + 0x28) + section_index * 0x5c;
-        byte *transforms = (byte *)table_entry_data(entry->unknown08);
-        short selected = *(short *)(section + 0x2c);
-        byte *transform;
-        if (selected != NONE)
+        byte *record = *(byte **)(definition + 4) + part * 0x48;
+        *(real *)(out + 0x10) = 0.0f;
+        *(real *)(out + 0x28) = *(real *)(record + 0x2c) > 0.0f ? *(real *)(record + 0x2c) : 1.0f;
+        byte *material;
+        bool visible = true;
+        if (entry->tag != NONE)
+            material = *(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x64) + *(short *)(record + 4) * 32;
+        else
         {
-            if (tag[4] & 4) selected = ((short *)(transforms + 4))[transform_index * 2];
-            transform = transforms + 0x44 + selected * 0x30;
+            material = *(byte **)((byte *)g_4e0348 + 0xa8) + *(short *)(record + 4) * 32;
+            long instance = (entry->flags >> 18) & 0x7ff;
+            if (instance == 0x7ff) instance = NONE;
+            long bit = material[0x1c] == 0xff ? NONE : material[0x1c];
+            visible = (byte)function_184000(instance, bit) != 0;
         }
-        else transform = transforms + 0x44;
-        *(real *)(out + 4) = *(real *)(transform + 0xc);
-        *(real *)(out + 8) = *(real *)(transform + 0x1c);
-        *(real *)(out + 0xc) = *(real *)(transform + 0x2c);
-        long bias = entry->unknown10[11] & 15;
-        if (bias) *(real *)(out + 0x10) = (bias - 5) * 0.001f;
-    }
-    else if (entry->unknown00 & 0x1000)
-    {
-        byte *instance = *(byte **)((byte *)g_4e0348 + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
-        void *plane = function_1e280(*(short *)(instance + 0x34), true, part);
-        out[0x14] = plane != NULL;
-        if (plane) memcpy(out + 0x18, plane, 16);
-        *(point3f *)(out + 4) = *(point3f *)(instance + 0x3c);
-        if (out[0x14])
+        *(long *)out = *(long *)(material + 0xc);
+        out[0x14] = false;
+        if (!visible) return visible;
+        if (entry->tag != NONE)
         {
-            real x = *(real *)(out + 0x18), y = *(real *)(out + 0x1c), z = *(real *)(out + 0x20);
-            *(real *)(out + 0x18) = *(real *)(instance + 0x1c) * z + *(real *)(instance + 0x10) * y + *(real *)(instance + 4) * x;
-            *(real *)(out + 0x1c) = *(real *)(instance + 0x20) * z + *(real *)(instance + 0x14) * y + *(real *)(instance + 8) * x;
-            *(real *)(out + 0x20) = *(real *)(instance + 0x24) * z + *(real *)(instance + 0x18) * y + *(real *)(instance + 0xc) * x;
-            *(real *)(out + 0x24) = *(real *)(out + 0x24) * *(real *)instance +
-                *(real *)(instance + 0x30) * *(real *)(out + 0x20) + *(real *)(instance + 0x2c) * *(real *)(out + 0x1c) +
-                *(real *)(instance + 0x28) * *(real *)(out + 0x18);
+            long section_index = (entry->flags >> 9) & 0x1ff;
+            if (section_index == 0xff) return false;
+            byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
+            byte *section = *(byte **)(tag + 0x28) + section_index * 0x5c;
+            byte *transforms = (byte *)table_entry_data(entry->unknown08);
+            short selected = *(short *)(section + 0x2c);
+            if (selected != NONE)
+            {
+                byte *transform;
+                if (tag[4] & 4)
+                {
+                    selected = ((short *)(transforms + 4))[transform_index * 2];
+                    transform = transforms + 0x44 + selected * 0x30;
+                }
+                else transform = transforms + 0x44 + selected * 0x30;
+                *(real *)(out + 4) = *(real *)(transform + 0xc);
+                *(real *)(out + 8) = *(real *)(transform + 0x1c);
+                *(real *)(out + 0xc) = *(real *)(transform + 0x2c);
+            }
+            else
+            {
+                *(real *)(out + 4) = *(real *)(transforms + 0x50);
+                *(real *)(out + 8) = *(real *)(transforms + 0x60);
+                *(real *)(out + 0xc) = *(real *)(transforms + 0x70);
+            }
+            if (entry->unknown10[11] & 15)
+                *(real *)(out + 0x10) = ((entry->unknown10[11] & 15) - 5) * 0.001f;
         }
+        else if (entry->unknown00 & 0x1000)
+        {
+            byte *instance = *(byte **)((byte *)g_4e0348 + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58;
+            void *plane = function_1e280(*(short *)(instance + 0x34), true, part);
+            out[0x14] = plane != NULL;
+            if (plane) memcpy(out + 0x18, plane, 16);
+            *(point3f *)(out + 4) = *(point3f *)(instance + 0x3c);
+            if (out[0x14])
+            {
+                real x = *(real *)(out + 0x18), y = *(real *)(out + 0x1c), z = *(real *)(out + 0x20);
+                *(real *)(out + 0x18) = *(real *)(instance + 0x1c) * z + *(real *)(instance + 0x10) * y + *(real *)(instance + 4) * x;
+                *(real *)(out + 0x1c) = *(real *)(instance + 0x20) * z + *(real *)(instance + 0x14) * y + *(real *)(instance + 8) * x;
+                *(real *)(out + 0x20) = *(real *)(instance + 0x24) * z + *(real *)(instance + 0x18) * y + *(real *)(instance + 0xc) * x;
+                *(real *)(out + 0x24) = *(real *)(out + 0x24) * *(real *)instance +
+                    *(real *)(instance + 0x30) * *(real *)(out + 0x20) + *(real *)(instance + 0x2c) * *(real *)(out + 0x1c) +
+                    *(real *)(instance + 0x28) * *(real *)(out + 0x18);
+            }
+        }
+        else
+        {
+            void *plane = function_1e280((short)((entry->flags >> 9) & 0x1ff), false, part);
+            out[0x14] = plane != NULL;
+            if (plane) memcpy(out + 0x18, plane, 16);
+            *(point3f *)(out + 4) = *(point3f *)(record + 0x10);
+        }
+        return visible;
     }
-    else
-    {
-        void *plane = function_1e280((short)((entry->flags >> 9) & 0x1ff), false, part);
-        out[0x14] = plane != NULL;
-        if (plane) memcpy(out + 0x18, plane, 16);
-        *(point3f *)(out + 4) = *(point3f *)(record + 0x10);
-    }
-    return visible;
+    return false;
 }
 
 
@@ -4230,6 +5239,12 @@ void function_40890(void)
 bool function_48b00(point3f const *point, real radius, real *screen, real *extent);
 void function_1cf50();
 
+// MiniMax I (11-15): no new form, no lower score (199): the permuter's only lower variant still swaps the third
+//   vertex's x and y, which contradicts retail's own stores at 0x48959/0x48964, and the declaration order of the
+//   four products was measured in all 24 orders in an earlier round. What still differs: retail multiplies
+//   ws, wc, hs, hc and reads the sine twice from the parameter slot where this build multiplies hc, wc, ws, hs;
+//   retail keeps the width in xmm5 and the height in xmm2 where this build keeps the cosine in xmm4 and the sine in
+//   xmm3; the body is 1586 bytes against retail's 1601, which moves every internal branch target.
 // Round 2 of #1066: score 199 (was 319): LOGIC WALK against retail found no behaviour
 // difference (clamps and constants 0x45dd40/0x45dbc0, slots 5/2/1/0, the 2f values, x1=screen0+a, y1=screen1-b,
 // x2/y2 from c/d, x3=screen0-a, y3=screen1+b, x4=screen0-c, y4=screen1+d, z/w kept in the dead point/depth slots);
@@ -4281,7 +5296,54 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
         D3DDevice::End();
     }
 }
+// MiniMax I (11-16): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, so the two early skips branch to a near block here and to the end of the body in retail, and the four screen values are loaded in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; the permuter over 300 s made twenty-three tries and never beat its baseline of 121 differing instructions (the check's 125).
+// MiniMax S (11-15): no new form, no lower score (125).
+// MiniMax H (11-14, third pass): no new form, no lower score (199); the longer permuter run was stopped at its time
+//   limit after one variant at 184 on the reduced image, the same score as the variant of the second pass whose x
+//   and y swap contradicts retail's own stores (screen[0]-a in the first float and screen[1]+b in the second at
+//   0x48959/0x48964), so nothing new came out of it and the body stands.
+// MiniMax H (11-14, second pass): no new form, no lower score (199); the four products were re-measured from the
+// compiled side, and this build schedules them after the loads that feed them rather than in the order they are
+// written: the source order ws/wc/hs/hc compiles to wc, ws, hs, hc (306) and the committed hs/hc/wc/ws compiles to
+// hc, wc, ws, hs (199), so the written order does not pin the schedule and the products cannot be forced into
+// retail's ws, wc, hs, hc this way; moving the four products ahead of the calls gives 341 with a 1582-byte body.
+// Retail keeps the sine parameter in memory and folds it into both multiplies (mulss xmm0, [esp+0x48] and
+// mulss xmm2, [esp+0x48]) and holds the width in xmm5 and the height in xmm2, where this build keeps the sine in
+// xmm3 and the cosine in xmm4, so retail's products take one register operand and one memory operand each.
+// Both bodies hold 369 instructions, so retail's fifteen extra bytes are longer encodings (register numbers and
+// displacement sizes) and not more instructions.
+// MiniMax H (11-14): no new form, no lower score (199); all 24 declaration orders of the four products were measured
+// (199 to 306, retail's own order ws/wc/hs/hc gives 306 and the committed hs/hc/wc/ws is the best at 199), so the
+// declaration order is not the lever; naming the four positions instead of repeating the expressions (the V2 form) drops
+// the body to 1439 bytes and scores 462, and the inlined products (V1) score 462 as well, so the body stands.
+// The permuter (17 tries) found one lower-scoring variant, and it swaps the x and y of the third vertex's
+// SetVertexData2f call; retail's own stores put screen[0]-a in the first float and screen[1]+b in the second
+// (0x48959/0x48964), so the swap changes the geometry and was rejected (the variant's other two changes - the &&
+// split into a flag and the 16777215.0f constant in a local - measure 199 on their own).
+// What still differs: retail multiplies ws, wc, hs, hc (keeping wc in a frame slot and reading the sine twice from the
+// parameter slot) while this build multiplies hc, wc, ws, hs, retail computes a before b and this build computes b
+// before a, and retail keeps the width in xmm5 and the height in xmm2 where this build keeps the cosine in xmm4 and
+// the sine in xmm3; the body is 1586 bytes against retail's 1601, which moves every internal branch target.
+// MiniMax H (11-13): no new form, no lower score (125): the four products moved to the head of the block
+// (238), to the head of the block in retail's order (240) and before the block's test (238) all score worse,
+// so the body stands.
+// MiniMax I (11-11): no new form, no lower score (125): the four products taken in retail's order (the width's cosine product first, then the height's cosine, the width's sine and the height's sine) score 213 and grow the body to 1045 bytes, so the body keeps its own order; our body is still five bytes longer than retail's 1027, which is what moves the two early skips' branch targets and every later one.
+// MiniMax A (11-12): no new form, no lower score (125): our body is still five bytes longer than retail 1027, our four products reach the same stack slots in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail xmm6/xmm3/xmm2/xmm7) and another multiply order, and our two early skips branch to a near block where retail branches to the end of the body; naming the four products in retail order scores 213, so the body stands.
 
+// MiniMax H (11-12): no new form, no lower score (125); our body is five bytes longer than retail's 1027, our four
+// products reach the same stack slots in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's
+// xmm6/xmm3/xmm2/xmm7) and another multiply order, and our two early skips branch to a near block where retail
+// branches to the end of the body.
+// MiniMax B (11-11): no new form, no lower score (125); our body is five bytes longer than retail's 1027, our four
+// products reach the same stack slots in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's
+// xmm6/xmm3/xmm2/xmm7) and another multiply order, and our two early skips branch to a near block where retail
+// branches to the end of the body.
+// MiniMax E (11-11, run 80): no new form, no lower score (125): retail multiplies width*cosine, height*cosine, width*sine and height*sine and loads the four screen values in another register order (ours xmm1/xmm3/xmm2/xmm5, retail xmm6/xmm3/xmm2/xmm7), our body is still five bytes longer than retail's 1027 so the two early skips branch to a near block here and to the end of the body in retail, and naming the four products in retail's order scores 213.
+// MiniMax E (11-10, run 73): no new form, no lower score (125); our four products reach the same stack slots in another register order and another multiply order than retail's (ours hc, ws, wc, hs against retail's wc, hc, ws, hs), and our two early skips branch to a near block where retail branches to the end of the body.
+// MiniMax D (11-11): no new form, no lower score (125): the two early skips still branch to a near block here and to the end of the body in retail, and the body is still five bytes longer than retail's 1027; the body's four products taken in retail's order (the width's cosine product first) score 213 instead of 125.
+// MiniMax G (11-11): no new form, no lower score (125): our body is five bytes longer than retail's 1027, so the two early skips branch elsewhere and the four screen values are loaded in another register order (ours xmm1/xmm3/xmm2/xmm5, retail xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies width*cosine, height*cosine, width*sine, height*sine.
+// MiniMax S (11-10): no new form, no lower score (125): the four screen values reach the same slots but in another register order (ours xmm1/xmm3/xmm2/xmm5, retail xmm6/xmm3/xmm2/xmm7), retail multiplies width*cosine, height*cosine, width*sine, height*sine where ours multiplies width*cosine, width*sine, height*cosine, height*sine (the two declaration orders that would match retail's order score 213 and 200), the two early skips branch to a near block here and to the end of the body in retail, our body is five bytes longer than retail's 1027, and the permuter (46 tries, 611 s) found nothing below its own baseline.
+// MiniMax D (11-10): no new form, no lower score (125): the two early skips branch to a near block here and to the end of the body in retail, and our body is five bytes longer than retail's 1027.
 // Round 2 of #1066: score 125 (was 152): LOGIC WALK against retail found no behaviour difference (slots 9/3,
 // the 2s values 0x1/0x10001/0x10000/0, x/y/z/w of the four corners, extent/screen offsets all agree). c and d are
 // computed in retail's block after the (1,1) tex write (0x48297), so they are declared after that call (213 with
@@ -4296,6 +5358,23 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // vertex calls and so draws something else, not kept. MiniMax D (11-01): no new form tried, no lower score.
 // Permuter (25 min on #1066, about 650 variants, on its own rendering that loses the round 2 order): best 142, above
 // this source's 125; nothing kept.
+// MiniMax I (11-14): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, which moves the two early skips' branch targets, and the four screen values are still loaded in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7); taking the four products in retail's machine order (width*cosine, height*cosine, width*sine, height*sine) scores 213 and grows the body to 1045 bytes, and the earlier permuter run over this body found nothing below 142.
+// MiniMax D (11-14): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, so
+// the two early skips branch to a near block here and to the end of the body in retail, and the four screen values
+// are still loaded in another register order (ours xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7).
+// MiniMax R (11-15): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, the two early skips branch to a near block here and to the end of the body in retail, and the four screen values are loaded in another register order.
+// MiniMax R (11-16): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, so
+// the two early skips branch to a near block here and to the end of the body in retail, and the four screen values
+// are loaded in another register and another slot order.
+// MiniMax C (11-17): no new form, no lower score (125, was 125): our body is still five bytes longer than retail's 1027 (one extra screen[] load and a spill reload in the third vertex), the four products and the corner values still take other registers and other spill slots than retail's, and the two early skips still branch to a near block here and to the end of the body in retail.
+// score 125 (was 125): our body is five bytes longer than retail's 1027, so the two early skips branch to a near block
+// here and to the end of the body in retail, and the four screen values are loaded in another register order (ours
+// xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies
+// width*cosine, height*cosine, width*sine and height*sine.
+// MiniMax E (11-15): no new form, no lower score (125): our body is five bytes longer with one extra instruction (a second screen[] load and one more spill reload in the third vertex), the four products sit in other registers and other spill slots than retail's, and retail's own product order (wc, hc, ws, hs) measures 213 with a 1045 byte body.
+// MiniMax S (11-16): no new form, no lower score (125): the four products and the corner values take other
+// registers and other spill slots than retail's, and this body is five bytes longer, so the first difference is
+// a branch target.
 // @retail 0x480a0
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color)
 {
@@ -4409,8 +5488,28 @@ extern dword g_4b8448, g_4b8308, g_4b8450;
 extern dword g_4b82e8, g_4b82f4, g_4b82f8;
 dword g_4b8438, g_4b82e0, g_4b82fc, g_4b82ec;
 void function_48010(real const *color);
+// MiniMax I (11-16): no new form, no lower score (244): the first difference is still at +0xa, where this build saves esi in the prologue and loads the mode into esi later where retail copies the mode parameter into ebp and dispatches on it with a compare chain, and retail keeps six of its eighteen function_0222d0 calls out of line where this build inlines all six; the forms tried (the if/else chain for the modes, the switch with a case 0, all eighteen sites called out of line) measure 244 or worse.
+// MiniMax S (11-15): no new form, no lower score (244).
+// MiniMax H (11-13): no new form, no lower score (244).
+// MiniMax I (11-11): no new form, no lower score (244): retail loads the `mode` parameter into ebp at the entry (`mov ebp, dword ptr [esp + 0x3c]`) and keeps its copy of the flags in esi, while we copy the flags into ebp and read `mode` from the stack where it is first used; the switch on the mode writes its states in the other order.
 
+// MiniMax B (11-11): no new form, no lower score (244); the mode switch rewritten as an if/else-if chain scores 288
+// at 1348 bytes, and a copy of the mode parameter into a local of its own compiles to the same code (244), so retail's
+// prologue copy of the mode into ebp and its out-of-line function_0222d0 calls are still not reproduced.
+// MiniMax E (11-11, run 80): no new form, no lower score (244): the switch on the mode still writes its states in the other order and the case bodies' calls and arguments still differ from the first difference; retail copies the mode parameter into ebp in the prologue and keeps six of its eighteen function_0222d0 calls out of line where we inline all six, and the only lever (inline_depth) may not be added.
+// MiniMax E (11-10, run 73): no new form, no lower score (244); retail copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi where we load the mode later, and retail keeps six of its eighteen function_0222d0 calls out of line (the default arm's four, the blend op and the alpha test off) where we inline all six; the only lever (inline_depth) may not be added.
+// MiniMax D (11-11): no new form, no lower score (244): the switch on the mode still writes its states in the other order and the case bodies' calls still differ from the first difference on.
+// MiniMax G (11-11): no new form, no lower score (244): retail copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi where ours loads the mode later, and retail keeps six of its eighteen function_0222d0 calls out of line (the default arm's four, the blend op and the alpha test off) where ours inlines all six; the only lever (inline_depth) may not be added.
+// MiniMax S (11-10): no new form, no lower score (244): retail copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi where ours loads the mode later, and retail keeps six of its eighteen function_0222d0 calls out of line (the default arm's four, the blend op and the alpha test off) where ours inlines all six, which is most of the remaining score; the only lever (inline_depth) may not be added.
+// MiniMax D (11-10): no new form, no lower score (244).
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax H (11-12): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue and keeps six of its function_0222d0 calls out of line where this build inlines all six, and the switch on the mode still writes its states in the other order.
+// MiniMax I (11-14): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue where this build loads it later, and retail still keeps its function_0222d0 calls out of line where this build inlines all six; that helper's inline-ness is set in another file.
+// MiniMax D (11-14): no new form, no lower score (244): retail still copies the mode parameter into ebp in the
+// prologue where this build loads it later, and retail still keeps six of its function_0222d0 calls out of line
+// where this build inlines all six; that helper's inline-ness is set in another file.
+// MiniMax R (11-15): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue and calls the setter out of line, where this build keeps the mode in esi and inlines the call.
+// MiniMax C (11-17): no new form, no lower score (244, was 244): retail still copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi, where we keep the flag scratch in ebp and load the mode into esi later; retail is still 17 instructions longer and the two drift apart in the mode branch.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
 // retail is also 17 instructions longer than ours, and the two drift apart in the mode branch.
@@ -4426,6 +5525,16 @@ void function_48010(real const *color);
 // at the six calls (288). None below 244, so the source is unchanged.
 // Permuter (25 min on #1066, about 850 variants): 228 only with the cull value stored through a word cast and a
 // word read of a long field; not kept.
+// MiniMax R (11-16): no new form, no lower score (244): the first difference is at +0xa, where this build saves esi
+// in the prologue and retail loads ebp from the argument, and the mode's dispatch stays a jump table here against
+// retail's compare chain.
+// MiniMax A (11-12): no new form, no lower score (244); retail copies the mode parameter into ebp in the prologue and
+// dispatches on it with a compare chain, while this build keeps the flag scratch in ebp and reaches the mode through
+// a jump table, and the forms tried (the if/else chain for the modes, the switch with a case 0, all eighteen sites
+// called out of line) measure 244 or worse.
+// MiniMax S (11-16): no new form, no lower score (244): this build saves esi in the prologue and loads the mode
+// later where retail copies the mode into ebp and dispatches on it with a compare chain, and retail keeps six of
+// its eighteen calls out of line where this build inlines them.
 // @retail 0x47930
 void function_47930(word flags, long format, long mode)
 {
@@ -4610,7 +5719,21 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
     }
 }
 
-// score 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
+#define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
+
+// MiniMax I (11-15): no new form, no lower score (498): the camera flag read out of the reset storage block scores
+//   447, but that read is a cast into the aggregate and is kept only with a match, so the body stands. What still
+//   differs: retail reloads g_4858c8, g_4858c4 and g_4858b8 at every use and keeps the constant 1 in ecx across the
+//   body, where this build hoists those loads out of the again-loop; the body is 1696 bytes against retail's 1700
+//   and the first difference is at +0x1f.
+// MiniMax H (11-14), NOT kept at review (a cast read into the reset storage block is kept only with a match, and it left 0350e0.cpp's extern unresolved; 0x19530 498 -> 447, 0x37a60 529 -> 519 back to main): the camera flag at 0x4858c8 is the first word of the reset storage block, so it is now read
+//   from there (a view of the aggregate, like the shader pointer next to it) and reloaded at every use as retail does;
+//   the separate global is gone and the file that writes it writes the same aggregate word. The body is 1704 bytes
+//   against retail's 1700 and the first difference is at +0x1f. What still differs: g_4858b8 is still a separate
+//   global, so retail's reload of it is missing, and retail keeps the constant 1 in ECX across the body.
+// score 498 (was 585): round 94 put g_4858c4 in the reset storage aggregate (include/reset_storage.h), so it is
+// reloaded after calls as retail does; 1696 bytes against retail's 1700; g_4858c8 and g_4858b8 below remain separate.
+// Earlier 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
 // matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
 // Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
 // does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
@@ -4623,29 +5746,36 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 // hoists those loads out of the again-loop. Diagnostic only (not kept): a file-scope `short *p = &g_4858c8;` plus
 // the same for g_4858c4 and g_4858b8 gives 116 with the old argument and 447 with the fixed one (the layout shift
 // above), so they are members of an address-taken struct in retail, as 0x350e0's note says for g_4858c4.
+// Walk (b4B, statement by statement against retail 0x19530-0x19b67, jump table 0x19b68): all 25 live cases, the two
+// null slots (modes 7, 11: no case; default __assume(0) = unchecked jmp at 0x1954c), the dimension defaults (1x1 start
+// 0x19540-0x19546, 0x0 on a missing surface 0x19b15, 640x480 for case 6 0x19660, 4x4 for case 27 0x19b55), every
+// tag offset (+4 +0xc +0x14 +0x64 +0xd0), the 0x143c0/0x144f0/0x137550 bitmap-index ECX constants (1 or 0) and
+// case 16's in-range test (0x19850-0x19862) agree with retail: no behaviour difference found. Layout-neutral
+// cleanups (fast 612 before and after): the (short) casts on 0x14f60/0x143c0 arguments (their parameters are short),
+// the dead `&stage` / `(void)&param` address-taking and case 16's written-out clamp (now PIN, file-local macro as in
+// 0x167a0's file; same bytes). Tried: recursive call function_19530(18, ...) for the mode 18 re-dispatch 612
+// (same loop as the goto). No new include, helper or double local.
 // @retail 0x19530
 void function_19530(long mode, byte const *context, long stage, long *width, long *height)
 {
-    long const *stage_reference = &stage;
-    (void)&context; (void)&width; (void)&height;
 again:
     *width = 1;
     *height = 1;
     switch (mode)
     {
-    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, *stage_reference, 0.0f); return;
-    case 2: function_14f60(*stage_reference, 1); return;
+    case 1: function_143c0(*(long *)(g_485a80 + 0xc), 0, stage, 0.0f); return;
+    case 2: function_14f60(stage, 1); return;
     case 3:
-        function_14f60(*stage_reference, 1);
+        function_14f60(stage, 1);
         texture_surface_dimensions(1, width, height);
         return;
-    case 4: g_51f3c8[1][*stage_reference] = NULL; return;
+    case 4: g_51f3c8[1][stage] = NULL; return;
     case 5:
-        function_14f60(*stage_reference, (short)g_4858b8);
+        function_14f60(stage, g_4858b8);
         function_01dd60(g_4858b8, width, height);
         return;
     case 6:
-        function_14f60(*stage_reference, 3);
+        function_14f60(stage, 3);
         if (g_4b4b58[3].data && !g_4b4b58[3].flag95)
         {
             *width = g_4b4b58[3].width;
@@ -4653,15 +5783,15 @@ again:
         }
         else { *width = 640; *height = 480; }
         return;
-    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, *stage_reference, 0.0f); return;
+    case 9: function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f); return;
     case 10:
         if (g_4858c8 && g_4858c4)
         {
             if (*(dword *)g_4858c4 & 0x80000) { mode = 18; goto again; }
             if (*(long *)(g_4858c4 + 0xe0) != NONE && !g_485a77)
-                function_14f60(*stage_reference, 13);
+                function_14f60(stage, 13);
             else
-                function_144f0(*stage_reference, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
+                function_144f0(stage, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
         }
         else
         {
@@ -4670,30 +5800,30 @@ again:
             if (tag != NONE)
             {
                 s_type_7ba8e9 *bitmap = function_137550(tag, 1);
-                if (bitmap) function_14390(*stage_reference, bitmap, 0.0f);
+                if (bitmap) function_14390(stage, bitmap, 0.0f);
             }
         }
         return;
     case 12:
-        if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, *stage_reference, 0.0f);
-        else function_144f0(*stage_reference, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
+        if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, stage, 0.0f);
+        else function_144f0(stage, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
         return;
     case 13:
-        function_14f60(*stage_reference, 9);
+        function_14f60(stage, 9);
         texture_surface_dimensions(9, width, height);
         return;
     case 8:
-        function_14f60(*stage_reference, 10);
+        function_14f60(stage, 10);
         texture_surface_dimensions(10, width, height);
         return;
-    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, *stage_reference, 0.0f); return;
-    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, *stage_reference, 0.0f); return;
+    case 14: function_143c0(*(long *)(g_485a80 + 0x14), 0, stage, 0.0f); return;
+    case 15: function_143c0(*(long *)(g_485a80 + 0x14), 1, stage, 0.0f); return;
     case 16:
-        function_143c0(g_4e6978, (short)g_4e697c, *stage_reference, 0.0f);
+        function_143c0(g_4e6978, g_4e697c, stage, 0.0f);
         if (g_4e6978 != NONE)
         {
             byte *definition = g_4e3b44[g_4e6978 & 0xffff].bytes;
-            long clamped = g_4e697c < 0 ? 0 : g_4e697c > *(long *)(definition + 0x44) - 1 ? *(long *)(definition + 0x44) - 1 : g_4e697c;
+            long clamped = PIN(g_4e697c, 0, *(long *)(definition + 0x44) - 1);
             if (clamped == g_4e697c)
             {
                 byte *bitmap = *(byte **)(definition + 0x48) + g_4e697c * 0x74;
@@ -4703,7 +5833,7 @@ again:
         }
         return;
     case 17:
-        function_14f60(*stage_reference, 19);
+        function_14f60(stage, 19);
         texture_surface_dimensions(19, width, height);
         return;
     case 18:
@@ -4712,29 +5842,29 @@ again:
             long surface = function_25960();
             if (surface != NONE)
             {
-                function_14f60(*stage_reference, (short)surface);
+                function_14f60(stage, surface);
                 function_01dd60(surface, width, height);
                 return;
             }
         }
-        function_143c0(*(long *)(g_485a80 + 0x64), 0, *stage_reference, 0.0f);
+        function_143c0(*(long *)(g_485a80 + 0x64), 0, stage, 0.0f);
         return;
-    case 19: function_14f60(*stage_reference, 21); texture_surface_dimensions(21, width, height); return;
-    case 20: function_14f60(*stage_reference, 22); texture_surface_dimensions(22, width, height); return;
-    case 21: function_14f60(*stage_reference, 13); texture_surface_dimensions(13, width, height); return;
-    case 22: function_14f60(*stage_reference, 17); texture_surface_dimensions(17, width, height); return;
-    case 23: function_14f60(*stage_reference, 23); texture_surface_dimensions(23, width, height); return;
+    case 19: function_14f60(stage, 21); texture_surface_dimensions(21, width, height); return;
+    case 20: function_14f60(stage, 22); texture_surface_dimensions(22, width, height); return;
+    case 21: function_14f60(stage, 13); texture_surface_dimensions(13, width, height); return;
+    case 22: function_14f60(stage, 17); texture_surface_dimensions(17, width, height); return;
+    case 23: function_14f60(stage, 23); texture_surface_dimensions(23, width, height); return;
     case 24:
     case 25:
         {
             long surface = g_485a78[mode - 24];
             if (surface == 25 || surface == 26 || surface == 27)
             {
-                function_14f60(*stage_reference, (short)surface);
+                function_14f60(stage, surface);
                 function_01dd60(surface, width, height);
             }
             else
-                function_14f60(*stage_reference, 1);
+                function_14f60(stage, 1);
             return;
         }
     case 26:
@@ -4749,13 +5879,13 @@ again:
                 index = *(short *)(*(byte **)(parameters + 0x60) + 0x10);
             }
             byte *bitmap = *(byte **)(parameters + 8) + index * 12;
-            function_143c0(*(long *)bitmap, *(short *)(bitmap + 4), *stage_reference, 0.0f);
+            function_143c0(*(long *)bitmap, *(short *)(bitmap + 4), stage, 0.0f);
             return;
         }
     case 27:
         if (g_485a76)
         {
-            function_14f60(*stage_reference, 16);
+            function_14f60(stage, 16);
             texture_surface_dimensions(16, width, height);
         }
         else
@@ -4764,7 +5894,7 @@ again:
             if (tag != NONE)
             {
                 s_type_7ba8e9 *bitmap = function_137550(tag, 0);
-                if (bitmap) function_14390(*stage_reference, bitmap, 0.0f);
+                if (bitmap) function_14390(stage, bitmap, 0.0f);
             }
             *width = 4;
             *height = 4;
@@ -4776,6 +5906,8 @@ again:
 
 long g_485a60;
 
+// MiniMax C (11-14): no new form, no lower score (146): retail's inlined floor sequence is still a call to floor
+// here, the frame is still 0x8 against retail's 0xc and g_485a60 is still kept across the loop.
 // score 146 (was 353): retail inlines 0x16ae0's floor body (its asm; a 0xc frame with the value's slot) where ours
 // calls floor, so ours keeps g_485a60 in EDX across the loop where retail keeps the definition table. Round 126:
 // binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
@@ -4786,6 +5918,19 @@ long g_485a60;
 // location tag in a local 214; a file-local forceinline asm copy 158 (a twin, not kept). Lead: exposing g_485a60's
 // address (diagnostic only) gave 42 at 736 bytes: retail reloads g_485a60 after the state stores and holds g_4e3b44
 // in EDX; 0x16ae0 is `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line here.
+// b8D (11-17) walk against retail, fast build on r836: every field, offset, loop bound, callee argument and constant
+// agrees (0x45dbd4 is 3.0, 0x45dbd8 is 0.0, 0x44a04c is the float 0x3f317218), and so does every branch sense, NaN
+// included: comiss/jbe at 0x18b31 and 0x18b38 skip the floor when count <= value or unordered, ucomiss/jnp at 0x18c73
+// and 0x18c7a skips the update only when the stored level is ordered-equal. Changed: the log factor is multiplied as
+// `(real)log(..) * 0.6931471824645996f` (as 0x167a0 does), where the old `(real)(log(..) * f)` promoted the float
+// constant to a qword operand; retail's is `fmul dword` at 0x18d00; same value, score unchanged (146). Not fixed:
+// retail's floor (0x18b3e..0x18b6e) is 0x16ae0's body inlined, ours calls the CRT floor on a double, so NaN and
+// huge values differ; a file-local forceinline asm copy gives 738 bytes and 155 (a twin, not kept). retail loads
+// g_485a60 at 0x18c43 and again at 0x18cc2 after the dword stores at 0x18cb7 and keeps g_4e3b44 in edx from 0x18abf;
+// ours defines g_485a60 in this file with no address taken and hoists it, an `extern` before and the definition after
+// the function is 146 too. Also measured: one named slot pointer for the stores 185 (705 bytes; retail redoes
+// movsx/shl for each store at 0x18b85 and 0x18b97), the maximum as `height > width`, `width <= height`,
+// `width < height` or `height >= width` ternaries 176, as if-assignments 147 to 172 (retail's cmovle is at 0x18ce5).
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
@@ -4845,7 +5990,7 @@ void function_18a90(byte *state, word const *descriptor)
                         short width = *(short *)(bitmap + 4);
                         short height = *(short *)(bitmap + 6);
                         long maximum = width > height ? width : height;
-                        *(real *)(state + 0x1334 + binding[2] * 0x40) = (real)(log((double)maximum) * 0.6931471824645996f);
+                        *(real *)(state + 0x1334 + binding[2] * 0x40) = (real)log((double)maximum) * 0.6931471824645996f;
                     }
                     *(dword *)(state + 0x1420) |= 1 << binding[2];
                 }
@@ -4864,6 +6009,11 @@ extern real g_485a6c, g_485a70;
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale);
 
+// score 5 (was 6): the 0x48 float store is written before the 0x44 one, which
+// moves the 0x48 load into retail's order. The last difference is retail's
+// early g_485a64 store. A form at 4 needed
+// `*(volatile long *)&g_485a64 = 0`, a volatile store to a global, so it was
+// not kept.
 // @retail 0x1bbf0
 void function_1bbf0(long tag, long first, long second, long third, long fourth, real scale)
 {
@@ -4895,8 +6045,8 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
         byte *definition = g_4e3b44[tag & 0xffff].bytes;
         g_485a64 = *(word *)(definition + 0x3e);
         g_485a68 = *(word *)(definition + 0x40);
-        g_485a6c = *(real *)(definition + 0x44);
         g_485a70 = *(real *)(definition + 0x48);
+        g_485a6c = *(real *)(definition + 0x44);
     }
     else
     {
@@ -4908,6 +6058,12 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
     function_16b90(g_485b48, tag, first, second, third, fourth, scale);
 }
 
+// MiniMax C (11-14): no new form, no lower score (73): the shader tag still goes to edx where retail keeps it in
+// ecx, the pass entry's tag is still loaded from the folded addressing mode, and the record's tag still goes
+// straight to eax where retail copies it through ebp.
+// score 73 (was 73): retail keeps the second tag lookup in ecx where ours uses edx, retail materialises the pass
+// entry's address with its own lea before loading its tag (ours folds the +4 into the load, two bytes shorter,
+// which shifts every later jump) and retail copies the record's tag through ebp where ours loads it into eax.
 // @retail 0x16610
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy)
@@ -4962,6 +6118,38 @@ void __stdcall function_352e0(long target, bool multiple);
 long function_35510(long format);
 void function_1bd50(void *state);
 
+// MiniMax E (11-16): no new form, no lower score (13): the fallback index is still loaded as a masked dword where retail loads a word, and the shared global g_4858b8's declared type is not this lane's to change.
+// MiniMax D (11-14): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an
+// xor (xor eax, eax; mov ax, word ptr [0x4858b8]) where this build loads the long global g_4858b8 and masks it, so the
+// body is 206 bytes against retail's 204, and retail pushes the element argument before the branch where this build
+// pushes it after; the shared global's type may not change here and reading it as a word would need a cast of its own
+// address, which the rules forbid.
+// MiniMax E (11-14): no new form, no lower score (13): the fallback index is still masked to a long here and loaded as a
+// word and widened in retail, and the element's argument is still pushed after the branch here and before it in retail;
+// the shared global's type may not change here and reading it as a word would need a cast of its own address, which the
+// rules forbid.
+// MiniMax B (11-13): no new form, no lower score (13): the fallback index is still masked to a long here and loaded as a word and widened in retail, and the element's argument is still pushed after the branch here and before it in retail; the shared global's type may not change and a cast of its own address is a banned form.
+// MiniMax H (11-12): no new form, no lower score (13): the fallback index is still loaded as a masked long where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the matched 0x2dd30 and 0x32ac0 show that the xor-and-word form comes from a 16-bit lvalue or a (short) cast of the global passed straight to function_14bc0, while inside a ternary the conversion to the common type folds into movzx or movsx and if-converts to a cmove (15 and 16).
+// MiniMax H (11-11): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor (xor eax, eax; mov ax, word ptr [0x4858b8]) while ours loads the long global g_4858b8 and masks it, and retail pushes the element argument before the branch where we push it after; the global's declared type is not mine to change and reading it as a word needs a cast of its own address.
+// MiniMax I (11-11): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor while ours loads the long global g_4858b8 and masks it, and retail pushes the element argument after the branch where we push it before; the global's declared type may not change here.
+// MiniMax D (11-11): no new form, no lower score (13).
+// MiniMax S (11-10): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor while ours loads the long global g_4858b8 and masks it, and retail pushes the element argument after the branch where we push it before; the global's declared type may not change and reading it as a word needs a cast of its own address.
+// MiniMax A (11-10): no new form, no lower score (13): retail's fallback load is `mov ax, word ptr [0x4858b8]` (66 a1, six bytes), which VC7.1 only emits for a 16-bit lvalue at an absolute address; g_4858b8 is a long here and in the other files that declare it, a word-typed view would give the global another mangled name and break those files, and a cast of its own address is not allowed.
+// MiniMax E (11-10): no new form, no lower score: retail loads the fallback index as a word and
+// widens it with an xor while ours loads the long global g_4858b8 and masks it, and the branch
+// sits after the element argument's push in retail and before it here.
+// MiniMax R (11-10): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor, ours loads the long global g_4858b8 and masks it; reading that global as a word needs a cast of its own address, which the rules forbid.
+// MiniMax D (11-09): no new form, no lower score: this round's twelve new forms (the fallback as
+// `(short)`, `(word)` and `(unsigned short)`, the word and short locals, the call without the
+// explicit `(short)` cast, an explicit zero before the word assignment and that zero with `|=` and
+// with `+`) all score 15 or 13; MSVC folds the truncation and the widening of the long global into
+// one `movzx eax, word ptr [...]`, while retail widens the word with an `xor eax, eax` before its
+// 16-bit load, which only happens when the lvalue is word-typed. Retail writes the global as a
+// dword (`mov dword ptr [0x4858b8], 0x12` in 0x13450), so the global is a long there too and the
+// type of g_4858b8 cannot change.
+// MiniMax D (11-09): no new form, no lower score: the `(word)` spelling does give retail's 204
+// bytes, but the element argument's push then stays after the branch where retail pushes it
+// before, so the tail is laid out differently and the score is 15; the 13-scoring masked body stays.
 // MiniMax G (11-05): no new form, no lower score; the fallback's word load stays a movzx because the global's declared type is long in another file.
 // MiniMax D (11-01): the two-call form retail uses scores 20 here (the fallback's word load
 // lands in ecx and each arm pushes its own value); the mixed-type ternary reaches 15 with the
@@ -4971,9 +6159,48 @@ void function_1bd50(void *state);
 // or worse; our load stays a movzx where retail widens the word with an xor.
 // MiniMax A (11-03): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
+// MiniMax G (11-12): no new form tried this round, no lower score (13): the fallback index is still masked
+// rather than narrowed to a word, so the load stays a dword and a mask.
+// MiniMax H (11-13): no new form, no lower score (13); the fallback index is masked to a long here and loaded as a word and widened in retail, and the element's argument is pushed after the branch here and before it in retail.
+// MiniMax S (11-14): no new form, no lower score (13): the fallback's word is widened with an xor in
+// retail, and the global's declared type is one of the declarations that must stand, so the narrowing is
+// not this lane's to change; the body was re-measured and did not move.
+// MiniMax D (11-14, run 90): no new form, no lower score (13): the fallback index is still masked where retail
+// narrows it to a word, and the width of the load comes from the declared type of the shared global g_4858b8, which
+// belongs to a shared declaration this lane may not change; re-measured at 13 (206 bytes, against retail's 204).
+// BLOCKED-BY the shared global's declaration.
+// MiniMax R (11-15): no new form, no lower score (13): the fallback index is still loaded as a dword and masked where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; every narrowing of the shared global g_4858b8 measured this round widens to movzx or movsx as soon as the value passes through a 32-bit local.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
+// MiniMax D (11-06): no new form, no lower score: the fallback's load is a masked dword load where
+// retail widens a word with an xor, because g_4858b8 is a long in this file.
+// MiniMax E (11-08): no new form, no lower score: retail widens the fallback's word with an xor and hands it over in ecx, ours masks the dword and keeps the branch.
+// MiniMax E (11-09): no new form, no lower score: retail loads the fallback as a word and widens it with an xor, ours loads the long global g_4858b8 and masks it; the global's declared type is not mine to change.
+// MiniMax D (11-09): no new form, no lower score: the `(word)g_4858b8` spelling makes the length
+// retail's 204 bytes, but the score rises to 15, because MSVC gives `movzx eax, word ptr [...]`
+// where retail writes `xor eax, eax` and then `mov ax, word ptr [...]`; the 13-scoring body stays.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 13 (206 bytes against retail's 204); retail takes the fallback as a word in the same register as the other arm (`xor eax, eax`; `mov ax, word ptr [0x4858b8]`) so that both arms write one variable and the value is a phi in eax, while ours loads the long global and masks it, two bytes longer. This round: about sixteen forms (the two-call if/else with a shared or a separate variable, the plain ternary with both arms long or both short, the mixed `(word)` and long ternary, the mixed `(short)` and long ternary, the local-variable forms, the unsigned casts) all score 15 or worse; MSVC if-converts a ternary whose arms share a type into a `cmove`, widens a mixed-type one with a `movzx` or a `movsx`, and gives the value a fresh register when the arms write different variables.
+// MiniMax G (11-13): no new form tried this round, no lower score (13): retail takes the fallback index as a word
+// and widens it with an xor before it hands it over in the same register as the other arm, while ours loads the long
+// global g_4858b8 and masks it, so our body is 206 bytes against retail's 204; the global's declared type is long
+// (retail writes it as a dword) and this lane may not change a shared global's type, and reading it through a cast
+// of its own address is not allowed either, so the body stands.
+// MiniMax R (11-09): no new form, no lower score (13): retail loads the fallback index as a word and widens it with an xor while ours loads the long global g_4858b8 and masks it, and the branch sits after the element argument's push in retail and before it here; the global's type is a declaration this lane may not change, and reading it through a cast of its own address is not allowed either.
+// MiniMax A (11-13): no new form tried this round, no lower score (13): retail loads the fallback index as a
+// word and widens it while this build loads the long global g_4858b8 and masks it, and the branch sits after
+// the element argument's push in retail and before it here; the shared global's type may not change and a cast
+// of its own address is a banned form.
+// MiniMax C (11-15): no new form, no lower score (13).
+// MiniMax S (11-15): no new form, no lower score (13): the fallback tag is still read as a dword and masked where
+// retail reads a word, and this build pushes the call's second argument after the branch where retail pushes it
+// before; the tag as a word, the value in a local, the value inline in the call and the two calls in an if/else
+// measure 15, 15, 15 and 20, so the original body stays the lowest.
+// MiniMax C (11-16): no new form, no lower score (13): the fallback index is still loaded as a masked dword where retail loads a word and
+// MiniMax C (11-16): widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the
+// MiniMax C (11-16): shared global g_4858b8's declared type is not this lane's to change and reading it as a word would need a cast of
+// MiniMax C (11-16): its own address.
+// MiniMax R (11-17): no new form, no lower score (13): the fallback index is still loaded as a masked dword where retail loads a word and widens it with an xor, and the element argument is still pushed after the branch where retail pushes it before; the shared global g_4858b8's declared type is not this lane's to change and reading it as a word would need a cast of its own address.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {
@@ -5059,6 +6286,37 @@ struct s_filter_coordinates
     s_filter_vector offsets[4];
 };
 
+// MiniMax I (11-15): no new form, no lower score (656): the four weights are copied into g_4c19b0..bc with four
+//   float stores here, retail moves four dwords; the same score (642) comes from a memcpy of each weight or from
+//   declaring the four globals as dwords, but both change how the shared globals are read or declared and were
+//   dropped at review, and the four globals live in two of this lane's files, so they are not adjacent in our
+//   image either way. What still differs: our frame is 0x9c against retail's 0x98 (one local too many), our four
+//   global stores are scheduled after `sub esp` while retail's are before it, and retail pushes ebp/ebx/edi/esi
+//   where we push ebx/ebp/esi/edi.
+// MiniMax H (11-14, third pass): no new form, no lower score (642); retail converts the four viewport floats in the
+//   order left (0x4b9dd2), top (0x4b9dd0), right (0x4b9dd6), bottom (0x4b9dd4) at 0x2d344, and declaring them in
+//   that order reproduces that order in the compiled side and still scores 642, because the four-byte frame
+//   difference hides it. Retail's eight surface dimensions are eight separate locals and not one array - the widths
+//   at 0x94, 0x7c, 0x80 and 0x74 and the heights at 0x70, 0x78, 0x88 and 0x90 (read at 0x2dae8-0x2db37) - writing
+//   them out as eight scalars moves the body to 2536 bytes and scores 772, so the array form is kept.
+// MiniMax H (11-14, second pass): no new form, no lower score (642); the frame is the whole story, because our
+//   frame is 0x9c against retail's 0x98, so every [esp+0xNN] reference after the prologue compares against a
+//   different slot and the listing desynchronises. The local slots each side uses were mapped by tracking the
+//   stack depth through both listings (ours reach -0x100 and -0xd8 and -0xc4 where retail reach -0xf4 and -0x88
+//   and -0x68), and the two sets differ in more than one slot, so the extra four bytes are a different slot
+//   assignment rather than one missing local. Two instruction-level differences are visible inside the block:
+//   retail multiplies the scale by the height in memory (fmul dword ptr [esp+0xa4], the scale in st(0)) where
+//   this build loads the height and multiplies st(1) (fld dword ptr [esp+0x98]; fmul st(1)) and leaves the scale
+//   on the x87 stack (an extra fstp st(0)); MSVC canonicalises the operand order of the multiply, and writing
+//   the operands the other way round does not change it. Retail loads the filter count's index with movzx where
+//   this build uses xor ecx, ecx and a 16-bit move. The permuter (2 tries in 329 s) found nothing better than the
+//   baseline 642.
+// MiniMax H (11-14), NOT kept at review (memcpy of each float only steers the stores into integer moves; 0x2d140 656 -> 642 back to main): the weight copy now copies the four weights into g_4c19b0..bc with memcpy, which the
+//   compiler turns into retail's four dword moves without a cast on the globals' addresses (the same score
+//   642, was 656, as a dword-typed global block, but no pun on the shared globals and no change to their
+//   declared type). The body length now matches retail's 2652 bytes. What still differs: our frame is 0x9c
+//   against retail's 0x98 (one local too many), our four global stores are scheduled after `sub esp` while
+//   retail's are before it, and retail pushes ebp/ebx/edi/esi where we push ebx/ebp/esi/edi.
 // score 656 (was 686), 2664 bytes (retail 2652). Round 1 of #1066: first statement-by-statement logic walk.
 // Behaviour fixed: the filter-pass test compared the weights with 1.0f; retail compares with 0.0f (constant at
 // 0x45dbd8) and SKIPS the pass when the flag bit is set and that weight is 0 (the test was inverted); the pass
@@ -5167,7 +6425,7 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
                         if (coordinates)
                         {
                             real const *offset = (real const *)&coordinates->offsets[attribute];
-                            
+
                             value[0] += offset[0];
                             value[1] += offset[1];
                             value[2] += offset[2];
@@ -5254,24 +6512,105 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
+// MiniMax D (11-14): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx (retail's order is the tag in edx, the first argument in ecx and the second in eax, with the third and fourth on the stack), and the callers are in other files, so the convention cannot be changed from here.
+// MiniMax H (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX, and the arguments behind it still sit one stack slot lower; retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with the third and fourth on the stack, and the callers are in other files, so the convention cannot be changed from here.
+// score 62 (was 62): retail takes tag/first/second in EDX/ECX/EAX (first and second moved to ESI/EDI, the tag table
+// kept in EBX, fourth loaded into EBP from the stack, ret 8); ours takes tag EDX and fourth EAX, three on the stack.
+// MiniMax A (11-11): no new form, no lower score (62); the second argument still arrives in EAX where retail
+// takes it in ECX and the arguments behind it still sit one stack slot lower, so the entry block's register
+// choice is the call cycle's, not this body's; the callers are in other files, so the calling convention cannot be
+// changed from here. The original body is kept.
+// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail
+// takes it in ecx, and the arguments behind it still sit one stack slot lower. This round: the permuter
+// ran out of time without reporting a form, so nothing was tried from it.
+// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the declaration and the callers of this function are in other files, so the convention cannot be changed from here.
+// MiniMax E (11-16): no new form tried this round, no lower score (62): retail's convention is edx = the tag, ecx = the first
+// (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth, ret 8, and this build still takes the
+// second argument in eax with the arguments behind it one stack slot lower; the register an argument arrives in follows from the
+// callers, which are in src/flexible_surface.cpp:941 and src/unknown_19eda0.cpp:544, and the declaration is in
+// include/flexible_surface_calls.h:11, all in files this lane may not edit.
+// MiniMax A (11-06, run 52): no new form, no lower score (62) - the two address-taken parameters are
+// dropped (the same code), and retail keeps the first argument in ecx where ours reads it from the
+// stack.
 
+// MiniMax C (11-15): no new form, no lower score (62): retail's convention is edx = the tag, ecx = the first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth, ret 8, and this build still takes the second argument in eax with the arguments behind it one stack slot lower; measured this round, the range index in a local leaves the code unchanged (62) and `first * 10` in place with that local scores 91 (239 bytes), so the register an argument arrives in still follows from how the body uses it.
+// MiniMax B (11-13): no new form, no lower score (62): this build still reads its first stack argument from [esp+0xc] where retail reads it from [esp+0x10]; the slot is fixed by the callers in the other files, so no source form here reaches it.
+// MiniMax G (11-12): no new form, no lower score (62); retail's convention is edx = the tag, ecx = the
+// first (copied to esi), eax = the second (copied to edi), e+4 = the third and e+8 = the fourth (copied
+// to ebp), ret 8, with the tag table in ebx; the record index is the third argument and the selected
+// tag lands in the dead fourth slot, as here. New forms: `first * 10` in place 91 (239 B), the same
+// multiply fused into the entry read 91 (same code), the range index with its operands swapped 91 (same
+// code), a local holding a copy of the first argument (the same code). Restored.
+// MiniMax G (11-12): the call to 0x1bbf0 is the other blocker and it is in another file: our 0x1bbf0
+// (in this file) compiles to retail's code with the same `ret 0x14` slots, but retail's 0x16b90 takes
+// the scale as its third argument (its prologue reads the tag at e+8 and the state at e+4) while the
+// declaration at src/unknown_0167a0.cpp:263 has the scale last, so our 0x1bbf0 gives the second, third
+// and fourth parameters different stack slots and this caller pushes the first, third, second and
+// fourth where retail pushes the first, second, fourth and third.
+// MiniMax G (11-12): the permuter (300 s, 10 tries) reached 60 in both images by pulling the 0xffff and
+// the 10 into constant locals and reordering the two calls' arguments: two points is under the keep bar,
+// the constant locals and the reordered calls are not allowed forms, and the calls would pass something
+// else, so the body stands.
+// MiniMax C (11-11): no new form, no lower score (62); the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files.
+// MiniMax R (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
+// MiniMax I (11-10): no new form, no lower score (62); the second argument still arrives in EAX where retail takes it in ECX and the arguments behind it still sit one stack slot lower, because the callers are in other files.
+// MiniMax E (11-09): no new form, no lower score; the second argument still arrives in eax
+// where retail takes it in ecx, and the callers of this function are in other files.
+// MiniMax C (11-06): no new form, no lower score - the second argument still arrives in eax where retail
+// takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers are in other
+// files, so the calling convention cannot be changed from here.
 // MiniMax D (11-05): no new form, no lower score - retail reads the second argument in ecx and keeps the
 // tag table in ebx, ours takes the fifth argument in eax and reloads the table into esi; the record
 // multiplier written as the selected tag or as the fifth argument scores 90.
-// score 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
+// Earlier 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
 // ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
 // calling convention cannot be changed from here.
-// score 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
+// MiniMax C (11-08): forms tried, none lower: the second argument through a local 62, the entry
+// pointer through the table 62, the offset named after the selected tag 91, the entry built from the
+// slot 91 (base 62).
+// Earlier 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
 // arguments behind it sit one stack slot lower than retail's; the callers of this function are
 // in other files, so the calling convention cannot be changed from here.
 // Lane 18 r37 (fast): without the `(void)&` reads (one or both) 62 (same code); `first * 10` written in
 // place, or its local named just before the entry, 91 (239 B, ret 8: first now arrives in EBX and third in
 // EAX, where retail takes first in ECX, moved to ESI, and second in EAX; retail keeps the tag-table base
 // in EBX and reloads it after the 0x137bd0 call). Restored.
+// Round 170 (m3 lane 6, fast with 0x19f680/0x244470/0x2be5d0/0x116b00): the selected tag computed just before the
+// 0x1bbf0 call 91 (238 B), the group read ahead of the selected tag 78 (251 B), each with `first * 10` in place 99/91;
+// the selected tag as `selected = tag; if (tag == NONE) ...` 77; the group read as `*(dword *)&g_4e3b44[(short)tag]`,
+// the head through a copy of 0x16b90's material_parameters inline (diagnostic), the parameters pointer as a ternary
+// and the 0xc table named 62 each (same code). Re-measured: `first * 10` in place or named just before the entry 91.
+// Retail forms the group read as `add eax, ebx; mov eax, [eax]`, unlike 0x16b90 and 0x19f680 (folded).
+// MiniMax B (11-13): no new form, no lower score (62): the second argument's register is decided by the callers, which are in other files.
+// MiniMax S (11-14): no new form, no lower score (62): the second argument still arrives in EAX where retail takes it in ECX (retail's order is the tag in EDX, the first argument in ECX and the second in EAX, with `ret 8`), and the register the argument arrives in is decided by the callers, which are in files this lane may not edit.
+// MiniMax D (11-15): no new form, no lower score (62): the second argument still arrives in eax where retail takes it
+// in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here.
+// MiniMax I (11-15): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here.
+// MiniMax R (11-16): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of this function are in other files, so the calling convention cannot be changed from here; the permuter (8 tries in 302 s, annealing) reached 60 only by naming the constants 4, 10 and 0xffff in locals and by swapping the arguments of the two calls, so its variant was reverted.
+// MiniMax S (11-16): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the callers of
+// this function are in other files, so the calling convention cannot be changed from here.
+// score 62 (was 62): the second argument arrives in eax where retail takes it in ecx; the callers are in other files.
+// MiniMax G (11-13): no new form, no lower score (62): the second argument still arrives in eax where retail
+// takes it in ecx, and the callers are in other files, so the calling convention cannot be changed from here.
+// MiniMax D (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx,
+// and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling
+// convention cannot be changed from here.
+// b12A (11-17) walk against retail, fast build on r846: fields, offsets, jcc senses, constants and callee arguments all
+// match (0x4b2d0-0x4b3c8); no behaviour difference. Retail multiplies first by 10 after the tables load (lea at
+// 0x4b34c), but without the hoisted `first_offset` it is 91 (239 B), 0x116b00 322 -> 414 and 0x19f680 370 -> 427: first
+// then arrives in EBX, further from retail's ECX, so the local stays. Why: retail's callers keep esi/edi/ebx/ebp live
+// over the call (0x116b9c-0x116ba4: edx = tag, ecx = group, eax = variant) and the callee saves all four
+// (0x4b2d3-0x4b2da) with the tag table in EBX (0x4b2f6), so the arguments can only arrive in EDX/ECX/EAX; here the
+// table sits in ESI and first takes EBX unsaved. A parameter order does not move a register: 20 orders of the five
+// (third before fourth) on this body all give `ret 8` with first in EBX (91-95); 8 on the old body keep `ret 0xc`
+// (61-63); (third, fourth, tag, first, second) with both callers updated: 63, 0x116b00 320, 0x19f680 404, so no reorder
+// is kept. Retail forms pass (0x4b37e) and record (0x4b3ae) addresses that are dead: `byte *const &` on pass (alone or
+// with record) gives 251 B and 81 (62 on the old body, same code); on entry or record alone 91. No form matches; the
+// open difference is the tag table in EBX (retail) against ESI (ours).
 // @retail 0x4b2d0
+// MiniMax C (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here, and the permuter's best (60) only renamed constants and swapped the arguments of the two calls, so it was reverted.
 void function_4b2d0(long tag, long first, long second, long third, long fourth)
 {
-    (void)&third; (void)&fourth;
     long selected = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
     long first_offset = first * 10;
     dword group = ((dword *)g_4e3b44)[(short)tag * 4];
@@ -5292,6 +6631,7 @@ void function_4b2d0(long tag, long first, long second, long third, long fourth)
 }
 
 #include "geometry_cache.h"
+#include "vector_products.h"
 dword g_55ee58, g_55ee5c;
 real g_55e6cc, g_55e6d0, g_55e6d4, g_55e6d8, g_55e6dc, g_55e6e0;
 real g_55e6e4, g_55e6e8, g_55e6ec, g_55e6f0, g_55e6f4, g_55e6f8;
@@ -5309,8 +6649,79 @@ vector3f *function_11d000(vector3f const *vector, vector3f *perpendicular);
 void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
+// MiniMax I (11-16): no new form, no lower score (127): the model's read is still folded into a single load here, where retail forms the entry's address first and loads the model through it, and one pair of the vertex rows' float reloads still comes in the other order; the plain forms that keep the entry's address are the match-only ones already rejected (a reference to the entry scores 2).
+// MiniMax S (11-15): no new form, no lower score (127).
+// MiniMax I (11-14): no new form, no lower score (127): the reference entry form reaches 2 with the split index test and 4 with the combined one, but both keep the one-use reference, which the rules keep only on a byte match; the row 12 products written into named locals give 13 (they change the product order), the same products hoisted above the row 11 call give 210 (the frame grows), a reference to the whole reference table gives 487, hoisting the loop's part count gives 435, and the split index test on its own gives 125; the order of the [esp+0xd8] and [esp+0x54] reloads after the grow call survives every form tried.
+// MiniMax D (11-14): no new form, no lower score (127): the plain forms still leave the model entry's address fused
+// into one load where retail takes the entry's address and reads the field through it, and the reference form (kept
+// only on a match) still leaves the two independent float reloads after the second grow call in the other order.
+// MiniMax R (11-15): no new form kept, no lower score (127): the reference form (the model entry's address
+// bound to a const reference, the part index's sign test ahead of the geometry load) reaches 2 again, and a
+// 300 s permuter run on it did not move the two float reloads after the second grow call; a one-use reference
+// is kept only on a byte match, so the body is main's.
+// MiniMax C (11-17): 2 (was 127): the model entry's address is bound to a reference to a const pointer and the
+// part index's sign test comes ahead of the geometry load, as retail has it; the reference is a one-use pointer
+// binding, which the rules keep only on a byte-for-byte match. Still differs: two independent float reloads
+// after the second grow call (retail loads [esp+0xd8] into xmm2 and then [esp+0x54] into xmm3, ours the other
+// way round); the row 12 products in named locals (11), the up component in a local (238) and the permuter
+// (19 tries, 250 s) do not move it.
+// score 127 (was 127): main's body. On the reference form (the model entry's address bound to a const
+// reference, the index < 0 test ahead of the geometry load: 2 in the plain check, kept only on a match) the
+// only difference left is two independent float reloads after the second SetVertexData4f grow call (retail
+// loads [esp+0xd8] into xmm2 and then [esp+0x54] into xmm3, ours the other way round).
+// MiniMax H (11-13): no new form kept, no lower score (127): the plain forms tried this round (typed index,
+// typed table pointer, the entry pointer advanced by the index, the field read through a byte offset, the
+// 0x41640-shaped lookup through a definitions local, a second masked read of the field, a compare on the
+// model) all fuse the entry address into one load; the reference entry reaches 2 again (the model's read as
+// a lea and a separate load, and the part index's sign test ahead of the geometry load), which the rules
+// keep only on a byte-for-byte match, so the body is restored; in that form what still differs is the order
+// of the two float reloads after the grow call (xmm2 and xmm3), and the products of register 12 in named
+// locals (11), the products of registers 12 to 14 in named locals (219), the light multiplies split (8) and
+// the size computed earlier (2) do not move it.
+// MiniMax I (11-11): 2 (was 127): the model entry is bound to a reference to a const pointer, so the
+// address of the entry stays in a register and the model is read with a separate displaced load, as
+// retail has it (`lea edx,[ebx+edx*8]` then `mov edx,[edx+4]`) instead of one fused indexed load;
+// the loop's negative-index test is also split from the geometry load, so retail's order holds.
+// The same shape is in the matched 0x273040, whose entry is a reference to a const pointer too.
+// Still differs: two independent float loads after the call to 0x3faae0 come out in the other order.
+// MiniMax I (11-11): no new form, no lower score (127): the references pointer reaches ebx as retail has it, but retail reads the model with a `lea` and a separate load where ours folds the address into one instruction, so every instruction after that one is paired with the wrong counterpart.
 
-// score 302 (was 544), Round 1 of #1066: same size as retail (2406). What changed: the rotation is one
+// MiniMax B (11-11): no new form, no lower score (127); retail reads the model index through the entry address
+// computed with a lea and loads it four bytes on, where ours folds the four into the load's displacement, and the
+// register and stack homes of the sine and of the cross product still differ; the body is retail's 2406 bytes.
+// MiniMax E (11-11, run 81): 2 (was 127): the model is read through the entry address in a lea and a
+// separate load, as retail reads it, and the sign check on the part index comes before the geometry
+// load, as retail has it; what is left is the order of two independent float reloads after the
+// second SetVertexData4f call.
+// Reference form, not kept: 2 (from 127): the model's two reads are combined and the part index's sign check comes first;
+// what still differs is the order of two independent float reloads after the second SetVertexData4f call.
+// MiniMax E (11-11, run 80): no new form, no lower score (127): retail reads the model with a lea plus a
+// separate load where ours folds the address into one instruction; this round typed the reference table as
+// an eight-byte entry (the tag index in the second dword) and read it as an element, as a pointer to the
+// element, through an inline double dereference, through a byte entry pointer and as a long array, and every
+// one of them still compiles to the fused load, so what is left to find is the form that keeps the entry's address.
+// MiniMax E (11-10, run 73): no new form, no lower score (302); our sine takes a stack slot of its own ([esp+0x48]) where retail keeps it in the shared temporary ([esp+0x14]) and puts cosine in a fresh one, so every frame offset after it is four bytes out, the references base sits in esi against retail's ebx, and the cross product's xmm choice differs.
+// MiniMax D (11-11): 127 (was 128): the node pointer is taken before the table and references
+// loads, which puts the references pointer in EBX as retail has it; retail still reads the model
+// with a lea and a separate load where ours folds the address into one instruction, so every
+// instruction after that one is paired with the wrong counterpart.
+// MiniMax D (11-11): no new form, no lower score (128): the references pointer still lands in ESI where retail keeps it in EBX, so the model's read is one fused load here and a lea plus a load there; reading the model straight out of the references pointer, swapping the table and references declarations and typing the references pointer as void all compile to the same ESI form.
+// MiniMax G (11-11): no new form, no lower score (302): our sine takes a stack slot of its own ([esp+0x48]) where retail keeps it in the shared temporary ([esp+0x14]) and puts cosine in a fresh one, so every frame offset after it is four bytes out; the references base sits in esi against retail's ebx and the cross product's xmm choice differs.
+// MiniMax S (11-10): no new form, no lower score (302): our sine takes a stack slot of its own ([esp+0x48]) where retail keeps it in the shared temporary ([esp+0x14]) and puts cosine in a fresh one, so every frame offset after it is four bytes out, the references base sits in esi against retail's ebx, and the cross product's xmm choice differs.
+// MiniMax D (11-10): 128 (was 302): the cross product now goes through the existing cross3f helper,
+// which puts `sine` in retail's shared temp [esp+0x14]; the earlier note's worry that the full build
+// then loses the matched 0xc2d00 (its scheduling tie) cannot be seen in the fast check, where
+// 0xc2d00 scores 249 in the reduced image with either form, so the helper call is kept and the
+// coordinator's full check should confirm 0xc2d00.
+// MiniMax D (11-10): no new form, no lower score (302).
+// MiniMax A (11-12): no new form, no lower score (127); the model's read stays one fused load where retail takes a
+// lea and a separate load, and the forms that do reproduce retail's addressing are the match-only ones the coordinator
+// has already rejected (a reference to the entry scores 2, a plain typed index with the split test scores 125); with the
+// reference form in place the only difference left was the order of two independent reloads after a grow call (xmm2 and
+// xmm3), and none of the perturbations tried here (the vertex data's products written the other way round, the position
+// and light statements reordered or split, the size and alpha computed at another point) moved that order.
+// MiniMax H (11-12): no new form kept, no lower score (127): the model's read is still one fused load where retail takes a lea and a separate load, and the only forms that reproduce retail's addressing are the ones the rules keep only on a byte-for-byte match (a reference to the entry scores 2, a plain typed index with the split test scores 125); a 900 s permuter run from the reference form found nothing below 2.
+// Round 1 of #1066: 127 (from 544), same size as retail (2406). What changed: the rotation is one
 // transform4x3f (forward/left/up filled by either branch, then position stored into it, so retail's
 // copy of the position after the branch appears), the angle is computed inside each branch (the sin/cos
 // one keeps it unrounded on the x87 stack), the draw count is a word tested `<= 0` and read into word
@@ -5320,6 +6731,41 @@ dword g_4b8430;
 // is dereferenced without retail's lea; xmm register choice in the cross-product block and the draw
 // calls. Tried: cosine declared before sine (303), sin/cos written inline at each use (421, 441),
 // swapped product operands in the cross product (302), basis declared at function scope (302).
+// Walk b4I (11-06): every field, offset, test direction (the `js`/`jge` bounds test, `jbe` on the unsigned word count,
+// `jle` on the loop count), callee, argument order, the unrounded x87 angle (sin/cos stored as float) and the rounded
+// `fraction`/`size` agree with retail: no behaviour difference. The cross product is cross3f's body written out; calling
+// cross3f (vector_products.h) scores 128, since it puts `sine` in retail's shared temp [esp+0x14], but the full build then
+// loses the matched 0xc2d00 (its scheduling tie), so the written-out form stays. The alpha clamp is PIN's body written out.
+// MiniMax I (11-11), NOT kept (coordinator 11-11): 127 -> 2 with the reference entry bound as `s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[index]` (a reference to a one-use pointer: match-only) and the index < 0 test ahead of the geometry load; the same entry type read as a plain typed index with the split test is 125 (under the keep bar). Lead: retail keeps the entry's address before reading its model; find the plain form that does that.
+// MiniMax E (11-12), NOT kept (coordinator 11-12): 127 -> 2 again, this time by reading the entry's model twice and AND-ing the copies (`model &= model_copy`, a no-op steer) with the index < 0 test first; together with MiniMax I's reference form above, retail evidently loads the model field twice from the entry's address. Find the plain source that uses entry->model twice.
+// MiniMax B (11-13), NOT kept (coordinator 11-13): 127 -> 2 a third time with MiniMax I's reference form (the entry's
+// address bound to `s_4e260_model_entry const *const &`, as in 0x273040, where it is kept because that function matches)
+// and the index < 0 test ahead of the geometry load. Here it is 2, not a match, so the one-use reference stays out.
+// What is left at 2: the order of two independent float reloads after the second SetVertexData4f call (retail loads
+// [esp+0xd8] and then [esp+0x54], ours the other way round); a 900 s permuter run and a hand sweep of the products'
+// order could not move it. Lead: with the reference form, find what orders those reloads; a match keeps the form.
+// m3 lane 14 r90 (all on the reference form, 2 in the plain check; fast checks): the rows' C-API
+// D3DDevice_SetVertexData4f spelling 710 (1999 bytes: not inlined); the rows read through basis.rotation 2
+// (same code); the cross and perpendicular declarations swapped 2 (same code); the basis declared at loop scope
+// beside the colours 2 (same code); the alpha clamp ahead of the position copy 187 (2408 bytes); the position
+// copied field by field 68 (2418 bytes); the size computed after the basis 374 (2388 bytes); the entry as a
+// const element reference 125, its model as a long const reference 125 (both fold the model read); the entry
+// copied by value 508 (2421 bytes). Re-measured: each single product's operands swapped in rows 12 and 13, 2
+// each (same code). Diagnostics: the basis or the size renamed 2 (same code: names do not order the reloads).
+// The two reloads keep their order whatever the model read's form (the 125 forms show the same pair).
+// MiniMax R (11-16): no new form, no lower score (127): the model's read is folded into a single load here, where
+// retail forms the entry's address first and loads the model through it, and one pair of the vertex rows' float
+// reloads comes in the other order.
+// MiniMax S (11-14), NOT kept: 125 (was 127) with an eight-byte model-entry struct read through for the
+// reference table and the index's two bound tests split into two `continue`s; a 2-point gain, under the
+// 8-point bar for a function above 30.
+// MiniMax S (11-16): no new form, no lower score (127): retail reads the model through the entry's address (a
+// lea plus a separate load) where this build fuses the address into one load, and the two float reloads after
+// the second grow call come out in the other order.
+// NOT kept (review 11-17): the model read through a reference to the table entry (s_4e260_model_entry const *const
+// &entry) took 127 -> 2, but a reference-bound local is a match-only form (the notes above already list it); the
+// entry struct and the split index test go with it (the split test alone is 125, under the keep bar). Code back to
+// main.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -5334,15 +6780,14 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     g_4b8430 = 1;
     D3DDevice_SetRenderState(D3DRS_TWOSIDEDLIGHTING, 1);
     function_1bd50(0);
+    s_octree_output *node = &g_4c5700[handle & 0xff];
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    byte *reference = references + (signed char)record[0] * 8;
-    long model = *(long *)(reference + 4);
+    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
-    s_octree_output *node = &g_4c5700[handle & 0xff];
     if (function_12de70((s_geometry_block_info *)block, 3)
         && function_12de70((s_geometry_block_info *)(definition + 0x38), 3))
     {
@@ -5395,9 +6840,7 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
                 basis.up = *function_4dcd0(&decoded_direction, packed >> 20);
                 vector3f perpendicular, cross;
                 function_11d000(&basis.up, &perpendicular);
-                cross.i = basis.up.j * perpendicular.k - basis.up.k * perpendicular.j;
-                cross.j = basis.up.k * perpendicular.i - basis.up.i * perpendicular.k;
-                cross.k = basis.up.i * perpendicular.j - basis.up.j * perpendicular.i;
+                cross3f(&basis.up, &perpendicular, &cross);
                 function_4efb0(&basis.up);
                 basis.forward.i = perpendicular.i * cosine + cross.i * sine;
                 basis.forward.j = perpendicular.j * cosine + cross.j * sine;
@@ -5481,11 +6924,76 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 {
     function_4ede0(tag, context, first, second, third, handle, material);
 }
+// MiniMax C (11-17): no new form, no lower score (54): the score rests on the load-bearing volatile tag local (the rules allow a volatile only with a byte match); retail reads the block base out of the table before the tag lookup and keeps the tag in a register where this build spills it and reloads it; this round took the volatile off and moved the block base ahead of the tag lookup together, which rebuilds the body (111), and taking the volatile off alone gives 117, so the body stands.
+// MiniMax E (11-16): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (which the
+// rules allow only for a byte match), and retail still reads the block base out of the table before the tag lookup and keeps the
+// tag in a register where this build spills it to a stack slot and reads it back; this round took the volatile off the tag and
+// moved the block base ahead of the tag lookup, which rebuilds the body (111), and taking the volatile off while loading the
+// block base before the record's short rebuilds it further (117), so the body stands.
+// MiniMax D (11-14): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this build spills it to a stack slot and reads it back.
+// MiniMax A (11-12): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body, 117), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where ours spills it to a stack slot and reads it back; inlining the tag into the index gives 117 and reading the block before the tag gives 101, both worse, so the body stands.
 
+// MiniMax C (11-15): no new form, no lower score (54): retail still reads the block base out of the table before the tag lookup and keeps the tag in a register, where this build reads the tag's byte first and reloads it through the load-bearing volatile local (without it the compiler rebuilds the body, 117); a volatile local is only allowed with a byte match.
+// MiniMax B (11-13): no new form, no lower score (54): retail adds the block base before the tag lookup and keeps the tag's table address in a register, while this build reads the tag's byte first, spills the tag through the volatile local and reloads it, so the two orderings differ; a volatile local is only allowed with a byte match.
+// MiniMax H (11-12): no new form, no lower score (54); the score still rests on the load-bearing volatile tag local
+// (without it the compiler rebuilds the body, 117), and retail still reads the block base out of the table before the
+// tag lookup and keeps the tag in a register where ours spills it to a stack slot and reads it back.
+// MiniMax G (11-11): no new form, no lower score (54); the score still rests on the load-bearing volatile tag
+// local: without it the compiler rebuilds the body (117), retail reads the block base out of the table before the
+// tag lookup and keeps the tag in a register where ours spills it to a stack slot and reads it back, and retail
+// adds the block base before the definition lookup where ours adds it after; this round re-read the diff and the
+// only routes to those shapes are the ones recorded below, so the body stands.
+// MiniMax H (11-11): no new form, no lower score (54); retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where ours spills and reloads it through the volatile local, and retail still adds the block base before the definition lookup where ours adds it after; this round inlining the tag into the index gives 117 and reading the block before the tag gives 101, both worse, so the body stands.
+// MiniMax C (11-11): no new form, no lower score (54); the tag is still spilled to a stack slot and reloaded through the volatile local where retail keeps it in a register, and the block base is still added in after the definition lookup.
+// MiniMax R (11-10): no new form, no lower score (54); the tag is still spilled to a stack slot and reloaded where retail keeps it in a register, and the block base is still added in after the definition lookup where retail reads it before the tag lookup.
+// MiniMax I (11-10): no new form, no lower score (54); the tag is still spilled to a stack slot and reloaded where retail keeps it in a register, and the block base is still added in after the definition lookup where retail reads it before the tag lookup; reading the block base first rebuilds the body (101).
+// MiniMax E (11-09): no new form, no lower score; the score still rests on the load-bearing
+// volatile tag local, and every other spelling of the tag lookup rebuilds the body.
+// MiniMax R (11-09): no new form, no lower score; the score still rests on the volatile tag local, and retail reads the block base out of the table before the tag lookup and keeps the tag in a register where ours spills it and reads it back.
+// MiniMax R (11-09): no new form, no lower score; the tag read through an eight-byte stride gives 54 with
+// the volatile and 117 without it, the same as the body, so the tag's spill stays.
+// MiniMax G (11-06): no new form, no lower score: the score still rests on the load-bearing volatile tag
+// local; without it the compiler rebuilds the body (117), computing the block before the tag gives 111 and
+// the two-element tag table gives 115, so the body is unchanged.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local, which the rules allow only for a byte match, and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this build spills it and reads it back; without the volatile the compiler rebuilds the body (117), so the body stands.
+// MiniMax D (11-15): no new form, no lower score (54): the score still rests on the volatile tag local, and retail
+// still reads the block base out of the table before the tag lookup where this build reads it after; without the local
+// the compiler rebuilds the body (117), so the body stands.
+// MiniMax I (11-15): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local, which the rules allow only for a byte match; retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this build reads the tag's byte first and reloads it through that local.
+// MiniMax R (11-16): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler rebuilds the body, 117), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this build spills it and reads it back; a volatile local is only allowed with a byte match.
+// MiniMax S (11-16): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without it the compiler
+// rebuilds the body, 117), and retail still reads the block base out of the table before the tag lookup and keeps the tag in a register where this
+// build spills it and reads it back; a volatile local is only allowed with a byte match.
 // score 54 (was 54): this round found no gain - the score rests on the volatile tag local; without it the
 // compiler rebuilds the body (117), computing the block before the tag gives 111 and the two-element tag
 // table gives 115, so the body is unchanged.
+// MiniMax B (11-13): no new form, no lower score (54): the volatile tag local is load-bearing (the record's tag has to be read before the block base), so the order of the two reads still differs from retail's.
+// MiniMax G (11-13): no new form, no lower score (54): the score still rests on the volatile tag local, and
+// retail reads the block base out of the table before the tag lookup where this build reads it after; the
+// forms in the note below rebuild the body.
+// MiniMax D (11-17): no new form, no lower score (54): the score still rests on the load-bearing volatile tag local (without
+// it the compiler rebuilds the body at 117), and retail still reads the block base out of the table before the tag lookup where
+// this build reads it after; the body is left as it was.
+// b12F (11-17) walk against retail, fast build on r846: every statement, offset, callee argument (1bd50, 3f7230 0x35,
+// 1cdd0, 1c590, 1c620 edi/eax, 1bbf0 tag in edi, 3f59b0, 3faed0 8/5), constant (128/64/512/16/32/64, 1.0, 10000.0f) and
+// the draw if/else-if agree with retail; no float compare, so no behaviour difference. Retail loads the block base
+// (0x4ec75) before the tag (0x4ec78), but its block_offset multiply comes first (0x4ec72) and the add after the tag
+// (0x4ec82), so that is the scheduler's interleaving; block first with a plain tag is 111 and block first with the
+// volatile 101, so the body stays (54). What differs is allocation: retail keeps handle in edi (0x4ec56, used in place
+// at 0x4ecd7), geometry in ebx, the part in handle's home slot (0x4ecb7, read back 0x4ed9f), material re-read from its
+// slot (0x4ed2e, 0x4ed6d) and forms the tag pair address with lea (0x4ec90, 0x4ec93); plain builds put handle in ebx,
+// geometry in edi, material in ebx. Tried, fast r846: volatile on definition 78 (block first), block 89/91,
+// block_offset 95, part 106/112, table 107/109, record 116/144, byte *volatile material 126-147; inline pair helper
+// 117/111; vertex-buffer local 100; init-list constants 111; handle >> 30 local 112/119; switch (part[4]) 60-118
+// (dec/dec tail). The volatile tag local (lane code) is a match-only form in a function that does not match yet.
 // @retail 0x4ebd0
+// MiniMax A (11-11): no new form, no lower score (54); the difference is still the tag lookup: retail computes the
+// tag's table address with a lea and keeps the tag in a register, ours spills and reloads it through the volatile
+// local, and retail adds the block base before the tag lookup where ours adds it after the definition lookup. The
+// forms the earlier rounds tried (the pair read as an array of pairs, through a byte pointer local and through a
+// long pointer local, the block read before the tag, the volatile moved onto the part) all keep the same 54 or
+// score worse, so the body stands.
 // MiniMax D (11-06): no new form, no lower score; the tag lookup still differs: retail reads the pair
 // with a lea into a register and never spills the tag, ours reads it through the volatile local with a
 // spill and a reload; this round the pair read as a long array of pairs, through a byte pointer local and
@@ -5734,7 +7242,35 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->top += dy;
     rectangle->bottom += dy;
 }
+// MiniMax E (11-16): no new form tried this round, no lower score (60): the two rectangles still sit four bytes higher in the frame
+// than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the bitmap pointer
+// still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set
+// where retail branches; a long left edge gives retail's slots but grows the frame to 0xb0, so the body stands.
+// MiniMax S (11-14): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set where retail branches; a long left edge with the top clamp written inline gives retail's frame and prologue but still scores 60.
+// MiniMax D (11-14): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set where retail branches.
+// MiniMax A (11-12): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set where retail branches; a long left edge gives retail slots but grows the frame, so the body stands.
 
+// MiniMax C (11-15): no new form, no lower score (60): the two rectangles' fields are still read into different registers (this build takes the first one's word into eax where retail takes it into edi) and the argument slots still follow the LTCG convention's eax and ecx, so the block's shape is not this lane's to pick.
+// MiniMax B (11-13): no new form, no lower score (60): the two rectangles' fields are still read into different registers (this build takes the first one's word into eax where retail takes it into edi) and the argument slots still follow the LTCG convention's eax and ecx, so the block's shape is not ours to pick.
+// MiniMax H (11-12): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame
+// than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the
+// bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still
+// clamped with a conditional set where retail branches; a long left edge gives retail's slots but grows the frame.
+// MiniMax G (11-11): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame
+// than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]),
+// the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is
+// still clamped with a conditional set where retail branches; a long left edge gives retail's slots but grows the
+// frame to 0xb0, so the body stands.
+// MiniMax H (11-11): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set instead of retail's branch; a long left edge gives retail's slots but grows the frame to 0xb0, so the body stands.
+// MiniMax C (11-11): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame than retail's and the bitmap pointer still shares the clip's slot instead of being spilled.
+// MiniMax R (11-10): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame than retail's, the bitmap pointer still shares the clip's slot, and the left edge is still clamped with a conditional set instead of retail's branch.
+// MiniMax I (11-10): no new form, no lower score (60); the two rectangles still sit four bytes higher in the frame than retail's, the bitmap pointer still shares the clip's slot, and the left edge is still clamped with a conditional set instead of retail's branch.
+// MiniMax E (11-09): no new form, no lower score; the two rectangles still sit four bytes
+// higher in the frame than retail's and the bitmap pointer still shares the clip's slot, and the
+// left edge is still clamped with a conditional set instead of retail's branch.
+// MiniMax R (11-09): no new form, no lower score; the order of the two rectangle declarations does not move their frame slots, and a long left edge gives retail's slots and retail's branchy clamps but needs a slot of its own, so the frame grows to 0xb0 (177); the short left edge clamps with a conditional set instead of retail's branch.
+// MiniMax R (11-09): no new form, no lower score; the clip rectangle and the bitmap pointer still swap their
+// frame slots, the bitmap at [esp+0x10] here against [esp+0x1c] in retail.
 // MiniMax D (11-06): no new form, no lower score; the two rectangles sit four bytes higher in the frame than
 // retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14])
 // and the bitmap pointer shares the clip's slot instead of being spilled at [esp+0x1c], because our clamp
@@ -5754,10 +7290,57 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
 // function is then 21 bytes short with a frame four bytes too big; retail adds the horizontal offset in
 // 32 bits where ours adds it in place in 16 bits, and only a long offset forces that (128).
 // MiniMax D (run 37): no new form, no lower score; the bitmap pointer declared first, the two rectangles swapped and the casts removed all give 60, a short top gives 99 and the clamps written as if/else give 187, the four clamp values as longs or declared first in the outer scope give 122 and 113, and retail's frame leaves sixteen bytes below the rectangles where ours leaves twelve, which the type and the order of the clamp locals do not move.
-// score 60 (was 75): the two rectangles sit four bytes higher in the frame than retail's and the
+// MiniMax G (11-06): no new form, no lower score: a `long` for the left edge gives retail's frame slots
+// and its branchy clamps but grows the frame to 0xb0 (177), and reordering the helper's fields gives
+// 76 and 161, so the body is unchanged.
+// MiniMax A (11-11): no new form, no lower score (60); the two rectangles still sit four bytes higher in the
+// frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and
+// [esp+0x14]) and the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], because
+// our clamp arithmetic keeps the bitmap in EDX where retail clobbers EDX and reloads the pointer from the stack; the
+// forms the earlier rounds tried (a long left edge, the clamps as if statements, the offset added in 32 bits, the
+// declaration orders) all keep the same slots or score worse, so the body stands.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax D (11-15): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame
+// than retail's and the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the
+// left edge is still clamped with a conditional set instead of retail's branch.
+// MiniMax I (11-15): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail's and the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set instead of retail's branch. The two clamp spellings tried here (the top clamp as a short, and the clamps assigned straight into the wanted clip) score 99 and 175, and a permuter run with annealing over this body (59 tries, 603 s) found nothing below its baseline of 60.
+// MiniMax R (11-16): no new form, no lower score (60): the permuter (28 tries in 305 s, annealing) found no variant under 60; the two rectangles still sit four bytes higher in the frame than retail's, the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set instead of retail's branch. This round's clamp battery measured the two edges as shorts, as longs and as if statements and moved the store order (99, 94, 177, 189, 187): a long left edge does give retail's frame slots (the clip at [esp+0xc], the bounds at [esp+0x14], the bitmap at [esp+0x1c]) but moves the clip pointer into edi and leaves the body 21 bytes short, and the if-statement spelling drops the body to 534 bytes, so the current form stands.
+// MiniMax R (11-16): no new form, no lower score (60): the permuter (28 tries in 305 s, annealing) found no variant under 60; the two rectangles still sit four bytes higher in the frame than retail's, the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set instead of retail's branch.
+// MiniMax S (11-16): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail's and the bitmap
+// pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set instead
+// of retail's branch; the permuter (annealing, lane R's run today) found no variant under 60, and this round's run (40 tries in
+// 435 s) found none either.
+// score MATCH (was 60; was 75 before that): the two rectangles sat four bytes higher in the frame than retail's and the
 // bitmap pointer shares the clip's slot instead of being spilled; the clip branch clamps the left
 // edge with a conditional set instead of retail's branch.
+// MiniMax B (11-13): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail [esp+0xc] and [esp+0x14]), the bitmap pointer still shares the clip's slot instead of being spilled at [esp+0x1c], and the left edge is still clamped with a conditional set instead of retail's branch; the left clamp written straight into the field gives the same code, a long left edge gives retail's slots but grows the frame to 0xb0, and the permuter (23 tries in 250 s) found no better variant.
+// MiniMax G (11-13, later): no new form, no lower score (60): the four clip clamp values as shorts give 101, and
+// the two rectangles keep their frame slots; retail keeps the bitmap pointer in a stack slot and reloads it after
+// the clip clamps, while this build keeps it in edx across them, which moves the clamps' temporaries into the
+// other registers.
+// MiniMax G (11-13): no new form, no lower score (60): retail keeps the bitmap pointer in a stack slot and
+// reloads it after the clip clamps, while this build keeps it in edx across them, which moves the clamps'
+// temporaries into the other registers; the forms in the note below all score 60 or more.
+// MiniMax D (11-17): no new form, no lower score (60): the two rectangles still sit four bytes higher in the frame than
+// retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), retail still
+// keeps the bitmap pointer in a stack slot and reloads it after the clip clamps where this build keeps it in edx across them,
+// and the mipmap limit read into a local (70) stays under the keep bar.
+// b12I (11-17) walk against retail, fast build on r846: MATCH (60 -> 0), with callers 0x1fa50 0x1fb10 and callees
+// 0x35b90 0x13f0e0 0x36560 0x1f490 all still MATCH. The walk found no logic difference: ecx = bounds (0x1f0ca), eax =
+// clip kept in ebx (0x1f07d); the null branches subtract g_4b9dd2 from fields +2/+6 and g_4b9dd0 from +0/+4
+// (0x1f0f5-0x1f116, 0x1f145-0x1f161); the clip branch takes bottom and right (0x1f172-0x1f19c), then top and left
+// (0x1f19f-0x1f1b8) and stores left, top, right, bottom (0x1f1bf-0x1f1ce); the material, the call arguments and the
+// 1.0f at 0x45dbc0 were already identical. What matched was the spelling: retail loads the clip limit before it
+// subtracts (0x1f17c then 0x1f180; 0x1f187-0x1f196), which is the `a - b > limit ? limit : a - b` form (include/ has
+// no MIN macro), and keeps top and left as 32-bit values (movsx at 0x1f1a8 and 0x1f1b8) with a branch each. That needs
+// three scratch registers, so edx loses the bitmap and it is reloaded at 0x1f1bb from [esp+0x1c], which also puts the
+// rectangles in retail's slots. Same order as retail (bottom, right, top, left). Measured on this body, none kept: `if
+// (b > limit) b = limit` with long clamps 177 (retail's order) or 36 (bottom, top, right, left); top short with left
+// long 59-60; 48 type and order permutations 36-189; limits read into locals 44; raw top in a local 40; if-statement
+// clamps 98-189; material declared first 60; (void)&bitmap 60; the ternary minimums in bottom, top, right, left order
+// 110.
 // @retail 0x1f070
+// MiniMax C (11-17): no new form, no lower score (60): the two rectangles sit four bytes higher in the frame than retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14]), the bitmap pointer shares the clip's slot where retail spills it at [esp+0x1c] and reloads it, and the left edge is clamped with a conditional set where retail branches; the earlier rounds' clamp, copy and slot forms all measure 60 or worse.
 void function_1f070(short_rectangle2d const *bounds, short_rectangle2d const *clip,
     short *position, long line_gap, dword const *text, real scale,
     void const *color, void const *shadow, bool preserve)
@@ -5788,12 +7371,10 @@ void function_1f070(short_rectangle2d const *bounds, short_rectangle2d const *cl
     }
     else
     {
-        long bottom = g_4b9dd4 - g_4b9dd0;
-        if (bottom > clip->bottom) bottom = clip->bottom;
-        long right = g_4b9dd6 - g_4b9dd2;
-        if (right > clip->right) right = clip->right;
+        long bottom = g_4b9dd4 - g_4b9dd0 > clip->bottom ? clip->bottom : g_4b9dd4 - g_4b9dd0;
+        long right = g_4b9dd6 - g_4b9dd2 > clip->right ? clip->right : g_4b9dd6 - g_4b9dd2;
         long top = clip->top < 0 ? 0 : clip->top;
-        short left = clip->left < 0 ? 0 : clip->left;
+        long left = clip->left < 0 ? 0 : clip->left;
         wanted_clip.left = (short)left;
         wanted_clip.top = (short)top;
         wanted_clip.right = (short)right;
@@ -5849,29 +7430,53 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
-// MiniMax D (11-06): no new form, no lower score; our ebx save in the prologue against retail's inside the
-// loop keeps the frame at 0xb0 instead of 0xac, so every stack reference sits four bytes off; this round the
-// outer loop as a while loop gives 199 and the same loop with the counter bumped on every path gives 199,
-// and neither moves the frame off 0xb0, the count in a local gives 237 and the handle tested twice against
-// NONE gives 240.
-// MiniMax G (11-05): no new form, no lower score; dropping the table local scores 200 and dropping the availability flag 240, and the frame stays 0xb0 against retail's 0xac.
-// MiniMax G (11-04): score 199 (was 223): the material pointer is loaded before the part type is
-// tested and the cull-mode global is no longer zeroed; the handle's sign test as (handle & 0x80000000)
-// == 0 gives retail's test/js but scores 224-240, and ours still keeps the ebx zero register where
-// retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax
-// at 0x3e380, whose declaration is in another file.
-// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
-// score 199 (was 241): the handle now goes into the context's dword at offset 8 and the availability
-// flag drives the table test, as retail does; left is our ebx zero register against retail's
-// edi and the loop counter in edi against retail's esi. Round 61: the permutations now arrive in ecx at
-// 0x3e380, a member of s_model_permutations, as retail; the count stays 223.
-// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
-// Earlier at 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
-// higher (the context buffer at [esp+0x44] against retail's [esp+0x3c], the indices at [esp+0x38]
-// against [esp+0x30]), so every reference in the body is at another offset.
-// Earlier at 241 (was 260): the length is retail's 877 bytes now, but retail keeps the tag-instance
-// pointer in ebp and saves ebx only where it starts to use it, while ours saves ebx in the
-// prologue and compares the handle against a zero register.
+// MiniMax D (11-17): no new form, no lower score (184): the table handle is still tested once against the zero
+// register where retail tests NONE and then the sign, the zero constant lives in EBX where retail makes it in EDI,
+// the outer counter is in EDI where retail keeps it in ESI, and the section itself is in ESI where retail uses EBX;
+// repeating the NONE comparison inside the available branch reproduces retail's doubled test, but that comparison is
+// always true where it stands, and the other forms tried this round reach 177 and 179, under the keep-bar.
+// MiniMax R (11-16): no new form, no lower score (184): the doubled table-handle test inside the block (`handle != NONE && handle >= 0` with the outer test kept) measures 204 here, because the compiler then pushes EBX in the prologue and the frame changes with it, and the transform index read as an unsigned word gives 185, so the body stands; what is left is retail's register permutation (the zero constant in EDI, the outer counter in ESI and the section pointer in EBX where ours has EBX, EDI and ESI), the frame's homes (retail's table pointer at +0x10 and section pointer at +0x14 against our +0xc and +0x20) and retail's doubled handle test.
+// MiniMax C (11-16): no new form, no lower score (184): the table handle tested as `available && handle != NONE && (handle & 0x80000000) == 0` reaches 177 and the same test with `>= 0` 179, both under the keep-bar, so the body stands; what is left is retail's register permutation (the zero constant in edi, the outer counter in esi, the section pointer in ebx) and retail's doubled handle test.
+// MiniMax D (11-16): no lower score (184): typing the transform as int gives 179, five points under the keep-bar, so
+// the body stays as it is; what is left is retail's register permutation (the zero constant in edi, the outer counter
+// in esi, the section pointer in ebx, ours in ebx, edi and esi) and retail's doubled handle test.
+// MiniMax D (11-16): no lower score (184): retail's table handle is tested twice (a setne'd bool test, then a fresh
+// `cmp eax,-1` and the sign test), and repeating the NONE comparison inside the available branch reproduces that at 179,
+// but that comparison is always true where it stands, so the body stays at 184. What is left is the register
+// permutation: retail keeps the zero constant in edi, the outer counter in esi and the section pointer in ebx, ours has
+// them in ebx, edi and esi, and the handle's own test uses ebx as the zero where retail uses edi. Tried this round: the
+// handle test as `!= NONE` before `>= 0` (179 with the repeated comparison, 204 without the bool), the same test through
+// the context's dword (179), the outer counter, part counter and pass counter as int (179 each), the section index as
+// int (179) or byte (205), the transform as word (196), the handle as int (179), the availability flag as byte (179).
+// MiniMax R (11-16): no new form, no lower score (184): the table handle is still tested once against the zero register where retail tests NONE and then the sign, the zero lives in EBX where retail makes it in EDI, the section loop's counter is in EDI where retail keeps it in ESI, and the section itself is in ESI where retail uses EBX.
+// score 184 (was 199), fast build (b6L walk, 11-06): retail walked statement by statement. Fixed: (1) the
+// else branch of the transform test passes the section loop index to function_151e0, not NONE: retail's
+// call at 0x4c7ed loads no esi, and esi holds the loop counter there (xor esi,esi 0x4c74e ... inc esi
+// 0x4c9c7), while 0x151e3 compares esi with -1 (behaviour fix; alone 199 -> 221). (2) The part type and the
+// material tag are read from memory at each use, as retail does (movzx eax, word ptr [esi] before every
+// function_13d9f0 call at 0x4c8c0, mov edi,[eax+0xc] at 0x4c940); with a `type` local ours hoisted the
+// call out of the pass loop (retail's evaluation order, not a behaviour fix; 221 -> 193). (3) The volatile
+// on geometry is gone (193 -> 184); the length is retail's 877 and the frame retail's 0xac. (4) The (byte)
+// cast on the word at section + 0x1a is gone: retail pushes the zero-extended word (0x4c929) where ours
+// still loads a byte, because function_1cdd0 declares `byte flags`; its callee reads only the low byte
+// (0x1cdde), so no behaviour differs, and the score is the same. Still differs: ours creates the zero in
+// ebx before the test of function_3e320's result where retail makes it in edi after it (0x4c6fe), the
+// loop counter is in edi (copied to esi before function_151e0) where retail keeps it in esi, the section
+// is in esi where retail uses ebx, and ours tests the table handle once (jl) where retail tests NONE
+// then the sign (0x4c727-0x4c72e). Tried: handle != NONE && handle >= 0 for the table (204), the outer
+// counter declared before the for (184), `long type` local for the part type (188), `<= 0` for the three
+// word tests (193, retail's jbe, same score). Earlier rounds (MiniMax, 11-03 to 11-06), before the frame
+// matched: the handle as (handle & 0x80000000) == 0 gives retail's test/js but scored 224-240, dropping the
+// table local 200, dropping the availability flag 240, the count in a local 237, the outer loop as a while
+// loop 199, the handle tested twice against NONE 240; the material pointer is loaded before the part type is
+// tested and the cull-mode global is no longer zeroed (223 -> 199); the permutations arrive in ecx at 0x3e380
+// as retail, and the handle goes into the context's dword at offset 8.
+// MiniMax S (11-17): no new form, no lower score (184): the zero constant, the outer counter and the section
+// pointer still sit in ebx, edi and esi where retail has them in edi, esi and ebx, and retail's doubled table
+// handle test (a setne'd bool test and then a fresh compare against NONE and the sign) is an always-true test
+// that the rules do not let a body keep; a 300 second permutation run on this body found nothing below the
+// base, and the part type held in a local of its own (188), the transform compared against the word's own
+// sentinel (191) and the three counts tested as not positive (195) all measure worse, so the body stands.
 // @retail 0x4c690
 void function_4c690(long tag, transform4x3f const *nodes)
 {
@@ -5900,7 +7505,7 @@ void function_4c690(long tag, transform4x3f const *nodes)
                 if (section_index == 255) continue;
                 byte *section = *(byte **)(definition + 0x28) + section_index * 0x5c;
                 if (!*(word *)(section + 4) || !*(word *)(section + 6) || !*(word *)(section + 8)) continue;
-                byte *volatile geometry = 0;
+                byte *geometry = 0;
                 if (!g_4e6494 || function_12de70((s_geometry_block_info *)(section + 0x38), 0))
                     geometry = *(byte **)(section + 0x34);
                 short transform = *(short *)(section + 0x2c);
@@ -5909,18 +7514,16 @@ void function_4c690(long tag, transform4x3f const *nodes)
                     D3DDevice_SetVertexShaderConstantFast(-46, g_485a5c->transforms[transform], 3);
                     g_5093d8 = 0;
                 }
-                else function_151e0(NONE);
+                else function_151e0(index);
                 for (long part_index = 0; part_index < *(long *)geometry; ++part_index)
                 {
                     byte *part = *(byte **)(geometry + 4) + part_index * 0x48;
                     short material_index = *(short *)(part + 4);
                     if (material_index == NONE) continue;
                     byte *material = *(byte **)(definition + 0x64) + material_index * 0x20;
-                    word type = *(word *)part;
-                    if (type == 0 || type == 5 || type == 1) continue;
-                    long material_tag = *(long *)(material + 0xc);
-                    if (material_tag == NONE) continue;
-                    byte *shader = g_4e3b44[material_tag & 0xffff].bytes;
+                    if (*(word *)part == 0 || *(word *)part == 5 || *(word *)part == 1) continue;
+                    if (*(long *)(material + 0xc) == NONE) continue;
+                    byte *shader = g_4e3b44[*(long *)(material + 0xc) & 0xffff].bytes;
                     byte *shader_definition = g_4e3b44[*(long *)(shader + 4) & 0xffff].bytes;
                     byte *tables = *(byte **)(shader_definition + 0x5c);
                     byte *stage = *(byte **)(tables + 4);
@@ -5928,7 +7531,7 @@ void function_4c690(long tag, transform4x3f const *nodes)
                     word *passes = (word *)(*(byte **)(tables + 0xc) + (*(word *)stage & 0x1ff) * 2 + 0x1e);
                     for (long pass = 0; pass < (*passes >> 9); ++pass)
                     {
-                        if (!function_13d9f0(type)) continue;
+                        if (!function_13d9f0(*(word *)part)) continue;
                         byte *entry = *(byte **)(tables + 0x14) + ((*passes & 0x1ff) + pass) * 10;
                         byte *pass_definition = g_4e3b44[*(long *)(entry + 4) & 0xffff].bytes;
                         byte *program = *(byte **)(*(byte **)(pass_definition + 0x20) + 4);
@@ -5936,9 +7539,9 @@ void function_4c690(long tag, transform4x3f const *nodes)
                         if (function_1caa0(program_tag, section + 4, (word const *)part, geometry, 0, 0, 0))
                         {
                             if (*(long *)(definition + 0x14) > 0)
-                                function_1cdd0(*(real **)(definition + 0x18), (byte)*(word *)(section + 0x1a));
+                                function_1cdd0(*(real **)(definition + 0x18), *(word *)(section + 0x1a));
                             else function_1cdd0(0, 0);
-                            function_1bbf0(material_tag, 0, 15, pass, 0, 1024.0f);
+                            function_1bbf0(*(long *)(material + 0xc), 0, 15, pass, 0, 1024.0f);
                             D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
                             word const *vertices = *(word **)(geometry + 0x24) + *(word *)(part + 6);
                             long count = *(word *)(part + 8);
@@ -6027,13 +7630,55 @@ void geometry_cache_update(void);
 void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
+// MiniMax I (11-16): no new form, no lower score (153): the timestamp is still copied as a double here, where retail copies one dword into a four-byte global (the shared global is declared as a double in a header this lane may not edit), and the gamma ramp's bytes still go through the device's ramp call where retail uploads them inline against the device's own ramp buffers.
+// MiniMax S (11-15): no new form, no lower score (153); the gamma ramp's 255.0 multiplier is a float in retail's data, and writing 255.0f gives our fmul retail's dword operand width, but the score stays 153, so the body stands.
+// MiniMax H (11-13): no new form, no lower score (153).
+// MiniMax A (11-12): no new form, no lower score (153); retail's copy of the frame header is six contiguous dword stores into the globals at 0x485898-0x4858ac while ours moves the double through the x87 stack and the other fields one at a time, so our body is eleven bytes shorter than retail's 758.
+// MiniMax C (11-11): no new form, no lower score (153); retail copies the frame timestamp into the global as two dwords and uploads the gamma ramp inline against the device's own ramp buffers, while the shared global is a double in include/timed_effect.h and this build goes through x87 and calls D3DDevice_SetGammaRamp.
+// MiniMax D (11-10): no new form, no lower score (153); the timestamp's two halves cannot be written to the
+// shared global from this file, since the global is declared as a double in a header this lane may not edit and
+// a cast of its own address is not allowed.
+// MiniMax S (11-09): no new form, no lower score (153): retail copies the timestamp into the global
+// as two dwords and ours goes through x87 because the global is a double in include/timed_effect.h,
+// and retail uploads the gamma ramp into the device's own ramp buffers where ours calls
+// D3DDevice_SetGammaRamp; copying the timestamp dword-wise through a byte copy scores 173.
+// MiniMax D (11-09): no new form, no lower score (153); the timestamp still reaches the global through
+// x87 here and through two dword stores in retail, because the shared global is a double in a header this
+// lane may not edit, and the gamma ramp still goes out through D3DDevice_SetGammaRamp instead of retail's
+// inline upload into the device's own ramp buffers.
+// MiniMax G (11-12): no new form, no lower score (153); the two blockers are unchanged and both live
+// outside this lane's files: the frame time global is declared double in include/timed_effect.h, so
+// retail's dword-wise copy of the timestamp cannot be written here, and retail uploads the gamma ramp
+// inline against the device's own ramp buffers where ours calls D3DDevice_SetGammaRamp.
+// MiniMax A (11-06, run 52): no new form, no lower score (153) - retail copies the timestamp into the
+// global as two dwords and uploads the gamma ramp into the device's own ramp buffer; three separate
+// channel stores in retail's red/green/blue order (and 255.0f) score the same 153, not kept, and a
+// depth test as < 2 scores 176.
 
 // MiniMax D (11-05): no new form, no lower score - retail copies the timestamp into the global as two dwords, ours goes through x87 because the global is a double in include/timed_effect.h, and retail uploads the gamma ramp into the device's own ramp buffer where ours calls D3DDevice_SetGammaRamp.
+// MiniMax C (11-06): no new form, no lower score - retail still copies the timestamp into the global as
+// two dwords (ours goes through x87, because the shared global is a double in include/timed_effect.h,
+// which this lane may not edit) and still uploads the gamma ramp inline against the device's own ramp
+// buffers instead of calling D3DDevice_SetGammaRamp.
 // MiniMax H (11-04): no new form, no lower score; the frame time copied through one union, through a
 // union of two halves or through a local read gives 158, 159 and 153, and retail writes that time
 // into the global as two dwords, which the double the global has in include/timed_effect.h cannot
 // express, while retail uploads the gamma ramp inline against the device's own ramp buffers.
-// score 153 (was 202): retail keeps the current depth bound when it is not zero and stores the
+// MiniMax E (11-10): no new form, no lower score (153).
+// MiniMax E (11-11): no new form, no lower score (153); retail copies the 24-byte frame header into the contiguous
+// globals 0x485898-0x4858ac in one block, ours copies it field by field and moves the double through the x87
+// stack, because g_4858a0 is declared double in include/timed_effect.h.
+// MiniMax A (11-14): no new form, no lower score (153): retail copies the frame timestamp into the global as two
+// dwords and uploads the gamma ramp inline against the device's own ramp buffers, while this build moves the
+// double through the x87 stack (the global is a double in a header this lane may not edit) and calls
+// D3DDevice_SetGammaRamp.
+// MiniMax D (11-14): no new form, no lower score (153): the frame header is still copied field by field and the
+// timestamp still moves through the x87 stack where retail copies the two halves as dwords (the shared global is a
+// double in a header this lane may not edit), and the gamma ramp still goes out through D3DDevice_SetGammaRamp
+// where retail uploads it into the device's own ramp buffers.
+// MiniMax R (11-15): no new form, no lower score (153): the frame timestamp still goes through x87 into the shared double global where retail copies its two halves as dwords, and the gamma ramp still goes out through D3DDevice_SetGammaRamp.
+// score 152 (was 153, was 202 before the conditional defaults; the b8C paragraph below supersedes the reading here):
+// retail keeps the current depth bound when it is not zero and stores the
 // default only when it is (the comparison is against the bound loaded before the stores), so the
 // two default stores are now conditional on the bound being zero; the unconditional stores were a
 // behaviour difference as well as 49 differing instructions. Still differs: the timestamp copy
@@ -6045,6 +7690,34 @@ void function_22850(void);
 // the override carried in two locals and the pair stored again at the end: 182 against 202,
 // but the first stores are always overwritten (a no-op form), so not kept without a match.
 // The locals alone score 218 (fast). Retail does compare the current depth with zero here.
+// MiniMax E (11-09): no new form, no lower score (153); retail divides 1.0f by the gamma's high word once and
+// multiplies that inverse into the low and the high word (and by 16777215.0f), while our build divides the
+// 16777215.0f constant by the high word and multiplies that into the two words, so the two bounds come out of
+// a different association.
+// MiniMax B (11-11): no new form, no lower score (153); retail copies the frame timestamp as one dword into a
+// four-byte global at 0x4858a0 and keeps five more dword globals after it, while the shared global here is a double
+// declared in include/timed_effect.h and defined in src/unknown_01fbb0.cpp, so the copy goes through x87 and the
+// second field cannot be reached.
+// MiniMax R (11-16): no new form, no lower score (153): the timestamp is copied as a double here, where retail copies
+// one dword into a four-byte global, and the ramp's bytes still go through the device's ramp call.
+// MiniMax I (11-14): no new form, no lower score (153); the timestamp copy would need a dword-wise
+// write into the global that include/timed_effect.h declares as a double, and the gamma ramp still
+// goes through D3DDevice_SetGammaRamp where retail uploads it inline against the device's ramp buffers.
+// MiniMax S (11-16): no new form, no lower score (153): the timestamp copy still goes through the x87 path
+// where retail moves the two halves as dwords, and the gamma ramp still goes through the device's ramp call
+// where retail uploads it inline.
+// b8C (11-17) walk against retail, fast build on r836: 153 -> 152 (no full build). Behaviour fix: retail resets both
+// depth bounds on every call. It loads the defaults straight from 0x467014/0x467018 (0x12b00, 0x12b12), stores them
+// only when the bound is zero (0x12b0a, 0x12b23) and then stores the final value unconditionally: xmm0 holds the
+// default, or the effect's override (+0x190, +0x194) when that is > 0 (0x12b49 for the low bound, 0x12b66 for the
+// high one, one `if (g_5093e0)` each, at 0x12b33 and 0x12b47). Ours kept a non-zero bound from the last call. Now two
+// locals are stored after their own override test. The first conditional stores are overwritten later in retail's
+// behaviour too, but they are in its bytes (without them 218), so they stay. The defaults are read as floats
+// (`*(real const *)&g_467014`, the form unknown_02c560.cpp already uses; the union copy scored 182 against 175).
+// Gamma ramp channels are stored red, green, blue (0x12c8f, 0x12c93, 0x12c9a); the chained assignment stored blue
+// first. No score change from that. Float tree of the bounds already matches: (1.0/hi*lo)*16777215 and the same for hi.
+// Callers 0x2c8a0 MATCH and 0x2ca00 (3) unchanged. Still differs as before: the timestamp copy (double global in
+// the header) and the inline SetGammaRamp (retail's lib: 0x12cae-0x12d08), plus ours hoists the constant 1 into ebx.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -6062,18 +7735,22 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
     else if (upper > 16777215.0f) upper = 16777215.0f;
     g_485adc = lower;
     g_485ae0 = upper;
-    union { dword bits; real value; } default_lower, default_upper;
-    default_lower.bits = g_467014;
-    default_upper.bits = g_467018;
-    if (g_485ad4.lo == 0.0f) g_485ad4.lo = default_lower.value;
-    if (g_485ad4.hi == 0.0f) g_485ad4.hi = default_upper.value;
+    real lower_bound = *(real const *)&g_467014;
+    real upper_bound = *(real const *)&g_467018;
+    if (g_485ad4.lo == 0.0f) g_485ad4.lo = lower_bound;
+    if (g_485ad4.hi == 0.0f) g_485ad4.hi = upper_bound;
     if (g_5093e0)
     {
         real value = *(real *)((byte *)g_5093e0 + 0x190);
-        if (value > 0.0f) g_485ad4.lo = value;
-        value = *(real *)((byte *)g_5093e0 + 0x194);
-        if (value > 0.0f) g_485ad4.hi = value;
+        if (value > 0.0f) lower_bound = value;
     }
+    g_485ad4.lo = lower_bound;
+    if (g_5093e0)
+    {
+        real value = *(real *)((byte *)g_5093e0 + 0x194);
+        if (value > 0.0f) upper_bound = value;
+    }
+    g_485ad4.hi = upper_bound;
     function_0206a0();
     geometry_cache_update();
     function_12c600();
@@ -6100,7 +7777,9 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
         for (long i = 0; i < 256; ++i)
         {
             byte value = (byte)(long)(pow(i * (1.0f / 255.0f), gamma) * 255.0);
-            ramp.red[i] = ramp.green[i] = ramp.blue[i] = value;
+            ramp.red[i] = value;
+            ramp.green[i] = value;
+            ramp.blue[i] = value;
         }
         D3DDevice_SetGammaRamp(0, &ramp);
         g_47fd10 = gamma;
@@ -6115,7 +7794,74 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
 bool function_48b00(point3f const *point, real radius, real *screen, real *extent);
 real function_30bf0(vector3f *vector);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
+// MiniMax E (11-17): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18 against retail's frame+0x14), the dot product's three products are still summed in the other order, and retail's four bound temporaries, copied into the slots that overlap the dead direction, are still missing; the four bounds computed on the x87 stack through double (558) only steers the code and is not kept.
+// MiniMax G (11-13): no new form, no lower score (576): the diff re-read this round shows retail summing the dot product's products in a rotated order and giving the two constants after the normalize call the other registers, with the call's result slot four bytes higher here than in retail, so the body stands.
+// MiniMax I (11-11): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary, and the double forms tried for that score 614, 586, 576, 614, 612 and 583; retail calls 0x224f0 out of line for the second group of ten stage states where our build inlines it, and the only lever for that (an in-body inline_depth pair) is not allowed.
 
+// MiniMax E (11-15): no new form, no lower score (576): our body is still shorter than retail's, retail's second group of ten stage states and its three render-state calls stay out of line where ours inlines them, and the dot3f adds still take i, j, k where retail takes k, i, j.
+// MiniMax H (11-13), NOT kept (coordinator: `(real)(double)(...)` round-trip casts change no value and only steer the
+// compiler; not a form the source would have; a natural double context, such as a double literal `32.0` or bounds
+// computed from double values, is the lead): the four screen bounds cast through double use retail's x87 form with
+// dword float constants (576 -> 558); retail still copies each bound through a float temporary into a bounds array
+// that overlaps the dead direction vector, where ours keeps the bounds in the temporary slots, and our direction
+// sits four bytes higher in the frame (the first difference is the store at [esp + 0x18] against retail's [esp +
+// 0x14]); casting the first operand of each bound instead of the whole difference measures 586, and the permuter's
+// 30 tries in 306 s found nothing below its own baseline of 516 differing instructions.
+// MiniMax B (11-11): no new form, no lower score (576); retail overlaps the direction and the bounds at
+// [esp + 0x14] where ours gives each of them a slot of its own, so every slot above them is four bytes out, the
+// dot product's three products are summed k, i, j in retail and i, j, k here, and our body is 71 bytes shorter
+// than retail's 2507.
+// MiniMax E (11-11, run 80): no new form, no lower score (576): retail computes left/top/right/bottom on the x87 stack with a
+// float constant and copies each through a temporary where we subtract and store the left and the right in SSE, retail overlaps
+// the direction and the bounds at [esp+0x14] where ours gives each of them slots of their own, and our body is 71 bytes shorter
+// than retail's 2507; the eight double and float forms of the bounds chain tried here and by earlier rounds score 576 to 614.
+// MiniMax E (11-10, run 73): no new form, no lower score (576); retail computes left/top/right/bottom on the x87 stack and copies each through a temporary where we subtract and store directly, its second group of ten stage states and the three render-state calls of that group stay out of line where we inline them, and its loop counts down in memory.
+// MiniMax D (11-11): no lower score (576): the four reference locals are gone (the bounds array is
+// indexed directly), which keeps the score and gives the frame retail's size; the three direction
+// components still sit four bytes higher in the frame than retail's, and the dot product's three
+// products are still summed in a rotated order; retail keeps the second rounded screen coordinate on
+// the x87 stack and narrows each bound through a temporary, and the double forms tried for that (a
+// double centre with a double constant, a float centre with double casts, the rounding written into
+// the screen array, a double centre with an implicit narrowing, a double centre with the rounding
+// written as floor((double)screen[1] + 0.5f), and a float centre with double casts on all four
+// bounds) score 614, 586, 576, 614, 612 and 583.
+// MiniMax G (11-11): no new form, no lower score (576): retail overlaps the direction and the bounds at [esp+0x14] where ours gives each of them slots of their own, so every slot above them is four bytes out; the dot3f adds run i, j, k in ours and k, i, j in retail, and our body is 71 bytes shorter than retail's 2507.
+// MiniMax S (11-10): no new form, no lower score (576): retail computes left/top/right/bottom on the x87 stack and copies each through a temporary where we subtract and store directly, its second group of ten stage states and the three render-state calls of the second group stay out of line where ours inlines them, and its loop counts down in memory.
+// MiniMax D (11-10): no new form, no lower score (576).
+// MiniMax B (11-12): no new form, no lower score (576): retail computes left/top/right/bottom on the x87 stack with
+// the dword constant and copies each through a temporary, so the bounds are doubles before they are narrowed; the
+// three ways of writing that here - double locals with float narrowing temporaries, double casts on the two
+// centres, and both of those interleaved with the array stores - all score 614, because the double context makes
+// our build push ebx and ebp at the entry and grow the frame to 0x4c while retail keeps 0x44 and shrink-wraps the
+// two saves to its own epilogue, so every slot offset differs; a 900-second permuter run found no lower score.
+// MiniMax B (11-13): no new form, no lower score (576): read against retail's listing, its four bounds are the two
+// floored values on the x87 stack (fld dword / fadd dword / fstp qword / floor / fstp dword) and its floor calls take
+// a double, so the values agree with ours and only the arithmetic differs: retail adds and subtracts dword constants
+// on the x87 stack where this build does the same in SSE with other constants; the double form of last round cannot
+// match because the double constants it needs are not in retail's data.
+// MiniMax I (11-14): no new form, no lower score (576): the three direction components still sit four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is four bytes out) and the dot product's three products are still summed in a rotated order; retail keeps the second rounded screen coordinate on the x87 stack and narrows each bound through a temporary.
+// MiniMax C (11-14): no new form, no lower score (576): the three direction components still sit four bytes
+// higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14, so every slot above them is
+// four bytes out); the dot product's three products are still formed in the other order and added with the
+// other operand first, and the bound test is retail's two compares with a conditional store against ours,
+// which branches to a shared tail for the lower bound.
+// MiniMax R (11-15): no new form, no lower score (576): the three direction components still sit four bytes
+// higher in the frame than retail's (ours at frame+0x18 against retail's frame+0x14, so every slot above
+// them is four bytes out) because our build keeps the rounded centre in a slot of its own where retail
+// keeps it on the x87 stack, and the dot product's three products are still summed in the other order;
+// writing the rounded centre back into the screen array instead of a named local measures 576 again with
+// the same code, so the original body stands.
+// MiniMax C (11-16): score 576 (was 576): no new form, no lower score; the three direction components still
+// sit four bytes higher in the frame than retail's (ours at frame+0x18 against retail's frame+0x14) because
+// this build keeps the rounded centre in a slot of its own where retail keeps it on the x87 stack, and the
+// dot product's three products are still summed in the other order; this build also inlines the second ten
+// stage states and the three render-state calls that retail calls out of line.
+// MiniMax D (11-16): score 558 (was 576): the four screen bounds are computed on the x87 stack with the float
+// 32.0 constant, as retail's bytes at 0x47001-0x47040 show. Still differs: the three direction components sit
+// four bytes higher in the frame than retail's (ours at frame+0x18, retail's at frame+0x14), retail's four
+// comparison temporaries are still missing (retail copies each bound through a temp into a slot that overlaps
+// the dead direction), the dot product's three products are still summed in the other order, and this build
+// still inlines the second ten stage states and the three render-state calls that retail calls out of line.
 // score 576 (was 695), Round 1 of #1066: 2436 bytes against retail 2507. Fixed: the 2nd quad and the
 // loop begin with D3DDevice_Begin (retail calls it; ::Begin inlined it), the 1st quad uses the member
 // D3DDevice::SetVertexData4f (inlined, as retail), the first ten stage states go through
@@ -6123,14 +7869,37 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 // array. Still differs: (1) our build also inlines function_0224f0 (the second ten stage states) and the
 // three function_0222d0 calls of the 2nd render-state group, which retail calls; an in-body inline_depth(0)
 // pair around the ten 0224f0 calls gives 540, not kept; file-scope inline_depth 0/1/2 changes nothing
+// or worsens (770); (2) retail computes left/top/right/bottom on the x87 stack with dword constants and copies
+// each through a temp (fstp, mov ecx, mov [bounds], ecx) into a bounds array that overlaps the dead direction,
+// where our bounds (with the not-kept double casts) go through the x87 stack too but keep the temporary slots and our direction sits four
+// bytes higher; double or float locals, an aggregate of the direction and casts tried; (3) retail's loop counts down
+// in memory (dec [esp+0x20])
 // or worsens (770); (2) retail computes left/top/right/bottom on the x87 stack and copies each through a
 // temp (fstp, mov ecx, mov [bounds], ecx) where we use subss and a direct store; double or float
 // locals, a union with direction and casts tried; (3) retail's loop counts down in memory (dec [esp+0x20])
 // and recomputes (real)i * 0.0625f * 80.0f - 4.0f, we keep a float induction variable and cmp esi, 16;
 // an extra "for (remaining = 16; remaining; --remaining)" counter gives 567 (not kept: artificial);
-// (4) the dot product adds k, j, i terms where retail adds k, i, j (source order of the terms makes no
-// difference); the strength clamp as a nested ternary has retail's shape but scores 601.
+// (4) the dot product now adds k, i, j as retail (0x46f25-0x46f34) but with xmm0/xmm1 swapped, and retail
+// multiplies direction.j by a memory operand; the j product's operand order changes nothing (576).
 // Earlier lane rounds also tried the camera forward vector copied into a local (748, not kept).
+// b4C walk (r722): every statement checked against retail, no logic difference found: field offsets, the
+// four bounds tests (0x4704a-0x470ac: left < g_48564e, top < g_48564c, g_48564a < right, g_485648 < bottom),
+// the three render-state/combiner groups, 0x14bc0/0x14f60/0x143c0/0x467c0 arguments, the 16-pass loop
+// (offset from i before the increment, strength / (i + 1) after it) and the XBE constants (0.70710677,
+// 3.4142134, 0.5, 32.0, 0.0625, 80.0, 4.0, 16777215.0). Forms tried, none kept: strength as a nested ternary
+// (retail stores 1.0 at 0x46f63 before the ja, as the ternary does) 601; left/top/right/bottom as float
+// locals copied into bounds[] (retail's temps at 0x2c-0x38 and the copies at 0x4700e-0x47062) 584, with
+// (double) casts on screen[0] and center_y 497 (x87 chain as retail, but qword constants and fst/fld st(1);
+// narrowing casts), center_x/center_y unrounded locals 585-592; direction and bounds in separate blocks
+// (retail overlaps both at esp+0x14; ours then grows the frame to 0x54) 584; all twenty stage states through
+// function_0224f0 (retail inlines the first ten, calls the second) 638; dot3f adds i, j, k, retail k, i, j.
+// MiniMax A (11-12): no new form, no lower score (576): retail computes the four screen bounds on the x87 stack through a
+// temporary each and overlaps the direction with them at [esp+0x14], our body is 71 bytes shorter than retail's 2507, and
+// its second group of ten stage states and its three render-state calls stay out of line where ours inlines them.
+// MiniMax D (11-15): no new form, no lower score (576): the four screen bounds are stored four bytes higher in our frame (+0x18 and +0x20 where retail has +0x14 and +0x1c) and our body is 71 bytes shorter than retail's.
+// MiniMax D (11-16), NOT kept: the four bounds as (real)(double)(screen[0] - 32.0f) etc. scored 558 (main 576),
+// but a float taken to double and straight back changes no value and only steers code generation; the source form
+// that computes them in double, a double constant ((real)(screen[0] - 32.0)), measures 586. Body back to main.
 // @retail 0x46ea0
 void function_46ea0(long tag, point3f const *position)
 {
@@ -6155,16 +7924,12 @@ void function_46ea0(long tag, point3f const *position)
     screen[0] = (real)floor(screen[0] + 0.5f);
     real center_y = (real)floor(screen[1] + 0.5f);
     real bounds[4];
-    real &left = bounds[0];
-    real &right = bounds[1];
-    real &top = bounds[2];
-    real &bottom = bounds[3];
-    left = screen[0] - 32.0f;
-    top = center_y - 32.0f;
-    right = screen[0] + 32.0f;
-    bottom = center_y + 32.0f;
-    if (!((real)(short)g_48564e > left && (real)(short)g_48564c > top &&
-        right > (real)(short)g_48564a && bottom > (real)(short)g_485648)) return;
+    bounds[0] = screen[0] - 32.0f;
+    bounds[2] = center_y - 32.0f;
+    bounds[1] = screen[0] + 32.0f;
+    bounds[3] = center_y + 32.0f;
+    if (!((real)(short)g_48564e > bounds[0] && (real)(short)g_48564c > bounds[2] &&
+        bounds[1] > (real)(short)g_48564a && bounds[3] > (real)(short)g_485648)) return;
     function_1cc30(10);
     function_1c710(g_51f0f0);
     g_4b8448 = 0x901; D3DDevice_SetRenderState(D3DRS_CULLMODE, 0x901);
@@ -6180,10 +7945,10 @@ void function_46ea0(long tag, point3f const *position)
     function_1ccf0(&g_484f68);
     function_1cf50();
     D3DDevice::Begin(D3DPT_TRIANGLEFAN);
-    D3DDevice::SetVertexData4f(0, left, top, 16777215.0f, 16777215.0f);
-    D3DDevice::SetVertexData4f(0, right, top, 16777215.0f, 16777215.0f);
-    D3DDevice::SetVertexData4f(0, right, bottom, 16777215.0f, 16777215.0f);
-    D3DDevice::SetVertexData4f(0, left, bottom, 16777215.0f, 16777215.0f);
+    D3DDevice::SetVertexData4f(0, bounds[0], bounds[2], 16777215.0f, 16777215.0f);
+    D3DDevice::SetVertexData4f(0, bounds[1], bounds[2], 16777215.0f, 16777215.0f);
+    D3DDevice::SetVertexData4f(0, bounds[1], bounds[3], 16777215.0f, 16777215.0f);
+    D3DDevice::SetVertexData4f(0, bounds[0], bounds[3], 16777215.0f, 16777215.0f);
     D3DDevice::End();
     function_14bc0((short)g_4858b8, 0, true);
     function_1cc30(10);
@@ -6218,13 +7983,13 @@ void function_46ea0(long tag, point3f const *position)
     function_1cf50();
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     D3DDevice_SetVertexData2s(3, 0, 0);
-    D3DDevice_SetVertexData4f(0, left, top, 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, bounds[0], bounds[2], 16777215.0f, 16777215.0f);
     D3DDevice_SetVertexData2s(3, 1, 0);
-    D3DDevice_SetVertexData4f(0, right, top, 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, bounds[1], bounds[2], 16777215.0f, 16777215.0f);
     D3DDevice_SetVertexData2s(3, 1, 1);
-    D3DDevice_SetVertexData4f(0, right, bottom, 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, bounds[1], bounds[3], 16777215.0f, 16777215.0f);
     D3DDevice_SetVertexData2s(3, 0, 1);
-    D3DDevice_SetVertexData4f(0, left, bottom, 16777215.0f, 16777215.0f);
+    D3DDevice_SetVertexData4f(0, bounds[0], bounds[3], 16777215.0f, 16777215.0f);
     D3DDevice::End();
     function_46230(16, bounds);
     function_46230(17, bounds);
@@ -6276,13 +8041,13 @@ void function_46ea0(long tag, point3f const *position)
         ++i;
         D3DDevice_SetVertexData4f(9, 0.0f, 0.0f, 0.0f, strength / i);
         D3DDevice_SetVertexData2s(3, 0, 0);
-        D3DDevice_SetVertexData4f(0, left - offset, top - offset, 16777215.0f, 16777215.0f);
+        D3DDevice_SetVertexData4f(0, bounds[0] - offset, bounds[2] - offset, 16777215.0f, 16777215.0f);
         D3DDevice_SetVertexData2s(3, 1, 0);
-        D3DDevice_SetVertexData4f(0, right + offset, top - offset, 16777215.0f, 16777215.0f);
+        D3DDevice_SetVertexData4f(0, bounds[1] + offset, bounds[2] - offset, 16777215.0f, 16777215.0f);
         D3DDevice_SetVertexData2s(3, 1, 1);
-        D3DDevice_SetVertexData4f(0, right + offset, bottom + offset, 16777215.0f, 16777215.0f);
+        D3DDevice_SetVertexData4f(0, bounds[1] + offset, bounds[3] + offset, 16777215.0f, 16777215.0f);
         D3DDevice_SetVertexData2s(3, 0, 1);
-        D3DDevice_SetVertexData4f(0, left - offset, bottom + offset, 16777215.0f, 16777215.0f);
+        D3DDevice_SetVertexData4f(0, bounds[0] - offset, bounds[3] + offset, 16777215.0f, 16777215.0f);
         D3DDevice::End();
     } while (i < 16);
 }
@@ -6490,6 +8255,13 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     bool center, bool shift, bool clip, bool skip_state, real *depth_out);
 void function_47ea0(short stage, byte flags);
 
+// MiniMax I (11-15): no new form, no lower score (325): the length written with the three squared components in
+//   retail's order (j, k, i) reproduces retail's x87 association byte for byte, but the whole function scores 327
+//   because retail's per-iteration perspective test (test al, al; setne dl) is two instructions more than this
+//   build's, and that test needs a byte parameter, which changes the name of the declaration in another file.
+//   What still differs: retail reloads the three direction floats for the length (i, k, j order) where this build
+//   keeps the last store in st(0); loop 2's base is points + 0x10 against points + 0xc here; retail tests the
+//   perspective per iteration where this build loads it as a bool.
 // score 325 (was 383; 1582 bytes, retail 1592). Round 2 of #1066 found this form; it was held while it cost then-matched
 // 0x41640 (unknown_0350e0.cpp), which matched only through whole-image layout and was given up in r695. Walked against retail:
 // control flow, both clamps, the 0x3a5c0/0x484b0/0x480a0 arguments and the constants
@@ -6667,6 +8439,36 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     bool center, bool shift, bool clip, bool skip_state, real *depth_out);
 void function_1cf80();
 
+PRIVATE __forceinline real clamp_callback(real x, real low, real high);
+
+// MiniMax I (11-15): no new form, no lower score (529): a second pair of inline-depth pragmas around the two
+//   ZWRITEENABLE/ZFUNC calls would need a new pragma line, which is not allowed, and it moves the stage loop out of
+//   line as well (653). What still differs: retail calls 0x222d0 out of line for ZWRITEENABLE and ZFUNC
+//   (0x380b7, 0x380c6) where this build expands it; retail re-reads input+0x98/0x9c/0xa0 at each use in the clamps
+//   (0x37cf9..0x37d67); depth, z and w sit in different slots (retail z 0x10, depth 0x14, w 0x18).
+// MiniMax H (11-14): score 519 (was 529) - the existing inline_depth pair now starts at function_1cf80 instead of
+// at D3DDevice_Begin, so retail's out-of-line call to 0x1cbe0 (0x3816f) stays a call instead of being expanded
+// by the `inline` on its definition; the body is now retail's 2344 bytes and 0x1cbe0, 0x34a90 and 0x34d90 still
+// match. No new pragma line was added, the pair already in this file was moved. Still differs: retail calls
+// 0x222d0 out of line for ZWRITEENABLE/ZFUNC (0x380b7, 0x380c6) where ours expands it (a pair around those two
+// calls would need a second pragma and moves the stage loop out of line as well, 653); retail re-reads
+// input+0x98/0x9c/0xa0 at each use in the clamps; depth/z/w sit in different slots (retail z 0x10, depth 0x14, w 0x18).
+// score 529 (was 624), walked statement by statement against retail (b4A, 11-06). Behaviour/precision: no
+// field, offset, condition direction, callee, argument or constant differs. Differences fixed: the stage-1..3
+// loop stored ADDRESSV twice (retail 0x3810d stores ADDRESSU, ADDRESSV, then the filters, ten dirty-flag
+// updates; ADDRESSW is not stored); the colour block zero-filled all 0x34 bytes (rep stos) where retail stores
+// the thirteen fields one by one (0x37c79..0x37d8d, padding left alone: bytes 1-3, unread by 0x3a5c0 mode 3, so `= {0}` is not wanted); the two span-to-float conversions
+// were before 0x16b10, retail converts after it (0x37e91, 0x37eb6) and keeps the spans as ints in the meantime;
+// extents are read at each use (retail reloads them, 0x37aae/0x37ab7) so the frame is retail's 0x120.
+// Stage states go through sampler_state_write (retail keeps one dirty-flag update per state).
+// Still differs: retail calls 0x222d0 out of line for ZWRITEENABLE/ZFUNC (0x380b7, 0x380c6), ours inlines
+// them (a pragma pair around the two calls: 516); retail calls 0x1cbe0 at 0x3816f, ours inlines it because
+// its definition above is `inline` (without that keyword: 519, 2344 bytes as retail); retail re-reads
+// input+0x98/0x9c/0xa0 at each use in the clamps (0x37cf9..0x37d67) where clamp_callback reads once (the
+// same clamps as written ternaries: 584); depth/z/w sit in different slots (retail z 0x10, depth 0x14, w 0x18).
+// The one inline_depth pair around Begin..End replaces the volatile 0x3fb280 pointer and the four pairs
+// around SetVertexData4f (that form scores 710 on this body); with no pair at all 1400.
+// NOT kept (coordinator screen, MiniMax H 11-15): a new #pragma (reverted): `#pragma inline_depth(0)`; the body is main's again.
 // @retail 0x37a60
 bool __stdcall function_37a60(void *context)
 {
@@ -6674,45 +8476,39 @@ bool __stdcall function_37a60(void *context)
     long view_span_y = (short)g_48564c - (short)g_485648;
     byte *input = (byte *)context;
     byte *view = input + g_485600 * 0xb8;
+    real const *extents = (real const *)(view + 0x134);
     struct s_filter_vertex { real x, y; byte unknown08[0x10]; point2f coordinates[3]; };
     s_filter_vertex vertices[4];
-    void (WINAPI *volatile vertex2f)(INT, float, float) = D3DDevice_SetVertexData2f;
     {
-
-        real extent = *(real *)(view + 0x134 + 0 * 4);
-        vertices[0].coordinates[0].x = extent * -1.0f;
-        vertices[0].coordinates[0].y = extent * -1.0f;
-        vertices[1].coordinates[0].x = extent;
-        vertices[1].coordinates[0].y = extent * -1.0f;
-        vertices[2].coordinates[0].x = extent * -1.0f;
-        vertices[2].coordinates[0].y = extent;
-        vertices[3].coordinates[0].x = extent;
-        vertices[3].coordinates[0].y = extent;
-        }
+        vertices[0].coordinates[0].x = extents[0] * -1.0f;
+        vertices[0].coordinates[0].y = extents[0] * -1.0f;
+        vertices[1].coordinates[0].x = extents[0];
+        vertices[1].coordinates[0].y = extents[0] * -1.0f;
+        vertices[2].coordinates[0].x = extents[0] * -1.0f;
+        vertices[2].coordinates[0].y = extents[0];
+        vertices[3].coordinates[0].x = extents[0];
+        vertices[3].coordinates[0].y = extents[0];
+    }
     {
-
-        real extent = *(real *)(view + 0x134 + 1 * 4);
-        vertices[0].coordinates[1].x = extent * -1.0f;
-        vertices[0].coordinates[1].y = extent * -1.0f;
-        vertices[1].coordinates[1].x = extent;
-        vertices[1].coordinates[1].y = extent * -1.0f;
-        vertices[2].coordinates[1].x = extent * -1.0f;
-        vertices[2].coordinates[1].y = extent;
-        vertices[3].coordinates[1].x = extent;
-        vertices[3].coordinates[1].y = extent;
-        }
+        vertices[0].coordinates[1].x = extents[1] * -1.0f;
+        vertices[0].coordinates[1].y = extents[1] * -1.0f;
+        vertices[1].coordinates[1].x = extents[1];
+        vertices[1].coordinates[1].y = extents[1] * -1.0f;
+        vertices[2].coordinates[1].x = extents[1] * -1.0f;
+        vertices[2].coordinates[1].y = extents[1];
+        vertices[3].coordinates[1].x = extents[1];
+        vertices[3].coordinates[1].y = extents[1];
+    }
     {
-
-        real extent = *(real *)(view + 0x134 + 2 * 4);
-        vertices[0].coordinates[2].x = extent * -1.0f;
-        vertices[0].coordinates[2].y = extent * -1.0f;
-        vertices[1].coordinates[2].x = extent;
-        vertices[1].coordinates[2].y = extent * -1.0f;
-        vertices[2].coordinates[2].x = extent * -1.0f;
-        vertices[2].coordinates[2].y = extent;
-        vertices[3].coordinates[2].x = extent;
-        vertices[3].coordinates[2].y = extent;
-        }
+        vertices[0].coordinates[2].x = extents[2] * -1.0f;
+        vertices[0].coordinates[2].y = extents[2] * -1.0f;
+        vertices[1].coordinates[2].x = extents[2];
+        vertices[1].coordinates[2].y = extents[2] * -1.0f;
+        vertices[2].coordinates[2].x = extents[2] * -1.0f;
+        vertices[2].coordinates[2].y = extents[2];
+        vertices[3].coordinates[2].x = extents[2];
+        vertices[3].coordinates[2].y = extents[2];
+    }
     for (long stage = 0; stage < 3; ++stage)
     {
         real constants[4];
@@ -6722,55 +8518,54 @@ bool __stdcall function_37a60(void *context)
         constants[3] = 0.0f;
         D3DDevice_SetVertexShaderConstantFast(-75 + stage, constants, 1);
     }
-    byte configuration[0x34] = { 0 };
+    byte configuration[0x34];
     configuration[0] = true;
     real gain = *(real *)(view + 0x14c) * *(real *)(view + 0x148);
     real red = *(real *)(view + 0xec) * gain;
     real green = *(real *)(view + 0xf0) * gain;
     real blue = *(real *)(view + 0xf4) * gain;
-    *(real *)(configuration + 8) = red < 0.0f ? 0.0f : (red > 1.0f ? 1.0f : red);
-    *(real *)(configuration + 0x14) = green < 0.0f ? 0.0f : (green > 1.0f ? 1.0f : green);
-    *(real *)(configuration + 0x20) = blue < 0.0f ? 0.0f : (blue > 1.0f ? 1.0f : blue);
-    real r = *(real *)(input + 0x98);
-    real g = *(real *)(input + 0x9c);
-    real b = *(real *)(input + 0xa0);
-    *(real *)(configuration + 0x28) = r < 0.0f ? 0.0f : (r > 1.0f ? 1.0f : r);
-    *(real *)(configuration + 0x2c) = g < 0.0f ? 0.0f : (g > 1.0f ? 1.0f : g);
-    *(real *)(configuration + 0x30) = b < 0.0f ? 0.0f : (b > 1.0f ? 1.0f : b);
+    *(real *)(configuration + 4) = 0.0f;
+    *(real *)(configuration + 8) = clamp_callback(red, 0.0f, 1.0f);
+    *(real *)(configuration + 0xc) = 0.0f;
+    *(real *)(configuration + 0x10) = 0.0f;
+    *(real *)(configuration + 0x14) = clamp_callback(green, 0.0f, 1.0f);
+    *(real *)(configuration + 0x18) = 0.0f;
+    *(real *)(configuration + 0x1c) = 0.0f;
+    *(real *)(configuration + 0x20) = clamp_callback(blue, 0.0f, 1.0f);
+    *(real *)(configuration + 0x24) = 0.0f;
+    *(real *)(configuration + 0x28) = clamp_callback(*(real *)(input + 0x98), 0.0f, 1.0f);
+    *(real *)(configuration + 0x2c) = clamp_callback(*(real *)(input + 0x9c), 0.0f, 1.0f);
+    *(real *)(configuration + 0x30) = clamp_callback(*(real *)(input + 0xa0), 0.0f, 1.0f);
     real depth;
     if (function_3a5c0(configuration, *(real *)(input + 0x80), *(real *)(input + 0x84), 3,
         false, false, true, true, &depth))
     {
         real ratio = g_485ad4.hi / (g_485ad4.hi - g_485ad4.lo);
-        real z = ((ratio * depth - ratio * g_485ad4.lo) / depth) * 16777215.0f;
-        if (z < 0.0f) z = 0.0f;
-        else if (z > 16777215.0f) z = 16777215.0f;
-        real w = (depth / g_485ad4.hi) * 16777215.0f;
-        if (w < 0.0f) w = 0.0f;
-        else if (w > 16777215.0f) w = 16777215.0f;
+        real z = clamp_callback(((ratio * depth - ratio * g_485ad4.lo) / depth) * 16777215.0f, 0.0f, 16777215.0f);
+        real w = clamp_callback((depth / g_485ad4.hi) * 16777215.0f, 0.0f, 16777215.0f);
         real x = (real)(short)g_48564a;
         real y = (real)(short)g_485648;
-        real width = (real)view_span_x;
-        real height = (real)view_span_y;
         g_4670bc = true;
         function_16b10((s_render_reset_state *)g_485b48);
+        real width = (real)view_span_x;
+        real height = (real)view_span_y;
         vertices[0].x = x - 0.5f; vertices[0].y = y - 0.5f;
         vertices[1].x = width + x - 0.5f; vertices[1].y = y - 0.5f;
         vertices[2].x = x - 0.5f; vertices[2].y = height + y - 0.5f;
         vertices[3].x = width + x - 0.5f; vertices[3].y = height + y - 0.5f;
         function_14bc0((short)g_4858b8, 0, true);
         function_14f60(0, 3);
-        D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSU, 3);
-        D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSV, 3);
-        D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSW, 3);
-        D3DDevice_SetTextureStageState(0, D3DTSS_MAGFILTER, 1);
-        D3DDevice_SetTextureStageState(0, D3DTSS_MINFILTER, 1);
-        D3DDevice_SetTextureStageState(0, D3DTSS_MIPFILTER, 0);
-        D3DDevice_SetTextureStageState(0, D3DTSS_MAXANISOTROPY, 0);
-        D3DDevice_SetTextureStageState(0, D3DTSS_MIPMAPLODBIAS, 0);
-        D3DDevice_SetTextureStageState(0, D3DTSS_MAXMIPLEVEL, 0);
-        D3DDevice_SetTextureStageState(0, D3DTSS_COLORSIGN, 0);
-        D3DDevice_SetTextureStageState(0, D3DTSS_ALPHAKILL, 0);
+        sampler_state_write(0, D3DTSS_ADDRESSU, 3);
+        sampler_state_write(0, D3DTSS_ADDRESSV, 3);
+        sampler_state_write(0, D3DTSS_ADDRESSW, 3);
+        sampler_state_write(0, D3DTSS_MAGFILTER, 1);
+        sampler_state_write(0, D3DTSS_MINFILTER, 1);
+        sampler_state_write(0, D3DTSS_MIPFILTER, 0);
+        sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
+        sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
+        sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
+        sampler_state_write(0, D3DTSS_COLORSIGN, 0);
+        sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
         g_4b8308 = 0x10101; D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x10101);
         g_4b82e8 = 1; D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
         g_4b82f4 = 1; D3DDevice_SetRenderState(D3DRS_SRCBLEND, 1);
@@ -6789,52 +8584,44 @@ bool __stdcall function_37a60(void *context)
         for (long stage = 1; stage < 4; ++stage)
         {
             function_143c0(*(long *)(input + 4 + (stage - 1) * 8), 0, (short)stage, 0.0f);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSU, 1);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 1);
-            /* retail sets ADDRESSV a second time here (eleven dirty-flag updates, ADDRESSW never stored) */
-            D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 1);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_MAGFILTER, 2);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_MINFILTER, 2);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_MIPFILTER, 2);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_MAXMIPLEVEL, 0);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_MAXANISOTROPY, 0);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_MIPMAPLODBIAS, 0);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_COLORSIGN, 0);
-            D3DDevice_SetTextureStageState(stage, D3DTSS_ALPHAKILL, 0);
+            sampler_state_write(stage, D3DTSS_ADDRESSU, 1);
+            sampler_state_write(stage, D3DTSS_ADDRESSV, 1);
+            sampler_state_write(stage, D3DTSS_MAGFILTER, 2);
+            sampler_state_write(stage, D3DTSS_MINFILTER, 2);
+            sampler_state_write(stage, D3DTSS_MIPFILTER, 2);
+            sampler_state_write(stage, D3DTSS_MAXMIPLEVEL, 0);
+            sampler_state_write(stage, D3DTSS_MAXANISOTROPY, 0);
+            sampler_state_write(stage, D3DTSS_MIPMAPLODBIAS, 0);
+            sampler_state_write(stage, D3DTSS_COLORSIGN, 0);
+            sampler_state_write(stage, D3DTSS_ALPHAKILL, 0);
         }
         function_1cf80();
         function_1cbe0(0, 0, 0x15);
         function_1c710(g_51f0f0);
+        #pragma inline_depth(0)
         D3DDevice_Begin((D3DPRIMITIVETYPE)9);
-        vertex2f(1, vertices[0].x, vertices[0].y);
-        vertex2f(2, vertices[0].coordinates[0].x, vertices[0].coordinates[0].y);
-        vertex2f(3, vertices[0].coordinates[1].x, vertices[0].coordinates[1].y);
-        vertex2f(4, vertices[0].coordinates[2].x, vertices[0].coordinates[2].y);
-        #pragma inline_depth(0)
+        D3DDevice_SetVertexData2f(1, vertices[0].x, vertices[0].y);
+        D3DDevice_SetVertexData2f(2, vertices[0].coordinates[0].x, vertices[0].coordinates[0].y);
+        D3DDevice_SetVertexData2f(3, vertices[0].coordinates[1].x, vertices[0].coordinates[1].y);
+        D3DDevice_SetVertexData2f(4, vertices[0].coordinates[2].x, vertices[0].coordinates[2].y);
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, vertices[0].x, vertices[0].y, z, w);
-        #pragma inline_depth(255)
-        vertex2f(1, vertices[1].x, vertices[1].y);
-        vertex2f(2, vertices[1].coordinates[0].x, vertices[1].coordinates[0].y);
-        vertex2f(3, vertices[1].coordinates[1].x, vertices[1].coordinates[1].y);
-        vertex2f(4, vertices[1].coordinates[2].x, vertices[1].coordinates[2].y);
-        #pragma inline_depth(0)
+        D3DDevice_SetVertexData2f(1, vertices[1].x, vertices[1].y);
+        D3DDevice_SetVertexData2f(2, vertices[1].coordinates[0].x, vertices[1].coordinates[0].y);
+        D3DDevice_SetVertexData2f(3, vertices[1].coordinates[1].x, vertices[1].coordinates[1].y);
+        D3DDevice_SetVertexData2f(4, vertices[1].coordinates[2].x, vertices[1].coordinates[2].y);
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, vertices[1].x, vertices[1].y, z, w);
-        #pragma inline_depth(255)
-        vertex2f(1, vertices[2].x, vertices[2].y);
-        vertex2f(2, vertices[2].coordinates[0].x, vertices[2].coordinates[0].y);
-        vertex2f(3, vertices[2].coordinates[1].x, vertices[2].coordinates[1].y);
-        vertex2f(4, vertices[2].coordinates[2].x, vertices[2].coordinates[2].y);
-        #pragma inline_depth(0)
+        D3DDevice_SetVertexData2f(1, vertices[2].x, vertices[2].y);
+        D3DDevice_SetVertexData2f(2, vertices[2].coordinates[0].x, vertices[2].coordinates[0].y);
+        D3DDevice_SetVertexData2f(3, vertices[2].coordinates[1].x, vertices[2].coordinates[1].y);
+        D3DDevice_SetVertexData2f(4, vertices[2].coordinates[2].x, vertices[2].coordinates[2].y);
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, vertices[2].x, vertices[2].y, z, w);
-        #pragma inline_depth(255)
-        vertex2f(1, vertices[3].x, vertices[3].y);
-        vertex2f(2, vertices[3].coordinates[0].x, vertices[3].coordinates[0].y);
-        vertex2f(3, vertices[3].coordinates[1].x, vertices[3].coordinates[1].y);
-        vertex2f(4, vertices[3].coordinates[2].x, vertices[3].coordinates[2].y);
-        #pragma inline_depth(0)
+        D3DDevice_SetVertexData2f(1, vertices[3].x, vertices[3].y);
+        D3DDevice_SetVertexData2f(2, vertices[3].coordinates[0].x, vertices[3].coordinates[0].y);
+        D3DDevice_SetVertexData2f(3, vertices[3].coordinates[1].x, vertices[3].coordinates[1].y);
+        D3DDevice_SetVertexData2f(4, vertices[3].coordinates[2].x, vertices[3].coordinates[2].y);
         D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, vertices[3].x, vertices[3].y, z, w);
-        #pragma inline_depth(255)
         D3DDevice_End();
+        #pragma inline_depth(255)
         D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
         D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
         D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
@@ -6858,16 +8645,131 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
+// MiniMax I (11-16): no new form, no lower score (130): the frame is 0x5c here against retail's 0x58 - the blur block's two address-taken locals cost twelve bytes where retail's cost eight - with the frame pointer saved in the prologue where retail saves it around the filter loop, so every slot sits four bytes off; the grid's stores also come in another order and the blur block keeps its 0.9 constant in another register.
+// MiniMax C (11-14): no new form, no lower score (130): the permuter searched the body over the reduced image for 300 s and left the baseline where it was, and the grid's fields are still stored in this build's order.
+// MiniMax D (11-14): no new form, no lower score (130): retail's frame is 0x58 bytes with the grid filling it and the
+// frame pointer pushed around the filter loop, while this build reserves 0x5c with the pointer pushed in the prologue,
+// so every stack slot sits four bytes off; the earlier round's four bounds read straight from the globals reach 125, a
+// gain under the bar, and this round found no other form, so the body stands.
+// MiniMax H (11-13): no new form kept, no lower score (130): the four screen bounds read straight from the
+// globals score 125, a gain under the bar, so the body stands; the permuter ran on this function for 600 s over
+// the reduced image and left the baseline where it was (130 differing instructions in both the reduced and the
+// full image), so no permutation of the body beats it.
+// globals score 125, a gain under the bar, so the body stands.
+// MiniMax B (11-11), NOT kept (coordinator): 130 -> 120 stores the grid's fields in another order picked by score
+// (match-only). The lead as written: the grid is stored in the order retail stores it, the
+// two left values first, then the top, the right and the bottom, and only then the zero and one values,
+// so the sixteen stores fall in retail's order; what still differs is that this build reserves a frame
+// of 0x5c with the same twenty-two slots four bytes lower than retail's 0x58 and one slot unused at the
+// top, the frame pointer is saved in the prologue where retail saves it around the filter loop, and the
+// blur block loads the 0.9 and 1.0 constants into other registers and computes the distortion in
+// another order.
+// MiniMax C (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43) and frames 0x58, this build saves it in the prologue and frames 0x5c, so every stack slot sits four bytes off and the four unused bytes above the grid remain.
+// MiniMax D (11-10): no new form, no lower score (139); the frame is still 0x5c with a frame pointer pushed in
+// the prologue against retail's 0x58, where retail keeps ebp for the grid loop's counter and pushes it only around
+// that block, so every stack slot sits eight bytes off; the ramp function and the strength pair are called the
+// same way in both builds.
+// MiniMax S (11-09): no new form, no lower score (139): retail's frame is 0x58 bytes with the frame
+// pointer saved around the grid block and ours is 0x5c with the frame pointer saved in the prologue,
+// so every stack slot sits eight bytes off; the state local, the entry offset, the entry count and
+// the declaration order were tried this round and all leave the frame at 0x5c.
+// MiniMax D (11-09): no new form, no lower score (139); the frame is still 0x5c bytes here with the frame
+// pointer saved in the prologue, while retail's frame is 0x58 bytes and retail saves the frame pointer
+// around the grid block, so every stack slot sits four bytes off; inlining the four grid bounds, dropping
+// the byte-offset variable and moving the state pointer into the blur block all leave the frame at 0x5c.
+// MiniMax A (11-06, run 52): no new form, no lower score (139) - retail's frame is 0x58 bytes with the
+// grid filling it and the frame pointer pushed inside the loop.
 
+// MiniMax C (11-06): no new form, no lower score - retail's frame is still 0x58 bytes with the frame
+// pointer pushed inside the grid block and every local four bytes higher than ours, while ours is still
+// 0x5c with the pointer pushed in the prologue; the six forms tried this round (separate locals for the
+// weights and the grid, a merged loop head, a while loop, an index-multiplied address and two others)
+// all leave the frame at 0x5c.
 // MiniMax D (11-05): no new form, no lower score - retail's frame is 0x58 bytes with the grid filling it and the frame pointer pushed inside the loop, ours is 0x5c with the pointer pushed in the prologue, so every stack slot sits four bytes off.
+// MiniMax B (11-11): improved to 130 (was 139); the entry address is now taken from the index
+// (base + i * 0x24), so the byte offset is an induction variable zeroed in the preheader the way
+// retail does it, and the filter loop from its head to its end now matches retail instruction for
+// instruction; what still differs is that this build reserves a frame of 0x5c with the same
+// twenty-two slots four bytes lower than retail's 0x58 and one slot unused at the top, the frame
+// pointer is saved in the prologue where retail saves it around the filter loop, the grid is
+// stored in another order (retail keeps the two left values, the top, the right and the bottom
+// before the zero and one values), and the blur block loads the 0.9 and 1.0 constants into other
+// registers and computes the distortion in another order.
 // MiniMax H (11-04): no new form, no lower score; the counter in the loop head gives 205, the entry
 // pointer as the induction variable 172 and both together 183 against 139, so retail's pushed frame
 // pointer and its 0x58 frame still stand.
 // MiniMax H (11-03): no new form, no lower score; retail saves edi in the prologue and keeps the scenario pointer in it across the loop's call with ebp as the counter, where ours saves edi inside the block and keeps the pointer in ecx, so every stack slot sits four bytes off; the scenario pointer in a local gives 148 and was dropped.
 // MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
-// score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
+// MiniMax E (11-10): no new form, no lower score (139); the frame's four extra bytes sit above the grid and the
+// frame pointer's push inside the loop decides them.
+// MiniMax E (11-11): no new form, no lower score (139); retail's frame is 0x58 bytes with the frame pointer pushed
+// inside the filter loop, ours is 0x5c with it in the prologue, so every stack slot sits four bytes off.
+// MiniMax H (11-12): no new form, no lower score (130): this build still pushes ebp in the prologue and frames 0x5c while retail pushes ebx, esi and edi and frames 0x58, saving ebp around the filter loop instead, so every stack slot sits four bytes off and the grid's stores come in another order.
+// MiniMax B (11-14): score 125 (was 130): the grid's four bounds are read straight from the globals, so the
+// one-use left/top/right/bottom locals are gone; the grid's stores still come in the source order (grid[0].x,
+// grid[0].y and so on) where retail stores the two left values first, then the top, the right and the bottom,
+// then the zeros and the ones; what still differs is the frame, which is 0x5c here against retail's 0x58 with
+// four unused bytes above the grid (the blur block reserves a slot for the strength local and then keeps the
+// strength in the dead blur argument's slot), and ebp, which this build pushes in the prologue where retail
+// saves it around the filter loop, so every stack slot still sits four bytes off.
+// MiniMax B (11-14, later): no new form, no lower score (125); retail's blur block keeps the 0.9 in xmm5 across
+// the ramp call and stores it in the distortion slot before that call, and moving our initialisation above the
+// call reproduces that block instruction for instruction but scores 129, so the kept form stands; the clamp's own
+// local, the state local, the loop counter's type and the grid's scope each leave the frame at 0x5c; our
+// twenty-two slots sit at the same offsets from the frame's bottom as retail's (the distortion at the bottom, the
+// ramp result four above it, the weights eight to twenty and the grid twenty-four to eighty-four), so the whole
+// difference is the one unused slot at the top and the frame pointer saved in the prologue where retail saves it
+// around the filter loop; the grid's sixteen stores carry the same values on both sides, only their order differs.
+// MiniMax R (11-15): no new form, no lower score (130): this build still reserves a 0x5c frame and saves the frame pointer in the prologue where retail reserves 0x58 and saves it around the filter loop, so every stack slot sits four bytes off.
+// score 130 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
+// MiniMax E (11-09): no new form, no lower score (139); retail calls 0x137a0 for the ramp's value where our
+// build expands it into the float arithmetic, and the ramp's three results sit in different frame slots
+// (retail's esp+0xc, esp+0x6c and esp+0x10 against our esp+0x10, esp+0x14 and esp+0x74), so the difference
+// is not only the four-byte frame offset.
+// MiniMax B (11-11): no new form, no lower score (139); the blur block is instruction for instruction retail's
+// except that retail's 137a0 writes its first result at entry-0x54 and ours writes it at entry-0x58, so the
+// whole frame is four bytes out: retail reserves 0x58 with its twenty-two slots packed exactly (the distortion
+// at entry-0x58, the ramp result at entry-0x54, the weights at entry-0x50..entry-0x44 and the grid at
+// entry-0x40..entry-0x04) while this build reserves 0x5c with the same twenty-two slots four bytes lower and
+// one slot unused at the top; retail also stores the grid in a different order (the two left values first, then
+// the top, the right and the bottom, then the zero and one values) than this build's entry order; the forms
+// tried (the four bounds read straight from the globals, the counter hoisted out of the for statement, the
+// distortion and the extra swapped, the state local removed, the byte offset moved into the for statement and
+// the declaration orders) all leave the score at 139 or worse.
+// MiniMax B (11-11): no new form, no lower score (139); retail saves ebp around the filter loop (at 0x13a43, popped
+// at 0x13b72) and frames 0x58, while this build saves it in the prologue and frames 0x5c, so every instruction
+// after the prologue pairs against the wrong one and the rest of the function cannot be read off the diff.
+// MiniMax A (11-12): no new form, no lower score (130); this build pushes ebp in the prologue and frames 0x5c while
+// retail pushes ebx, esi and edi and frames 0x58, saving ebp around the filter loop instead, so every stack slot sits
+// four bytes off; the grid's fields stored in retail's order give 120, but that form was already rejected as a store
+// order picked by score.
+// MiniMax B (11-15), NOT kept: 125 (was 130), a 5-point gain, under the 8-point bar for a function above 30.
+// MiniMax S (11-14): no new form, no lower score (130): the frame contents are retail's (the ramp result in the
+// blur argument slot, the distortion, the weights and the grid), but this build still saves the frame pointer in
+// the prologue and reserves 0x5c, so every slot sits four bytes off and no source form tried here moves it.
+// MiniMax R (11-16): no new form, no lower score (130): the frame is 0x5c here against retail's 0x58, with the frame
+// pointer saved in the prologue where retail saves it around the filter loop, so the distortion, strength, weights
+// and grid homes all sit four bytes off.
+// MiniMax E (11-15): no new form, no lower score (130): the frame stays at 0x5c with the frame pointer saved in the prologue (retail reserves 0x58 and saves it around the filter loop), and removing the clamp's own local through the file's clamp_callback helper leaves both the frame and the score unchanged.
+// MiniMax S (11-16): no new form, no lower score (130): the frame stays 0x5c here against retail's 0x58 with the
+// frame pointer saved in the prologue where retail saves it around the filter loop, so the distortion, strength,
+// weights and grid homes sit four bytes off; reading the four grid bounds straight from the globals drops the
+// score to 125 but leaves the frame at 0x5c, and dropping the scaled local as well leaves the frame unchanged.
+// b8D (11-17) walk against retail, fast build on r836 (CAVEAT: 7 globals outside the reduced image): the whole body
+// agrees statement by statement: the g_485890 test and reload (0x13887..0x138ad), the 137a0 outputs with strength in
+// the blur argument's slot (0x138ce..0x138e9), distortion 0.9 before the call and (1 - (1 - range4)) * 0.9 after it
+// (0x138f0..0x1390d), the strength clamp (0x13938..0x13947), both blends (0x1395d..0x1398b), the 214f0 arguments and
+// their order (0x13991..0x139b5, constants 0x407f7cee and 0x3e800000), the g_485898 5..7 test, the grid and its
+// 16 stores' slots (0x13a0d..0x13a98), the per-entry tests and weights, and the two != 0.0 tests whose jp/jnp
+// (0x13b30, 0x13b3f) send NaN to the call. No behaviour difference. The frame's extra 4 bytes depend on the `finish`
+// parameter being read at the tail: an unconditional 0x2df00 call (793 bytes, 134) or a test of a global in its
+// place both give retail's 0x58 frame, with ebp still pushed in the prologue; a local copy of `finish` (at the top,
+// at the tail, or `!= 0`) stays 0x5c. Also 130 with the frame unchanged: strength as a reference to the blur
+// argument's slot, the weights and grid declared at the top, the grid as real[16]; the blur block alone frames 8
+// and the grid block alone 0x50, so the hole only exists with both and the live `finish` (retail reads it at 0x13b73,
+// after the pop of ebp at 0x13b72).
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
@@ -6889,8 +8791,8 @@ void __stdcall function_13870(bool finish, bool blur)
             distortion = (1.0f - (1.0f - state->range[4])) * 0.9f;
         if (strength > 0.0f)
         {
-            strength = (extra + 1.0f) * strength * 0.5f;
-            strength = 0.0f > strength ? 0.0f : strength > 1.0f ? 1.0f : strength;
+            real scaled = (extra + 1.0f) * strength * 0.5f;
+            strength = 0.0f > scaled ? 0.0f : scaled > 1.0f ? 1.0f : scaled;
             if (g_4b9fd0 > 0.0f)
             {
                 distortion = (g_4b9fd4 - distortion) * g_4b9fd0 + distortion;
@@ -6901,8 +8803,8 @@ void __stdcall function_13870(bool finish, bool blur)
     }
     if (g_4e0350 && !(g_485898 >= 5 && g_485898 <= 7) && !g_485607 && !g_4850c8 && function_022710())
     {
-        struct { real weights[4]; s_filter_vector grid[4]; } scratch;
-        s_filter_vector *grid = scratch.grid;
+        real weights[4];
+        s_filter_vector grid[4];
         real left = (real)g_4b9dd2;
         real top = (real)g_4b9dd0;
         real right = (real)g_4b9dd6;
@@ -6911,22 +8813,20 @@ void __stdcall function_13870(bool finish, bool blur)
         grid[1].x = right; grid[1].y = top; grid[1].z = 1.0f; grid[1].w = 0.0f;
         grid[2].x = left; grid[2].y = bottom; grid[2].z = 0.0f; grid[2].w = 1.0f;
         grid[3].x = right; grid[3].y = bottom; grid[3].z = 1.0f; grid[3].w = 1.0f;
-        dword byte_offset = 0;
-        for (long i = 0; i < *(long *)((byte *)g_4e0350 + 0x3d0); ++i, byte_offset += 0x24)
+        for (long i = 0; i < *(long *)((byte *)g_4e0350 + 0x3d0); ++i)
         {
-                byte *entry = *(byte **)((byte *)g_4e0350 + 0x3d4) + byte_offset;
-                if (*(long *)(entry + 0x14) != NONE &&
-                    (*(short *)(entry + 0x20) != NONE || *(short *)(entry + 0x22) != NONE))
-                {
-                    real *weights = scratch.weights;
-                    weights[0] = 0.0f; weights[1] = 0.0f; weights[2] = 0.0f; weights[3] = 0.0f;
-                    if (*(short *)(entry + 0x20) != NONE)
-                        weights[0] = scenario_ramp_evaluate_current(*(short *)(entry + 0x20));
-                    if (*(short *)(entry + 0x22) != NONE)
-                        weights[1] = scenario_ramp_evaluate_current(*(short *)(entry + 0x22));
-                    if (weights[0] != 0.0f || weights[1] != 0.0f)
-                        function_2d140(*(long *)(entry + 0x14), weights, 2, 2, grid);
-                }
+            byte *entry = *(byte **)((byte *)g_4e0350 + 0x3d4) + i * 0x24;
+            if (*(long *)(entry + 0x14) != NONE &&
+                (*(short *)(entry + 0x20) != NONE || *(short *)(entry + 0x22) != NONE))
+            {
+                weights[0] = 0.0f; weights[1] = 0.0f; weights[2] = 0.0f; weights[3] = 0.0f;
+                if (*(short *)(entry + 0x20) != NONE)
+                    weights[0] = scenario_ramp_evaluate_current(*(short *)(entry + 0x20));
+                if (*(short *)(entry + 0x22) != NONE)
+                    weights[1] = scenario_ramp_evaluate_current(*(short *)(entry + 0x22));
+                if (weights[0] != 0.0f || weights[1] != 0.0f)
+                    function_2d140(*(long *)(entry + 0x14), weights, 2, 2, grid);
+            }
         }
     }
     if (finish) function_2df00();
@@ -6960,6 +8860,79 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax E (11-15): no new form, no lower score (299): the group index is still sign-extended where retail moves the dword, and the group's counter and the facing float still sit in different homes.
+// MiniMax H (11-13): no new form, no lower score (299): the count's early test is retail's mov eax, [edi + 8]; test
+// eax, eax; jle where ours compares the memory with 1 (cmp dword ptr [edi + 8], 1; jl); spelling the test as
+// *(long *)(definition + 8) <= 0 lines the instruction stream up with retail's from the start and so shows the real
+// difference, 310 instructions, but it scores 313, and with it the group index's sign extension (movzx esi, ax against
+// retail's mov esi, eax) and the index slot at [esp + 0x3c] against retail's [esp + 0x54]; counting the group after
+// the test, as retail does at 0x4f7a5, measures 300.
+// MiniMax G (11-13): no new form, no lower score (299): the thirty-two bit group index forms measure 506 to 507 again (a for loop over the counter 506, the counter as an int 507, the index widened by a cast 506), so the group index is still sign-extended where retail moves the thirty-two bit value, and the body stands.
+// MiniMax S (11-11): no new form, no lower score (299): the group index is still sign-extended (movsx esi, ax)
+// where retail moves the thirty-two bit index, the index slot still sits at [esp+0x3c] against retail's [esp+0x58],
+// an extra mov edi, edi still stands in the loop head and the body is still three bytes longer than retail's; the
+// thirty-two bit index forms score 507 to 514 and the permuter ran to the outer time limit and was stopped with no
+// result, so the body stands.
+// MiniMax D (11-10): NOT kept: 298, one below S's 299 already in main (under the 8-point bar): a for loop over
+// an unsigned short counter; the group counter is 16 bits wide and the early exit compares the
+// group count with one; the loop keeps a single counter and recomputes the stride with imul, the frame is
+// 0x1894 as in retail's and the function is 2000 bytes as in retail's. What still differs: retail's early exit
+// loads the count and tests it while this build compares the count in memory with one, so this build's exit is
+// one instruction shorter; retail's loop bottom compares a 32-bit counter where this build widens the 16-bit
+// one, and that counter wraps for counts above 65535 where retail's does not.
+// score 310 (was 310): this round: no new form and no lower score; the loop still strength-reduces
+// group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and
+// the zero for both counters lives in EBP where retail keeps a single counter and an imul.
+// MiniMax S (11-09): the group loop is a while loop over a 16-bit index with the step at the end of the body,
+// which drops the strength-reduced second counter and the zero register: the frame is 0x1894 as in retail, the
+// count test is a test/jle and the loop head carries the imul of the 0x98 stride.
+// MiniMax E (11-10): no new form, no lower score (299); the sign-extended group index and the index slot's
+// place in the frame are what the loop's induction variable fixes.
+// MiniMax H (11-12): no new form, no lower score (299): the group index is still sign-extended where retail moves the 32-bit index, the index slot still sits at another offset in the frame, and this build still strength-reduces the group stride into a second counter, which makes the frame 0x1898 against retail's 0x1894.
+// MiniMax B (11-13): no new form, no lower score (299): the group index is still sixteen bits wide where retail
+// moves the 32-bit index, the while-loop form keeps retail's 0x1894 frame, and retail's stride is still an imul of
+// the 0x98 against this build's strength reduction into a second counter.
+// MiniMax H (11-14): no new form, no lower score (299): retail's entry loads the count into a register and tests
+// it, this build compares the count in memory with one, the group index is still sixteen bits wide where retail
+// moves the thirty-two bit index, and the index slot sits at [esp+0x3c] against retail's [esp+0x58]; the
+// thirty-two bit counter reads 514 and the "<= 0" count test reads 313.
+// MiniMax C (11-14): no new form, no lower score (299): retail's entry guard loads the group count into a
+// register and tests it (mov eax,[edi+8]; test eax,eax; jle) where this build compares the count in memory
+// with one; the group index is still sign-extended where retail moves the thirty-two bit index, and the index
+// slot sits at [esp+0x3c] against retail's [esp+0x58]; the "<= 0" count test reads 313 and the thirty-two bit
+// counter reads 514.
+// MiniMax R (11-15): no new form, no lower score (299): re-measured in the reduced image with 0x46ea0 and
+// 0x1f5c0 as controls; the group index is still sign-extended where retail moves the 32-bit index, the index
+// slot still sits at [esp+0x3c] against retail's [esp+0x58], and the body is still three bytes longer than
+// retail's, so the body stands.
+// MiniMax C (11-16): score 299 (was 299): no new form, no lower score; retail's entry loads the group count
+// into a register and tests it where this build compares the count in memory with one, the group index is
+// still widened from sixteen bits (movzx esi, ax) where retail moves the thirty-two bit index, and the
+// index slot sits at [esp+0x3c] against retail's [esp+0x58]; a thirty-two bit counter strength-reduces the
+// 0x98 stride into a second counter (506) and the for-loop form keeps the counter in a slot (300).
+// MiniMax C (11-17): no new form, no lower score (299, was 299): our group index is still sign-extended (movsx esi, ax) where retail moves the 32-bit index, the index slot still sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi still stands in the loop head, and the body is still 3 bytes longer than retail's.
+// score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
+// 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
+// the loop head, and the body is 3 bytes longer than retail's.
+// MiniMax D (11-10): NOT kept: 298, one below S's 299 already in main (under the 8-point bar): a for loop over
+// an unsigned short counter; the group counter is 16 bits wide and the early exit compares the
+// group count with one; the loop keeps a single counter and recomputes the stride with imul, the frame is
+// 0x1894 as in retail's and the function is 2000 bytes as in retail's. What still differs: retail's early exit
+// loads the count and tests it while this build compares the count in memory with one, so this build's exit is
+// one instruction shorter; retail's loop bottom compares a 32-bit counter where this build widens the 16-bit
+// one, and that counter wraps for counts above 65535 where retail's does not.
+// MiniMax D (11-09): no new form, no lower score (310); the group stride is still strength-reduced into a
+// second counter kept in a stack slot, while retail recomputes the product with imul and keeps one counter,
+// and retail saves the frame pointer around the loop where this build saves it in the prologue, so the
+// frame is 0x1898 against retail's 0x1894 and every local above the counter sits four bytes higher.
+// MiniMax D (11-08): no new form, no lower score (310, measured on the full image); our loop still strength-reduces
+// group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and the zero for
+// both counters lives in EBP; a short group removes the slot and keeps the imul but scores 390 here.
+// MiniMax B (11-07): no new form, no lower score (310); the group stride is still strength-reduced into a second
+// counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894, the zero for the counters lives in EBP
+// and every local above that slot sits 4 bytes higher; writing the two count tests as equality tests (retail
+// compares with `test`, so a negative count behaves as retail's) leaves the code unchanged.
+// MiniMax C (11-07): round 53: no new form, no lower score; the permuter never left its baseline build.
 // fast score 310 (was 308), statement-by-statement walk against retail (f1D, 11-05): every field, offset,
 // condition direction, callee, argument, constant and loop/branch shape agrees with retail; the one
 // behaviour difference found is the order of the x87 sum for the facing cosine. Retail adds
@@ -6984,6 +8957,48 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
 // Permuter, 30 minutes (11-06, on the source before the facing-sum change): 291 only with call arguments swapped (pow's
 // two, function_13bb90's last two, function_4ff50's last two), which changes behaviour. Not kept.
+// MiniMax G (11-11): no new form, no lower score: the early exit as `<= 0` 313 (2003 bytes) - the load and the
+// test now match retail's, but the group index is still sixteen bits wide (movzx esi, ax against retail's
+// mov esi, eax), so everything after the loop head stays out of step; a thirty-two bit group index 514 (2011
+// bytes) and with the index copied into a named local 507 - the index is then strength-reduced into a second
+// counter at [esp+0x40] instead of retail's imul; a thirty-two bit index with the step at the end of the
+// body 513 (2000 bytes) - the loop's zero register moves to ebp and the frame pointer is pushed in the
+// prologue. The body was restored.
+// MiniMax R (11-11): no new form kept this round, no lower score (299): the +8 field test written as <= 0 gives retail's load, test and jle, but the one-byte shift it makes downstream raises the score to 313, so the original test stays.
+// MiniMax A (11-12): no new form, no lower score (299); the count test written as `<= 0` gives retail's load, test
+// and jle instead of a compare against 1, but the length that changes makes the rest of the body pair against the
+// wrong instruction and the score rises to 313, so the original stands.
+// MiniMax B (11-14): no new form, no lower score (299): retail increments the group counter on the path that skips
+// the entry body, and this build increments it only inside the body, so moving the increment out (the for-loop form)
+// gives 298 with retail's exact 2000-byte size and 0x1894 frame, but the counter still lives in a stack slot and the
+// zero register is EBP where retail has EAX, so the body stays one instruction out of step; a thirty-two bit counter
+// puts it in EAX but the compiler strength-reduces the 0x98 stride into a second counter (506, 507, 508). The body
+// stands.
+// MiniMax B (11-14, third pass): no new form, no lower score (299): retail's entry holds four instructions - the
+// load of the count, the test, the store of the definition pointer and the branch - where the compare against 1
+// gives three, and the checker pairs the two sides by instruction, so the pair after the entry no longer lines up;
+// the count test written as `<= 0` gives retail's four, and then the body agrees with retail instruction for
+// instruction from the entry to the group loop head, where retail moves its thirty-two bit group counter into esi
+// and this build widens its sixteen bit one with movzx. The increment of the group counter stands where this build
+// has it, inside the body, while retail counts every group: retail's increment is in the block that the skipped
+// groups also reach (0x4f7a2), and this build's counter would stand still on a group with no points. Moving the
+// increment out gives retail's exact 2000-byte length and 300, and with it the count test has to be `<= 0` as well,
+// which then puts the zero register in ebp (452) where retail has eax (313). A thirty-two bit group counter gives
+// retail's imul of the 0x98 stride its own counter at [esp+0x40] and a frame of 0x1898 (514).
+// MiniMax B (11-14, second pass): no new form, no lower score (299): the count test written as `<= 0` does give
+// retail's own load, test and jle, so the block matches instruction for instruction from `mov ecx, [g_4e3b44]` to the
+// branch, but the three bytes it takes off the entry make the rest of the body pair against the wrong instruction and
+// the score rises to 313, so the compare against 1 stays; a named count local makes no difference (313). What still
+// differs: retail's group counter is a thirty-two bit value in EAX, compared against the count in EAX, while this build
+// keeps the counter sixteen bits wide in a stack slot and widens it with movzx before the imul of the 0x98 stride;
+// retail keeps that counter at [esp+0x54] and the facing float at [esp+0x50] under its `push ebp` around the loop,
+// where this build keeps the counter at [esp+0x3c] and the facing at [esp+0x4c] without the push; and retail pads the
+// loop head with `push ebp; nop` where this build pads it with `push ebp; mov edi, edi`.
+// MiniMax D (11-15): no new form, no lower score (299): retail's first test jumps to a block placed after the function's end where ours jumps inside it, so the two streams are laid out differently from the entry.
+// MiniMax D (11-16): no new form, no lower score (299): the first test read as `<= 0` matches retail's `mov eax, [edi + 8]; test eax, eax; jle` byte for byte but scores 313 (the group's home and the fade's slots then sit four bytes off), and a 32-bit group counter costs four more frame bytes (514).
+// MiniMax S (11-16): no new form, no lower score (299): the group index is still widened from sixteen bits
+// where retail moves the thirty-two bit value, the group's home still sits at [esp+0x3c] against retail's
+// [esp+0x54], and retail's first test jumps to a block placed after the function's end.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -6991,7 +9006,7 @@ void __stdcall function_4f010(void *payload)
     s_42850_payload *state = (s_42850_payload *)payload;
     if (state->b == NONE) return;
     byte *definition = g_4e3b44[state->b & 0xffff].bytes;
-    if (*(long *)(definition + 8) <= 0) return;
+    if (*(long *)(definition + 8) < 1) return;
     real fade = 1.0f;
     vector3f direction;
     direction.i = g_4b9da0.x - state->position.x;
@@ -7009,7 +9024,8 @@ void __stdcall function_4f010(void *payload)
     g_46713c = true;
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);
-    for (long group = 0; group < *(long *)(definition + 8); ++group)
+    word group = 0;
+    while (group < *(long *)(definition + 8))
     {
         byte *entry = *(byte **)(definition + 0xc) + group * 0x98;
         if (*(long *)(entry + 0xc) > 0)
@@ -7027,7 +9043,8 @@ void __stdcall function_4f010(void *payload)
             real strength = 0.0f, horizontal = 1.0f, vertical = 0.0f;
             real output[2] = {1.0f, 1.0f};
             real start = 1.0f, multiplier = 1.0f, inverse = 1.0f, offset = 0.0f;
-            byte *positions = *(long *)(entry + 0x60) == count ? *(byte **)(entry + 0x64) : NULL;
+            byte *positions = NULL;
+            if (*(long *)(entry + 0x60) == count) positions = *(byte **)(entry + 0x64);
             if (*(dword *)(entry + 0x5c) & 1)
             {
                 real first = function_13bb90((s_tag_data *)(entry + 0x18), 0.0f, time);
@@ -7083,6 +9100,7 @@ void __stdcall function_4f010(void *payload)
             }
             function_4f7e0(*(long *)(entry + 8), points, *(long *)(entry + 0xc), 0,
                 horizontal, vertical, false, false, filtered);
+            ++group;
         }
     }
     if (!g_46713c)
@@ -7709,14 +9727,77 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     }
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
+// MiniMax E (11-17): no new form, no lower score (328): the frame is still 0x201c against retail's 0x2020, the stack parameter still arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp, the font pool still rides in edi where retail loads it into eax before its first test, and the three removal sites are still called out of line where retail inlines them.
+// MiniMax G (11-13): no new form, no lower score (328): the diff re-read this round puts the first difference at the prologue's register plan - retail loads the pool into EAX before the pushes and holds the parameter in EBX with the -1 sentinel in EBP, ours in ESI and EBX - and none of the forms tried here moves it, so the body stands.
+// MiniMax I (11-11): score 328 (was 342): a named local for the scaled character offset, used by both the character pointer and the later slot store, adds the dword home retail has; our body is 25 bytes shorter than retail's 1133 and the frame is still 0x201c against retail's 0x2020, and a plain (non-volatile) header local gives 365 and is worse.
+// MiniMax I (11-11): no new form, no lower score (342): the body is 41 bytes shorter than retail's 1133 and the first difference is at +0x1; retail reads the stack parameter into ebx with the -1 sentinel in ebp, ours uses esi and ebx, and retail's text buffer keeps two word counters that are missing here.
 
+// MiniMax E (11-15): no new form, no lower score (328): our body is still shorter than retail's, the frame is still 0x201c against retail's 0x2020, and retail's two word counters are still missing here.
+// MiniMax H (11-13): no new form, no lower score (328): the frame is still 0x201c against retail's 0x2020, retail
+// reads the stack parameter into ebx with the -1 sentinel in ebp where ours uses esi and ebx, and retail loads the
+// font pool before its first test into eax where ours keeps it in edi; dropping the volatile on the glyph header, which
+// lets the build keep the pointer in a register, measures 365.
+// MiniMax B (11-11): no new form, no lower score (342); our body is still 41 bytes shorter than retail's 1133,
+// retail keeps the stack parameter in ebx with the -1 sentinel in ebp where ours uses esi and ebx, and retail
+// inlines the third removal site where ours calls the helper out of line.
+// MiniMax E (11-11, run 80): no new form, no lower score (342): our body is still 41 bytes shorter than retail's 1133,
+// retail still reads the stack parameter into EBX with the -1 sentinel in EBP where ours uses ESI and EBX, and retail
+// still loads the font pool before its first test and keeps it in eax where ours loads it later; the header lookup
+// needs the font character type in a header, outside this file.
+// MiniMax E (11-10, run 73): no new form, no lower score (342); retail loads the font pool before its first test and keeps it in eax, keeps the character index in EBX with the -1 sentinel in EBP, and probes the stack with the __chkstk label where our probe is the same helper's __alloca_probe label; our body is 41 bytes shorter than retail's 1133.
+// MiniMax D (11-11): no new form, no lower score (342): the body is still 41 bytes shorter than retail's 1133, and retail still reads the stack parameter into EBX with the -1 sentinel in EBP where ours uses ESI and EBX.
+// MiniMax G (11-11): no new form, no lower score (342): retail loads g_54d574 before its first test and keeps it in eax, spills ebx and ebp across the call, stores the first fill x as a word at [esp+0x1e] and inlines the third removal site where ours calls the helper out of line; our body is 41 bytes shorter than retail's 1133.
+// MiniMax S (11-10): no new form, no lower score (342): retail loads the font pool before its first test and keeps it in eax, keeps the character index in EBX with the -1 sentinel in EBP, and probes the stack with the __chkstk label where our probe is the same helper's __alloca_probe label; our body is 41 bytes shorter than retail's 1133.
+// MiniMax D (11-10): no new form, no lower score (342): retail keeps the stack parameter in EBX with the -1 sentinel in EBP where ours uses ESI and EBX, so the two homes still differ.
 // MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
+// MiniMax B (11-13): no new form, no lower score (328): the frame is still 0x201c against retail's 0x2020 and the
+// 41 missing bytes stand; retail reads the stack parameter into ebx with the -1 sentinel in ebp where ours uses esi
+// and ebx, and loads the font pool before its first test.
+// MiniMax I (11-14): no new form, no lower score (328): retail's frame is 0x2020 against our 0x201c and retail's two small locals sit four bytes higher than ours (the header at frame+0x1c and the scaled character offset at frame+0x18, against ours at frame+0x18 and frame+0x14), so retail's frame carries four bytes of extra word-sized locals that this body does not declare; the parameter still arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp.
+// MiniMax C (11-14): no new form, no lower score (328): our body is 25 bytes shorter than retail's 1133
+// (1108 against 1133) and the frame is still 0x201c against retail's 0x2020; retail's two word-sized locals
+// sit four bytes higher than ours (the header at frame+0x1c and the scaled character offset at frame+0x18,
+// against ours at frame+0x18 and frame+0x14), the parameter still arrives in esi where retail keeps it in
+// ebx with the -1 sentinel in ebp, and retail inlines the three removal sites where this build calls the
+// helper out of line.
+// MiniMax R (11-15): no new form, no lower score (328): re-measured in the reduced image with 0x46ea0 and
+// 0x4f010 as controls; the body is still shorter than retail's, the frame is still 0x201c against retail's
+// 0x2020, the parameter still arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp, and
+// the three removal sites are still called out of line where retail inlines them, so the body stands.
+// score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
+// MiniMax B (11-12): no new form, no lower score (328): retail loads the font pool before its first test and keeps
+// it in eax, reads the stack parameter into ebx with the -1 sentinel in ebp, keeps the header at [esp+0x10] and the
+// scaled character offset at [esp+0x14], has a second flag byte at [esp+0xf] it never reads, inlines the three
+// removal sites where ours calls the helper out of line, and puts the pixel buffer at [esp+0x30] (frame 0x2020
+// against our 0x201c); earlier rounds' forced-inline helper and plain header local scored worse in the full build.
+// MiniMax C (11-16): score 328 (was 328): no new form, no lower score; the body is still 41 bytes shorter
+// than retail's (1092 against 1133), the frame is still 0x201c against retail's 0x2020, the parameter still
+// arrives in esi where retail keeps it in ebx with the -1 sentinel in ebp, and the three removal sites are
+// still called out of line where retail inlines them.
+// score 328 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
 // Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile
 // header as a plain local, one read of the pool and guarded do-while loops gave 279 on the fast image but 342 in the full
 // build, so none of it is kept.
+// b4F walk (11-06, against retail 0x1f5c0-0x1fa2a, block by block): no logic difference found. Every offset, test
+// direction, loop bound, field width and callee argument matches (pool +0x44, slot +0x34 / state +0x10 == 4 / header
+// +0x1c, the three removal sites, the 0x1ff ring, the clipped fill, the row copy, the prediction inline, the tail).
+// The header lookup is the body of font_cache_character_get_header (unknown_1406b0.cpp, static inline over
+// s_font_character): retail's null header is dereferenced when the state is not 4, as ours is. Using the helper needs
+// its type moved to a header, outside this edit. Retail keeps the pointer stack-homed, stored at 0x1f613 and reloaded from [esp+0x14] at
+// every use (0x1f797, 0x1f8bb, 0x1f8d2, 0x1f946, 0x1f98a, 0x1f9a0, 0x1f9fe); a plain local gives 379. Fast-check, nothing changed: 342. Tried and dropped: __forceinline removal
+// helper 348 (1172 bytes); `pool = g_54d574` local 342; the wait argument as `removed` or `(long)removed` 341;
+// `long wait = 0; if (removed) wait = 1;` 321 (retail has that xor/test/je/mov shape, but it is a value set before
+// its test, so not kept); the clamps as `short end = bitmap - 1; if (right <= end) end = right;` 328 (not kept:
+// retail dec's in 32 bits and cmov's in 16, ours still dec's in 16). Differences left are all register choice:
+// retail loads g_54d574 before the first test and keeps it in eax, spills ebx/ebp across the call, stores the first
+// fill x as a word at [esp+0x1e], and inlines the third removal site where ours calls the helper out of line.
+// MiniMax A (11-12): no new form, no lower score (328): retail reads the stack parameter into ebx with the -1 sentinel in
+// ebp where ours uses esi and ebx, its text buffer keeps two word counters that are missing here, and our body is 25 bytes
+// shorter than retail's 1133 with the frame at 0x201c against retail's 0x2020.
+// MiniMax D (11-15): no new form, no lower score (328): the stack size is 0x201c against retail's 0x2020, the unit table pointer rides in edi where retail keeps it in eax, and the body is 25 bytes shorter than retail's.
+// MiniMax D (11-16): no new form, no lower score (328).
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
@@ -7724,7 +9805,8 @@ void __stdcall function_1f5c0(long character_index)
     if (character_index != NONE
         && *(long *)(g_54d574->data + (character_index & 0xffff) * 0x38 + 0x34) != NONE)
         return;
-    byte *character = g_54d574->data + (character_index & 0xffff) * 0x38;
+    long character_offset = (character_index & 0xffff) * 0x38;
+    byte *character = g_54d574->data + character_offset;
     s_glyph_header_1f5c0 *volatile header = 0;
     if (*(long *)(character + 0x10) == 4)
         header = (s_glyph_header_1f5c0 *)(character + 0x1c);
@@ -7757,7 +9839,7 @@ void __stdcall function_1f5c0(long character_index)
         glyph_remove_first_1f5c0(&removed);
     long slot = g_4b62a4.fields.next;
     if (character_index != NONE)
-        *(long *)(g_54d574->data + (character_index & 0xffff) * 0x38 + 0x34) = slot;
+        *(long *)(g_54d574->data + character_offset + 0x34) = slot;
     g_4b62b0[slot].character_index = character_index;
     g_4b62b0[slot].position.x = g_4b62a4.fields.x;
     g_4b62b0[slot].position.y = g_4b62a8;
@@ -7973,7 +10055,7 @@ void __stdcall function_132d0(s_frame_view_2c560 const *frame)
 
 // Disabled: retail publishes the persistent shared render-source address and needs the blocked 14b60 flags interface.
 
-extern byte g_4ba022, g_4ba023, g_4ba024;
+extern bool g_4ba022, g_4ba023, g_4ba024;
 extern long g_467130, g_4858b4;
 extern void *g_467134;
 extern s_record_sources *g_467138;
@@ -7984,6 +10066,37 @@ void function_0496f0();
 
 extern bool g_485a74;
 
+// MiniMax C (11-14): no new form, no lower score (85): 0x14b60's first argument still goes on the stack here
+// where retail passes it in eax, and the jump-table bytes it shifts still differ.
+// score 85 (was 122): r136 lane 7: the mode table is a typed const array (retail's is in .rdata and folds where this
+// routine is inlined); the gate is a switch on the mode with raw bool gates (retail's `sub eax,2/6/9` chain and raw byte
+// copies), the cull is two 0x15680 calls (retail's load-first arm order). 80 with three forms kept only with a
+// match (coordinator, 11-08): the cull test in a one-use `bool stipple_enabled`, the final switch in retail's case
+// order with 17 falling into 3/16, and `enabled` declared before the sources pointer.
+// What is left is 0x14b60's register argument (retail `mov eax, flags`; ours pushes it to the stub) and the jump-table
+// bytes it shifts: BLOCKED-BY 0x14b60. `inline` here makes every caller inline it at every pass (retail stops after
+// five or six per caller), so it stays out of line.
+// Alignment model (r802): with the real 0x14b60, 0x44370's frame is `sub esp,8`
+// (retail `push ecx`, 4), so 0x14b60 needs its own 4-byte pad before calling
+// 0x14ac0 and 0x14ac0's frame grows 0x30 -> 0x34; the five demotions follow. The
+// 4-byte difference is 0x44370's entry alignment: retail inlines 0x44370 into the
+// passes (five or six per caller) while this build keeps it out of line, so the
+// out-of-line callee sees a different stack. `inline` over-inlines every caller
+// (above), so reproducing the per-caller inlining pattern is the prerequisite,
+// not a local frame tweak.
+// b11A (11-17) walk against retail, fast build on r843: statement by statement (h2.py disasm, align.py) there is no
+// logic difference: struct offsets (target +0, clear_flags +4, colour +8, depth +0xc, stencil +0x10, cull +0x18, group
+// +0x1c, stride 0x24), the 0xbffdee mask, the 2/8/17 gate (0x443b2-0x443e3), the 0x467130/34/38 stores, the mode-10
+// target and clear tests (g_4ba014 bits 4 and 5), the g_485a75/76 guards, the 4..7 cull test (0x444b2-0x444cc), the
+// case 10/11/17/3/16 tail and 0x15370's (mode == 3 || mode == 1) all agree, with the same jcc senses. What differs: (1)
+// the 0x14b60 flags travel in eax in retail (0x44476 -> 0x444ad, 0x4449b `mov eax, ebx`, 0x444a8 `mov eax, 0x60`) but
+// the stub is __stdcall, so ours pushes at three sites (483 vs 479 bytes) and the jump table moves: BLOCKED-BY 0x14b60
+// (the disabled body above collides with the @stub marker in lane_w.cpp). (2) Retail stores enabled = 1 to [esp+0xf]
+// (0x4438e) before the sources lea (0x44392); ours after. (3) Cull arms: retail lays out `cmp 4; jl cull; cmp 7; jle
+// zero; cull: mov ax,[+0x18]; jmp; zero: xor eax,eax` (0x444b7-0x444cc), ours puts `xor eax,eax` first (`jg`).
+// Measured, none kept: if/else in both senses (85), three ternary senses on one call (85), nested ifs (95), `short
+// cull_mode = cond ? settings->cull_mode : 0` (88), `short cull = 0; if (...) cull = ...` (84, set-then-override, still
+// xor first). Source unchanged.
 // @retail 0x44370
 bool __stdcall function_44370(long mode)
 {
@@ -7994,9 +10107,12 @@ bool __stdcall function_44370(long mode)
     if ((1 << mode) & 0xbffdee) enabled = (sources->flags & (1 << mode)) != 0;
     if (enabled)
     {
-        if (mode == 2) enabled = g_4ba023 != 0;
-        else if (mode == 8) enabled = g_4ba022 != 0;
-        else if (mode == 17) enabled = g_4ba024 != 0;
+        switch (mode)
+        {
+        case 2: enabled = g_4ba023; break;
+        case 8: enabled = g_4ba022; break;
+        case 17: enabled = g_4ba024; break;
+        }
     }
     if (enabled)
     {
@@ -8018,7 +10134,8 @@ bool __stdcall function_44370(long mode)
             if ((bool)((g_4ba014 >> 4) & 1) && !(bool)((g_4ba014 >> 5) & 1)) function_14b60(1, 0xffffff, 0.0f, 0);
             else function_14b60(0x60, 0, 1.0f, 0);
         }
-        function_15680(g_485898 >= 4 && g_485898 <= 7 ? 0 : settings->cull_mode);
+        if (g_485898 < 4 || g_485898 > 7) function_15680(settings->cull_mode);
+        else function_15680(0);
         switch (mode)
         {
         case 3: case 16: enabled = true; break;
@@ -8410,7 +10527,34 @@ long __fastcall function_14280(void const *data)
 
 s_device_setup_storage g_device_setup_storage = {{{0, 0, 1, 0, 3, 0, 0, 0, 1, 0, 0, 0}}};
 
-s_render_modes_storage g_render_modes_storage = {{{255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 255, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 255, 255, 255, 255, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 10, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 11, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 13, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 15, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 255, 255, 255, 255, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 183, 209, 56}}};
+s_render_mode_44370 const g_43fa1c[25] =
+{
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xff, 0xff, 0xff, 0xff }, 0, 0, -1, 1 },
+    { 1, 1, 0, 0.0f, 0, { 0, 0, 0, 2, 0, 0, 0 }, 1, 0, 0, 2 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xe, 0, 0, 0 }, 1, 0, 0, 3 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 3, 0, 0, 0 }, 1, 0, 0, 4 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 3, 0, 0, 0 }, 0, 0, 0, 5 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 4, 0, 0, 0 }, 0, 0, 0, 6 },
+    { -1, 0x10, 0, 0.0f, 0, { 0, 0, 0, 5, 0, 0, 0 }, 0, 0, 0, 7 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 6, 0, 0, 0 }, 0, 0, 0, 8 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 7, 0, 0, 0 }, 0, 0, 0, 9 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 8, 0, 0, 0 }, 0, 0, 2, 0xa },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 9, 0, 0, 0 }, 0, 0, 2, 0xb },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xa, 0, 0, 0 }, 0, 0, 1, 0xc },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xb, 0, 0, 0 }, 0, 0, 1, 0xd },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xc, 0, 0, 0 }, 0, 0, 1, 0xe },
+    { 1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xd, 0, 0, 0 }, 0, 0, 1, 0xf },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xf, 0, 0, 0 }, 1, 0, 0, 0x10 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0x10, 0, 0, 0 }, 0, 0, 0, 0x11 },
+    { -1, 0x10, 0, 0.0f, 0, { 0, 0, 0, 0x12, 0, 0, 0 }, 0, 0, 0, 0x12 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xf, 0, 0, 0 }, 1, 0, 0, 0x13 },
+    { 3, 0, 0, 0.0f, 0, { 0, 0, 0, 0xf, 0, 0, 0 }, 0, 0, 0, 0x14 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xe, 0, 0, 0 }, 0, 0, 0, 0x15 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0xf, 0, 0, 0 }, 0, 0, 0, 0x16 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0x18, 0, 0, 0 }, 0, 0, 0, 0x17 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0x19, 0, 0, 0 }, 0, 0, 0, 0x18 },
+    { -1, 0, 0, 0.0f, 0, { 0, 0, 0, 0x1a, 0, 0, 0 }, 0, 0, 0, 0x38d1b717 },
+};
 
 s_type_7ba8e9 *function_1358e0(short width, short height, short levels, short format, word flags);
 // @retail 0x1eff0
@@ -8500,6 +10644,46 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax I (11-16): no new form, no lower score (171): the palette's result is still written through a local out-parameter here, where retail hands the palette global itself to the callee, and the palette's home sits in another slot; the callee's declaration lives in src/unknown_0167a0.cpp.
+// MiniMax S (11-15): no new form, no lower score (171).
+// MiniMax C (11-14): no new form, no lower score (171): the only form that puts the two offsets in retail's order measures 167, under the keep bar, and the widths they are handed over in are the callee's own declaration's, which is in another file.
+// MiniMax H (11-13): no new form, no lower score (171).
+// MiniMax C (11-11): no new form, no lower score (171); retail hands the two offsets to 0x16a30 sign-extended (movsx ecx,cx and movsx edx,ax) and reaches the palette through a different call sequence, while the callee's declaration lives in src/unknown_0167a0.cpp, which this lane may not edit.
+// MiniMax D (11-10): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other order
+// than retail's, and their width is the callee's own declaration's, which is in another file this lane may not
+// edit.
+// MiniMax S (11-09): no new form, no lower score (171): retail sign-extends the two offsets at the
+// call because its callee took ints, while ours folds the constants into the argument registers
+// because the callee here takes shorts, and retail passes the palette global itself as the
+// out-parameter where ours reaches the palette through a local; the type-punned call form scores
+// 169 and the palette-through-the-global form scores 184.
+// MiniMax D (11-09): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other
+// order than retail's and the palette is still reached through a different call sequence, and the callee
+// takes short offsets here where retail's took ints, so it is declared in another file this lane may
+// not edit.
+// MiniMax A (11-06, run 52): no new form, no lower score (171) - retail passes the two offsets to
+// 0x16a30 in its own order and reaches the palette through a different call sequence.
+// MiniMax C (11-06): no new form, no lower score - retail still passes the two offsets to 0x16a30 in its
+// own order and still reaches the palette through a different call sequence, so the difference is in the
+// call order rather than in a local form; the earlier trial with the offsets swapped scored 167, under
+// the keep bar.
+// MiniMax E (11-10): no new form, no lower score (171); the palette's address given straight to the callee was
+// tried again this round and scores 184, so the call sequence stays.
+// MiniMax E (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
+// registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
+// shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
+// MiniMax H (11-12): no new form, no lower score (171): the two offsets still reach 0x16a30 in the other order than retail's, and the callee takes short offsets here where retail's took ints; the callee's declaration lives in another file this lane may not edit.
+// MiniMax H (11-14): no new form, no lower score (171): retail sign-extends the two offsets into the argument
+// registers of 0x16a30 and hands the palette global over as the out-parameter, this build passes the offsets as
+// sixteen bit values in the other order and reaches the palette through a local; the callee's declaration is in
+// src/unknown_0167a0.cpp, which this lane may not edit.
+// MiniMax D (11-14): no new form, no lower score (171): retail still hands the two offsets to 0x16a30 as
+// sign-extended 16-bit values in eax and ecx and passes the palette global itself as the out-parameter, where
+// this build passes them as dwords in ecx and edx and reaches the palette through a local; that callee's
+// declaration is in another file this lane may not edit.
+// MiniMax R (11-15): no new form, no lower score (171): retail still sign-extends the two offsets into the argument registers of 0x16a30 and passes the palette global itself as the out-parameter, and that callee's declaration is in another file.
+// score 170 (was 171; the fast-build 170 is after the b8C walk below): the two offsets passed to 0x16a30 sat in the
+// other order, and the palette was reached through a different call sequence than retail's (both fixed by b8C).
 // MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.
 // MiniMax H (11-04): no new form, no lower score; the two offsets passed to 0x16a30 in retail's order
 // (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx) match retail's behaviour but
@@ -8509,26 +10693,54 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // as the second and third arguments), the device result tested directly with the failure
 // path writing the flag, and the palette result in a local of its own: 167 against 171;
 // under the keep bar, body restored.
+// MiniMax E (11-09): no new form, no lower score (171); retail hands the two offsets over as sign-extended
+// 16-bit values (movsx ecx,cx and movsx edx,ax after the two movs, with the width left in EAX as well) where
+// ours passes the two constants as dwords; the callee's declaration, which decides that, is in another file
+// this lane may not edit.
+// MiniMax B (11-11): no new form, no lower score (171); retail sign-extends the two offsets into the argument
+// registers of 0x16a30 and passes the palette global itself as the out-parameter, while the callee here takes
+// shorts and the palette is reached through a local; the callee's declaration lives in src/unknown_0167a0.cpp.
+// MiniMax R (11-16): no new form, no lower score (171): the palette's result is written through a local out-parameter
+// here, where retail hands the palette global itself to the callee, and the palette's home sits in another slot.
+// MiniMax A (11-12): no new form, no lower score (171); retail sign-extends the two offsets into the argument
+// registers of 0x16a30, whose declaration is in another file, and passes the palette global itself as the
+// out-parameter, which the address-taking exception does not cover; the offset order, the palette result local and
+// the dimension orders all score no better.
+// MiniMax S (11-16): no new form, no lower score (171): the dimension selection, the palette result and the
+// callee's out-parameter still differ, and the callee's declaration is in another file, so the palette result
+// cannot be written into it from here.
+// b8C (11-17) walk against retail, fast build on r836: 171 -> 170 (no full build). Behaviour fixes:
+// (1) the two offsets were handed to 0x16a30 swapped. Retail loads (0x20,0x18) or (0x30,0x24) into eax/ecx
+// (0x12588-0x12599) and passes ecx = 0x18/0x24, edx = 0x20/0x30 (0x125a7, 0x125aa); the callee stores ecx at 0x485a92
+// and edx at 0x485a94 (0x16a7f, 0x16a78). Ours passed the pair the other way round.
+// (2) the "stencil enable" state was retail's simple state 0x40338 (mov ecx at 0x126bb, mirror store at 0x126cc),
+// which is D3DSIMPLERENDERSTATEENCODE[81], D3DRS_SOLIDOFFSETENABLE; ours reached the stencil-enable path instead.
+// (3) retail pushes 0x484dbc itself as the palette out-parameter (0x125f9); the callee writes *out on every path,
+// so passing &g_484dbc changes no behaviour and drops the NULL local. (4) the volatile on success is gone: retail
+// stores 0 only on the failure path (0x125d5). (5) the position copy is one struct assignment (dword moves,
+// 0x12809-0x1281a). Callers/callees: 0x1d3f0 (62), 0x2ca00 (3) unchanged, 0x2c8a0 and 0x16a30 still MATCH.
+// Still differs: retail sign-extends both offsets (0x125a7, 0x125aa) because its callee took ints (declared short in
+// src/unknown_0167a0.cpp, not edited); 0x3f6e10 takes 0x11 in eax (0x12670) where the XDK lib here takes it on the stack.
 // @retail 0x12560
 void function_12560()
 {
     if (g_485a88) return;
     function_0169f0();
     short x, y;
-    if (g_485ac5 && g_485ac6) { x = 0x20; y = 0x18; }
-    else { x = 0x30; y = 0x24; }
+    if (g_485ac5 && g_485ac6) { x = 0x18; y = 0x20; }
+    else { x = 0x24; y = 0x30; }
     function_016a30(1.0f, y, x);
     Direct3D_SetPushBufferSize(0x100000, 0x8000);
-    volatile bool success = function_128c0(&g_43ed80);
-    if (success)
+    bool success;
+    if (!function_128c0(&g_43ed80))
+        success = false;
+    else
     {
         g_4670bc = 1;
         function_16b10((s_render_reset_state *)g_485b48);
         function_1c1b0();
         function_1c810();
-        D3DPalette *palette = NULL;
-        success = function_1d3f0(3, g_468848, &palette);
-        g_484dbc = palette;
+        success = function_1d3f0(3, g_468848, &g_484dbc);
         if (success)
             {
                 D3DDevice_SetPalette(0, (D3DPalette *)g_484dbc);
@@ -8544,7 +10756,7 @@ void function_12560()
             D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 1);
             D3DDevice_SetRenderState(D3DRS_ZFUNC, 0x203);
             D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
-            D3DDevice_SetRenderState(D3DRS_STENCILENABLE, 0);
+            D3DDevice_SetRenderState(D3DRS_SOLIDOFFSETENABLE, 0);
             D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
             D3DDevice_SetRenderState(D3DRS_ALPHAFUNC, 0x204);
             D3DDevice_SetRenderState(D3DRS_ALPHAREF, 0);
@@ -8567,9 +10779,7 @@ void function_12560()
         g_4670f8 = 0x24;
         if (function_1eff0())
         {
-            g_4b72b4.x = g_468788->x;
-            g_4b72b4.y = g_468788->y;
-            g_4b72b4.z = g_468788->z;
+            g_4b72b4 = *g_468788;
             g_4b72c0 = NONE;
             success = true;
         }

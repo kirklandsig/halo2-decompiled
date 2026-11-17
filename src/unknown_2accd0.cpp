@@ -610,6 +610,56 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
+// and size through pointers; with the `void *` parameters view and one function-scope byte count the
+// length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
+// the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
+// body_size in ESI, retail ECX): retail computes each sum into a fresh register.
+// MiniMax C (11-15): no new form kept, no lower score (34, was 34): the entry total still lands in EAX where retail has
+// it in EDX; dropping the named total puts the sum in EDX as retail but reorders the header case's loads and scores 88,
+// and the total's operand orders, a parenthesised sub-sum, a two-statement total and a constant-first total all stay
+// at 34. The dispatch still hoists body_size into ESI where retail reuses the switch register ECX, so the signature
+// position still folds into ESI where retail has `lea esi, [ecx + edx]`, and the body's size and position stay in ESI
+// and EDI where retail has them in EDI and ESI. The signature position's operand orders and spellings (body first, two
+// statements, a sub-sum) are all the same code.
+// MiniMax G (11-14): no new form kept, no lower score (34): the C form (the total inlined into the fild, the file
+// handle read into a local) scores 28, but that local is one-use - the same 28 form the 11-09 notes record as not
+// kept - and without it the same body scores 88. Still differs: the entry total lands in eax where retail keeps it
+// in edx, the hoisted body size in esi where retail keeps it in ecx, the signature position as a one-byte-shorter
+// add where retail uses lea, and the size/position pair is esi/edi where retail has edi/esi.
+// M3 lane 8 r170 (fast): the direct arm's size before its buffer 34; `size == bytes` 34; the buffer arms swapped
+// (`if (!parameters->body)`) 41; no total local with 0-7 dead locals 88 each (no phase effect: dead locals change
+// nothing, only a used handle local does); a scratch-size local with the clamp `MIN(remaining, buffer_size)` 161 (691
+// bytes: the body arm is retail's, remaining in ECX from the body-size load, size EDI, position ESI, but the signature
+// sum still coalesces the body size into ESI so the head merge goes, and the clamp selects through EDX); that with the
+// total folded and the one-use handle local 156 (691). Compile-only (exact here, normalized lines, base 23): signature
+// sum body first, the two-statement position, the plain if clamp, `size = buffer_size; if (size > remaining)` on a
+// scratch-size local: same code; `body_size > body_offset` +3; reversed MIN, `remaining < size` if or ternary +1;
+// the clamp as if/else on a scratch-size local -3 at 237 instructions; `size = remaining; if (size > buffer_size)` +10.
+// MiniMax D (11-11): no lower score (34): the total converted without its own local puts the entry sum in EDX as retail but
+// reorders the signature case's file-handle load (88); declaring the position before the size changes nothing (34).
+// MiniMax C (11-09): NOT kept: 28 (was 34), I's form again (a one-use local is kept only with a match): the entry total
+// folded into its float conversion (no total local) and the signature case naming the file handle once, which puts the entry sum in EDX with the task pointer in EAX and the
+// signature case's header size in EDX with the handle in EAX, as retail has them. Left: the dispatch still hoists
+// body_size into ESI where retail reuses the switch register ECX, so the signature sum stays a one-byte-shorter add
+// where retail has `lea esi, [ecx + edx]`, every later branch shifts by that byte, and the body's size and position
+// stay in ESI and EDI where retail has them in EDI and ESI. Also tried and reverted: the position declared before
+// the handle (28, unchanged), the signature sum's operands in the other order (28, unchanged), the position computed
+// before the buffer arms (152), a separate capacity variable for the scratch getter (158). Also tried and reverted here:
+// a local for the header size (28, unchanged), the position written as two statements (28, unchanged), the sum with a
+// zero addend (28, unchanged), and the position computed at the top of the function (228: the entry sum then shares the
+// position's addend and the body size load does reach ECX, but the entry no longer matches).
+// MiniMax I (11-09): NOT kept: 28 (was 34) with the entry total inline for the float conversion plus a one-use
+// HANDLE local for SetFilePointer only (the sum then lands in EDX, task pointer in EAX, as retail has it); a one-use
+// local is kept only with a match, and the same local used by ReadFile too scores 203. The dispatch still hoists
+// body_size into ESI where retail reuses the switch register ECX, and the signature position still folds into ESI
+// where retail has `lea esi, [ecx + edx]`.
+// MiniMax S (11-08): no new form, no lower score (34); the entry total still lands in EAX where retail has it in EDX with the task pointer in EAX, the dispatch still hoists body_size into ESI where retail reuses the switch register ECX, and the signature position still folds into ESI where retail has `lea esi, [ecx + edx]`.
+// MiniMax D (11-07): score 34 (was 34): no new form and no lower score; dropping the named total still gives
+// retail's head (the sum in EDX, the task pointer in EAX) but the dispatch then hoists body_size into ESI where
+// retail reuses the switch register ECX, so the signature position is a one-byte-shorter add and every later
+// branch shifts by one byte; the signature case made the switch default with that total scores 177.
 // MiniMax E (11-06): no new form, no lower score.
 // The head's total needs a fresh register (retail EDX): dropping the named total fixes it
 // (the sum then lands in EDX) but reorders the header case's loads and scores 88; two size
@@ -618,12 +668,6 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // function-scope position scores 34. Left: the hoisted body_size in ESI (retail ECX), the
 // body pointer in ECX (retail EDX) and the size/position pair swapped between ESI and EDI.
 // MiniMax b (11-04): no new form, no lower score; the entry total still lands in EAX (retail EDX) and the body's size/position still in ESI/EDI (retail EDI/ESI); an unnamed total fixes the head but reorders the header case's loads and scores 88, and the state store moved ahead of the total scores 232; the permuter's 188 annealed tries found nothing below 34, and the scratch clamp reading g_4fa0c8.size directly scores 159.
-// score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
-// size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
-// and size through pointers; with the `void *` parameters view and one function-scope byte count the
-// length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
-// the entry total in EAX (retail EDX) and size/position in ESI/EDI (retail EDI/ESI; the hoisted
-// body_size in ESI, retail ECX): retail computes each sum into a fresh register.
 // Round 14 (lane 2; 0x2adb10 in brackets): that getter as `owner; *buffer; *size; flag` 34 [129],
 // kept; returning the size (`owner; *buffer; flag; return size`) 34 [138]; that with the view in
 // 0x2adb10 too 34 [138]; total written body first 34; no total local 88; compile-only (exact here):
@@ -935,6 +979,157 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // on the no-total base [82] each of those, the byte count declared later, the total summed body first, sizeof first
 // or through a dword cast; the signature sum written in both the seek and its compare [96] (it reloads after the call).
 // Retail's body_size temporary shares ECX with the body arm's remaining count, so the signature sum cannot fold into it.
+// Round 57 (m3 lane 2, fast; 0x2adb10 matched throughout): the matched sibling's clamp (a `buffer_size` local, `size =
+// MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
+// position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
+// body case's file handle in a two-use local 168 (695 bytes).
+// Round 160 (m3 lane 5, fast; 0x2adb10 matched throughout), each on the no-total-local form (88 alone): `bytes` declared in the
+// `!unknown1` block 88; both signature buffers declared at the top of that block 177 (688 bytes); the body case as an early out on
+// `body_offset >= body_size` 122; the buffer arms swapped 93; the scratch clamp as an explicit if on the field difference 88. The
+// matched sibling's signature seek is `mov edi, [header]; add edi, [body]` (coalesced) where this retail sums two temporaries with `lea`.
+// Round 97 (m3 lane 9, fast; 0x2adb10 matched throughout; aligned counts in brackets): the in-place total with a new (file, position)
+// seek helper at the signature seek re-measured 28 [17]; on it: the direct arm's size before its buffer 28 (same code); size declared
+// before the buffer 28 (same code); the body test as `body_size > body_offset` 157 (689 bytes); the helper at the body seek too 155 (689);
+// the scratch clamp through the record's size field 153 (689) [4: only the signature sum is left, ours `mov esi, [body_size]` and
+// `add esi, edx`, retail `mov ecx` head-merged with the body case and `lea esi, [ecx + edx]`]. On that [4] form, all 153 [4] (same
+// code): the signature sum as the total minus the signature size (the constants fold before the add is formed); the helper's parameters
+// as (position, file); the sum written body first; the helper plain inline; a three-parameter helper adding (start, offset) inside.
+// Retail's sum keeps the body size in its own temporary, as if it were read again after the sum; no form found that keeps it apart.
+// Nothing kept (one-caller helper; the field clamp reads the field beside a local copy).
+// Round 66 (m3 lane 15, fast; 0x2adb10 matched throughout): the dispatch hoist is a merge of two identical loads into a callee-saved register (ours ESI): with no
+// total local, the record's size field in the clamp and the body test flipped both cases start `mov ecx, [body_size]` and nothing is hoisted, so retail's ECX there was
+// allocated before the scratch rotation. The parameter record's size fields as `unsigned int` (all three, body only, header only) 34 each (same code); one inline size
+// function (body + header + a trailer argument, sizeof at the entry and 0 at the signature) 34, with no total local 88, with the field clamp 175/159 (same code as
+// without it: the zero folds before the sum is formed); an inline (file, start, offset) seek for the signature case with no total local and the field clamp 153 (689
+// bytes), summed offset first 153, at the body case too 154, on the plain body 178 (688), with no total local 154; a seek with an unused third (limit) argument given
+// the body size 153; that limit tested in the seek (`position >= limit &&`) 217 (693), the same test written in the case 216 (692), on the plain body 220 (693): even
+// with the body size read twice the sum is `mov esi, [header]; add esi, eax`, so a second reference alone does not give retail's `lea esi, [ecx + edx]`.
+// Round 161 (m3 lane 6, fast; 0x2adb10 matched throughout): the total as `sizeof + (header + body)` 34; the result as
+// `!memcmp(...)` 34; the body progress summed offset first 34; the header case as two early `break`s on the failure
+// tests 34; the signature seek and read as nested ifs 34 (all the same code; the first and last re-measure listed forms).
+// New on top: the total as header + sizeof + body 34 (same code); the bool passed straight as XCalculateSignatureBegin's
+// flag (its value is 1) 71.
+// Round 103 (m3 lane 16, fast with 0x2adb10 matched; the compile-only /Gr harness gives the same code as fast for each): both
+// positions `dword const` 34; the signature position as `position = header_size; position += body_size;` 34; the signature
+// seek compare as `position == SetFilePointer(...)` 35; the direct arm's size as `size = body_size; size -= body_offset;` 34; the
+// body position as a `long` 34 (harness: the signature position as a `long`, the body position through `+=`, both the same code).
+// Lane 12 r105 (fast; 0x2adb10 and 0x2ada70 matched throughout): the total converted in place re-measured 88 (entry agrees to
+// +0x3f; the signature case then hoists body_size into ESI, position's register, where retail loads it into ECX). Retail gives both
+// cases' positions ESI and the body case's size EDI (ours size ESI, position EDI). New: one function-scope position for both
+// cases 34 (same code), with the total converted in place 88; the body position computed at the top of the body block 158; a
+// `remaining` count computed before the two buffer arms 161, with the total converted in place 178; the body case as an early
+// return once the body is complete 103.
+// Round 69 (m3 lane 15): no new form; three of the 34 lines are the same float constants on both sides, flagged only where
+// the code is a byte out of line; the rest is the one rotation above (entry total EAX/EDX, hoisted body_size ESI/ECX,
+// size/position ESI/EDI).
+// M3 lane 9 r110 (fast with 0x2adb10 and 0x2ada70, both matched; control 34): retail's body case computes `body_size -
+// body_offset` in ECX (the hoisted body_size) and copies it to EDI, a copy the direct arm shares with the scratch arm's
+// clamp by a cross-jump; ours coalesces body_size, the remaining count and size into ESI, so no copy is left to share
+// (retail gives the position ESI and the size EDI; ours the reverse). The direct arm's size before its buffer 34 (only
+// the buffer's lea moves); the signature update given the requested size instead of the transfer count 136; the buffer
+// arms swapped on `!parameters->body` 41. The explicit if clamp re-measured 34 (same code). The compile-only harness
+// gives 30 aligned lines for this body.
+// M3 lane 3 r231 (fast with 0x2adb10 and 0x2ada70, both matched in each; base 34, round 103 also unchanged at 34; a compile-only
+// /Gr harness with retail-normalized operands gives 28 aligned lines on this body, all register rotation). New: the buffer arms
+// reduced to the buffer and one shared `if (parameters->body || size > remaining-expression) size = remaining-expression;` 177
+// (702 bytes); the signature position assigned inside the seek call (`SetFilePointer(file, position = ..., ...) == position`)
+// 34 (same code; harness 58 lines on the folded total). Re-measured listed forms: the total folded into its conversion 88
+// (harness 58: the head is retail's, then the hoisted body_size coalesces into the signature position's ESI and the signature
+// case's scratch registers fall one step behind retail's ECX/EDX/EAX); a `remaining` count set in each arm with an if-clamp 161
+// (689 bytes, round 112's); on the folded total the body test as `body_size > body_offset` 178 (688), the two-statement
+// signature position 88 and the direct arm's size before its buffer 88 (both same code). Harness only, on the folded total:
+// `position == SetFilePointer(...)` 61 lines, the sum in the seek and its compare 67 lines. No other untried natural form is
+// left for the rotation: the levers are the hoisted body_size's register and the total's coalescing, and every form listed here
+// leaves both or moves only one (the one-use HANDLE local that fixes the folded form's signature case is reverted unless the
+// function matches).
+// m3 lane 11 r90: no new form run (baseline 34, masked aligned 2: register rotation only). Each candidate checked against this
+// note is listed: getter references, size/position spellings, total local and orders, clamp forms, case/test orders, field
+// types, the signature file-handle local, the existing MIN and remaining helpers, the body early-out. A scan of include/ for
+// helpers this body writes out found none.
+// M3 lane 2 r72 (fast with 0x2adb10 and 0x2ada70, both matched throughout; masked = registers/slots-masked aligned count, base 2):
+// the task's state store first, then the total and its conversion 232 (masked 33); the total, then the state store, then the
+// conversion 42 (masked 6); the body case's `bytes == size` as `size == bytes` 34 (same code); the direct arm's size before
+// its buffer on this base 34 (masked 4); the scratch clamp as `MIN(body_size - body_offset, size)` 35 (masked 3).
+// M3 lane 4 r190 (fast with 0x2adb10 and 0x2ada70, both matched throughout): the byte count declared in each case 161
+// (689 bytes); both positions `dword const` 34; the clamp as `if (body_size - body_offset < size) size = ...;` 35; the
+// signature position written at both uses (no local) 221 (694 bytes), both cases' positions so 221 (695 bytes).
+// MiniMax A (11-12): no new form, no lower score (34); the difference is still the register rotation (the total in EAX against retail's EDX, the hoisted body_size in ESI against ECX) and the join copy at retail's 0x2ad911 that ours lacks because it coalesces the remaining count into ESI.
+// M3 lane 2 r77 (fast with 0x2adb10 and 0x2ada70, both matched; control 34): re-measured the total folded into its
+// conversion 88 (the entry is retail's to +0x3f; the dispatch then hoists body_size into ESI where retail keeps ECX, and the
+// signature case's scratch registers fall one step behind). No unlisted natural form found: total, size, position, clamp,
+// getter, case and scope forms are all listed above. Diagnostic, reverted at once: one dead volatile read of a parameters
+// field before the total, before its conversion, after the state store, before the switch or at the header, signature or
+// body case's start, on this body and on the folded total: the total stays in EAX here (EDX only when folded) and the
+// hoisted body_size stays in ESI everywhere, so the residue is the hoisted value's coalescing with position and size,
+// not a missing scratch-rotation step. Body unchanged.
+// M3 lane 7 r156 (fast with the file's 20 functions; 0x2ad480 stays 19): the direct arm's count as `size = body_size; size -=
+// body_offset;` 34 (same code); the body test as `body_size > body_offset` on this base 162 (689 B); the entry total summed header,
+// signature size, body 34 (same code); the state dispatch as an if / else-if / else chain 210 (687 B) and the switch without its
+// `default: __assume(0);` arm 218 (695 B, range check): in both the entry sum lands in EDX with the task pointer in EAX as in
+// retail (first difference +0x3f), so the unreachable default is what puts our entry sum in EAX; without it the dispatch no
+// longer hoists body_size and the signature sum still folds into ESI (masked aligned 23). The default placed first 34 (same
+// code); `case _signed_file_read_signature: default:` 177 (688 B, the listed default form); the body progress as `(real)(position
+// + bytes) / total_size` 107; re-measured on this body: the listed early out on `body_offset >= body_size` 103. No fifth unlisted
+// natural form found (the `__assume` on the state at the dispatch is listed too). Body unchanged.
+// M3 lane 5 r179: no trial; the residue is register rotation only (masked 2), and the rounds above (lane 3 r231, lane 2
+// r77, lane 7 r156) list every natural total, size, position, clamp, getter, case and scope form. Body unchanged.
+// M3 lane 16 r116 (fast with 0x2adb10/0x2ada70, both matched throughout): the entry total folded into its conversion
+// re-measured 88 (entry retail's to +0x3f; the signature case then loads the file handle into ECX after the add where
+// retail loads it into EAX ahead of the pushes). On that folded form: no `default: __assume(0);` 220 (695 bytes); the
+// scratch clamp as an `if` 88; the signature position summed body size first 88; the two signatures declared ahead of the
+// position 88; the body case's position summed body offset first 88; the state store ahead of the folded conversion 231.
+// Reading: retail's direct arm computes the remaining count in ECX and jumps to the clamp's `mov edi, ecx` (the two arms'
+// `size = ...` tails are cross-jumped), so its hoisted body_size never joins size or position; ours coalesces them in ESI.
+// Body unchanged.
+// m3 lane 7 r160 (fast with 0x2ada70 and 0x2adb10, control 34): no total local 88 (re-measure: the entry is retail's to
+// +0x3f, then the signature case's scratch registers rotate by one); that with the sum written body first 88; with the
+// signature buffers at function scope 177 (688 bytes); with the signature case's own byte count 89; on this body,
+// `body_size > body_offset` for the body test 162 (689 bytes). The `fadd` 2^32 and 1.0f constant lines (3) are flagged
+// as differing targets here, where 0xdaaa0's identical constant fields verify.
+// m3 lane 9 r123 (fast with the file's 19 other functions): the caller-buffer arm setting size to 0xffffffff with one MIN
+// after both arms 155 (VC keeps the constant, `or edi, -1`, and the clamp becomes cmova); diagnostic re-measure of no total
+// local 88 (head as retail, but the hoisted body_size coalesces with the signature position in ESI, so header/handle
+// temporaries rotate one step; with the total local the head's EAX shifts the rotation back); the caller-buffer arm's
+// size as `size = body_size; size -= body_offset;` 34; `real total_size = total;` (implicit conversion) 34; the total typed
+// `unsigned long` 34; the total summed header, signature size, body 34 (all same code).
+// M3 lane 15 r87 (fast with 0x2ada70/0x2adb10/0x2adec0/0x2adf70/0x2ae090, all stay matched; base 34, register-masked
+// aligned 2: only the signature sum's `add esi, ecx` against retail's `lea esi, [ecx + edx]` and one load): the switch
+// value read into a `char` local first 161 (689 bytes: the entry sum turns header first and the hoist goes); no total
+// local with the file handle named once for the body case's seek and read 182 (694 bytes), and for both cases' seeks
+// and reads 209 (691 bytes); the signature case written ahead of the body case on this base 34 (same code); no default
+// arm 218 (695 bytes, a re-measure of the listed form); the scratch clamp as `MIN(remaining, size)` 35 (re-measure); the body
+// case's seek, read and signature update as three early `break` tests 34 (same code).
+// M3 lane 15 r90 (fast with the file's 20 functions; base 34, the no-total-local form re-measured 88): the signature and body
+// positions renamed to sort first (`a_position`) 34; `buffer` and `size` declared at function scope 34; the body block's
+// position declared (unassigned) ahead of `buffer` and `size` 34 (all three the same code: names and declaration order do not
+// move the size/position ESI/EDI pair); the shared job-buffer helper storing its two outputs before the owner and external
+// stores 34, but matched 0x2adb10 goes to 26 (not kept); the caller's body pointer in a two-use local 161 (689 bytes).
+// Round 125 (m3 lane 16, fast with 0x2ada70 and 0x2adb10, both stay matched; control 34): the parameters record as a
+// reference (`parameters.` at every use) 34 (same code); the entry total and the signature sum through `dword const &`
+// header_size/body_size references 34; the body case through `dword const &` body_size/body_offset references 34; the total
+// bound as `dword const &total` to the sum 34; both seek positions bound as `dword const &position` to their sums 34. The
+// remaining flagged constant lines (`fadd [2^32]`, `movss [1.0]`) are only the one-byte shift of the signature sum (ours
+// `add esi, ecx`, retail `lea esi, [ecx + edx]`).
+// M3 lane 12 r133 (fast with 0x2adb10 and 0x2ada70, both MATCH; control 34): the body case's size typed `long` 34 (same
+// code); the signature case's file handle in a two-use local (seek and read) on this body 124; the state read
+// into a `long` local for the switch 34 (same code); that with the total folded into its conversion 88 (the listed 88);
+// the scratch clamp through `g_4fa0c8.size` (its compile-only 20 above) re-measured 159 (689 bytes), with the long state
+// local 159. Reading: both sums retail forms into a fresh register (entry total EDX, signature `lea esi, [ecx + edx]`)
+// and the body case's remaining count stays in the hoisted ECX until the shared `mov edi, ecx`; ours targets each sum
+// and the remaining count at its variable's register. Body unchanged.
+// P588: Repeated file/signing-handle/phase field lvalues, seven subsets,
+// then all with mutable offset: 161/161/162/161/162/162/38/191. NOT kept:
+// no fresh-total/seek/size recovery; original body, scratch getter and record restored.
+// M3 lane 9 r131 (fast; base 34; compile-only screen build/r131/scr.py, aligned counts in brackets, base [23]): re-measured
+// the total without its own local 88 [64] and that with a forceinline (file, position) seek helper in the signature case
+// 28 [17] (entry exact, every later block retail's but the body case, where size keeps ESI and position EDI and the
+// dispatch hoist is ESI). New on that pair: the scratch-size local with `MIN(remaining, buffer_size)` 156 (691 B) [11:
+// body arm retail's, but the signature case then loads the header first into ESI so the hoist goes); the clamp moved
+// after the if/else for both arms 152 (690 B) [15: size EDI and position ESI as retail, but the clamp becomes `cmova`];
+// the same on main's body 158 (690 B) [21]; a two-use handle local in the signature case 203 [56: no reload before
+// the read]. Compile-only, all [17] on the helper pair: buffer/size declaration order, arm statement order, the clamp as
+// MIN either way round, `if (size > remaining)`, `if (remaining < size)`, the position declared first. On the helper
+// pair, `size = buffer_size; if (size > remaining) size = remaining;` on a scratch-size local 28 (same code as the pair).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

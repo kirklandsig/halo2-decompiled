@@ -73,8 +73,27 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// score 534 (was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
+// /Op file still calls the CRT for them, and this build's frame is 0x22c against retail's 0x224.
+// MiniMax R (11-16): the level's square root taken in double, as retail's inline fsqrt keeps the extended
+// precision before the float store, lowers the full-build score by ten; exp and log10 stay library calls.
+// MiniMax B (11-13): no new form, no lower score (544); the permuter refuses the reduced image for this function, and the full-image search over the declaration and statement forms found nothing better.
+// Full build; b2D 11-06 statement walk against retail found no logic difference
+// (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
+// MiniMax A (11-12): no new form, no lower score (544); the file's fixed /Op still decides the mixed
+// arithmetic: the gain difference is computed on the x87 stack where retail subtracts in SSE and takes the
+// absolute value afterwards, our frame is still 0x22c against retail's 0x224, and we still push EBP before
+// the stream pointer is formed where retail forms the pointer first and pushes EBP after it; the names and
+// the declaration orders the notes above list all give the same code.
+// MiniMax b (11-11): no new form, no lower score (544); our frame is still 0x22c against retail's 0x224, we push
+// EBP before the stream pointer is formed (retail forms the pointer first and pushes EBP after it), and the gain
+// difference is computed on the x87 stack where retail subtracts in SSE and only then takes the absolute value.
+// Found, not kept: retail also sums the level energy unrounded on the x87 stack (faddp at 0x21fde3, fsqrt at 0x21fde9). A double `energy`
+// scores 530 here, but in the full build it loses the matched 0x21f8a0, 0x120d50, 0x120d80, 0x121350, 0x121a40, 0x121fc0, 0x125b40 and
+// 0x1293f0 (and 0x128ca0 222 -> 293, 0x21c400 339 -> 526), so the energy stays a float.
+// Not kept: retail also never rounds the exp result or `scaled` (0x21fdb9-0x21fddd): a double amplitude 574; with a double `scaled` too 528 but 21f8a0 0 -> 67 and callers 293/526;
+// `fabs((double)a - b)` on the three field differences puts a CRT fabs call in, 539. Root cause is the file's /Op (retail rounds nothing). Frame 0x22c versus 0x224; stream/gain homes and mixed math remain (masked aligned 233 of 565 lines, the most of this queue).
 // MiniMax E (11-05): no new form, no lower score: the named gain difference 537 fast (542 plain, already recorded), the double-cast differences 539 fast and 551 plain, the gain declarations moved ahead of changed 573 and no /Op 723; retail's frame 0x224 and its stream in EBX with the gain in EBP stay unmatched; the permuter was stopped before it printed a result.
-// score 545 (was 545): frame 0x22c versus 0x224; stream/gain homes and mixed math remain (masked aligned 233 of 565 lines, the most of this queue).
 // Round 64 (fast control 532, full 545; masked aligned in brackets, control [240]): send bits through a helper with a named bool result 532 [243] (no dead byte: the store
 // needs the flags in memory); mode sends as a fall-through two-case switch 545 at 1901 bytes [244], with the helper [247], with the gain difference named [240]; gain
 // difference named alone 537 [244], cast to real 532 (same code); direct as a bool cast 532 (same code); `changed` default-true 544 [246], default-false 543 [244], default-true with the
@@ -298,6 +317,109 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // DL271: Existing integer-clamp pointer/in-place/returned-pointer/reference outputs
 // 548/548/548/548; real-clamp output protocols 549/549/545/549 (control 545).
 // NOT kept: no equality or gain; original producer ownership, frame and body restored.
+// Lane 5 r164 (plain; aligned/register-masked LCS [369/246] for 544): retail builds the first send flag as
+// `shr; and al,1; neg al; sbb eax,eax; and eax,4` (a select on a bool value), ours folds it to a shift whatever the
+// spelling: `(bool)` on that bit 545, all five input bits as one-bit fields of field_30 declared in the input record 545
+// (same code), flags zeroed then file-local SET_FLAG per bit (the macro five files define) 561 (1916 bytes). The four
+// levels as one 16-byte memcpy 560 (1885 bytes). Mode and direct read before the gain with the voice sends as a case-1-
+// into-case-0 switch 572 (1879 bytes [350/238]). Lead: every flag test in the function (input bits and sends.flags bits)
+// stores its bool to [esp+0xe] (direct's home), written about ten times and read once, and sends.flags is reloaded
+// after each such store, as if that byte were address-taken memory that may alias the send record.
+// Lane 12 r102 (plain; full 544, the fast image 536 with the builds-differently caveat): gain bits read before the
+// stream pointer 555; the sends as retail's fall-through two-case switch on the mode (case 1 into case 0) 542 (1901
+// bytes; the block then has retail's shape); fabsf at all six tests 544; the three send-bit sets through a set helper
+// with a bool parameter 544 (identical) and through one function-scope bool assigned before each test 544 (identical).
+// The 17 x87 rounding stores ours has (retail none) still come from the file's /Op: lead for the user, flags unchanged.
+// m3 lane 7 r146 (fast control 536 at 1906 bytes, full 544; fast is unreliable here, so plain checks decide): `sends.flags` started at 0 and
+// bit 1 set by an if 554 fast; the voice read at its one use (no voice pointer) 525 fast, 544 -> 552 plain; the gain reference dropped
+// (gain_bits cast at both uses) 536 fast (same code); the status local declared in each arm 544 plain (same code); the two-case switch
+// re-measured 562 plain at 1884 bytes [masked 225 against 235], with the voice read at its use 563 plain (1921 bytes). In every form the
+// stream stays in EBP and gain_bits in EBX (retail: EBX and EBP). Retail also inlines exp, sqrt and log10 as x87 code (f2xm1/fscale,
+// fsqrt, fldlg2/fyl2x) where this /Op file calls the CRT, and copies the four levels and the send fields through integer registers.
+// Round 73 (m3 lane 15, plain; fast builds this function differently): the voice sends as `if (mode == 0 || mode == 1) { add;
+// if (mode == 1) add; }` 546 (1904 bytes). Diagnostic (the one compiler-setting probe): the file without /Op 723 fast (1728
+// bytes; re-measure of the listed result): the x87 intrinsics (fsqrt, fyl2x, f2xm1) appear, but the pushed byte arguments stay
+// `movzx` where retail zero-extends with `xor reg, reg; mov reg8, [mem]`. Retail also stores every flag test's bool in the one
+// stack byte at +0xe (the volatile-bool shape of matched 0x21ec00), which this round may not add.
+// Round 73, continued: the two-if voice sends drop our send-loop counter slot (frame 0x228 against retail's 0x224; our 0x22c
+// holds the counter at +0x14), masked aligned 238 -> 251.
+// M3 lane 8 r151 (fast = plain here, 544; masked aligned 170): the XDK stream entry points that matched 0x221490 calls,
+// in place of the inline methods: the stream mix-bins call 544, the pitch call 544, both volume calls 544,
+// the voice-properties call 544 (same code each); `bool direct=input->field_30&1;` 544 (same code). Retail also zero-extends the
+// channel byte as `xor reg, reg; mov reg8, [ebp+1]` where ours has movzx (three sites); with the subtractions and rounding
+// stores, that is another /Op-or-flags lead for the user.
+// M3 lane 12 r110 (fast control 536 at 1906 bytes, full 544 at 1901; fast carries the global-reference CAVEAT): `direct`
+// read before the gain with mode after it 540 (1902 bytes); mode before the gain with direct after it 609 (1962); the mixbin
+// loop bound as `send < mode + 1` 532 fast but 545 plain (1901 bytes); the send flags cleared first and every bit set or
+// cleared alike 565 (1922); the send bits read from one named input flags word 550 (1908). The file's /Op stays the
+// largest cause (flags are the user's decision).
+// M3 lane 13 r82 (fast, control 544): the four send-bit tests through an inline `bool result = false; if (bit) result =
+// true; return result;` test (the shape behind 0x19e1c0's dead byte store), tried for retail's per-bit stores to one
+// stack byte: 558 (1886 bytes, no byte store appears). Retail stores every flag-test bool to +0xe, including `direct` and
+// the `!(input->field_30 & 1)` and `!(sends.flags & 0x20)` tests. No untried natural form is left; the file's /Op
+// (rounding stores, CRT fabs/exp/sqrt/log10 calls, frame 0x22c) stays the cause.
+// m3 lane 14 r89 (plain; control 544, masked aligned 234): `changed` with the global test first 571 (1925 B, masked 249).
+// Retail's voice sends are a switch on the mode (`mov eax, esi; sub eax, 0; je; dec eax; jne`, case 1 calling the add
+// and jumping into case 0's), and it pushes zeros as `xor eax, eax; push eax` and zero-extends bytes as `xor; mov reg8`
+// where ours has `push 0` and movzx: two more settings leads beside /Op. Lane 13 r82's finding stands: no untried
+// natural form is left, and the file's flags are the cause.
+// m3 lane 2 r81 (plain each with 0x21f8a0; masked = aligned count with registers and esp offsets masked, base 328): the send
+// counter as `char` 608 (1948 B; matched 0x21f8a0 lost at 66, reverted at once); the voice guard as `mode >= 0 && mode <= 1`
+// 544 (masked 332); the gain change as stored minus gain 544 (same count, operands swapped); the 0 dB volume as
+// `sound_decibels_to_volume(s_decibels(0ul))`, the header's bits idiom for constant levels, 542 (retail's `xor eax, eax;
+// push eax; push eax`, and the mode reload and loop `nop` go; two under the bar, not kept); on it the else-branch volume
+// from `*(s_decibels const *)&gain_bits` (same code) and the case-1-into-case-0 send switch re-measured 545. Retail also
+// copies every float it only moves with integer moves (`mov ecx, 0xc2800000` for the -64 level, `mov ecx, [edi + 0x14]`
+// for level_offset) where this /Op file moves them through SSE registers, and it stores each flag test's bool (the send
+// bits, `sends.flags & 1/2/0x20`, `input->field_30 & 1`) to the dead byte at +0xe after `direct` moves to DL.
+// P481: Existing bit-value constructors at zero/selected/send volume boundaries,
+// masks 1..7, then the original append boundary: 548/536/548/536/547/536/547/536
+// (fast control 536, full 544). NOT kept: no native frame/role recovery or equality;
+// original constructors, helpers and complete body restored.
+// M3 lane 5 r182 (fast 536 at 1906 B, plain 544): the log-level ternary as an if/else 536 (same code). No other untried
+// natural form found; the remaining difference is the file's /Op (rounding stores, CRT math calls, the extra frame word).
+// M3 lane 8 r167 (fast with 0x21f8a0, 0x128ca0, 0x21c400; control 544, register-masked 239): fabsl (the header's long
+// double inline, no float cast) on the gain test 541 (3 under the bar: under /Op it is a CRT call and the subtraction runs
+// in double, so not retail's shape), on all six tests 549 (1914 bytes); the three send-bit sets through the existing dword
+// setter 0xbfe20 544 (same code); a file-local forceinline dword setter that reads its bool through its own address 561
+// (1916 bytes, masked 223: it gives retail's `and cl, 1; mov byte [esp+x], cl; je` stored-byte bit tests, but the flags
+// stay in EBX where retail reloads them from the send record after each byte store); that with the fall-through two-case
+// mode switch 559 (1916 bytes, masked 234). Lead: retail's flag byte behaves like one address-taken bool that the
+// compiler treats as possibly aliasing the send record.
+// M3 lane 5 r186 (all plain with 0x21f8a0, 0x12aff0, 0x21e230, 0x2201f0, 0x2215d0, 0x2216f0; control 544): the gain
+// change named (`real gain_change = gain - stored;`) after `direct` 544 (the subtraction becomes retail's SSE subss, but
+// it is hoisted above the `changed` test and the float fabs overload still rounds its result); named right after `gain`
+// 544; that local as `double` 541 (fabs becomes a CRT call; matched 0x21f8a0 lost at 67, reverted at once); the named
+// float local tested as `fabs(gain_change) >= 0.1f` 544; the pitch clamp as if/else-if 544. Body unchanged.
+// M3 lane 6 r182 (fast with 0x21f8a0, 0x128ca0, 0x21c400 and the callees; fast control 544 = full, masked 235): the voice
+// sends as `switch (mode) { case 0: add; break; case 1: add; add; break; }` 562 (1884 B, masked 225: retail's block shape,
+// the positional score rises with the shorter body); with `fabsf` on the gain test 562 (same code: fabsf is the float fabs
+// here); with `fabsf` at all six difference tests 562 (same code); the switch with the gain difference named before the test
+// and fabsf at all six 548 (1907 B, masked 239); the named difference with fabsf at all six 544 (same code as this body);
+// the cached gain stored at the top of the gain block 550 (1901 B, masked 236). The switch alone repeats lane 12 r81's form.
+// BLOCKED by the file's /Op (a flags decision: retail's double fabs, exp, log10 and sqrt expand inline and unrounded).
+// M3 lane 2 r88 (plain each with 0x21f8a0, MATCH each time; control 544, fast still carries the builds-differently caveat): the
+// amplitude clamp as an if/else-if on a copy 543 (one under, not kept); the buffer volume as one call with a conditional argument 544;
+// the send level assigned straight from its conditional expression (no `level` local) 546 (1903 bytes); the cached gain stored as
+// `*(real *)&stream->unknown0c = gain;` 593 (1935 bytes, first difference +0x0); the stream's 0x20 bit compared through a `(bool)` cast
+// 544. Retail also writes the bit-5 test of the send flags and every input-bit test to the +0xe byte before branching (the volatile
+// shape), and inlines exp/log10/sqrt as x87 code: the file's /Op stays the blocker.
+// P535: Immutable original selected-gain bits/mode/direct producers, seven subsets then all with immutable changed outcome; native driver/stream/gain roles and 0x224 frame remain unrecovered.
+// 544/544/544/544/544/544/544/544. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P551: Complete cached-gain retention and logarithmic-amplitude admission outcomes
+// in bool/byte/short/long: 549/549/549/549/536/536/536/536 (reduced control 536, full 544).
+// NOT kept: no native frame/stream/gain/flag-home repair; original full body restored.
+// P564: Separate per-query playing/stopped results in both original playback arms,
+// bool/byte/short/long: 534/534/534/534/536/536/536/536. NOT kept: native frame/stream/gain homes and
+// unrounded math expansion remain; original queries, guards, calls and complete body restored.
+// M3 lane 4 r207 (fast with 0x21f8a0): the linear gain through the float pin, `exp(channel_pin_gain(value) * 0.05f *
+// 2.3025851f)`, 557 (1875 B); the two mode sends as `if (mode == 1) add; add;` inside the mode test 544; the gain as a
+// value copy of the bits in place of the const reference 534 (same code); the direct bit read at each use (no local)
+// 548; the level assigned to the send state by an if/else 534 (same code). Flag lead, measured with a compile-only build
+// of this file: under /Op even `#pragma intrinsic(exp, log10, sqrt)` gives calls (exp, __CIsqrt, __CIlog10), and every
+// fabs difference goes through a float store and reload, where retail expands all of them inline on the x87 stack with
+// no rounding stores (0x21fc9f-0x21fd20, 0x21fdb9-0x21fe37): retail's body was built without /Op. BLOCKED by the file's
+// @flags (the user's decision).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
@@ -350,9 +472,11 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 				real amplitude=channel_linear_gain(levels[i]);
 				energy+=amplitude*amplitude;
 			}
-			real amplitude=(real)sqrt(energy);
+			real amplitude=(real)sqrt((double)energy);
 			real bounded=amplitude<0.0f?0.0f:amplitude>1.0f?1.0f:amplitude;
-			real level=amplitude>0.0f?channel_pin_gain((real)(log10(bounded)*20.0f)):-64.0f;
+			// retail multiplies the log10 (fyl2x, 0x21fe2f) by 20 straight from the x87 stack (0x21fe31), so
+			// the logarithm is taken as a double: the float overload would round it first
+			real level=amplitude>0.0f?channel_pin_gain((real)(log10((double)bounded)*20.0f)):-64.0f;
 			sends.level=level;
 			sends.level_offset=input->field_14;
 			sends.flags|=0x20;

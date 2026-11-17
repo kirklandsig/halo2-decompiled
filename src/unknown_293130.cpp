@@ -305,6 +305,67 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // vector as references 30 (same code); the z flag read before the member pointer 315; the angle read right
 // after the member pointer 278 (1420 bytes); the random count passed straight instead of through its one-use
 // local 30 (same code, kept).
+// Round 99 (m3 lane 12, fast): the creation record declared where it is first used 35; the tag flag read after the
+// record setup call 282; the two record stores after the range draw 63; the member arms inverted (no member first) 77;
+// the two accumulators declared in the other order 32. Diagnostic: the 0xb7b40 stub letting the record escape (our stub
+// ignores it, retail's body uses it) 30, identical listing, so the record's escape does not order the rotation.
+// Round 140 (m3 lane 7, fast unless noted): new: the z flag as `(flags & 0x10) == 0` 30 (same code); the helper
+// taking the input vector by value (copied from the global at the call) with a separate output 88 (1408 bytes);
+// the three negated radii as `0.0f - radius` 30 (same code); the existing cross-file record_rotate_vector
+// (0x26d570's file) with sine and cosine from the caller 78 (plain, 1407 bytes); the selected entry indexed at
+// every use instead of its pointer local 412 (1459 bytes). Re-measured (listed): the z draw as a ternary 30 and
+// the z arms inverted 56 (round 31's compile-only screen); a vector pointer local for the copy and the call 60
+// (round 108's form, 118 then). Diagnostic: +0x1a stored from the +0x10 field just written 113 (not a source form).
+// Round 91 (m3 lane 11, fast): explicit parentheses are honoured by VC (they gave 0x297d30 its retail score and dot
+// order), but every grouping of this dot is listed above. Forms outside the rotation, as rank perturbations: the count
+// increment before the weight add 35; the +0xb6 record store before +0xb4 32; the set-entry count as long 290; the
+// block count held in a local for the gate and the three loops 405 (1386 bytes). Same code: the position counter
+// declared before the drawn index, the z flag through a named tag-flags dword, the helper as plain inline
+// (re-measure, listed at 52 on an older base).
+// Round 111 (m3 lane 16, fast; control 30): the three entry tests as nested ifs 30; `local_15 != NULL` 30; the weighted test as
+// `selection_weight <= local_5` 30; the count test as `else if (local_6)` 31; the last index draw without its braces 30; the
+// result declared bare and then set 30 (30 = same code). The member's stores through forced-inline helpers: the +0x18 pair
+// through a helper taking the member 30, the first eight stores through one 30, all ten through one 30 (same code: a helper
+// that takes the member itself changes nothing); the pair through a helper taking a pointer to the pair 54 (1409 bytes, the
+// round 162 pointer effect). Retail keeps the ten stores in source order and reloads the argument right after the +0x18
+// store; ours moves that store and the reload above the four flag and zero stores.
+// Round 162 (m3 lane 8, fast with 0x2936b0 0x259d0 0xb7930; control 30): the record's range test as `field_24 > 0 &&
+// field_20 > 0` 32 (the first difference moves to +0x234: forms ahead of the rotation break the matched entry code).
+// Round 122 (m3 lane 9, fast; control 30): 0-7 unused locals at the top 30/30/30/57/57/57/57/30 (the dot stays k, j, i at
+// every phase; phase 3 only moves the v.i load), the same with 0-5 dead float products in the helper. The dot written flat
+// i, k, j at phases 0-7 43-48; grouped j + (i + k) 55-63 (1409 bytes); the +0x18/+0x1a pair through a pointer 54-65
+// (1409 bytes); the pair as a two-short member written directly 30 (same code, still hoisted); a const entry pointer 30.
+// Round 164 (m3 lane 7, fast): the cross terms through the existing cross3f_staged(vector, axis) into a vector local with
+// the named components kept 152 (1414 bytes); the textbook rotate (cross product into a vector local through
+// cross3f(vector, axis), rows reading the vector in place, `v * cos + a * proj - cross * sin`) 53 at 1405 bytes (dot still
+// k, j, i), the same through cross3f_staged 53, cross3f(axis, vector) with the cross term added 55, the textbook rows
+// written scalar first 53.
+// Round 166 (m3 lane 7, fast with 0x2936b0 0x259d0 0xb7930; control 30): the grouped `j + (i + k)` dot re-measured 55
+// (1409 bytes; it now sums k and i first with k as the accumulator); the rotation helper in 0x2551c0's helper shape (only
+// k named, vector-first dot) 53 (1409 bytes); the +0x10/+0x1a zero stores as one chained assignment after +0x18 31; +0x18
+// ahead of +0x10 30 (same code); the 0x2936b0 call ahead of the member's vector copy 44; the creation record declared in
+// the selected-entry block 35.
+// Round 186 (m3 lane 6, fast with 0x2936b0 0x259d0 0xb7930): the rotation as a forceinline member of the creation record
+// turning its own forward vector 30 (same code); the member's ten stores as a forceinline member of the member view 60 (1409
+// bytes); the +0x18/+0x1a pair as a two-short member aggregate with a forceinline `reset()` 54 at 1409 bytes (the tail then
+// keeps retail's store order and argument reload, but the dot sums j and k first with a.j loaded first), with the member
+// rotation 54, with `dot3f(vector, axis)` 54, with the vector named j, k, i 54.
+// M3 lane 2 r90 (fast with 0x2936b0 0x259d0 0xb7930): the three vector names as `real const &` references to the components
+// 43; the rotation written out in the body with local axis and vector pointers (the forceinline helper is this file's own)
+// 44 (1409 bytes); the angle as a `real const &` to the entry's field 41; the selected entry as a const reference with dot
+// reads 30 (same code); the projection over the named components in 0xc7840's i, k, j order 43.
+// M3 lane 13 r101 (fast with 0x2936b0 0x259d0 0xb7930): the projection summed j, k, i over the named components 43 (it
+// sums k, j, then i: the i product stays last); summed i, k, j with retail's operand order in each product (a.i*v.i, a.k*v.k,
+// v.j*a.j) 43 (the same k, j, i code: the flat order is reassociated); grouped `(k + i) + j` 55 (1409 bytes; k the
+// accumulator, a.k loaded first); `(1.0f - cos) * dot3f(...)` 30 (same code); the rows built in a local vector then copied
+// to the output 184 (1431 bytes, frame 0xe0).
+// M3 lane 2 r95 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the projection accumulated i, k, j through a bound
+// `real &sum`, then `*= 1 - cos`, 65 (1409 B, the unbound accumulated form's count); only the vector's i named (j and k
+// read in place) 60 (1409 B); a redundant `0 < count` guard around the weighted selection loop 68 (1409 B); the
+// parameter read once through its address for 0x2936b0 (`long const *ref = &arg_0;`) 30 (identical listing: the +0x18
+// store and the reload still move up); the axis pointer named after the vector copy 44 (1409 B). Re-measured (listed):
+// the two accumulators declared in the other order 32. Retail's tail looks like the reload cannot pass the member stores
+// (an aliased home), which no plain parameter form gives.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

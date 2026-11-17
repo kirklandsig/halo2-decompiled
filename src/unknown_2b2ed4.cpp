@@ -74,11 +74,17 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// score 316 (was 316; earlier 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// MiniMax R (11-14, run 65): no new form, no lower score (316): the first difference is the null-datum test at
+// +0x16, where retail's `je` goes to the function's end (offset 0x920 of 2345) and ours goes to a near block, and
+// the five string buffers' homes are one buffer apart from retail's (the display name at ebp-0x6cc where retail
+// has ebp-0x8cc, a difference of 0x200, one 512-byte buffer). Moving the declarations is the only thing that
+// moves those homes and review rejects that, so the buffer rotation, the state switch's out-of-line shift arm and
+// the join order all stand as they are.
 // MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
 // end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
 // homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).
 // MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
-// score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
 // text set to NONE only at the top of the online block 330 (same code); set_text inside the online block
 // under `if (text == NONE)` 539 (2350 B); the invitation bit chosen by if/else after a `continue` 330
@@ -226,6 +232,48 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Three-way suffix selectors: native 2,3,default; alternatives 2,default,3 and
 // 3,default,2. All eight non-native order pairs 330, still 2334/2345 bytes.
 // NOT kept: no native case-layout recovery; original complete cases restored.
+// Walk b3J (11-06, vs retail 0x2b2ed4-0x2b37fa, block by block): no logic difference found. Checked: the five
+// find_child calls (6/0 name, 6/1 status, 8/3 invite, 8/5 session, 8/4 voice) and their slots; the empty-row
+// text ids (0x2b2f4b-0x2b2f82) and the 16 cleared flags; the identity copy (dword[28] = XONLINE_USER, ends
+// exactly at ebp+0x18); the item loop (count > 0 guard, cmovne null test, flags >> 12 friends / >> 10 players,
+// flags |= 0x200, ++invitations); bits 4/5/10/11/0/1/7/0x200/0x100; has_user -> player id, voice (0x53b40,
+// 0x53b90, 0x53850 with (local, player)), the inlined active-player lookup (0x59330 before 0x19acc6),
+// joinable via 0x19abe4; `allowed`; all text arms and their ids/order (0x2b31f1-0x2b366f, incl. the
+// is-this-title/known/strlen arms, state 1-6 suffix switch, can_join = session id != 0 && datum+0x20 & 8 &&
+// !active); the invite icon chain (28/17, n+18/n+7, 1, 18, 6, 2, 7); session icons 29/19/0; voice icons 3/5/4;
+// the final layout (80440, 80de0, 2b01a2 with -1 for empty rows or player+0x56, 16-byte copy, flags 2|1,
+// value4 = 0, 22f042). Remaining differences are only the stack homes, the out-of-line shift arm and the
+// join order. Not kept: `other = entry ? entry : NULL` in the item loop 618 (2338 B; retail's cmovne is
+// matched by the plain `other = NULL; if (entry) other = entry;` form). Score-only forms left as found:
+// `value6e = (...) ? true : false` (plain `!empty && !self` 442). No shared helper, include or double local added.
+// Round 109 (m3 lane 12, fast; 316): `inline` on 0x230134's definition (so callers get no register summary)
+// 1211 (2789 B: LTCG then expands 0x230134 into this caller; retail never does); the title buffer as the same
+// string-buffer record as the other three 316 (same code); the value04 default as `if (can_join)` (the value08
+// switch's form) 396 (2349 B); the dispatch as `if (text == NONE) set_text else 253b1a` 488 (2323 B); the item
+// loop as a pointer walk 536 (2347 B). Retail's homes: display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix
+// -0x458, message -0x258; ours title, display_name, suffix, layout, message (two adjacent pairs swapped).
+// MiniMax R (11-11): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's, the state switch's shift arm stays out of line and the join order differs.
+// MiniMax C (11-14): no new form, no lower score (316).
+// MiniMax S (11-11): no new form, no lower score (316); the four buffer homes can only be changed by moving the declarations, which review rejects, so the body stands as found.
+// MiniMax B (11-12): no new form, no lower score (316): the display name's buffer twice as long (638) and the
+// session and voice child pointers' slots exchanged (316, the same code) leave the score where it is; a 31-try
+// permuter found no variant below the baseline (351 on the reduced image, 313 in the full image).
+// MiniMax A (11-13): no new form, no lower score (316): the child, text, layout and suffix buffer homes differ from
+// retail's, and the suffix re-derivations differ with them.
+// M3 lane 3 r242 (fast, base 316): display_name's three loads as direct `get_screen()->function_230134(id, text)` calls 316
+// (same code); suffix's 20 loads so 330 (2334 B); message's nine loads so 316 (same code); all 32 loads so 330 (2334 B); the
+// explicit layout flags clear dropped (the inlined constructor clears it, as in matched 0x2b3a9d) 316 (same code). The buffer
+// homes do not follow how the loads are written. Body unchanged.
+// MiniMax I (11-14): no new form, no lower score (316): the title still takes the frame's lower block where retail
+// keeps the display name there, the two of them still trade their slots, and the flag test's shift and test are still
+// laid out before the branch where retail moves them out of line.
+// MiniMax S (11-15): no new form, no lower score (316): our friend scan keeps the shift-by-10 arm next to the join and needs
+// an extra jump, while retail lays the shift-by-12 arm inline and moves the other arm out of line; the five buffer homes stay a
+// rotation apart from retail's. A 33-try permuter (reduced image) found no variant below the baseline.
+// MiniMax D (11-16): no new form, no lower score (316 in the fast check; ours is 2342 bytes against retail's 2345): the
+// five string buffers keep their homes a rotation apart from retail's (display_name -0x8cc, title -0x6cc, layout -0x4cc,
+// suffix -0x458, message -0x258 in retail), the switch's shift arm stays out of line, and the suffix address is
+// re-derived after every 0x230134 call in retail, which this lane may not change because that callee is another file.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

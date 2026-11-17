@@ -114,7 +114,15 @@ void function_7f930(void);
 void pending_messages_reset(void);
 void function_53210(void);
 void function_8dd70(void);
-// score 253 (was 221): 0x8dd70 reads three of these pointers through their addresses, which moves this function off retail's length (915 bytes); four-byte frame and entry predicate agree; helper boundaries,
+// score 245 (was 253; 909 bytes): walked statement by statement against retail 0x8d9f0 (2026-11-06): every store,
+// callee, argument and branch agrees, including the register/stack argument split of 0x59ad0 and 0x58ee0, the
+// 12-byte session-list clear, the 0x38/0x5a0/0x70f8/0x268-byte clears and the tail stores. One behaviour difference
+// is left: retail clears 0x4d8f08 with a dword store (0x8dc44, with the dwords around it), ours with a byte store,
+// because g_4d8f08 is a bool (0xb3570, 0xb3610, 0xb3670 read and write it as a byte): retail also zeroes 0x4d8f09..0x4d8f0b.
+// A `*(long *)&g_4d8f08 = 0` cast scores 245 too and is not kept. The failure tail is retail's unconditional
+// `jmp 0x8dd70`; the old `if (initialize) function_8dd70();` repeated a test that was already true and is removed
+// (253 with it, which kept retail's sete/cmp prologue).
+// Earlier (score 253 (was 221)): 0x8dd70 reads three of these pointers through their addresses, which moves this function off retail's length (915 bytes); four-byte frame and entry predicate agree; helper boundaries,
 // readiness storage and global reloads differ.
 // Round 110 (diagnostic chain, not kept): the six pointers 0x510560..0x510574 as one struct
 // global whose address 0x8dd70 takes (a memset of it in place of the six clears) give retail's
@@ -345,7 +353,6 @@ void function_8d9f0(void)
 				}
 			}
 		}
-		if (initialize)
-			function_8dd70();
+		function_8dd70();
 	}
 }

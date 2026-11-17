@@ -3546,15 +3546,34 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
-// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
-// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
-// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
-// epilogues (1 and 0) where ours keeps the peer result in EBX.
-// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
-// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
-// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
-// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
-// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
+// MiniMax E (11-15): no new form, no lower score (101): the call boundaries agree with retail's (ten calls in the same order), so what is left is the timeout owner's spill, which needs 0x769a0's unread owner parameter in another file. BLOCKED-BY 0x769a0.
+// MiniMax C (11-15): no new form, no lower score (101): the timeout call still takes its two values where retail
+// passes a third, the dead store of the session's second field, and that value needs an unread owner parameter on
+// 0x769a0, whose definition is in src/unknown_075870.cpp and not this lane's to change; the frame agrees (0x3c) and the
+// announcement's identifier loads still split around the push, so the body stands as found.
+// MiniMax A (11-14): no new form, no lower score (101). Putting the reply member-state pointer before the
+// reply identifier drops the listing to 94 (the reply block then matches row for row) but the keep-bar sends
+// that body back. Retail still loads session+0x10 into ecx, stores it to frame +0x04 and splits the
+// member-state lea into two steps before the timeout call, and it reaches the observer through edx; the
+// value10 spill needs an unread owner parameter on 0x769a0, whose definition is in another file, and the
+// announcement loads both identifier halves after the memset while this build splits them around the push.
+// MiniMax H (11-13): no new form, no lower score (101): still BLOCKED-BY 0x769a0, whose unread owner parameter
+// decides the call's register home and whose definition is in another file; the frame agrees (0x3c), the
+// announcement and identity loads still take other registers than retail's, and the permuter's 37 tries in 307 s found
+// nothing below its own baseline.
+// MiniMax B (11-13): no new form, no lower score (101); still BLOCKED-BY 0x769a0 in another file, whose unread owner parameter decides the call's register home.
+// MiniMax C (11-16): no new form, no lower score (101): retail calls the matched 0x769a0 with three arguments - the
+// observer on the stack (push edx, the session's observer at +8), the session's value10 in ECX (the callee overwrites
+// ECX, so that argument is dead there) and the channel index in EAX - while our declaration of that callee takes two
+// parameters, so ours loads the observer into ECX, pushes it and calls; that parameter list lives in
+// include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit.
+// MiniMax E (11-16): no new form, no lower score (101): the call boundaries agree with retail's (ten calls in the
+// same order) and the frame agrees (0x3c), but retail calls the matched 0x769a0 with three arguments - the
+// observer on the stack (push edx, the session's observer at +8), the session's value10 in ECX (the callee
+// overwrites ECX, so that argument is dead there) and the channel index in EAX - while our declaration of that
+// callee takes two parameters, so ours loads the observer into ECX, pushes it and calls; that parameter list
+// lives in include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
+// MiniMax C (11-17): no new form, no lower score (101, was 101): the frame still agrees (0x3c), but retail still loads the session's value10 and spills it and splits the member-state lea before its timeout call, which needs the unread owner parameter on 0x769a0 whose definition is in src/unknown_075870.cpp, and the identifier/reply allocation still differs: BLOCKED-BY 0x769a0.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -3670,6 +3689,76 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // `do { } while (false)` after the pointer 114; assume with owner/observer first 7 (433 bytes), with the pointer first 4 (registers rotated), owner
 // before a named observer 27, observer read in the call MATCH. Forceinline owner wrapper stays a call in this inline_depth(0) region. Body restored:
 // the flag is only worth keeping with the match.
+// R223 (lane 3): score 101. BLOCKED-BY 0x769a0 as round 65 found: its definition is in src/unknown_075870.cpp, still on
+// the avoid list this round, so the unread owner parameter could not be added.
+// R223, second pass (fast with 0x769a0, control 101; aligned count in brackets, control [30]): the announcement zeroed by an
+// `= { 0 }` initialiser 101 [32]; `was_host = session->function_058d20(); if (was_host)` 142 (414 bytes) [37]; the three flags
+// as one chained assignment 101 [32]; session->state read at each test with no state local 101 [30] (same code); the two
+// member tests swapped 103 [32]; `was_host = true` ahead of the send with the leave as `if (session->state == 7) leave = flag
+// != 0;` 135 (411 bytes) [42].
+// M3 lane 11 r89: still BLOCKED-BY 0x769a0 (src/unknown_075870.cpp, a held sort_4byte file on the avoid list): the dead
+// session->value10 store and split member-state lea ahead of the timed-out call (retail 0x5e466-0x5e477, the 13 bytes ours
+// lacks) come only from the unread owner parameter on 0x769a0 (round 65's byte match); the forms left on this side of the
+// call are all listed above, so no trial was run.
+// MiniMax B (11-11): no new form, no lower score (101); retail's call to 0x769a0 takes the session's second field
+// in ecx and its first field in edx before the stack argument, and reaches the member state through a pointer to
+// the field, while this build's callee takes the table in ecx and the owner on the stack; the callee is declared
+// in src/unknown_075870.cpp.
+// MiniMax B (11-14, later): no new form, no lower score (101): the permuter (240 s, --anneal, 15 tries) got one
+// instruction below the baseline (90 against 91) and the variant it reports needs a volatile cast, a constant-only
+// local and a reordered announcement struct, so the body stands.
+// MiniMax B (11-14): no new form, no lower score (101): retail's timeout call still takes three values - the
+// session's +0x10 in EDX, the observer in ECX and the member state's field in EAX - with the member state's
+// address formed by a lea of the row and a load at +4, where this build folds the +4 into one displacement and
+// passes two values; the third one is the owner parameter 0x769a0 would have to declare, and that definition is in
+// src/unknown_075870.cpp, so the call cannot be settled from this file. The body stands.
+// MiniMax G (11-12): no new form, no lower score (101); the timeout owner still has no home, because the
+// callee that would read it (0x769a0, src/unknown_075870.cpp:312) is in another file; the announcement
+// id and member scheduling behind it are in this file and still differ.
+// MiniMax G (11-12): what is left in this file, read off retail's code: retail takes the member state's
+// address in two steps (lea eax, [ebp + eax*4 + 0x72dc] then mov eax, [eax+4]) where here the field
+// offset is folded into one displacement (mov eax, [ebp + eax*4 + 0x72e0]); retail stores the session's
+// value10 ([ebp + 0x10]) into the frame slot +0x14 before the timeout call, a dead store into the slot
+// that later holds the session id, and that id's home is +0x14 here it is +0x1c, while the id is passed
+// by address (lea ecx, [esp + 0x14]) in both. The two-step address needs a pointer local for the
+// member-state element, which the once-used-pointer form does not allow.
+// MiniMax E (11-11): no new form, no lower score (101): the thirteen bytes retail has between the
+// member-state lea and the timeout call need an unread owner parameter on 0x769a0, whose definition
+// is in src/unknown_075870.cpp.
+// MiniMax D (11-11): no new form, no lower score (101): still BLOCKED-BY 0x769a0 in src/unknown_075870.cpp, where the call's register home is the callee's to decide.
+// MiniMax R (11-10): no new form, no lower score (101); the timed-out call's owner argument still has no home, because the callee that would take it is in another file.
+// MiniMax R (11-09): no new form, no lower score; the timed-out call's owner argument still has no home,
+// because the callee that would take it is in another file.
+// MiniMax S (11-06): no new form, no lower score (101): retail's call into the timed-out check passes one argument on the stack and keeps the channel index in a register, ours passes two; the callee's declaration and definition are in other files.
+// MiniMax B (11-06): no new form, no lower score (101).
+// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
+// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
+// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
+// epilogues (1 and 0) where ours keeps the peer result in EBX.
+// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
+// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
+// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
+// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
+// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax E (11-10): no new form, no lower score (101); the timeout owner comes from a parameter of 0x769a0
+// whose declaration is in another file, so the spill cannot be settled here.
+// M3 lane 12 r119: no trial. The first difference (+0x27) is still the 0x769a0 call setup: retail reads session+0x10
+// into ECX and spills it, then forms the member-state address with a separate lea; round 65's byte match needs the
+// unread owner parameter on 0x769a0, whose file (src/unknown_075870.cpp, held sort_4byte change) is avoid-listed
+// again. The forms on this side of the call are listed above (lane 11 r89). Still BLOCKED-BY 0x769a0.
+// m3 lane 2 r81: no trial. The listing still agrees up to the timed-out call (retail 0x5e466-0x5e477: the value10 load
+// stored to +0x14 and the split member-state lea), which round 65 matched only with an unread owner parameter on 0x769a0;
+// its definition is in src/unknown_075870.cpp, a held sort_4byte file this round too, and every form on this side is listed.
+// Still BLOCKED-BY 0x769a0.
+// MiniMax D (11-16): no new form, no lower score (101).
+// MiniMax S (11-16): no new form, no lower score (101): the timeout owner still comes from a parameter of
+// 0x769a0 whose declaration is in another file, so the owner spill before that call cannot be settled from here.
+// M3 lane 7 r173 (fast with 0x769a0, control 101 [aligned 38]): the outer member tests as nested ifs 101 [38] (same
+// code); the three announcement flags as `for (long flag = 0; flag < 3; flag++) message.flags[flag] = 1;` 92 [32] (419
+// bytes; NOT kept: the loop compiles to a 0x01010101 word-and-byte fill where retail stores three bytes, so the drop is
+// alignment); the host comparison written `(host = session->member_index) != member` 102 [39]; `session->value44 ==
+// member` 102 [39]; `long host;` declared ahead of `state` 101 [38]. Still BLOCKED-BY 0x769a0 (its held file).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3962,13 +4051,16 @@ long session_peer_map_find_machine(s_session_peer_map *map, const s_session_memb
 // @retail 0x61ef0
 void __stdcall function_61ef0(c_class_58d20 *session)
 {
+ long one = 1;
+ bool flag = true;
  s_session_peer_transition *transition = (s_session_peer_transition *)&session->value7420;
  for (long i = 0; i < session->member_count; i++)
  {
   if (i != session->current_member)
   {
-   dword pending = transition->pending;
-   dword bit = 1 << i;
+   /* retail reads pending from memory here, not from a cached register */
+   dword pending = *(volatile dword *)&transition->pending;
+   dword bit = one << i;
    if (pending & bit)
    {
     if (network_session_time_since(transition->times[i]) >= g_network_configuration.value148c)
@@ -3990,21 +4082,21 @@ void __stdcall function_61ef0(c_class_58d20 *session)
   s_session_peer_map *map = (s_session_peer_map *)transition->map;
   for (long i = 0; i < session->member_count; i++)
   {
-   if (transition->failed & (1 << i))
+   if (transition->failed & (one << i))
     failed++;
    else
    {
     long index = session_peer_map_find_machine(map, (const s_session_member_header *)&session->members[i]);
     bool present = false;
-    if (index != NONE) present = (*(dword *)((byte *)map + 0xbc) & (1 << index)) != 0;
+    if (index != NONE) present = (*(dword *)((byte *)map + 0xbc) & (one << index)) != 0;
     if (!present) missing++;
    }
   }
   if ((failed <= 0 || (network_session_time_since(transition->start_time) >= g_network_configuration.value148c &&
     network_session_time_since(transition->selection_time) >= g_network_configuration.value1490)) && !missing)
-   function_061570(session, true);
+   function_061570(session, flag);
  }
- else if (transition->failed & (1 << transition->selected))
+ else if (transition->failed & (one << transition->selected))
  {
   transition->selected = network_session_build_peer_map(session, (s_session_peer_map *)transition->map);
   transition->selection_time = network_session_time_now();
@@ -4022,7 +4114,7 @@ void __stdcall function_61ef0(c_class_58d20 *session)
    {
     s_network_session_member_state *member = &session->member_states[i];
     if (member->flag1)
-     network_observer_send_message(session->observer, session->value10, member->unknown04, true, 22, sizeof(message), &message);
+     network_observer_send_message(session->observer, session->value10, member->unknown04, flag, 22, sizeof(message), &message);
    }
    transition->send_time = network_session_time_now();
   }
@@ -4345,8 +4437,18 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// MiniMax h (11-05): the result byte home is +0xa in ours and +0xb in retail, where the better flag shares +0xa with the identity-equal flag; exchanging the better and same declarations gives 305, spelling out the better decision gives 314 and the same decision 306, and the shared acknowledgement block sits after the reason-5 exit in ours but at the end of retail's.
-// MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
+// MiniMax C (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean homes
+// stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and retail's call to the matched 0x769a0
+// passes three arguments - the observer on the stack (push eax), the session's value10 in EDX (dead at the callee) and
+// the channel index in EAX - where our declaration of that callee takes two, so the extra load and the spill it causes
+// are missing here too; that parameter list lives in include/unknown_075870.h and src/unknown_075870.cpp, which this
+// lane may not edit.
+// MiniMax E (11-15): no new form, no lower score (305): the call boundaries agree with retail's (twenty-one calls in the same order), so what is left is the rotation of the three boolean stack homes and the timeout spill, which needs 0x769a0's unread owner parameter in another file. BLOCKED-BY 0x769a0.
+// MiniMax E (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean
+// homes stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and the 0x769a0 call misses
+// retail's third argument for the same reason as in 0x5e3f0; that parameter list lives in
+// include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
+// MiniMax C (11-17): no new form, no lower score (305, was 305): the frame (0xd8) and the length agree, but the boolean homes are still a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail still reads the acceptance byte back where this build folds it to a constant, and the same timeout spill as 0x5e3f0 needs 0x769a0, whose definition is in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
@@ -4490,6 +4592,60 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // (masked 181), reason 2 sinks; acknowledgement written at both sites 604 (1472 bytes, no cross-jump); `__assume(!result)` 365; returns with that assume and
 // one `||` 386 (1231 bytes). Pointer to `result` for its stores 305 (same code, it folds away). Retail's later blocks come in source order once a trace ends
 // (reason 1 right after the first version arm's `jmp`), and the acknowledgement's two entries differ by `mov edi, [esp+0x10]`.
+// Walk b3N (11-06), statement by statement against retail 0x5e7f0-0x5ecdd: every reason code (1-9), the state tests,
+// the host identity compare (9 dwords at message+8), the timeout/channel-state tests, the version/preference
+// tie-break, the pending/failed bit updates, the reply time, the acknowledgement and the clear_peer tail agree;
+// no field, direction or constant differs. Two differences: (1) retail calls 0x62c20 as (local, received, remote)
+// at 0x5ea21 and (local, map, remote) at 0x5ea36 (edx = local both times, remote pushed first), so the second call is
+// `(local, map, remote)`; the earlier `(remote, map, local)` was a score-only swap (callee is symmetric in its two
+// members), it scored 305 with `remote` declared first and 306 (1265 bytes) in retail order; declaring `local`
+// before `remote` with retail order gives 305. (2) retail stores session->value10 into [esp+0x1c] at 0x5e91b before
+// the 0x769a0 call (its unread owner parameter, see the 0x5e3f0 note); not expressible until 0x769a0 takes it.
+// MiniMax C (11-15): no new form, no lower score (305): the frame and the body length agree, but retail keeps its
+// flag results in stack bytes (the result byte at +0xb where this build frames it at +0xa) and stores the session's
+// value10 into a slot before its 0x769a0 call, whose unread owner parameter the callee in src/unknown_075870.cpp does
+// not take, so the extra store cannot be written from here.
+// MiniMax B (11-11): no new form, no lower score (305); retail keeps its flag results in stack slots (the byte
+// at esp+0xb, where this build keeps it in al and frames it at esp+0xa) and stores session->value10 into a slot
+// before its 0x769a0 call, whose unread owner parameter this build's callee in src/unknown_075870.cpp does not
+// take, so the extra store in the caller cannot be written here.
+// MiniMax A (11-11): no new form, no lower score (305); the two byte flags sit one slot lower than retail's and the second pair of byte slots one higher, so the difference is a slot permutation this build does not reproduce from the source.
+// MiniMax R (11-11): no new form, no lower score (305): the frames agree (0xd8 with the same two pushes) and the
+// body length agrees, but the flag results are kept in registers and al where retail keeps them in stack bytes
+// (the byte at esp+0xb, this build at esp+0xa), and retail stores the session's value10 into a slot before its
+// 0x769a0 call, whose unread owner parameter the callee in another file does not take.
+// MiniMax H (11-13): no new form, no lower score (305): the three boolean stack homes are still rotated (the
+// result byte at +0xa where retail keeps it at +0xb), and the same timeout spill as 0x5e3f0 needs 0x769a0, whose
+// definition is in another file.
+// MiniMax G (11-12): no new form, no lower score (305); the same timeout spill as 0x5e3f0 sits here and
+// needs 0x769a0, whose definition is in src/unknown_075870.cpp; what is left in this file is the
+// rotation of the three boolean stack homes (the result byte at +0xa where retail keeps it at +0xb).
+// MiniMax S (11-11): no new form, no lower score (305); the frames agree (0xd8 with the same two pushes) but our
+// body is one byte longer than retail's (1265 against 1264), and the result byte still lives at esp+0xa where
+// retail keeps it at esp+0xb.
+// MiniMax R (11-10): no new form, no lower score (305); the three flag bytes keep their homes a rotation apart
+// from retail's (retail: the peer block's better flag at esp+0x9, the same flag sharing the identity test's slot at
+// esp+0xa, the result at esp+0xb; ours: the same flag at esp+0x9, the result at esp+0xa, better at esp+0xb), and the
+// two peer flags written as bytes instead of bools measure the same code (305), so the body stands.
+// MiniMax S (11-10): no new form, no lower score (305): retail stores the session's value10 into [esp+0x1c] before the 0x769a0 call, which needs that callee to take its unread owner parameter, and retail calls 0x62c20 the second time as (local, map, remote) where ours passes the map in the other place; both need a file this lane may not edit.
+// MiniMax D (11-10): no new form, no lower score (305).
+// MiniMax h (11-05): the result byte home is +0xa in ours and +0xb in retail, where the better flag shares +0xa with the identity-equal flag; exchanging the better and same declarations gives 305, spelling out the better decision gives 314 and the same decision 306, and the shared acknowledgement block sits after the reason-5 exit in ours but at the end of retail's.
+// MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
+// MiniMax B (11-13): no new form, no lower score (305): the boolean homes stay a rotation from retail's (the
+// acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa, and the two peer
+// bytes are zeroed at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12), and retail reads the acceptance byte
+// back where this build folds it to a constant.
+// MiniMax I (11-14): no new form, no lower score (305): the frame 0xd8 and the body length agree with retail's, but the three boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail reads the acceptance byte back where this build folds it to a constant, and the 0x769a0 and 0x62c20 call setups need files this lane may not edit.
+// M3 lane 3 r242 (fast, base 305; retail's two reason-2 exits are one block, `state <= 2` jumping into the `state > 8`
+// fall-through): the valid range as one `state > 2 && state <= 8` test with the exit as its else 366 (1264 B, the shared exit
+// laid out after the body); the reason-3 test as one `&&` 305 (same code); the channel-state test as one `&&` 305 (same code);
+// the timed-out arm with one identity copy and `*reason = identity_equal ? 4 : 6` 320 (1234 B); the `state > 8` test inverted
+// with the exit as its else 367 (1269 B). Body unchanged.
+// MiniMax D (11-16): no new form, no lower score (305).
+// MiniMax S (11-16): no new form, no lower score (305): the frame and the body length agree with retail's, but
+// the boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the
+// identity byte at +0x9 against retail's +0xa) and the two peer bytes are zeroed at +0x11/+0x13 where retail
+// zeroes its pair at +0x11/+0x12.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4587,15 +4743,15 @@ bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *addr
  }
  {
   byte received[0xc0];
+  s_session_member_header *local = (s_session_member_header *)&session->members[session->current_member];
   s_session_member_header *remote = (s_session_member_header *)&session->members[sender];
   memcpy(received, (const byte *)message + 8, sizeof(received));
-  s_session_member_header *local = (s_session_member_header *)&session->members[session->current_member];
   s_session_peer_transition *transition = (s_session_peer_transition *)&session->value7420;
   s_session_peer_map *map = (s_session_peer_map *)transition->map;
   bool better = false;
   bool same = false;
   session_peer_map_update_reachable(local, (s_session_peer_map *)received, remote);
-  session_peer_map_update_reachable(remote, map, local);
+  session_peer_map_update_reachable(local, map, remote);
   long selected = network_session_find_member(session, (const s_session_member_identity *)(received + 0x24));
   long version = *(long *)(received + 0x48);
   long old_version = *(long *)(transition->map + 0x48);

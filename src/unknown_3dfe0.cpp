@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "unknown_3dfe0.h"
 #include "unknown_0259d0.h"
+#include "object_tag_definitions.h"
 
 extern s_record_pool *g_509434;
 extern dword g_4ba034;
@@ -78,6 +79,60 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // one `now` read of the game time shared by both elapsed values 21; force renamed stale 21. Diagnostic rerun of update
 // before force 218: object in ebx with retail's homes, but sample/update timestamps take edi/esi, the false store follows
 // the home store and the force arm has no reload.
+// Round 143 (m3 lane 8, fast): `update = false` before force re-measured as the base, 218: its only real differences are
+// three allocator choices (no reload in the force arm, the false store after the object's home store, and the two
+// timestamps in EDI/ESI for ESI/EDI); every other line is the four-byte shift. On that base: `if (force) update = true;`
+// then `if (!force && flag) return;` 218 (threaded to the same code); the object through a named header-entry pointer
+// 218; the elapsed clamp right after the zero return 246 (816 bytes); the existing ai object getter 218; force declared
+// before update and assigned after it 218. A 600 s permuter run on the kept body (45 tries) found nothing below 21.
+// Round 182 (m3 lane 4, fast = plain 21; masked aligned 12: object load register, the object/force homes, the false
+// store's place and the reload's place): the cache as an element of the pool (`&((s_3dfe0_cache *)g_509434->data)[index]`,
+// the matched 0x3dd10's form) 21 (aligned 12), on the update-first base 218 (aligned 28); `bool const force` 21;
+// the distance test's object through a fresh lookup 255 (842 bytes: not merged across the calls); `(void)&object_index;`
+// at the top (0x3dd10's idiom) 21, on the update-first base 218. Diagnostic: the update-first base (218) has retail's
+// object/force homes and EBX load; left there are the timestamps in EDI/ESI, the object index loaded straight into EDI
+// for 0xd1850 (retail ESI then `mov edi, esi`), the false store after the home store and no reload in the force arm.
+// Round 114 (m3 lane 9, fast = plain 21; masked aligned 8 on the base, 15 on the update-first form): update-first re-measured 218 (homes
+// and EBX load as retail, sample/update timestamps in EDI/ESI); the tail under `if (cache->valid)` in place of the early return 21 (same
+// code), with update first 218; the special-flag tests as plain `& 0x2000` / `& 2` tests setting 1 48; the elapsed clamp as a ternary 21
+// (same code); `update = update || cache->update_time == NONE || update_elapsed > 1` 205, with update first 121.
+// m3 lane 15 r79 (fast with 0x3d2c0 and the callees = full 21; masked = aligned rows with registers and constants
+// masked, 8 here, all in the entry block): the object local renamed body/zobject 21 (same code); `bool force;` declared
+// before the object and assigned in place 21 (same code); no force local, its test written at both uses 161; the
+// object through a named header-entry pointer 21 (same code); a named position pointer (object + 0x30) for its three
+// uses 230; the elapsed clamp after the force arm 28. The parent's definition now reads the typed object definition
+// (same code). On the update-first diagnostic (218, masked 15: retail's EBX object and homes, but the two timestamps
+// take EDI/ESI and the force arm has no reload): renaming update, elapsed or update_elapsed, `type` before `special`
+// and the update test's operands swapped all leave the first push EDI (218).
+// m3 lane 14 r92 (fast with 0x3d2c0, control 21): the elapsed clamp just before the force flag 172; force as
+// `initialized && valid ? false : true` 21 (same code); the update elapsed written at its test with no local 259
+// (802 bytes); elapsed renamed sample_elapsed 21; the object as `byte *const` 21.
+// m3 lane 14 r97 (fast with 0x3d2c0, 0xd1850 and 0xd4080, control 21): update-first re-measured 228 (homes and EBX load as
+// retail, the timestamps in EDI/ESI, the false store at the very top); a 1200 s permuter run from that form (77 tries) best
+// 167 (volatile and constant locals); `update` started as `force` after a combined `!force && flag` return 246 (804 bytes);
+// force as `!(initialized && valid)` with the update time in a named local used twice 21 (same code); the force arm
+// inverted with the flag return nested in its own braces 25; the false store and the object's flag read (a named bool)
+// ahead of force 246 (at retail's length).
+// m3 lane 14 r99 (fast with 0x3d2c0, 0xd4080 and 0xd1850, control 21), all on the update-first form (`bool update = false;`
+// ahead of force, 218: the object's EBX load and homes as retail; left the timestamps in EDI/ESI, the false store after the
+// home store and no reload in the force arm): both timestamp NONE tests compared as signed longs 218; force declared bare
+// ahead of update and assigned after the false store 218; force as `!(initialized && valid)` 218; the elapsed clamp ahead
+// of force 239 (816 B); the object as `byte *const` 218.
+// m3 lane 16 r124 (fast with 0x3d2c0 and 0xd1850, control 21; update-first re-measured 218): on update-first, the force arm
+// inverted (not-force flag test first) 218; force and update set inside an `initialized && valid` if/else with the clamp in
+// both arms 218 (829 B); the hidden-object flag in a named bool 218; `initialized` read into a local for the force test 218.
+// On the kept order, `update` declared bare and set false in the not-force arm 222.
+// Round 169 (m3 lane 7, fast with 0x3d2c0, control 21): `update` as char 21; `update` declared bare at the top and set
+// false after force 21 (same code each); the initialized flag named for the force test and the tail's test 212 (829 B);
+// the masked object index named 21 (same code); the update-time test moved to just after the force arm 240. Probe stores
+// of 0, 1, -1, 2 on the update-first form (diagnostic, reverted) leave the timestamps in EDI/ESI (194, 834 B).
+// Round 192 (m3 lane 5, fast with 0x3d2c0/0x3db00/0xd1850/0x3e4e0, control 21, aligned 12, masked 8, all in the entry block): the
+// hidden-object return as its own `if (!force && flag) return;` after `if (force) update = true;` 21 and the rest of the body under
+// `if (force || !flag)` 21 (both the base's code); update elapsed computed before the zero-elapsed return 235; the sample decision as
+// an inline helper returning each threshold test 312 (753 bytes: the shared setg goes); a stale-cache helper for force 21 (same code);
+// the hidden bit read as the word flags' 0x100 bit 21 (same code). On update-first (218, masked 15): inline accessors for the update
+// time at its NONE test or for the sample time at its subtraction 218 each (same code), update elapsed before the zero return 192,
+// the sample helper 303 (768 bytes), the word-flags bit 218 (same code), the hidden return ahead of the clamp and the force arm 214.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
@@ -148,10 +203,10 @@ void function_3dfe0(long cache_index, long object_index, real priority)
     if (cache->parent != NONE)
     {
         byte *parent = ((s_3dd10_object_header *)g_4e0300->data)[cache->parent & 0xffff].object;
-        byte *definition = g_4e3b44[*(long *)parent & 0xffff].bytes;
-        type = *(short *)definition;
+        s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)parent & 0xffff].bytes;
+        type = definition->object_type;
         if ((bool)(((*(dword *)(parent + 4)) >> 13) & 1)) special = 1;
-        if ((bool)((*(word *)(definition + 2) >> 1) & 1)) special |= 1;
+        if ((bool)((definition->flags >> 1) & 1)) special |= 1;
     }
     function_d4080(type, &cache->current, special, &cache->lighting);
     cache->initialized = true;

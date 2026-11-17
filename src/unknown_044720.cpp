@@ -14,6 +14,7 @@
 #include "frame_storage.h"
 #include "reset_storage.h"
 #include "globals.h"
+#include "unknown_044e90.h"
 #include "index_cache_storage.h"
 #include "physical_memory.h"
 #include <string.h>
@@ -29,12 +30,6 @@ struct s_word_bit_iterator
 	short index;
 	dword remaining;
 	dword const *words;
-};
-
-struct s_geometry_visibility_list
-{
-	dword *indices;
-	long count;
 };
 
 /* the geometry of an entry, as one result; entry_flags is the entry's first word,
@@ -73,23 +68,11 @@ void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
     dword and_mask, dword or_mask);
 
-struct s_visibility_query_list
-{
-    dword *indices;
-    long count;
-    long capacity;
-};
 template<long N> struct s_visibility_query_storage
 {
     s_visibility_query_list list;
     dword indices[N];
 };
-
-PRIVATE __forceinline void release_visibility_list(s_visibility_query_list *list)
-{
-    if (!(list->capacity & 0x80000000))
-        g_480118->allocate((long)list->indices, (list->capacity & 0x7fffffff) * 4, 0x12);
-}
 
 transform4x3f *function_b8c00(long object_index, long *node_count);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);

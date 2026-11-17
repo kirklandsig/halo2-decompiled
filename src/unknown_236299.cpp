@@ -648,61 +648,15 @@ struct s_interface_draw_request
 void __stdcall function_52040(void const *request, void const *vertices);
 
 /* Draws a textured rectangle through the shared rendering request. */
-// score 8 (was 8): retail loads x0 first and stores the first corner's x
-// before its y, ours stores the y first; every other order scores worse.
-// Tried: both extents first, then the corners in order 86 (retail's instructions,
-// registers rotated: the bottom sum copies y0 instead of adding into height);
-// chained corner stores 86; the bottom as `height += bounds->y0` 23; corners as a
-// real[4][2] array 8; const extents 8. Lane 10 round 42 (a compile-only harness of the corner
-// block reproduces 8 and 86; all 24 orders of the first corner's two stores and the two extents,
-// each with both sum operand orders, all 8 x/y orders of the other corners, and 180 orders with named
-// right and bottom sums stay at 8 or above; the extents-first form has retail's instructions with
-// the three xmm registers rotated and the bottom added into a copy of y0): right and bottom named
-// sums 85; height, y store, width, x store 19; an aggregate initialiser after both extents 85;
-// a size point local 19; the other corners stored last to first 21.
-// real[4][2] array 8; const extents 8.
-// KIMI1 r94: width/height output helper 86; height-first output helper 85;
-// ordinary inline extents helper 86; returned point extents 118; bounds corner
-// helper 86; reversed corner helper 86; width-only and height-only helpers 86 each.
-// Round 71: retail's colours (height and the bottom sum xmm0, corner temps xmm1, width and y0 xmm2) only come
-// with the bottom sum in height's web: a named bottom right after the extents 16 and `height += bounds->y0`
-// there 16 (286 bytes: retail's sequence but `addss xmm0, [eax + 8]` at the top for its later `addss xmm0, xmm2`).
-// Written later, height's definition sinks to it: `height +=` after corner 1 21 (286), named bottom before
-// corner 2's y 23 (284). Height after corner 1's y 89 (290); named top before the extents 92 (275), after
-// corner 1's x 21 (285); corner 2's y right after corner 0 19 (285); height then width with the corners in
-// order 85 (288). Compile-only, none in retail's shape: 16 x/y orders with both sum operand orders, all
-// orders with corner 1's y after the bottom sum, 1000 random statement orders with named sums and read-back
-// corners, inline extent getters and a corners helper writing through a pointer.
-// The point setter's shape for each corner (x then y, y then x, returning the point, forceinline): same colours as the plain form.
-// Round 79 (fast): no extent locals, the differences written at each corner 86 (280 bytes), with reversed sums 86 (280 bytes);
-// x0 and y0 locals 97 (271 bytes); a corner pointer at the array base 8; a walking corner pointer 85 (288 bytes);
-// extents first with corners 1/2 and 2/3 chained 86 (282 bytes).
-// Round 98: extents first and corner 0 copied as a point2f value 88 (280 bytes); an origin pointer
-// with scalar stores 85 (288); split extent declarations before the array 85, reversed declarations 85;
-// retail's corner store sequence (both right x stores before the y stores) 17 (285), width computed first
-// 19 (285), split declarations on the 17 form 17 and reversed declarations 17. Original body restored.
-// Round 88 (fast): extents first, then corner 0 in order, with: a named top read after the right x stores and
-// `height +=` 25 (284 bytes); corner 2's x read back from corner 1 and corner 2's y from corner 1's y 86 (280 bytes);
-// named right, top, left and bottom 86 (280 bytes); `width +=` and `height +=` in place 86 (280 bytes); chained right x
-// and bottom y stores 86 (282 bytes). A single-use extent sinks to its use, so retail's top-of-body width has two uses.
-// Round 131 (lane 7, fast): bounds as the first, second, third or fourth parameter at the definition and both calls 8 each, on the extents-first
-// form 86 each (288 bytes; the two callers keep their matches); that form with the bottom sums, the right sums, or both written height/width first
-// 86 each; height declared before width 85, also with the bottom sums reversed 85; the corner array declared after the extents 86.
-// Round 44 (m3 lane 17, fast): corner 0's y, the extents, corners 1 and 2's x, then corner 0's x 85 (281 bytes: x0 shared with the
-// right sum); corner 0's x after corner 3's x 85 (281); the extents as an aggregate size local after corner 0's y 87 (281); the
-// bounds copied into a local rectangle 88 (284); corner 0's y read back from corner 1's y on the extents-first form 19. Compile-only
-// screen (it reproduces this block exactly): all 900 interleavings of the two extents and corner 0's stores into both corner orders,
-// 6000 random forms (named sums, read-backs, operand orders), extent names, the bounds on the stack: none in retail's colours. Retail's
-// colours need height and the bottom sum in one register with height defined before corner 0 (only `height +=` forms reach that,
-// and those share y0 with corner 0's y).
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {
+	__assume(bounds != NULL);
 	point2f corners[4];
-	corners[0].y = bounds->y0;
-	corners[0].x = bounds->x0;
-	real height = bounds->y1 - bounds->y0;
 	real width = bounds->x1 - bounds->x0;
+	real height = bounds->y1 - bounds->y0;
+	corners[0].x = bounds->x0;
+	corners[0].y = bounds->y0;
 	corners[1].x = bounds->x0 + width;
 	corners[1].y = bounds->y0;
 	corners[2].x = bounds->x0 + width;

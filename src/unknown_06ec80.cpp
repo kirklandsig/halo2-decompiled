@@ -18,6 +18,7 @@ union s_6ec80
     __int64 field_2;
 };
 
+// score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
 // MiniMax G (11-06): no new form, no lower score; five more forms that put the mask's zero inside the
 // guard — the two tests split into nested ifs, the mask declared outside and zeroed inside, the mask as
 // a signed int, the mask as an unsigned long, and the mask declared at the top of the function and
@@ -27,7 +28,6 @@ union s_6ec80
 // block's dominator. Every form that moves the zero into the block also moves the constant registers
 // (NONE to edi, the zero to ecx) and takes the machines pointer out of ebx, so the placement and the
 // allocation cannot be won together from this source; the baseline stands.
-// score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
 // Before round 75 (13, first written at 53): the two stack slots were swapped: retail keeps the short at esp+0x14 and
 // the pointer at esp+0x10, ours the other way round; the mask is zeroed before the guard.
 // The mask scoped inside the guard gives both retail's slots and its zeroing, but then NONE
@@ -80,6 +80,75 @@ union s_6ec80
 // Round 69 (m3 lane 14, fast): a `while (local_15 < 16)` loop with the mask zeroed before the guard 348 (1059 bytes),
 // the same with the mask scoped 348; with the mask scoped: the players walked through a `player++` pointer 228,
 // `(dword)1 << local_15` 225; the mask declared with the top declarations and zeroed where it is 5 (same code).
+// Round 43 (m3 lane 18, fast): on this body a forced-inline active-mask helper called inside the guard 225 (plain
+// inline 287, 940 bytes, not inlined, as listed); an inline out-pointer getter for the 0x4f24/0x4f90 blocks (live
+// and flag test inside, as 0x6e720's lead) 5 (same code), with the mask scoped 225; the guard as two nested ifs
+// with the mask scoped 225; a forced-inline populated-blocks predicate (null tests, mask loop, data test) 226.
+// The scoped forms all give NONE EDI for its whole range and drop the machines pointer's EBX range.
+// Round 173 (m3 lane 4, fast), all with the mask scoped in the guard: `while (++local_15 < 16)` 225; a word mask 224;
+// the bit or-ed through a ternary 240 (974 bytes); the bit named in the loop body 109; the data and mask tests as two
+// ifs 228 (977 bytes).
+// Round 59 (m3 lane 2, fast), all with the mask scoped in the guard (alone 225: NONE EDI and zero ECX from the entry,
+// local_2 in memory, players in EBX): players declared first 225, players declared last 225, local_2 declared last
+// 225, the counter declared at the top and zeroed in the guard 225, counter then mask at the guard top 227, the two
+// flags declared true flag first 227, a short counter 247 (981 bytes).
+// Round 83 (m3 lane 10, fast), all with the mask scoped in the guard (alone 225: NONE takes EDI for the whole
+// setup and the frame's second_id/name and short/data slots swap): the block pointer, mask and counter named
+// machines/player_mask/player_index 225; the block pointers set in an if/else (no zero ahead of the test) 227;
+// the guard tested players first 225, with the if/else pointers 227; a typed player-record pointer for the loop 225.
+// Round 75 (m3 lane 15, fast; masked = register-masked aligned count): the scoped mask re-measured 225 (masked 19). On it the
+// 0x4da8 value as a ternary 269 (981 bytes, masked 7: NONE goes back to ECX, but the ternary adds a jmp and the two block
+// pointers swap EBX/EDI); the data pointer as a ternary 256 (masked 26); the 0x4dac value as a ternary 242 (974 bytes, masked
+// 21); all three 254 (masked 13), the same unscoped 254; first/second id NONE chained 225, unscoped 7. Same code as the plain
+// reads: inline result-default getters for the 0x4da8/0x4dac/data/short values (225 scoped, 5 unscoped).
+// Round 96 (m3 lane 10, fast): the scoped mask's NONE-to-EDI shift comes from the 0x49c8 getter's result-default
+// body: with the mask scoped and that read written by hand (`if (live) value_49c8 = arg_0->value49c8;`) NONE and the
+// zero stay in ECX/ESI and the first difference moves from +0x17 to +0x101, 195 (left: the hand read compares against
+// the NONE register where retail's getter loads into ECX, compares with -1 and re-forms NONE, and the two block
+// pointers swap EBX/EDI); the same hand read unscoped 195, scoped with the 0x4d08 getter also by hand 195; scoped with
+// only the 0x4d08 getter by hand 225; scoped with the result-default 0x49c8 body as a file-local forceinline helper
+// 225. A compile-only harness (dummy first parameter so the session arrives in EDX, getters inline) does not show
+// the shift: there the scoped mask keeps NONE in ECX. The 0x49c8 read as `live ? value : NONE` 177 unscoped, 229
+// scoped (990 bytes each).
+// Round 97 (m3 lane 1, fast), all with the mask zeroed inside the guard (alone 225): the machines block's first
+// word read into a named local ahead of the loop 229 (980 bytes: NONE stays in ECX, but the word is then loaded
+// into EDI before the loop and the block pointers move to ESI/EBX); an out-pointer getter for the two blocks with
+// the null tests, mask loop and data test in an inline predicate taking both pointers 308 (928 bytes, not
+// inlined), both force-inlined 226; the mask zeroed between the two pointer tests with a populated flag 227
+// (diagnostic: the zero has to be live at the first pointer test for retail's allocation); a non-zero start value
+// (diagnostic) 227, so the shift does not come from sharing the zero register; the machines pointer renamed to
+// sort after the players pointer 225 (names move nothing).
+// A bool for "both blocks present" computed where the two blocks are fetched and tested at the guard, mask zeroed
+// inside 251 (985 bytes; it is materialised as a byte, not carried as the two pointer registers).
+// Round 115 (m3 lane 16, fast with 0x5b120; control 5), all with the mask scoped in the guard (alone 225: NONE in EDI,
+// the zero in ECX, the machines pointer spilled): 0-7 dead initialised locals at the top 225 each (no phase effect on
+// this allocation); the two block copies as aggregate assignments in place of memcpy 225; the members-equal bool
+// computed where the mode is chosen 219; the member count read at its test instead of a local 115 (the later code
+// recovers, the entry roles stay NONE EDI / zero ECX); the local machine read at its store instead of the copy 236.
+// Also: with the mask scoped, the member count at its test plus the members-equal bool at the mode choice 164, plus
+// the local machine read at its store 238 (960 bytes); unscoped, the member count read at its test 150.
+// Round 105 (m3 lane 1, fast with 0x6ec10 and 0x5b120; control 5): the mask typed long 5 (same code); the guard tested
+// players first (`if (players && local_2)`) 89; that with the mask scoped 225; the mask scoped after the counter with the
+// active test spelled `!= 0` 227; a 600 s permuter run, 17 tries, best 5.
+// M3 lane 4 r202 (fast with 0x6ec10/0x5b120): the players local typed as the player-record pointer (cast at its
+// assignment, plain indexing) 5 (same code), that with the mask scoped 225; with the mask scoped: the 0x49c8 read by
+// hand plus both block pointers cleared and set players first 192 (the two pointers' homes and EBX/EDI then both swap),
+// only the two assignments players first 225 (974 B), only the two NULL initialisations swapped 225.
+// M3 lane 14 r100 (fast with 0x6ec10/0x5b120; base 5): re-measured the scoped mask 225 (local_2 then has no register
+// at all, read from its home at each test; players takes EBX, NONE EDI, the zero ECX; the short/data and name/second_id
+// homes swap). On the scoped mask: the name and data pointer declarations swapped 225; `value_49c8` declared at its NONE
+// store 225; first_id, second_id and players declared at their first stores 225; an unsigned counter 226; a char counter
+// 247 (981 B). Declarations and initialisers do not move this allocation; only where the zero is written does.
+// M3 lane 14 r101 (fast with 0x6ec10/0x5b120; base 5): the mask scoped in the guard with the loop counter declared and zeroed
+// just before the guard 88 (every register is retail's: NONE ECX, the entry zero ESI, the mask's zero inside the guard, the
+// block pointers EBX/EDI; left: the counter's zero sits before the guard and the frame is 0x1154 with the slots reshuffled);
+// that with the counter declared among the top declarations 88 (same code). With the counter's zero inside the guard the
+// scoped mask goes back to 225: the counter in a nested block, an `int` counter, the counter declared before the guard and
+// zeroed inside it, 225 each. So the scoped form's register shift follows the counter's zero, not the mask's.
+// M3 lane 14 r104 (fast with 0x6ec10/0x5b120; base 5), all with the mask scoped in the guard: the mask accumulated through a
+// reference bound to it 225; the active test through a trivial inline accessor taking the player record 225; the mask and
+// counter zeroed by one chained assignment, mask first 227, counter first 225; the bit or-ed in branch-free from the active
+// byte 247 (286 instructions). Each keeps NONE in EDI and the entry zero in ECX.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

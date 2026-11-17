@@ -9,6 +9,7 @@
 #include "globals.h"
 #include "index_cache_storage.h"
 #include "unknown_0494b0.h"
+#include "selected_source_pass.h"
 #include <string.h>
 #include <xtl.h>
 
@@ -132,7 +133,7 @@ extern byte g_485a75, g_485a76, g_4858bc;
 extern long g_485898, g_4858b8;
 extern real g_485adc, g_485ae0;
 extern vector3f g_485950;
-extern byte g_4ba022;
+extern bool g_4ba022;
 byte g_4ba018;
 
 __declspec(noinline) void *function_449e0(short index, bool instance, bool load);
@@ -508,6 +509,61 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // so the two starts in the preheader are the question. Entries in a local before/after first 2/2, ahead of the outer test 28; `n + entries` with `n + first` ahead of it 2; first read after the copy 119;
 // index from `previous + n` 142 (496 bytes); `__assume` on the index before/after entry 2/2; entry from `index - first` 2; index as the loop variable, n derived 8, with cursor from it 122 (490); count named in the block 73 (495);
 // index defined inside the entry test, first or after the weight, or `n + first` there 2/2/2; entry by bytes `<< 5`, by `* sizeof` or a named offset 2/2/2; `entries` then `+= n` 2; `first + (short)n` 102; the weight through `first + n` 100; n declared ahead of the selection 14.
+// Round 97 (m3 lane 12, fast): retail's cursor start is a copy of the entries base live across the copy, so its range overlaps
+// first. first split from the chain (`first = previous; current = first;`) 158 (492 bytes); the entry test as an early continue 2;
+// the copy's source pointer named before the copy and stepped as the loop cursor 163 (490 bytes); selection declared ahead of
+// first 2; a named block index for the six block reads 55.
+// Round 72 (m3 lane 14, fast): material as one ternary at its declaration 76; material index and material declared
+// before weight and shape 104; shape, material, then weight 23; weight declared after the geometry call 32; material
+// reused for the chosen value 155 (481 bytes). Compile-only (no dead mode home, material in a register there) keeps first
+// and the cursor temporary in one slot for every loop-body, memcpy-source, type and scope spelling; only the explicit
+// cursor or explicit index (both start above the guard) split them. Re-measured: local renames 2.
+// Round 222 (m3 lane 3, fast with 0x404b0): `current = first + count` 157 (492 bytes); `long first; current = first =
+// previous;` 158 (492 bytes); `dword first` 2; first and current each reading previous 2; the copy size as
+// `sizeof(s_44940_entry) * count` 2 (same code each).
+// Round 65 (m3 lane 2, fast): the mode parameter renamed draw_mode / selection_mode 2/2 (parameter names do not move
+// the spill either); shape as a short 128 (490 bytes); the part context declared once outside the part loop 2 (same code);
+// `if (chosen == NONE) continue;` 2 (same code); `entry->unknown10[0xa] != 0` 3. Re-spellings of listed forms: the count
+// guard as an early return 2; chosen as if/else 52 and material as if/else 76 (the listed ternaries' code); entry and index
+// at block scope before the `for` 2; the geometry result as `long const *part_count` 2.
+// Round 173 (m3 lane 5, fast): `NONE != material` 2; chosen declared at the part-context scope and assigned 2; chosen
+// started from material with `if (chosen == NONE) chosen = context.material;` 21; material declared before the material
+// index 2; the geometry pointer declared at the block top 2; shape read after the material lookup 104. Re-measured:
+// `current = previous;` then first from previous 2; on this base the listed selection in the loop body 171 (484 bytes)
+// and written into the entry test 171 (VC does not hoist it). Retail shares first's slot with material (frame +4) and gives the
+// cursor the mode home; ours gives first the mode home with the cursor and material frame +4 alone.
+// Round 93 (m3 lane 11, fast): first renamed base_index/start_index/copy_start/zone_first/a_first 2 each and material
+// renamed chosen_material/override/a_material 2 each (a re-check: names do not move the slot); a short loop counter 152;
+// the copy's destination through `g_4c0b78.previous` 2, as `&g_4ba138[g_4c0b78.current]` 2; the entry table named right
+// before the `for` (after the selection) 2; the count named right before the `for` 171 (479 bytes).
+// Round 160 (m3 lane 8, fast with 0x404b0): 1-8 unused initialised locals at the function top 2 each (no count effect on the
+// slots); the entry through a reference local 2 (same code); the loop test as `count > n` 4 (the latch compare's operands
+// swap); index declared inside the entry test 2 (same code); first read from previous and current then set from first 158
+// (492 bytes, the listed split form); material as if/else 76 (the listed if/else form). The slots fit a packer that
+// places the heaviest spilled local first: the cursor takes the dead mode home in both builds, and first shares it only
+// when its last read (the index start) comes before the cursor's start; in retail first still overlaps the cursor, so
+// it takes a frame slot, which material then shares.
+// Round 195 (m3 lane 4, fast): the entry test split into two nested ifs (mask and bit, then table and flags) 2; the
+// part-loop test as two nested ifs 2; a long weight passed as `(byte)weight` 97; the geometry result as `long const *`
+// with the part test `*geometry` 2; a `dword` index 2 (all the 2s the same code). Re-measured: const first and index 2.
+// Round 200 (m3 lane 4, fast with 0x404b0): the entry test's mask as `unknown00 & 0x1fffff & selection` 2; a named
+// `short part_index` for the five `(short)index` uses 2 (propagated); a non-const entry pointer 2 (all the same code);
+// shape from `(byte)entry->flags & 0xf` 128 (490 bytes); a `short` part counter 58 (515 bytes).
+// Round 184 (m3 lane 6, fast): the entry test and its body as a forceinline helper taking (index, entry, selection) 2,
+// (entry, index, selection) 2, with `first + n` passed and no index local 2; the part loop as a forceinline helper 2 (all
+// the same code); a block pointer for the copy and the count update only, the loop still indexed, 148. Diagnostic: a use
+// of mode after first's store (a byte global written) leaves first in mode's home (126), so mode's home is free from entry.
+// Round 128 (m3 lane 9, fast): `if (!geometry) continue;` 2; the geometry call's flag as `(unknown00 & 0x1000) != 0` 2 (same
+// code); the part count hoisted into the `for` init 35; the entry read from the copy (`&g_4ba138[index]`) 147 (495 bytes);
+// the count read through the metadata view (`g_4c6b00[cache_index].count`) 2.
+// M3 lane 14 r101 (fast with 0x404b0): a named const entries base used as the copy's source and for `&entries[n]` 2; with
+// `index` computed ahead of `entry` 2; with the base named ahead of `first` 2; with `entry = entries + n` 2; the base named
+// just ahead of the `for` only 2 (all the same code: `first` keeps the mode parameter's home).
+// M3 lane 14 r104 (fast with 0x404b0): `first` renamed to the running index and stepped with `++n, ++index` (no `first + n`)
+// 163 (492 bytes: the index lives in EBP, mode on the stack); the index built in two steps (`index = first; index += n;`) 2;
+// n declared right before the `for` 2; the part context declared at the top of the entry test's body 2; material declared at
+// the function top and assigned NONE where it was declared 2 (all four the same code). Re-measured: first declared then
+// assigned with `n + first` 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
@@ -677,6 +733,9 @@ void function_402b0(long cache_index, long mode)
 // Diagnostic: the passes as an inlined copy of 0x44370 with a const mode table 282 (895 bytes: stack
 // byte, pass-11 re-store and the 0x496f0 call as retail; only the dead g_485898 loads and frame
 // 0x88 missing); the same copy on the real writable table 782 (1389 bytes).
+// r136 lane 7 (plain): the four passes through draw_light_source_pass (moved into include/selected_source_pass.h,
+// with the stipple cull and case 11's `enabled = true`) 157 at 946/946 bytes (LCS-aligned 63 -> 20; the passes then
+// equal retail, but ours keeps the constant 1 in EBX where retail uses immediates); not kept (positional rise).
 // @retail 0x404b0
 bool function_404b0(long mode)
 {
@@ -757,7 +816,11 @@ bool function_404b0(long mode)
     return true;
 }
 
-// score 193 (was 193): BLOCKED-BY 0x44370. Frame 0x48 and geometry agree. Round 81 (fast; aligned
+// score 85 (was 193): r136 lane 7: the passes go through the shared pass helper (include/selected_source_pass.h, moved
+// there from src/unknown_0350e0.cpp unchanged), which follows 0x44370's body for a constant mode (gate by mode,
+// the two 0x15680 calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool
+// stipple_enabled` (76; kept only with a match, coordinator 11-08): 1215/1215 bytes, every inlined pass equal to retail's except the 0x14b60 call (flags pushed, retail passes them in eax): BLOCKED-BY 0x14b60.
+// Earlier 193 (was 193): BLOCKED-BY 0x44370. Frame 0x48 and geometry agree. Round 81 (fast; aligned
 // count 24, so the 21 missing bytes cause most of the 193): the entry byte test as `<= 0` 192 (retail's
 // `jbe`); the selections or the geometry flag without their bool casts 193/193 (same code); pass 8 as
 // `selected = bit; if (selected) selected = g_4ba022;` 176 (aligned 16, not kept: a flag set inside a
@@ -862,72 +925,15 @@ bool function_3fdf0(long mode, bool single_pass)
             }
         }
     }
-    bool selected;
     if (single_pass)
-    {
-        selected = (bool)((g_4c1a48[0].flags >> 16) & 1);
-        if (selected)
-        {
-            g_467130 = 16; g_467134 = 0; g_467138 = &g_4c1a48[0];
-            g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
-    }
+        draw_selected_source_pass(0, 16, false, false, g_4858b8, false);
     else
     {
-        selected = (bool)((g_4c1a48[0].flags >> 1) & 1);
-        if (selected)
-        {
-            g_467130 = 1; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = 1;
-            function_14bc0(1, 0, true);
-            if (!g_485a75 && !g_485a76) function_14b60(1, 0, 0.0f, 0);
-            bool stipple_enabled = g_485898 < 4 || g_485898 > 7;
-            function_15680(stipple_enabled);
-        }
-        else g_467130 = 0;
-        function_15370(1);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 3) & 1);
-        if (selected)
-        {
-            g_467130 = 3; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true);
-            bool stipple_enabled = g_485898 < 4 || g_485898 > 7;
-            function_15680(stipple_enabled);
-        }
-        else g_467130 = 0;
-        function_15370(1);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 8) & 1) && g_4ba022;
-        if (selected)
-        {
-            g_467130 = 8; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 20) & 1);
-        if (selected)
-        {
-            g_467130 = 20; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 7) & 1);
-        if (selected)
-        {
-            g_467130 = 7; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
+        draw_selected_source_pass(0, 1, true, true, 1, false);
+        draw_selected_source_pass(0, 3, true, true, g_4858b8, false);
+        draw_selected_source_pass(0, 8, false, false, g_4858b8, false);
+        draw_selected_source_pass(0, 20, false, false, g_4858b8, false);
+        draw_selected_source_pass(0, 7, false, false, g_4858b8, false);
         if (function_44370(2)) { function_44550(); function_445d0(); }
     }
     g_4c1a48[0].flags = g_4c1a48[0].unknown10;

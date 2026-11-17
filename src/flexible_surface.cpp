@@ -7,6 +7,7 @@
 #include "object_markers.h"
 #include "effects.h"
 #include "vector_products.h"
+#include "axis_rotation.h"
 #include "normalize3d.h"
 #include "bit_vector.h"
 #include "vertex_inputs.h"
@@ -365,9 +366,33 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// score 130 (was 171): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
+// 0x2551f0 inlines (include/axis_rotation.h), which loads the global's i, j and k up front and reloads j, where retail loads
+// j and k early, i late, and spills two cross terms; retail also loads the random-state pointer before the time product.
+// MiniMax E (11-15): no new form, no lower score (117, was 117): the rotation written out with scalar cross and dot
+// terms in retail's own order (the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, then cross j, cross k and
+// cross i inside the i row) gives 156 with the direction copy and 174 with three scalars, and the frame stays 0x24 or
+// 0x1c against retail's 0x20; the fraction drawn with the shared random step instead of the shared random real gives
+// 117 with the seed load still after the time product, and the seed pointer in a local gives 136. What still differs is
+// the frame size (0x28 against 0x20) and the seed pointer load, which retail makes between the two pushes.
+// MiniMax S (11-15): no new form, no lower score (117, was 117): on this body the row-i projection operand swapped to
+// projection*axis.i compiles to retail's own order and changes no byte (round 41's projection*axis rows were on the field-wise
+// `old` copy, not here), and a permuter run with a new seed stays at the starting score; the frame is still 0x28 against
+// retail's 0x20, since retail keeps the old direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and its
+// dot is summed k, j, i, an order the shared dot3f cannot produce.
+// MiniMax B (11-13): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches cross3f and dot3f; the rotation in place is the shared rotate_vector_170d70 body written out, which is kept only with a match.
+// MiniMax S (11-16): no new form, no lower score (117): the frame is still 0x28 against retail's 0x20 because retail keeps the old
+// direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and retail's dot is summed k, j, i, an order the shared
+// dot3f cannot produce; the seed and time register roles remain; the permuter (annealing, 420 s, 49 tries) found no variant
+// below 117.
+// Earlier (171, was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
+// MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
+// before the draw (197) move the seed update up but split the float chain, so both are worse.
 // MiniMax D (11-05): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score: retail still loads the random-state pointer before the time multiply and keeps the old direction in registers, ours spills the old direction to the stack and frames 0x28 against retail's 0x20.
-// score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
+// MiniMax G (11-06): no new form, no lower score: the frame is 0x28 against retail's 0x20 because retail loads
+// the random-state pointer before the seed read, so our locals sit eight bytes higher (esp+0x28 and esp+0x2c
+// against retail's esp+0x18 and esp+0x20).
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
 // At 104: frame 0x1c versus 0x20 (retail spills cross j as well as k and keeps axis.i in memory, so its
@@ -380,7 +405,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // cosf/(real)cos 104/104/104, plain sin and cos 149; random-state local at entry 104, random_unit_vector 104;
 // dot3f(&axis, ..)/axis-first i,j,k 104/104, k,j,i/j,k,i/retail operand order 165/166/166 (864 bytes); dot3f with
 // cross i,j,k 165 (864); cross order j,k,i,P/i,P,j,k/P,i,j,k/P,k,j,i/j,k,P,i 160/168/104/161/160; cross3f
-// after/before the projection 163/163, cross3f_staged 163, the same struct body in place 163, rotate_direction 150,
+// after/before the projection 163/163, cross3f_staged 163, the same aggregate body in place 163, rotate_direction 150,
 // a same-file forceinline copy of it 150, with scalar cross terms 173 (860), rotate_vector_170d70 172 (860);
 // axis drawn before sine/cosine 104; axis-first cross/scalar-first rows/axis-first rows/split sine,cosine 104 each;
 // fraction before time 191, at the top 203, oscillation before the fraction 191, fraction inline 196, product
@@ -391,7 +416,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 26: the float time product (fimul), the random fraction and a float oscillation/angle gave retail's head
 // x87 code (160 -> 139). Then: random drawn before the time product 197; double oscillation with float constants
 // 140; sinf/cosf in the tail 157 (883 bytes), three spellings 157; cos operand order compiles the same; in-place
-// rotation helper projection-first 183 (849 bytes), cross-first 188, dot3f with a struct cross 170, cross3f in the
+// rotation helper projection-first 183 (849 bytes), cross-first 188, dot3f with an aggregate cross 170, cross3f in the
 // helper 171; projection then cross3f on the global directly 181; projection before cross3f on the copy 161.
 // Earlier: frame 0x28 against 0x20 and random/time/oscillation staging remain; shared cross product reaches retail length.
 // Earlier frame 0x24 against 0x20 and the random-seed/oscillation schedule. Reading the frame
@@ -431,7 +456,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // on the const staged graph 181 each; const staged inputs with shared random_index draws 160.
 // Original body restored.
 // DL210: native tail producer/clamp result/component output, masks 1-7, then all with existing vector setter; component-output frame with staged cross/projection-first/both/both and readonly inputs;
-// scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
+// DL210 earlier scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
 // Round 96 (one-link harness of this file with 0x30bf0's, exact at 139; the full build already passes wind in
 // EBX with a plain ret as retail): cross3f(&axis, &old, &cross) with `+ cross*sine` rows 166, with the
 // projection first 167 (864 bytes); rows as sine*cross / projection*axis / cosine*old 139 each (same code);
@@ -468,7 +493,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // retail, but the frame grows to 0x34), declared before the axis 163, as `{ g.i, g.j, g.k }` 159; field-wise `old` with the
 // projection before cross3f 148 (frame 0x28; retail's store/reload of the first cross product appears, but cross3f gives
 // i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
-// 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
+// 148; cross3f_staged alone 159; the projection before cross3f on the aggregate copy 161 (885 bytes). Diagnostics (scalar
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
 // DH round 273: native real tail trigonometric results at first/second/third/fourth/first-pair/last-
 // pair/all producers 155/139/155/139/155/155/138; all with real double-product arguments 163.
@@ -609,6 +634,172 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // three draws 136; the gust value and direction globals (0x55ecd0/0x55ecd4, only used here) as one struct 117 (same code); sinf/cosf for the
 // angle 117; no `old` copy, cross/dot/rows on the global into a `rotated` local stored back 161 (885 B); the axis draw before sine/cosine 117;
 // the frame-count and initialized-flag globals (0x55e710/0x55e714) as one struct 117 (same code).
+// P384: Complete normalization admission, bool/byte/short/long positive then complementary:
+// 117/117/117/117/117/117/117/117. NOT kept: no equality or native old/cross home recovery.
+// Original direct unordered-safe test, true-only initialization store and complete body restored; frame 0x28/0x20 remains.
+// MiniMax E (11-08): no new form, no lower score: our frame is eight bytes larger (sub esp, 0x28 against retail's 0x20) and the global load sits before the push edi.
+// P396: Complete sine/cosine/projection double receivers, seven subsets then immutable all:
+// 231/220/218/220/218/218/218/218. NOT kept: nonexact precision forms shrink to 804-818/880 bytes;
+// original float coefficients, full captures, shared products, draws and whole body restored.
+// MiniMax E (11-09): no new form, no lower score: our frame is eight bytes larger (sub esp, 0x28 against retail's 0x20) and the global load sits before the push edi.
+// Round 141 (m3 lane 7, fast, 0x118140 matched; our build already returns with a plain ret and takes wind in EBX): `old` as a const
+// reference to the global 173 (862 B, frame 0x28); the angle as `oscillation * oscillation * fraction * 0.15f` 117 (same code); the
+// projection before the cross product 158 (883 B, frame 0x24); the oscillation squared in place 197 (882 B); the axis draw before
+// sine/cosine 117 (same code); the length test as `>= 0.0001f` 170 (882 B); cosine computed before sine, own statements 118; the
+// definition read only at the strength product 208; the time product's operands swapped 117, the frame-count compare's operands
+// swapped 117 (same code).
+// M3 lane 14 r74 (fast, base 117, aligned 72; 0x118140 stays matched in each; retail and ours both end in a plain ret): the rotation as a file-local
+// inline of unknown_26db50.cpp's form (dot3f(axis, vector) scaled by 1 - cosine, the vector's i, j, k copied, rows `axis * along + old * cosine -
+// (cross) * sine`) on the global 156 (880 bytes, aligned 84), the same forceinline 156, with dot3f(vector, axis) 156, with the i row old-first 156 (all
+// the same code); the kept rows into a `rotated` local copied to the global 183 (903 bytes); cross3f and dot3f reading the global with the `old` copy
+// kept for the rows 164 (893); the `old` copy taken after the cross and dot, just before the rows 173 (862). Body unchanged.
+// (The first four are one compiled body; the cross/dot-on-the-global form re-measures round 206's 164 at 893 bytes.) On the opening: the time
+// product with its factors swapped 117 (same code); the time globals through a pointer local used for both reads 117 (same code); the fraction
+// held as a double 122; the angle as `fraction * (oscillation * oscillation) * 0.15f` 197 (882 bytes), the square as a named local 197 (882).
+// Round 166 (m3 lane 6, fast with 0x118140; masked = register-masked aligned count, base 72; plain ret on both sides): `old`
+// copied before the trig values and the axis draw 121 (masked 96); the cross from the global itself with the dot and rows
+// from `old` 142 (889 bytes); row i with the axis term first, as rows j and k, 134 (881 bytes); axis and old in one
+// declaration 117 (same code); the projection's factors the other way round 117 (same code). Body unchanged.
+// Round 87 (m3 lane 1, fast with 0x118140, base 117, aligned/masked 68/56; ours and retail both end in a plain ret, the round
+// prompt's ret 4 is not what this build gives): 0x2551f0's (vector, axis, sine, cosine) rotate helper applied in place on the
+// global (same-file copy, diagnostic) 169 (864 bytes), with the sine and cosine computed in the call as 0x2551f0 does 148 (880,
+// masked 49: the helper re-reads the global's j from memory at each use where retail keeps j and k in XMM5/XMM4). Matched 0x177d10
+// draws its axis the same way (g_4417f0 by random_index 0x402) and writes the same rotation out (s, c, t, cross j/k/i, rows); round
+// 41 measured that shape here (176/181); 0x177d10's exact statements on the global 143 (880, aligned 75); matched 0x23d260's
+// staged shape (axis k local, staged projection, cross i/j/k, staged rows stored as they finish) on the global 188 (846 bytes).
+// No other natural rotation or opening form outside this note's list is left. Not kept.
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 68, masked 45),
+// each the same code (117, 880 bytes): `old` as a const copy; dot3f(&old, &axis); the axis as a const copy; `cross` declared
+// ahead of the axis and `old`; the three rows and the 0x117c80 call through a named direction pointer to the global.
+// The frame's extra eight bytes are `old` kept in memory (its address goes to cross3f and dot3f); retail holds the global's
+// j and k in XMM5/XMM4 and reads i late, and none of these forms changes that.
+// M3 lane 16 r100 (fast, 0x118140 stays matched; the build already returns with a plain ret and takes wind in EBX), re-measured on
+// the current body: the `old` copy dropped with cross3f, dot3f and the rows on the global 173 (862 B; round 37 had 152 at 854),
+// the projection first 175 (858 B, frame 0x1c; round 39 had 148 at 852), that with dot3f(&g_55ecd4, &axis) or vector-first rows
+// 175 (same code); the cross-file rotate_direction on the global (plain check) 183 (852 B; round 28 had 150): cross i then sinks
+// into the i row and cross j, k form early as in retail, but the global's j/k reload in the i row. Round 69's tail (`cos((real)(time
+// * 0.001))`, `(real)sin((real)(time * 0.005))`) re-measured 171 (892 B; retail's fxch pair and fst stores), with rotate_direction
+// 171 (864 B), with rotate_vector_170d70 170 (864 B); with rotate_direction on an `old` copy stored back 161 (889 B). Body unchanged.
+// m3 lane 2 r71 (fast with the file's functions and 0x30bf0): the axis as a pointer into the table (no axis copy)
+// 159. Retail copies the axis into the frame with integer moves, keeps no copy of the global (its j and k load early
+// into XMM5/XMM4, i late) and spills only cross j and k: no form that keeps cross3f/dot3f on the existing helpers
+// gives that frame, and the hand-written rotation is match-only. Body unchanged.
+// M3 lane 9 r109 (fast with 0x118140, 0x30bf0 and 0x117c80; base 117, aligned 100, masked 72; both sides end in a plain
+// `ret`): the fraction drawn through random_next with `(real)... * (1.f / 65535.f)` in place of function_x82e52f 117 (same
+// code, not kept); the clamp of g_55ecd0 through a file PIN macro (`PIN(x, lo, hi)` as other files define it) 117 (same code,
+// not kept); the wind written through the existing scale_vector_by_double 118 plain, and matched 0x118140 drops to 50
+// (round 219's shared final double scale on this base: not kept). No other untried natural form of the opening, rotation or
+// tail. Body unchanged.
+// M3 lane 14 r83 (fast with the file and 0x30bf0; both sides end in a plain `ret`, index in EAX): cross3f(&axis, &old) with
+// `+ cross * sine` in the rows 134 (881 B); rows j and k written old-first 158 (882 B); the projection's dot on the global
+// with cross3f on `old` 141 (890 B), that dot before cross3f 143 (894 B); the dot then cross3f, both on the global, with
+// `old` for the rows only 162 (890 B). Same code: scalar-first products, the projection staged as `*= 1 - cosine`,
+// parenthesised row sums, dot3f(&g_55ecd4, &axis). Retail keeps no `old` or `cross` copy in memory (the global's j/k in
+// XMM5/XMM4, cross j/k spilled early, cross i formed inside the i row); only scalar code gives that.
+// m3 lane 8 r158 (fast with 0x118140, 0x30bf0, 0x117c80; both sides end in a plain `ret`): the permuter (`--fast --anneal`,
+// 600 s after an 856 s full-image baseline) tried 64 variants, best 117 (none lower); re-measured the listed definition
+// read only at the strength product 208 (880 B; 0x118140 stays matched). Register-masked aligned 45: the frame (0x28 for 0x20: `old`
+// lives in memory because its address reaches cross3f and dot3f), the seed pointer loaded after the time product (retail
+// before it) and the rotation block (retail keeps no `old` or `cross` copy: the global's j/k in XMM5/XMM4, cross j/k spilled,
+// cross i formed in the i row), which only the hand-written rotation (an existing helper's body, match-only) gives.
+// M3 lane 7 r156 (fast with the file, 0x30bf0, 0x117c80; plain `ret` and index in EAX on both sides; base masked 72): tail
+// `(real)sin((real)(time * 0.005))` 164 (888 B, an fxch pair before fsin; `sin((real)..)`, a `(real)` on the 0.0006f cosine and the
+// cosine factors swapped the same code); with `(real)cos(time * 0.001)` too 165 (888 B: the sine term gets retail's `fst; fsin;
+// fst`, the cosines still run 0.0006f first). Match-only, written-out cross and dot terms in retail's dataflow (dot3f(&axis,
+// &g_55ecd4), scalar cross_j/cross_k, the i row's cross term inline, rows on the global): with that tail 142 (880 B, frame 0x1c,
+// masked 53: ours copies the global's component in each product where retail copies the axis's; dot arguments swapped, a
+// direction pointer, a const reference or a named cross_i the same code), with the base tail 145, cross terms first 159; old
+// i/j/k scalar captures after the axis 165 (the axis is then the copied operand, but all three loads go early); an `old` copy after
+// the axis with dot3f 157, with the dot written out 113 (880 B, masked 90, `old` in the frame, 0x24), that with the base tail 158,
+// with `old` declared first 117 (other code); j/k captured and i read from the global 149 (frame 0x20, first difference +0x2a),
+// that with retail's dot grouping `(k + j) + i` 124 (frame 0x20, masked 61), i captured after the j/k terms 164. Body unchanged.
+// m3 lane 14 r88 (fast with 0x118140, 0x30bf0, 0x117c80; both sides end in a plain `ret`, frame 0x28 against 0x20):
+// rotate_vector_170d70 on an `old` copy stored back 374 (664 B: the helper stays a call here). Every other rotation, seed
+// and opening form found is listed above; retail's opening loads the random-state pointer into ESI before the time
+// product and its rotation reads the global straight into XMM5/XMM4/XMM3 with the dot summed k, j, then i. Body unchanged.
+// MiniMax B (11-12): no new form, no lower score (117): the frame is 0x28 against retail's 0x20 and the entry keeps the
+// random's state pointer in ESI where retail reloads it, so the locals differ before the first compare; the body is
+// retail's length (880 bytes).
+// MiniMax H (11-11): no new form, no lower score (117); retail keeps the old direction in xmm3-xmm5 and computes the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order dot3f cannot produce, and the frame stays 0x28 against retail's 0x20 because the old direction's address reaches the cross and dot helpers.
+// MiniMax D (11-11): no new form, no lower score (117); the frame is still 0x28 against retail's 0x20, and the
+// eight extra bytes are still the copy of the old direction that has to live in memory because its address is
+// handed to the cross and dot helpers; dropping that copy and reading the global at each use gives 173. Retail
+// keeps the rotation scalar, so the cross terms are the shared helper's body written out, which is kept only
+// with a match; with the helper in place the rotation stays in the vector form.
+// MiniMax E (11-11): no new form, no lower score (117); retail's frame is 0x28 bytes where ours is 0x20 and the
+// seed global is read later in ours than in retail.
+// MiniMax S (11-11): no new form, no lower score (117): the frame stays 0x28 against retail's 0x20 because retail
+// loads the random-state pointer before the seed read, and the old direction's address is passed to cross3f and
+// dot3f here where retail keeps the old direction in registers.
+// m3 lane 5 r181 (fast with 0x118140, 0x117c80, 0x30bf0, all MATCH; control 117, aligned 68, masked 45; both sides end in a
+// plain `ret`): retail loads the random-state pointer into ESI before the definition's load and the time product. The
+// fraction drawn before the time product 193; the definition lookup moved after both draws 157 (882 B). Rounds 87, 109
+// and 148 above list every other opening, rotation and tail form; none is left untried. Body unchanged.
+// T104: Returned direction/axis/both snapshot destinations, mutable/readonly memcpy, then
+// complete memmove: 161/161/160/161/161/160/178/178. NOT kept: no equality or native frame/home
+// recovery; original full captures, shared products, draws, row trees and entire body restored.
+// MiniMax H (11-14): no new form, no lower score (117): retail keeps the old direction in xmm3-xmm5 and sums the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, an order the shared helpers cannot produce, and the frame stays 0x28 against retail's 0x20 while the old direction's address reaches them.
+// M3 lane 12 r123 (fast with 0x118140, matched each time): no `old` copy, cross3f and dot3f on the global and the rows into
+// named scalars stored after them 173 (862 B; frame still 0x28, cross3f's output stays in the frame), with cross3f_staged 173,
+// with dot3f(&global, &axis) 173 (same code); that with the tail as `cos((real)(time * 0.001)) * cos(time * 0.0006f) +
+// (real)sin((real)(time * 0.005))` 158 (880 B: the tail is retail's x87 sequence, its float store +0x14 for +0x18), with the
+// projection before cross3f 163 (880 B). Body unchanged.
+// M3 lane 16 r119 (fast with 0x118140, 0x117c80, 0x30bf0, all matched; control 117; both sides end in a plain `ret`, the
+// convention is component EAX/output EBX in both): a `dword *seed` for the random state taken at entry and used by both
+// draws 136; cosine computed before sine as two statements 118; the rotation pair through sinf/cosf 117 (other code); the
+// definition lookup after the time product 160; the cross product as axis x old with the rows adding it 134 (881 B).
+// Same code: cosf for the opening oscillation, the record in its own local first, the axis drawn before sine/cosine.
+// M3 lane 11 r103 (fast with 0x118140, 0x117c80, 0x30bf0, all matched each time; both sides end in a plain `ret`):
+// cross3f_staged for cross3f 117 (same code); the rows through the existing vector3f_scale and vector3f_add_scaled
+// (old by cosine, then the axis by the projection, then the cross by -sine) 193 (914 B). Diagnostics with a file-local
+// rotation (written-out helper bodies, match-only): an in-place scalar rotation on the global with the existing sine and
+// cosine 183 (852 B); the path-rotate spelling (cross and result vectors, aggregate copy back) 182 (905 B); a rotation
+// taking the angle, sine and cosine computed inside after the axis draw, 145 (880 B). Body unchanged.
+// M3 lane 13 r96 (fast with 0x118140, 0x117c80, 0x30bf0, all MATCH; control 117; both sides end in a plain `ret`, so the
+// queue's `ret 4` remark is stale): the tail with float-rounded trig arguments, `cos((real)(time * 0.001)) * cos(time *
+// 0.0006f) + (real)sin((real)(time * 0.005))`, on this body 171 (892 B: the tail is then retail's x87 sequence, the 0.001
+// cosine first, `fxch; fxch` and the `fst` stores of the sine argument and result, but the body grows 12 bytes); dot3f
+// and cross3f reading the global while `old` serves only the rows 164 (893 B); `old` as the aggregate initializer `{
+// g_55ecd4.i, g_55ecd4.j, g_55ecd4.k }` 154 (880 B, frame 0x34: the global is then read with movss, j first, as retail,
+// but the cross product moves to the frame; cross3f_staged on it the same score), with the projection before cross3f
+// 152 (884 B, frame 0x28), with `old` initialized before the axis draw 158 (frame 0x34).
+// M3 lane 2 r88 (fast with 0x118140, 0x117c80, both MATCH; control 117): base for these, re-measured, round 69's tail (the
+// float-overload casts: retail's fxch pair and three fst stores) with no `old` copy and cross3f/dot3f/rows on the global 158 at
+// 880 B (the global's j/k then load right after the seed store, as retail). On it: the axis drawn before sine/cosine 158, cross3f_staged
+// 158, sine then the axis draw then cosine 158 (all three the same code); the projection first (re-measured 163) with
+// cross3f_staged 163, with dot3f(&global, &axis) 163. Retail computes the dot first, then cross j and k (spilled), then cross i inside
+// the i row (0x177d10's statement order), which neither shared cross helper gives. Body unchanged.
+// P537: Actual normalization return/absolute-magnitude producers, real/double/const-real/
+// const-double: 117/118/117/118/117/118/117/118 at 880 bytes. NOT kept: no exact
+// result or frame recovery; original call/test, shared products and complete body restored.
+// P569: Existing shared cross: mutable/immutable product parts 117/117; component accumulator 117;
+// mutable/immutable component results 117/117; entry product declarations 117;
+// reused component result/accumulator 117/117. NOT kept: all tie; original helper/body restored.
+// Frame 0x28 versus native 0x20 and direction/cross/seed homes remain.
+// b9C (11-17) walk against retail, fast build on r839: fields, offsets, constants (readf), jcc senses with NaN, callee
+// arguments and statement order all agree; no behaviour difference found. Checked: 0x30bf0 test `ja` skip (0x117ed1;
+// NaN sets the flag), signed `jle` (0x117ee6), clamp `jbe`s (0x1180d8, 0x1180f7: NaN skips), 0x117c80 args (eax = ecx =
+// &g_55ecd4, push 0x3eb2b8c2 at 0x118050), frame-count reload (0x118064), wind stores (0x118122-0x118137). The strength
+// constant 0x45e208 is 0x3da3d70b, not 0.08f (0x3da3d70a); float products such as 0.1f * 0.8f round to it. Kept,
+// retail's x87 sequence for the tail (0x118070-0x1180b4): cos(time * 0.001) first, then 0.0006f, with the float stores
+// at 0x118098, 0x11809e and 0x1180b0 (copies only: st(0) keeps the unrounded value, so the result is the same);
+// `cos((real)(time * 0.001)) * cos(time * 0.0006f) + (real)sin((real)(time * 0.005))` gives it op for op, 117 -> 171
+// (892 bytes; round 69's form, measured again). Not kept, written-out rotation (cross3f/dot3f
+// bodies; axis_i, old_j, old_k captured after the axis draw, dot staged k, j, i, scalar cross j, k, i in the i row),
+// match-only: 100 (880 B, frame 0x20), with that tail 103 (885 B), with `short ticks` read before the draw and the time
+// 93 (880 B: esi loads first as retail, but `mov dx,[ecx+2]; movsx` and `fst` where retail has movsx and fstp+fld); on
+// 103: draw first 158, `dword *seed` 134; `long ticks` 194. Left at 100: retail copies the axis (xmm7, 0x117f85) where
+// ours copies g.i; g.i stores before the row j loads (0x118006); sine*cross_j reads memory (0x118023).
+// M3 lane 4 r207 (fast, plain for the kept form; 0x118140, 0x117c80, 0x30bf0 and 0x2551f0 matched each time): rotation
+// bodies of matched functions that inline the same rotation, on the global with the axis copy: 0x29b2e0's angle-taking
+// helper 173 (898 B); 0x29c860's 164 (880 B); 0x23d260's block as an in-place helper 156 (880 B), with the sine and
+// cosine as call arguments 156; 0x177d10's in-place form with sine/cosine arguments 171 (863 B); 0x2551f0's in-place
+// helper with the sine and cosine locals 152 (880 B), with them as call arguments 130 (889 B, kept: the helper moved to
+// include/axis_rotation.h and called from both files; 0x2551f0 stays matched). On that helper: without the vector_k
+// capture 147 (884 B) / 171 (864 B) with locals; dot3f and cross3f inside it 157 / 155 (880 B); its dot terms axis-first,
+// its cross terms j, k, i, or its rows scalar-first 130 each (same code); the axis passed as a table pointer (no copy) 183
+// (852 B); sine and cosine as two statements before the axis 152 (880 B); a `dword *seed` local at entry for the three
+// draws 174 (880 B).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -624,20 +815,13 @@ void function_117dd0(long index, vector3f *wind)
 	}
 	if ((long)g_4ba034 > g_55e710)
 	{
-		real sine = (real)sin(angle), cosine = (real)cos(angle);
 		vector3f axis = g_4417f0[random_index(&g_4e7408->seed, 1026)];
-		vector3f old = g_55ecd4;
-		vector3f cross;
-		cross3f(&old, &axis, &cross);
-		real projection = dot3f(&axis, &old) * (1.0f-cosine);
-		g_55ecd4.i = old.i*cosine + axis.i*projection - cross.i*sine;
-		g_55ecd4.j = axis.j*projection + old.j*cosine - cross.j*sine;
-		g_55ecd4.k = axis.k*projection + old.k*cosine - cross.k*sine;
+		function_x84d9e8(&g_55ecd4, &axis, (real)sin(angle), (real)cos(angle));
 		function_117c80(&g_55ecd4, &g_55ecd4, 0.34906584f);
 		/* retail reloads the frame count after the call, as for an address-taken global (0x4a7c0, 0x248620) */
 		g_55e710 = *(dword const *)&g_4ba034;
 	}
-	real wave = (real)((cos(time * 0.001) * cos(time * 0.0006f) + (real)sin(time * 0.005)) * cos(time * 0.0001f)) * 0.01f;
+	real wave = (real)((cos((real)(time * 0.001)) * cos(time * 0.0006f) + (real)sin((real)(time * 0.005))) * cos(time * 0.0001f)) * 0.01f;
 	g_55ecd0 += wave * 0.3f;
 	if (g_55ecd0 < -0.1f) g_55ecd0 = -0.1f;
 	else if (g_55ecd0 > 0.1f) g_55ecd0 = 0.1f;
@@ -732,8 +916,21 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax I (11-16): no new form, no lower score (322): the first difference is the first call's argument setup - retail loads
+// the field into ESI, pushes it and keeps the header pointer in a stack slot, this build loads it into ECX and
+// pushes that.
+// MiniMax E (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls
+// them, both in src/unknown_01cf50.cpp, and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against
+// our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
+// MiniMax C (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in EDX/ECX/EAX against this build's three stack arguments; the lighting pointer nulled before the lookup measures 315, seven points and under the keep bar, and 0x4b2d0's convention follows from its own body, whose second argument this round still could not move from eax into ecx.
+// MiniMax S (11-14): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where ours calls them
+// (both sit in src/unknown_01cf50.cpp, which is not this lane's file) and passes 0x4b2d0's tag, group and variant in
+// EDX/ECX/EAX against our three stack arguments (fixed by the header), so the frame, the attribute scans, the side
+// loop and the outer vertex calls stand as they are.
 // MiniMax C (11-01): no new form, no lower score.
-// score 322 (was 422): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
+// MiniMax S (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
+// MiniMax E (11-16): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 and passes the first argument to 0x4b2d0 in ECX; both callees sit outside this lane's files.
+// score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
 // tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.
 // Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
@@ -817,6 +1014,28 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // M341: Actual typed descriptor on retained binormal/position graph, uniform type/count
 // observations and per-scan defaults, masks 0..7: 422/439/422/439/424/433/423/433. Original
 // descriptor/searches restored; frame, application convention and outer API expansion remain.
+// M3 lane 12 r123 (fast with 0x117060): the lighting pointer NULL before the lookup re-measured 315 (a gain of 7); on it the
+// definition read after the lighting setup 334, the material index by if/else 315 (same code), the strip loop's vertex
+// and rest pointers replaced by indexed reads 402 (1328 B), the body under `if (function_117100(index))` 315 (same code).
+// 0x4b2d0, 0x1ccb0 and 0x1cd90 are this machine's; retail's 0x4b2d0 takes `first` in ECX (ours on the stack: its body puts
+// it in EBP), which also decides which dead parameter homes the four scans reuse here.
+// b7B (11-17) walk against retail, fast build on r829: statement by statement, no behaviour difference found, source
+// unchanged (322). Checked against retail: the record and definition lookups (0x116b17-0x116b4b: record = pool + (index
+// & 0xffff) * 0x1258, definition from record+4, object index from record+8 into 0x3ddd0 at 0x116b55, lighting = cache +
+// 0x44 at 0x116b70); 0x4b2d0's roles (0x116b9c-0x116ba4: edx tag, ecx group, eax variant, stack the byte at context+4
+// then pass; the second parameter is never read); the material, group, variant and shader chain with their 0x1ff masks
+// and 10-byte stride (0x116bc4-0x116c4d); the vtable call at slot 10 (0x116bf6); the four scans in retail's order,
+// normal 4, tangent 5, binormal 6, uv 3 (0x116c76, 0x116ca0, 0x116cc5, 0x116ce8); the cull restore and mode per side,
+// 0x901 for side 0 and 0x900 for side 1 (0x116d61-0x116d75, 0x117042); the sign as +1/-1 (0x116d67-0x116d6b)
+// multiplying tangent (0x116d8a) and normal (0x116e86-0x116e8e) but not binormal (0x116dc7-0x116ddb); the 1.0f w
+// component (0x45dbc0 = 0x3f800000); the 2f uv from rest +0xc/+0x10 (0x116efd-0x116f5e), position from vertex +0/+4/+8
+// with header 0x101a00 (0x116fc7); the strip count re-read each pass (0x116fd7); Begin 6 / End with the 0x1000 test
+// (0x116e04, 0x117003-0x11702a). Every float is a dword movss store (no x87 rounding point), and each product is
+// independent (no sum order). Not kept, all fast on r829 and without a behaviour fix: the object index in a local
+// (retail keeps it in ESI, 0x116b4b-0x116b4e) 316, the lighting pointer NULL-first 315, both 303 (also 303 as a static
+// inline helper taking the object index and returning the pointer, 316 with an early-return helper); left are the same
+// retail inlines of 0x1ccb0/0x1cd90 (0x116d0b-0x116d3a), 0x4b2d0's register convention, and the stack homes of the
+// scans.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

@@ -153,6 +153,58 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // used by both steps 53 (the draw block reschedules and the pulse query moves); the 0.5 factor as a named const 12; the default
 // rectangle declared before the bitmap index 12. The advance product still takes XMM4 and the half-height copy XMM3. Without the
 // pointer: the converted width/height first in each half extent 14 (same code).
+// Round 96 (m3 lane 16, fast control 14): the bitmap entry pointer read at each use 120 (852 bytes); the
+// sequence index read at each use 14; the default rectangle set field by field 14; half height computed before
+// half width 26; the draw pass's sequence through the existing bitmap-sequence type with the first sprite's
+// bounds as `sprites->bounds` / `sprites[0].bounds` 14/14 (the copy source stays ADD). The two XMM3/XMM4
+// values are the advance product (then the new x, in place) and the half-height copy (then y + half height).
+// Round 64 (m3 lane 2, fast): permuter on this body (600 s, 50 tries) best 14; the corner array declared at the top
+// of the draw loop 14; only the first step's product as pulse * half width 14; the draw arm as `if (bitmap_index !=
+// NONE) { ... }` in place of `continue` 14; one sprite index variable for both passes 14 (all same code); the
+// bounds-record pointer with that positive arm 12 (the pointer's own gain; XMM3/XMM4 unchanged, not kept).
+// Round 109 (m3 lane 16, fast control 14): the half extents declared before the draw loop 14; as one 2-D vector local 14;
+// the pulse pointer computed at the top of the draw loop 14; the bounds as the existing box2f type 14 (all four the same
+// code); a separate draw-loop counter 38. Matched siblings 0x22bbca/0x24f0fc build their quads in a four-corner loop,
+// which retail keeps as a loop there; retail's eight straight stores here rule that form out.
+// Round 111 (m3 lane 16, fast control 14; all on the bounds-record pointer, re-measured 12): the eight corner stores as all x then
+// all y 87, all y then all x 86, corners 0, 3, 1, 2 16, the two top y stores first 87, x stores 0, 3, 1, 2 then the y stores 87,
+// the y stores then x stores 0, 3, 1, 2 87 (846 bytes where 86-87); named x and y spans after or before the pulse query 12/12,
+// named sprite width and height 83 (846 bytes), full extents named before halving 12, only the height 12, `0.5f * (...)` for the
+// half height or both 12/12 (12 = same code); the advance assigned inside the first x step (`x += advance = ...`), declared at the
+// step, at the loop top or at function scope, or as `x = (advance = ...) + x`, 53 each (the named-advance code). Re-measured with
+// the listing: half height at each use 18 (the advance then takes XMM3 and the half-height copy XMM4 as retail, but the half
+// height is computed after the x step, the 0.5 moves to XMM7 and x to XMM4). Diagnostic: the advance kept beside the position in
+// one three-real local 53 (same as a named advance). The two free registers at the product are XMM3 and XMM4 in both builds;
+// retail gives the product the lower one, ours the higher.
+// Round 162 (m3 lane 8, fast with 0x2008fc 0x200891; control 14): each corner copied from the running position and then
+// offset (0x24ecae's idiom) 181 (921 bytes); the pulse pointer computed before the bitmap entry pointer 14 (identical).
+// A compile-only build without /GL does not reproduce the draw block (the pulse helper's return register differs).
+// Round 122 (m3 lane 9, fast with 0x2008fc 0x200891; control 14): 0-7 unused locals at the top 14 at every phase; the draw
+// pulse, bitmap entry and sequence entry pointers each as pointers to const 14/14/14; the corner array declared at function
+// scope 14 (all same code).
+// M3 lane 16 r121 (fast with 0x2008fc 0x200891, control 14): the sprite width and height converted into named reals first 85
+// (846 bytes); a block-local center point for the corners with the running x stored once after the draw call 85 (852 bytes);
+// the bounds copy as memcpy 14 (same code: ADD stays); the second step's product commuted 14 (same code); the running
+// position declared first in the function 14 (same code). Re-measure: named advance 55 (the pulse call then sinks below the
+// half extents).
+// Round 166 (m3 lane 7, fast with 0x2008fc 0x200891, control 14): the first pass's width scale defaulted in an else arm
+// 214 (856 bytes); the corner array as a four-point aggregate initializer 14 (same code); the second x step moved up to just
+// after the corners 98 (843 bytes, the product spill goes); one pulse pointer at the draw loop's top ahead of the entry
+// pointer and mask test 14 (same code); the first pass's bitmap tag index named once for its test and lookup 14 (same code).
+// Round 111 (m3 lane 10, fast with 0x2008fc 0x200891, control 14; on the bounds-record pointer, re-measured 12, where only the
+// advance/half-height XMM3/XMM4 pair differs): one pulse-array pointer at the top for both loops 27 (the prologue moves); the running
+// position as two scalar reals 36 (frame 0x54); the vertical +50 step before the horizontal centring 19; the lower corners' y as
+// `half height + y` 12, with the right corners' x as `half width + x` too 12 (same code). Re-measured: half height after the first
+// x step 18 (x moves to XMM4 and 0.5 to XMM7).
+// Round 189 (m3 lane 5, fast with 0x2008fc 0x200891; control 14): the repeated corner values read back from the corner
+// just stored (`[1].y = [0].y`, `[3].y = [2].y`) 30, the x pair the same way 32, all four 30 (the x/y spans swap XMM1/XMM2);
+// the first sprite record through a two-use force-inline accessor in both passes 12 (retail's `lea esi, [eax + 8]` copy
+// source, as the bounds-record pointer; only the XMM3/XMM4 pair left; not kept, 2 lower without a match); that accessor
+// with the y read-backs 28. All restored.
+// Round 93 (m3 lane 2, fast; on that two-use first-sprite accessor, re-measured 12 with only the XMM3/XMM4 pair left):
+// the half factor applied to each span before the sprite size 12 and the sprite size first in each half extent 12
+// (both reassociated to the same code); the four edges named after the x step (left, top, right, bottom) 12 (same
+// code); the lower and right edges named first 91 (852 bytes). All restored to the body without the accessor.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

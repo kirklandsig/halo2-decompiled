@@ -199,7 +199,7 @@ void s_animation_state::secondary_channels_clear()
 }
 
 // @retail 0x1cd510
-c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
+c_type_709360 s_animation_state::current_animation_get()
 {
 	c_type_709360 none;
 
@@ -215,8 +215,7 @@ c_type_709360 *s_animation_state::current_animation_get(c_type_709360 *result)
 	{
 		none = channels[0].animation_id;
 	}
-	*result = none;
-	return result;
+	return none;
 }
 
 PRIVATE __forceinline real blend_fraction(real blend)
@@ -513,12 +512,28 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax R (11-17): no new form, no lower score (348): the first difference is still inside the inlined
+// request expansion, whose helper is src/unknown_1dacb0.cpp's and not this file's, so no form of this body
+// moves the score; the body stands.
+// MiniMax H (11-12): no new form, no lower score (348): the first difference is still the expansion of the
+// existing graph_resources_request (src/unknown_1dacb0.cpp), where retail does `add ebx, 0x34` for the
+// request's graph and reloads it into EBP lazily while ours keeps graph+0x34 in EBP, and that helper's body
+// is not mine to change.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-04): no new form, no lower score; the two animation lookups' graph stays in ebx in retail and in ebp in ours, and its final mov al is not normalised there, both of which come from the inlined graph helpers rather than from the form of this body.
 // MiniMax D (run 37): no new form, no lower score; the permuter (15 minutes, --fast) spent all of
 // its time on the first build and never reached a search, and the forms of the earlier rounds leave
 // the body at 348, the graph reload and the request expansion's register use still differ from
 // retail's.
+// MiniMax E (11-11): no new form tried, no lower score (348): from +0x1de retail loads the graph into EBX
+// for `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure
+// join) where ours keeps the graph in EBX and graph+0x34 in EBP, and the inheritance loop then keeps the
+// graph in EBP where ours reloads it per use; the graph and the mode-count pointer come from the inlined
+// graph helpers, so their register roles are not ours to make, and the body stands.
+// MiniMax D (11-14): no new form, no lower score (348): the graph pointer and the mode-count pointer still
+// change register between the two loops and retail's final success byte stays unnormalised, while the
+// request expansion is the inlined graph_resources_request from another lane's file; the permuter's 34 tries
+// over the reduced image found nothing below the 332 baseline.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
@@ -532,6 +547,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // retail holds &graph->mode_count in EBX and reloads the graph from its home (EBP), ours keeps the graph in EBP.
 // frame eight versus twelve; primary/fallback result homes entry +16/+16 versus retail +4/-4.
 
+// MiniMax B (11-11): no new form, no lower score (348): retail forms the +0x34 pointer with an add and keeps it in
+// EBX with the base in EBP, ours uses a lea into EBP with the base in EBX, and the two pointers pushed for the calls
+// that follow differ with them.
+// MiniMax H (11-10): no new form, no lower score (348): through +0x1de the bytes are retail's; the graph
+// pointer and the mode-count pointer still change register between the two loops, and retail's final
+// success byte stays unnormalised there while ours is normalised.
 // Earlier 399 (was 399): frame 8 versus 12 and hidden-result homes still differ.
 // Earlier: frame eight versus twelve and hidden query-result homes still differ.
 // Earlier: frame 8 versus 12 and hidden-result homes still differ.
@@ -719,6 +740,68 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // query phases/complete lookup phase, byte then Boolean status: 348/348/348/348/478/478/478/478.
 // NOT kept: aliases give no native graph-base/reload repair, Boolean status lengthens;
 // original entire body and byte return producer restored.
+// b3F (11-06) statement walk against retail, no behaviour difference found: through +0x1de the bytes are identical
+// (graph from [this+0x68] & 0xffff, names_resolve, *found = *names, primary lookup, the flags & 2 set 0x400000c retry
+// with found->set, the flags & 4 five-step default-name chain with its found-field stores); the request tail is
+// the same opcode sequence with the same immediates (mode 0x14, class 0x14, type 0x34 sorted-array lookups, urgent
+// loop only, five default groups, then the inheritance loop with count [+0x4c], array [+0x50] stride 0x20, index
+// [+4]); only register homes differ. Retail's final `mov al, [esp+0x13]` is not normalised (0x1ccac3), which is a
+// bool-typed success; `bool success` reproduces that tail but scores 478 (graph in EBP, &mode_count recomputed per
+// group instead of retail's EBX copy), so `byte` stays. Retail also splits the roles: main graph in EBP with
+// &mode_count in EBX for the first five groups, then graph in EBX and &mode_count in EBP in the inheritance loop.
+// P440: Success-owned fallback completion scopes, first-three subsets then all four nonterminal successes: 348/348/348/348/348/348/348/348.
+// NOT kept: Native graph/base reloads and final return-byte normalization remain. Original complete body restored.
+// P459: Immutable fallback type/class/mode snapshots, seven subsets and complete fixed graph receiver on the twelve-byte expansion:
+// 348/348/348/348/348/348/348/348. NOT kept: native destructive graph-base/reload ownership and byte normalization remain; original complete body restored.
+// T107: Paired alternate/fallback permission results after resolution or found copy,
+// bool/byte/short/long: 592/592/600/536 at both boundaries. NOT kept: all regress;
+// wider forms also lose seven matched callers. Original full body restored.
+// P497: Actual serial fallback/request mode/class/type locals, seven subsets then all with Boolean success: 390/356/353/394/391/356/394/487.
+// NOT kept: graph/base ownership and byte normalization remain, some forms disturb the exact prefix and Boolean status lengthens; original complete body and provider call restored.
+// P504: Original input/found names, mode/class/type/set/options and output identifier formal bindings
+// independently immutable: 348/348/348/348/348/348/348/348. NOT kept: All eight tie 348 at 1782 bytes. Native
+// destructive graph-base/lazy-reload ownership and final return-byte normalization remain. Original method
+// formals, original shared request expansion and complete executable body restored. Original complete executable
+// body restored.
+// P512: Primary-failure subtree on the twelve-byte shared expansion, byte/char/signed-char/
+// bool/word/short/int/long success: 567/567/567/594/601/601/598/598. NOT kept: native destructive graph-base/lazy
+// reload ownership and return-byte normalization remain; original full body restored.
+// P514: Independent binary-enum presence at primary/alternate-permission/alternate-index
+// and the five original fallback queries: eight 348 at 1782 bytes. NOT kept: native
+// destructive graph-base/reload homes and byte normalization remain; original full body restored.
+// P517: Complete lazy fallback admission after alternate lookup, allowed/blocked bool/byte/short/long
+// results; 348/348/348/348/348/348/348/348.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P525: Actual urgent-resource count, inheritance count and inherited graph-index
+// full-width signed storage, seven graphs then complete int units: eight 348.
+// NOT kept: native destructive graph/base reloads and return-byte normalization remain; original shared records and complete body restored.
+// P527: Late request mode/class/type/all actual field-lvalue references, mutable then readonly:
+// 348/348/348/348/348/348/348/348. NOT kept: no destructive graph/base or byte-return repair;
+// original request arguments, fallback snapshots and complete executable body restored.
+// P531: Two-field default-name chains in both orders, then all six three-field
+// chains: 350/348/350/351/351/350/350/348. NOT kept: native destructive graph/base
+// reloads and return-byte normalization remain; some forms disturb the agreeing
+// lookup prefix. Original separate stores and complete executable body restored.
+// P534: Ordinary-inline caller metadata for sorted/cache/fallback leaves, seven subsets,
+// then complete metadata with equality-to-true completion: 348/348/348/348/348/348/348/352. NOT kept: no native
+// destructive graph/base or lazy-reload repair; original complete body and declarations restored.
+// P545: Standard typed name forward/backward copies, primary/alternate hidden-result
+// forward/backward copies and name representation forward/backward copies:
+// 586/587/611/612/591/592/586/587. NOT kept: native graph/base reloads and byte
+// return remain; query copies disturb the agreeing prefix. Original complete body restored.
+// MiniMax C (11-15): no new form, no lower score (348): retail's destructive graph-base reloads and its final
+// return-byte normalization are still the whole difference, and this body only calls the graph lookup that owns the
+// name record (src/unknown_1dacb0.cpp), which this lane may not edit, so the local spellings cannot move them.
+// P558: Deep fallback negative-continuation masks 8..14, then all five query predicates at mask 31:
+// 362/433/396/533/375/431/394/532. NOT kept: no native graph/base or return equality; original complete
+// fallback chain, query snapshots, byte status, request producer and full body restored.
+// P570: Provisional fallback truth before ordered queries, terminal failure clears it,
+// original success merges afterward; byte/char/signed-char/bool/word/short/long/dword:
+// 643/643/643/643/643/643/643/643. NOT kept: matching lookup prefix and request graph/base
+// homes regress; original success stores, shared request call and complete body restored.
+// P587: Eight independent original graph-pointer identities on the recovered twelve-byte
+// query frame: eight 348 at 1782 bytes. NOT kept: no native destructive graph-base,
+// lazy graph reload or byte-return repair; original complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -965,7 +1048,17 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax E (11-17): no new form, no lower score (210): the two id slots are still swapped (retail keeps the animation id at frame+0x18/0x1a with its -1 stores at the entry and the transition id at frame+0x14/0x16 with its stores in the block); four declaration and scope orderings measured at 210 or 211, and moving the transition id to function scope gives retail's slots but leaves its constructor at the entry (353).
+// MiniMax E (11-15): no form kept. The permuter's best variant (195, same in both images) swaps the first and
+// fourth arguments of the transition channel's set() call, which would put the animation set name into the
+// channel's graph tag index instead of the state's graph tag index that retail loads from [edi+0x68] at
+// 0x1cd312 and passes at 0x1cd324, and it adds a local that holds only a constant; both are on the reverted
+// list, so the original call stands. Still differs: the two id slots are swapped (retail keeps the transition id
+// at frame+0x04/0x06 with its -1 stores in the block and the animation id at frame+0x08/0x0a with its -1 stores
+// at the entry), the blend-query byte's residency, and the set() call's fourth argument (retail keeps the set
+// name in ebp, ours reloads it from a stack slot).
 // MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
+// MiniMax S (11-16): no new form, no lower score (210); the permuter's only lower form swaps the first and fourth arguments of the channels[2].set call, which retail does not do (retail passes the state's graph tag in ecx and the set name in ebp), so it is not kept; passing the set parameter instead of names.set measures 223, the third parameter 221, and naming the third and fourth parameters the other way round 214.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives
@@ -1105,6 +1198,18 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // Round 262: Existing library lower/upper selection at fraction only 318/318;
 // phase only 323/323; all four phase/fraction order combinations 337 each.
 // Original conditional clamps, identifier scopes, byte result and all query contracts restored.
+// Walk (b6F, 11-06, fast build 210 before and after; comments only): compared with retail statement by statement, no
+// behaviour difference found. Checked: prior-loop truth from the channel-0 graph entry flag (0x1cd0ba-0x1cd0e0);
+// lookup argument order and the id/found/names slots (0x1cd114); transition_find argument order and the blend mask by
+// flags&1, e6800 and state_flags>>10 (0x1cd162-0x1cd1b9); the 0x200 path clearing unknown6e (0x1cd1c1); the early
+// exit when no transition id and blend (0x1cd1c5); the fraction chain, 0.0001/0.0/1.0 constants confirmed in the XBE
+// (0x1cd1d8-0x1cd272); the blend-id lookup only without 0x100 (0x1cd28b-0x1cd2a6); channel_start arguments
+// (0x1cd2cd); transition channel set(0x15, ..., 3) and frame 0 (0x1cd324-0x1cd331); loop flag copy (0x1cd336);
+// offset compute guarded by the combined unflagged byte (0x1cd34f); frame placement guarded by 0x20/0x40 and
+// fraction > 0 (0x1cd36f-0x1cd3a3); flags 0x10 (0x1cd3b0/0x1cd3b6); blend channel set(0x3c0, ..., 0) and
+// unknown80 = 0 (0x1cd3e2-0x1cd3ee); flags &= ~1 (0x1cd3f6); name compare before the store, request guard and
+// the three loop clears (0x1cd3fa-0x1cd4b9); state_flags & 4 fallback (0x1cd4ce). No hand-expanded helper bodies
+// (channel_loop_clear, channel_valid, PIN are used), no in-body pragma, no new include, helper or double local.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

@@ -258,6 +258,21 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax S (11-08): no new form, no lower score (32); the one-copy form that reproduces retail's head and dispatch still hoists the twice-used buffer address into EBX, whose prologue save shifts every later row, while the form without that hoist keeps the early EDI save, the tag in EDX and the selector in ECX.
+// MiniMax E (11-06): no new form, no lower score (32). Retail's head (the raw variant getter with the
+// &g_54e4a0 fallback at the call site, the tag read into ESI, the selector in EAX, the EDI save in the
+// dispatch) reproduces retail's prologue row for row, but our build hoists the twice-used buffer address
+// 0x55c6e4 into EBX: `push ebx` in the prologue and `mov ebx, imm` before the globals test, and those
+// two rows shift every later row by two (54, 173 bytes). Tried this round: the copy's source through a
+// local 54, the translator's argument through a local 54, the tag read after the fallback 54 (the tag
+// still coalesces into ESI and the selector falls to ECX), the fallback as a conditional expression 54,
+// the copy's source cast like the translator's argument 54, the tag read at the call with the copy's
+// source through a local 45 (171 bytes), retail's control flow (the default arm jumping past the
+// translator, one shared copy block) 54 and the same with the tag read at the call 45, and the copy in
+// the then-arm with retail's head 81 (194 bytes). The kept body keeps the address in ESI and
+// rematerializes the join's copy, but saves EDI early and holds the tag in EDX with the selector in
+// ECX; that is the 32 that stands.
+// MiniMax B (11-06): no new form, no lower score (32).
 // MiniMax A (11-05, second round): no new form, no lower score; the switch subject written as an inline
 // `get_game_variant()->field_xcb8724` puts the selector in EAX as retail has it but moves the tag into EBX
 // before the call (44), the tag read after the switch gives 45, and a field pointer for the tag or a named
@@ -737,6 +752,22 @@ done:
 // F402: Complementary selector partitions at 1/2/3/4/5/7/8/9, retaining original
 // translation/copy completion, 70/65/63/63/69/69/63/69. NOT kept: all regress;
 // original complete dispatch restored; early EDI save and scratch/tag ownership remain.
+// Round 135 (m3 lane 7, fast; 0x22d503 and 0x22d52e stay matched): one copy with `__assume(variant != 0)` after the getter
+// 54 (173 bytes, `mov ebx, imm` still placed ahead of the globals test); one copy with the tag read after the switch,
+// just before the translator, 45 (171 bytes, hoist stays); one copy with a `dword` name 54; the two-copy body with the tag
+// read just before the translator 45 (178); the two-copy body with `__assume(variant != 0)` 32 (same code). The hoist is
+// a byte-cost tie (10 bytes either way), so only a cost change outside the source decides it.
+// M3 lane 8 r144 (fast; 0x22d503 and 0x22d52e stay matched; control 32, natural one-copy form 54 at 173 bytes). On the one-copy
+// form: the translator's buffer written as the end of the previous buffer (`&g_55c4e4[k_parse_buffer_length]`, another symbol for
+// the same address) 6 (173 bytes: no EBX hoist, two immediates and the mid-function `push edi` as retail; only the tag load's
+// slot and the selector register left); that with the tag declared before the variant 51 (171), with a named selector 6, with
+// the tag read in the translator call 38 (171); that with the getter written out and the tag read before its fallback 0
+// (byte match in the fast check). The round reverted it; the coordinator (11-10) applied it: an address spelling of a
+// global and a helper body written out are both kept with a byte match. Without the address spelling: the caller's buffer
+// held in a named local 54; a found flag in place of the default's jump 54; an empty else arm 54. Diagnostic: the size
+// preference off for this function 118 (224 bytes, the helpers then inline; the tail has retail's two immediates).
+// So retail's source reads the tag between the variant getter's call and its fallback, and its two uses of the buffer are
+// not one address expression when the function is optimized.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
@@ -744,8 +775,10 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 
 	if (globals)
 	{
-		s_game_variant *variant = get_game_variant();
+		s_game_variant *variant = (s_game_variant *)network_session_interface_get_data_4db0();
 		long tag_index = *(long *)((byte *)globals + 0x14c);
+		if (!variant)
+			variant = &g_54e4a0;
 		long name_id;
 
 		switch (variant->field_xcb8724)
@@ -777,9 +810,7 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		default:
 			goto done;
 		}
-		function_1a0180(tag_index, name_id, (word *)g_55c6e4);
-		parse_copy(buffer, g_55c6e4);
-		return;
+		function_1a0180(tag_index, name_id, (word *)&g_55c4e4[k_parse_buffer_length]);
 	}
 done:
 	parse_copy(buffer, g_55c6e4);

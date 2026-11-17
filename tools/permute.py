@@ -6,6 +6,9 @@ It works on a copy of src/, include/ and config/ (and the build caches
 build/obj and build/gen) in a scratch build root under build/permute/, so
 the repository is never modified unless --write or --write-only-match is
 given, and then only with a strictly better variant of the one function.
+The scratch builds compile stale sources in parallel (HALO2_BUILD_JOBS, or
+the CPU count, at most 16) and keep their last image when nothing it was
+linked from changed.
 --write writes the best variant whenever it scores better than the original;
 it may behave differently from the original. --write-only-match writes it only
 when a full build finds that it matches retail exactly and every decompiled
@@ -60,6 +63,7 @@ variant is scored twice.
 import argparse
 import bisect
 import difflib
+import functools
 import os
 import random
 import re
@@ -71,6 +75,7 @@ import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from functools import cached_property
 
 import build
 import check
@@ -82,6 +87,8 @@ from xbe import FUNCTIONS_CSV, ROOT, Xbe, retail_xbe_path
 
 WORST = 10 ** 6
 DEFAULT_TRIES = 200
+BUILD_JOBS = max(1, int(os.environ.get('HALO2_BUILD_JOBS') or min(16, os.cpu_count() or 1)))
+# ^ sources the scratch builds compile at once, as tools/check.py does
 INT_TYPES = ['long', 'int', 'short', 'unsigned long', 'dword']
 CHAR_TYPES = ['char', 'byte']
 NOT_NAMES = {'long', 'int', 'short', 'unsigned', 'char', 'byte', 'dword', 'word', 'const', 'void', 'static', 'sizeof',
@@ -935,15 +942,118 @@ def mut_volatile_pointer(body, rng):
     return '\n'.join(lines)
 
 
+# A repeated literal or constant, held in one named local. The scheduler places
+# the load of a shared constant (NONE, 0, 1.0f, ...) differently from the
+# repeated immediate stores, and that placement is often the last difference in
+# a near miss. Insert the declaration at the top of the body or immediately
+# before the first use in code (not in a comment, string, case label, array
+# bound or static initializer).
+LITERAL = re.compile(r'(?<![A-Za-z0-9_.])(?:NONE|true|false|0x[0-9A-Fa-f]+|'
+                     r'\d+(?:\.\d*)?(?:[eE][-+]?\d+)?[fF]?)(?![A-Za-z0-9_.])')
+
+
+def _code_only(text):
+    """text with comments and string/character literals blanked out, its length
+    and newlines kept, so a literal found in it is code at the same offset."""
+    out, i = list(text), 0
+    while i < len(text):
+        j = _skip_literal(text, i)
+        if j == i:
+            i += 1
+            continue
+        for k in range(i, j):
+            if out[k] != '\n':
+                out[k] = ' '
+        i = j
+    return ''.join(out)
+
+
+def _literal_type(literal):
+    if literal == 'NONE':
+        return 'long'
+    if literal in ('true', 'false'):
+        return 'bool'
+    if literal.startswith('0x'):
+        return 'dword'
+    if re.search(r'[.eEfF]', literal):
+        return 'real'
+    return 'long'
+
+
+def mut_shared_constant(body, rng):
+    """Turns a literal repeated in code into one local, declared before its
+    first use or at the top of the body, and replaces the other uses with that
+    local. This changes when the constant reaches a register, which is what
+    some near misses need; the literals in comments, strings, case labels,
+    array bounds and static initializers are left alone."""
+    code = _code_only(body)
+    found = {}
+    for m in LITERAL.finditer(code):
+        literal = m.group(0)
+        start, end = m.start(), m.end()
+        line_start = code.rfind('\n', 0, start) + 1
+        line_end = code.find('\n', end)
+        line_end = len(code) if line_end < 0 else line_end
+        line = body[line_start:line_end]
+        before = line[:start - line_start]
+        if re.match(r'[ \t]*(?:case\b|default\b|#|static\b|typedef\b|enum\b)', line):
+            continue
+        if '__asm' in line or 'sizeof' in before:
+            continue
+        if '[' in before and re.search(r'\b(?:char|byte|short|long|int|dword|word|real|float|double|bool|void|'
+                                       r'[sc]_\w+)\s+\w+\s*\[', line):
+            continue                    # an array bound, not a value
+        found.setdefault(literal, []).append((start, end, line_start, line))
+    choices = [(literal, uses) for literal, uses in found.items() if 2 <= len(uses) <= 16]
+    if not choices:
+        return None
+    literal, uses = rng.choice(choices)
+    name = _fresh_temp(body)
+    type_ = _literal_type(literal)
+    first_start, _, first_line_start, first_line = uses[0]
+    first_indent = first_line[:len(first_line) - len(first_line.lstrip())]
+    min_indent = min(len(line) - len(line.lstrip()) for _, _, _, line in uses)
+    depth = code[:first_line_start].count('{') - code[:first_line_start].count('}')
+
+    def stays_in_scope(start):
+        d = depth
+        for ch in code[first_line_start:start]:
+            if ch == '{':
+                d += 1
+            elif ch == '}':
+                d -= 1
+            if d < depth:
+                return False
+        return True
+
+    before_first = (len(first_indent) == min_indent
+                    and not re.match(r'[ \t]*(?:else|case|default)\b', first_line)
+                    and all(stays_in_scope(start) for start, _, _, _ in uses[1:]))
+    places = []
+    if before_first:
+        places.append((first_line_start, first_indent))
+    m = re.search(r'(?m)^(?P<ind>[ \t]*)\S', body)
+    if m and (not before_first or m.start() != first_line_start):
+        places.append((m.start(), m.group('ind')))
+    if not places:
+        places.append((first_line_start, first_indent))
+    at, indent = rng.choice(places)
+    edits = [(start, end, name) for start, end, _, _ in uses]
+    edits.append((at, at, f'{indent}{type_} {name} = {literal};\n'))
+    for start, end, replacement in sorted(edits, reverse=True):
+        body = body[:start] + replacement + body[end:]
+    return body
+
+
 MUTATIONS = [mut_swap_operands, mut_reorder, mut_retype, mut_introduce_temp, mut_inline_temp, mut_swap_if_else,
              mut_for_while, mut_compound, mut_increment, mut_split_decl, mut_chain_assign, mut_bool_flag,
              mut_or_split, mut_ternary, mut_swap_ternary, mut_swap_args,
-             mut_volatile_read, mut_volatile_pointer]
+             mut_volatile_read, mut_volatile_pointer, mut_shared_constant]
 
 
 # Tried more often: call arguments traded places in a fifth of the edits that made a near function match, and
 # statement order or operand order in a few more (see the comment above mut_swap_args). The rest weigh 1.
-WEIGHTS = {mut_swap_args: 6, mut_reorder: 2, mut_swap_operands: 2}
+WEIGHTS = {mut_swap_args: 6, mut_reorder: 2, mut_swap_operands: 2, mut_shared_constant: 3}
 
 
 # ------------------------------------------------- typed mutations (--anneal)
@@ -993,11 +1103,13 @@ class Context:
     """What the typed mutations know beyond the body: the function's parameter
     list and return type, text (its source file and the headers that file
     includes) to look up structure fields, globals and callees in, and own
-    (the source file alone; text when not given)."""
+    (the source file alone; text when not given), and start (where the
+    function's body starts in own, when known)."""
 
-    def __init__(self, params='', returns='', text='', own=None):
+    def __init__(self, params='', returns='', text='', own=None, start=None):
         self.params, self.returns, self.text = params, returns, text
         self.own = text if own is None else own
+        self.start = start
         self._cache = {}
 
     def _find(self, key, pattern, accept=lambda m: True):
@@ -1031,8 +1143,12 @@ class Context:
                 close = match_brace(self.text, m.end() - 1)
             except ValueError:
                 continue
+            inside = self.text[m.end():close]
             f = re.search(r'^[ \t]*(?P<type>' + TYPE + r')(?P<ptr>' + POINTERS + r')\s*\b' + re.escape(field)
-                          + r'\s*(?::\s*\w+\s*)?;', self.text[m.end():close], re.M)
+                          + r'\s*(?::\s*\w+\s*)?;', inside, re.M)
+            if not f:  # one of a list ('real i, j, k;', also in an anonymous struct), pointers left out
+                f = re.search(r'(?:^|[{;])[ \t]*(?P<type>' + TYPE + r')(?P<ptr>)\s+(?:[A-Za-z_]\w*\s*,\s*)*\b'
+                              + re.escape(field) + r'\s*(?:,\s*[A-Za-z_]\w*\s*)*;', inside, re.M)
             if f and f.group('type').split()[0] not in KEYWORDS:
                 found = _var_type(f)
             elif m.group('base') and depth < 4:
@@ -1094,7 +1210,7 @@ def function_context(text, start, root=ROOT):
             if m:
                 ret = re.sub(r'\b(?:static|inline|virtual|__\w+)\b', ' ', m.group('ret'))
                 returns = _normal(ret.replace('*', ' '), ret.count('*')) if ret.strip() else ''
-    return Context(params, returns, _with_includes(text, root, set()), text)
+    return Context(params, returns, _with_includes(text, root, set()), text, start)
 
 
 def _normal(type_, stars=0):
@@ -2185,6 +2301,684 @@ def mut_inline_helper(body, rng, context=None):
     return body[:s] + new + body[e:]
 
 
+ALIAS_DECL = re.compile(r'^(?P<indent>[ \t]*)(?P<type>' + TYPE + r')(?P<ptr>' + POINTERS + r')\s*(?P<ref>&)?\s*'
+                        r'(?P<name>[A-Za-z_]\w*)\s*=\s*(?P<amp>&)?\s*(?P<lv>' + LVALUE + r')\s*;\s*$')
+
+
+def _unconst(t):
+    return re.sub(r'\s+', ' ', re.sub(r'\bconst\b', ' ', t or '')).replace(' *', '*').strip()
+
+
+def _writes_variable(line, name):
+    """Whether a line assigns, increments or takes the address of the variable name (not a member so named)."""
+    n = r'(?<![\w.>])%s\b' % re.escape(name)
+    return re.search(n + r'\s*(?:(?:<<|>>|[-+*/%&|^])?=(?!=)|\+\+|--)|(?:\+\+|--)\s*' + n
+                     + r'|(?<!&)&\s*' + n + r'(?!\s*(?:->|\.|\[))', line) is not None
+
+
+def _writes_memory(line):
+    """Whether a line stores through memory (a dereference, an element or a field), not a plain local."""
+    flat = _squash(line)
+    m = re.search(r'([^=;{}]*?)(?<![=!<>])(?:=(?!=)|\+=|-=|\*=|/=|%=|&=|\|=|\^=|<<=|>>=)', flat)
+    if m and re.search(r'[*\[>.]', m.group(1)):
+        return True
+    return re.search(r'\+\+|--', flat) is not None and re.search(r'\*|->|\[', flat) is not None
+
+
+def _lvalue_names(lv):
+    """The variable names an lvalue reads (its root and the names in its indices), not its members."""
+    return set(re.findall(r'(?<![\w.>])[A-Za-z_]\w*', lv)) - KEYWORDS
+
+
+def _lvalue_pointers(lv):
+    """The prefixes of an lvalue chain that are loaded from memory and then followed by '->'
+    (a->b in a->b->c), and a field indexed as a pointer (a->b[i], a.b[i]): pointers a call
+    or a store could change."""
+    flat = _squash(lv)
+    out = [flat[:m.start()] for m in re.finditer(r'->', flat) if re.search(r'(?:->|\.|\])[A-Za-z_]\w*$|\]$', flat[:m.start()])]
+    out += [flat[:m.start()] for m in re.finditer(r'(?:->|\.)\s*[A-Za-z_]\w*\s*\[', flat)]
+    return out
+
+
+def _reads_memory(lv, types):
+    """Whether the address an lvalue names depends on memory a call could change: a pointer loaded
+    from a field or an element (a->b->c, a[i]->c), a global it indexes or goes through (g->x, g[i]),
+    or an index that reads memory or a global (a[*p], a[b->n], a[g])."""
+    flat = _squash(lv)
+    if _lvalue_pointers(lv):
+        return True
+    root = re.match(r'[A-Za-z_]\w*', flat).group(0)
+    rest = flat[len(root):]
+    if root not in types and re.match(r'(?:->|\[)', rest):
+        return True
+    for index in re.findall(r'\[([^\[\]]*)\]', flat):
+        if re.search(r'\*|->|\.|\[', index) or any(n not in types for n in _lvalue_names(index)):
+            return True
+    return False
+
+
+def _in_literal(spans, pos):
+    return any(a <= pos < b for a, b in spans)
+
+
+def _scope_end(body, pos, pairs):
+    """The end of the block a declaration at pos lives in (its '}', or the body's end)."""
+    o = _enclosing(body, pos, pairs)
+    return pairs[o] if o is not None else len(body)
+
+
+def mut_remove_alias(body, rng, context=None):
+    """A local that only aliases something else -> that thing at each use:
+    'T *r = &x;' (x a name or an lvalue chain) read as *r, r-> or r, or
+    'T &r = x;' read as r. Left alone when:
+    - the lvalue has a side effect (r = &a[i++] would step i at each use);
+    - the alias's type is not known to be the aliased object's (a const
+      reference to another type binds a copy), or it is declared volatile;
+    - anything from the declaration to the end of its block (so a loop that
+      goes round again counts) writes a name the lvalue reads (its root, an
+      index) or a pointer in its chain, or takes a pointer alias's address,
+      or writes the pointer alias itself;
+    - the body takes the address of a name the lvalue reads anywhere (a write
+      through that pointer would not show);
+    - a call comes in that range and the address depends on memory: a pointer
+      loaded from a field or an element, a global the chain goes through or
+      indexes, or an index that reads memory;
+    - the declaration is the unbraced body of a control statement, the name is
+      declared twice, or it appears in a comment or a string."""
+    lines = body.split('\n')
+    types = declared_types(body, context)
+    pairs = _brace_map(body)
+    spans = _literal_spans(body)
+    starts = [0]
+    for l in lines[:-1]:
+        starts.append(starts[-1] + len(l) + 1)
+    cands = []
+    for i, line in enumerate(lines):
+        m = ALIAS_DECL.match(line)
+        if not m or m.group('type').split()[0] in KEYWORDS or 'volatile' in m.group('type') + m.group('ptr'):
+            continue
+        ref, amp = m.group('ref'), m.group('amp')
+        if bool(ref) == bool(amp) or (amp and '*' not in m.group('ptr')):
+            continue
+        name, lv = m.group('name'), m.group('lv').strip()
+        if name in _lvalue_names(lv) or (context and re.search(r'\b%s\b' % name, context.params)) or not _pure(lv):
+            continue
+        declared = _normal(m.group('type'), m.group('ptr').count('*'))
+        target = declared if ref else _deref(declared)
+        got = expr_type(lv, types, context)
+        if not target or got is None or _unconst(got) != _unconst(target):
+            continue
+        at = starts[i] + len(m.group('indent'))
+        if _controlled(body, at):
+            continue                                            # deleting it would hand the if its next statement
+        if sum(1 for l in lines if (d := DECLARATION.match(l)) and _is_declaration(d) and d.group('name') == name) > 1:
+            continue
+        word = r'(?<![\w.])(?<!->)%s\b' % re.escape(name)
+        if any(_in_literal(spans, x.start()) for x in re.finditer(word, body)):
+            continue                                            # in a comment or a string
+        uses = [j for j, l in enumerate(lines) if j != i and re.search(word, l)]
+        if not uses or uses[0] < i:
+            continue
+        end = _scope_end(body, at, pairs)
+        last = max(j for j in range(len(lines)) if starts[j] <= end)
+        span = lines[i + 1:last + 1]
+        if amp and any(re.search(r'(?<!&)&\s*%s\b' % name, l) for l in span):
+            continue                                            # the pointer's address (a reference's is lv's)
+        if amp and any(_writes_variable(re.sub(r'\*\s*%s\b' % name, '', l), name) for l in span):
+            continue                                            # the pointer itself moves
+        if any(_writes_variable(l, n) for n in _lvalue_names(lv) for l in span):
+            continue
+        others = '\n'.join(lines[:i] + lines[i + 1:])
+        if any(re.search(r'(?<!&)&\s*%s\b(?!\s*(?:->|\.|\[))' % re.escape(n), others) for n in _lvalue_names(lv)):
+            continue                                            # a pointer to it could write it unseen
+        if any(_writes_chain(l, p) for p in _lvalue_pointers(lv) for l in span):
+            continue
+        if _reads_memory(lv, types) and any(_has_call(l) or _writes_memory(l) for l in span):
+            continue
+        cands.append((i, uses, name, lv, bool(amp)))
+    if not cands:
+        return None
+    i, uses, name, lv, pointer = rng.choice(cands)
+
+    def use(x):
+        star, arrow = x.group('star'), x.group('arrow')
+        nxt = x.string[x.end():x.end() + 1]
+        if pointer and arrow:
+            return (star or '') + lv + '.'
+        if pointer and star and nxt not in '[(':
+            return lv
+        if pointer:
+            pre = x.string[:x.start()].rstrip()
+            post = x.string[x.end():].lstrip()
+            bare = '&' + lv if pre.endswith(('(', ',', '=', 'return')) and post[:1] in (')', ',', ';') else f'(&{lv})'
+            return (star or '') + bare
+        return (star or '') + lv + (arrow or '')
+
+    def untight(x):
+        # (x) -> x only where the parentheses are the operand's own: not after a name, a keyword, ')' or ']'
+        # (a call's, an if's or sizeof's, a cast's), and before a postfix operator or the operand's end
+        pre, post = x.string[:x.start()].rstrip(), x.string[x.end():].lstrip()
+        own = not re.search(r'[\w)\]]$', pre) and (post[:1] in (')', ',', ';', ']') or post.startswith(('->', '.', '[')))
+        return x.group(1) if own else x.group(0)
+
+    pat = re.compile(r'(?P<star>\*\s*)?(?<![\w.])(?<!->)%s\b(?P<arrow>\s*->)?' % re.escape(name))
+    tight = re.compile(r'\(\s*(%s)\s*\)' % re.escape(lv)) if _postfix(lv) else None
+    for j in uses:
+        lines[j] = pat.sub(use, lines[j])
+        if tight:
+            lines[j] = tight.sub(untight, lines[j])             # (*r) -> (x) -> x
+    del lines[i]
+    return '\n'.join(lines)
+
+HELPER_DEF = re.compile(r'^[ \t]*(?P<pre>(?:(?:static|PRIVATE|inline|__inline|__forceinline)[ \t]+)+)'
+                        r'(?P<ret>(?:const[ \t]+)?[A-Za-z_]\w*(?:[ \t]*\*)*)[ \t]*\b(?P<name>[A-Za-z_]\w*)[ \t]*'
+                        r'\((?P<params>[^()]*)\)\s*\{', re.M)
+MACRO_DEF = re.compile(r'^[ \t]*#[ \t]*define[ \t]+(?P<name>[A-Za-z_]\w*)\((?P<params>[\w \t,]*)\)[ \t]+(?P<body>[^\n]+?)[ \t]*$',
+                       re.M)
+HELPER_STORE = re.compile(r'(?P<lhs>[A-Za-z_]\w*\s*->\s*[A-Za-z_]\w*(?:\s*(?:\.|->)\s*[A-Za-z_]\w*)*)\s*=(?!=)\s*(?P<rhs>[^;]+)')
+PURE = re.compile(r'[^;{}]*')
+CAPTURE = (r'(?:\(\s*[A-Za-z_][\w \t]*\**\s*\)\s*)?(?:[A-Za-z_]\w*(?:\s*(?:\.|->)\s*[A-Za-z_]\w*|\s*\[[^\[\]\n]*\])*'
+           r'|-?\d[\w.]*|\([^()\n]*\))')
+SIMPLE_CAPTURE = r'(?:[A-Za-z_]\w*|-?\d[\w.]*)'
+
+
+@dataclass
+class _Helper:
+    kind: str          # 'expr' (return e;), 'stmts' (stores through pointer parameters) or 'macro'
+    name: str
+    ret: str
+    params: list       # (type or None, name)
+    parts: list        # the expression, or the statements without their ';'
+    own: bool          # defined in the function's own file
+    usable: bool       # defined where the function can call it (a header, or its file before it)
+
+    @cached_property
+    def words(self):
+        """The names the code it stands for must contain (its words but the parameters and members)."""
+        params = {n for _, n in self.params}
+        return {w for w in re.findall(r'(?<![\w.>])[A-Za-z_]\w*', ' '.join(self.parts))
+                if w not in params and w not in KEYWORDS}
+
+
+def _number_type(e):
+    """The type of a number literal as the compiler reads it, or None: 0.5f real, 0.5 double,
+    1u and 0x80000000 (too big for long) dword, other integers long."""
+    m = re.fullmatch(r'(?:\d+\.\d*|\.\d+|\d+(?=[eE]))(?:[eE][-+]?\d+)?(?P<f>[fF])?|(?P<i>0[xX][0-9a-fA-F]+|\d+)'
+                     r'(?P<s>[uUlL]*)', e)
+    if not m:
+        return None
+    if m.group('i') is None:
+        return 'real' if m.group('f') else 'double'
+    if 'u' in m.group('s').lower() or int(m.group('i'), 0 if m.group('i').lower().startswith('0x') else 10) > 0x7fffffff:
+        return 'dword'
+    return 'long'
+
+
+def _arith_type(expr, types, context):
+    """The type of an arithmetic expression after the usual conversions: real
+    when an operand is real, dword when one is unsigned, long for the other
+    integers, bool for a comparison or a logical operator; None when unknown."""
+    e = expr.strip()
+    if not e:
+        return None
+    ops = _operators(e)
+    if not ops:
+        if _parenthesized(e):
+            return _arith_type(e[1:-1], types, context)
+        if e[0] == '!':
+            return 'bool'
+        if e[0] in '-+~' and not e.startswith(('--', '++')):
+            t = _arith_type(e[1:], types, context)
+            return 'long' if t in ('short', 'word', 'char', 'byte', 'bool', 'int') else t
+        lit = _number_type(e)
+        if lit:
+            return lit
+        t = expr_type(e, types, context)
+        return 'long' if t == 'int' else t
+    names = {op for _, op in ops}
+    if names & (ASSIGNMENTS | {',', '?', ':'}):
+        return None
+    if names & ({'&&', '||'} | COMPARISONS):
+        return 'bool'
+    leaves, s = [], 0
+    for k, op in ops:
+        leaves.append(e[s:k])
+        s = k + len(op)
+    leaves.append(e[s:])
+    got = [_arith_type(leaf, types, context) for leaf in leaves]
+    if None in got or any(t.endswith('*') for t in got):
+        return None
+    if names & {'<<', '>>'}:
+        got = got[:1]
+    if any(t in ('real', 'float', 'double') for t in got):
+        return 'double' if 'double' in got else 'real'
+    if any(_unconst(t) in ('dword', 'unsigned long', 'unsigned int', 'unsigned') for t in got):
+        return 'dword'
+    return 'long' if all(t in WIDTHS or t == 'int' for t in got) else None
+
+
+def _same_type(a, b):
+    a, b = _unconst(a), _unconst(b)
+    return a is not None and a != '' and (a == b or {a, b} <= {'long', 'int'})
+
+
+def _helpers(context):
+    """The helpers and function-like macros the function's file defines (before
+    the function, to be called) or includes."""
+    if not context or not context.text:
+        return []
+    if 'helpers' in context._cache:
+        return context._cache['helpers']
+    text, own_end = context.text, len(context.own) if context.own and context.text.startswith(context.own) else 0
+    start = getattr(context, 'start', None)
+    out = []
+    for m in HELPER_DEF.finditer(text):
+        params = _helper_params(m.group('params'))
+        if params is None:
+            continue
+        try:
+            close = match_brace(text, m.end() - 1)
+        except ValueError:
+            continue
+        inner = text[m.end():close].strip()
+        own = m.start() < own_end
+        if own and start is not None and m.start() < start < close:
+            continue                                        # the function itself
+        usable = not own or start is None or close < start
+        ret = m.group('ret').strip()
+        r = re.fullmatch(r'return\s+(?P<e>[^;{}]+);', inner)
+        if r and ret != 'void':
+            out.append(_Helper('expr', m.group('name'), ret, params, [r.group('e').strip()], own, usable))
+            continue
+        stmts = [s.strip() for s in inner.split(';')]
+        if stmts[-1] != '' or len(stmts) < 2:
+            continue
+        stmts = stmts[:-1]
+        pointers = {n for t, n in params if t.endswith('*')}
+        last = re.fullmatch(r'return\s+(?P<p>[A-Za-z_]\w*)', stmts[-1])
+        if last and last.group('p') in pointers and ret != 'void':
+            stmts = stmts[:-1]
+        elif ret != 'void':
+            continue
+        if stmts and all((s_ := HELPER_STORE.fullmatch(s)) and re.match(r'\s*(\w+)', s_.group('lhs')).group(1) in pointers
+                         and '(' not in s_.group('rhs') for s in stmts):
+            out.append(_Helper('stmts', m.group('name'), ret, params, stmts, own, usable))
+    for m in MACRO_DEF.finditer(text):
+        body, names = m.group('body').strip(), [p.strip() for p in m.group('params').split(',') if p.strip()]
+        if any(c in body for c in '#;{}\\') or body.startswith('//') or not names or len(set(names)) != len(names):
+            continue
+        if any(re.search(r'(?:\.|->)\s*%s\b' % re.escape(p), body) for p in names) or '//' in body or '/*' in body:
+            continue
+        own = m.start() < own_end
+        usable = not own or start is None or m.start() < start
+        out.append(_Helper('macro', m.group('name'), '', [(None, p) for p in names], [body], own, usable))
+    names = Counter(h.name for h in out) + Counter(m.group('name') for m in HELPER_DEF.finditer(text)
+                                                    if _helper_params(m.group('params')) is None)
+    out = [h for h in out if names[h.name] == 1]            # an overload, or a macro defined twice: leave it be
+    context._cache['helpers'] = out
+    return out
+
+
+def _template(part, helper, defined):
+    """A regex for the code a helper's expression or statement stands for: its
+    text with each parameter a capture (a pointer parameter before '->' takes
+    'x.' or 'p->'), whitespace free, parentheses around a parameter optional.
+    defined: the parameters captured so far (later ones are back references).
+    Returns a list of variant patterns (one per choice of the optional parentheses)."""
+    params = {n: t for t, n in helper.params}
+    uses = Counter(re.findall(r'(?<![\w.>])[A-Za-z_]\w*', ' '.join(helper.parts)))
+    toks = re.findall(r'[A-Za-z_]\w*|\d[\w.]*|->|<<=|>>=|<<|>>|&&|\|\||[-+*/%&|^=!<>]=|\S', part)
+    variants = [('', set(defined))]
+    k, prev_word = 0, False
+    while k < len(toks):
+        tok = toks[k]
+        wrapped = tok == '(' and k + 2 < len(toks) and toks[k + 1] in params and toks[k + 2] == ')' \
+            and not (k + 3 < len(toks) and toks[k + 3] == '->')
+        name = toks[k + 1] if wrapped else tok
+        member = k > 0 and toks[k - 1] in ('.', '->')
+        if name in params and not member:
+            ptype = params[name]
+            g = 'h_' + name
+            arrow = not wrapped and k + 1 < len(toks) and toks[k + 1] == '->' and ptype and ptype.endswith('*')
+            if (arrow and g in _seen(variants)) or (not arrow and g + '>' in _seen(variants)):
+                return []                                       # read both as p-> and as p: left alone
+            out = []
+            for pat, seen in variants:
+                sep = r'\s*' if not prev_word else r'\s+'
+                if arrow:
+                    if g + '>' in seen:
+                        x = r'(?:(?P=%s_o)\s*\.|(?P=%s_p)\s*->)' % (g, g)
+                    else:
+                        x = r'(?:(?P<%s_o>[A-Za-z_]\w*(?:\s*(?:\.|->)\s*[A-Za-z_]\w*)*)\s*\.|(?P<%s_p>[A-Za-z_]\w*' \
+                            r'(?:\s*(?:\.|->)\s*[A-Za-z_]\w*)*)\s*->)' % (g, g)
+                    out.append((pat + sep + x, seen | {g + '>'}))
+                    continue
+                x = '(?P=%s)' % g if g in seen else '(?P<%s>%s)' % (g, CAPTURE if uses[name] == 1 else SIMPLE_CAPTURE)
+                if wrapped:
+                    out.append((pat + sep + r'\(\s*' + x + r'\s*\)', seen | {g}))
+                    if g not in seen:
+                        out.append((pat + sep + x, seen | {g}))
+                    else:
+                        out.append((pat + sep + x, seen | {g}))
+                else:
+                    out.append((pat + sep + x, seen | {g}))
+            variants = out[:16]
+            k += 3 if wrapped else (2 if arrow else 1)
+            prev_word = False
+            continue
+        word = re.match(r'\w', tok) is not None
+        sep = r'\s+' if word and prev_word else r'\s*'
+        variants = [(pat + sep + re.escape(tok), seen) for pat, seen in variants]
+        prev_word = word
+        k += 1
+    return [(pat[3:] if pat.startswith(r'\s*') else pat, seen) for pat, seen in variants]
+
+
+def _seen(variants):
+    """The parameters a template has captured so far (p> for one read as p->)."""
+    return variants[0][1] if variants else set()
+
+
+def _pure(text):
+    """No call, assignment, increment or decrement."""
+    return CALLEE.search(re.sub(r'\(\s*[A-Za-z_][\w \t]*\**\s*\)', ' ', text)) is None \
+        and not re.search(r'(?:\+\+|--|(?<![=!<>])=(?!=))', text)
+
+
+def _postfix(text):
+    """Whether an expression is a primary or postfix one (a name, a call, a member or an
+    element of one, a parenthesized expression), so it can stand anywhere an operand can."""
+    e = text.strip()
+    if not e or _operators(e) or e[0] in '*&-+!~' or re.match(r'(?:sizeof|new|delete)\b', e):
+        return False
+    if e.startswith('('):
+        close = _split_top(e, 0)
+        if re.fullmatch(r'\s*' + TYPE + POINTERS + r'\s*', e[1:close - 1]) and close < len(e):
+            return False                                         # a cast
+    return True
+
+
+def _whole_operand(body, s, e, atomic):
+    pre, post = body[:s].rstrip(), body[e:].lstrip()
+    if atomic:
+        return (not re.search(r'(?:[\w)\].]|->)$', pre) or re.search(r'\b(?:return|case)$', pre) is not None) \
+            and not re.match(r'\w', post)
+    before = (pre.endswith(('(', ',', '[', '?')) or re.search(r'\breturn$', pre) is not None
+              or (pre.endswith('=') and not re.search(r'(?:[=!<>]|<<|>>)=$', pre)))
+    return before and post[:1] in (')', ',', ';', ']', '?', ':')
+
+
+def _collapse_patterns(h, context):
+    """The compiled patterns of the code helper h stands for, and whether that code is a postfix
+    expression (so a call can stand anywhere it does); None when h cannot be collapsed into."""
+    key = ('collapse', h.name)
+    if key in context._cache:
+        return context._cache[key]
+    got = None
+    if h.kind in ('expr', 'macro'):
+        part = h.parts[0]
+        inner = part[1:-1] if _parenthesized(part) else part
+        t = _arith_type(part, dict((n, t) for t, n in h.params), context) if h.kind == 'expr' else ''
+        if h.kind == 'macro' or (t is not None and (_same_type(t, h.ret) or t == h.ret == 'bool')):
+            pats = _template(inner, h, set()) + (_template(part, h, set()) if inner != part else [])
+            got = (_postfix(part), [re.compile(p) for p, _ in pats])
+    else:
+        defined, pieces = set(), []
+        for s in h.parts:
+            variants = _template(s, h, defined)
+            if len(variants) != 1:
+                break
+            pat, defined = variants[0]
+            pieces.append(pat)
+        else:
+            got = (False, [re.compile(r'(?m)^(?P<indent>[ \t]*)' + r'\s*;[ \t]*\n[ \t]*'.join(pieces) + r'\s*;[ \t]*$')])
+    context._cache[key] = got
+    return got
+
+
+def _collapse(body, h, context, types):
+    """Places where the body has the code helper h stands for: (start, end, call)."""
+    got = _collapse_patterns(h, context)
+    if got is None:
+        return []
+    atomic, pats = got
+    out = []
+    spans = _literal_spans(body)
+    for pat in pats:
+        for m in pat.finditer(body):
+            if any(a < m.end() and m.start() < b for a, b in spans):
+                continue                                        # in or across a comment or a string
+            if h.kind == 'stmts':
+                if _controlled(body, m.start() + len(m.group('indent'))):
+                    continue                                    # the first store is an unbraced if's or loop's body
+                args = _helper_args(m, h, types, context, stmts=True)
+                if args is not None and not re.search(r'^[ \t]*(?:case\b|default\b|\w+\s*:(?!:))', m.group(0), re.M):
+                    out.append((m.start(), m.end(), f'{m.group("indent")}{h.name}({", ".join(args)});'))
+                continue
+            if not _whole_operand(body, m.start(), m.end(), atomic and _postfix(m.group(0))):
+                continue
+            args = _helper_args(m, h, types, context, stmts=False)
+            if args is not None:
+                out.append((m.start(), m.end(), f'{h.name}({", ".join(args)})'))
+    return out
+
+
+def _helper_args(m, h, types, context, stmts):
+    """The call's arguments from a template match, or None when the call could
+    compute something else: an argument with a side effect, one whose type is
+    not the parameter's (helpers only), or, for stores (stmts), one that the
+    stores could change (anything but a literal, a local or parameter whose
+    address is not taken, or the address of one). Argument types are the
+    usual conversions' (_arith_type), so (x + y) with real x is real and 0.5
+    is a double. No volatile name may be in the code."""
+    body = m.string
+    volatile = _volatile_names(body, context)
+    if volatile & set(re.findall(r'[A-Za-z_]\w*', m.group(0))):
+        return None                                             # a call would read a volatile name another number of times
+    if context and any(re.search(r'^[ \t]*#[ \t]*define[ \t]+%s\b' % re.escape(w), context.text, re.M)
+                       for g, v in m.groupdict().items() if g.startswith('h_') and v
+                       for w in set(re.findall(r'[A-Za-z_]\w*', v))):
+        return None                                             # a macro in an argument can stand for anything
+    args = []
+    for t, n in h.params:
+        g = 'h_' + n
+        gd = m.groupdict()
+        if gd.get(g + '_o') is not None or gd.get(g + '_p') is not None:
+            obj = gd.get(g + '_o')
+            a = ('&' + _squash(obj)) if obj is not None else _squash(gd[g + '_p'])
+            root = re.match(r'\w+', a.lstrip('&')).group(0)
+            if stmts and (not re.fullmatch(r'&?[A-Za-z_]\w*', a) or root not in types):
+                return None
+            if h.kind != 'macro' and not _same_type(_arith_type(a, types, context), t):
+                return None
+        elif gd.get(g) is not None:
+            a = gd[g].strip()
+            if not _pure(a):
+                return None
+            if stmts and not (re.fullmatch(r'-?\d[\w.]*', a) or (a in types and not re.search(r'(?<!&)&\s*%s\b' % a, body))):
+                return None
+            if h.kind != 'macro' and not _same_type(_arith_type(a, types, context), t):
+                return None
+        else:
+            return None                                         # a parameter the code does not read
+        args.append(a)
+    if stmts:
+        addressed = {a[1:] for a in args if a.startswith('&')}
+        if addressed & set(args):
+            return None
+    return args
+
+
+OPERATOR_CHARS = set('+-*/%&|^!=<>:')
+
+
+def _expand(body, h, context, types):
+    """Calls of helper h in the body, each with the code it stands for: (start, end, code)."""
+    out = []
+    spans = _literal_spans(body)
+    volatile = _volatile_names(body, context)
+    whole = ' '.join(h.parts)
+    conditional = re.search(r'\?|&&|\|\|', whole) is not None
+    for m in re.finditer(r'(?<![\w.])(?<!->)%s\s*\(' % re.escape(h.name), body):
+        if _in_literal(spans, m.start()):
+            continue
+        got = _call_args(body, m.end() - 1)
+        if got is None:
+            continue
+        spans_, end = got
+        args = [body[s:e].strip() for s, e in spans_]
+        if args == [''] and not h.params:
+            args = []
+        if len(args) != len(h.params):
+            continue
+        # #1002's single-read rule: an argument read other than once, or in an expression where a read can be
+        # skipped, must be a plain name or literal (not volatile, not a macro), or for a helper a local's address
+        if any((conditional or len(re.findall(_param_name(p) if h.kind != 'macro' else r'\b%s\b' % re.escape(p), whole)) != 1)
+               and not _plain_arg(a, volatile, context)
+               and not (h.kind != 'macro' and re.fullmatch(r'&\s*[A-Za-z_]\w*', a) and a.lstrip('&').strip() not in volatile)
+               for (_, p), a in zip(h.params, args)):
+            continue
+        if h.kind == 'macro':
+            raw = dict((p, a) for (_, p), a in zip(h.params, args))
+            alt = '|'.join(map(re.escape, raw))
+
+            # as the preprocessor does: each parameter becomes its argument's text, nothing added; the
+            # parentheses the body puts around a name or a literal go (they change nothing)
+            def put(x):
+                if x.group(2):
+                    a, before, after = raw[x.group(2)], x.string[:x.start()], x.string[x.end():]
+                    if before[-1:] in OPERATOR_CHARS and a[:1] in OPERATOR_CHARS:
+                        a = ' ' + a                         # '-x' with '-y' must not paste as '--y'
+                    if after[:1] in OPERATOR_CHARS and a[-1:] in OPERATOR_CHARS:
+                        a = a + ' '
+                    return a
+                a, before, after = raw[x.group(1)], x.string[:x.start()], x.string[x.end():]
+                call_or_cast = re.search(r'[\w\])]\s*$', before) or re.match(r'\s*[\w(]', after)
+                if _plain_arg(a, volatile, context) and not call_or_cast:
+                    if before[-1:] in OPERATOR_CHARS and a[:1] in OPERATOR_CHARS:
+                        a = ' ' + a                             # '-x' with '-y' must not paste as '--y'
+                    if after[:1] in OPERATOR_CHARS and a[-1:] in OPERATOR_CHARS:
+                        a = a + ' '
+                    return a
+                return f'({a})'
+            new = re.sub(r'\(\s*(%s)\s*\)|(?<![\w.])(?<!->)\b(%s)\b' % (alt, alt), put, h.parts[0])
+            if _parenthesized(new) and _postfix(new[1:-1]):
+                new = new[1:-1]
+            before, after = body[:m.start()], body[end:]
+            if before[-1:] in OPERATOR_CHARS and new[:1] in OPERATOR_CHARS:
+                new = ' ' + new                                 # '-' then '-x' must not read as '--x'
+            if after[:1] in OPERATOR_CHARS and new[-1:] in OPERATOR_CHARS:
+                new = new + ' '
+            out.append((m.start(), end, new))
+        elif h.kind == 'expr':
+            # '&x' for a pointer parameter of x's type reads as x. before a member
+            arrows = {p: a.lstrip('&').strip() + '.' for (t, p), a in zip(h.params, args)
+                      if re.fullmatch(r'&\s*[A-Za-z_]\w*', a) and _same_type(_arith_type(a, types, context), t)}
+            lookup = {p: _cast_arg(a, t, types, context) for (t, p), a in zip(h.params, args)}
+            new = _substitute(h.parts[0], lookup, arrows)
+            c = re.match(r'\(\s*(?P<t>' + TYPE + POINTERS + r')\s*\)', new)
+            if c and _unconst(_normal(c.group('t').replace('*', ' '), c.group('t').count('*'))) == _unconst(h.ret) \
+                    and _postfix(new[c.end():]):
+                out.append((m.start(), end, f'({new})'))       # already a cast to the return type
+            else:
+                out.append((m.start(), end, f'(({h.ret})({new}))'))
+        else:
+            line_start = body.rfind('\n', 0, m.start()) + 1
+            if body[line_start:m.start()].strip() or not re.match(r'\s*;[ \t]*(?:\n|$)', body[end:]):
+                continue                                        # not a statement of its own
+            if _controlled(body, m.start()):
+                continue                                        # the unbraced body of an if or a loop: one statement
+            semi = body.index(';', end) + 1
+            ok, lookup, arrows = True, {}, {}
+            for (t, p), a in zip(h.params, args):
+                if t.endswith('*'):
+                    if not _same_type(_arith_type(a, types, context), t):
+                        ok = False
+                        break
+                    if re.fullmatch(r'&\s*[A-Za-z_]\w*', a):
+                        arrows[p] = a.lstrip('&').strip() + '.'
+                    elif re.fullmatch(r'[A-Za-z_]\w*', a) and a not in volatile:
+                        arrows[p] = a + '->'
+                    else:
+                        ok = False
+                        break
+                    lookup[p] = a
+                else:
+                    if not (_number_type(a.lstrip('-')) or (a in types and a not in volatile
+                                                             and not re.search(r'(?<!&)&\s*%s\b' % a, body))):
+                        ok = False
+                        break
+                    lookup[p] = a if _same_type(_arith_type(a, types, context), t) else f'(({t}){a})'
+            if not ok or {v[:-1] for v in arrows.values() if v.endswith('.')} & set(lookup.values()):
+                continue
+            indent = body[line_start:m.start()]
+            lines = []
+            for s in h.parts:
+                lines.append(f'{indent}{_substitute(s, lookup, arrows)};')
+            out.append((line_start, semi, '\n'.join(lines)))
+    return out
+
+
+def _substitute(text, lookup, arrows):
+    """text with each parameter (not a member so named) replaced in one pass: by arrows[p] where
+    it is followed by '->' and arrows has it, by lookup[p] elsewhere."""
+    if not lookup:
+        return text
+
+    def one(x):
+        p, arrow = x.group(1), x.group(2)
+        if arrow and p in arrows:
+            return arrows[p]
+        return lookup[p] + (arrow or '')
+    return re.sub(r'(?<![\w.])(?<!->)(%s)\b(\s*->\s*)?' % '|'.join(map(re.escape, lookup)), one, text)
+
+
+def _cast_arg(a, t, types, context):
+    plain = _plain_arg(a, set(), context)                      # a macro name goes in parentheses
+    if _same_type(_arith_type(a, types, context), t):
+        return a if plain else f'({a})'
+    return f'(({t}){a})' if plain else f'(({t})({a}))'
+
+
+def mut_existing_helper(body, rng, context=None):
+    """Code <-> a call of a helper or function-like macro that the function's
+    file already defines or includes, both ways, only where the two compute the
+    same thing. Collapsing: the code must be the helper's expression (or its
+    run of stores through pointer parameters, or the macro's body) with the
+    parameters substituted, in the same operand order; every argument must be
+    free of side effects and, for a helper, of the parameter's type; the
+    result's type must be the helper's return type; for stores, an argument
+    must be a literal, a local or parameter whose address is not taken, or the
+    address of one. Expanding: a call -> the code, with #1002's argument casts
+    and single-read rule (a helper's expression is cast to its return type; a
+    macro is substituted as the preprocessor does, nothing added). Types are
+    the usual conversions' (_arith_type: 0.5 is a double, (x + y) with real x
+    is real). Never: stores in or out of the unbraced body of a control
+    statement, code with a volatile name, a macro in a collapsed argument,
+    code in a comment or a string. Same-file one-expression
+    helpers are mut_inline_helper's to expand, and TEST_FIELD_BIT is
+    mut_test_field_bit's. A helper (not a macro) is left alone where the
+    function has a local or parameter named like a global, type or function
+    the helper's code uses."""
+    helpers = _helpers(context)
+    if not helpers:
+        return None
+    types = declared_types(body, context)
+    cands = []
+    words = set(re.findall(r'[A-Za-z_]\w*', body))
+    for h in helpers:
+        if h.name == 'TEST_FIELD_BIT' or (h.kind != 'macro' and h.words & set(types)):
+            continue  # mut_test_field_bit's; or a name the helper's code reads is a local here, so it would read another
+        if h.usable and h.words <= words:
+            cands += _collapse(body, h, context, types)
+        if not (h.kind == 'expr' and h.own) and h.name in words:
+            cands += _expand(body, h, context, types)
+    if not cands:
+        return None
+    s, e, new = rng.choice(cands)
+    return body[:s] + new + body[e:]
+
+
 TESTED_FIELD = re.compile(r'(?:(?<=if \()|(?<=while \()|(?<=!)|(?<=&& )|(?<=\|\| ))(?P<f>' + FIELD
                           + r')(?=\s*(?:\)|&&|\|\|))')
 
@@ -2212,7 +3006,8 @@ def mut_test_field_bit(body, rng, context=None):
 
 TYPED_MUTATIONS = [mut_reorder_fields, mut_move_statement, mut_hoist_argument, mut_inline_local, mut_cache_field, mut_uncache_field,
                    mut_zero_compare, mut_early_return, mut_volatile_local, mut_retype_wide, mut_recast,
-                   mut_redundant_cast, mut_do_while, mut_single_exit, mut_inline_helper, mut_test_field_bit]
+                   mut_redundant_cast, mut_do_while, mut_single_exit, mut_inline_helper, mut_test_field_bit,
+                   mut_remove_alias, mut_existing_helper]
 WEIGHTS.update(dict.fromkeys(TYPED_MUTATIONS, 1))  # drawn only with --anneal (run_fast's anneal)
 PARSE_ERRORS = (ValueError, IndexError)  # unbalanced text (match_brace), a declaration with nowhere to go
 
@@ -2269,8 +3064,9 @@ class Scorer:
     def build(self):
         """Builds the scratch root: (map path, image path)."""
         if self.image is None:
-            return build.build(self.root, self.xdk), os.path.join(self.root, 'build', build.EXE_NAME)
-        return build.build(self.root, self.xdk, image=self.image), self.image
+            return (build.build(self.root, self.xdk, jobs=BUILD_JOBS, reuse=True),
+                    os.path.join(self.root, 'build', build.EXE_NAME))
+        return build.build(self.root, self.xdk, image=self.image, jobs=BUILD_JOBS, reuse=True), self.image
 
     def score_text(self, text):
         """Writes text as the source file and returns (score, first-difference text)."""
@@ -2334,7 +3130,8 @@ class FastScorer(Scorer):
         self.include = include
 
     def build(self):
-        return build.build(self.root, self.xdk, units=self.units, image=self.image, include=self.include), self.image
+        return build.build(self.root, self.xdk, units=self.units, image=self.image, include=self.include,
+                           jobs=BUILD_JOBS, reuse=True), self.image
 
 
 def prepare_scratch(scratch):
@@ -2343,6 +3140,54 @@ def prepare_scratch(scratch):
         s = os.path.join(ROOT, d)
         if os.path.isdir(s):
             shutil.copytree(s, os.path.join(scratch, d), copy_function=shutil.copy2)
+    # A generated stand-in unit names its source by absolute path, so the copies
+    # still name the working tree's source. Repoint them at this root's copy, or
+    # the build regenerates every unit and recompiles all ~1800 objects before
+    # the search's first try.
+    gen_dir = os.path.join(scratch, 'build', 'gen')
+    for name in (os.listdir(gen_dir) if os.path.isdir(gen_dir) else ()):
+        if not name.endswith('.cpp'):
+            continue
+        path = os.path.join(gen_dir, name)
+        with open(path, encoding='utf-8') as f:
+            text = f.read()
+        fixed = text.replace(ROOT + os.sep, scratch + os.sep)
+        if fixed != text:
+            with open(path, 'w', encoding='utf-8', newline='') as f:
+                f.write(fixed)
+    # The working tree's headers can be newer than its objects (a fresh checkout
+    # or a header edit since the last build). The copies are exact, so the
+    # objects are still valid; stamp them newer than everything copied, or every
+    # scratch build recompiles every source. Only the function's edited source
+    # (and anything genuinely changed in this scratch) should be stale. An
+    # object whose source is newer than it was stale in the working tree
+    # already (an edit not yet built there): drop the copy so the scratch
+    # builds it, or a stale stub object would define a symbol its edited source
+    # now defines too.
+    obj_dir = os.path.join(scratch, 'build', 'obj')
+    for dirpath, _, names in os.walk(obj_dir):
+        for name in names:
+            if not name.endswith('.obj'):
+                continue
+            path = os.path.join(dirpath, name)
+            source = _object_source(name[:-len('.obj')], scratch)
+            if source and os.path.getmtime(source) > os.path.getmtime(path):
+                os.remove(path)
+            else:
+                os.utime(path, None)
+
+
+def _object_source(stem, root):
+    """The source whose change makes build/obj/<stem>.obj stale, or None when
+    no source of that name exists (a generated object, or a source renamed
+    since the last build)."""
+    if stem.startswith('stubs_'):
+        path = os.path.join(root, 'src', 'stubs', stem[len('stubs_'):] + '.cpp')
+    elif stem.startswith('standard_'):
+        path = os.path.join(root, 'src', stem[len('standard_'):] + '.cpp')
+    else:
+        path = os.path.join(root, 'src', stem + '.cpp')
+    return path if os.path.exists(path) else None
 
 
 def new_scratch():
@@ -2491,7 +3336,7 @@ class FastSearch:
     none is scored twice. progress (0 to 1) is how far the run has gone."""
 
     def __init__(self, prefix, body, suffix, confirm, baseline, log=print, strategy=None, mutations=None,
-                 context=None):
+                 context=None, fast_baseline=None):
         self.prefix, self.original, self.suffix = prefix, body, suffix
         self.confirm, self.log = confirm, log
         self.strategy = strategy or Greedy()
@@ -2499,10 +3344,10 @@ class FastSearch:
         self.progress = lambda: 0.0
         self.lock = threading.Lock()  # guards the state below
         self.confirming = threading.Lock()  # one full build at a time
-        self.walk, self.walk_score = body, None  # the position and its reduced-image score
-        self.fast_baseline = None
+        self.walk, self.walk_score = body, fast_baseline  # the position and its reduced-image score
+        self.fast_baseline = fast_baseline
         self.best, self.best_score = body, baseline  # the best and its full-build score
-        self.best_fast = None  # the best's reduced-image score
+        self.best_fast = fast_baseline  # the best's reduced-image score
         self.baseline = baseline
         self.seen = {body}
         self.tries = 0
@@ -2518,7 +3363,8 @@ class FastSearch:
         return self.prefix + body + self.suffix
 
     def start(self, score, note):
-        """Records the original's reduced-image score (each worker scores it once)."""
+        """Records the original's reduced-image score (the caller may already
+        have scored it, so each worker does not)."""
         with self.lock:
             if self.fast_baseline is None:
                 self.fast_baseline = self.walk_score = self.best_fast = score
@@ -2593,7 +3439,8 @@ class FastSearch:
 
 def _work(search, scorer, rng, tries, deadline):
     """One worker of a --fast search."""
-    search.start(*scorer.score_text(search.text(search.original)))
+    if search.fast_baseline is None:
+        search.start(*scorer.score_text(search.text(search.original)))
     while deadline is None or time.time() < deadline:
         candidate, n = search.propose(rng, tries)
         if candidate is None:
@@ -2602,7 +3449,32 @@ def _work(search, scorer, rng, tries, deadline):
         search.offer(candidate, score, note, n, rng)
 
 
-def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False):
+def _fast_baseline_check(va, fast_baseline, baseline, allow_mismatch=False, log=print):
+    """--fast may only search when its reduced image scores the original the
+    same as the full image; otherwise it would optimise the wrong score.
+    allow_mismatch searches anyway, for a draft too far from retail for a plain
+    full search; every improvement is still confirmed by a full build."""
+    if fast_baseline != baseline:
+        if not allow_mismatch:
+            raise SystemExit(
+                f'the reduced image scores the original {fast_baseline} differing instructions, the full image '
+                f'{baseline}: --fast cannot search this function. Run without --fast: python tools/permute.py {va:#x}')
+        log(f'warning: the reduced image scores the original {fast_baseline}, the full image {baseline}; '
+            'searching the reduced score anyway (--allow-mismatch), each improvement confirmed by a full build')
+
+
+def context_units(context, rows, marked, depth=None):
+    """The sources a reduced image adds for each context function: its own
+    units (reduced_units), so a search can reproduce a function that only
+    builds as retail does beside its callers or siblings."""
+    units = set()
+    for va in context:
+        units |= reduced_units(va, rows, marked, depth)
+    return units
+
+
+def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, jobs=1, depth=None, anneal=False,
+             context=(), allow_mismatch=False):
     """The --fast search with jobs workers, each scoring on its own scratch root
     with its own seed (seed, seed + 1, ...), and one more root for the full
     builds: first the original's, whose map gives the library objects the
@@ -2610,7 +3482,9 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
     limit with a time limit, which starts after that first build. The images
     are linked in build/permute/<va>/ of the repository, one folder per root,
     as .img files (see build.build). anneal: the Anneal walk, with
-    TYPED_MUTATIONS besides MUTATIONS."""
+    TYPED_MUTATIONS besides MUTATIONS. context: other functions whose units
+    each reduced image also builds, for a function whose own units build
+    differently from the full image."""
     if tries is None:
         tries = DEFAULT_TRIES if time_limit is None else float('inf')
     own = scratch is None
@@ -2625,6 +3499,11 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
         full = Scorer(va, roots[0], image=os.path.join(images, 'full', 'halo2.img'))
         scorers = [FastScorer(va, root, os.path.join(images, name, 'reduced.img'), depth=depth)
                    for name, root in zip(names[1:], roots[1:])]
+        if context:
+            marked = build.marked_sources(full.root) + build.stub_sources(full.root)
+            extra = context_units(context, full.rows, marked, depth)
+            for scorer in scorers:
+                scorer.units |= extra
         with open(os.path.join(ROOT, full.marked.path), encoding='utf-8', newline='') as f:
             original = f.read()
         start, end = find_body(original, va)
@@ -2641,11 +3520,14 @@ def run_fast(va, tries=None, seed=0, time_limit=None, scratch=None, log=print, j
             for scorer in scorers:
                 scorer.include = include
                 scorer.units |= pinning
+        fast_baseline, fast_note = scorers[0].score_text(original)
+        _fast_baseline_check(va, fast_baseline, baseline, allow_mismatch, log)
+        log(f'baseline: {fast_baseline} differing instructions on the reduced image ({fast_note})')
         log(f'reduced image: {len(scorers[0].units)} sources: ' + ', '.join(sorted(scorers[0].units)))
         walk = dict(strategy=Anneal(), mutations=MUTATIONS + TYPED_MUTATIONS,
                     context=function_context(original, start, full.root)) if anneal else {}
         search = FastSearch(original[:start], original[start:end], original[end:], full.score_text, baseline, log,
-                            **walk)
+                            fast_baseline=fast_baseline, **walk)
         t0 = time.time()
         deadline = None if time_limit is None else t0 + time_limit
         if time_limit is not None:
@@ -2675,11 +3557,13 @@ def unmatched_callees(va, root=ROOT):
     not match retail yet. Under LTCG the registers a call passes its arguments
     in follow the callee's code, so while such a callee's differ from retail's,
     a caller can match retail's bytes and still pass it different arguments
-    (two of them swapped, say). Stubs and library code are not decompiled."""
+    (two of them swapped, say). Stubs and library code are not decompiled.
+    A recursive call to the function itself is not a blocker: once its own
+    bytes match, its self-calls are already retail's."""
     rows = read_rows(FUNCTIONS_CSV)
     decompiled = {m.retail for m in build.marked_sources(root)}
     calls = [int(c, 16) for c in rows.get(va, {}).get('calls', '').split()]
-    return [c for c in calls if c in decompiled and rows.get(c, {}).get('status') != 'matched']
+    return [c for c in calls if c != va and c in decompiled and rows.get(c, {}).get('status') != 'matched']
 
 
 def main():
@@ -2699,6 +3583,11 @@ def main():
     ap.add_argument('--jobs', type=int, default=1, help='with --fast: scorers working in parallel')
     ap.add_argument('--depth', type=int, default=None,
                     help='with --fast: follow callees only this many levels (default: all)')
+    ap.add_argument('--context', action='append', default=[], metavar='VA',
+                    help='with --fast: another function whose units the reduced image also builds (repeatable)')
+    ap.add_argument('--allow-mismatch', action='store_true',
+                    help='with --fast: search even when the reduced image scores the original differently, '
+                         'confirming each improvement with a full build')
     ap.add_argument('--anneal', action='store_true',
                     help='with --fast: simulated annealing with restarts, and the typed mutations too')
     args = ap.parse_args()
@@ -2708,12 +3597,20 @@ def main():
         ap.error('--depth takes a count of levels, and needs --fast')
     if args.anneal and not args.fast:
         ap.error('--anneal needs --fast')
+    if args.context and not args.fast:
+        ap.error('--context needs --fast')
+    if args.allow_mismatch and not args.fast:
+        ap.error('--allow-mismatch needs --fast')
     va = check.parse_addresses([args.address]).pop()
+    context = tuple(check.parse_addresses(args.context))
+    # progress is watched while a run is in flight, so flush each line as it is
+    # printed: redirected output would otherwise arrive only when the run ends
+    log = functools.partial(print, flush=True)
     if args.fast:
         result = run_fast(va, args.tries, args.seed, args.time_limit, jobs=args.jobs, depth=args.depth,
-                          anneal=args.anneal)
+                          anneal=args.anneal, context=context, allow_mismatch=args.allow_mismatch, log=log)
     else:
-        result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit)
+        result = run(va, DEFAULT_TRIES if args.tries is None else args.tries, args.seed, args.time_limit, log=log)
     rate = result.tries / result.seconds if result.seconds else 0
     if args.fast:
         print(f'{result.tries} tries in {result.seconds:.1f}s ({rate:.2f} tries/s); reduced image: best '

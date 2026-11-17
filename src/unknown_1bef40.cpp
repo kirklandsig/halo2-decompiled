@@ -8,8 +8,6 @@
 #include "unknown_20fe20.h"
 #include "unknown_1e1f20.h"
 
-extern "C" void _ReadWriteBarrier(void);
-
 /* slot types 0xa and 0xb */
 
 struct s_slot_0a
@@ -57,60 +55,31 @@ struct s_character_d10
 
 void *function_1e4d10(long actor_index);
 void function_1f86a0(long index);
+bool function_1f86f0(long index);
 
 short function_2684f0(s_actor_view *actor);
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 long function_1469f0(real seconds);
 
-#pragma intrinsic(_ReadWriteBarrier)
-// MiniMax I (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX; this round the reference copied into a named local after the actor's lookup (99) and before it (100) both move the load but grow the body, and the permuter (420 s) found no candidate.
-// MiniMax G (11-05): no new form, no lower score; copying the slot reference into a long or into a
-// named local before the actor's arithmetic still scores 100 and moves the table's data into EBX,
-// and the inlined action lookup still scales the index in ECX where retail scales it into EDX.
-// MiniMax G (11-04): no new form, no lower score; the slot reference still loads into EDX after
-// the actor's index arithmetic where retail loads it into ECX before it, and the inlined action
-// lookup still scales the index in ECX where retail scales it into EDX.
-// MiniMax E (11-04): no new form, no lower score; the barrier at five positions scores 94, 94,
-// 94, 94 and 16, the actor first 17, and the reference compared through the slot 13 (the same
-// code), against the unchanged 13.
-// score 13 (was 13): the slot reference is still loaded late into EDX where retail loads
-// it early into ECX, and the inlined action lookup still scales the index in ECX where
-// retail scales it into EDX and reads the unit table late; reading the reference into a
-// named local before the actor's arithmetic moves the load but spills the actor pointer;
-// moving the barrier down to the reference's second use gives 89 and still loads it late
-// MiniMax D (11-01): the barrier at the top 94, in the else arm 90, dropped 90, the reference copied
-// into a named local 99/100/104 (before the actor's arithmetic, after it, or with a hand-written
-// actor lookup), the actor lookup moved into the else arm 96 or after the barrier 94, the compare's
-// operands swapped 13: all worse or equal. The copy does put the reference load where retail has it
-// (ECX, ahead of the actor's arithmetic) and keeps the global a memory operand, but the table's
-// data then moves to EBX with an extra push, where retail keeps it in EDX.
-// score 13 (was 13): the slot reference still loads into EDX after the actor's index
-// arithmetic, where retail loads it into ECX before it; reading the reference into a named
-// local before the actor's arithmetic (a bool or a copy) moves the load but costs the body.
-// score 13 (was 13): retail reads the slot reference before actor arithmetic and the object table
-// after index arithmetic; ours has the opposite order in each case.
-// Slot data block 13; without the barrier 90; action helper result 13; actor/state/result 17;
-// result/state/actor 13; state/result/actor 13; result/actor/state 17; actor/result/state 17.
-// Packed reference field view/local names/entry declarations/actor-result scope/action lifetime 13;
-// presence-first branch 91; branch-local actor lifetime 96; shared entry exit 13.
-// Native field view and all scope forms restored; both remaining load regions still differ.
-// Early reference predicate/default-first/wide-result/presence predicate 109/108/111/109;
-// complete current/both reference values 100/104; native word equality logical/bitwise 222/130.
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {
 	s_slot_0a_data *state = (s_slot_0a_data *)slot->unknownc;
 	s_actor_view *actor = actor_get(actor_index);
 	short result = g_46fbe8;
-	_ReadWriteBarrier();
 	if (REFERENCE_EQUAL(state->reference, g_470fa0))
 	{
 		function_1f86a0(actor_index);
 	}
-	else if (actor->unknown504 == 2)
+	else if (function_1f86f0(actor_index))
 	{
-		short action;
-		if (*function_e70b0(&action, actor->unknown018) == 5)
+		if (function_e70b0(actor->unknown018).value == 5)
 		{
 			if (state->unknown06 > 0)
 				state->unknown06--;
@@ -138,7 +107,6 @@ short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 	}
 	return result;
 }
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x1bef40
 short __stdcall function_1bef40(long actor_index)

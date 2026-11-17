@@ -392,7 +392,7 @@ struct s_effect_object_placement
 /* set once an effect part of an unknown type was seen */
 bool g_55e756;
 
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 long function_baf40(long object_index);
 long function_1469f0(real seconds);
 bool function_172750(long mode, point3f const *point, real radius);
@@ -1556,7 +1556,7 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 }
 
 // @retail 0x176ad0
-void function_176ad0(long marker_count, s_effect_marker *markers, s_effect_owner const *owner, vector3f const *velocity, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin, vector3f const *direction, long mode)
+void function_176ad0(s_effect_owner const *owner, vector3f const *velocity, long marker_count, s_effect_marker *markers, long tag_index, long unknown30, real scale_a, real scale_b, point3f const *origin, vector3f const *direction, long mode)
 {
 	s_effect_parameters parameters;
 
@@ -1882,9 +1882,41 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax I (11-15): no new form kept: reading colour B into a local ahead of the spawn stores measures 187 (was 128), so the body stands.
+// score 128 (was 128): frame 0x40 versus 0x44 (colour A packed into the dead `unknown` home), the system kept in EDI
+// through the type queries where retail reloads it from its home for the colour call (so colour B misses EDI), and the
+// zone block's scheduling.
+// MiniMax E (11-14): no new form, no lower score (128): reading the location index into a local of its own makes the
+// head match retail's bytes but measures 124, a gain of four on a function still above 30, so it is not kept; reading
+// the zone byte from the cluster field instead of a copy makes the zone block match retail's bytes but measures 161,
+// since the definition reload and the alignment pad leave two extra instructions before the switch dispatch; the
+// particle system still takes EDI where retail keeps it in ESI, and the frame is still 0x40 against retail's 0x44.
+// MiniMax H (11-14): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 and the
+// spawn record still sits two frame slots lower than retail's, and the particle system still takes EDI where retail
+// keeps it in ESI; the header's zone helper, whose zone block then matches retail's byte for byte, measures 165 on
+// its own and 161-166 combined with the 0x44 frame, so the kept body stands.
+// Earlier at 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
+// MiniMax S (11-11): no new form, no lower score (128); retail spills colour A into a frame home at +0x10 right after set_location, and those four bytes are what make its frame 0x44 against our 0x40 and shift every stack reference; the tint also still reaches the colour call on the stack, because 0x175a80's register contract (ECX colour A, EDI colour B, AL tint) lives in another lane's file and cannot be changed from here.
+// MiniMax E (11-11): no new form, no lower score (128); reading both colours into locals before the type-query
+// block with the two type queries inline as the call's arguments measures 181 against the kept 128, so the
+// original body was restored; the frame is still 0x40 against retail's 0x44 and the system is still in EDI where
+// retail keeps it in ESI.
+// MiniMax A (11-06): no new form, no lower score; retail's head takes the definition (its third stack
+// argument) into EAX and the location index from there, keeps the effect in EBP and the particle system in
+// ESI, reads both colours before the 0x1751d0 type query (colour A in a frame home, colour B in EDI, the
+// tint in BL) and pushes the multiplied value straight from EAX; ours keeps the particle system in EDI
+// across the query, reads both colours at the 0x175a80 call site and spills the multiplied value to a
+// byte home before the push, so every later jump is shifted; the frame is 0x40 against retail's 0x44.
+// Retail's argument order is the one we already use (the scale in xmm0, then the effect, the particle
+// system and the definition).
+// MiniMax A (11-06): no new form, no lower score; retail keeps the first colour in a frame home at frame+0 and
+// the second in EDI, so both colours are read before the type query; reading them into two locals after the
+// location setup gives 184 and, with the two declaration orders exchanged, 185 (the frame grows to 0x48 and the
+// location index leaves the argument home); a permuter run on this function finished with no candidate (5 tries
+// in 315 s, best the baseline, no confirming build).
 // MiniMax E (11-06): no new form, no lower score; the colour query and zone-base scheduling still keep
 // the frame at 0x40 and both colours spilled.
-// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
+// MiniMax E (11-09): no kept form, no lower score; naming the definition's location index in a local reaches 124 (a four-point gain, under the eight-point gate, so the body was restored) and the entry block still differs: retail keeps the particle system in ESI and reads both colours before the type query, ours promotes the system to EDI and re-reads the colours at the call; the permuter (three tries, best the baseline) and the colour-placement, store-order, scope, width and zone-helper variants all score 124 or worse.
 // MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
 // spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
@@ -2045,6 +2077,155 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // colour B declared first 178; both colour locals at the function top 195; only colour B read early (colour A at
 // the call) 146 (556 B, aligned 76 -> 66: colour B takes EBX, the system keeps EDI, the tint spills). The loop already
 // matches retail apart from frame offsets and the definition reload.
+// Round 155 (m3 lane 5, fast with 0x178eb0/0x179020): the pointer parameters `*const` 128 (identical); colour A alone read
+// after the spawn stores 187 (572 B); colour B alone early with `multiplied()` as the argument 146; colour A alone early with
+// `multiplied()` as the argument 146 (the system keeps EDI in all three); the zone test through the existing
+// location_point_in_zone_inline 165 (556 B; the zone block is then retail's: base in EDI, add unfolded; left are the entry's
+// colour/system registers, frame 0x40/0x44 and the definition not held in EDI across the back edge); that with both colours
+// early and `multiplied()` as the argument 181 (572 B, frame 0x44, the loop laid out with a jump to its test).
+// Round 80 (m3 lane 1; one-file LTCG harness with the link ballast, exact here: 128; aligned counts by difflib with
+// addresses and frame offsets masked, 68 for this body): all 119 other parameter orders of 0x175a80 128-184, none
+// lower; a random search of 120 combinations of colour read point (call/top/before or after the spawn stores/query
+// block), multiplied and tint named or in the argument list, the six spawn store orders, zone helper and declaration
+// order: best 125 (unknown, scale, location with the spawn declared first; gain 3); the existing
+// location_point_in_zone_inline in place of the file-local copy 165 but aligned 35 (the whole loop then matches retail
+// but the definition reload at the loop top; left are the entry's system register, the early colour reads and the
+// frame), with spawn stores unknown, location, scale 162; on that form the system or the definition read once through
+// its own address 165/165; colours read early with both queries in the call's argument list 183 (568 B), at the top
+// 192.
+// Round 160 (m3 lane 5, fast with 0x177040/0x178eb0/0x179020/0x176f60/0x178bc0): early colours re-measured 178 (572 B); on them the
+// system passed through a volatile read of its parameter (diagnostic, not kept) 137 (556 B: the system in ESI reloaded from its slot
+// for the call and colour B in EDI as retail; colour A takes EBX, so the tint spills, and the location index loses its slot home),
+// with colour B read first 138, with the tint declared above the colours 137; a forceinline colour helper shared with 0x177040 178
+// (0x177040 93; same code as written out); the system through one plain read of its address 178 (folds away).
+// Round 97 (m3 lane 9, fast with 0x177040/0x176f60/0x178eb0/0x179020): retail's allocation before the loop gives colour B EDI and the
+// tint BL (their registers at the 0x175a80 call), the type object ESI, and leaves the system and colour A in memory; ours ranks the
+// system (EDI) and colour A (EBX) first. A begin-spawn inline helper shared with 0x177040, taking the spawn record (it stores the
+// particle-location index, runs the type queries and the colour call): parameters (system, effect, spawn) with early colour locals and
+// `multiplied()` as the argument 179 (572 bytes, aligned 88), with a named multiplied 234 (488 bytes: the helper stays out of line;
+// 0x178eb0 13, 0x179020 11); colours read at the call 135 / 235 (out of line); parameters (effect, system, spawn) 179; (spawn,
+// system, effect) 179. Body unchanged.
+// MiniMax C (11-09): earlier at 128 (was 128): the early colour home is still missing and the frame is
+// 0x40 against retail's 0x44. Untouched this round.
+// Round 161 (m3 lane 6, fast with 0x178eb0/0x179020/0x178bc0, all matched): matched 0x174a30's shape (colour locals read
+// before the spawn record, a named definition from 0x1751d0, both queries in the call's argument list) 187 (568 bytes);
+// the spawn record declared at its stores 128; the 0x1751d0 definition named in the type block 128; the query results
+// `bool const` 128 (the last three the same code); the colour locals declared first and read after the spawn stores,
+// `multiplied()` as the argument 178 (572 bytes, as the earlier early-colour forms; the first and last re-measure listed
+// forms). New on top: the zone helper reading g_4e0348 at each use instead of a bsp local 128 (same code); the node flag as
+// `node_index != NONE && node_index < 0` 133. Untested lead: 0x175a80's body (its file held by another lane this round),
+// though the call's argument registers already agree with retail's.
+// Round 165 (m3 lane 6, fast with 0x178eb0/0x179020/0x178bc0): colour locals read after set_location ahead of the spawn
+// stores with the type-query block as `do { } while (false)` 184 (572 bytes; the same code as the colour locals without
+// it, re-measured 184 here, listed at 187: the region folds away); the type-query block alone as `do { } while (false)` 128 (same code); colour locals with the type object declared
+// at function scope before them 184; on that, the tint and colour A renamed to sort the other way (diagnostic) 184 (same
+// code: names don't order the registers); the location index stored first, then the colour locals, then scale and unknown
+// 184 (masked 29); a `dword const *colors = &effect->color_a` pointer after set_location with colors[0] and colors[1]
+// in the call 128 (the loads still sink to the call). In every early-colour form colour A takes EBX and the system EDI,
+// so colour B and the tint spill.
+// Round 76 (m3 lane 14, fast with 0x178eb0/0x179020/0x177040/0x176f60/0x178bc0): retail's type-query block holds the
+// tint in EBX, colour B in EDI, the type object in ESI and the effect in EBP, so the system and colour A have no
+// register there (colour A gets the frame slot, the system is read from its parameter slot for the colour call), and
+// the definition takes EDI through the loop where ours keeps the system there. Early colour locals with the spawn
+// stores as unknown, scale, location 184 (572 bytes); colours read between the scale/unknown stores and the location
+// store 184; the system's location index named and read with both colours before the spawn stores 180; colours read
+// at the top of the type-query block with `multiplied()` in the call 178; the first form with colour B declared and read
+// first 185 (the first, third, fourth and fifth re-measure round 58/92/160 forms; the second is new). 0x175a80's
+// body (its file held this round) stays the untested lead; no untried natural colour placement is left.
+// Round 105 (m3 lane 16, read against the fast listing): the frame and length gaps are the same colour-call cause.
+// Retail's extra frame dword is colour A spilled before the type query; its other 4 bytes are the multiplied value
+// pushed straight from EAX (ours spills it to a byte home) and the definition kept in EDI from the loop's bottom reload
+// to the placement switch (ours reloads it into a scratch register at each use, with a `mov edi, edi` pad). Both
+// follow the system/colour/tint ranks set by 0x175a80's register contract (src/unknown_173b90.cpp, Avoid this round).
+// Round 184 (m3 lane 4, fast; aligned/masked as difflib counts with addresses / also registers masked, 76/32 at 128):
+// re-measured: the existing location_point_in_zone_inline (location_zones.h, NULL zone index) for the private zone
+// copy 165 (aligned 45, masked 28), with the spawn stores unknown, scale, location 162 (aligned 41, masked 19). New on
+// that: both colours read into locals before the type-query block 187 (572 bytes), inside it 187; `multiplied()` as
+// the call's argument 170; both queries as the call's arguments 164 at 552/552 bytes (aligned 36, masked 15: the loop
+// then holds the definition in EDI and reloads the system as retail; LEAD), on it both colours early 188 (568 bytes),
+// colour B only early 153 (aligned 35), colour A only early 153 (masked 26). Left on the lead: the system in EDI at the
+// entry (retail ESI, reloaded for the colour call), the early colour reads and frame 0x40/0x44.
+// Round 93 (m3 lane 10): no new form. Retail reads both colours right after set_location (colour A to +0x10, colour B
+// in EDI), keeps the system in ESI up to the colour call and the definition in EDI through the loop; those registers are
+// set by the 0x175a80 call, whose file is in another lane's set this round (the lead this note already names).
+// M3 lane 3 r236 (fast with 0x177040/0x176f60/0x178eb0/0x179020/0x178bc0/0x1794e0, all matched or unchanged): 0x175a80 is
+// not the lever these notes name: its register contract (colour A ECX, colour B EDI, system ESI, tint AL, one push) is retail's
+// and it saves no callee-saved register in either build. The 0x177040 order that spills colour A as retail (cursor stored
+// first, colour B then colour A) applied here: location stored first, colour B, colour A, then scale and unknown 184 (572 B);
+// location, scale, unknown, then colours B/A read inside the type-query block 181 (572 B, frame 0x44, but the location index
+// takes the new frame slot and colour A the dead `unknown` home, retail the reverse; the tint spills); the first with both
+// queries in the call's arguments 187 (568 B). Round 117's volatile-parameter diagnostics stand as the cause: retail splits
+// the system's live range (ESI to the 0x1751d0 call, then its home), which no non-volatile form here reproduces.
+// MiniMax A (11-12): no new form, no lower score (128); the gap starts in the prologue (frame 0x40 against retail's 0x44) and in the order of the 0x175180/0x1751d0/0x137bd0 calls, so it needs a body rewrite rather than a local spelling.
+// M3 lane 3 r238 (fast with 0x177040/0x176f60/0x178bc0/0x178eb0/0x179020): the node flag for 0x175270 in a named bool 135 at
+// 564 B (frame 0x44 as retail, register-masked aligned 41 -> 31, but the bool takes the effect argument's home and the
+// location index the frame slot, retail the reverse); round 184's lead re-measured 166 fast (552 B); the lead with that
+// named bool 172 (560 B, masked 21). Body unchanged at 128.
+// M3 lane 11 r97 (fast with 0x178eb0/0x179020, matched throughout): re-measured the lead (existing
+// location_point_in_zone_inline, both queries in the colour call's arguments) 166 at 552 bytes; with both colours read
+// into locals after the spawn stores 184 at 568 bytes. On that form frame 0x44, the location cursor in the effect
+// argument's home, colour A's slot at +0x10, the tint in BL and the type object in ESI are all retail's; the one
+// difference left ahead of the loop is the system kept in EDI through the queries (retail drops it when the type object
+// takes ESI and reloads it from its argument home for the colour call), which leaves colour B without EDI. On it: colour
+// B read first 184; the colours ahead of the spawn stores 190; colour B first and ahead 190; the location store first,
+// then the colours, then scale and unknown 190; the system read once through its own address for the colour call 184,
+// for the colour call and the loop call 184 (both fold away); a named tint with `multiplied()` as the argument 181 (572
+// bytes). Diagnostics: no system argument in the loop's 0x175270 call 65 at 552 bytes (colour B takes EDI, the system
+// moves to EBX, the tint spills); no set_location call 178 (540 bytes); the type looked up from the definition argument
+// 153 (552 bytes, system still EDI). Locating diagnostic only (a forced re-read of the system parameter at the colour
+// call on the early-colour lead; forbidden form, reverted at once): 40 at 552 bytes, the same with the loop call re-read
+// 40; the system then sits in ESI and is reloaded, colour B takes EDI. Left on it: colour A spills to the dead `unknown`
+// argument home instead of a new frame slot (frame 0x40 against 0x44, which shifts every stack offset), one scratch
+// register step from the first statement on (the definition's location index lands in ECX, retail reuses EAX), the
+// third zone product's operand order, and the order of the two loads ahead of the colour call.
+// M3 lane 9 r120 (fast): both type queries in the colour call's arguments 146 (552 B: definition in EDI for the loop
+// as retail, the loop entered through a jump to an aligned head); multiplied() alone in the call 135; colour locals in
+// the type-query block 178 (572 B); the spawn's location index stored first 128; colour locals after the spawn stores
+// 184 (572 B).
+// P479: Standard location/iterator/node-sentinel/node-sign predicates 193/221/173/172;
+// node conjunction/complementary disjunction, zone complement and paired negative
+// query producers 173/183/171/204. NOT kept: all regress/lengthen; first form loses both
+// exact callers. Original full body restored; early color/frame/query homes remain.
+// Round 84 (m3 lane 2, fast with 0x178eb0/0x179020, matched unless given): `&effect->location` held in an `s_location *`
+// local for the cluster test, set_location and both zone tests 142 at retail's 552 bytes (the definition then stays in
+// EDI from the loop's mode read to the placement switch, as retail; entry registers and frame unchanged); on it both
+// colours read into locals after set_location ahead of the spawn stores 178 (568 B), after the spawn stores 178 (568 B).
+// On the current body: the spawn stores as unknown, scale, location 124 (0x178eb0 4, 0x179020 6); the type-query
+// block's braces removed 128 (same code); both colours read into locals as the first statement 198 (572 B).
+// M3 lane 5 r183 (fast with 0x178eb0/0x179020, both matched throughout): lane 11 r97's early-colour lead (colours read
+// after the spawn stores, both queries in the colour call, location_point_in_zone_inline) re-measured 184 (568 B); on it:
+// the colour block through a forceinline helper taking the system by const reference 184, through a forceinline helper
+// taking (colour A, colour B, system) 184, that helper fed `effect->color_a`/`effect->color_b` as arguments 184 (all the
+// lead's code: the helper parameter is coalesced); colours read between the scale and unknown stores 190 (first
+// difference +0x2); colours read before the location-index store 185; the system parameter renamed a_system or
+// zz_system 184 each (diagnostic). Diagnostic only, reverted at once: the volatile re-read at the colour call
+// re-measured 40 (552 B). On the kept body: the spawn record declared first 128; a named `s_location *effect_location`
+// for the cluster test, set_location and both zone tests 142 (552 B).
+// MiniMax G (11-14): no new form, no lower score (128): retail's frame is 0x44 with colour A spilled to frame+0x00 and
+// the spawn record at frame+0x04, while ours keeps the spawn at frame+0x00 and colour A in a register; reading colour A
+// into a local declared before the spawn (this round) gives 187 at 572 bytes, so the body stands.
+// M3 lane 15 r89 (fast with 0x178eb0/0x179020/0x178bc0, matched throughout; control 128): the system's definition named and
+// the type looked up from it (0x174a30's matched spelling) 128; the location matrix at function scope 128 (same code); 0x178bc0's
+// result passed straight to 0x175270 162 (552 B; the node flag is then evaluated before the 0x178bc0 call, retail after); both
+// queries as the colour call's arguments with one `s_location *` for the cluster test, set_location and both zone tests 146
+// (552 B); 0x174a30's whole colour pattern (colours read before the spawn stores, definition named, queries as arguments) 187 (568 B).
+// MiniMax S (11-15): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system
+// in ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it reads the location mode from the
+// definition again for each call.
+// M3 lane 5 r191 (fast with 0x178eb0/0x179020/0x178bc0/0x177040/0x176f60, matched or unchanged throughout): the
+// definition's location index named first (`long definition_location_index = definition->location_index;`) re-measured
+// 124 (the head is then retail's, gain 4, not kept); on it: the existing location_point_in_zone_inline (NULL zone index)
+// with both type queries in the colour call's argument list 162 at 552 bytes (that lead was listed at 164); that with
+// both colours read into locals ahead of the spawn stores 184 (568 bytes, frame 0x48); the spawn record declared first
+// 124 and the location cursor assigned after the declarations 124 (both same code); the spawn stores moved after the
+// colour call 186 (572 bytes). Our loop already reloads the system from its argument home for 0x175270 as retail
+// does; the gap stays in the entry block (system EDI against ESI, colour A's frame slot, frame 0x40/0x44).
+// P589: Placement cases 1302/1320/3012/3021/3102/3120/3201/3210:
+// 128/128/128/138/128/128/138/138. NOT kept: no native frame/color/query/zone recovery;
+// original complete body and case order restored.
+// MiniMax D (11-17): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system in
+// ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it loads the location mode into EAX where
+// ours uses ECX; the multiplied query inlined gives 135, colour A read early with it 146, and both queries inlined 146.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2317,6 +2498,44 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax I (11-16): no new form, no lower score (63): retail still adds the record base into the scaled index before its
+// first load and still reads the object's index again from the effect after the 0xbadc0 validity call, where this build
+// keeps the index in ESI across the call; the bodies of 0xbadc0 and 0xbaf80 are in src/unknown_0bad50.cpp, which this
+// lane may not edit: BLOCKED-BY 0xbadc0, 0xbaf80.
+// MiniMax S (11-16): no new form, no lower score (63): the head's load still folds into the datum address where retail adds the record base into the scaled index before its first load, and the object's index is still cached across the 0xbadc0 validity call where retail reads it again from the effect; the body of 0xbadc0 and 0xbaf80 is in src/unknown_0bad50.cpp, which this lane may not edit: BLOCKED-BY 0xbadc0, 0xbaf80.
+// MiniMax C (11-15): no new form, no lower score (63): the body stands as found.
+// MiniMax D (11-14): no new form, no lower score (63): the head still reads the object's index through the
+// folded address where retail adds the record base into the scaled index first and reads it back, and the
+// index is still cached across 0xbadc0 where retail reloads it; 0xbadc0's body is in another file.
+// MiniMax S (11-14): no new form, no lower score (63): the head's load stays folded into the datum address
+// because the base-plus-scaled-index pointer is formed by a helper in another file, so the add that precedes
+// the load in retail cannot be produced here; the body was re-measured and did not move.
+// MiniMax S (11-15): no new form, no lower score (63): retail still adds the record base into the scaled index
+// before its first load and still reloads the object's index from the effect after the 0xbadc0 validity call, where
+// this build caches the index in esi across the call and reads the field before the add; the head's load still folds
+// into the datum address where retail forms the pointer. This round the object index named in a local of its own
+// gives the same code (63) and reading the object index before the definition lookup gives 78, so both were
+// restored; 0xbadc0 and 0xbaf80 live in src/unknown_0bad50.cpp: BLOCKED-BY 0xbadc0, 0xbaf80.
+// score 63 (was 63): unchanged this round: retail adds the record base into the scaled index before its
+// first load and keeps the object's index in EAX across the validity call, where ours reads the field
+// before the add and caches the index in ESI; the validity callee's body is in another file, so the
+// reload cannot be produced from here.
+// score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
+// its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
+// src/unknown_0bad50.cpp.
+// MiniMax H (11-11): no new form, no lower score (63); the only difference left is retail's reload of the object's index from the effect after the 0xbadc0 validity call, and 0xbadc0's body lives in another file, so the reload cannot be produced from here.
+// MiniMax C (11-11): no new form, no lower score (63); the object index stays cached across 0xbadc0 where retail keeps NONE in ESI and reads the object index into EAX, and the head's load is folded into the datum address where retail forms the pointer; 0xbadc0 and 0xbaf80 live in another file.
+// MiniMax E (11-11): no new form, no lower score (63); retail still reloads the object's index from the effect after
+// the 0xbadc0 validity call, and that reload only appears when the compiler cannot prove that call read-only, so
+// the difference cannot be produced from this side (BLOCKED-BY 0xbadc0).
+// MiniMax A (11-06): no new form, no lower score; retail reloads the object's index from the effect after
+// the 0xbadc0 validity call, and that reload appears only when the compiler cannot prove that call
+// read-only, so the difference cannot be produced from this side: the body of 0xbadc0 is in another file
+// this lane may not edit (BLOCKED-BY 0xbadc0).
+// MiniMax A (11-06): no new form, no lower score; the only difference is the object's index, which retail reads
+// again after the 0xbadc0 validity call while ours keeps it in a register across that call; the body of 0xbadc0 is
+// in src/unknown_0bad50.cpp, which this lane may not edit, so the reload cannot be produced here
+// (BLOCKED-BY 0xbadc0).
 // MiniMax E (11-06): no new form, no lower score: the only difference left is the object's index,
 // which retail reloads after the 0xbadc0 validity call; that call's body lives in
 // src/unknown_0bad50.cpp, which this lane may not edit.
@@ -2327,10 +2546,8 @@ event_done:
 // the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
 // and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
-// score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
-// its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
-// src/unknown_0bad50.cpp.
-// score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
+// MiniMax E (11-09): no new form, no lower score; the entry block still differs in where the record base is added into the scaled index and which register keeps the object index across 0xbadc0, and the permuter (29 tries in 311 s) plus the width and statement-order variants found nothing below 63.
+// Earlier note: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // and 0xbaf80 (NONE in EBX), retail reloads it after each call with NONE in ESI. Retail's callers
@@ -2441,6 +2658,56 @@ event_done:
 // (585); the object test split off as an empty first arm 198 (571); root index with the definition in the live arm
 // 206 (584). Retail reloads the object index from the effect after 0xbadc0 and 0xbaf80 (both in
 // src/unknown_0bad50.cpp, avoid-listed again): BLOCKED-BY 0xbadc0.
+// Round 155 (m3 lane 5, fast): root index as 0x1794a0's first argument re-measured 197 (585 B); empty first arm 198
+// (571 B); `!(index == NONE || valid)` 63; `NONE != effect->object_index` 63; deletion arm `return true;` with a plain
+// second if 198 (572 B). Retail's reload at the join after 0xbadc0 still needs 0xbadc0 seen as writing memory.
+// Round 80 (m3 lane 1, fast; aligned counts by difflib with addresses and frame offsets masked, 41 for the
+// current body): retail also reloads the index after 0xbaf80 for 0x1794a0's second argument, so 0xbaf80 needs
+// the same (BLOCKED-BY 0xbadc0, 0xbaf80). The root index as 0x1794a0's first argument (a value correction)
+// 197, aligned 41 (585 B; only the cached index and the scratch rotation it causes differ); that with a plain
+// `if (effect && ...)` second test 130, aligned 52 (the head reload then matches; the index is cached for
+// 0xbaf80 instead); root index at function scope 197; tail reading the field 197; a named head index reused
+// by the tail 197.
+// Round 97 (m3 lane 9, fast with 0x1794a0/0x1792b0, both matched throughout; aligned counts in brackets, this body [72]): 0xbadc0
+// and 0xbaf80 are matched and write nothing, so retail's reloads are not their summaries; retail also reads the tag index through
+// the unadded lookup address and the object index through the formed pointer. Grid of the effect read through a fresh datum
+// lookup in place at the else-if test (a), 0xbaf80's argument (b), 0x1794a0's pushed index (c), with or without the root index
+// as 0x1794a0's first argument (d), abcd: 0001 197 [48]; 0010 219; 0011 210; 0100 72 [95]; 0101 206; 0110 269; 0111 216; 1000 87;
+// 1001 202; 1010 265; 1011 212; 1100 87; 1101 202; 1110 264; 1111 190 (593 bytes) [33]. Second grid, the tag read through the
+// lookup (t), the first test and 0xbadc0's argument through it (f), then a, b, d: t alone 84 [84]; t+d 205; t+b 181; t+b+d 170;
+// t+a 177; t+a+d 166; t+a+b 177; t+a+b+d 166; f alone 203 (581 bytes); f+d 212; f+b 203; f+b+d 205; f+a 204; f+a+d 263; f+a+b 199;
+// f+a+b+d 206; with t too the f rows repeat (203/212/203/205/204/263/199/206). None below 63; body unchanged.
+// MiniMax G (11-14): no new form, no lower score (63): the object index stays cached across the 0xbadc0 call where
+// retail reloads it from the effect and keeps NONE in ESI, and the head's load stays folded into the datum address
+// where retail forms the pointer first; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
+// MiniMax H (11-13): no new form, no lower score (63): the object index is still cached across 0xbadc0 where retail
+// reloads it from the effect, and the head's load is still folded into the datum address where retail forms the pointer
+// first; both callees live in another file.
+// MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
+// reloads it, and the head's load is folded into the datum address where retail forms the pointer
+// first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
+// MiniMax R (11-10): no new form, no lower score (63): the object index stays cached across the call where
+// retail reloads it, and the callees in the other file decide that caching.
+// Round 155 (m3 lane 8): first difference unchanged (+0x29: retail keeps NONE in ESI and reads the object index into EAX
+// for 0xbadc0, then reads it again; ours keeps the index in ESI). Still BLOCKED-BY 0xbadc0 and 0xbaf80: their file was
+// avoid-listed again, so no new form was tried.
+// M3 lane 3 r236: no new form. Re-read against the listing: from the 0xbadc0 call on, every difference is the object
+// index cached in ESI (retail reloads it from the effect after 0xbadc0 and 0xbaf80, with NONE in ESI); the grids above
+// (fresh datum lookups at each use, root index, tests nested or split, definition placement, inline/noinline helpers,
+// widths) cover the caller-side spellings. Retail's 0x1794a0 call takes 0xbaf80's root index in EAX (a value
+// difference on this body, listed at 197 as a value correction). The lever is how LTCG summarises 0xbadc0/0xbaf80
+// (both matched; src/unknown_0bad50.cpp is avoid-listed this round).
+// MiniMax A (11-14): still no lower score (63): the object index named in a local of its own and used
+// for both the test and the call compiles to exactly the bytes we already have, and reading the object
+// index before the definition lookup scores 78; the listing shows why the register choice matters:
+// retail loads the object index into EAX after the definition lookup and reloads it from the effect
+// after 0xbadc0, because a value in EAX is clobbered by the call, while we keep it in ESI across the
+// call (a callee-saved register), so the else path reuses it instead of reloading it. Nothing in the
+// source can move a live value out of a callee-saved register, so the reload has to come from the
+// else path reading the effect again: BLOCKED-BY 0xbadc0, 0xbaf80.
+// MiniMax A (11-14): no new form, no lower score (63): the head's load still folds into the datum
+// address where retail forms the pointer first, and the object index is still cached across
+// 0xbadc0 where retail reloads it; both callees live in another file: BLOCKED-BY 0xbadc0, 0xbaf80.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -2639,7 +2906,7 @@ void function_179fb0(s_effect_datum *effect)
 					}
 					vector3f impulse;
 
-					random_vector_in_cone(&direction, &impulse, &g_4e7408->unknown0, acceleration->inner_cone_angle, acceleration->outer_cone_angle);
+					random_vector_in_cone(&g_4e7408->unknown0, &direction, &impulse, acceleration->inner_cone_angle, acceleration->outer_cone_angle);
 					normalize3d(&impulse);
 					vector3f_scale(&impulse, acceleration->acceleration * object_definition->unknown14, &impulse);
 
@@ -2724,7 +2991,16 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 	}
 }
 
-// score 23 (was 30): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
+// score 23 (2 held; was 23; 30 before): with the held change below only the decal call's two register arguments remain,
+// BLOCKED-BY 0x17e670 (contributor): its
+// body takes the source in ECX and the point in EDX in retail, ours the other way round. Round 80 (m3 lane 1): the
+// round 117 lead applied, 0x189060 as (object, value, position, direction, scale, tag) at its definition, every
+// declaration and all nine calls (each retail caller evaluates the scale before the position/direction register
+// setup) 29 alone, with the detached record filled position, compression, velocity, location (every other
+// 0x1895f0 caller's order) 2 (all 0x189060 callers unchanged). HELD by the coordinator 11-09, not on main: the
+// reorder edits the call in 0xbf600, a contributor's finished function (src/unknown_0b9fc0.cpp), so it waits for
+// that owner's OK (BLOCKED-BY 0xbf600 call). Both changes go in together or not at all.
+// Earlier 23 (was 30): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
 // 0x17e670) and the sound arms' scratch registers remain. Earlier 30: the attached light call's register arguments
 // (computed before its pushes, retail after: ours forms forward with add ecx, retail with lea edx and keeps the
 // location pointer live), fixed by 0xc0350's order in round 117. Round 85: `effect` declared before `up` gives retail's EAX up (38 -> 30, kept);
@@ -2841,6 +3117,30 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // one, then 26 (location, position, velocity, compression), 27 (three forms), 28 (nine), 29 (six), 40 (retail's order), 42, 43, 43.
 // The attached call loads scale into EDI because position and direction already hold EAX and ECX in our evaluation order; that and
 // the detached arm's rotation still need 0x189060's order. BLOCKED-BY 0xbf600, 0xceee0 (their calls) and 0x17e670.
+// Round 101 (m3 lane 9, fast): retail's record order re-measured 40 (aligned 36; only scratch rotation differs: the
+// point copy starts in EDX against retail's ECX); the sound case's object index as a case-scope local for the test
+// and the call 23 (same code), with retail's order 40; a case-scope tag index for both arms 62, with retail's order
+// 63; the sound record declared at function scope 23 (same code), with retail's order 40. The attached call's scale
+// takes EDI because the position and direction temporaries are defined before it (arguments are evaluated last to
+// first), so the cause stays 0x189060's order: BLOCKED-BY 0xbf600 (its call) and 0x17e670 (the decal call).
+// M3 lane 15 r76: no trial. The first difference (+0x24f) is still the decal call's two register arguments into 0x17e670
+// (contributor, unmatched at 429), and the sound arms still need the held 0x189060 order (aligned 25, register-masked 14).
+// M3 lane 16 r112: no trial (first difference still 0x17e670's register arguments, contributor). The held 0x189060
+// order's saved patch (lane 7 r117) no longer applies to current main and needs regenerating once its owner agrees.
+// M3 lane 10 r100 (fast, with every 0x189060 caller): the held change re-measured on current main and its patch
+// regenerated (build/r100/held-0x17a8a0.patch; still HELD, it edits the call line in 0xbf600): 0x189060 as (object, value,
+// position, direction, scale, tag) with the detached record filled position, compression, velocity, location 2; that
+// order alone 29; the record order alone 40. 0x189060, 0x107980, 0x166cd1, 0xf6670, 0x105dd0 and 0x1039a0 match in all
+// three, 0xceee0 (97) and 0xbf600 (50) are unchanged. The first difference is still the decal call's two register
+// arguments, BLOCKED-BY 0x17e670 (contributor).
+// M3 lane 10 r104: no trial. The first difference (+0x24f) is still the decal call's two register arguments into
+// 0x17e670 (contributor, unmatched), and the sound arms still need the held 0x189060 order (BLOCKED-BY 0xbf600's call).
+// M3 lane 11 r106: no trial. Baseline 23 at 1328 bytes; the first difference (+0x24f) is still the decal call's two
+// register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order.
+// M3 lane 16 r126: no trial. Baseline 23 at 1328 bytes; the first difference (+0x24f) is still the decal call's two
+// register arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order.
+// M3 lane 15 r94: no trial. Baseline 23 at 1328 bytes; the first difference (+0x24f) is still the decal call's two register
+// arguments into 0x17e670 (contributor), the rest the sound arms that need the held 0x189060 order (0xbf600's call line).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3052,10 +3352,51 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
+// score 93 (was 93): the system takes EDI and the next index ESI where retail has ESI and EDI (colour B and the type
+// object rotate with them), the frame is 0x4c against 0x54 and the location mode is cached where retail spills the
+// definition and reads the mode at each call.
+// MiniMax E (11-14): no new form, no lower score (93, was 93): retail keeps the particle system in ESI and the next
+// index in EDI, spills the definition pointer and reads the location mode at each call; this build gives the system
+// EDI and the next index ESI and caches the mode, so the frame is 0x4c against retail's 0x54. The per-call mode form
+// measures 108 here and drops the matched caller 0x176f60, which lives in another file.
+// MiniMax H (11-14), NOT kept (coordinator: a 2-point gain on a function still above 30 is under the keep bar; code
+// back to main, 93): the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A)
+// measures 91 at 337 bytes with the matched caller 0x176f60 still matching; the same order with the
+// mode as a word or with the two colours exchanged gives 92, the mode as a short gives 92, the mode read again at
+// each call gives 108 and drops that caller to 25, the effect-location cursor moved into the block gives 95 and 103
+// (the latter also drops the caller), the particle cursor moved out of the block gives 103, the next index read at
+// the end gives 107, the system declared before the effect gives 113 and the type query's locals lifted to the
+// function scope gives 91.
+// Earlier at 93 (was 93; 91 recorded before): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
+// Earlier at 91 (was 93; MiniMax H's block-scope form, not kept): our frame is 0x4c against retail's 0x54 and the particle system takes EDI where retail keeps
+// it in ESI, so the homes of the two pointers, of the definition and of the cached mode sit at other offsets than
+// retail's; retail spills the definition and reads the mode at each call, which needs the per-call form that drops
+// the matched caller.
+// system takes EDI where retail keeps it in ESI, so the homes of the two pointers and of the definition
+// sit at other offsets than retail's.
+// Earlier at 93 (was 93): frame 0x4c versus 0x54, the particle system in EDI (retail ESI) and the location mode cached
+// where retail spills the definition and reads the mode at each call.
+// MiniMax E (11-11): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54,
+// and the per-call mode and the particle system still take the opposite registers.
+// MiniMax C (11-11): no new form, no lower score (93): retail keeps the particle system in ESI and
+// colour B in EDI and reads the location mode at each call, but that per-call read flips the LTCG
+// convention and breaks the matched caller 0x176f60, and 0x175a80's register contract (colour A in
+// ECX, colour B in EDI, the tint in AL) is decided in src/unknown_173b90.cpp, another lane's file.
+// MiniMax A (11-06): no new form, no lower score; the same cause as 0x178c80: retail reads both colours
+// before the type query and keeps the particle system in ESI with colour B in EDI, ours keeps the system
+// in EDI and the datum in ESI, and retail's frame is 0x54 against our 0x4c; the recorded best form (the
+// spawn cursor with a long mode) reaches 89, a gain of four that the gate drops, and the per-call mode
+// read reaches 108 while the matched caller 0x176f60 falls to 25.
+// MiniMax A (11-06): no new form, no lower score; retail's frame is 0x54 with the definition in a frame home, the
+// first colour spilled and the second in EDI, and the location mode read again for each call, while ours keeps
+// the mode in a frame slot and the type object in ESI; the mode read for each call gives 108 and the matched
+// caller 0x176f60 falls to 25, and the spawn-cursor form reaches 89/90, a gain under the gate.
 // MiniMax E (11-06): the location mode read live from the definition reaches retail's 0x54 frame but
 // scores 108, the same form with the particle system declared before the effect 119 and with color B
 // read at the call 110; no new form, no lower score.
-// score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
+// MiniMax E (11-09): no new form, no lower score; the particle system and the next index trade ESI and EDI against retail, and the form that would free the definition's frame slot (the location mode read again for each call) is not usable because it drops the matched caller 0x176f60 to 25; the declaration-order and width variants score 93 or worse.
+// Earlier summary (frame 0x4c versus 0x54; retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
 // read-only settings 109; immutable mode once 96 (kept); size policy 146; inline depth zero 109;
@@ -3254,6 +3595,133 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // system pointer declared before the effect pointer 93 (same code); the definition declared first with the mode read
 // per call 108 (0x176f60 25: effect index in EAX, system index in ECX, definition in EBX until the loop); `word const`
 // mode 93. On the cached form the prologue is retail's except the system/next ESI/EDI swap.
+// Round 155 (m3 lane 5, fast with 0x176f60, which matches unless given): mode read per call re-measured 108 (0x176f60 25);
+// spawn cursor + long mode re-measured 89 (337 B, the loop then retail's); on it: system/next/definition locals const 89,
+// colours read before the cursor 90, type object declared at the top of the block 89, mode as dword 89, the cursor copied
+// to a named index 89, the matrix declared before the loop 89. The system EDI / next index ESI entry swap remains.
+// Round 80 (m3 lane 1; a one-file LTCG harness with the link ballast reproduces 93 here, 128 for 0x178c80 and 17 for
+// 0x175a80): all 119 other parameter orders of 0x175a80 (definition, declaration, three calls) 93-98, none lower; a
+// random search of 136 combinations of lookup order, next-index read point, word/long/per-call mode, colour read
+// point, multiplied argument/named, cursor local/spawn record, node flag point and block/early-return test: best 96
+// (every per-call-mode form turns 0x176f60 to 25); the tint query in the colour call's argument list 120 (0x176f60
+// 25), with the spawn cursor and a long mode 120; the location declared in the while condition 93 (same code).
+// Diagnostic only: without the particle system argument of the loop's 0x248c60 call the system takes ESI and the
+// next index EDI as in retail, so the system's loop use sets the swap.
+// Round 160 (m3 lane 5, fast with 0x176f60/0x178bc0, which match unless given): mode per call re-measured 108 (0x176f60 25; frame 0x54,
+// effect index EAX, system index ECX, definition EBX); with the effect index read once through its address 127 (352 bytes, 0x176f60 18:
+// the effect index returns to the stack but the system index moves to ECX). A forceinline colour helper shared with 0x178c80 (colours,
+// type query, tint, `multiplied()` as the argument) 93 (same code); in it colour B first 92 (0x178c80 178); both queries in the argument
+// list 120 (325 bytes, 0x176f60 25); both queries named 105 (346 bytes).
+// Round 97 (m3 lane 9, fast with 0x176f60/0x178c80): spawn record + mode read per call + colours early re-measured 109 (0x176f60 25;
+// aligned 65: ours passes the effect index in a register, forms the effect pointer in EAX, keeps the definition in EBX and gives the
+// tint and node flag frame slots of their own, where retail keeps them in the effect index's stack home). A begin-spawn inline
+// helper shared with 0x178c80, taking the spawn record (cursor store, type queries, colour call), six forms (parameter orders
+// system/effect/spawn, effect/system/spawn, spawn/system/effect; colours early or at the call; multiplied named or as the argument):
+// 185 each at 258 bytes (the helper stays out of line here; 0x176f60 25). Body unchanged.
+// MiniMax C (11-09): earlier at 93 (was 93): the system pointer and the next index swap ESI and EDI
+// (retail keeps the system in ESI and the next index in EDI), retail's frame is 0x54 against our
+// 0x4c and it spills the definition pointer early. Untouched this round.
+// Round 161 (m3 lane 6, fast with 0x176f60/0x178bc0, both matched throughout), all on the spawn-record cursor with a long
+// cached mode (frame 0x54, 337 bytes; masked aligned difference 18): the cursor stored before the colour reads 88; colour B
+// read first 88; the mode cached before the cursor 89; the colour reads inside the type-query block 88; the type-query
+// block's braces removed 88. Left on it: system EDI / next index ESI (retail ESI / EDI), colour A in EBX and the type object
+// in ESI (retail colour A spilled, colour B in EDI, type object in EBX), and the cached mode where retail spills the
+// definition and reads the mode per call. Not kept (the record only groups the cursor; gain 5). Four of these re-measure
+// listed forms; new on the current body: the node flag as `node_index != NONE && node_index < 0` 94 (339 bytes); the
+// particle system derived again from g_510c74 and its index for the 0x1751d0 type query 118, for the loop's 0x248c60
+// call 112, for the particle-location cursor 119 (each turns the effect index into a register argument; 0x176f60 25).
+// Round 147 (m3 lane 7, fast with 0x176f60, 0x178bc0, 0x178c80, 0x17ae50): mode read per call with colour B read
+// first 108; per call with both colours read inside the type-query block (B first) 108; per call with the colours read
+// before the particle-location cursor 108 (each: definition in EBX until the loop, effect index in EAX and system
+// index in ECX, 0x176f60 25); cached mode with colour B first and the cursor after the colours 93; cached mode with
+// the cursor read last 93 (same code). Retail's 0x175a80 call takes the system in ESI and colour B in EDI, which
+// sets the system/next ESI/EDI swap; 0x175a80 is in src/unknown_173b90.cpp, an Avoid file this round.
+// Round 180 (m3 lane 4, fast with 0x176f60, which matches unless given; aligned/masked = difflib counts with
+// addresses / also stack offsets masked): permuter 30 minutes, best 81 on its own count only with a volatile tinted
+// result, colour A narrowed to a word (a value change) and the loop rotated by hand: not kept. The tinted result
+// declared at the block scope above the type query 93 (same code); on the spawn cursor with a long mode
+// (re-measured 89, aligned 37, masked 33): that 89 (same code), colour B read first 89 (aligned 36); tinted at block
+// scope with the mode read per call 108 (0x176f60 25). On the spawn form only the system/next ESI/EDI swap, the
+// type object/colour A registers and the per-call mode read from the spilled definition remain. Also: the effect
+// looked up after the definition call (declared first) 121 (346 bytes); the node flag's tests swapped, sign bit first,
+// 92 (aligned 51, against 48 at 93).
+// MiniMax R (11-10): no new form, no lower score (93): the system pointer and the next index still take the
+// opposite registers from retail, and the frame is 0x4c against retail's 0x54.
+// Round 93 (m3 lane 10): no new form. Every remaining lever in this note runs through 0x175a80's body (its file is in
+// another lane's set this round) or changes the convention that matched caller 0x176f60 relies on (the mode read per call
+// passes the effect index in a register). The /Gd first-pass harness loads the system index into EBP, where the full
+// build passes it in EAX, so it cannot screen this convention either.
+// Round 105 (m3 lane 16, fast with 0x176f60): the particle-location cursor `location_index` declared first
+// (uninitialised, assigned where it was) 93 (same code); that with the mode read per call 108 (0x176f60 25, as the
+// listed per-call form). A compile-only `/Gd` first pass loads the system index into EBP and the effect index into
+// EDI, the opposite of both builds' conventions, so it cannot screen the per-call convention here. Levers left:
+// 0x175a80's register contract (src/unknown_173b90.cpp, an Avoid file this round), the per-call mode's LTCG
+// convention (breaks matched 0x176f60) and the system/next swap set by the matched 0x248c60 call's system argument.
+// M3 lane 3 r236 (fast with 0x176f60/0x178c80/0x178eb0/0x179020/0x178bc0/0x1794e0/0x1794a0/0x1792b0/0x179850/0x17ae50/0x176e40,
+// matched unless given): 0x175a80 is not the cause these notes name: its contract is the same in both builds (colour A ECX,
+// colour B EDI, system ESI, tint AL, multiplied pushed) and it saves no callee-saved register in either, so its body cannot
+// give the callers other registers. New: the system re-derived from g_510c74 for the colour call 117 (342 B, 0x176f60 25);
+// diagnostic, per-call mode with the system looked up first and the effect index read once through its address 121 (348 B,
+// both indices register arguments, 0x176f60 25). On the spawn cursor with a long cached mode: the cursor stored first, then
+// colour B, colour A, the mode 88 (colour A then spills to retail's home); the cursor, the mode, colour B, colour A 87 (best,
+// gain 6, not kept); that with the colours read inside the type-query block, const colours, const next index, the type
+// block's braces removed or the node test with `!= 0` 87 each (same code as the 87 form); the mode as a word 88 (on the 88
+// form 89); `multiplied` named 105 (346 B). Re-measured: spawn + per-call mode 109, spawn + long mode 89, both queries in the call's arguments 120 (325 B).
+// Left on the 87 form: system/colour B/type object in EDI/EBX/ESI against retail's ESI/EDI/EBX from the entry on, and the
+// mode cached where retail spills the definition (the per-call read makes both indices register arguments).
+// Permuter on the 87 form (fast, anneal, 600 s, 68 tries; 87 in the full image too): best 86 only with volatile reads of
+// the mode and colour A and the tint and colour B swapped in the colour call (wrong values); not used.
+// M3 lane 3 r238 (fast with 0x176f60/0x178bc0/0x178c80/0x178eb0/0x179020): re-measured the mode read per call 108 (0x176f60
+// 25: both indices register arguments, the system in EDI, the definition in EBX); no untried natural form found.
+// M3 lane 11 r97 (fast with 0x176f60, matched unless given): re-measured the spawn-record cursor with a long cached mode
+// (cursor, mode, colour B, colour A) 87 at 337 bytes; on it the loop step (particle-location lookup, 0x248c60, cursor
+// advance) as a forceinline helper taking system, spawn record, matrix and node flag 87 (same code), with the node flag
+// as its argument 87, with the mode read at each call 109 (338 bytes, 0x176f60 25); the whole `unknown0c` body as a
+// forceinline helper taking effect, system, definition and the location cursor 92. Both swapped pairs follow from one
+// choice: retail's system takes ESI at the entry (ESI and EDI are the 0x175a80 call's own registers for the system and
+// colour B) where ours gives ESI to the type object first; a helper around the loop does not split the system's range.
+// P479: Standard activity/cursor/node-sentinel/node-sign/location-presence predicates
+// 132/124/123/129/162; complete node conjunction/complementary disjunction and negative
+// query producers 113/138/112. NOT kept: all regress and lengthen; native frame,
+// definition spill and system/successor/color homes remain. Original full body restored.
+// Round 84 (m3 lane 2, fast with 0x176f60, matched unless given; this note's first line read 91, the baseline full check
+// measures 93): effect and particle system as `&((T *)pool->data)[index & 0xffff]` 93, the definition pointer const 93,
+// the location matrix as `transform4x3f const *` 93 (all same code); both colours read at the function top ahead of the
+// definition test 108 (0x176f60 25); the const definition with the mode read per call 108 (0x176f60 25).
+// M3 lane 5 r183 (fast with 0x176f60, matched unless given): mode read per call re-measured 108 (0x176f60 25); on the
+// spawn-record cursor with a long cached mode (cursor, mode, colour B, colour A; re-measured 87, 337 B): dead-local phase
+// scan n = 1..7 87 each (diagnostic, same code); the particle-location pointer declared at the loop body's top 87 (same
+// code); colour A read at the colour call 128 (317 B, 0x176f60 25); the node flag computed inside the cursor test 110
+// (325 B, 0x176f60 25); the matrix declared at the definition-test block's scope 87; the effect-location pointer
+// declared above the spawn record 87.
+// MiniMax G (11-14): no new form, no lower score (93): swapping the two DATUM statements gives 114 at 345 bytes; retail
+// keeps the system in ESI and its successor in EDI (ours the other way round), which is what puts colour B in the frame
+// slot and colour A in a register here while retail spills colour A to frame+0x0c and holds colour B in EDI, and
+// retail's 0x54 frame comes from the definition pointer it spills at frame+0x00 and reads the mode from on every call
+// of the location cursor, the per-call form in the lines above measuring 108; a 300 s permuter run (5 tries) stays at
+// 92 differing instructions.
+// M3 lane 15 r89 (fast with 0x176f60, matched throughout; control 93): the system's definition named and the type looked up
+// from it (0x174a30's spelling) 93; the matrix declared at the definition-test block's scope 93; both colour locals `dword const`
+// 93; the cached mode as a `long` 92 (337 B); that with the block's locals in the order colours, mode, particle cursor 92 (337 B).
+// MiniMax S (11-15): no new form, no lower score (93): retail's frame is 0x54 against our 0x4c, it keeps the particle system in
+// ESI and its successor in EDI where ours has them the other way round until the colour call, it spills colour A to a frame
+// home of its own instead of re-reading the effect, and it reads the location mode from the definition again for each call;
+// the form that reads the mode per call reaches retail's frame but flips the entry parameter placement.
+// M3 lane 5 r191 (fast with 0x176f60/0x178c80/0x178bc0, matched unless given): the definition bound by a const
+// reference to the 0x1751d0 result (`s_effect_particle_system_definition *const &definition = ...`; retail stores it
+// right after the call and reloads it for each mode read) with the mode read per call 108 (0x176f60 25: the reference
+// temporary is stored but the definition still takes EBX and the effect index becomes a register argument); the
+// reference with the cached mode 93 (same code); that with colour B read first 93; the reference on the spawn-record
+// cursor with the mode per call 109 (0x176f60 25); on the spawn-record cursor with a long cached mode and colour B
+// first 87 at 337 bytes (the listed 87 form; the reference changes nothing).
+// P589: Existing effect/system/successor/settings/matrix/query/tint/location bindings,
+// independently fixed on the simple-cursor graph: 93/93/93/93/93/93/93/93. NOT kept:
+// no native frame/residence recovery; original complete body, mode and callers retained.
+// MiniMax D (11-17): no new form, no lower score (93): retail's frame is 0x54 against our 0x4c, it keeps the particle system in
+// ESI and its successor in EDI where ours has them the other way round, it spills colour A to a frame home of its own with
+// colour B in EDI, and it re-reads the location mode from the spilled definition on every cursor call; the mode-per-call form
+// reaches retail's frame but flips the entry parameter placement (108), the two DATUM statements swapped give 114, and a 300 s
+// permuter run stays at 92.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3548,6 +4016,21 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // on the default-before-color scale, a shared point pointer 280, output-only 272, input-only 278, and the same
 // pointer at both render calls 280; direct copy construction 272; an explicit temporary copy 272. None preserves
 // position.y; both matched helper users and both callers stay matched. Opening body restored.
+// Round 155 (m3 lane 5, fast with callers, callees, 0x179fb0 and 0x17a380): copies through a `transform4x3f const &` to
+// the location matrix 74, with the house scale 270 (1519 B); position/forward/up declared apart and copied in position, up,
+// forward order 74, with the house scale 278; the lens flare limit as `continue` 74. Compile-only: the reference, the
+// separate copies and a cast copy of position keep y in place; only a by-name position.y (the listed read, or a
+// self-assignment) gives retail's copy: retail keeps the loaded x and y and scales into fresh registers, z in place.
+// Round 80 (m3 lane 1, fast with 0x179fb0, 0x17a380, 0x176bb0; aligned counts by difflib with addresses and frame
+// offsets masked: 8 for this body, 4 for the house scale form, which is the y copy alone): on the house scale form,
+// the mode as one ternary 270; the up copy after the colour and scale default 286; forward and up transformed from
+// the location matrix with copies in an else arm (as 0x179fb0) 357; a NULL-initialised location cursor 270; the
+// forward normal transformed before the point 298. Only 0x179880 transforms its point copy in place.
+// MiniMax I (11-08): the scale default is declared before the colour copy, which puts the scale default store
+// ahead of the colour-component store as retail does; with the scale block and the point transform's y copy
+// already in place the function now matches byte for byte.
+// score 0 (was 74): the scale block, the point transform's y copy and the colour-component store against the scale
+// default store now all agree with retail (MiniMax I, 11-08).
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
@@ -3572,14 +4055,17 @@ void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 				point3f position = location->matrix.position;
 				vector3f forward = location->matrix.forward;
 				vector3f up = location->matrix.up;
+				real scale = 1.0f;
 				color3f color = *(color3f *)&g_4686cc->red;
-				real scale = (part->a_scales & 0x20) ? effect->scale_a : 1.0f;
+				if (part->a_scales & 0x20)
+					scale = effect->scale_a;
 				if (part->b_scales & 0x20)
-					scale *= effect->scale_b;
+					scale = effect->scale_b * scale;
 				if (location->node_index != NONE)
 				{
 					transform4x3f matrix;
 					function_17aec0(location->node_index, effect, &matrix);
+					(void)position.y;
 					effect_matrix_transform_point(&matrix, &position, &position);
 					effect_matrix_transform_normal_179880(&matrix, &forward, &forward);
 					effect_matrix_transform_normal_179880(&matrix, &up, &up);

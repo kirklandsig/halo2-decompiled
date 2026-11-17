@@ -434,6 +434,85 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // Round 77 (lane 10, fast): the copy as `if (slot) memcpy else break` 20; a bool helper over the pointer
 // helper returning `slot != NULL` 20 (the bool threads into the NULL test); `&entries[count]; count++;` 20;
 // `list->entries + list->count++` 20; a count local with `count + 1` stored before the address 49.
+// Round 79 (fast): the pointer helper's result assigned in both arms 20 (same code); bool helpers preset true and
+// cleared when full 54 (654 bytes), assigned in both arms 54 (654), on `count < 4096` with the copy before `count++` 57
+// (656), over a count local with an index copy 51; compile-only, the bool helper with a named caller result, `== false`,
+// braces, a `goto next` arm, BOOL or swapped parameters all keep bool CL, count EAX, list EDX. A helper returning the
+// new count (0 when full) 52.
+// Round 175 (one-file LTCG harness with the caller's and callees' files; it reads 2 above the real count for the two
+// unresolved XDK calls; the numbers below have those 2 taken off): in the bool-append family one dummy global load/store right after the
+// append call makes every register outside the append block retail's, so that family's rotation is one step off there;
+// the append block itself stays bool CL / count EAX / list EDX (retail AL / ESI copied to EAX / ECX) in every spelling
+// with that probe (index copy, nested index helper, room and index helpers, count local, preset-false result, copy
+// before `count++`, slot pointer, member function). Without the probe: a non-inline bool append in saved_game_storage.cpp
+// that LTCG inlines, with an aggregate assignment 55 (656 bytes), with a false preset and `count < 4096` 52 (654), with an
+// early `return false` 52 (654); the pointer helper's body as such a cross-module function 20 (same code); a bool helper
+// taking the slot from `&entries[count++]` with memcpy 32, with an aggregate assignment 32. No existing function appends to
+// the location table. A `room` flag set in the found block and tested in the do/while condition 159 (668 bytes), with
+// an index copy and memcpy 175 (671): the flag lives in BL and a stack byte.
+// Round 106 (lane 9, fast; re-measures): the bool append helper (`bool result = count != 4096;`, index copy, `count =
+// index + 1`, memcpy) as an ordinary function in unknown_216b60.cpp that LTCG inlines, on the shared location table
+// type, 51; with `long index = table->count++;` 51; with the index read first and tested 51: the helper's file does
+// not matter. The path append and directory strip are 0x137320/0x1373c0, whose /Ob1 file keeps them out of line.
+// Round 174 (m3 lane 5): no untried natural form found. The only difference left is the append block (retail: bool AL,
+// list ECX, count ESI copied to EAX; the pointer helper gives the registers but no setne/test, every bool form rotates
+// them). A byte scan of retail finds this append sequence in no other function, and the matched functions with an
+// unfolded setcc/test (0x4b160, 0x3d2c0, 0x56b70...) get it from a bool assigned in a switch or tested twice, which does
+// not fit here.
+// Round 86 (m3 lane 13, fast): bool append helpers again, looking for a form that keeps the count out of the scratch
+// registers (retail holds it in ESI and copies it to EAX for the post-increment, as our build does for a count that
+// lives in a stack home): a room helper and an index helper (`return list->count++`) under a bool append 51; the result
+// preset false and assigned under an `if (entry)` that folds after inlining 32; a count local with `long index =
+// count++; list->count = count;` 51; the room helper taking the count by value under the bool append 32; success handed
+// back through a bool out-parameter 32; one success flag shared with the 0x1368f0 file test 32 (the webs split). All
+// keep list EDX, count EAX, bool CL. Diagnostic: a function-scope count used after the loop 211 (701 bytes): the count
+// then loads into ESI with a stack store, list EAX, index EDX, so a count the allocator treats as a variable with a
+// home gives retail's ESI; no natural form found that makes it one without the store.
+// Round 176 (m3 lane 6, fast; base fast 20), bool append helpers `add(list, &entry)` with `if (!add) break;`: result as
+// `!(count == 4096)` with memcpy into `entries[count++]` 32 (setne CL, count EAX, list EDX); `long index = count++;` and an
+// aggregate assignment 51; a slot pointer from `&entries[count++]` with an aggregate copy 32; `long index = count;` then
+// `count++;` and memcpy 51; the full test first with `result = false` / copy and `result = true` arms 54 (654 bytes,
+// the bool folds) (the last four repeat earlier rounds' forms); the result as `count != 4096 ? true : false` 32; a template
+// bounded-list type with a bool `add` member 151 (643 bytes), with the pointer `new_element` member 145 (651 bytes).
+// Permuter on this body (fast, anneal, 600 s): 84 tries, best 20. Pointer helper restored.
+// Round 101 (m3 lane 11, fast with the file's functions, unknown_216b60.cpp's and 0x215790, all others MATCH): a bool `add`
+// member of the list type defined in unknown_216b60.cpp (this-call, LTCG inlines it) with `result = count != 4096` and
+// memcpy into `entries[count++]` 32 (setne CL, count EAX, list EDX, the outside pairs rotated as every bool form); that
+// member in 0x216990's shape (false preset, `slot = count++`, aggregate copy, `result = true`) 54 (654 bytes, the bool
+// folds); the pointer helper with `index = count; count = index + 1; &entries[index]` 49 (lea for the new count, no
+// copy, 4 bytes short before the NULL test); a bool helper handing the slot back through a pointer out-parameter 32; a
+// `full = count == 4096` flag returned negated 32 (sete CL). Note: 0x216990 (src/unknown_215b40.cpp) appends to a table of
+// the same 0x40004-byte shape (count + 4096 records of 64 bytes) with the same `count != 0x1000` test. Pointer helper restored.
+// M3 lane 16 r121 (fast with 0x216400/0x216d70/0x216e50): bool append helpers: the entry passed by value with an aggregate
+// store 80 (677 bytes); the whole found block (type store, name lookup, append) in one bool helper 32 (bool CL, count EAX,
+// list EDX, outside pairs rotated, as every bool form); the helper's result in a named caller bool 32; 0x216990's shape
+// with its out-index (`*index = count - 1` after the copy, the caller's index unused) 54 (654 bytes, the bool folds), the
+// same with `result = count != 4096` 51. Retail 0x216990 shows the same `lea (count + 1); shl; store; lea dest` sequence
+// as this append. Pointer helper restored.
+// Round 166 (m3 lane 7, fast with 0x216400 0x216d70 0x216e50): the bool append re-measured 51; a dummy file-static update
+// (diagnostic) at function entry, the loop top, just before the append, the diagnostic arm's end, after XFindClose and after
+// the append on that form 215/171/63/44/46/59, the append block itself bool CL, count EAX, list EDX in every one (its
+// allocation is local to the block, not the outside rotation). The append written in the caller as `if (count == 4096)
+// break;` then memcpy into `entries[count++]` 54 (654 bytes), as `if (count != 4096) memcpy else break` 54; a generic bool
+// append over (count pointer, maximum, element base, element size, element) 51; a bool append taking the list and entry by
+// reference with an aggregate copy 57 (656 bytes); a bool append copying through the pointer helper 60 (668 bytes).
+// Round 111 (m3 lane 10, fast with 0x216400/0x216d70/0x216e50): the bool append re-measured 51 (list EDX, count EAX, setne CL);
+// with its result in a caller bool declared at the function's top 51; inline room (`return count != 4096`) and index (`return
+// count++`) helpers with the room flag tested for the copy and again for the break 51; a bool append over a count reference and
+// the entry array with memcpy into `entries[count++]` 32 (setne CL, count EAX copied to ECX for the shift), the same with `long
+// index = count++` 51, with an aggregate assignment 57 (656 bytes). Every bool form keeps list EDX / count EAX / bool CL.
+// Round 189 (m3 lane 5, fast with 0x216400/0x216d70/0x216e50): a bool add helper in the shape of the header's location
+// iterator get (false preset, `count < 4096`, aggregate copy into `entries[count++]`) 62 (651 bytes); a helper returning
+// the reserved index or NONE, the caller breaking on NONE then copying, 47 (662 bytes: retail's `lea edx, [eax + 1]`
+// store, but the NONE test stays, count EAX, no setne), the copy in the found arm and the break in the else 47 (same
+// code); a bool reserve helper with a count local, `result = count != 4096` and the index handed out through a pointer
+// 51 (setne CL, list EDX, count EAX); the same reading the field twice with `*index = count++` 51. Pointer helper restored.
+// Round 171 (m3 lane 7, fast with 0x216400/0x216d70/0x217590/0x216e50): a room bool preset false and set under `if (type !=
+// NONE)` 55 (664 bytes, the type guard does not fold); a count local with the copy before `count + 1` is stored 59 (654, the count
+// stays EAX across the copy); the room test as an end-pointer compare (`slot == &entries[4096]`) 50; inline has-room and get-entry
+// accessors with `long index = count++` 54 (654: the bool folds, the tail after it is retail's, list ECX, `lea edx, [eax + 1]`).
+// Diagnostics: a room bool under an always-true test of the find handle 32 (the guard folds late and setne/test appear,
+// but bool CL, count EAX, list EDX), the same on the accessor form 51: a materialized bool is coloured after the count and the list.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

@@ -74,9 +74,9 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
-// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
+// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // Earlier: BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
 // in EBX, ours pushes it; that tail is about 42 of the 47 lines and the extra byte, the later calls shifting
 // by one instruction) and the restore block's schedule: retail reloads the table field before the entry
@@ -244,6 +244,65 @@ PRIVATE inline byte const *material_parameters(long tag)
 // loads right after the entry lea); that with `second + (packed & 0x1ff)` 5; that with the chain lookup folded into
 // the pass expression 5; the reference form with the swapped sum 5 (+0x19e); the tables field bound through a
 // reference with the direct entry store 6. Original body restored.
+// Round 96 (m3 lane 16, fast control 5; earlier forms re-measured and combined, no new form found): direct entry
+// store with the word read back from the field 5 (`second` loads right after the entry lea, retail after the two
+// table loads); combined with the pass through a reference 5, with the chain index read from the published entry 5;
+// the reference form with the pass through a reference 5, with `third + (next & 0x1ff)` 5. Diagnostic (not kept):
+// `second` read once through its address in the direct form, in the restore block or at the top, 5/5. Restored.
+// Round 64 (m3 lane 2, fast; control: the direct entry store with the word read back from the field 5, where the only
+// difference left is `second` loading right after the entry lea, retail after the two table loads): on the direct
+// form, the chain and pass bases named after the store and before `next` 5; `second` through a const reference bound
+// in the restore block 5; `(void)&second;` at the top 5 (diagnostic; the load still moves, so not an aliasing effect);
+// on the reference form, the tables field bound to a const reference for the 0xc/0x14/0x1c bases 5; tables and entry
+// both written through references, the later bases read through the tables reference 5. Original body restored.
+// Round 109 (m3 lane 16, fast control 5; the direct entry store gives 5 with only `second` loading right after the entry lea):
+// on the direct store, the entry word read from the assignment's value (an embedded assignment, diagnostic) 5 (direct-form code);
+// the chain base named before the store 174; chain and pass bases both named before it 183; the chain base from the `tables`
+// local with the pass base from the field 210 (974 bytes); the pass base from the local with the chain base from the field 210.
+// Round 93 (m3 lane 11, fast): the direct entry store re-measured 5 (only the `second` load differs: right after the entry
+// lea, retail after the two table loads); the chain lookup as word-pointer arithmetic (0x174d0's spelling) on the reference
+// form 5, on the direct form 5, in both blocks 5/5. Diagnostics (not kept): on the direct form `second` read through a
+// plain pointer to it 5; through a pointer kept in memory 304 (the convention changes).
+// Round 194 (m3 lane 4, fast; the reference form 5 at +0x19e, where only the tables-field reload follows the entry store; the
+// direct entry store 5 at +0x1a7, where the reload hoists as retail but `second` loads right after the entry lea): the four
+// index parameters `long const` 5 (same code); the direct store and its read as pointer-array elements of the state
+// (`((byte **)state)[5] = ((byte **)((byte **)state)[4])[1] + first * 10`) 5 (+0x1a7); the entry reference bound to
+// `((byte **)state)[5]` 5 (+0x19e); the direct store with both index sums operand-swapped together 5 (+0x1a7); the direct
+// store with long packed/next carriers in the restore block 5 (+0x1a7). Body unchanged.
+// Round 101 (m3 lane 11, fast with the file's 30 functions; the direct entry store with the word read back from the field,
+// 5 at +0x1a7, as the base: only `second` loads into ESI right after the entry lea, where retail loads it after the chain
+// and pass bases): the word read through a `word const *` 5; `third + (next & 0x1ff)` in the pass index 5; `10 * first`
+// for the entry 5; the tables published without the local reassignment 5; fresh block-scoped word locals for the restore
+// block's packed and next 5 (all five the same code as that base). Diagnostic (not kept): `second` read through a volatile
+// view of the parameter there still loads right after the lea, so its early load is the allocator's placement of the
+// ESI reload, not a scheduling move past the store. Body unchanged.
+// Round 183 (m3 lane 6, fast): the reference store with the packed word read back from the published field 293
+// (980 bytes); the direct entry store re-measured 5 (+0x1a7); on it a 600 s permuter run (57 tries) best 5, the pass
+// published directly and read back for the range 5 (+0x1a7), the table field re-read into `tables` after the entry
+// store for the chain and pass bases 5 (+0x1a7). Original reference body restored.
+// Round 90 (m3 lane 15, fast; the reference form 5 at +0x19e, the direct entry store 5 at +0x1a7 with only `second` loading
+// into ESI right after the entry lea): on the direct form, the four mask ORs written out (no loop) 163 (977 bytes); the restore
+// block's chain and pass indices through s_packed_shader_range::index() (0x17420's spelling, no packed/next locals) 5 (same code);
+// the function as a __stdcall member of a state type (state as `this`, the 0x1bbf0 call through a cast of g_485b48) 5 on either
+// entry form (same code), 178 / 176 with a `byte *state = (byte *)this;` copy; the tables published in a chained assignment 5;
+// the first block's two index sums written parameter first 5. Body unchanged.
+// Round 188 (m3 lane 5, fast; the reference form 5 at +0x19e, the direct store 5 at +0x1a7 with `second` loading into ESI
+// right after the entry lea): the entry reference typed `word *&` with the packed word read through it 5 (+0x19e, same code);
+// the tables and entry fields written through one two-field `byte **` view of the state 178 (+0x148); the direct store with
+// the chain index named where it is computed 5 (+0x1a7); the entry reference bound at function scope 5 (+0x19e, same code);
+// the direct store written `first * 10 + base` 5 (+0x1a7). Body unchanged.
+// Round 102 (m3 lane 14, fast, control 5): the restore block's entry from the `tables` local through a chained store
+// into the existing entry local 210 (974 B); the entry stored directly from the `tables` local and read back from its
+// field 210; the four restore fields through a `byte **` view of the state 289 (977 B); the parameters store chained
+// with the lookup 5; the tables store chained with its read 5 (same code).
+// Round 192 (m3 lane 5, fast with 0x16f60-0x1b0a0, control 5 at +0x19e): the direct entry store re-measured 5 (+0x1a7, `second`
+// into ESI right after the entry lea); the direct store with the packed word read back through a `byte *const &` bound after it 292
+// (979 B) or through `**(word *const *)(state + 0x14)` on the reference form 293 (980 B); `state` read through its address
+// (`byte *const *state_reference = &state;`) for the restore block's publications on the direct or the reference form 296/296 (983 B);
+// `third` read through its address on the direct form 5 (same code); the chain lookup folded into the pass expression on the
+// reference form 5 (same code); a named chain index 5 (same code); `different_tag || changed` re-measured 7; `first` read through
+// its address on the direct form 5 (same code); round 64's tables reference re-measured with a non-const binding 5 (same code).
+// Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1039,13 +1098,43 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
     }
 }
 
-// MiniMax D (11-06, run 49): no new form, no lower score (2); cases 12 and 13 still share one tail that stores out[3] before out[2], retail stores out[2] before out[3].
-// score 2 (was 0): cases 12 and 13 share one tail; ours stores out[3] before out[2], retail stores
+// score 2 (was 2): cases 12 and 13 share one tail; ours stores out[3] before out[2], retail stores
 // out[2] before out[3]. A `real *zero = out + 1` copy in cases 14/18 makes this match exactly, but
-// it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match.
+// it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match (this
+// header read 2, was 0, before the stacked notes below were merged into it).
+// MiniMax D (11-09): no new form, no lower score (2); the tail shared by cases 12 and 13 still stores out[3] before out[2] where retail stores out[2] before out[3], and every spelling that asks for out[2] first makes the compiler order that pair descending in cases 10 and 14/18 as well (6); a `real *zero = out + 2` copy in cases 12 and 13 matches this function byte for byte, but it hides its write summary from LTCG and drops the matched 0x19ca0 to 130, so the direct stores stay.
+// MiniMax D (11-06, run 49): no new form, no lower score (2); cases 12 and 13 still share one tail that stores out[3] before out[2], retail stores out[2] before out[3].
+// MiniMax B (11-06, run 42): no new form and no lower score (2); retail stores out[2] before out[3] in the tail that
+// cases 12 and 13 share, ours stores out[3] first; reversing the chain in either case scores 6.
 // M404: direct-output zero propagation in pair/width/height/pair-width/
 // pair-height/width-height/all/all-plus-zero families: 6/2/2/6/6/2/6/6.
 // Original stores and complete body restored; shared pair-zero scheduling remains.
+// Round 81 (m3 lane 10, fast with 0x19be0/0x19ca0, both kept): the 12/13 zeros as separate
+// statements 6; case 13 falling into case 12 2 (same code), with case 12's chain reversed 6; case
+// 20's chain in plain order `out[0] = out[1] = out[2] = out[3]` 2 (same code); every zero case as
+// separate ascending statements 6; `case 14: case 18:` and `case 15: case 19:` labels 32 (retail
+// places those blocks at 18/19's positions); the 14/18 chain as `out[1] = out[2] = out[3]` 4, as
+// separate statements 2 (same code), that with the 12/13 chains reversed 6. Any change to the 12/13
+// pair's order flips cases 10 and 14 to +0xc first as well, while the shared tail stays +0xc first.
+// MiniMax C (11-09), earlier: the shared tail's zero pair is out[3] before out[2] in every
+// spelling; writing the second zero through a pointer expression (`out[2] = 0.0f; *(out + 3) =
+// 0.0f;`) scores 6, because the independent stores also reorder cases 10 and 14/18 into
+// descending pairs. Original body restored.
+// MiniMax C (11-09), earlier: the tail that cases 12 and 13 share still stores out[3]
+// before out[2], retail stores out[2] first. Reversing the zero chain in both cases and writing
+// the two zeros as separate statements each score 6, and each flips the store order in cases
+// 10 and 14/18 with them; the pointer copy that matches exactly hides the write summary and
+// costs 0x19ca0 its match, so it stays rejected.
+// MiniMax C (11-09), earlier: the shared tail's pair is out[3] before out[2] in every
+// spelling: the chain in either direction, two separate statements and a chain with a repeated
+// target all compile to the same descending pair and score 6, because they also flip the store
+// order in cases 10 and 14/18; putting the zeros ahead of the width and height stores in case 13
+// rebuilds the whole switch (97). Original body restored.
+// MiniMax S (11-10): no new form, no lower score (2): the shared case 12/13 tail still stores out[3] before out[2] where retail stores out[2] first; a descending pair of statements (out[3] then out[2]) scores 2, the chain in either direction, an ascending pair of statements, a pair that reads the first zero back and a local zero score 6, and the pointer form that matches byte for byte costs 0x19ca0 its match (0x19ca0 then scores 130), so the body stays as it is.
+// MiniMax R (11-10): no new form, no lower score (2): the shared tail's zero pair is out[3] before out[2] in every spelling tried (the chain in either direction, two separate statements, a repeated target: 6 each); a reference to the array in the tail also scores 6, and the pointer form that matches 0x1b2c0 byte for byte costs 0x19ca0 its match (130), so it stays rejected.
+// New: existing clamp helper 257; standard fill in pair/width/zero-only/
+// height ranges 94/68/119/68; pair plus width 97; all ranges 137;
+// standard color copy 141. NOT kept: all regress; range forms also lose a caller.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

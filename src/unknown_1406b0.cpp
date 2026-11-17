@@ -833,6 +833,75 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // existing data_find_index scan 14, over a scan with the bit test either way round 14/14 (diagnostics, the
 // scan's shape is not the tie); the flags set field by field 71; the iterator and prediction declared ahead
 // of the flags 14; one exit with `result = true` first, a break and allocation only when not found 73 (187).
+// Round 95 (m3 lane 16, fast): the font read as `.field_0` at all three uses 14; the character compared first 17; the search
+// pointer declared in the while condition 14; a const search pointer with a separate pointer for the new prediction 14; the
+// datum-iterator form of matched 0x1406b0 (prediction from `iterator.datum`) 14; a `predictions` pool local for the iterator and
+// the allocation 14; the iterator in its own block 14; `return true` in an explicit else 14. Diagnostics: the header call's font read through
+// its address 14; without the header call 87 (the mask still takes EBP: it is allocated after the parameter in every form).
+// Round 175 (one-file LTCG harness with 0x13eeb0's and 0x16b840's files, exact at 14): the flags as a `static const`
+// aggregate 15; the datum-iterator walk with the character compared first 17. Diagnostics: plain long parameters 86 (LTCG
+// passes the character in EBX, the font stays on the stack, the mask EBP); plain long parameters with the function's
+// address taken keep the declared convention: fastcall 76, `__stdcall` 14 (the font still EBX); a forced-inline copy of
+// the scan with the mask as `2 <<` or `0x80000000u >>` 14/14. So neither the convention nor the mask's constant decides
+// it: the allocator colours the font before the mask, retail the mask first (bits ESI and count EDI in both).
+// Round 175: the iterator as an aggregate initializer `{ g_54d578, NONE, NONE }` 14; the allocation inside a `for (;;)`
+// search when the walk ends, `break` on a match, 14 (harness); a 600 s permuter run (75 tries) none below 14.
+// Round 106 (lane 9, fast): the search test in the while condition with an empty body and the allocation under
+// `if (!prediction)` 14; a font mismatch `continue` before the character test 14; the header result in a pointer
+// local with one `return header != NULL;` exit 79. Retail's matched scans that keep a stack parameter across the
+// loop (0x13d950, 0x1ff7d0, 0x204b20, 0x23f260) also give it EBP and the mask EBX; ours gives the parameter EBX.
+// No untried natural form is left in this note; the caller's declaration sits in another lane's file this round.
+// Round 157 (m3 lane 8, fast; the caller's file was open this round): the wrapper's field and conversion as `dword` 14
+// (same code); the iterator declared and initialised ahead of the header call 84 (202 bytes: the pool is held across the
+// call). Only called from 0x13eeb0 (no address taken in retail), yet its parameters stay on the stack. Caller-side forms
+// cannot reach the callee's colouring: the listed plain-long, `__stdcall`, by-value key and wrapper forms cover them.
+// Round 78 (m3 lane 15, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each): a non-null `__assume` on
+// iterator.data after it is set 14; `__assume(font_index.field_0 != NONE)` at the top 14, the same on the character 14;
+// `__assume(prediction != NULL)` on the new prediction 14 (all the same code); the same assume at the top of the loop
+// body 58 (195 bytes). Reading: retail 0x140900 saves EBX itself, so no callee convention keeps the font out of EBX;
+// in matched 0x13d950 the mask's EBX is the iterator index's own register, free during the scan, which this
+// function's index (EAX throughout) does not offer.
+// Round 177 (m3 lane 6; one-file LTCG harness with unknown_13e8a0.cpp and unknown_16b570.cpp, exact at 14): the existing
+// out-of-line iterator step (0x16bb70) 71 (it stays a call); the header's calling iterator copy 70 (0x16bc00 out of line); the
+// key wrapper's conversion returning `long const &` 14 (diagnostic, header restored); the match test as two mismatch
+// `continue`s 14; a local key aggregate for the call, the test and the stores 14 (the 14s are the same code).
+// Round 106 (m3 lane 1, fast): `register` on the font parameter does not build (the checker's generated cast); the
+// whole body in a forced-inline helper with plain long parameters 14; the datum-iterator walk with the prediction read
+// in the body 14; a long return 20 (189 bytes; the font still EBX). Diagnostics: the iterator as a scalar index over
+// data_next_absolute_index_inlined 88 (203 bytes); `iterator.index = NONE` ahead of the header call 60 (191 bytes: the
+// index takes ESI across the call, the font EBX, the mask EBP); without the search loop 173, where the font takes ESI
+// and the character EDI. Reading: the hoisted bitmap pointer and count are coloured first (ESI, EDI), then the font
+// (EBX), the mask last (EBP); retail colours the mask before the font, as if its mask were a cross-block value.
+// Round 108 (m3 lane 1, fast with 0x13eeb0, which matched in each): the new prediction through a typed pool accessor
+// macro 14; a long copy of the font declared in the not-found branch for the test and the store 14, copies of both
+// parameters there 14; the wrapper type made non-POD by an empty inline destructor (diagnostic, header restored) 14;
+// the search as a do/while that stops on a match, then `if (prediction) return false;` 14 (all the same code). Retail
+// 0x13d950 for comparison: its pointer parameter takes EBP at entry and the mask EBX (shared with the iterator index).
+// Round 107 (m3 lane 11, fast with 0x13eeb0, which matched in each), combinations of single forms listed above:
+// 0x13d950's iterator start (datum index NONE too) with the character compared first 17; that start with the character
+// stored first 15; a separate created pointer storing the character first 15; the iterator and prediction declared
+// at function scope with that start 14 (same code); `break` on a match then `if (prediction) return false;` 14 (same
+// code). The mask still takes EBP and the font EBX.
+// Round 187 (m3 lane 6, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each). Diagnostics with the scan
+// written out in the body (no inline helper, so not keepable without a match): plain 14; with a function-scope mask
+// local declared first 14; with the bitmap and count read into locals before the inner loop 16; with `long` font
+// copies at the compare and the store 14 (the inlined helper's loop depth is not what colours the font first). A
+// `long const &` to the font's field used for the header call, the compare and the store 14. The font takes EBX
+// and the mask EBP in every form.
+// Round 132 (m3 lane 12, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each): an early `return true`
+// when the header exists, the search at function level 72 (the returns laid out first, same registers); matched
+// 0x23f260's scan shape (a private early-return scan and a forced-inline step over a cursor local, the stack parameter
+// EBP and the mask EBX there) 14, with the mask as a named local under two names sorting either side of the font's
+// 14/14 (register ties do not follow names); a found flag with `break` and the allocation under `if (!found)` 14;
+// the prediction's two fields read into named locals before the compare 14. All the same code as the body.
+// Round 178 (m3 lane 8, fast with 0x13eeb0, which matched in each), the scan written out in a private forced-inline step
+// (diagnostics, not keepable without a match): a guard `index >= 0 && index < high_water` around it 14 (same code); a
+// second `0 < high_water` guard 61 (187 bytes); the count in a local 14; a while loop 14; the mask in two steps 14. The
+// mask bound by reference (`long &bit = mask; bit = 1; bit <<= index & 0x1f;`) 9: the font then takes EBP as in retail,
+// but the mask jumps to ESI ahead of the bitmap (EDI) and count (EBX), and the character is loaded into ESI for its
+// compare; the same initialised then bound 9, at helper scope 9, under a guard 9, as a guarded do/while 9, named so it
+// sorts first or last 9/9; with the count and bitmap also bound by reference 10, either alone 9/10; the bitmap word
+// bound 75 (199 bytes); the index bound 14. Retail's own 0x16bc00 gives count EDI, bitmap ESI, mask EBX.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

@@ -40,7 +40,12 @@ public:
 // a segment starting inside the box misses; otherwise the faces are taken
 // first on the positive side, then on the negative side, each one the start
 // lies outside of moving the entry and each other one moving the exit
-// score 73 (was 141): retail walks the three axes by their byte offset, so the
+// score 42 (was 73): the axis loop counts one byte offset (8, 4, 0) that every access uses, and
+// steps it in both paths (after an axis that is not crossed, and at the end of the body), which
+// keeps it the only counter; the limit is read once per axis and the leaving test is
+// `!(leave < fraction)`; `leave` is declared last. Left: retail fuses the step with the sign test
+// (`sub ecx, 4; jns`), ours tests again, two bytes longer.
+// Before, 73 (was 141): retail walks the three axes by their byte offset, so the
 // offset is the loop's one counter and every access is a plain displacement;
 // ours still derives the axis from the offset and scales it, and our four
 // masks and the frame's slots for the normal and the negated extents sit in
@@ -70,35 +75,36 @@ answer_2fe550 box_2fe550::function_2fe550(segment_2fe550 const *segment, hit_2fe
 	{
 		return answer_2fe550(false);
 	}
+	__m128 normal;
 	int const axis_bits[3] = {1, 2, 4};
 	float enter = 0.0f;
-	float leave = hit->fraction;
-	__m128 normal;
 	float side = 1.0f;
 	int crossed = end_above | start_above;
 	int outside = start_above;
+	float leave = hit->fraction;
 	for (int pass = 1; pass >= 0; pass--)
 	{
-		for (int offset = 8; offset >= 0; offset -= 4)
+		for (int offset = 8; offset >= 0;)
 		{
-			int const axis = offset >> 2;
-			if ((crossed & axis_bits[axis]) == 0)
+			if ((crossed & *(int const *)((char const *)&axis_bits + offset)) == 0)
 			{
+				offset -= 4;
 				continue;
 			}
-			float const start_distance = side * segment->start.m128_f32[axis] + negative_extents.m128_f32[axis];
-			float const end_distance = side * segment->end.m128_f32[axis] + negative_extents.m128_f32[axis];
+			float const limit = *(float const *)((char const *)&negative_extents + offset);
+			float const start_distance = side * *(float const *)((char const *)&segment->start + offset) + limit;
+			float const end_distance = side * *(float const *)((char const *)&segment->end + offset) + limit;
 			float const fraction = start_distance / (start_distance - end_distance);
-			if ((outside & axis_bits[axis]) != 0)
+			if ((outside & *(int const *)((char const *)&axis_bits + offset)) != 0)
 			{
 				if (fraction >= enter)
 				{
 					enter = fraction;
 					normal = _mm_setzero_ps();
-					normal.m128_f32[axis] = side;
+					*(float *)((char *)&normal + offset) = side;
 				}
 			}
-			else if (fraction <= leave)
+			else if (!(leave < fraction))
 			{
 				leave = fraction;
 			}
@@ -106,6 +112,7 @@ answer_2fe550 box_2fe550::function_2fe550(segment_2fe550 const *segment, hit_2fe
 			{
 				return answer_2fe550(false);
 			}
+			offset -= 4;
 		}
 		side = -1.0f;
 		crossed = end_below | start_below;

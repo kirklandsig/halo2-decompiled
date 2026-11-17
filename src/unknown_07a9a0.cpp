@@ -965,11 +965,15 @@ bool function_1934f0(s_surface_description *variant);
 long function_1931a0(long count, s_surface_description *variant);
 long function_193250(s_surface_description *variant);
 long function_1932c0(s_surface_description *variant);
+long function_193300(s_surface_description *variant);
 long network_session_get_maximum_players(c_class_58d20 *session);
 bool balance_teams_by_count(long player_count, const long *parties, long team_count, long maximum_team_size,
 	bool flag_parties, long minimum, long maximum, bool use_parties, long *imbalance);
 bool balance_teams_can_add(long player_count, const long *parties, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long minimum, long maximum, bool use_parties, long maximum_imbalance);
+
+struct s_session_summary;
+long session_summary_get_machine_highest_value(s_session_summary *summary, long machine_index);
 
 struct s_ratings_summary
 {
@@ -993,18 +997,6 @@ struct s_matchmaking_ratings
 	dword add_mask, group_mask;
 };
 
-static inline long ratings_variant_capacity(s_surface_description *variant)
-{
-	switch (variant->type)
-	{
-	case 1: return variant->height;
-	case 2: return variant->height;
-	case 3: return variant->depth * variant->width;
-	case 4: return variant->depth * variant->width;
-	case 5: return variant->depth * variant->width;
-	default: __assume(0);
-	}
-}
 static inline long ratings_variant_teams(s_surface_description *variant)
 {
 	switch (variant->type)
@@ -1051,6 +1043,28 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax I (11-17): no new form, no lower score (964): re-measured the baseline; retail's session arrives in EAX
+// with a 0xb4 frame against our 0xd4, and that ingress is fixed by the callers in the other files, and the opening
+// 0x192e60 and the capacity test are inlined or called the other way round here (both callees in other files), so
+// the body stands.
+// MiniMax E (11-16): no new form, no lower score (964): retail's session arrives in eax with a 0xb4 frame against our 0xd4, and that convention is fixed by the caller in a file this lane may not edit.
+// MiniMax C (11-16): no new form, no lower score (766): retail takes the session in EAX and the output pointer on the
+// stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
+// out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
+// files.
+// score 964 (was 964): frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
+// inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
+// coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
+// it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
+// in EAX); 2684 bytes against retail's 2828, the top 0x192e60 still inlined and 0x631f0 still a call (retail the reverse).
+// Earlier 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
+// expanded here while retail calls the matched 0x192e60 out of line.
+// MiniMax H (11-12): no new form, no lower score (766): the frame is still 0xd4 against retail's 0xb4, the session still comes in on the stack where retail passes it in eax with the output pointer on the stack, and the opening lookup is still expanded here while retail calls the matched 0x192e60 out of line.
+// MiniMax S (11-11): no new form, no lower score (766): the frame is 0xd4 against retail's 0xb4, the session
+// comes in on the stack where retail passes it in EAX with the output pointer on the stack, and the opening
+// lookup is expanded here while retail calls the matched 0x192e60 out of line; the session's EAX home belongs
+// to the callers in other files.
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
 // w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
@@ -1058,7 +1072,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
 // scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
 // three-way type 5/4/other (no effect).
-// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// Earlier note (766, was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// Earlier 766 (was 766; round 103 unchanged): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
 // Earlier: Frame 0xd4/0xb4, stacked session and protected opening lookup expansion remain.
@@ -1277,6 +1292,204 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // the shared tail where retail has its own `result = false` epilogue); that with a long histogram 928 (2700 bytes, masked
 // 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
 // (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
+// Round 103 (m3 lane 9, fast): the player value through a call to 0x63220 1097 (2524 bytes: 0x63220 stays a call, the top
+// 0x192e60 lookup still inlines, and the session then arrives in EAX with `ret 4`, so 0x73530 matches); with an `inline`
+// declaration of 0x63220 in this file 1097; a file-local inline helper of 0x63220's shape 1097 (it stays a call too, and still
+// does with the body cut after the player loop);
+// a `__forceinline` declaration before 0x63220's definition (diagnostic) 1032 (2588: 0x63220 inlines but its own
+// 0x192e60/0x631f0/0x1931a0 calls stay out of line, and 0x6e910 then inlines it, 0 -> 155); the loop's availability test through
+// the matched 0x193f50 857 (2804, it stays a call); both early exits as `result = false; return result;` 766 (same code).
+// MiniMax I (11-10): no new form, no lower score; retail's party histogram is 16 dwords at frame+0x44, cleared twice with `rep stosd` and indexed as `mov ebx,[esp + eax*4 + 0x40]` with the count-1 folded into the displacement, so our word cells and the 0xd4 frame stay (the dword cells reach retail's 0xb4 frame but score 844), and the session ingress and the inlined lookup remain the only differences.
+// Round 103 (m3 lane 16, fast with 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0 and 0x1931a0 matched): the admission
+// test with `!variant` first 766, with `!summary || !variant` first 766, with the capacity compares written capacity-last 766, with
+// `capacity < summary->player_count` 766 (all four the same code); the type-5 machine scan ending in `break` once a match clears
+// the result 893 (2764 bytes). The top 0x192e60 call's inline choice is the cause; it stays a flags lead (this file is /arch:SSE).
+// Round 66 (m3 lane 2, fast; 0x6fa60, 0x63220 and 0x192e60 stay matched, 0x71730 426 throughout): retail makes seven calls here
+// (0x192e60 at the top, 0x1931a0, 0x193250, 0x1932c0, 0x1934f0, 0x91e30, 0x91f00) and inlines everything else, the
+// matched ratings accessors, the capacity switch and 0x63220 included. In retail the matched 0x66050 also keeps 0x192e60 out
+// of line at an entry-block site (after another call), and 0x705f0 at a guarded one; the matched 0x6fa60 drops its call to
+// this function in both builds (result and output unused); retail's 0x73530 pushes the output before setting EAX to the
+// session (no reorder evidence); retail keeps the type-5 machine flag as this body does. On 766: the player value through
+// the existing 0x63220 and every other helper through its matched accessor (0x193300, 0x193440, 0x1933d0, 0x1933a0,
+// 0x1934d0, 0x193400, 0x1934b0, 0x193470) 1127 (2492 bytes); the same with this file's capacity helper kept 1127; that
+// with the capacity labels grouped 1101 (2524 bytes); the accessors without 0x63220 and the capacity helper kept 904 (2744);
+// that with grouped labels 851 (2808 bytes). Re-measures: the 0x63220 call alone 1097 (2524 bytes, 0x73530 matches); the
+// accessors alone 904. Diagnostic, not kept: `#pragma inline_depth(255)` with the 0x63220 call 1097 (no change), so inline
+// depth does not keep 0x63220 out of line. Blockers left: the link's inline choices, and 0x63220 staying a call here.
+// Round 226 (m3 lane 3, fast, control 766, 0x73530 8): the player loop written as 0x63220's body with its calls (0x192e60 for
+// the variant, 0x631f0 for the group's highest rating, a two-evaluation max of 0x1931a0) 1032 at 2588 B: 0x73530 matches (the
+// top 0x192e60 call stays out of line), but none of the four loop calls inline (retail inlines 0x192e60, 0x631f0 and the first
+// 0x1931a0 there); with a forceinline redeclaration of 0x631f0 here 1032 (no effect); with the capacity helper forceinline 998
+// (2656 B, the top call inlines again, 0x73530 8); with forceinline redeclarations of 0x192e60 and 0x1931a0 as well 998.
+// Round 69 (m3 lane 15, fast): the capacity helper with grouped case labels and external `inline` linkage together 876
+// (2852 B, 0x73530 8: the switch inlines as a table, the top call still inlines). Our link inlines only the first direct
+// 0x192e60 site here, and retail's one inlined copy is inside the inlined 0x63220, which fits one inlined copy of a callee
+// per caller; 0x63220 never inlines in this link, so that cannot be tested from this function. No natural no-code test
+// fits the top call: retail calls 0x192e60(-1) on the invalid-state path with no compare. Retail's out-of-line 0x63220
+// itself calls 0x192e60, and so do matched 0x741f0, 0x73ca0, 0x596d0 and 0x19a0c5, all from files built without /arch:SSE
+// (or /O1, /Ob1), so retail inlines 0x192e60 only inside the copy of 0x63220 it inlines here. This function's retail
+// code has no float instruction, so its build's /arch cannot be read from it. Lead for the flags owner (not tried): this
+// file is /arch:SSE like 0x192e60's, 0x63220's file is not; a non-SSE build of this body may keep the top call out of line
+// as 0x741f0's does and let 0x63220 inline.
+// Round 91 (m3 lane 1, fast with 0x72db0, 0x71730 and 0x192e60): the top lookup through a file-local inline wrapper of
+// 0x192e60 766 (the wrapper and 0x192e60 both inline: call depth is not what keeps retail's call out of line); with the
+// capacity helper's case labels grouped (re-measured 876, 2852 bytes, the switch then inlines as retail's table), the top
+// lookup after the capacity read 850 (2836), after the summary read 869 (2844), that after-capacity form with the loop's
+// variant through 0x192e60 844 (2788: the top call inlines and the loop call stays out of line, retail's reverse), and
+// (diagnostic, not keepable) an `__assume` on the index ahead of the lookup 876 (no effect on the inline choice); this
+// function with its helpers and records moved up to just after the identity records, ahead of 0x7ed20, 766 (same code,
+// the file's 21 other functions unchanged). Body restored.
+// m3 lane 2 r70: no new form run. The register-masked aligned diff (142 blocks, masked 348) is the session's stack ingress, the
+// capacity switch kept as a call (retail inlines it as a jump table) and the register homes that follow; every natural spelling
+// of the top lookup, the player loop, 0x63220 and the capacity helper is listed above. Retail inlines 0x192e60 here only inside
+// its inlined copy of 0x63220, whose file (network_session_membership.cpp) is not /arch:SSE, while this file is; every file that
+// keeps a 0x192e60 call out of line in retail (0x741f0, 0x66050, 0x705f0) is non-SSE too. BLOCKED on build flags (the user's
+// decision; not tried, no flags diagnostic run).
+// Then five local forms (fast, control 766, aligned 750, masked 348): this file's party minimum/maximum/spread copies written as
+// the matched accessors 0x1933d0/0x1933a0 are (`long result = 0;` then if/else-if, one return) 820 at 2792 bytes (aligned 601,
+// masked 343: every inlined copy now has retail's `xor` first and `cmp byte [ebp+0x604], 0`); with the teams and imbalance
+// copies as the accessors' switch-with-result form too 908 (2744, masked 494); that with `long histogram[16]` 903 (2712); the
+// switch forms alone 903 (2764); the party forms with `long histogram[16]` 830 (2760 bytes, masked 313, frame 0xb4 as retail;
+// first difference +0x7). 0x73530 stays 8 and every matched caller and callee stays matched in all five.
+// M3 lane 12 r114 (fast with the file's 22 functions, 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0 and 0x1931a0, control
+// 766 [masked aligned 486, register-masked 267]): `excess` as a zero default raised by an if 778 (2812 B); the rated-count tail
+// with the division arm first 774 [491, 272]; the add loop's minimum as a 1 default replaced by an if 774 (2816 B); the imbalance
+// zeroed before the team block instead of in its else 779 (2812 B) [555, 351]; the inner add-mask test without its `type == 3 ||`
+// (never true inside `type == 2 || type == 4`) 902 (2764 B: the smaller body moves the link's inline choices, so the test stays).
+// Re-measured: the type-5 machine scan returning false from inside the loop 893 (2764 B, the listed `break` form's numbers).
+// m3 lane 3 r233 (fast, control 766 = full; register-masked aligned 343). Diagnostic (compiler setting, reverted at once):
+// this file without /arch:SSE plus the player loop through a call to 0x63220 1097 at 2524 bytes, the same as with /arch:SSE:
+// 0x63220 still stays a call, so the SSE mismatch between this file and 0x63220's is not what keeps it out of line (lane 14
+// r55 already found /arch:SSE on 0x63220's file changes nothing). Forms: the balance call's party flag passed as the
+// expression, no `use_parties` local, 858 (2812 B); the two identical team-type tests merged into one block 909 (2756 B);
+// the rated extrema as `if (rating > max) max = rating;` statements 818 (2812 B); the party spread and team tests joined
+// into one `||` test 907 (2764 B); `available` computed just ahead of its first use 821. Body unchanged.
+// m3 lane 16 r109 (fast, 0x73530 8 throughout unless noted): the write-only machine-id copy dropped 937 (2700 B); the capacity
+// test through the existing 0x193300 766 (same code), with a forceinline redeclaration 766; that with the top lookup after
+// the capacity read 942 (2732 B, 0x73530 1); 0x6fa60's ratings buffer without `__declspec(align(8))` 766. Body unchanged.
+// Round 76 (m3 lane 2, fast, control 766 / 0x73530 8; all restored): output cleared first 815; the top lookup inside the
+// `||` validity test 954 (2700 B; 0x73530 1, session in ECX); the loop's lookup through 0x192e60 at the loop body's top level
+// 930 (2716 B; 0x73530 matches: the inliner gives its one copy of 0x192e60 to the hotter loop site, so the top call stays out
+// of line as in retail, whose copy sits inside the inlined 0x63220); the variant index by an explicit state test 766; the
+// validity test split in two 766. Diagnostic (flags, not kept): this file without /arch:SSE 836, the top call still inlines.
+// m3 lane 14 r89 (fast with 0x73530, 8 throughout; control 766, aligned 750, masked 348): the party loop's `last = count;`
+// ahead of the `first == NONE` test 766 (one row differs; masked 350); `out->player_count` stored ahead of the three NONE
+// defaults 851 (2804 B); the player loop's second-rating copy ahead of the first 766 (masked 353); the group loop's
+// identity copy ahead of the three counter clears 766 (aligned 747, masked 340); the add loop leaving with `if (count >
+// available) break;` 766 (same code). The inline choices above stay the cause.
+// MiniMax A (11-13): no new form, no lower score (766): the first difference is still the stack ingress and the capacity switch, which retail expands as a jump table and this link keeps as a call, and the player loop, which retail inlines (0x63220 with its 0x192e60 call) and this link does not; the register homes follow from that choice.
+// Round 81 (m3 lane 15, fast with 0x73530, 0x63220, 0x192e60, 0x1934f0, 0x1931a0, 0x631f0, 0x6e910 and the accessors, all unchanged;
+// control 766, aligned 515). New cause: this link's inline choices follow each call site's static frequency, and every early exit
+// ahead of a site halves it. Measured on this body: a small same-file helper called from the player loop inlines only when nothing
+// in it would inline in turn (a trivial body, or one call to 0x1931d0 or 0x193250: 1109/1096/1098); with a four-test body, or one
+// call to 0x1931a0, 0x1932c0, 0x193300, 0x1933d0, 0x193440 or 0x1934d0, it stays a call (1097 each), and so does the real 0x63220
+// (1097; plain or `inline` same-file copy of its shape 1079, forced 1033 with its four calls left out of line). That helper called
+// ahead of the opening test inlines (948), after the player loop it does not (868). The opening test cut to n cheap early exits
+// (diagnostic): n = 0 or 1 inlines the real 0x63220 in the loop together with its 0x192e60, 0x631f0 and both 0x1931a0 (889/918),
+// n = 2 or 3 does not (1027/976); in the written-out body n <= 3 inlines 0x1931a0 and 0x193250 (958), n = 4, 5, 6 do not
+// (932/778/830). So retail's body cannot sit behind early returns, and retail's two failure exits do store false to the result
+// byte and reload it (0x7e2ea, 0x7ea9a): `result = false;` joined to the one `return result;`. Written so (the opening test and the
+// excess test set result = false, the type-5 scan under `result &&`, the rest under `if (result)`): 984 at 2948 bytes, 0x1931a0
+// and 0x193250 inline; with the player value through the real 0x63220 947 (2920): it inlines with all four nested callees; with
+// this file's copies replaced by the real 0x193300, 0x193440, 0x1933d0, 0x1933a0, 0x1934d0, 0x193400, 0x1934b0 and 0x193470, which
+// then inline too, 900 (2896 bytes, aligned 566). That form still inlines the top 0x192e60, the second 0x1931a0 and 0x193250 where
+// retail calls them, and calls 0x193300. The opening test split into `if (!summary || ... || !variant) result = false;` and
+// `if (result && (capacity > 0x193300 || capacity < 0x1932c0)) result = false;` inlines both lookups (1034, 2984 bytes); as an
+// else-if 900; with `!variant` moved to the second test 986. Diagnostic: the whole body under a constant-true test (every site
+// halved once more) with that split gives retail's call set but for 0x631f0 (called here, inlined in retail) and 0x193250 (inlined
+// here, called in retail): 843 at 2816 bytes, 0x73530 MATCH. Here 0x631f0 and the second 0x1931a0 always flip together, so one of
+// them weighs differently in retail. No budget effect: 16 extra accessor expansions change no other choice. On the early-return
+// body the loop lookup without its 0x1934f0 call 862, through 0x192e60 857, with no validity test 892; positive nesting or the
+// failure arm first for the opening test alone 815 each (the base's inline choices). Compiler-setting probe (reverted): the 900 form
+// without /arch:SSE 912, the same inline choices. Every form raises the score, so the body stays at 766;
+// build/r81/lead_7e210_rejsplit1.patch and build/r81/lead_7e210_w1split1.patch hold the 1034 and 843 forms.
+// P474: Standard player/machine/group identity copies forward 851/821/892;
+// backward 851/868/892; full-byte equality/mismatch 889/888. NOT kept:
+// regressions; frame/session/initial lookup remain. Original body restored.
+// P481: Direct failure completion to the sole result return, bool/byte/word/long,
+// original/entry true default: 785/785/808/808/801/825/803/826 (control 766).
+// NOT kept: frame/ingress/lookup still differ and extents regress; original
+// early returns, result, helpers and complete executable body restored.
+// P484: Actual player-summary maximum/minimum/total/count scalar reductions
+// 824/808/878/890; paired extrema 867, total/count 890, first three 865, all four 858.
+// NOT kept: native per-player publications require equality; frames/extent/ingress
+// still differ. Original field reductions, selectors, observations and full body restored.
+// M3 lane 13 r91 (fast with 0x73530 (8 throughout), 0x63220, 0x192e60 and 0x6e910, all unchanged; control 766): the capacity
+// helper's labels grouped with the loop's lookup through 0x192e60 at the loop body's top level 880 (2780 B: the capacity
+// switch inlines, but the top call inlines again and the loop call stays out of line); round 81's single-exit form (the
+// opening test and the excess test set `result = false`, the type-5 scan under `result &&`, the rest under `if (result)`)
+// with the player value through 0x63220 and grouped capacity labels 998 (2952 B: 0x63220 inlines with all four nested
+// callees, the top 0x192e60, both 0x1931a0 and 0x193250 inline too); the single-exit form with grouped labels and the
+// written-out loop 1016 (2984 B); the 998 form with the matched accessors 0x193440/0x1933d0/0x1933a0/0x1934d0/0x193400/
+// 0x1934b0/0x193470 for this file's copies (capacity kept as the grouped file helper) 956 (2928 B); that with the scan and
+// the body nested as `if (result) { scan; if (result) { body } }` 920 (2928 B: the second 0x1931a0 now stays a call as in
+// retail; the top 0x192e60 and 0x193250 still inline). Body unchanged.
+// M3 lane 3 r242 (fast with 0x73530, 8 throughout; base 766): the player loop bounded by the summary's player count 845 (2812
+// B); `result` declared after the validity exit 766 (same code); the group loop bounded by the summary's machine count 783;
+// `first` declared before `last` 766 (same code); `available` computed from out's player count after the out stores 879 (2764
+// B). Body unchanged.
+// M3 lane 1 r104 (fast with 0x73530, 8 throughout): the output memset below the admission test 815 (2812 B); the type-5
+// scan's exit as `return false;` 766, the machine-user compare as `memcmp(...) == 0` 766, the average as an explicit
+// division 766 (same code each); the player loop's variant lookup hoisted above the loop 846 (2796 B). Re-measured: a
+// `long` histogram 844 (frame 0xb4; the session still arrives on the stack in EBP).
+// P501: Loop-owned rejection in machine validation, group maximum, rated-player reduction, party count, group mask
+// and final admission, then complete graphs: 766/766/766/766/766/766/766/844. NOT kept: Seven graphs tie 766 and
+// leave the ingress/frame/lookup unchanged; complete native-width table regresses to 844 and shortens away from
+// retail. Every loop and table restored. Original complete executable body restored.
+// M3 lane 3 r245 (fast with 0x73530, 8 throughout; base 766, ours `ret 8`/frame 0xd4, retail session in EAX/`ret 4`/0xb4):
+// `result` declared first 766 (same code); the first histogram zeroing through memset 820 (2812 B); `spread`/`parties`
+// ahead of `last`/`first` 766 (same code); the excess exit as `result = false;` 789 (2844 B); `adjusted` started from
+// `rating` 811. Body unchanged.
+// M3 lane 14 r97 (fast with 0x73530, 0x192e60, 0x63220; control 766): the loop's variant through 0x192e60 after the rating
+// reads plus `long histogram[16]` 918 (2736 B; frame 0xb4 and the session in EAX as retail, 0x73530 matches, but the top call
+// still inlines and the loop call and capacity switch stay out of line); with the capacity switch forceinline 868 (2788 B,
+// 0x73530 8); with grouped capacity labels 888 (2768 B, 0x73530 8); the player value through 0x63220 plus the long histogram
+// 1141 (2476 B); the 0x192e60 call first in the loop body plus the long histogram 937 (2704 B, frame 0xb0). Body unchanged.
+// M3 lane 2 r86 (fast with 0x73530, 0x63220, 0x192e60, 0x1934f0, 0x1931a0; control 766, 0x73530 8), all with `long
+// histogram[16]` (frame 0xb4 as retail): the top lookup after the capacity read 874 (2772 B, 0x73530 1); that with the
+// loop's variant through 0x192e60 922 (2724 B, 0x73530 1); the top lookup after the summary read with the loop's variant
+// through 0x192e60 908 (2724 B); the validity test split in two with the loop's variant through 0x192e60 901 (2740 B);
+// the type-5 scan's early return dropped and the rest of the body under `if (result)` 862 (2788 B).
+// Round 123 (m3 lane 16, fast with 0x73530 (8 throughout), 0x63220, 0x192e60, 0x1934f0, 0x1931a0 and 0x6fa60, all unchanged):
+// the balance result as `if (!balance_teams_by_count(...)) result = false;` (retail's test/jne/store-al shape) 777 (2812 B);
+// round 81's single-exit form rebuilt as control 984 (2948 B: retail's two failure exits store false to the result's home
+// and reload it, a shared `return result;` duplicated into each exit); on it that conditional clear 981; plus the player value
+// through 0x63220 924 (2916 B: 0x63220 inlines here, the top 0x192e60 and 0x193250 still inline, the capacity switch stays a
+// call); plus grouped capacity labels 1001 (2952 B); the 924 form with `long histogram[16]` 901 (2888 B, frame 0xb4 as
+// retail). Re-measured: the opening test as one inline admission predicate 948 (2956 B, M370's form). Body unchanged.
+// MiniMax E (11-15): no new form, no lower score (766): retail's session arrives in EAX with a 0xb4 frame against our
+// 0xd4, and that convention is fixed by the caller in a file I may not edit.
+// m3 lane 5 r188 (fast with 0x73530, 0x192e60, 0x63220, 0x631f0, 0x6fa60, 0x1931a0, 0x1934f0, all matched throughout but
+// 0x73530; control 766, 0x73530 8): the write-only machine-id copy declared inside the group loop 766 (same code, frame
+// still 0xd4); the player loop's group-highest scan through the existing 0x631f0 (retail inlines it there) 964 at 2684
+// bytes, 0x73530 MATCH (the session arrives in EAX, but the top 0x192e60 still inlines and 0x631f0 stays a call; not kept:
+// a rise here; diff saved as build/r188/lead-0x73530-631f0-call.patch; applied by the coordinator 11-16, see the 964 line); that with `long histogram[16]` 984 (2640 bytes,
+// frame 0xb4, 0x73530 MATCH); that with the loop's variant through 0x192e60 1011 (2620 bytes, 0x73530 MATCH, the top call
+// still inlined); the player's group named before the written-out scan 766 (same code). Body unchanged.
+// m3 lane 8 r176 (fast with 0x73530, 0x192e60, 0x631f0, 0x193300, 0x1932c0; control 964): the capacity copy forceinline 866
+// (2800 B) but 0x73530 8 (the session on the stack, `ret 8`: the inlined top 0x192e60 takes EDI, so the session is reloaded
+// from its slot); with `long histogram[16]` 894; the single exit 984 (2948 B); forceinline with `result` first 866; with
+// the loop's variant through 0x192e60 957; all with 0x73530 at 8. Kept: the capacity test through the matched 0x193300 in
+// place of this file's copy of its body, 964 (same code). Lead: the top 0x192e60 out of line with the capacity switch inline.
+// M3 lane 7 r172 (fast with 0x71730/0x73530/0x6fa60/0x192e60/0x193300/0x631f0/0x63220; control 964, aligned 862; ours
+// already returns with `ret 4`, the session in EAX). Behaviour: retail's second 0x1931a0 call in the player loop takes the
+// group's highest rating (ECX, 0x7e4a9; it is 0x63220's MAX evaluating 0x1931a0(highest) twice), where this body passes
+// `lower`, the first evaluation's result; the two differ when lower <= field_51c[lower - 1] < highest. Passing `highest`
+// 966 (the extra `mov ecx, eax`: our called 0x631f0 returns the highest in EAX, retail's inline copy keeps it in ECX); the
+// clamp as `adjusted > f(highest) ? adjusted : f(highest)` 990 (2652 B, both calls out of line). Re-measured: `long
+// histogram[16]` 984 (2640 B, frame 0xb4). New: the top 0x192e60 after the summary and capacity reads 966 (0x73530 1).
+// LEAD (loses 0x73530, so not kept; build/r172/lead-0x7e210-t7.patch in the m3-lane7 worktree): the single exit (the
+// opening and excess tests set `result = false`, the rest under `if (result)`), the player value through the real 0x63220
+// and `long histogram[16]` 924 (2892 B, frame 0xb4; 0x63220 inlines with its nested 0x192e60/0x631f0/0x1931a0 as retail);
+// with the opening test split into an else-if 924 (same code); with the type-5 scan inside `if (result)` and the body under
+// a second `if (result)` 914 (2900 B, aligned 763). In all three the top 0x192e60 still inlines (its pointer takes EDI) and
+// `out` takes EBX, so the session goes to EBP and stays a stack argument: 0x73530 8, 0x71730 387 -> 402.
+// M3 lane 13 r104 (fast with 0x73530, 0x192e60, 0x631f0, 0x63220, 0x193300, 0x1932c0, 0x1931a0, all matched throughout;
+// control 964, both `ret 4`): the clamp as retail's two-evaluation max of 0x1931a0(highest) in place of the hand loop 990
+// (2652 B); that with the loop's variant through 0x192e60 1032 (2588 B); the clamp's call passing `highest` 966 (re-measured;
+// retail's ECX holds the group's highest rating at that call, so `lower` is a behaviour difference left for the reviewer);
+// that with the loop's variant through 0x192e60 1011 (2620 B: the loop's lookup stays a call and the top one still
+// inlines, the reverse of retail); the clamp as `adjusted > lower ? adjusted : 0x1931a0(highest)` 968.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1287,7 +1500,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 	bool result = true;
 	memset(out, 0, sizeof(*out));
 	if (!summary || summary->player_count > capacity || !variant ||
-		capacity > ratings_variant_capacity(variant) || capacity < function_1932c0(variant))
+		capacity > function_193300(variant) || capacity < function_1932c0(variant))
 		return false;
 	if (variant->type == 5)
 	{
@@ -1320,9 +1533,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				function_1934f0(&g_551ae8[variant_index])) rating_variant = &g_551ae8[variant_index];
 			if (variant_index)
 			{
-				long highest = NONE;
-				for (long j = 0; j < summary->player_count; j++)
-					if (summary->groups[j] == summary->groups[i] && highest <= summary->first[j]) highest = summary->first[j];
+				long highest = session_summary_get_machine_highest_value((s_session_summary *)summary, summary->groups[i]);
 				if (highest != NONE)
 				{
 					long lower = highest;

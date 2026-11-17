@@ -44,6 +44,11 @@ public:
 	long index;
 };
 
+// score 7: only the two find_child results are allocated differently. Retail
+// copies each into ebx before testing it; ours tests eax and copies into ebx
+// inside the taken branch (function_2b10a3 takes the model in ebx). Separate
+// const locals for the two results measured the same 7. Permuter: 128 tries in
+// 300 s (seed 999), no form below 7.
 // @retail 0x2cb350
 void c_screen_45d398::v3()
 {

@@ -427,6 +427,33 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // every difference is one scratch register on from retail (origin before pool data in the prologue, pool before
 // index in the loop, the reload and the sign extension), the round-robin pattern seen in 0x5c720, so the cause is
 // likely one allocation more or less before the prologue's actor block, not any one statement's form.
+// Round 160 (m3 lane 6, fast with 0x1e3b60 and 0x28f890): the actor pool's data as a typed actor array, the actor as
+// array + index 28 (same code); a pool pointer local with the data read at the actor computation 99; the record as a
+// typed perception element 28 (same code); the pool's data read before the NONE test 41 (hoisted to the entry); a named
+// sample pointer for the reset and the call 30.
+// Round 187 (m3 lane 4, fast with 0x1e3b60 and 0x28f890): the actor scale as a signed 0x888 in place of the size 28 (same
+// code); the averaging helper's factor by value 28 (same code); the next creature read ahead of the sum 80 (392 bytes);
+// the count increment ahead of the sum 38; the creature pointer started NULL and set in the `!flags134` arm 93.
+// Re-measured: the flag test written NULL arm first 33 (round 22's ternary form, same score); the origin pointer read
+// into a local at entry, ahead of the NONE test, 28 (same code as round 23's origin local ahead of the pool). No existing
+// helper does the sample reset (memset at 0x22c, three NONE stores, the call). Diagnostics (reverted): dead loads at
+// entry, in the arm, after the pool and after the copy 104-105 (397 bytes), the centre update cut 351, the reset cut
+// 144: the actor data keeps the pool's ECX and the origin EDX in every one, so the colouring is local to the prologue.
+// Round 175 (m3 lane 5, fast with 0x1e3b60 and 0x28f890): the statement order is already retail's. Retail's load order
+// follows from its registers: its origin shares ECX with the pool pointer, so that load cannot rise above the pool chain,
+// while ours sits in EDX and the scheduler lifts it to the front; in the loop retail's `lea edx` leaves ECX to the pool
+// chain, ours scales in place and the pool chain (EDX) is lifted above the index copy. Four register picks are left: the
+// pool data (EDX for our ECX), the lea, the object reload after the call (EDX for our EAX) and the count's sign extension
+// (in place in EAX for our ECX). Tried: the creature lookup as byte arithmetic on the pool data, the form matched 0x2403b0
+// has where retail's lookup is index-first, 28 (same code); the count read once into a short local for the averaging 30
+// (the x sum's operands swap); the creature loop on a local iterator record 30 (same swap); the centre update written in
+// the function body, no inline helper, 28 (same code); tools/permute.py with `--context 0x1e3b60 --context 0x28f890`
+// (its reduced image then scores 28 as the full one does): 147 tries in 1200 s, none below 28. Diagnostics (reverted):
+// one component copied 138 (the data still ECX, the origin EDX); a second use of the pool data 114 (it moves to ESI).
+// Round 253 (m3 lane 3, fast with 0x1e3b60 and 0x28f890): trivial inline accessors to shift the
+// scratch rotation: the actor index test through one 30, the origin pointer through one 28, the
+// pool data through one 28 (the prologue unchanged in each); the centre update as a member of the
+// record 60; the origin as a const reference passed to the copy 28.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

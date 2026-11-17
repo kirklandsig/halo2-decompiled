@@ -9,7 +9,7 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 4 (was 85): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// score 4 (was 4): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
 // the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
 // Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
@@ -192,6 +192,74 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 93 (m3 lane 16, fast): the scaled-direction pointer declared beside `facing` 4; a short component counter
 // 243 (960 bytes, not unrolled); local_3 and unit declared after the flag store 4; the degenerate arm first 4;
 // the scaled output written through the field without the pointer 21.
+// Round 69 (m3 lane 13, fast): each row as a sum then `-=` the offset in the loop 195 (1001 bytes); the rows before the
+// copy and the flag 56 (992 bytes); the rows read through real arrays over the three vectors 4; the copy after the flag 4;
+// the loop as `component <= 2` with the increment in the body 4; the rows written out by field 192 (1001 bytes: the
+// subss/faddp interleave is retail's, but the flag store sinks below the rows and the half and rows take other XMM
+// registers), with the scale first, 0.5f on the left, the flag after the rows or the rows k, j, i 192 each. Reading:
+// with the loop the flag store stays ahead of the rows' loads (an ordering edge that delays them a slot), with the rows
+// written out it has none and sinks; retail keeps it early without the delay. Also: each row written through a pointer
+// to its component 4; position read through a const reference declared before the loop 4.
+// Round 157 (m3 lane 6; LTCG harness of this file with its four callees' files, equal to the full listing for the first
+// 143 instructions): without the flag store the block's x87/SSE order is retail's; retail keeps the store at slot 31 and
+// still issues the second faddp after the first row's subss, so some other node differs. Square sum through
+// `local_2.n[]` 4; the flag through the record's lookup written again 142 (harness head; fast 237, 1006 bytes); a named half step per row 4;
+// the direction copy as a component loop 122 (harness head); squares accumulated in a component loop 44 (999 bytes,
+// fast); the flag ahead of the copy 4; rows through a per-row element pointer 4.
+// Lane 9 r99 (fast): the length declared at the top and assigned later 4; the reciprocal declared at the top 4; each
+// square sum term cast `(double)(real)(...)` 4; the half-step row without its parentheses 4; the component counter
+// declared at function scope 4 (all the same code).
+// Round 171 (m3 lane 6, fast): the flag store ahead of the facing pointer 4; each row's half-stepped position
+// named in the loop body 4; the length as `sqrt` of the float sum (float overload) 266 (1045 bytes, sqrtf called);
+// the component counter at function scope 4; the rows as a `while` loop 4.
+// Round 153 (m3 lane 7, fast): the degenerate test as `fabs(local_4) < 0.0001f` without casts 226 (1025 bytes, the float
+// overload is called), with the root's `(double)` cast dropped too 274 (1053 bytes); a separate `magnitude` for the root
+// and the test with the returned length assigned from it in the non-degenerate arm 4 (same code); the rows written out
+// through three `real const *` component pointers declared ahead of the flag store 191 (1001 bytes: the flag store stays
+// at retail's slot, with the written-out rows' registers and our faddp-before-subss order); a second identical flag store
+// after the rows (diagnostic) 184 (1003 bytes: both emitted, the two swaps unchanged), so nothing later in the block moves
+// the swaps: both x87 results are due in the same issue slot as a two-step SSE row operation, and retail issues the row
+// operation first where ours issues the x87 one first whenever the flag store sits ahead of the rows.
+// Round 176 (m3 lane 6, fast; all restored at 4). Compiler-setting diagnostics (inline-depth windows, not source forms): the
+// existing getter 0x2684f0 for the opening test under a statement-level inline_depth(255) window 4 (it inlines, the head is
+// retail's, same code); the unit vector through the header's vector3f_scale in such a window 4; the whole normalization
+// through the header's normalize3d on a copy 257 (1036 bytes); the file's depth-0 pair replaced by depth-0 windows around
+// only the 0x30bf0/0x1f5110/0x1e4290 calls, with actor_get and the getter inlined 4 (same code: the pair does not shape the
+// schedule); on that, the flag store ahead of the copy 4. Source forms: `facing` as a value copy of unknown290 227 (1016
+// bytes); unit as `local_2.x / local_4` per component 4; each row as `(position - offset) + half step` 204 (1007 bytes);
+// the prop record typed with its short unknown00 field 4; the half step as the double `0.5` 219 (985 bytes).
+// Round 101 (m3 lane 11, fast): the else arm's `local_2 = local_3` as memcpy (local_3 address-taken) 4 (same code);
+// the degenerate test in double without the float cast 5 (the constant becomes a qword); the direction copy after
+// the rows 4 (same code); an `unsigned long` component counter on this base 4 (same code); a 600 s annealing
+// permuter run (seed 101): 57 tries, none below 4. Restored.
+// M3 lane 16 r121 (fast): the copy of unknown37c in its own `direction` local, with local_2 declared only for the output
+// (they share the stack slot, as retail's) 4 (same code); velocity and offset through `const` vector pointers 4, the
+// position through one 4 (same code); the flag store after the row loop 18 (996 bytes: interleave and registers are
+// retail's, the store sinks below the row stores); after the length statement 195 (1000 bytes); rows written out with the
+// flag first 192 (1001 bytes, the store sinks, rows in XMM2/3/7); the rows through a forceinline component-loop helper
+// 280 (927 bytes: called under this file's inline_depth(0)). Diagnostic, no flag store: 197 (989 bytes), and the block is
+// retail's instruction for instruction once the store is added back at slot 31, so retail's store has no ordering edge
+// with the row loads, where ours (indexed loop accesses) has one that delays the row loads a slot.
+// Round 108 (m3 lane 1, fast): the record pointer `s_actor_view *const` 4; the loop bound as `sizeof(local_3.n) /
+// sizeof(local_3.n[0])` 4; the rows indexed from each vector's first component, `(&local_0->position.x)[component]`, 4;
+// the flag through a `bool *const` to its field 4 (re-measured); a `byte` component counter 243 (960 bytes, not unrolled).
+// Round 107 (m3 lane 11, fast): the flag through a `bool *const` taken at entry, with the rows written out by field 191
+// (1001 bytes: the flag stays early but the interleave is ours; written-out rows also renumber the later projection's
+// XMM registers, so retail's rows are loop-shaped); the copy as memcpy with the rows written out 192 (1001 bytes, the
+// flag sinks: exposing the copy's address early gives the store no edge); the entry flag pointer with the store in place
+// 4 (same code); the rows counted down with the flag after them 22; the entry flag pointer with the store after the rows 18.
+// Round 187 (m3 lane 6, fast): the direction copied field by field 196 (1001 bytes); the flag stored through a raw byte
+// offset 4; the rows read through `real *` casts of each vector 4; `position`/`velocity`/`origin` field pointers taken
+// at entry and used in the row loop 4, with the flag store after the loop 18 (the store still sinks below the rows).
+// M3 lane 5 r190 (fast with 0x30bf0, 0x1f5110, 0x1e4290 and 0x25d700): a 600 s annealing permuter run (seed 1190, 56
+// tries, reduced image equal at 4) none below 4; the row loop, then the flag, then the direction copy 18 (retail's x87/SSE
+// interleave, the flag store sinks below the row stores as in the flag-after-loop form); the same with the rows written out
+// by field 192 (1001 B); the flag, the rows, then the copy 4 (same code: the copy's place does not matter, only the flag's
+// against the rows); the flag written at the end of both arms of the prop test 4 (tail-merged back, same code).
+// M3 lane 10 r114 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): `#pragma optimize("a", on)` around
+// the function (diagnostic, no-aliasing) 4 (same code: the store/load ordering is not an alias edge); the row as
+// `position + 0.5f * velocity - origin` without parentheses 4; unit.k as `local_8 * local_2.k` 4; the flag store inside the
+// row loop body 240 (1012 B); the length, then the flag, then the rows 181 (1000 B).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

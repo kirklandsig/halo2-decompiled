@@ -126,6 +126,50 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // The 0x262b40 result declared at the function's top 12; the equal-arm test inverted 29; the result flag declared first
 // 187; the 0x261280 outputs declared before the entry 12; 0x1af530's real output declared at the top 12; the two
 // 0x1f4a20 flags declared the other way round 12. Original body restored.
+// Round 143 (m3 lane 8, fast with 0x1e1f20, control 12): stack variables moved to function scope, to test whether the tied
+// home order follows the frame's variable set: the 0x1af530 real output, the distance vector, the rounding input real,
+// the two 0x1f4a20 flags, the 0x1e1f20 result: 12 each (identical code). The bool output's home follows its callee chain
+// (round 43's diagnostic), and 0x260670 on that chain is still 700 differences and 71 bytes long, so what LTCG knows of
+// it is not retail's: a lead, likely BLOCKED-BY 0x260670 until that body matches (round 148 enabled it, still unmatched).
+// Round 182 (m3 lane 4, fast with 0x1e1f20, control 12; masked aligned 12: only the two swapped home pairs, the actor
+// against the offset temp's slot shared with the 0x262b40 result, and the prop node against the bool output): the
+// 0x265c30 call's prop index through a fresh actor lookup 77 (984 bytes; the frame shrinks), the search record as
+// `= {0}` for its memset 231 (978 bytes), the saved reference copy declared const 12, the repeated found test held
+// in one named bool 177. No untried natural form left in this body: the levers are 0x260670 (src/unknown_260670.cpp,
+// another lane's file this round) and the held src/unknown_261280.cpp prototypes. Still BLOCKED-BY 0x260670.
+// Round 116 (m3 lane 12): no trial. Both swapped pairs are use-count ties in retail too (the actor spill and the offset
+// slot four references each, the prop node and the bool output two each), and every natural use-count change is listed
+// above with its score. The levers left are outside this body: 0x260670 (score 440 at 3097 bytes against 3077) and the
+// output prototypes in the held src/unknown_261280.cpp.
+// Round 177 (m3 lane 6, `--fast 0x1af160 0x1e1f20`): the 0x261280 bool output initialised false 201 (979 bytes); its long
+// output initialised 0 235 (980 bytes); the 0x262b40 result as a const pointer 12; the 0x1e4be0 result kept `void *` 12; the
+// prop node as a const pointer 12. A compile-only lab is not faithful here (without LTCG the offset stays in EBP).
+// M3 lane 14 r97 (`--fast 0x1af160 0x1e1f20`, control 12): the equal-arm store through the array-index actor getter
+// 12 (same code); the prop node through the existing prop_ref_get as `s_prop_datum *` with its two casts dropped 12 (same
+// code, not kept); the node getter's body written out 12 (diagnostic: inline return temporaries do not order the tie); the
+// top actor through the array-index getter 12 (diagnostic, same code); no asm (a plain cast and the helper call) 135
+// (diagnostic: the actor then takes retail's 0x24 but the offset moves to 0x20). The permuter cannot search this
+// function: its reduced image scores 209 even with 0x1e1f20 as context.
+// m3 lane 14 r99 (`--fast 0x1af160 0x1e1f20`, control 12): the definition range test written `node < limit` 12 (same
+// code); the squared-distance test written `limit * limit > length` 30; the 0x1af530 range test written `call < output`
+// 12 (same code); the equal-arm store's actor lookup written as the getter's expression 12 (same code: the inline getter's
+// temporary does not order the offset's home); the 0x1e4be0 result as `dword const *` 12 (same code). 0x260670 on the
+// bool output's chain is still 440 at 3097 bytes against 3077.
+// m3 lane 5 r188 (`--fast 0x1af160 0x1e1f20`, control 12; ours homes the actor offset 0x24 / actor 0x28 / node 0x30 /
+// bool output 0x34, retail 0x28 / 0x24 / 0x34 / 0x30): the equal arm's result flag cleared before the actor store 12
+// (same code); the marker pointer as a NULL default and an if 236 (982 bytes); the two opening tests nested 12 (same
+// code); the definition's range field named once for its three uses 65; the 0x265c30 flag declared inside the found
+// test 19. Body unchanged.
+// m3 lane 15 r93 (`--fast 0x1af160 0x1e1f20`, control 12; the same two swapped home pairs): the equal arm's two clears as one
+// chained `local_5 = actor_get(arg_0)->unknown040 = false;` 12 (same code); the saved-reference test with the macro's operands
+// swapped 13; the 0x261280 outputs declared bool before long, all three ahead of the scratch buffer 12 (same code); the search's
+// +0x59 flag as a ternary on the 0x1e4be0 result 222; the search's +0x698 bool stored before the +0x69a short 14. Still the
+// homes tie (0x260670, ours, is 440 at 3097 bytes against 3077, on the bool output's chain). Body unchanged.
+// m3 lane 13 r103 (`--fast 0x1af160 0x1e1f20`, control 12; reference bindings as in the contributor's slot forms, each
+// match-only): the prop node bound by reference for its two later uses 12; the bool output bound by reference for the
+// 0x2626b0 argument 12; the bool output's address in a pointer local for the 0x261280 call 12; the actor bound by reference
+// for the node lookup 12 (all the same code); re-measured on the real 0x260670 body, the three 0x261280 outputs declared at
+// the function's top 12 (same code). 0x260670 (ours) is still 440 at 3097 bytes against 3077.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

@@ -99,7 +99,7 @@ s_slot_handler_2 g_47e080 ={
 };
 
 short __stdcall function_1c8df0(short type, short team, point3f const *point, long object_index,
-	void const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
+	point3f const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
 void function_1e3b00(long object_index, long mode, point3f const *reference, void const *unknown0,
 	void const *unknown1, point3f *position);
 short __stdcall function_272af0(s_match_globals *structure, point3f const *point);
@@ -154,7 +154,7 @@ bool __stdcall function_1b2770(long actor_index, s_slot *slot)
 					cluster = view->unknown78.output_index == NONE ?
 						*(short *)((byte *)view + 0x72) : function_272af0(g_4e0348, &point);
 					state->unknown00 = function_1c8df0(*(short *)((byte *)actor + 0x254), cluster, &position, NONE,
-						(byte *)actor + 0x22c, 0, false, actor->unknown26c != NONE, true, NULL) == 0;
+						(point3f const *)((byte *)actor + 0x22c), 0, false, actor->unknown26c != NONE, true, NULL) == 0;
 				}
 				if (state->unknown00)
 				{

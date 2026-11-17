@@ -1702,10 +1702,63 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax B (11-14): no new form, no lower score (339): retail's conditional move for the state store is still out of
+// reach - it needs the SSE architecture flag this file's flags do not set, and the flags stay as they are - and the
+// frame stays 0xa9c against retail's 0xaa8, so the type, membership and member-index homes keep their different
+// offsets. The body stands.
+// MiniMax H (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8; retail's
+// conditional move for output->state needs /arch:SSE, which this file's flags do not set, and the inlined 0x5a680
+// twin is not allowed, so the state home and the frame stay as they are.
+// MiniMax H (11-12): no new form, no lower score (339); the frame is still 0xa9c against retail's 0xaa8, and the file's flags still keep retail's inlining of 0x5a680 and its cmovne out of reach.
+// MiniMax S (11-11): no new form, no lower score (339); retail holds the session pointer in ecx and the state
+// word in edx, ours holds the pointer in ebx and the state in ecx, and the frames differ by twelve bytes
+// (0xa9c against 0xaa8), so every local home after the prologue differs.
+// MiniMax A (11-10): no new form, no lower score (339): retail's conditional move for
+// output->state needs the SSE architecture flag that this file's flags do not set, and the frame is
+// 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.
+// MiniMax C (11-11): no new form, no lower score (339): retail's cmovne needs /arch:SSE and its three
+// extra frame homes follow from 0x5a680 being inlined into this /Ob1 file; both are outside this lane's
+// files, so the frame (0xa9c against 0xaa8) and the type, membership and member-index homes stay as
+// they are.
+// MiniMax B (11-13): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8 and the
+// saved-register set differs (retail holds the connection in ecx and the state in edx where ours keeps them in ebx
+// and ecx), and retail's conditional move for output->state needs the SSE architecture flag this file's flags do
+// not set.
+// MiniMax E (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8; retail's three extra homes (the member index, the membership block pointer and &session->value18) would each need a named one-use local or a pointer to a field used once, which are on the reverted list, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax R (11-15): no new form, no lower score (339): retail still holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne needs the /arch:SSE flag this file does not set.
+// MiniMax I (11-15): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and retail's conditional move for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax C (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8 and the session
+// pointer and the state word take ebx and ecx where retail keeps them in ecx and edx; retail's cmovne for the state
+// needs /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it,
+// so the membership pointer and the member index never get the frame homes retail gives them.
+// MiniMax E (11-16): no new form, no lower score (339): the frame is still 0xa9c against retail's 0xaa8 and the
+// type, membership and member-index homes and the saved registers still differ; retail writes the state with a
+// conditional move (cmovne esi, dword ptr [0x527334] at 0x64fac), which needs /arch:SSE, and this file's @flags
+// line does not set it, and retail inlines 0x5a680 where this build calls it, so the membership pointer and the
+// member index never get retail's frame homes.
+// MiniMax C (11-17): no new form, no lower score (339, was 339): the frame is still 0xa9c against retail's 0xaa8, and the type, membership and member-index homes and the saved registers still differ.
+// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
+// code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
+// `long used` (retail loads it once before the mode tests) 356 at retail's 1291 bytes; the team mask declared at the
+// player loop 375; the sort entries written through `entries[count]` with no entry pointer 356 (1291 bytes).
+// MiniMax R (11-10): no new form, no lower score (339): retail writes output->state with a conditional move, which needs /arch:SSE that this file's flags do not set, and the frame is 0xa9c against retail's 0xaa8 with the type, membership and member-index homes still different.
+// MiniMax D (11-10): no new form, no lower score (339).
+// Walk vs retail 0x64d70-0x65278 (b3G, 11-06, statement by statement): no behaviour difference found. Checked: state/value18/live
+// range guards; get_values_4d08 outputs (map, map_variant, map_data) and the pre-call name pointer; memset 0x714; header
+// words; type/local/mode; wcsncpy(.., 0x1f) + name[31]; id/key behind `state && flag24` (retail's per-destination null
+// tests are the inlined getter's, equal in effect); identity from member_index; full-session vs open-slot branch and the
+// mode 0/1/2 stores (0x98/0x94, 0x9a/0x96, 0x9a); variant 2/1; state; game_type/map/option/map_variant/teams;
+// statistics gate (+0x1120, state 2, state 3); player loop (mask, stride 0x13c, sort fields, i != NONE && i >= 0 &&
+// i < high_water, +0xc0 team, 0xff); sort; copy-out strides; team scores/mask. No float code.
+// New evidence on the cmovne (b3G, fast): `// @flags /O2 /Ob1 /arch:SSE /Gr` on this file leaves the other 58 functions
+// in it MATCH (fast) and turns `short state = 0; if (g_527330.initialized) state = (short)g_527330.state;` into
+// retail's `xor esi,esi / test al,al / cmovne esi, [0x527334]` (the `?:` form still compiles to neg/sbb/and). 64d70
+// then scores 353 (positional: the prologue and membership homes remain), so it is not kept here; the flag line is
+// outside this function's edit scope, so it is for the coordinator to full-check.
 // MiniMax I (11-05, run 37): no new form, no lower score (339); retail's cmovne needs /arch:SSE, which this file's flags do not set, and retail's inlined 0x5a680 is out of line here.
 // MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
 // then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
-// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
 // limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which
 // needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in the type, membership and
@@ -1781,6 +1834,21 @@ struct s_summary_player_sort_entry
 // pointers fold into the session register, the same code at every subset); with the existing key getter 396 [80] (1323 bytes, frame
 // 0xaa0, only the member index gains a home); both pointers from inline getters 396 [80], as const references to their results 396
 // [82], without the key getter 353 [95]. Retail's two pointers survive where every spelling folds; a form must first stop that.
+// Round 107 (m3 lane 9, fast with the file's 59 functions, 339): the copy-out loop indexed (`&entries[j]` in the
+// body, no comma increment) 356 (1312 B); the pointer step moved to the end of the body (`sorted_entry++;`) 360 (1314
+// B), so the comma increment stays. Every other natural form I could name is listed. Levers left and why each is out:
+// the cmovne needs /arch:SSE (a file-flag change); 0x5a680 inlined needs it inlined into this /Ob1 file (`inline` on
+// its definition loses 0x83220 and the 0x199ebc family, a local inline copy would be a twin); retail's three extra
+// frame homes follow from that inlining.
+// MiniMax A (11-12): no new form, no lower score (339): retail holds the session pointer in ecx and the state word in edx
+// where ours holds them in ebx and ecx, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state
+// needs /arch:SSE, which this file's flags do not set.
+// MiniMax S (11-14): no new form, no lower score (339): retail holds the session pointer in ECX and the state word in EDX where ours holds them in EBX and ECX, the frame is 0xa9c against retail's 0xaa8, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax D (11-15): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail's cmovne for output->state needs /arch:SSE, which this file's flags do not set.
+// MiniMax D (11-16): no new form, no lower score (339).
+// MiniMax S (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session
+// pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail's conditional
+// move for the output's state needs an architecture flag this file's flags do not set.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

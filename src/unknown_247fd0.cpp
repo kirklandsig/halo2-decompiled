@@ -223,7 +223,36 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
-// score 334 (was 356): frame 0xb0 and 1652 bytes agree; entry EBP is retail's now; effect/velocity/tag lookups keep retail's unfolded `add eax, edx`, blend and scaled position stay in memory, and the child loop rotates.
+// score 334 (was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds (retail never
+// combines base+index or folds a memory operand at the gate, the definition short or the bit-4 test), homes differ.
+// MiniMax E (11-15): no form kept; the permuter's best variant (333 in the reduced image and in the full one)
+// only adds a local holding a constant, which is on the reverted list, and one point is under the bar anyway; an
+// annealed run (19 tries) found nothing below the 334 of the baseline in either image.
+// Still differs: the gate byte is read with the base and the index in one operand where retail adds the index to
+// the base first and reads the byte from it (0x247985-0x247987), and the flag byte and the settings sit in the
+// frame's later slots where retail keeps them at +0x1b and +0x1c.
+// MiniMax G (11-14): no new form, no lower score (334): the effect datum's address still folds into the scaled index in
+// the flag byte's load and in the definition pointer's load, where retail keeps the address in a register; the flag
+// byte's and the definition pointer's frame homes still differ.
+// M3 lane 8 r159 (fast with 0x247fd0 and 0x248cc0, both stay matched): kept, the probe direction through the existing
+// vector3f_assign (0.f, 0.f, -1.f) 334 and the 3-bit draw through the existing random_index(&seed, 5) 334 (same code each;
+// they replace those helpers' bodies written out). The scale step as three `*=` 334 (same code); re-measured on main, the
+// bit-4 test as TEST_FIELD_BIT(local_3->flag4) 352 (masked 69 -> 65, the shr/test is retail's but the definition pointer
+// moves); the header mask and set as one statement 334 (same code); the final
+// call's tag index and both getters written in the call (no one-use locals) 337 (first difference +0x12).
+// Diagnostic (reverted): the file built with /G5 334, same code, so the unfolded addressing is not the processor target.
+// MiniMax H (11-11): no new form, no lower score (334); the flag byte read through a named datum pointer 334, through
+// its bitfield 334 and through a named word of flags 335 give the same code, so the base still folds into the scaled index.
+// Earlier status line (334, was 334): earlier 356; frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
+// MiniMax C (11-10): the score is 334 (was 334); the gate flag keeps its dead store where retail folds the address, and the settings pointer, the effect address and the random draws still live in different homes.
+// MiniMax E (11-09): no new form, no lower score (334).
+// Earlier (334, was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// Earlier first line: score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// MiniMax E (11-09): no new form, no lower score (334).
+// gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
+// MiniMax E (11-09): no new form, no lower score (334).
 // Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
 // across the first 0x143070 call (here it goes through the grouped local's memory); retail's
@@ -505,6 +534,268 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // F404: Actual child-creation success/failure outcome in bool/byte/short/long,
 // after descriptor refresh: 334/334/334/334/334/334/334/334. NOT kept: no exact outcome-storage form.
 // Original handle admission, loop, random stream, geometry and whole body restored; lookup/blend/getter allocation remains.
+// T64: Real byte-span element addressing at effect/allocation/velocity/child lookups,
+// singles/effect pair/particle pair/all: seven 334s; all with named offset producers 338.
+// NOT kept: separate native address adds and scalar homes are not recovered; complete
+// original typed lookups, geometry, random stream, qualifier and body restored.
+// P365: Real position/direction/both matrix-output workspaces, field/native then shared
+// setter publication, then one sequential workspace in both forms:
+// 386/384/401/386/386/430/399/415 (1681-1729 bytes). NOT kept: native calls use
+// in-place outputs; frame and length move away. Original complete body restored.
+// P367: Complete contact-normal value for both offset/direction consumers,
+// producer/contact/geometry/entry declarations and two vector-home names:
+// eight 366s, frame 0xbc and 1665/1652 bytes. NOT kept: record-copy and frame
+// shape miss native 0xb0; original normal pointer and complete body restored.
+// P371: Raw effect-flag input in char/signed-char/short/unsigned-short/int/unsigned-int/long/unsigned-long:
+// eight 334s on the native entry-save graph. NOT kept: folded address and gate/sample/
+// descriptor homes remain; original byte carrier, inherited Boolean store and full body restored.
+// T68: Actual effect-presence/absence snapshots in bool/byte/short/long, reused
+// for admission and inherited velocity:
+// 421/421/426/429/421/421/426/429. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Early address/flag home and blend/getter allocation remain.
+// T70: Actual flag word/bit-field extraction, staged/direct Boolean producers on native-entry graph:
+// 334/334/334/334/344/334/334/334. NOT kept: no exact address/DL/flag-home recovery; original field observations,
+// inherited qualifier, random stream, geometry, helpers and complete body restored.
+// T72: Native-entry gate/settings/sample lexical home subsets 1/2/4/3/5/6/7,
+// then all plus the raw-flag name: eight 334s. NOT kept: native DL/gate/descriptor
+// homes and separate address add remain; all original names and the whole body restored.
+// P392: Ordinary admission storage on the retained native-entry-save graph,
+// bool/byte/short/word/int/long/dword/signed-char: 395/395/395/395/395/395/395/395. NOT kept: no native
+// effect-address/gate-home equality. Original inherited local qualifier, random stream, geometry and
+// complete body restored.
+// M3 lane 4 r176 (fast with 0x247fd0, which stays matched; base 334 at 1652): retail's dead flag byte sits at +0x1b,
+// below the definition pointer's +0x1c, ours at +0x1f above it at +0x18. The flag as a bool member at the end of the
+// local record, no volatile, 351 (the member keeps its store but lands high in the frame); as the record's first member
+// 351; the volatile flag renamed to sort first or last among the locals 334/334 (same code); the flag declared after
+// the effect index 334 (same code). Re-measured: all four samples through one plain real 392; the flag as a plain bool
+// set and then tested 395 (store gone, first difference +0x2). All restored.
+// P401: Initial settings pointer reserved before collision/effect/allocation/admission,
+// each with distinct refreshed terminal owner/direct terminal tag: eight 334s at 1652 bytes.
+// NOT kept: no native gate/settings home or split effect-address recovery. Original
+// producer lifetimes, refreshed settings, random stream and complete body restored.
+// M3 lane 9 r101 (fast with 0x247fd0, which stays matched; base 334 at 1652, aligned 246, masked 106): the gate with
+// no volatile and no assignment in the test keeps its dead store when the flag starts false and is set under the
+// index test (`bool flag = false; if (index != NONE) flag = ...; if (flag) return;`): 351 at 1652 (aligned 249,
+// masked 118; the store stays at +0x1f in AL with the folded address, so it is a score rise and not kept), with the
+// bit read as the word bit-field 351 (same code), with the flag declared before the index 351 (same code); the same
+// gate as a file-local inline helper returning its `result`, byte read / bit-field read 351/351; the flag as
+// `index != NONE && bit` 406; the flag set in both arms of the index test 411. Retail's `add eax, edx` then
+// `mov dl, [eax + 2]` and the +0x1b home (under the definition pointer at +0x1c) are still open.
+// M3 lane 14 r79 (fast with 0x247fd0/0x248cc0, both kept): only the two effect-record lookups fold base+index here
+// (`[eax + edx + 2]` for the flag, `lea [ecx + eax + 0x30]` for the velocity); retail computes both with a separate
+// `add eax, edx`. The velocity as a default `g_4687a4` set to `&effect->velocity` from a named effect record under
+// `if (local_0 != NONE)` 348 (frame 0xb4; the lea still folds).
+// Retail's matched 0x249170 builds the same `index != NONE ? &record->field : default` pointer from the same pool with
+// a folded `lea [eax + ecx + 0x74]`, so retail's split `add eax, edx; add eax, 0x30` here is this function's source, not
+// the pool or the flags: a boundary between the record pointer and the field offset that a same-file inline getter
+// does not keep (listed above, 356). Retail's 0x18cbc0 folds the same velocity lookup too (`lea [eax + edx + 0x30]`).
+// m3 lane 1 r85 (fast; 0x247fd0 stays matched): an inline effect getter at both effect lookups 334 (same code, the flag
+// address still folds); the definition pointer named `definition` or `system_definition` 334/334 (same code); the flag
+// through an inline reader of the effect pointer returning bool 417 at 1665 B (the flag takes retail's +0x1b and the
+// definition pointer retail's +0x1c, by the extra read-back of the volatile; still folded); the effect pointer from
+// integer arithmetic 334 (same code); the reader returning the byte, `!= 0` in the caller, 334 (same code); the child
+// reciprocal as 0x247fd0's if/else alone 334 (aligned 188 -> 179). Retail's
+// sibling 0x247fd0 folds `[eax + edx]`; this one never folds base+index, so the cause is in the function, not the spelling.
+// Round 228 (m3 lane 3, fast; aligned counts exact/stack-masked/register-masked in brackets, base 334 [246/231/104]):
+// the 0x1697c0 query's result buffer is 0x5c bytes (matched 0x0b8ca0 declares it so); at that size retail's frame
+// reads probe 0x14, direction 0x20, result 0x2c, placement 0x88, with the blend and the first draw in registers. On
+// that shape (in-loop particle_object_for_tag, blend and first draw as plain locals, the result padded to 0x5c in an
+// aggregate wrapper; diagnostic): workspace {probe, direction, placement} 419 (1664) [180/177/98]; all plain locals
+// 419 [199/177/98] (the result renamed, declared last or as a 0x5c byte array, the placement renamed: same code);
+// probe, direction and result declared in the trace block 422 [175/170/87], the placement in the allocation block
+// as well 422 (same code); the placement's NONE store at the allocation 360 (same frame). Plain address-taken locals
+// here sort by size, smallest lowest: a 0x20-byte result lands below the placement (frame 0x78), and six extra
+// placement stores move nothing (455), so retail's result-below-placement order does not come from plain locals of
+// these sizes. The else arm's sum as three field statements (a helper body by hand; diagnostic) 343 (1652)
+// [241/215/93]: that gives retail's scaled-position block exactly (three products held in XMM2-4, the stores after
+// the age update, the else arm adding the held values), because the stored fields are then forwarded; through
+// vector3f_add_scaled, or a point-typed forceinline copy of it at both point sites, 334 (same code): an inlined
+// helper's pointer reads are not forwarded. Scaling through vector3f_scale 354 [272/246/113]. On main: a named
+// `point3f *position` for the record's position at every use 335 [269/236/116], with the point-typed helper at both
+// point sites 335 (same code); the else arm's scale folded into the call 334 (same code). All restored.
+// Round 80 (m3 lane 13, fast with 0x247fd0/0x248cc0, both stay matched): the flag byte's shift and mask as one
+// statement 334, in its initializer 334 (same code each); the velocity lookup through `local_0` 358 (1634 bytes); the
+// velocity defaulted to g_4687a4 and set under `if (local_0 != NONE)` without a named record 348 (the frame changes,
+// first difference +0x2); the collision result declared in the trace block 334 (stack-masked aligned 169 -> 167).
+// Body unchanged at 334.
+// Lane 6 r167 (fast with 0x247fd0, which stays matched; base 334 at 1652, aligned 246, masked 106). The child loop written
+// as matched 0x247fd0 writes it (`tag_index`/`effect_index` read into locals ahead of the 0x173fd0 call, the in-loop lookup
+// through particle_object_for_tag, the link call given the DATUM sum, the reciprocal as an if/else) 311 (1692 B, aligned
+// 185, masked 75); with 0x247fd0's cache test and store order as well 311 (masked 69). Match-only: the gain needs the two
+// one-use locals. Grid of the four loop parts (lookup, locals, sum, if/else): 1000 371, 0100 334, 0010 335, 0001 334,
+// 1001 372, 1100 333, 1010 375, 1110 321, 1101 323, 1011 376, 0111 335, 0110 335, 0101 334, 0011 335. On the 311 (masked
+// 69) form: the bit-4 test through TEST_FIELD_BIT(flag4) 387, all four samples through `last_sample` 376, the record
+// pointer as 0x247fd0's `&((s_248000 *)data)[index & 0xffff]` 311 (same code), the velocity as a g_4687a4 default
+// overridden under `if (local_0 != NONE)` 291 (frame 0xb4, masked 78: retail tests first and stores each arm into
+// local_0's slot +0x14), the velocity as an if/else 311 (same code as the ternary), the probe z as
+// `local_2->field_1c.z + 1.f` 385, the blend's x row written as the y and z rows (`40.x * (1 - a) + 34.x * a`) 311
+// (same code; on main's body 334, same code). Keepable parts alone: the velocity default 348 (frame 0xb4; a re-measure
+// of lane 14 r79's form); with the in-loop lookup and the if/else reciprocal 331 (1696 B); plus 0x247fd0's cache test
+// and store order 327.
+// M3 lane 12 r113 (fast with 0x247fd0 and 0x248cc0, both kept; aligned 169, register-masked 71, ours 420 instructions
+// against retail's 430 at 1652 bytes: retail folds no base+index or memory operand here). Lane 6 r167's keepable parts
+// (V the velocity default, L the in-loop particle_object_for_tag, R the if/else reciprocal) with C, the cache test as
+// `local_2 != arg_0->field_50` without 0x247fd0's store order: C 333, V+C 347, V+L+R+C 330 (1696 B), L+R+C 371 (1696),
+// V+L+C 342 (1696); without L: V+R 348, V+R+C 347, R+C 333 (1652 each); on V+L+R+C: all four draws through one plain real
+// (the record's draw member dropped) 385, the gate without the volatile or the assignment in its test 441 (1696 each).
+// None reaches the 8-point bar; body unchanged.
+// M3 lane 16 r106 (fast with 0x247fd0 and 0x248cc0, both stay matched; base 334, register-masked aligned 134): the cache clear
+// as `field_44 = field_44 & ~0xf80f` 334 (same code); that with matched 0x247fd0's order (`local_2 != arg_0->field_50`, field_50
+// stored first; aligned 131, the clear then load/and/store as retail) 346, and round 71's compound form in that order re-measured
+// 346; the contact normal read from the result at both uses (no pointer local) 337; the bit-4 velocity test as `((byte >> 4) & 1)
+// != 0` 334 (same code); the effect gate byte shifted and masked in one expression 334 (same code); the velocity's i row spelled as
+// the j and k rows (`i = velocity->i + i`) 334 (same code). Retail also inlines the in-loop tag lookup (the tag-group compares)
+// where ours calls it. Body unchanged at 334.
+// m3 lane 14 r88 (fast with 0x247fd0 and 0x248cc0, both MATCH): `if (!local_3->unknown0c)` 334 (same code); the else arm's
+// factor as `arg_6 * (1.f - arg_5)` 334 (same code); the field_3c store ahead of the motion branch 354; re-measured round 32's
+// inline effect-record getter at both effect sites 334 (same code: the split `add eax, edx` stays folded). Diagnostics, not
+// kept: global optimisation off for this body 1686 (2770 B), so the unfolded address adds and loads are not that setting; in
+// the compile-only screen, local_0 or local_3 renamed to sort last moves no home. Body unchanged.
+// P436: Fixed existing inherited-velocity/contact-normal receivers, child handle/record,
+// reciprocal, motion weight and terminal tag/handle bindings: eight fast 334s, control 334.
+// NOT kept: no native split-address/gate/settings home repair or byte change. Original
+// complete body restored; frame 0xb0, entry EBP and 1652-byte extent remain correct.
+// P439: Positive child rate then inverse test results in bool/byte/word/long:
+// 334/334/334/334/334/334/334/334. NOT kept: one-use predicates require equality;
+// split effect addressing and gate/settings homes remain. Original comparisons,
+// reciprocal results, all random steps and complete body restored.
+// P441: Original-site masked/copied header word/dword/short/long accumulators: 334/338/334/338/334/338/334/338.
+// NOT kept: Separate effect-base addition, native DL/gate +0x1b and settings +0x1c remain. Original complete body restored.
+// P444: physical lower header field 334f; physical contact bits 334f; physical failure bit 334f; pooled particle lvalue 334f; cache-change producer 334f; native terminal-slot result 334f; double-factor initial scale 377f; allocator-admission producer 334f.
+// NOT kept: split effect addressing and gate/settings homes remain; original complete body restored.
+// P446: Native objects on the integrated entry-save/helper graph: blend, first sample, both, probes/placement, geometry, probes/placement/sample, all, all at consumers;
+// 406/395/446/465/446/446/446/447. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P448: Immutable incoming system/settings/publication/fraction/duration/scale/placement/cache bindings:
+// 334/334/334/334/334/334/334/334. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 10 r101 (fast with 0x247fd0 and 0x248cc0, both stay matched; aligned/register-masked in brackets): nothing kept.
+// Round 73's recipe rebuilt on this tree 415 [79/45] at 1652 bytes, 430 instructions as retail. On it: the gate through a named
+// effect pointer read twice 243 [102/52] (431 instructions: the record address is then formed with a separate `add`, as retail,
+// but with the base in EBP and the byte in AL); the motion kind read into its named short ahead of the field_08 statement 409
+// [88/54] (retail's `mov ax, [edi+0xc]; test ax, ax` exactly; the field_08 product turns), ahead of the scaled stores 423
+// (1666 bytes); with that, the gate through a one-byte wrapper type returned by value from an inline helper taking the record
+// pointer 315 [107/62] (dead store with no volatile, address still folded, flag still at +0x1f); the effect pointer declared
+// at function scope for the velocity 415 (same code); 0 to 7 unused longs ahead of the body 409 each [88-90/54-56] (the
+// symbol-count phase moves two float rows and none of the address sites). Lead, not a source form: retail's body holds five
+// `add reg, reg` and no base+index operand at all, while the matched sibling 0x247fd0 folds `[eax + edx]` in the very same
+// inlined tag-group lookup (same three registers live) and `lea esi, [ebx + edx]` for the same child record; so the unfolded
+// sites (gate, velocity, tag lookup), the short loaded before its test and the `movss` copy of field_10 are a property of how
+// this one function was compiled, not of its spelling. Its caller 0x247470 only matches built without optimisation (its own
+// file, on main), so the original source had an optimisation pragma region next to this function. Diagnostic (compiler
+// setting, reverted at once): an `optimize("", off)` / `optimize("", on)` pair placed ahead of this function 334, same code,
+// so a plain restore is exact; a state with global optimisation and frame-pointer omission on but no speed preference was
+// not measured (one setting diagnostic per round) and is the next thing to try, as a build-flag question for the maintainer.
+// P450: Original contact-mode request decision, positive/complementary bool/byte/short/long:
+// eight 334s at 1652 bytes. NOT kept: one-consumer results lack byte equality; native
+// split effect addressing and gate/settings homes remain. Original complete body restored.
+// P452: Real 0x5c collision extent on native-entry code, query scope, first sample, blend, probes, placement, all entry and all producer scopes:
+// 337/337/395/406/336/337/444/445. NOT kept: all regress (best 336 versus 334); no native gate/address repair. Original shared type, complete body, grouped storage, random steps, qualifier and helpers restored.
+// P454: Initial scale, blend setter, inherited-velocity sum, probe copy, contact-normal setter,
+// post-transform sum, age product and offset-probe constructor on native-entry code:
+// 354/334/341/344/359/335/334/343. NOT kept: none improves; original grouped storage, samples,
+// helpers, field observations and full body restored; native split-address/gate/settings homes remain.
+// m3 lane 7 r159 (fast; aligned difflib count in brackets, control 334 [246]): the grouped workspace replaced by plain
+// locals (blend, probe point, direction, placement), all four draws through `last_sample`, the result padded to 0x5c
+// 444 [231] (frame 0xb0, blend and first draw in registers as retail); probe point, direction and result declared in the
+// trace block 447 [207] (probe +0x24 and direction +0x30 on retail's slots); the result's point and normal read as fields
+// 447 (same code); the placement declared in the final block with its NONE store there 443 [199] (result +0x3c and
+// placement +0x98: retail's offsets); with the in-loop particle_object_for_tag 416 [167] at 1648 bytes. Cause found with a
+// /GL harness of this file alone: real_truncate's inline asm switches VC7.1's slot ordering for the whole function (an
+// `__asm nop` alone does it), and in that mode the 0x28 placement sorts below the 0x5c result whatever the declaration
+// order, names, scopes or result references (only the final-block placement escapes it, but retail stores the NONE before
+// the loop). The same source without asm gives retail's offsets exactly. A plain cast of these x87 values compiles to
+// __ftol2 and the SSE intrinsics force an `and esp, -16` frame, so no spelling without asm reproduces retail's
+// fstp/movss/cvttss2si truncation yet. A no-asm truncation form is the lead (each form above was added to the previous).
+// P478: Standard link/time spans, inherited/blend producers, reverse normal/probe copies,
+// complete sample multiplies and age product: 440/373/379/456/335/370/548/385.
+// NOT kept: all regress; separate effect add, gate/settings homes and descriptor expansion remain; restored.
+// M3 lane 10 r104 (fast with 0x247fd0 and 0x248cc0, both stay matched; diagnostics only, all restored): the one
+// compiler-setting diagnostic named above, the speed preference turned off around this body, 711 (1368 B), so retail is
+// speed-optimised. The truncations: in a compile-only screen VC7.1 /arch:SSE turns `(word)(long)x` and every other
+// narrowing cast into __ftol2, `(long)x` stored as a long into `cvttss2si eax, [mem]` (one instruction, memory
+// operand) or the SSE path when its input is already in a register, and a value already on the x87 stack into __ftol2
+// even when it is stored into a 16-bit `long` bit-field. Retail's two-instruction `movss xmm0, [tmp]; cvttss2si eax,
+// xmm0` after an x87 `fstp` is the asm helper's own sequence, so retail had the asm here too and the asm itself is not
+// what moves this frame. The truncation as a plain C function in another file (inlined at link time) gives __ftol2
+// calls 444 (1619 B); the asm helper as an out-of-line function in another file stays a call 393 (1633 B), and as a
+// `__forceinline` one there is not emitted (unresolved calls). No new source form found; the forms the note lists
+// cover the open leads (gate addressing, result/placement homes, in-loop tag lookup). Body unchanged.
+// MiniMax I (11-14): no new form, no lower score (334): the gate's byte is still read with the base and the index
+// in one operand where retail adds the index to the base first and reads the byte from it, and the flag byte and the
+// settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
+// M3 lane 13 r93 (fast with 0x247fd0/0x248cc0, both stay matched; control 334): the gate flag renamed to sort first or last
+// 334/334, with the definition pointer renamed the other way 334/334 (same code: names do not swap the +0x1b flag and +0x1c
+// definition homes); dead-local phase scan on this body (n = 0..7, removed) 334/334/338/338/335/334/334/334. Diagnostic
+// (compiler setting, reverted at once): float consistency on around this body 480 (1713 B), the gate and velocity
+// addresses still fold, so that setting is not the cause either. Body unchanged.
+// P500: Standard reciprocal/interpolation/inherited-velocity arithmetic, seven subsets, then initial-position
+// products: 384/573/352/625/421/575/627/650. NOT kept: All regress; native separate effect address, gate/settings
+// homes and extent are not recovered. Three matched controls remain exact. Original complete executable body
+// restored.
+// M3 lane 10 r108 (fast with 0x247fd0 and 0x248cc0, both stay matched; control 334): the motion kind read into a named short
+// ahead of the age step 354; the child reciprocal computed ahead of particle_system_link 334 (1654 bytes); the probe's NONE
+// store ahead of the probe copies 334 (other code); the parent count increment ahead of the field_3c store 335. Same code:
+// the flag word update as one `(field & 0xe004) | 4` statement, the gate through a named effect pointer read once, the scale
+// rows as `*= arg_7` or `field * arg_7`, the age step with the sum's terms swapped, the motion-kind short read just before
+// its test, the definition index cast to short, the velocity's j and k rows as `+=`, the child's flag stored after its time.
+// Retail's `xor edx, edx; mov dx, [ebp + 2]` for the flag word is also in matched 0x247fd0 (same source), so it is schedule.
+// m3 lane 14 r96 (fast with 0x247fd0 and 0x248cc0, both stay matched; masked = registers and stack offsets masked,
+// control 334 masked 70, 420 instructions against retail's 430): the in-loop tag lookup through particle_object_for_tag
+// (retail inlines it there, as matched 0x247fd0 writes it) 371 (1696 B, 431 instructions, masked 56: the extra bytes are
+// 4-byte stack displacements, the collision result and placement sitting higher than retail's); field_10's copy with a
+// `(real)` cast 334 (same code; retail copies it through XMM0, 0x247fd0 through EDX); the gate without the volatile
+// flag 394; with the in-loop lookup, the placement's NONE store moved into the final block 366 (1687 B); that with the
+// placement as a plain local of the final block 322 (1680 B, masked 56: placement_set's `lea ecx, [esp + 0x9c]` is then
+// retail's, the collision result 0x10 above retail's 0x3c because the blend and first draw still sit in the grouped
+// workspace) -- not kept: retail stores that NONE before the child loop (0x247e3a), so the gain needs a statement moved
+// against retail's order; the plain placement with the NONE store before the loop 371, declared beside the collision
+// result 371. Retail's frame: probe 0x24, direction 0x30, collision result 0x3c (0x5c bytes; the shared type is 0x4c),
+// placement 0x98, blend and first draw only in registers.
+// M3 lane 13 r97 (fast with 0x247fd0 and 0x248cc0, both stay matched; control 334): `inline` on 0x137bd0's definition in
+// its /Ob1 file (retail expands that lookup in the child loop) 371 at 1696 B, and link-time code generation then expands
+// it at every caller: 16 of the 20 matched callers in the fast image stop matching, so not usable. The workspace, the
+// collision result, the gate flag and the effect index declared in other orders (collision first, flag first, flag
+// last) 334/334/334 (same code); collision first with the in-loop particle_object_for_tag 371 (1696 B). This function
+// is on a link-time call cycle (through 0x246e60, 0x247070, 0x188180, 0x175bd0's file, 0x175270, 0x248970 and 0x247470),
+// but its only call into the cycle is its last one, which already has retail's register convention.
+// P546: Full-width effect/allocation/child-ordinal/child-handle/tag/event/flags
+// domains, then unsigned effect identity: 334/334/334/334/334/334/334/334.
+// NOT kept: no exact native address/home repair; separate effect-base additions,
+// gate/settings homes and escaped blend/getter allocation remain. Full body restored.
+// Round 125 (m3 lane 16, fast with 0x247fd0 and 0x248cc0, both stay matched; control 334): the effect index, allocated
+// index, definition and gate flag named effect_index/particle_index/definition/hidden 334 (same code: names do not move the
+// flag's +0x1f slot); the gate's record as `s_effect_datum const &` 334 (same code); the child loop's rate as `real const &`
+// 334; the blend's two endpoints as `point3f const &` 337; the gate as one `local_0 != NONE && (flag = ...)` test 334.
+// Diagnostic (compiler setting, reverted at once; the state the note above names): `optimize("", off)` then `optimize("gy",
+// on)` around this function, `optimize("", on)` after, 334 with the same code, so dropping the speed preference does not
+// unfold the addressing either.
+// P565: Effect/allocation/child ordinal/child handle/tag/event/flags eight-byte
+// logical storage, each then all: 445/450/378/338/356/354/357/540. NOT kept: native values
+// are narrow and no split-address/home equality; original complete body restored.
+// M3 lane 5 r191 (fast with 0x247fd0/0x248cc0, both matched throughout): the gate test without the volatile flag
+// local 394 (frame moves); the first random sample in the shared `last_sample` local re-measured 392 (it only lines up
+// once the gate's unfolded `add eax, edx` is also there, retail being one instruction ahead from the gate on); the
+// velocity pointer through a named effect pointer inside an `if` 348 (frame moves); one function-scope effect pointer
+// for the gate and the velocity 414 (1633 bytes); the gate flag as the named effect's `flag3` bitfield 334 (same code).
+// Retail forms both effect addresses unfolded (gate `add eax, edx; mov dl, [eax + 2]`, velocity `add eax, edx; add
+// eax, 0x30`) where ours folds them into one operand or `lea`; no pointer-returning getter exists in retail to call.
+// P589: Original incoming system/settings/flags/blend/step/scale/link/cache parameter
+// identities, eight independent forms: 334/334/334/334/334/334/334/334. NOT kept:
+// no split effect-address or gate/settings-home recovery; complete original body restored.
+// MiniMax S (11-16): no new form, no lower score (334): the gate's byte is still read with the base and the
+// index in one operand where retail adds the index to the base first and reads the byte from it, and the flag
+// byte and the settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
+// b7H (11-17) walk against retail, fast build on r830: all of 0x247950-0x247fc1 read against ours, no behaviour
+// difference. Matched: gate 0x247971-0x247994, five seed steps (0x2479f6 0x247a2a 0x247a6e 0x247ab2 0x247af6),
+// constants (0x45dc50, 0x45dca4 65535, 0x45dbc0 1.0, 0x45dbcc -1.0, 0x45e21c 0.005), cache test 0x247b44-0x247b74,
+// scale and age 0x247baf-0x247be6, velocity default 0x247bf8-0x247c2e, blend sums 0x247c32-0x247c86 (v34*a+v40*(1-a)),
+// probe 0x247cbf-0x247d2b (z + 1.0 at 0x247d15, call args), offset 0x247d34-0x247d7d, else arm 0x247dd7-0x247e17,
+// child loop 0x247e4b/0x247f4b-0x247f54, reciprocals 0x247f10-0x247f3d, final dispatch order 0x247f5e-0x247fb2.
+// Differences left: retail inlines the tag lookup in the child loop (0x247e81-0x247ebb) where ours calls 0x137bd0
+// (same body as particle_object_for_tag): the inline form 371 at 1696 B, 378 with the two helpers below, not kept;
+// retail stores the placement's NONE at 0x247e3a after that call, ours before it (no effect). Not kept: the
+// velocity and position sums through vector3f_add, which this file doesn't use yet: both 342, velocity alone 341,
+// position alone 335, operands swapped 342 each (no behaviour change). The scale step has no helper without
+// normalize3d.h (a new include; 354 per r159). The raw reads (+0x16 bit 4, +0x78 == 8) and the volatile gate flag are lanes' score forms, left as is.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
@@ -537,7 +828,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 		arg_1->field_4 = local_1;
 		local_2->field_02 &= 0xe004;
 		local_2->field_02 |= 4;
-		local_2->field_02_13 = (_random(&g_4e7408->seed, 0, 0) * 5) >> 16;
+		local_2->field_02_13 = random_index(&g_4e7408->seed, 5);
 		local_2->field_08 = 0.f;
 		function_248076(&g_4e7408->seed, local_23.field_98);
 		local_2->field_14 = (word)real_truncate(local_23.field_98 * 65535.f);
@@ -575,9 +866,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 			if (*(long *)((byte const *)arg_3 + 0x78) == 8)
 			{
 				local_23.field_c = local_2->field_1c;
-				local_23.field_18.i = 0.f;
-				local_23.field_18.j = 0.f;
-				local_23.field_18.k = -1.f;
+				vector3f_assign(&local_23.field_18, 0.f, 0.f, -1.f);
 				local_23.field_c.z += 1.f;
 				collision.unknown24 = NONE;
 				if (function_1697c0(0x800005, &local_23.field_c, &local_23.field_18, NONE, NONE, &collision))

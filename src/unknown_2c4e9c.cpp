@@ -1581,6 +1581,15 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 {
 }
 
+// score 15 (195 bytes against retail's 194): retail tests
+// `definition->string_list_index` through a register it loaded once
+// (`mov eax, [ebx + 0xc]; cmp eax, -1`) and reuses it for the first 0x1a0180
+// call, while ours folds the test into a memory compare and reloads for the
+// call. Nested ifs, a named index local, const locals and a `false` zero all
+// kept the same form. The permuter found 9 only with
+// `*(volatile long *)&buffer[0] = 0;`, a four-byte store into a two-byte
+// buffer element: a type-widening store, so it was not kept; a volatile word
+// store changes nothing.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -3639,6 +3648,9 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
+// score 9: only the EAX/EDX roles in the `1 << controller_index` mask and the
+// zero store differ. A named controller_mask local keeps the same code.
+// Permuter: 295 tries in 600 s, no lower form.
 // @retail 0x2c5897
 void c_game_engine_variant_category_list::handle_item(s_controller_reference **controller, long *item)
 {

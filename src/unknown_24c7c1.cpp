@@ -556,12 +556,45 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
+// keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
+// packs the predicates at -0x14/-0xd/-2 and spills `left` as a dword at -0x50; the only spelling that produces
+// retail's word store is an invented two-short aggregate whose other half the function never touches, which review
+// rejects, and the best keepable form (const short left) measures 109, a gain of five, under the keep bar. The
+// body stands.
+// MiniMax B (11-14): no new form, no lower score (115): retail keeps the view at -0x44, the font at -0x50, the line
+// height at -0x14, the player at -0x40, the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at
+// -0x3c, while this build puts the view at -0x30, the font at -0x4c, the line height at -0x18, the player at -0x3c and
+// `left` in a dword at -0x50; the word needs 0x24ce9d to take a short, and that declaration may not change here:
+// BLOCKED-BY 0x24ce9d.
+// MiniMax C (11-14): no new form, no lower score (114 in the full build, 115 in the reduced one): retail's
+// homes are the view at -0x44, the font at -0x50, the line height at -0x14, the player at -0x40, the bounds
+// at -0xc, the text bounds at -0x24, the colour at -0x34 and the three message predicates as bytes at
+// -0xf/-0xe/-0xd with the split-screen byte at -1; ours puts the predicates at -0x14/-0xd/-2, and
+// retail keeps `left` in a word at -0x3c, sign-extended at the call to 0x24ce9d, where ours spills it as a
+// dword at -0x50; that word needs 0x24ce9d to take a short, and its declaration may not change:
+// BLOCKED-BY 0x24ce9d.
+// MiniMax A (11-13): no new form, no lower score (114): the timer predicate as a bool puts the byte
+// stores where retail has them but moves every other home, and scores 191; the three message predicates
+// are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and
+// retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
+// MiniMax G (11-12): no new form, no lower score (114); the three message predicates are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
+// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// MiniMax E (11-11): no new form, no lower score (114); the three message predicates are still packed in different
+// homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at
+// -0x3c where ours spills it as a dword at -0x50; the text buffer is still pushed where retail passes it in esi,
+// which the text helper in another file decides.
+// MiniMax C (11-10): the score is 115, unchanged; the three message predicates are packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
+// MiniMax R (11-10): no new form, no lower score (115 in the eight-function image); the view's home is
+// still four bytes above retail's and the text buffer is still pushed where retail passes it in esi,
+// which the contributor's text helper decides.
+// MiniMax S (11-07): no new form, no lower score; the three message predicates as bytes give 191, so the
+// body stays; the view, font, line-height, player, colour and rectangle homes and the left word still differ.
 // MiniMax R (11-05): no new form, no lower score; the timer flag as a bool puts retail's byte stores at
 // -0xe/-0xd with the scripted flag still at -2 beside split_screen, 191, so the body stays (file now 114).
 // MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
 // beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
 // -0x50 with the colour at -0x2c.
-// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -695,6 +728,62 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // at -0x50 and shifts font (-0x4c against -0x50), line height (-0x18 against -0x14) and player (-0x3c against -0x40).
 // J260: Timed ratio/row power/status power double storage singles 486/322/222; pairs 486/483/316; all 492; immutable all 492; frames 0x270 versus 0x264. No exact match; real producer widths restored.
 // NOT kept: no eligible native repair; opening executable source restored. View, packed predicates, left word, color and rectangle homes remain.
+// Round 224 (m3 lane 3, fast; control 115; counts in brackets are aligned with the frame offsets masked: 19 for
+// this body, 16 with the bool timer): `left` as the x of the existing two-short widget point with y never written
+// and the bool timer 109 at retail's 1889 bytes [15] (a six-point gain through a type chosen for its size, not
+// kept). On the bool timer (191, 1888 bytes): an unused `short` declared beside `left` 191, one assigned from
+// `left` and never read 191 (both still a dword store); a named `short right` for the two right edges 492 (1887
+// bytes), for the first edge only 494 (1893). With the widget point the flags sit at -2/-0xd/-0xe against retail's
+// -0xd/-0xe/-0xf: only the scripted flag is above the bounds/origin slot where retail has it below. A repeated
+// `bounds.top = top` store there changes nothing (109); the scripted test written out from the player fields at its
+// second use 375 (1892); the scripted flag set in two steps 454 (1891). What is left once the slots are masked:
+// the tutorial colour's arm order (retail a4 first) and two `mov eax, edi; push eax` argument loads (ours EDX).
+// M3 lane 8 r144 (fast with 0x24ce9d, 0x24c80b and 0x24cedf, matched each time; control 115). With the bool timer: left and
+// top as x and y of a two-short screen point, y written first and top a copy of it 516 (1899 bytes); only x written 109
+// (1889); x written first, then y, top a copy of y 109 (the same code as only x: the y store is removed, so converting the
+// origin to a whole integer point is a source that gives retail's word store); that with 0x24ce9d's text parameter last
+// (retail's setup order) 104, 0x24ce9d still matched (the diff is build/r144/lead-24cf66.patch; not kept: the point's y is
+// dead storage, a locals-grouping form without a match); the reorder alone 110; the reorder with the bool timer and plain
+// shorts 186 (1888). On the 109 form: the tutorial colour as `flag ? a4 : bit ? a8 : a4` 109 (same code); the total height
+// renamed to sort last or first 109/109 (same code: names do not order these homes); the total height declared before the
+// player 471 (1885); the two rectangles declared before origin 109 (same code). Left on the 104 form: retail's homes in
+// order are split flag, origin, scripted/tutorial/timer flags, line height, flash (shared with the row counter), total
+// height, bounds, colour, top, the point, player, view, count, row height (its own home), font; ours packs the scripted
+// flag at -2, shares the row height with the total height and gives the row counter its own home; and the tutorial
+// colour's block order.
+// Round 112 (m3 lane 9, plain): 114 -> 103 with two parameter reorders, NOT kept (coordinator 11-11: helper parameter order
+// picked by score, kept only with a match); the bodies stay at main's order.
+// 0x1fa30 as (bounds, text): m3_owner prints it as ours, though this note called its file a contributor's. Retail
+// sets ECX (text) before EAX (bounds) at every call, which gives (bounds, text), 0x1fa50's own order. 114 -> 108.
+// On that, 0x24ce9d as (left, top, bounds, result, text), round 27's order: 108 -> 103; two of its three calls
+// then set up their arguments as retail does. 0x1fa30, 0x1fa50 and 0x24ce9d still match; 0x24cf66 is their only
+// retail caller. With frame offsets masked, 14 lines differ: the left word store, the timer flag as a byte, the
+// tutorial colour's block order and the third 0x24ce9d call's setup; the rest is homes. On the 103 form: bool
+// timer 180 at 1888 (re-measure); the loop's `view->fade_time` read once into a named local 290 at 1892; the
+// message-text arm with a named `message_text` for its three uses 103 (same code); the scripted test as nested ifs
+// 103 (same code); the flash fraction clamp as a ternary 103 (same code); the loop's fade clamp as if/else-if 110.
+// M3 lane 13 r92 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 114): retail's row counter
+// shares the flash scalar's home (-0x18; flash is address-taken in both builds) where ours spills the counter at -0x44. The
+// rows loop in a block of its own (the counter's scope then a sibling of the flash block; this build has no for-scope
+// conformance) 114 (same code: spill homes do not follow lexical scope); that with the bool timer 191 (1888 bytes); the row
+// height as a short 261 (1903 bytes); the row height declared once at the loop block's top 114 (same code); the qsort call
+// inside the loop block 114 (same code).
+// MiniMax S (11-15): no new form, no lower score (114): retail keeps the timer message as a byte at -0xf and the left
+// coordinate as a word at -0x3c where ours stores a dword, and the frame homes of the row counter and the flash scalar differ.
+// MiniMax D (11-16): no new form, no lower score (115 in the fast check): retail keeps the view pointer at [ebp-0x44]
+// where this build keeps it at [ebp-0x3c], and retail's three message flags are bytes at -0xf, -0xe and -0xd while this
+// build gives the timer flag a long and the others bytes at -0x14, -0xd and -2; making the timer flag a bool so the
+// three pack measures 191 (as the round above it found), so the frame is left as it is.
+// b9E (11-17) walk against retail, fast build on r839: 114 fast, 1889 bytes both; 0x24cf66 starts exactly where
+// 0x24cedf ends (0x24cf63 ret 8), no padding or fall-through. Every field offset, jcc sense (NaN included: 0x24d130,
+// 0x24d3ce, 0x24d3ec, 0x24d3f8), callee argument, loop/qsort shape and constant agrees with the code; 0x45de40 and
+// 0x45e570 hold 1.9f and 0.4f promoted to double, 0x45dbc0 1.0f, 0x45dbbc 0.5f. No behaviour difference found.
+// Retail-only details that compile the same: the scripted path stores alpha 1.0 at 0x24d0c2 and 0x24d0ec overwrites it;
+// the timer path's pack_color4f call at 0x24d189 keeps its result unused. `top += (short)height` lost its cast (retail
+// adds the dword at 0x24d32d): 114 fast, 115 in the r841 full build. Left: homes (timer byte 0x24d03b, left word
+// 0x24cffc, view 0x24cf76, font 0x24cfc9), the tutorial colour's block order (retail falls into the a4 load at
+// 0x24d1a2, ours puts it last), and 0x24ce9d's setup (retail pushes the text between the left and top loads at
+// 0x24d2d6-0x24d2dd; ours loads top first through edx; 0x1fa30's ecx/eax loads at 0x24d2eb swap likewise).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
@@ -810,7 +899,7 @@ void function_24cf66(long local_player_index)
 				count--;
 		}
 
-		top += (short)height;
+		top += height;
 		qsort(player->messages, 4, sizeof(s_hud_message), hud_message_compare);
 		for (short i = 0; i < count; i++)
 		{

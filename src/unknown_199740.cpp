@@ -102,6 +102,34 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // volatile high 13; a reference to the plain local 116 (stores lost); a dead asm read of it 116 (diagnostic; stores lost). Compile-only:
 // block-scope volatile low and high, a volatile union, a two-dword array and a 64-bit integer for rdtsc keep the hoist; a volatile double
 // stores through x87; a constructor or a store through a pointer helper loses the stores; no SDK header has a reader.
+// Round 96 (m3 lane 9, fast): the decompressed size through a named local 3; `if (!function_2cb5b0(...))` 3; the allocator's
+// result in a `long` before the pool cast 3; `return result != false;` 105; `0 == function_2cb5b0(...)` 3. Original body restored.
+// Round 162 (m3 lane 6): the reader's local as a plain `__int64` read by one asm instruction after the rdtsc (`__asm test eax,
+// dword ptr local_0`, a diagnostic, reverted) 94 (326 bytes): with that instruction masked out 0x199740, 0x6a8a0, 0x8c790, 0x12d400
+// and 0x18f260 equal retail but for loop padding (retail's store order and frames), while 0x80e10 83 and 0x862e0 202 grow their
+// frames by 4 (the local stays live across the rdtsc, so start's spilled high half cannot take its slot). So retail's local is not
+// volatile, its stores survive, and its last use comes before the rdtsc. Compile-only screens, none with that shape: a const
+// reference to a zero temporary, a bit-field pair, a one-element array, `register`, the barrier intrinsic inside the reader with a
+// plain local (stores lost); a const volatile reference, the volatile declared then assigned or in its own block, the barrier after
+// the volatile (low store still hoisted); the barrier ahead of the volatile (retail's store order, zero register set after the
+// pushes); the asm read under a parameter flag, a static const flag, a sizeof test, a zero-trip loop or a goto (stores lost, and the
+// first three add a result temporary).
+// Real builds over all twelve reader users (baseline 0x6a8a0 2, 0x80e10 14, 0x862e0 22, 0x12d400 2, 0x146e30 120, 0x18f260 4):
+// the barrier ahead of the volatile inside the reader 4 (0x6a8a0 3, 0x80e10 13, 0x862e0 19, the rest unchanged, no match lost);
+// the barrier after it 3 and the volatile in its own block 3 (every user unchanged); a const reference to a zero temporary 116
+// (stores lost at every site; 0x8c790 and 0x194260 lose their matches). The header is back to main's.
+// Round 109 (m3 lane 16, fast over the eleven reader users; control 0x199740 3, 0x6a8a0 2, 0x12d400 2, 0x18f260 4, 0x80e10 14,
+// 0x862e0 22, 0x146e30 120, 0x86800/0x8c790/0x1241b0/0x194260 MATCH): the decompress source named ahead of the pool call 127 (332
+// bytes); this body moved below 0x1995a0 in src/unknown_199560.cpp with the pool from that file's existing allocation helper (its
+// reader a plain static function) 3 (same code); `size` as dword in every declaration 3 (same code); the buffer as `byte const *`
+// does not compile (0x199560 takes `void *`). Header diagnostics, each a form reverted even with a match (restored; the header's
+// users include two files on other lanes' lists this round): the reader with no local and `start` zeroed before it is assigned
+// (a dead store) 103 (stores lost, 0x8c790/0x1241b0 lost); a new volatile zero local in the allocation helper's scope 104 (stores
+// lost: the volatile pair survives only in the asm's own inlined scope); a plain zero local with rdtsc spelled as two raw opcode
+// bytes 116 (stores lost, 0x194260 lost); the volatile local with the raw opcode bytes 3 (same code at every user).
+// Round 93 (m3 lane 11, fast): the allocator copy typed `void *` 3; the pool kept as a `long` and cast inside the test 3;
+// `&buffer[4]` as the source 3; the decompressor status in a named `long` 3; the pool freed before the result is set 51.
+// The difference is still the shared tick-counter reader's (include/unknown_080e10.h), not this body's.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

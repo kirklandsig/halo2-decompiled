@@ -29,9 +29,6 @@ public:
 	virtual long seek(long offset, long origin);
 	virtual long tell();
 };
-class stdio_stream_factory_2d79c0
-{
-public:
-	virtual stream_writer_2d9e40 *open_writer(const char *name);
-};
+#include "service_streams_2d8780.h"
+typedef debug_stream_factory_2d76f0 stdio_stream_factory_2d79c0;
 #endif

@@ -3,6 +3,7 @@
 #include "unknown_1428b0.h"
 #include "object_queries.h"
 #include "slot_handler.h"
+#include "unknown_11cc90.h"
 #include <math.h>
 #include <new>
 // @flags /O2 /arch:SSE /Gr
@@ -10,12 +11,11 @@
 struct s_actor_position_state
 {
 	s_actor_position_state();
-	volatile long flags;
+	long flags;
 	point3f position;
 	short field10;
 	byte unknown12[2];
-	real field14;
-	real field18;
+	vector2f field14;
 	long field1c;
 	short field20;
 	short field22;
@@ -51,7 +51,18 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 	arg_2->k = arg_0->up.k * local_2 + arg_0->left.k * local_1 + arg_0->forward.k * local_0;
 }
 
-// score 21 (was 21): ours keeps the transform pointer in EBX and the point's y component in
+vector2f *function_11df30(vector2f *angles, vector3f const *v);
+transform4x3f *function_b8c00(long object_index, long *node_count);
+
+// score 19 (was 19): earlier start 21. Round 116 (m3 lane 9, fast): descriptive names for every parameter and local
+// 19, the parameter reference declared after the point and the vector 19, a const reference to the transform in the
+// else arm 19 (all same code); the node indexed at both calls with the reference kept 51; re-measured `field2e = true`
+// 19. Nothing in our build calls this function: 0x2902b0's body is `#if 0` and its stub is empty, so the convention and
+// the EBX/EBP choice come from this body alone. No untried natural form is left.
+// MiniMax G (11-12): no new form, no lower score (19); retail keeps the transform in EBP and takes the record in EDI, our build
+// takes the record from the stack and the transform in EBX, so the caller's register choice (in another file) decides the rest.
+// MiniMax E (11-11): no new form, no lower score (19): the else arm's two reads swapped 68, the position stored field by field 141, the transform read directly in one call 19; the transform still takes EBX and the point's y EBP, and the constant 1 stays shared between the result and field2e.
+// Earlier at 19 (was 19): Ours keeps the transform pointer in EBX and the point's y component in
 // EBP, retail keeps them the other way round; retail also stores the last field with a
 // direct word store where ours moves it through EAX. Tried: the last field through the
 // plain output pointer 34, with field1c too 35; field2e as word 21; field2e stored before
@@ -60,19 +71,100 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 // 35; only field1c/field2e through local_5 35; the angles through an inlined helper taking
 // real pointers 113; arg_2 read once through a volatile cast instead of local_4 35; the
 // result in a local also stored to field2e 21.
+// Round 99 (lane 16): the angle pair is the existing 0x11df30 (as matched 0x203780 fills the same
+// record), with field14 a vector2f: 21 -> 19, and the record's flags member is no longer volatile.
+// Left: the transform in EBX and the point's y in EBP (retail the other way) and the constant 1
+// shared between the result and field2e. Without the two steering locals that form reads 33 (464
+// bytes: the transform arrives in ECX; the stores then sit in retail's order on their own); seven
+// parameter orders 33; field2e as word 33; local_1 declared first 33. The existing 0x142640 for the
+// private rotate 312 (stays a call). With the angle function: no volatile pointer 113 (453 bytes);
+// only field1c or only field2e through it 19; no address-of local 124; a byte result 19; a result
+// local with field2e = true 19; field10 stored before the position 19.
+// Round 69 (m3 lane 2, fast, plain-confirmed): the node lookup through the existing 0xb8c00
+// (the count through its out-parameter, the returned pointer advanced past the bounds test)
+// 19, the same code: kept, as the count/offset reads were that getter's body written out;
+// on it the record no longer needs its volatile pointer (19, same code: removed). Also on it:
+// no address-of local and no volatile 124 (447 bytes); the getter's pointer plus the node
+// index before the bounds test 119; the getter's pointer in its own local 19. On the old
+// base: local_1 declared first 19 (same code), the no-entity copies swapped 68, one exit with
+// a `placed` flag 136; no steering locals re-measured 33 (the transform arrives in ECX and
+// goes to EBX: in the stack first pass it must load into EBP to stay a stack argument).
+// Round 71 (m3 lane 2, fast): the transform read once through local_4 into a pointer local 113 (453
+// bytes); the if/else inverted (`arg_0 == NONE` first) 137 (451), with no steering local 128 (462); no
+// steering local with the node indexed in both calls (`&local_3[arg_1]`) 63 (464); the bounds test as a
+// positive block with the false return in its else 19 (same code); placement new for the record 51 (474
+// bytes: a NULL test); the transform in a pointer local declared after the point and vector, read
+// once through local_4 113 (453), copied from the parameter with no steering local 33 (464; either
+// place). Permuter (600 s, annealing): reduced image 144 for this body, nothing better in 47 tries.
+// Helper input by value 135, by const reference 19; helper output by
+// reference 19, returned vector 110; named products in every row 19;
+// output accumulation 19; node count at entry 19; node pointer at entry 19.
+// All restored; the register pair and shared constant remain.
+// Round 88 (m3 lane 13, fast). Diagnostic, restored at once: with the only caller 0x2902b0 compiled (its stub taken out, its
+// `#if 0` opened) this body is still 19 and the no-steering body 33, so the missing caller does not decide the convention. One
+// exit (`bool result = false`, `goto done` at the bounds failure, `result = true` at the end) 139 (458 bytes) with the steering
+// local and 133 without it (the result takes CL from the top); a result local set at the end beside the direct false return 19
+// (same code); the rotate helper as a plain static or plain inline function 19, and 33 without the steering local (same code as
+// forced: the link expands it either way). Diagnostics on the no-steering body, the transform still arriving in ECX and kept in
+// EBX: one more read of the point after the reset 65 (483 bytes); the no-object arm's forward from a global, so the transform has
+// fewer uses, 77. The transform as a by-value one-pointer aggregate (diagnostic) 86 (its load is no longer hoisted to the entry);
+// as a reference parameter 33 (the no-steering code); the initial point assigned after its declaration 19; the record-filling tail as an
+// inline function returning true, or returning nothing with `return true` after it, 89 each (438 bytes: 0x11df30 is then called
+// from it and no longer expanded). All restored.
+// Round 103 (m3 lane 10, fast): the else arm reading the parameter directly (the address local only in the node arm) 19; the
+// address local as a reference to the parameter (`transform4x3f const *const &`) 19; the node count declared at function scope
+// ahead of the point 19; the rotate helper returning its output pointer, as 0x142640 does, 19; the helper's input as one vector
+// copy 130 (494 bytes). Diagnostic, restored: size preference for this body 252 (344 bytes, frame pointer and string moves), so
+// the shared constant 1 is not a size/speed choice. Retail inlines 0x142640 itself here (the scale test reads [esi]); that
+// function sits in an /Ob1 file with no `inline`, so ours calls it (312) and the private copy stands in. All restored.
+// Round 106 (m3 lane 1, fast): the record as a reference parameter 19; the address local non-const 19 (same code each);
+// the transform read once through the address local into a named pointer used everywhere 113 (453 bytes, a repeat of
+// round 71's form); the point and the vector grouped in one local aggregate 115 (455 bytes, diagnostic); `inline` on
+// 0x142640 with this body calling it in place of the private copy 19 (the same code), but matched 0x16c2f0 then inlines
+// it (107, 528 bytes): reverted. The call to 0x200e60 shows as differing only because ours reads `[ebx]` where retail
+// reads `[ebp+0]`, one byte shorter, which moves the tail by one byte until the shared constant 1 moves it back.
+// Round 108 (m3 lane 1, fast): the transform parameter as a const pointer 19 (same code); explicit `__stdcall` 19 (same
+// code), `__cdecl` 26 (caller-pops); the forward vector's address named once ahead of the branch for both arms 142 (454
+// bytes). Diagnostic: the result as `arg_0 != NONE || arg_3 != NULL` folds to the constant and still shares it with
+// field2e (19), so the sharing is the constant's, not the return statement's.
+// Round 107 (m3 lane 11, fast): `field2e = true` 19 (same code); field1c and field2e stored ahead of the angle call 35;
+// the node arm's point call given `&arg_2->position` (the address local kept for the rest) 19 (same code); the angle call
+// ahead of the field10 store 32; the bounds test as `!(arg_1 >= 0 && arg_1 < node_count)` 19 (same code). Readings:
+// matched 0x1b1f70 shares its constant 1 between a word store and the bool return exactly as ours does here, so the
+// sharing is the compiler's default and retail's separate `mov al, 1` needs another cause; 0x1414d0 shows the same
+// EBX/EBP trade (a stack parameter loaded at entry takes EBX in ours, EBP in retail). Diagnostic, reverted at once:
+// the standard marker without the address local puts every argument on the stack, 137 (479 bytes).
+// Round 112 (m3 lane 10, fast): the bounds test split (`arg_1 < 0` ahead of the node lookup, `>= node_count` after it) 89
+// (462 bytes); a byte return type 19 (same code, the constant 1 still shared); field1c and field2e stored right after the
+// constructor, ahead of the position, 39; the vector declared ahead of the address local and the point 19 (same code); the
+// else arm's point copied per component through a position pointer 143 (485 bytes). All restored.
+// Round 132 (m3 lane 12, fast with 0xb8c00, 0x142570 and 0x200e60, matched throughout): the record now arrives in EDI
+// as in retail; what is left is the transform in EBX (retail EBP), the point's y in EBP (retail EBX) and the shared
+// constant 1. The parameter orders retail's caller setup suggests (EDX first, the push, EAX, EDI last): record,
+// object, transform, node 19; record, object, node, transform 19; transform, record, object, node 19 (same code: the
+// body alone picks the registers); the transform read through the address local into a pointer local in each arm 19;
+// the node pointer declared at function scope 19; the record filled through a reference 19; the else arm through
+// pointers to the position and forward 81. Diagnostic: plain parameters with `__stdcall` and the function's address
+// taken by a probe global (no address local) 137 (479 bytes: every argument on the stack, the transform in EDI). All restored.
+// Round 178 (m3 lane 8, fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, matched throughout): the point bound by reference
+// (`point3f &local_0 = point;`) 113 (453 bytes); the vector bound by reference 19 (same code); the parameter bound by a
+// non-const reference with the address local taken of it 113 (453); a const reference to the parameter in place of the
+// address local 19 (same code); the record fill and `return true` in a forced-inline tail helper 23 (the constant 1 still
+// shared, the root's two products swap); no address local re-measured 33 (464 bytes). Same reading as 0x1414d0: retail
+// gives the stack-passed pointer EBP (the one register no register argument uses) and the other cross-call value EBX.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {
 	transform4x3f const *const *local_4 = &arg_2;
-	s_actor_position_state volatile *local_5 = arg_3;
 	point3f local_0 = *g_468788;
 	vector3f local_1;
 	if (arg_0 != NONE)
 	{
-		byte *local_2 = (byte *)object_get(arg_0);
-		if (arg_1 < 0 || arg_1 >= (long)((unsigned long)*(short *)(local_2 + 0x114) / sizeof(transform4x3f)))
+		long node_count;
+		transform4x3f const *local_3 = function_b8c00(arg_0, &node_count);
+		if (arg_1 < 0 || arg_1 >= node_count)
 			return false;
-		transform4x3f const *local_3 = (transform4x3f *)(local_2 + *(short *)(local_2 + 0x116)) + arg_1;
+		local_3 += arg_1;
 		transform4x3f_apply_point(local_3, &(*local_4)->position, &local_0);
 		function_290852(local_3, &(*local_4)->forward, &local_1);
 	}
@@ -84,9 +176,8 @@ bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_acto
 	arg_3->s_actor_position_state::s_actor_position_state();
 	arg_3->position = local_0;
 	arg_3->field10 = NONE;
-	local_5->field14 = (real)atan2(local_1.j, local_1.i);
-	local_5->field18 = (real)atan2(local_1.k, sqrt(local_1.j * local_1.j + local_1.i * local_1.i));
-	local_5->field1c = 4;
-	local_5->field2e = 1;
+	function_11df30(&arg_3->field14, &local_1);
+	arg_3->field1c = 4;
+	arg_3->field2e = 1;
 	return true;
 }

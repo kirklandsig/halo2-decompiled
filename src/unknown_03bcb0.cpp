@@ -1745,6 +1745,16 @@ extern long g_485a60;
 // value/definition (391 to 411, definition last kept: 393); long index with (short) casts (393, same bytes);
 // (byte)packed or short part_index (401, 18 bytes short); TEST_FIELD_BIT on the 0x100000 test (389) and on the
 // 0x200 test (380, kept) or both (397); *(long*)(g_485b48+8) store moved first (same).
+// Walk r719 (b2O), statement by statement against retail 4d0b0-4d637: no logic or behaviour difference found (decode, the
+// mode 18/19 tag/second override with the global store of the ORIGINAL tag, 0x4000 early return, the three geometry
+// sources, 1c0d0/4d830/4d7c0/44940 order, mode 5 extra, mode 3 mask/stream/bitmap/texture paths incl. the >>29 == 2 and
+// 0x7ff cases, prefetch order, compound walk, 1caa0 stack order, 4d9c0/4d640/4daa0/4d720 arguments all agree). Retail facts:
+// [esp+0x58] is packed's own incoming slot (a byte 0, then 1 after 15c90, is stored there and never read; the compound
+// walk then reuses it as the bitmap offset), so the omitted `setup` is behaviourally a no-op; 4d640 reads its flag as a
+// byte while retail pushes the 4-byte slot of compound (ours does too); part_index is read back with movsx word (the
+// slot is stored as a dword), values 0..255 so no behaviour change. 0x100000 test: retail `shr edx,0x14; test dl,1` but
+// every spelling (TEST_FIELD_BIT, bool local, (x >> 20) & 1) folds to `test [mem],0x100000` here (380 in all four).
+// Also tried: definition first then part_index/value/index (402), index kept as long raw_index + short (393), value first (404).
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)
