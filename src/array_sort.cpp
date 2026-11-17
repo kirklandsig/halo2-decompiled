@@ -371,9 +371,10 @@ PRIVATE void shortsort_2byte(word *lo, word *hi, t_sort_2byte_compare_function c
 	}
 }
 
-/* sorts an array of 2-byte values */
+/* sorts an array of 2-byte values; the scratch comes first, as in sort_4byte (retail's caller 0x1e370 sets it up
+   before the count) */
 // @retail 0x13df80
-void sort_2byte(word *elements, unsigned long count, void *unused, t_sort_2byte_compare_function compare, const void *context)
+void sort_2byte(void *unused, word *elements, unsigned long count, t_sort_2byte_compare_function compare, const void *context)
 {
 	void **unused_reference = &unused;
 
