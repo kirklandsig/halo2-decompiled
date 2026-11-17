@@ -5641,6 +5641,14 @@ bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking
 // P432: CRT aim/fallback/clip copies 2/2/2; basis/projection role names 2/2;
 // function-scope projection/vertical workspaces 2/2; normalization result 21.
 // NOT kept: no match; first cross j load and memory multiplier still exchange.
+// b14D (11-17) walk against retail, fast build on r847: every statement agrees (frame 0x24, the project/aim/clip tests,
+// the dot and its three stores, both cross products, the 0.0 test and fallback copy, the three offset steps, the clip
+// call, the root loop; 808 bytes). The one differing pair is at 0xc83b7/0xc83bc: retail loads a->k ([eax+8]) and
+// multiplies by b->i ([esi]); ours loads b->i first. In every other product ours and retail load the same operand
+// first. On 2: the helper's i/j/k statement order, all six permutations, 2; the j minuend commuted in the helper
+// (b->i * a->k, canonicalised to the same code) 2; the aim argument cast to a const pointer 2; the first product
+// computed into a local and copied into left 191 (840 bytes); written out with the world-up in a local (the loads
+// then differ at the dot, 108, 796 bytes); first through cross3f alone 12 (dot product registers change).
 // @retail 0xc8290
 void __stdcall function_c8290(point3f *point, vector3f *aim, long unit_index, vector3f *velocity, real const *offsets,
 	bool project, bool use_aim, bool clip)
