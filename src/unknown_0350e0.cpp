@@ -323,6 +323,17 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // P562: Actual squared-axis declaration orders ikj/jik/jki/kij/kji and complete
 // scalar lexical groups: 344/334/334/344/344/334/334/334. NOT kept: no equality or native
 // coefficient residence; current frame 0x90 agrees. Original helpers/body restored.
+// M3 lane 16 r129 (fast with 0x137ed0, matched throughout; control 334): with both matrices as transform4x3f locals and
+// each row rotated in place with i, j and k copied to locals (lane 5's 379; a running sum per component is the same
+// code), our passes take retail's shape: i and j live in stack temporaries, k is read again from g_467104 and each
+// partial sum is written to one stack temporary before the next term. What differs on that base is the builder (ours
+// loads the axis j, k, i and squares j first; retail i, j, k and squares i first; retail also forms inverse*k twice,
+// for xz and yz, where ours shares it). On it: the complement written in each cross product 369 (1812 B); that with
+// named sine products i, k, j and the stores in field order 367 (1814 B); the stores made as each pair is computed
+// (squares, sine products i, k, j, inverse, then forward.i, xy pair, xz pair, yz pair, left.j, up.k) 418 (1848 B: VC
+// moves inverse last, j*i first); matrix3x3 locals with the complement in each cross product 371 (1810 B); i and j
+// copied, k read again, with the complement 435 (1673 B); the row copied as an aggregate before the rotation 455
+// (1655 B, integer moves where retail loads floats). Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2355,6 +2366,20 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // it at +0x40/+0x44), animated +0x50, amount +0x60, scale +0x78, colour +0x7c, draw point +0x88; ours time +0, context
 // alpha +4, alpha +0xc, direction +0x24 (shared with the draw point), tag +0x3c, visibility +0x40, position +0x44, amount
 // +0x68, scale +0x7c, colour +0x84, with x_scale/y_scale in alpha's dead slot and +0x50.
+// M3 lane 16 r129 (fast with 0x2f2d0 and 0x2e3f0; control 492): the loop index declared at function scope 492 and the
+// projection dot ahead of the inverse range 492 (both same code: the slots follow live ranges, not scopes); re-measured
+// on this base, the far distance read at each use 532 and the flags read once as a word value 504 (2293 B). Retail
+// keeps the index in a stack home and reloads it at the loop top into the entry register because its `selected =
+// animated` integer copy at the top of the block takes ECX/EDX; ours keeps the index in ECX. New combinations of
+// retail's forms: the sampled colour copied field by field with each entry colour started as a copy of `animated` at
+// the top of the block and multiplied in place 568 (2322 B, frame still 0x90); that with `!(visibility > 0.0f)` 567,
+// with the far distance read at each use 574, with the flags as a word value 586 (2333 B), with the context alpha
+// through PIN 555 (2322 B). Kept (behaviour, count unchanged): `delta` assigned k, i, j. VC reorders a three-term float
+// sum by the order delta's fields are first assigned, so with i, j, k the forward and projection dots and both
+// camera sums were computed (k + j) + i, while retail computes (j + i) + k in all four (0x2eb3a-0x2eb5b,
+// 0x2ec40-0x2ec58, 0x2ed71-0x2ed97, 0x2ed99-0x2edb9); every term order written in the forward dot compiles to the same
+// code, and explicit grouping `(j + i) + k` in all four gives retail's order too (493). With k, i, j all four round as
+// retail's: 492 plain (register-masked aligned 242 -> 237).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2380,9 +2405,9 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
         context_alpha = clamp_2e9e0(context[3] * g_5234c8);
     color3f animated = { 1.0f, 1.0f, 1.0f };
     vector3f delta;
+    delta.k = position.z - g_4b9da0.z;
     delta.i = position.x - g_4b9da0.x;
     delta.j = position.y - g_4b9da0.y;
-    delta.k = position.z - g_4b9da0.z;
     real forward = g_4b9dac.j * delta.j + delta.i * g_4b9dac.i + delta.k * g_4b9dac.k;
     vector3f reflected;
     reflected.i = (g_4b9dac.i * forward - delta.i) * 2.0f;
@@ -3014,6 +3039,12 @@ real magnitude3d(vector3f const *v);
 // fcos, as ours does in 0x1161f0 where the angle arrives in xmm0 from a call; every form here keeps the x87 duplicate.
 // MiniMax C (11-16): no new form tried this round, no lower score (170): the body is retail's length in the twenty-address image (1045
 // MiniMax C (11-16): bytes) and the blocks' order still differs in the ways the notes above record.
+// M3 lane 16 r129 (fast with 0x24590/0x30bf0, and 0x1ecf50 when the shared rotate helper is used; control 170): the parallel
+// test on a fresh `dot3f(&second, &first)` with acos on the stored dot 198 (1039 B, first difference +0x9); the rotation
+// through the existing rotate_direction on `first` in place with a `cosine = dot` copy for acos and an angle copy for
+// the sine 178 (1028 B; without 0x1ecf50 in the fast image the helper stays a call, 388 at 820 B). Retail's rotation
+// writes each component's partial sums to +8 and the result into first's slot, sine at +0x10 and the cosine over the
+// angle at +0xc.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
