@@ -1719,8 +1719,8 @@ long function_127010(short class_index)
 					if (ducking->fade_out_time >= 0.001f && ducking->fade_out_time + ducking->hold_time > elapsed)
 					{
 						/* retail divides the clamp value by the fade-in time (divss); a copy of it keeps the inverse separate */
-						real fade_in = ducking->fade_in_time;
-						real inverse = 1.0f / fade_in;
+						real fade_time = ducking->fade_in_time;
+						real inverse = 1.0f / fade_time;
 						real time = sound_system->ambience_fade - elapsed + ducking->fade_out_time * ((elapsed - ducking->hold_time) * inverse);
 						real t = 1.0f;
 						if (1.0f > time * inverse)
