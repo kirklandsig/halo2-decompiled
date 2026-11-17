@@ -691,7 +691,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Earlier header detail: 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
-// score 114 (was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// Earlier copy of the first line (114, was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // MiniMax D (11-16): no new form, no lower score (114): the permuter searched this file for 303 s (31 tries, 5 worse
 // variants taken, 1 restart; the reduced image's baseline 108 equals the full image's 108) and found no improvement; the
 // first difference is still the inlined rotation's dot, where retail copies the vector's component into the destination
@@ -1157,6 +1157,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // signed animation index/support flags/first and second physics dwords: 205/194/215/213/146/140/114/114.
 // NOT kept: no native rotation j/k or eager-output equality; original complete body,
 // shared rotation, observations and flag publications restored.
+// M3 lane 1 r112 (fast with 0x24590/0x1cd6c0/0x1ecf50/0xe3910/0xd0080/0x1ff360, none moved): lead, kept only with a
+// match: `bool moved_away = false; if (alignment > 0.99f && alignment > dot3f(facing_goal, &rotated)) moved_away =
+// true;` 94 (plain too, 1387 B: retail's `xor dl, dl` ahead of the 0.99 test); with the up-dots' arguments swapped
+// as well 108. Other forms: the second comparison written `dot3f(...) < alignment` 114 (same code); both exit copies
+// through memcpy 114 (same code); `dot3f(&old_cross, &state->up) * dot3f(&new_cross, &state->up)` 111 (1393 B, under
+// the bar); the alignment as `dot3f(&state->forward, facing_goal)` 116; the moved-away dot as `dot3f(&rotated,
+// facing_goal)` 114.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -1161,6 +1161,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P571: Final policy enabled/disabled result at its original producer, bool/byte/short/long:
 // 395/395/395/395/395/395/395/395. NOT kept: all regress and grow to 1700/1696 bytes; direction-j preload
 // and length/zero homes remain. Original policy query, projection and complete body restored.
+// M3 lane 16 r126 (fast): the yaw offset through the existing vector3f_scale (forward times distance) and then each
+// component taken from zero 129 (products first, but the zero still XMM1); the distance's negation stored ahead of the
+// three offset rows 127; the offset's k row chained into the command's k store 126 (same code); the squared length as
+// dot3f(left, plane normal) 394 (1700 B); the plane offset as dot3f(normal, position) 126 (same code).
 // P574: Original-site point-distance cap admission, positive/complementary
 // bool/byte/short/long: 395/395/395/395/395/395/395/395. NOT kept: no native direction-j
 // preload or length/zero-home recovery; original comparison and full body restored.
@@ -1171,6 +1175,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // P580: Promoted yaw/sine/cosine receiver storage, seven subsets then immutable reused yaw:
 // 126/342/341/343/336/341/348/348. NOT kept: no exact direction-j/length-zero recovery; original scalar domains,
 // real API-result conversions, helpers and complete body restored.
+// M3 lane 12 r133 (fast with 0x16c6f0 and 0x13cb40, both MATCH; control 126): diagnostic sweep of the plane length
+// written out (the dot3f body by hand; reverted): left-first k, j, i 394, j, k, i 397, normal-first k, j, i 394,
+// (k + j) + i 394, i + (k + j) 394, all 1700 bytes. Only j, k, i hoists retail's left.j load (into XMM1), but every
+// written-out form also reorders the plane-distance dot ahead of it (position z and y loads swap, the k operand is read
+// from the field instead of through the copied pointer), so the length/zero registers still do not follow. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -592,6 +592,34 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // P571: Actual backward-progress rejection/admission result, bool/byte/short/long:
 // 244/244/244/244/244/244/244/244. NOT kept: no exact byte/line/sector-home or shared-tail repair. Original
 // progress comparison, traversal, helpers and complete body restored.
+// b7C (11-17) walk against retail, fast build on r829: statement-by-statement walk of all 1605 bytes, no behaviour
+// difference found, source unchanged, score stays 244 (fast; 1593 bytes against retail's 1605). Checked: the entry
+// guard order (pathfinding null 0x26c5e3, sector == target 0x26c5e9, sector >= 0 0x26c5f3, sector < node count
+// 0x26c5fb) and the result stores (FLT_MAX 0x44aed4 at 0x26c5ae, -0.1f 0x445630 as last_distance at 0x26c5dd); the
+// cross (0x26c611-0x26c63d) and that normal.k is never stored or rounded, only squared on the x87 stack
+// (0x26c63f-0x26c641, ours the same); the magnitude test against the double 1e-5 (0x45e138, 0x26c659-0x26c665: proceeds
+// when magnitude > 1e-5); the sector loop (previous := current 0x26c6d4, node flag 0x10 at 0x26c6dd, first := 1 at
+// 0x26c6e1, next := NONE 0x26c6ea, the unknown1c/unknown20 admission with the edge flag byte [edge+5] & 2 = 0x200 at
+// 0x26c6f6-0x26c70a, target exit 0x26c70f); the two 2-D dots (y*normal.j + x*normal.i, minus the line distance in
+// float, 0x26c7bc-0x26c7da, 0x26c812-0x26c827, 0x26c864-0x26c86c), the first-edge arm (forward picks vertices[1], else
+// vertices[0], at 0x26c7f3-0x26c806, first := 0 at 0x26c82b) and the carried distance1/point1 arm (0x26c832); the
+// call's argument order and register arguments (edx pathfinding 0x26c89f, edi origin 0x26c89d, cl forward 0x26c893);
+// the hit test (blocked || next != previous else hit := 0, 0x26c8b2-0x26c8bd); the doubles -0.1 (0x45e130, 0x26c8e7),
+// 0.0001 (0x45def8, 0x26c914) and 0.01 (0x45ddb0, 0x26c9b2), each compared in the direction ours uses, with word
+// compares of count at 0x26c8f3 (> 0) and 0x26c957 (> 200) then `inc dword` at 0x26c964; last_distance :=
+// result->distance before the 0.0001 test (0x26c90e); the three over-distance tails (0x26c9a8 sector := next, 0x26ca22
+// distance 0 and blocked, 0x26ca86 neither) and the target/NONE test order (0x26c98e-0x26c9a4); the blocked exit
+// (0x26cae7 returns true, no stores), the location exit (flag byte & 0x80 at 0x26c93f, 0x270600 called with edx
+// location and ebx the iterator's edge word 0x26c941-0x26c946, then blocked := 1 and return true at 0x26caf2); the
+// no-edge and no-hit tails (0x26cb76, 0x26cb72, blocked := 1, sector := current, return true); the final tail
+// (0x26cb14, sector := current, blocked := 0). Retail's xmm0 holds `distance` at every tail entry, reloaded at
+// 0x26c96a, so no register-passed value differs. The only non-register differences are the ones already listed:
+// retail's success byte is written only at entry (0x26c5bc) and at 0x26cb08, the two-level exits (0x26c8f9, 0x26c95e
+// both jump to 0x26caff) reach the final tail without testing hit, and the magnitude sums k, j, i (0x26c643-0x26c655)
+// where ours sums k, i, j in the private helper, which only moves an x87 extended-precision rounding before a 1e-5
+// test. Helper rule: the private dot_product2d (point, vector), magnitude3d and function_x697631 are not written-out
+// bodies of a shared helper that this file may include (magnitude3d's shared form needs slot_handler.h, a new include;
+// recorded above at 244); no new local, helper, double or include.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
