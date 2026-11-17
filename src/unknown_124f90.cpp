@@ -4476,6 +4476,12 @@ struct s_128ca0
 // widened (`xor edx, edx` ... `and edx, 0x7f`, retail byte ops), and the tail's flag tests, next-chunk test and stream store differ
 // (see r114 below). Earlier: the pitch result and the argument held swapped stack homes and the pitch bounds pair address was
 // formed differently (both fixed in r114). See the b6U walk below.
+// MiniMax D (11-17): no new form, no lower score (158, was 158); the pitch bounds pair address
+// (retail's lea +8), the pitch and argument hold swap and the two clamp joins remain. The single-exit
+// decibels_pin (168) and a long pin copy (171) regress; the permuter (30 tries, annealed) found no
+// better form.
+// score 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
+// pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
 // Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.

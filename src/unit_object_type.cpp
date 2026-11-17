@@ -2279,6 +2279,7 @@ struct s_unit_motion
 // the register-convention body that reaches retail's length makes LTCG inline the callee into 0xc7840 and lose 0x1e5af0/0x1faf80:
 // BLOCKED-BY 0xc7840's call sites. The permuter (annealing, 427 s, 37 tries, the first run over this body) found no
 // variant below 104.
+// MiniMax C (11-17): no new form, no lower score (104, was 104): this body keeps position/velocity on the stack (ret 0xc) where retail takes them in XMM5/XMM4 with the time in XMM3 and returns with ret 4; the accumulator form (#515's body) gives retail's convention and the same 227 bytes at 28, but it then inlines into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80, so it cannot be kept.
 // score 104 (was 104): this body keeps position/velocity on the stack (ret 0xc); retail takes them in
 // XMM5/XMM4, time in XMM3 and returns with ret 4. #515's body (output accumulators initialised from the inputs,
 // and each step as `time > motion->field ? motion->field : time` reading the field again) gives retail's
@@ -5099,6 +5100,7 @@ void __stdcall function_cc810(long vehicle_index)
 // repeated both (162 each) and compared the two builds side by side: retail computes the discriminant with mulss and subss and
 // stores it before the fsqrt, while this build keeps the whole chain on the x87 stack, which is a compiler-version difference
 // this source cannot reach.
+// MiniMax C (11-17): no new form, no lower score (162, was 162): the one-use discriminant is still evaluated on the x87 stack, which is what needs the eight-byte frame, where retail computes it in SSE and spills it for the fsqrt; the first stop test's three multiplies are still folded into one multiply by 0.25 where retail keeps them unfolded, and the acceleration is still loaded into a register early where retail reads it from the argument at each use.
 // score 162 (was 162; earlier 167): m3 lane 16 r120 (all restored): the first stop test grouped `(stop_time * 0.5f *
 // velocity) * 0.5f + distance` 189, fully grouped `((stop_time * 0.5f) * velocity) * 0.5f` 206 (the whole test moves to
 // x87); the acceleration/deceleration stores after the speed limit with no `negative` local and the coast reading
@@ -6638,6 +6640,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // MiniMax S (11-16): no new form, no lower score (59): the two initial header lookups still use this build's SIB encodings (the pool
 // data as the base where retail has the offset) and the EAX/ECX/EDX success scratch rotation remains; the frame, the unsigned source
 // loop and the three return blocks agree; the permuter (annealing, 420 s, 36 tries) found no variant below 59.
+// MiniMax C (11-17): no new form, no lower score (59, was 59): the out-of-memory arm still sets the return value before its store (retail has three return blocks, 1040 bytes), the first two header reads still take the scaled offset as the address base where retail takes the data pointer, and the success arm's scratch still starts in EDX, EAX where retail starts in EAX, ECX after the out-of-memory block.
 // score 59 (was 59): the out-of-memory arm sets the return value before its store (retail's three return
 // blocks, 1040 bytes); left are the first two header reads' base/index order and the success arm's scratch
 // rotation (ours starts EDX, EAX where retail starts EAX, ECX after the out-of-memory block). Earlier rounds below.
@@ -7296,6 +7299,14 @@ done:
 // retail's dead bit-9 and bit-1 byte stores, the first weapon index in a frame slot with the unit looked up again, the
 // side-bit `sete` and `or byte [mem]` updates, the state pointer's home (+0x14 retail, +0x1c ours), unit_index in ESI for
 // the tail, the face switch (no range check, case 3 laid out first) and the ticks' second store (held type).
+// Round 178 (m3 lane 8, fast with 0xc42e0, 0xd6bc0, 0xd6800 and 0xc6b30, matched throughout; the convention now agrees, both
+// `ret 0xc`): the toward normalizer written out with `v->i = scale * v->i;` 199 (same code: the x load still goes ahead of
+// the divide); both weapon indices in a two-element array 199 (same code, scalar-replaced). Diagnostics, not keepable
+// without a match (a new one-member aggregate and helper): both definition-flag tests through a forced-inline helper
+// returning a one-byte aggregate holding the bool 151 (retail's `and cl,1; mov [esp+x],cl` dead stores and the hoisted
+// `mov ecx, 2` appear), bit 9 alone 204, with the weapon array 151. Left on the 151 form: the x multiply, retail's first
+// weapon index in a frame slot (its store kills the unit lookup, which retail repeats for the second index; ours keeps
+// it in EBP) and the state pointer's home (+0x14 retail, +0x1c ours).
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7624,6 +7635,7 @@ public:
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
 // score 508 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
+// score 492 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
 // spills, magazine flags, later register/slot choices and the expanded
 // 0x106030 call remain. The indexed magazine pass gives native pointer steps
 // and a countdown, confirmed by the ordinary whole-file check.
@@ -8665,6 +8677,7 @@ real function_50650(real cosine);
 // MiniMax S (11-16): no new form, no lower score (563): the frame is still 0x8c against retail's 0x80 and the two 0xc7750 calls still
 // push position and velocity where retail passes them in XMM5/XMM4 with the time in XMM3; that call's register convention is decided by
 // 0xc7750's own declaration, which this lane may not change: BLOCKED-BY 0xc7750.
+// MiniMax C (11-17): no new form, no lower score (563, was 563): the frame is still 0x8c against retail's 0x80, and the input and vector homes and the prediction/call scheduling still differ.
 // score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.

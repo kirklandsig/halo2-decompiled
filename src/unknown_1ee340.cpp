@@ -247,6 +247,18 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // transformed point declared at function scope 6; const surface and edge pointers 6; the count advanced with `+= 1`
 // 6; `if (matrix != NULL)` 6 (all the same code). Re-measured by mistake (listed): a long side 97, the tag through a
 // `long *` view of the array 6. Restored.
+// Round 94 (m3 lane 2, fast with 0x1ee4d0/0x1ee500, both matched throughout): an inline member storing x into the
+// next slot and returning it, y/z/w stored by the caller, 10; the x copied with memcpy, y/z/w through the pointer 10;
+// the slot through an inline `vertex_slot(index)` accessor 6; the vertex as a `real (&)[4]` array reference 6; a
+// four-component setter (x, y, z, w) on the pointer 6. Diagnostics (not kept): a global store of 0 or 1 at the top
+// gives retail's entry order (radius first) but not the x store; at the end it moves nothing. A compile-only screen
+// (CL without /GL reproduces ours exactly) shows VC folds a pointer into its first use and forms it afterwards only
+// when the later uses lie past a block boundary (matched 0x42850's inlined record take: two stores fold, the add
+// follows for the uses after the inline's test); no code-free boundary (label, do-while(0), one-pass loop, a
+// returned pointer, a later use) moved the add here, so retail's x store sits in another block than y, z and w.
+// In the screen the fold needs a pointer variable with more than one definition whose later uses lie past a merge
+// (0x42850's `result = 0; if (...) result = &records[count];`, then the caller's uses); the vertex pointer declared
+// at function scope, set to NULL at the top or at the loop top and then assigned, still forms the address first.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)

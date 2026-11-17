@@ -395,6 +395,8 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // The world-up matrix sums stay a private helper: matrix_transform_vector (matrix_transform.h, not included here)
 // adds forward first, retail adds up, left, forward (0x11998b-0x1199a1), and vector3f_rotate_into_axes sums in
 // another order per component, so neither fits and neither is used. Nothing new: no new include, helper or double.
+// MiniMax I (11-17): no new form, no lower score (241 fast, 218 plain): the frame is still 0x78 against retail's
+// 0x6c with the early esi save, and the 0x11ce20 call still takes its two arguments in the other order.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1316,6 +1318,9 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // block's top 42/42; the object fetched before the 0x119bc0 call 42; the squares in i, j, k order 42 (all the same code).
 // Diagnostic: one to three unused `long` locals on it 42 each. Left there: the squares' i/k load order and the velocity
 // copy into the object (retail loads the source's i before the object pointer, every later scratch register follows).
+// MiniMax I (11-17): no new form, no lower score (45): the squared length's three components still load in the
+// order the compiler picks, and the 0x119bc0 result still travels in al where retail pushes the containing dword,
+// which needs 0x1c4b00's last parameter declared a bool in a file this lane may not edit.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

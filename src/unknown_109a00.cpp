@@ -706,6 +706,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // this base 172 (the failure block pops before its stores as retail but is laid out inline behind the body test); the dot as
 // dot3f(&entry->transform.forward, up) 14, dot3f(&entry->transform.up, forward) 10 (the i product turns retail's, the cross's
 // two `up.i` products flip), dot3f(up, &entry->transform.forward) 14; the 10-form with cross3f for cross3f_staged 24.
+// M3 lane 14 r104 (fast with 0xb7060; base 8): the body test given its own `else` with the two failure stores and a return (the
+// outer tests keep the closing copy) 159 (951 B, 0xb7060 11); the scale and the dot through the axis pointers up first,
+// `vector3f_scale(forward, dot3f(up, forward), &scaled)` 18; `inverse` declared at the function top 8 (same code, real build);
+// the component test as an early return with its own failure stores 278 (941 B); the physics test the same way 104 (928 B,
+// head flips, 0xb7060 11). Re-measured: the dot named 8, dot3f(up, &entry->transform.forward) 14.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

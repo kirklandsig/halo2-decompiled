@@ -116,6 +116,15 @@ bool function_1946f0(s_bitstream *stream)
 // `size_in_bytes - byte_index > 0` 52 (142 bytes); the memset size written out at the call (count kept for the tests) 15
 // (143 bytes); `long bit_offset = saved % 8;` named after the byte index for the mask 2; one `count >= 0` test guarding
 // both the mask and the clear (the separate bound test dropped) 40. Both LEAs stay data-first in each 140-byte form.
+// M3 lane 5 r193 (fast): the mask named as a byte local at the mode block's top (sunk to its use) 2; `saved / 8` written
+// at every use, re-measured 2; a data local at the mode block's top used by the mask 48 (the mask access becomes
+// index-first `[edx + edi]` but folded into both memory operands, no LEA, data held in EDI); an unused read of the data
+// field at the mode block's top or the function's top 2/2 (diagnostic, dead, folded away before ordering); block-local
+// data locals in both the mask and the clear blocks 35. Sibling evidence: retail 0x1957d0 and 0x195820 put the value
+// computed after the data load first (`[eax + edx]` index first, `add esi, edi` index destination), so retail's two
+// LEAs need data loads ordered before an index that is still computed once.
+// Then the clear's start as a `byte &` element reference passed by address 2 (same code); with the mask's element
+// reference as well 9 (round 90's mask form).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

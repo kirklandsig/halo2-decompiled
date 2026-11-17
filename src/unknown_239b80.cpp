@@ -230,6 +230,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax I (11-17): no new form, no lower score (144): a short hull count gives retail's 0x14 frame and puts the
+// departure flag's byte in an argument home (236), but the flag has to stay a dword to keep the matched caller 0x239d50
+// (a bool flag drops it to 80), so the frame stays 0x18; the one-counter while form (260), the two-continuation form
+// (326) and the pass counter as a short (261) all move the loop shape or the homes away from retail's.
 // score 144 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
 // in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
@@ -707,6 +711,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // loop), retail's is fld eps; fcompi; jbe 0x239f10 at 0x23a0d4 (a NaN dy continues). The written-out positive closure
 // gives retail's form but scores 159 (lane r239), so it is not applied. Still different: frame 0x18 against 0x14,
 // the dword departure flag against retail's byte in the indices home, and the hull count's home.
+// m3 lane 11 r110 (fast with 0x239d50 and 0x239b80, both matched each time; control 144): the count bound as
+// `short const &limit = count;` for the hull and candidate-scan bounds 144 (same code: the binding folds, count keeps
+// EBX); a redundant `if (0 < count)` guard around the candidate scan 149, around the hull loop 247; the first hull
+// index bound as `short const &first = indices[0];` for its six reads 144 (same code); the departure as
+// `if (!left_start) left_start = points2d_differ(...)` 162.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
