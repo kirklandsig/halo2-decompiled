@@ -1045,6 +1045,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // named empty/occupied predicates and head-first override/conditional: 60/60/60/60/60/60/74/60.
 // NOT kept: no native induction repair; nonempty/override forms also regress shared users.
 // Original head/index helpers and complete executable body restored.
+// M3 lane 7 r173 (fast with 0x96510/0x94df0, control 60): `long next = m_next_sequence; while (++next < newest)` 60; the
+// shared window-head helper as `count != 0 ? head : NONE` 60 (and 15 of the file's matched users lose: reverted at once);
+// the window pointer declared at the top (before the send call) for the bound local and the index, the count through
+// the member, 60; the bound compare written `newest > next` 60; a guarded do-while (`if (next < newest) do {...} while
+// (++next < newest);`) on the window-pointer form 60. All the same code: the offset is still strength-reduced.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

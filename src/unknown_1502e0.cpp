@@ -1659,6 +1659,14 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // as an early return with the a9030 arm falling through 36; the a9030 arm returning true directly 27. Diagnostic: the
 // `register` keyword on the slot 17 (ignored). Both of 0x14f820's retail calls are inlined in our build, with the
 // getter-reload lead as well (0x14f820 2742 B there).
+// M3 lane 7 r173 (fast, control 17): retail keeps the player in EDX untouched until the lookup's `mov edx, edi`, which
+// reads as a second `player->unit_index` load merged only after allocation (the getter-reload lead's mechanism). Forms
+// that might defer the merge without a second getter: the lookup's argument read as `*(dword *)&player->unit_index` 17;
+// the object getter `__forceinline` (file-wide) 17; the player getter `__forceinline` 17, with the getter reload 5 (the
+// player address still `mov edx, [edx + 0x44] ... add edx, eax`); the unit read by byte offsets (`*(char *)(unit + hand
+// + 0x212)`, `((long *)(unit + 0x218))[slot]`) 17; a unit-index local for the test and both calls with the lookup
+// reading `player->unit_index` 17; an object getter taking the index as `long const &` at the lookup 17; the lookup's
+// argument as `*(long *)((byte *)player + 0x2c)` 17 (all the same code: each read merges as early as the plain one).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

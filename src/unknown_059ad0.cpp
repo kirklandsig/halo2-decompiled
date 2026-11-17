@@ -3753,6 +3753,11 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // MiniMax D (11-16): no new form, no lower score (101).
 // MiniMax S (11-16): no new form, no lower score (101): the timeout owner still comes from a parameter of
 // 0x769a0 whose declaration is in another file, so the owner spill before that call cannot be settled from here.
+// M3 lane 7 r173 (fast with 0x769a0, control 101 [aligned 38]): the outer member tests as nested ifs 101 [38] (same
+// code); the three announcement flags as `for (long flag = 0; flag < 3; flag++) message.flags[flag] = 1;` 92 [32] (419
+// bytes; NOT kept: the loop compiles to a 0x01010101 word-and-byte fill where retail stores three bytes, so the drop is
+// alignment); the host comparison written `(host = session->member_index) != member` 102 [39]; `session->value44 ==
+// member` 102 [39]; `long host;` declared ahead of `state` 101 [38]. Still BLOCKED-BY 0x769a0 (its held file).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {

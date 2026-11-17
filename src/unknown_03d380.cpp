@@ -598,6 +598,15 @@ void function_125a90(long value);
 // where retail multiplies into eax and forms the address with a lea, and the special arm still sits after the kind
 // arm; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that
 // getter lives in src/unknown_221490.cpp, which this lane may not edit.
+// M3 lane 7 r173 (fast with 0x221810; base 36; [aligned]): the named class-type bool with the long `type == 0x26 && !a`
+// special arm and the kind arm's call test nested (`else if (K) { if (f(type)[0x4c] == 1) remove = false; }`) 150 (466
+// bytes, 0x221810 inlined: nesting the call test inside the kind test adds no depth). An else-if chain on the short type
+// keeps the call out of line: 0x20 `remove = false`, 0x26 `remove = type == 0x26 && !a` (retail's `cmp eax, 0x26`
+// re-test appears), kind arm as a value 48 [25] (0x20 then jumps to the keep store, where retail sends it to the shared
+// re-test, and the `!a` is threaded where retail materialises it); that with the kind arm's call test nested 85 [28];
+// 0x26 tested first, kind arm as a value 53 [29], with the nested call test 90 [32]. Still BLOCKED-BY 0x221810 (retail's
+// is a stack-argument `ret 4` function called out of line at every site; ours is inlined here and in 0x129aa0, 0x21c400
+// and one of 0x189fe0's two calls; the non-LTCG lead for its file is a flags decision).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
