@@ -3364,6 +3364,10 @@ real g_47ff30 = 2.5f;
 // but 710 (the rest reshuffles); the same two calls with the mass local 672 (same code). Retail keeps the 0x22c rates
 // pointer in EDX across both 0x2053c0 calls and the state pointer in EBX for the force block (ours the other way round),
 // and its SSE values sit one register higher (the constant 1 in xmm7, ours xmm6).
+// Complete directional squares, immediate/phased/immutable/weighted, 672 each;
+// the same with a mass-field binding 724 each. NOT kept: the field binding
+// recovers frame 0xfc but adds 20 bytes and raises the count. Acceleration,
+// velocity and scalar homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4554,6 +4558,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // three in-place member statements store i, j, k as retail does (0xf4721-0xf474d) and reload as its final cross does,
 // but score 118 at 800 bytes: not kept. Retail's shared tail starts at the sine load 0xf4713 after a per-arm
 // `cosine * up.i` (0xf468d default arm, 0xf470b case arms); cases 1 and 2 join at 0xf46ae: cross-jumped copies.
+// Returned projection, mutable/read-only and outer/scoped, with member stores
+// or the complete setter 116 each, first +0x108. On that form the vehicle cross
+// 129 and sequential rotated-up stores 121. NOT kept: two-point gain only on
+// the projection forms. First cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -6360,6 +6368,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // guard around the tail's point loop (diagnostic) 981. Retail reads: index ESI only up to 0xf44a0 (then stack reloads,
 // ESI becomes the forward pointer), offset EDI spilled to +0x28; the reversal loop stores every pass with the
 // acceleration sign as a byte and the target sign as a dword.
+// Returned tensor input/result/both and scoped transform 1019/1063/1063/1063;
+// with a separate relative-rotation product 1027/1056/1056/1056. NOT kept:
+// every form shortens and raises the score. Frame 0xfc versus 0xd8, index
+// placement and matrix homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
