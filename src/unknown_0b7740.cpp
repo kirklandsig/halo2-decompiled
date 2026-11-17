@@ -1086,6 +1086,11 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // declaration move, one point); the node byte read twice (no `index` local) 240 (same code); the sample arm setting
 // `matrices` from final_matrices (no second final store) 281. Re-measured: the 0xbfe20 clear 262 (813 B), with bit 29/+0x34b
 // through header->object 194 (814 B). Body unchanged.
+// M3 lane 12 r135 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): re-measured the bit-30
+// clear through the existing 0xbfe20 262 (813 B: frame 0x4c, orientations in ESI and the flags reloaded for the clear, as
+// retail). On it: the bit-29/+0x34b tests through a fresh by-index object_get() (matched 0xe3c90 reads its bit-29 test
+// through a fresh lookup beside its object local) 262 (same code: merges with `object`); the mask copy ahead of final_matrices 312 (804 B); final_matrices
+// declared ahead of object_orientations 262; node_count computed after the mask copy 262 (same code each).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

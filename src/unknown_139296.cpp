@@ -1348,6 +1348,11 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // Also r205: loop 1's draw call through a file-local bool wrapper (inline or forceinline) on SSS 118/118, on the current body 1.
 // Also r205: the definition as a const reference on SSS 118, on the current body 1; loop 1's element through a
 // `byte const &` on SSS 118.
+// M3 lane 6 r188 (round 157's harness with this build's ballast, control 1): in every S form the three failure stores
+// take BL (the kept zero) where retail stores AL, so the zero gains three in-loop uses; in the current form they are AL.
+// SSS with the draw result named and stored on failure in loop 1/2/3 only 106/106/106; the current form with it in loop 1
+// 107; S first with later `long count = field; long offset; for (offset = 0; count > 0; --count)` 6 (xor before the
+// guard, as S F F); SSS with `success = 0;` 106 (same code).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

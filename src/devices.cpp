@@ -1037,6 +1037,11 @@ struct s_device_machine_view
 // Also r205 (references): `word const &` to the group's flags with the lane S bits 116 (655 B), tested directly 122,
 // declared after the machine flags 127 (657 B); `dword const &` machine flags 2 (same code); a const group reference with
 // the lane S bits 115 (655 B).
+// M3 lane 4 r207 (fast with 0x107870, 0x1071e0; compile-only screens agree): the group pointer from a masked
+// `group_index` local with direct masks 122 (656 B); the machine flags read in the test itself (no local) with the
+// group pointer 122; a dead `else` on the group test 122; both value updates as ternaries on function_value 122; the
+// machine test spelled per bit (`(f & 1) || (f & 4) || (f & 8)`) on the lane S form 2 (merged into `test dl, 0xd`).
+// Re-measured round 62's both-arm read: 3 (the pointer takes EAX, the load hoists above the `je`).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1555,6 +1560,11 @@ bool function_108530(long device_index, long name)
 // M3 lane 7 r163 (fast, callers 31/13 throughout): 1-7 unused locals 121 each; the cruise numerator's products velocity
 // first (re-measured) 121; both distance denominators as `2.0f * rate` 121; the denominator summed half ramp-up, cruise,
 // half ramp-down 121; the reset stores in field order 121; the deceleration from the local cruise velocity 121.
+// MiniMax S (11-17): no new form, no lower score (121): retail's callee takes the initial velocity in xmm6
+// with five stack floats and returns with ret 0x14, while this build passes it on the stack and returns with
+// ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7,
+// retail's in xmm5); the split between xmm6 and the stack is the callee's own convention, set by the
+// definition that the six float signature may not change, so the body stands.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1778,6 +1788,13 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Also r205: the animation state as a reference (member calls through it), the model or the definition as a const
 // reference, the flag block reading the animation id and time through a const channel reference, the frame position
 // as a `real const &`, 2 each (same code).
+// M3 lane 4 r207 (fast): the two flag-block sample calls through a file-local forceinline pair helper 11 (the fstp unmoved);
+// `start` scoped to the flag block with the second block sampling into its own `end` 13; the animation and the time
+// declared at function scope and assigned in the block 2; the state declared first in the function 2; the node test's
+// arms swapped (`node == NONE` first) 74. Diagnostics: with the orientation block removed the state takes EBX (no reload)
+// and the fstp follows `push edi` as in retail, while dropping only its second half keeps the reload and our order; the
+// state renamed to sort first or last 2. In every build the fstp is the eighth instruction after the flag branch;
+// retail's is ninth, as if the state's reload were not in the block when it was scheduled.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
@@ -2404,6 +2421,9 @@ bool function_0b6760(s_index_pair const *pair);
 // acceleration read at the top of the position-group block 118 (1510 B); the 0x40 update with the arms swapped 61. Same
 // code as the lead: the speed/acceleration or the target named just before the call, `state != NULL` / `!= false` in the
 // refresh, a `real position = 0.0f` argument, the group index in a local.
+// MiniMax D (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off, and the body is still
+// sixteen bytes short of retail's 1495.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

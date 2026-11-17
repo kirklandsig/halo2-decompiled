@@ -47,15 +47,6 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
     return TEST_FIELD_BIT(arg_1->field_10a2);
 }
 
-/* the weapon in one of a unit's weapon slots */
-static __forceinline long unit_weapon_in_slot(s_unit_weapon_view const *unit, short slot)
-{
-    long result = NONE;
-    if (slot != NONE)
-        result = unit->weapon_indices[slot];
-    return result;
-}
-
 /* the tags an effect may be chosen from, at most four */
 struct s_tag_candidates
 {

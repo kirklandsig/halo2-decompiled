@@ -807,6 +807,10 @@ struct s_player_axes_153d10
 // the dots only 2; a `real const &` to up.k for both its products 8, declared after the i row for the j row only 2; to
 // forward.i for both its products 6, after the i row 10; to forward.j for both 6; the axes view as a const reference after
 // or before the two point calls 2/2.
+// M3 lane 6 r188 (fast with the four callees listed, control 2): the j row as `-(up.k * forward.i) + forward.k * up.i` 6;
+// a `(real)` cast on this product's up.k or forward.i operand alone 2/2 (same code); the axis pointers, the axes view, or
+// cross/relative/delta renamed 2/2/2 (names do not key the order); in the real build the forward and up dots ahead of the
+// cross 115 (1300 B), the forward dot only 47, the up dot only 46.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

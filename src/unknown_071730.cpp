@@ -287,6 +287,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 398: Final result produced by primary/secondary admission, bool/byte/short/long:
 // 470/484/468/469/475/477/469/447. NOT kept: result/admission coupling does not match; original
 // final result, method-call boundaries and complete body restored.
+// MiniMax D (11-17): no new form, no lower score (387, was 387); retail's out-of-line 0x5b080 data
+// getter, its second session state in EAX against our ESI, the two dead state stores at +0x20 and
+// +0x18 and the call at 0x71ac2 remain.
 // score 402 (was 426, fast build; 1589 bytes, retail length; first difference +0x6c). b6P walk of the
 // whole body against retail, block by block, found one behaviour difference and four structure points:
 // - BEHAVIOUR (fixed, score 426 unchanged): the call to 0x71ff0 passed the ratings record plus 4. Retail

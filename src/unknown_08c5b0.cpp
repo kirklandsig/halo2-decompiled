@@ -207,6 +207,14 @@ static inline long bungienet_user_voice_setting(short kind)
 // test) 4 (same code), `changed` set by if/else with no initialiser 25 (91 B); plain reads: the selection written in place
 // as `if (request->kind == 1 && available) ... else setting = 1` with the index read first 32, the controller looked up
 // before the selector 31, the read passed straight to the selector ahead of the index 30 (95 B each, compare folded).
+// M3 lane 14 r104 (fast with 0x8c5b0; plain where noted), all with a plain read (no volatile): an `else if (kind == 0)` arm
+// after the kind-1 arm, also giving 1, 4 (the volatile read's code exactly: the second compare keeps the word load in a
+// register, then goes when its two arms merge); `else if (kind == 0) ... else if (kind == 2) ...` with every arm but kind 1
+// giving 1, MATCH (fast and plain), and `else if (kind == 0 || kind == 2)` the same, MATCH (fast): the extra compares give
+// the kind the third use that puts it in AX and the request in ECX. Not kept: those arms are identical to the else (the
+// 2026-10-30 ruling on identical branches). Lead: retail's source tests the kind against 0 and 2 as well, in arms that
+// compile to the default; a natural form of that with non-identical arms should match. Also: a three-case switch
+// (0, 1, 2, default) 33 (100 bytes, `movsx; sub; dec` chain); the selection as one ternary in place 32 (95 bytes).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

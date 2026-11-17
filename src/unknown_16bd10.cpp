@@ -1180,6 +1180,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (k + j) + i 394, i + (k + j) 394, all 1700 bytes. Only j, k, i hoists retail's left.j load (into XMM1), but every
 // written-out form also reorders the plane-distance dot ahead of it (position z and y loads swap, the k operand is read
 // from the field instead of through the copied pointer), so the length/zero registers still do not follow. Body unchanged.
+// M3 lane 9 r131 (fast; base 126): the point-case left vector bound to a `vector3f const &` for the normal copy, the
+// length and the scaled add 416 (1700 B); the command forward bound to a `vector3f const &` for the yaw, the distance dot
+// and the offset rows 232; the distance dot ahead of the yaw 126 (same code); the sine and cosine declared at their
+// assignments 126 (same code); the length test as `0.0f != length_squared` 125 (only the ucomiss operands swap, the
+// zero still XMM1: a positional coincidence, not kept). The compile-only screen does not reproduce this function (263).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
