@@ -1467,6 +1467,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // from its slot); with `long histogram[16]` 894; the single exit 984 (2948 B); forceinline with `result` first 866; with
 // the loop's variant through 0x192e60 957; all with 0x73530 at 8. Kept: the capacity test through the matched 0x193300 in
 // place of this file's copy of its body, 964 (same code). Lead: the top 0x192e60 out of line with the capacity switch inline.
+// M3 lane 13 r104 (fast with 0x73530, 0x192e60, 0x631f0, 0x63220, 0x193300, 0x1932c0, 0x1931a0, all matched throughout;
+// control 964, both `ret 4`): the clamp as retail's two-evaluation max of 0x1931a0(highest) in place of the hand loop 990
+// (2652 B); that with the loop's variant through 0x192e60 1032 (2588 B); the clamp's call passing `highest` 966 (re-measured;
+// retail's ECX holds the group's highest rating at that call, so `lower` is a behaviour difference left for the reviewer);
+// that with the loop's variant through 0x192e60 1011 (2620 B: the loop's lookup stays a call and the top one still
+// inlines, the reverse of retail); the clamp as `adjusted > lower ? adjusted : 0x1931a0(highest)` 968.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

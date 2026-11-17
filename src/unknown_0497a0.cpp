@@ -428,6 +428,11 @@
 // stores through a pointer the compiler cannot separate from the camera global, s1 is computed first and stored to a float
 // home exactly as retail; so retail's wave values are materialised because something between their definitions and their
 // uses may alias that global (s0 still folds in that form).
+// M3 lane 13 r104 (fast with 0x4a1e0; control 536, both `ret 0x20`): the second cross computed right after the first, ahead
+// of the waves and the adds, 665 (2581 B); both wave values ahead of the first cross 654 (2590 B); s1's argument as a float
+// sum without the double cast 538; s1 computed after the first scaled add, just ahead of its use, 536 (VC sinks it there
+// anyway); the first cross after the first scaled add, ahead of its use, 643 (2603 B). Reading: retail rounds s0 to a float
+// home (fstp, movss) and multiplies by 0.03 in SSE, where ours multiplies by 0.03 on the x87 stack before the one store.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

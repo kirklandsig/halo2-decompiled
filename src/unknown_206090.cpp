@@ -640,6 +640,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P583: Advance-before-admission signed point/contact/query-initialization ordinals,
 // seven subsets, then both collected-prefix searches: 1375/1375/1375/1375/1375/1375/1375/1375. NOT kept: no exact
 // native frame/indexed-contact recovery; original loops, helpers and complete body restored.
+// M3 lane 13 r104 (fast = plain here, 0x2056e0 matched; control 1375, difflib exact/masked aligned 981/585): three
+// retail-shape leads, each raising the count through the phase regime. The impact-list loop as a plain `for` testing
+// `h == NONE ? 0 : arrays[h & 0xffff].count` through a typed 0x40-byte impact array, the element read as
+// `arrays[h & 0xffff].impact_indices[i]` and the inner search the same way, 1398 (982/556: the loop head is then retail's
+// exactly, the count read in the `jne` arm from a fresh pool load and the element at `[eax + (h * 16 + i) * 4 + 4]`); that
+// with a typed array pointer for the inner search 1428 (6289 B); `return a && b && c && d;` for the flag-set result alone
+// 1376 (6243 B, retail's `mov eax, 1` / `xor eax, eax` tail; one over the control), with the plain loop 1397; the friction
+// arm's `sqrt(x * 0.9f)` before the direction copy and its normalize 1405 (6240 B, 945/568: retail computes and stores that
+// root first, then multiplies in SSE where ours keeps it on the x87 stack); root first with the direct return 1420, with
+// both other leads 1468. One to five unused locals on the plain-loop form 1397 each (unused locals do not move the phase).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

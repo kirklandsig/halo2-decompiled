@@ -576,6 +576,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // P582: Rounded persistent minimum/active range/complete angle-limit promoted receiver
 // storage, seven subsets, then immutable range/angle receivers: 658/691/675/722/740/725/784/784. NOT kept: no exact native
 // success/input/hit homes or inactive-exit recovery; original real receivers, helpers and full body restored.
+// M3 lane 13 r104 (fast; control 558): the range local dropped and field_48 read from the definition at each use 631
+// (2892 B); `*arg_5 = 0.0f;` after the hit-flag initialisation 558 (same code: the zero still takes XMM1 ahead of the
+// minimum's store); the minimum update as a ternary 558 (same code); the root helper's product written root * angle
+// 558 (same code; retail multiplies angle * root for rays 1 and 2 but root * angle for rays 3 and 4, ours root * angle
+// for all four); `*arg_4 = 1.0f;` right after the output clear 664 (2912 B).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
