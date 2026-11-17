@@ -6,6 +6,16 @@ The newest entry comes first.
 
 ```
 matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1390 of 1436 Havok functions (228497 of 290362 bytes, 78.69%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1246: `0x306f80` and `0x307840` match.
+
+## 2026-11-16: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
 matched 1388 of 1436 Havok functions (226602 of 290362 bytes, 78.04%)
 ```
 
