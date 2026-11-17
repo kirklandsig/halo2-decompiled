@@ -40,6 +40,11 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax I (11-17): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and this build
+// cannot pack the two flag bytes into one home, so every home sits four bytes above retail's (the reference at 0x18 where
+// retail has 0xc) and the tail's length follows from that; the two call sites still differ (retail calls 0x2600a0 in the
+// sorted loop and inlines 0x262a30's owner lookup, ours does the opposite) and the x87 and SSE operand orders in the loops
+// differ, so the body stands;
 // score 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // Earlier 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
