@@ -280,7 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 214 (was 214; earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 206 (was 206; 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
 // matrix is taken in a named local inside the transform block, and the side bits are extracted with
 // an unsigned shift so retail's shr/and survives instead of our sar/xor fold; still differs: the
@@ -730,6 +730,13 @@ void function_245400(s_source_245400 const *source, long index,
 // code at field_0a first, then the one at field_08) and the two side bits are sign tests of the sign-extended codes.
 // Left: retail's 0x2c frame with the source copied to ESI, its matrix read from its stack slot at the test instead of
 // kept in EBP, its shr/and side bytes and the cross-product register order.
+// m3 lane 16 r132 (fast with 0x245aa0 and 0x245400, both MATCH; base 206): the edge copied into an aggregate `scaled`,
+// scaled into it with vector3f_scale and rotated from it 236 (814 B: the copy goes through memory); that with a
+// block-local matrix name 216 (810 B), with unsigned-shift side bits 223 (806 B), with both 226 (808 B); the edge copied
+// into edge_i/j/k before the scale test and scaled as `scale * edge_i` in the arm (vector3f_scale written out) 205 (783 B:
+// retail's select, `movaps` copies before the `jnp` and scale-first products, but the i/k rows then sum forward + up +
+// left; a one-point gain from a helper body written out, not kept); that with the i/k rows accumulated in two statements
+// 207, with a block-local matrix name 205 (still EBP from entry), with unsigned-shift side bits 212.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
