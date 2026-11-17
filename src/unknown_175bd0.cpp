@@ -1883,7 +1883,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 }
 
 // MiniMax I (11-15): no new form kept: reading colour B into a local ahead of the spawn stores measures 187 (was 128), so the body stands.
-// score 128 (was 128): frame 0x40 versus 0x44 (colour A packed into the dead `unknown` home), the system kept in EDI
+// score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
+// frame 0x40 versus 0x44 (colour A packed into the dead `unknown` home), the system kept in EDI
 // through the type queries where retail reloads it from its home for the colour call (so colour B misses EDI), and the
 // zone block's scheduling.
 // MiniMax E (11-14): no new form, no lower score (128): reading the location index into a local of its own makes the
@@ -2226,6 +2227,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // MiniMax D (11-17): no new form, no lower score (128): retail's frame is 0x44 against our 0x40, it keeps the particle system in
 // ESI where ours promotes it to EDI, it spills colour A to a frame home of its own, and it loads the location mode into EAX where
 // ours uses ECX; the multiplied query inlined gives 135, colour A read early with it 146, and both queries inlined 146.
+// Shared inline zone test on the outside arm 164.
+// Shared inline zone test on the inside arm 165.
+// Existing zone call on the outside arm 263.
+// Existing zone call on the inside arm 252.
+// Existing zone call on both conditional arms 375.
+// Existing placement helper for the complete dispatch 375.
+// Existing placement helper for the two conditional arms with the actual placement 367.
+// Existing placement helper on the outside arm 263.
+// NOT kept: the single-arm inline changes raised the score and the helper calls shortened the expanded zone region; the original body was restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3353,7 +3363,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 }
 
 // MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
-// score 93 (was 93): the system takes EDI and the next index ESI where retail has ESI and EDI (colour B and the type
+// score 93 (was 93): The frame is 0x4c versus retail 0x54. The system and successor registers are exchanged, and the definition has no spill for per-call mode reads.
+// the system takes EDI and the next index ESI where retail has ESI and EDI (colour B and the type
 // object rotate with them), the frame is 0x4c against 0x54 and the location mode is cached where retail spills the
 // definition and reads the mode at each call.
 // MiniMax E (11-14): no new form, no lower score (93, was 93): retail keeps the particle system in ESI and the next
@@ -3722,6 +3733,15 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // colour B in EDI, and it re-reads the location mode from the spilled definition on every cursor call; the mode-per-call form
 // reaches retail's frame but flips the entry parameter placement (108), the two DATUM statements swapped give 114, and a 300 s
 // permuter run stays at 92.
+// Typed low-word array subscript at the effect pool 90.
+// Typed low-word array subscript at the system pool 80.
+// Typed low-word array subscript at the particle location pool 94.
+// Typed low-word array subscript at the effect and system pool 93.
+// Typed low-word array subscript at the effect and particle location pool 91.
+// Typed low-word array subscript at the system and particle location pool 88.
+// Typed low-word array subscript at the effect and system and particle location pool 100.
+// Typed array subscripts fed by named low-word pool slots 100.
+// NOT kept: the 80-point system-pool form changed the stack/register arguments and lost 0x176f60. Forms preserving the caller gained at most three and shortened the body further from retail.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
