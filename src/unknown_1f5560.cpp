@@ -1392,6 +1392,11 @@ real function_50650(real cosine);
 // 1.0 entry stores are still the other way round (ours +0x10 then +0x1c, retail +0x1c then +0x10) and the length is
 // 1326 against retail's 1324; retail's own call site takes the object index first and the same function is declared
 // in four other files: BLOCKED-BY those declarations.
+// MiniMax R (11-17): no new form, no lower score (120): retail holds the actor in edi and the object in esi and
+// scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the pool first
+// and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
+// velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
+// order (object index first) is fixed by four other files.
 // score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before

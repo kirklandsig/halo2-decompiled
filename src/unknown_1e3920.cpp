@@ -1888,6 +1888,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 }
 
 // MiniMax E (11-16): no new form, no lower score (251): the permuter (1500 s, 131 tries, one job) left the baseline at 251, so the pool global is still re-read after each lookup where retail holds it in EDI across the callees, and the actor, options and pool registers still rotate the way the notes below say.
+// MiniMax R (11-17): no new form, no lower score (251): the permuter's 20 tries over the reduced image (311.7 s) reach
+// 246 in the full image as well, a five-point gain that is under the keep bar, so nothing was written; what still
+// differs is that retail holds the pool global in EDI and reloads the seed into EBX where this build keeps them the
+// other way round, the two-weapon index is spilled, and the random-state load rides across the opaque /GL- call
+// 0x259a0 in src/unknown_0259a0.cpp.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax D (11-15): no new form, no lower score (251): naming the object-pool global in a local does not make it live in a
