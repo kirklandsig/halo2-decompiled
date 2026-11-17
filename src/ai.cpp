@@ -1548,12 +1548,21 @@ long __stdcall function_1dfb90(long definition_index)
 
 long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v, real radius);
 
-// score 62 (was 62): frame 0x508 and exact length agree; origin/callee argument registers and stack cleanup differ.
+// score MATCH (was 62): fast build on r841; frame 0x508 and exact length agree.
 // Round 530: result initialized at scan, blocker initialized at scan, native long ordinal,
 // both producers, result/ordinal, blocker/ordinal, all three and complete scan role names: 67/62/64/67/64/64/64/64.
 // Original executable body restored; the geometry-call register contracts remain.
+// b10J (11-17) walk against retail, fast build on r841: fields, offsets, jcc senses, loop guard (0x1c8d51-0x1c8d54)
+// and the 0x1c9290-style segment call agree with retail. Differences found: (1) the 0x11ea30 call took (center, axis,
+// origin, direction); retail loads ecx=&center (0x1c8d9b), edx=&value10 (0x1c8d97), esi=direction (0x1c8d31) and
+// edi=origin (0x1c8d2a, reloaded 0x1c8da4), as matched 0x1c9290 does (0x1c9451-0x1c9463): the ray comes first, so the
+// call is now (origin, direction, center, axis, radius) (swapped segments, behaviour unverified: 0x11ea30 is todo).
+// (2) retail's statement order: the result is cleared (0x1c8de3) before the blocker is stored (0x1c8de5).
+// (3) parameter order: the actor is in ecx, the direction in eax, the object to ignore is the first stack slot
+// (0x1c8d60) and the origin the second (0x1c8d2a); the caller pushes blocker, origin, ignore (0x1fd969-0x1fd980,
+// in disabled src/unknown_1fc7e0.cpp, updated). Fast scores: old order with (1)+(2) 3; (1)+(3) without (2) 15.
 // @retail 0x1c8d20
-bool function_1c8d20(long actor_index, point3f const *origin, long excluded_object,
+bool function_1c8d20(long actor_index, long excluded_object, point3f const *origin,
     vector3f const *direction, long *blocking_index)
 {
     bool result = true;
@@ -1568,12 +1577,12 @@ bool function_1c8d20(long actor_index, point3f const *origin, long excluded_obje
         if (capsules[i].active)
             intersects = function_11e5e0(origin, direction, &capsules[i].center, capsules[i].radius);
         else
-            intersects = (char)function_11ea30(&capsules[i].center,
-                (vector3f *)&capsules[i].value10, origin, direction, capsules[i].radius);
+            intersects = (char)function_11ea30(origin, direction,
+                &capsules[i].center, (vector3f *)&capsules[i].value10, capsules[i].radius);
         if (intersects)
         {
-            blocker = capsules[i].value1c;
             result = false;
+            blocker = capsules[i].value1c;
             break;
         }
     }
