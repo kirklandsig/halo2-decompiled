@@ -1583,7 +1583,7 @@ bool function_cc0c0(long unit_index)
    unit or the object's definition asks) or has 0xce6b0 drop it with an
    animation by mode */
 // @retail 0xce470
-void function_ce470(long mode, long unit_index, long object_index)
+void function_ce470(long unit_index, long object_index, long mode)
 {
 	byte *definition = UNIT_DEFINITION_GET(UNIT_GET(object_index));
 
@@ -1868,7 +1868,7 @@ void __stdcall function_cea70(long mode, short slot_index, long weapon_index, lo
 		unit->weapon_object_indices[slot_index] = NONE;
 		if (mode != 4)
 		{
-			function_ce470(mode, unit_index, old_weapon_index);
+			function_ce470(unit_index, old_weapon_index, mode);
 		}
 	}
 	unit = UNIT_GET(unit_index);
@@ -7389,35 +7389,6 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	return false;
 }
 
-/* sends a unit request straight to its handler and tells the player's
-   controller how it went (as 0xce520 does for request 9) */
-static __forceinline void unit_perform_request(long unit_index, long type)
-{
-	s_unit_request request;
-	s_unit_request_definition *definition = g_4677c8[type];
-
-	memset(&request, 0, sizeof(request));
-	request.type = type;
-	function_b7360(unit_index);
-	bool result = definition->perform(unit_index, &request);
-	if (unit_index != NONE)
-	{
-		long player_index = UNIT_GET(unit_index)->unknown13c;
-
-		if (player_index != NONE)
-		{
-			byte *player = (byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c;
-
-			/* two reads of the controller: retail keeps the player pointer and loads +0x28 from it */
-			if (*(short *)(player + 0x28) != NONE)
-			{
-				function_1e6980((s_time_entry *)((byte *)g_51e9c0 + *(short *)(player + 0x28) * 0x1b0 + 0x150),
-					(short)request.type, result);
-			}
-		}
-	}
-}
-
 /* the unit dies: the biped's death (0xe4a20), its player and actor let
    go, its weapons and grenades dropped, it leaves its seat, its requests
    end (unless a ragdoll timer runs, when forced) and its actions stop */
@@ -7536,14 +7507,20 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 	s_unit *holder = UNIT_GET(unit_index);
 	if (holder->unknown238 != NONE && g_4e6948->mode != 4)
 	{
-		function_ce470(0, unit_index, holder->unknown238);
+		function_ce470(unit_index, holder->unknown238, 0);
 		holder->unknown238 = NONE;
 	}
 	function_ceb30(unit_index);
 	if (!unit->unknown1f5 || force)
 	{
-		unit_perform_request(unit_index, 0x13);
-		unit_perform_request(unit_index, 9);
+		s_unit_request request;
+
+		memset(&request, 0, sizeof(request));
+		request.type = 0x13;
+		function_e6900(unit_index, &request);
+		memset(&request, 0, sizeof(request));
+		request.type = 9;
+		function_e6900(unit_index, &request);
 	}
 	byte *state = (byte *)UNIT_GET(unit_index) + UNIT_GET(unit_index)->unknown346;
 	if (g_4677c8[0x1a]->interrupted)
