@@ -78,6 +78,15 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// MiniMax E (11-17): no form kept; the score is unchanged at 382. Re-measured the 11-15 forms (the selected endpoint as
+// a short 383, the candidate point as a short 456, both together 441) and found that the selected point and the selected
+// endpoint keep their homes whichever order they are declared in: the point index stays at +0x4 and the endpoint at +0x14
+// against retail's +0x28 and +0x24, so the homes follow the live ranges and not the declaration order, and swapping the
+// two declarations only swaps the two prologue stores, which are identical anyway (383). The first x87 site, the squared
+// distance, matches retail instruction for instruction; the length and the candidate score keep our square order where
+// retail rotates it per call. A permuter run over this body (15 tries in 123 s) found nothing below the 382 of the full
+// image. Still differs: six permuted selected-index and table homes, the comparison widths of the selected point and the
+// selected endpoint, the found flag's home and the per-call x87 square orders.
 // MiniMax R (11-15): no new form, no lower score (382). The frame agrees (0x64) and so do the marker position, both visited
 // bitmaps, the group record pointer, the candidate point home, the nearest point, the matched record, the pass counter, the
 // direction step, the group loop index, the best distance and the result byte; six homes are permuted. Retail's selected group,
