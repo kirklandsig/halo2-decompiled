@@ -421,6 +421,14 @@ inline real item_real_random_range(real lower, real upper)
 // Product-first range span/sample/offset named subsets 1..7: 2/76/76/61/61/61/61;
 // scalar offset accumulator 61. Original range producer and complete body restored;
 // frame 0x14 and last add/third owner-field load scheduling remain.
+// b14E (11-17) walk against retail, fast build on r847: the body matches retail statement by statement (both ITEM_GET
+// reloads, the seed store, the owner stores in the order unknown4/unknown0/unknown8, the 0.0f/NULL pushes). The one
+// difference is 0x10d583 `fadd st(1)` (the delay's final add), which retail issues between the c4 field load (0x10d57d)
+// and the c2 load `mov cx` (0x10d585); ours issues the c2 load first. Tried, same 2: each field read through
+// ITEM_GET(item_index) (the loads fold into one pointer); `owner` declared before `delay` or before `owner_item`;
+// `location_c2` as word; the helper returning `lower + span * sample`. Worse: the c2 copy before c4 (5, register
+// assignment changes), brace-initialising the owner {c4, c8, c2} (6, c4 loaded first), the helper with a named sample
+// local (76, SSE). No behaviour difference found against retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -805,6 +813,7 @@ struct s_item_collision_bsp
 // P591: Actual matrix receiver before the query/section derivation, ordinary/fixed
 // pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
 // 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
+// MiniMax S (11-17): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1499,6 +1508,7 @@ struct s_item_flags_view_10b850
 // defaults, positive/complementary exhaustive bool, then false-default char/byte/short/long:
 // 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
 // misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
+// MiniMax S (11-17): no new form, no lower score (824): the frame still misses retail's size (0x150/0x154 against 0x12c) and the entry, carrier, contact and rotation homes stay in other registers; the seven forms tried earlier all grow past the native extent or land below the eight-point gate.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

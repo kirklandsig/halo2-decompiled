@@ -39,6 +39,11 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
+// [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
+// magnitude), the working-vector group is still a rotation off retail's, site 1's planar normalize still keeps its own
+// zero path where retail uses the shared 0x2b400 helper in include/unknown_11cc90.h, a file this lane may not edit
+// (BLOCKED-BY 0x2b400), and a permuter over 23 tries on this body found nothing below 286, so the body stands;
 // MiniMax D (11-17): no new form, no lower score (286): the frame's homes are still permuted the way the notes
 // below describe (ours [esp+0x24] against retail [esp+0x1c] for the unit pointer, ours [esp+0x14] against
 // retail [esp+0x10] for the magnitude, and the working-vector group at [esp+0x3c]..[esp+0x64] where retail has

@@ -708,6 +708,13 @@ static inline bool teams_enabled_19e1c0()
 // ESI argument ahead of the first case's `text[0] = 0` (an immediate store) where retail stores the zero result register SI
 // first. Forms: the player index read into a local ahead of `text[0] = 0` in both player cases, plain/volatile 691/390; the
 // player cases passing `&text[0]`, volatile/plain 390/691 (all the same code as their bases).
+// M3 lane 13 r105 (fast with 0x19e0f0, which stays matched; control 390, plain result 691): with the plain result ours has one
+// call each to 0x19ea60, 0x19eae0 and wcslen (the name tails cross-jump into one) where retail has two, two and four; retail's
+// per-compare token reloads shift the scratch rotation so its tails differ. Forms: plain result with one `text[0] = 0;` at the
+// function's top for every case 644 (1212 B, token still EDI); that with the event teams read at each use 694 (1161 B); plain
+// result with the teams at each use and a named player pointer in the spawn-time and lives cases 667 (1196 B), with `best_score
+// <= function_1587f0(team)` too 667; the volatile result with those three together 387 (1443 B, retail's length; 3 points and a
+// one-use pointer, not kept).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

@@ -28,13 +28,11 @@ long function_11ca80(long value);
 
 inline long get_current_language(void)
 {
-	long language = g_47ff38;
-	if (language == NONE)
+	if (g_47ff38 == NONE)
 	{
-		language = function_11ca80(XGetLanguage());
-		g_47ff38 = language;
+		g_47ff38 = function_11ca80(XGetLanguage());
 	}
-	return language;
+	return g_47ff38;
 }
 
 #endif

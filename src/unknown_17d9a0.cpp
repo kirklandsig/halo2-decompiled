@@ -927,6 +927,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // `short i, j;` shared by every loop 575; `first_edge` read from the face and `edge_index` copied from it 535 (same
 // code); `remaining -= group_count;` after the group loop rather than inside its body 746; both distance tests with
 // the call on the left (`function_17d900(...) < projection->radius * 0.05f`) 535 (same code).
+// M3 lane 16 r131 (plain; base 535): the group pass behind an early return when the limits flag is clear or nothing is
+// pending 535 (same code); the two counts in one declaration, face count first 535 (same code); `first_face` renamed
+// `seed_face`, and `group_count` renamed `grouped_count` (the name-order lever for same-size cells) 535 each (homes
+// unchanged); the first loop as a `while` over a function-scope `next` index 535 (same code). Body unchanged.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

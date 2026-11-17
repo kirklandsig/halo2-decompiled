@@ -386,6 +386,14 @@ void contrail_update(long contrail_index, bool detach, real dt)
 // 0x17c0e0 count, the flags03 bit and the index step) fixes the two locals'
 // EBX/EDI load order. The remaining differences are the two `frame_time`
 // updates' remaining/elapsed XMM registers.
+// b14G (11-17) walk against retail, fast build on r847: every statement matches retail, and so do the registers, the
+// compares and their NaN directions. The only difference is the layout of the two out-of-line `frame_time` blocks that
+// share the store at 0x17bdde: retail puts the no-rate block (`frame_time += elapsed`, xmm5 at 0x17bdca) first and
+// the loop-break block (`frame_time += remaining`, xmm2 at 0x17bdd5) second, so the `jbe` at 0x17bd82 and the `jb` at
+// 0x17bdad point the other way round; ours emits break first, no-rate second. The addss register operands differ
+// only because of that order. Tried (fast build): `remaining` declared inside the `rate > 0` branch (6), `if (!(rate
+// > 0)) {no-rate} else {loop}` (118), `if (rate <= 0)` first (119), while(true) with a bottom break (138), a
+// for(;;) with continue (275), `while (remaining > 0)` and a hoisted `step` (4, same layout), else using `remaining`.
 // @retail 0x17bc40
 void function_17bc40(real dt)
 {

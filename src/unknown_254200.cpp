@@ -225,6 +225,12 @@ void function_254200(void)
 // first vertex's y sum written size first, the others as now 4; the second vertex's y sum size first only 4 (same code).
 // Reading: the colour block reloads its three spilled products from the highest slot down in both builds; only the
 // constant and the y sum after the second and third reservations come back in the other order.
+// Round 194 (m3 lane 5, single-address fast, control 4): the size `arg_2 * 2.f` written at each of its eight uses
+// 221 (1118 B); the point copy and size declared after the 0x1cf50/0x1c710 calls 16 (the pair unchanged); the colour
+// helper ahead of Begin 48 (diagnostic); each corner through one `point2f corner` assigned per vertex 270 (1205 B); the
+// colour helper plain `inline` 339 (985 B, out of line). Reading: retail reloads the depth constant and y + size in the
+// order they are first computed (call arguments right to left: the constant first), ours in the reverse order; the
+// colour helper's three products reload in declaration order in both builds.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -556,6 +562,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // 342 (2256 B); the colour as a `color3f const` value copied from the getter 392 (2238 B); the getter's result passed
 // straight to the existing colour helper `function_254491(1.f, ...)` after Begin 31 (the getter moves after Begin; the
 // reload pair unchanged).
+// Round 194 (m3 lane 5, single-address fast, control 2): declaration-only moves to the function top (assigned in place)
+// of the colour pointer, the alpha byte, the last quad's size and all three 2 each (same code: local symbol order does
+// not enter the reload order); the first two texture calls in the free device-call form 467 (2157 B, out of line).
+// Retail reloads the lower coordinate (defined at the first texture call) before the constant (first vertex), i.e. in
+// the order the values are first computed, as in 0x254490; ours reverses both pairs.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
