@@ -643,6 +643,13 @@ struct s_text_line_measurement
 // P580: Scalar memcpy at advance pixels/offset pixels/both/token/break byte/right bound/
 // start coordinate/reused running width: 77/77/77/77/77/79/79/79. NOT kept: native independent advance
 // copy and early width load remain; original observations, arithmetic and full body restored.
+// M3 lane 8 r175 (fast with 0x13f700/0x13f0e0, both MATCH; control 77): `count &&` ahead of the bound test 76 (416 B); the new
+// width named before the test with `count++` ahead of `width = next_width;` 71 (one-use local, not kept); the test's first pair
+// commuted (`advance + position->x`, exact) 77 and the update's (`offset + advance`) 77 (both re-sorted); the whole test sum named
+// before the can_break block 75 (one-use local). Diagnostics re-measured: 0x13f5a0 declared `inline` 42 at 418 B (the width
+// is then re-read in the can_break arm and at the test; only the alignment of the tail improves); the listed next-width forms
+// before the test 65 and before the can_break block 68 (the second gives retail's copy right after the products, but the
+// adds stay ahead of the branch, where retail runs them in the update arm). Body unchanged.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

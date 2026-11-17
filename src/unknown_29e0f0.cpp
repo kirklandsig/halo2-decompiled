@@ -461,6 +461,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // natural form left beyond these: the remaining levers (retail's 32-bit group with a separate test and set, short terminal and
 // candidate) are listed above and change the length or need the field read beside a local copy. A scan of include/ for helpers this
 // body writes out found none unlisted (bit_vector, dot3f/length_sq3f, vector3d_from_points3d and distance3d are all above).
+// M3 lane 8 r175 (fast with 0x29e730, MATCH each time; control 382): the point bitmap cleared by memset 382; the group skip test
+// split into the bit test and the range test 382; the distance helper as vector3d_from_points3d plus the existing magnitude3d
+// (0x24590, inlined) 382 (same code: every site still sums z, y, x, where retail sums z,y,x / y,x,z / x,z,y); both bitmaps by
+// memset 379 (three lower, not kept); that with `else local_4 = false;` on the no-selection exit (retail stores the false byte
+// there again) 418. Body unchanged.
 // M3 lane 10 r97 (fast with 0x29e730 MATCH; base 382): nothing kept. Descriptive names for every local (best_group, best_point,
 // best_end_point, found, ... count) 382 (same code: the three defaults stay at +0x40/+0xc/+0x20, retail +0x44/+0x28/+0x24, so
 // names do not order these homes); the improvement flag declared before the pass loop 382; the pass's anchor pointer declared

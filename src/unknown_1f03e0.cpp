@@ -1449,6 +1449,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // subsets, then a complete ground-adjusted magnitude result: 481/481/479/363/363/373/370/520.
 // NOT kept: all regress; native damping and raw/bounded homes remain. Original arithmetic,
 // observation boundaries, helper calls and complete body restored.
+// M3 lane 8 r175 (fast with 0x1f0450/0x24590/0x2b400/0x30bf0/0xa75d0, all MATCH; control 234, difflib-aligned 158, register-
+// masked 59): the direct arm's output as three statements, i, j, then k (retail computes and stores them in that order, ours
+// evaluates vector3f_assign's arguments k first) 543 (aligned 191, masked 81: that arm and the first arm's shared out.k store
+// become retail's, but the flying arm's second cross block moves); with the general arm's output through the existing
+// vector3f_add(current, &limited, out) 469 (aligned 153, masked 55; only its k row still commutes into limited's register,
+// `addss xmm2, [eax + 8]`, so the first arm keeps its own out.k store); vector3f_add(&limited, current, out) there 469 (same
+// code); on the body, the first arm clearing gravity as its first statement 233 (a one-point gain); all three together 468
+// (aligned 153, masked 55). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

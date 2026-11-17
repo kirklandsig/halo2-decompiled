@@ -697,6 +697,12 @@ void function_245400(s_source_245400 const *source, long index,
 // 228/228/228/228/228/228/228/228. NOT kept: all regress and shorten to 763/783 bytes without native
 // frame/table/side-home recovery. Original scale comparison, row arithmetic, point transform and complete
 // body restored.
+// M3 lane 8 r175 (fast with 0x245270/0x244de0/0x245400/0x245850/0x245aa0, all MATCH; control 214): the edge scaled into a copy
+// before the rows (`vector3f edge = local_6; if (scale != 1.f) vector3f_scale(&local_6, scale, &edge);`, as retail copies then
+// scales) with the edge_i/j/k scalars 216 (803 B), with the rows reading edge.i/j/k 216 (803 B); the side flags as sign tests
+// of the long codes (`local_2 < 0`) 207, of the short codes 207 (same code: `setl` pairs, a seven-point gain from layout, not
+// retail's `shr; and bl, 1`, under the keep bar), with named plane indices used for the pointers and the compare 207; the
+// side bits from an unsigned shift `((dword)local_2 >> 15) & 1` 214 (`shr`, still fused into `xor al, dl`). Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

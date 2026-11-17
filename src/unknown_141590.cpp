@@ -1347,6 +1347,11 @@ void function_143250(
 // then all scalar memmove: 1559/1754/1148/1770/1768/1582/1790/1865. NOT kept: no exact paired-home/frame recovery;
 // the 1148 transfer moves the frame farther from native 0x300 to 0x2f8; unmatched self-address storage restored.
 // original nine captures, polynomial, publications, helper calls and full body restored.
+// M3 lane 8 r175 (fast with 0x143250 matched; control 1333 at 10752 B, `ret 4` on both sides, frame 0x2fc against 0x300; the
+// listing is retail's instruction stream almost line for line, the count is stack-home placement): band three's r6_r0 written into
+// its two products 1656 (10698 B); band three's r6_r3 the same 1663 (10700 B); band two's entry 18 stored last, just ahead of its
+// 0x143250 call (retail stores it after the call's pushes) 1544 (10755 B); r5_r2_s105_s2_s21 and r5_r5_s21_s35 written at their uses
+// 1333 each (same code). Body unchanged.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
