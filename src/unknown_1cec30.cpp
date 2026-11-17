@@ -2651,6 +2651,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P592: Original body/component/output fixed pointer bindings, seven subsets,
 // then complete bindings with fixed speed: eight 91 at 1459/1454. NOT kept: no native
 // early velocity j/k or property-zero recovery; original full body and helpers restored.
+// P594: Native aggregate normal/velocity/both initialization, direct normal/sample/both
+// fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
+// NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
+// Early velocity j/k loads, speed-product residence and property-zero EDI remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
