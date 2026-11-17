@@ -4748,7 +4748,7 @@ struct s_vehicle_wash_collision
 	byte unknown34[0x5c - 0x34];
 };
 
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle,
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle,
 	real max_angle);
 real function_1201a0(vector3f *v, vector3f const *fallback);
 void function_1763a0(point3f const *point, vector3f const *direction, s_effect_marker *markers,
@@ -4791,7 +4791,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
 // operands swapped both leave the second count's sign extension in EAX.
 // MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
-// score 48 (was 48): from the marker count sum on, retail's scratch registers run one step
+// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
 // loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
 // block), plus the 0x146320 set-up pair (its declared order, BLOCKED-BY 0x146320: seed declared
@@ -4835,6 +4835,19 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // NOT kept (review 11-17): the 16-bit sum through the one-use local marker_total took 48 -> 24 (fast), but a one-
 // use local is kept only with a byte match; the same truncation written as a cast, long count =
 // (short)(primary_count + ...), is the form to try next.
+// b11E (11-17) walk against retail, fast build on r843: fields, offsets, constants (6.0 0x45dbfc, 2.0 0x45dc0c, 1.0
+// 0x45dbc0, cone 0x3e860a92), both 0xb8d30 calls (0xf60c7/0xf60f2: xor cl, cl, ebx = markers, stack 15 and 16 - count),
+// the ray products, the register arguments of 0x1201a0 (0xf61fe) and 0x1763a0 (0xf621d), the effect block's stores and
+// every jcc sense (je 0xf62e4, jle 0xf610a, jge 0xf6158, jl at the loop end; no float compare) agree: no logic or
+// order difference left. 48 on r843 is 46 with commit 71db4a592, which declares the cone helper (seed, forward,
+// result) in all 7 files: that order gives retail's set-up at 0xf6137/0xf613a/0xf613d (0xf62f0 2 -> MATCH, 0xce6b0
+// 4 -> 2, 0x17c0e0 56 -> 54, 0x179fb0 stays MATCH; (seed, result, forward) and (result, seed, forward) also give 46
+// but 0x179fb0 drops to 2; the other two orders gain nothing). Left: the sum (retail 0xf60f7 `movsx ecx, ax; add
+// edi, ecx`), the loop's scratch registers, the colour constant in ECX (0xf6257). Match-only recipes, NOT kept
+// (one-use local, narrowing cast): `long secondary_count = ...;` with `for (i = 0; i < primary_count +
+// secondary_count; i++)` 43 (`add edi, eax` and the zero store as retail, but movsx eax and shifted loop registers);
+// `long count = (short)(primary_count + ...)` 22 (loop body clean, but the pre-call code and the colour constant
+// differ); `long count = f(); short primary_count = count;` 141.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -4858,7 +4871,7 @@ void __stdcall function_f6060(long vehicle_index)
 			real length;
 
 			collision.unknown24 = NONE;
-			random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, 0.2617994f);
+			random_vector_in_cone(&g_4e7408->seed, &marker->matrix.forward, &direction, 0.0f, 0.2617994f);
 			length = (i < primary_count ? vehicle->unknown370 : vehicle->unknown374) * 6.0f + 2.0f;
 			vector.i = direction.i * length;
 			vector.j = direction.j * length;
@@ -5025,7 +5038,7 @@ void __stdcall function_f62f0(long vehicle_index)
 					vector3f vector;
 
 					collision.unknown24 = NONE;
-					random_vector_in_cone(&marker->matrix.forward, &direction, &g_4e7408->seed, 0.0f, 15.0f);
+					random_vector_in_cone(&g_4e7408->seed, &marker->matrix.forward, &direction, 0.0f, 15.0f);
 					vector3f_assign(&vector, direction.i, direction.j, direction.k);
 					if (function_1697c0(0x800007, &marker->matrix.position, &vector, vehicle_index, NONE,
 						(s_collision_result_1697c0 *)&collision))
