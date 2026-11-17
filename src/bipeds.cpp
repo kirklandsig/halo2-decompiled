@@ -1252,6 +1252,11 @@ extern long *g_51e9cc;
 // const *` to the velocity 2; the dd8e0 result in a bool tested after 2; the crouch read through a fresh BIPED_GET at the add
 // (diagnostic) 410 (1504 B, the lookup is redone). Re-measured: the two changes as a two-element array 4 (the crouch pair stays
 // field first; the physics byte moves), so the change's memory residence is not what orders the pair.
+// M3 lane 13 r101 (fast; base 10, the 2-form re-measured 2, only the crouch pair): on the 2-form, the damage block (0xd6660 to
+// 0xd7b80 under the game-mode test) as a forceinline helper taking the biped index 2; the change declared uninitialised as the
+// block's first local and assigned at its call 2; the clamp as a block-local sum with two plain ifs (`< 0`, then `> 1`) 2; the
+// three wake calls (0xb9b90, 0xb7360, 0xbba20) as a forceinline helper 2; case 5 written flagged arm first (only the 0x35c
+// store) with all five stores in the other arm 2 (the same exact case 5 code as the both-arms form). The pair stays field first.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
