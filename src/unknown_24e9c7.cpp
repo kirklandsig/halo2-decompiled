@@ -79,6 +79,7 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax R (11-17): no new form, no lower score (125): the corner sums written with the other operand first (up + origin, then back + that) compile to the same code, and the same sums written as back + (up + origin) grow the body to 749 bytes (137); retail still computes the two across products right after the size and spills the second to [ebp-8], so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.
 // MiniMax S (11-15): no new form, no lower score (125, was 125): the file's /O2 flag measures 279, so it keeps /O1, and a
 // permuter run over this body (86 tries) stays at the starting score; a second run with a new seed reaches 121 only by making
 // the height volatile, which is not kept; retail computes the two across products right after the size and spills the second to
