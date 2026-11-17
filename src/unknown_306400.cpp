@@ -64,7 +64,11 @@ public:
 	void function_306400();
 };
 
-// score 36 (was 67): one direction is turned by its own helper (the direction
+// Matched: the first position and the relative offset are each used through a
+// reference, and the offset is stored back with a plain assignment. That keeps the
+// offset's copy late and its last load after the store, as retail has them, and
+// gives the loop's cursors retail's registers.
+// Before, 36 (was 67): one direction is turned by its own helper (the direction
 // read after the columns are transposed), the offset is copied after the first
 // position is found, subtracted by a vector member, and stored back through a
 // reload, as retail reloads it. The run's cursor registers now differ.
@@ -86,9 +90,11 @@ void box_pair_306400::function_306400()
 	vector_306400 first_position;
 	first_position.set_inverse_rotated(first_transform, &first_transform->columns[3]);
 	relative_offset.value = relative[3].value;
-	relative_offset.subtract(first_position);
-	_mm_store_ps((float *)&relative[3].value, _mm_load_ps((float *)&relative_offset.value));
-	first_centre.set_inverse_rotated((transform_306400 const *)relative, &relative_offset.value);
+	vector_306400 const &position = first_position;
+	relative_offset.subtract(position);
+	relative[3].value = relative_offset.value;
+	vector_306400 const &offset = relative_offset;
+	first_centre.set_inverse_rotated((transform_306400 const *)relative, &offset.value);
 }
 
 static __declspec(align(16)) const unsigned long g_455940[4] = {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};

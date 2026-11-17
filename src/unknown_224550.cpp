@@ -94,6 +94,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's spill homes are swapped too; the blend leaves XMM5 in the aspect block.
 // MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
 // second UV set in the other slot, and the aspect block still leaves the blend in XMM5; the tint in a nested scope
 // measures 234 and swapping the two UV declarations gives the same code, so the homes cannot be moved that way.
@@ -103,8 +104,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // product before the inverse sums stands.
 // MiniMax B (11-13): the width product is computed before the inverse sums, which lowers the score to 194; the
 // blend still leaves XMM5 in the aspect block and the tint's home is still exchanged with the second UV set's bounds.
-// score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
-// Earlier first line: score 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
+// Earlier first line: 194, was 211 (round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // Earlier at 194 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // Earlier 211 (was 211; round 95 m3 lane 11 at the end): earlier 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's
 // spill homes (the dead `values`/`context` argument slots) are swapped too; the blend leaves XMM5 in the aspect block.
@@ -632,6 +632,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P567: Standard ordered lower/upper/paired-aspect test providers, subsets 1/2/4/3/5/6/7,
 // then complete opposite relations: 493/490/617/482/608/621/634/634. NOT kept: no byte
 // match or native tint/secondary-UV/blend home repair; original complete body and captures restored.
+// M3 lane 1 r112 (fast; masked aligned 35 at 194, all in the aspect block: retail loads the blend into XMM5 at the join
+// after the sequence arm and keeps it there for the remainder, next-term and aspect products): extents and reciprocals
+// in retail's computation order (ax, ay, by, inv_ax, inv_ay, bx, inv_bx, inv_by) 205 (1950 B, masked 28); that with the
+// flip between the a and b extents 351 (1984 B); both blend next-terms named right after the reciprocals 273 (1977 B);
+// retail's order with the aspect defaults first 207 (masked 29); `real first_weight = 1.0f - blend;` for both pivot
+// rows 194 (same code).
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

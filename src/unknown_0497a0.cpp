@@ -422,6 +422,12 @@
 // selected depth extent, reciprocal depth bounds, displacement depth bounds and output depth inputs:
 // 578/578/579/579/638/624/605/605. NOT kept: no exact native rounded-wave/frame recovery; original
 // complete body, scalar observations, helpers and includes restored.
+// m3 lane 8 r176 (fast with 0x4a1e0; control 536): `inv` declared after the shape pointers 536 (the entry stores in retail's
+// order); the three repeated wave factors as named double locals 646 (2595 B); s0 before s1 536; `w` initialised at its
+// declaration without the else 678; s1 through the float sin overload 538. Compile-only lead: when the first scaled add
+// stores through a pointer the compiler cannot separate from the camera global, s1 is computed first and stored to a float
+// home exactly as retail; so retail's wave values are materialised because something between their definitions and their
+// uses may alias that global (s0 still folds in that form).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1219,6 +1225,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
 // MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // MiniMax D (11-16): no new form, no lower score (233).
+// MiniMax S (11-16): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because
+// retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

@@ -76,6 +76,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // MiniMax I (11-16): no new form, no lower score (558): retail materialises the zero in XMM0 after the minimum's store
 // at +0x18 and keeps the range in XMM1, ours materialises it in XMM1 before the minimum's load and keeps the range in
 // XMM0, so every later row is one off. Naming the ray length once (retail computes the half width plus the range once
@@ -86,8 +88,6 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // MiniMax D (11-15): no new form, no lower score (558): the frame size and the five calls agree with retail, but the
 // success byte, the minimum float, the four hit flags and the copied input vector still sit at other frame homes, and
 // the inactive exit still comes before the ray loop instead of after it.
-// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
-// the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
 // Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // Earlier score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
@@ -566,6 +566,16 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // half-width for each of the four points (`0 - [ebp+0x14]` separately for points 3 and 4) while the width it loaded for
 // point 2 is still in XMM0, so in retail the point stores kill the definition's field; ours keeps one negation for
 // points 3 and 4 (its reload at point 2 is only a rematerialisation after point 1 clobbers XMM0).
+// M3 lane 16 r127 (fast): both rotations through the existing forced-inline rotate_direction with `(real)sin(angle)` and
+// `(real)cos(angle)` as direct arguments: --fast keeps that cross-file helper out of line (1121, 2400 B), and a same-file copy
+// of its body screens 576 (2855 B); the ray vector through the existing vector3f_scale 559 (same ray code: the k product still
+// reuses the dying length register where retail loads k first); the final projection into a local vector copied to arg_3 547
+// (2879 B, positional only: the copy goes through the stack where retail stores the three rows straight from XMM, and a one-use
+// local); the range read once before the inactive test (retail compares and later stores field_48 from one register) 661; the
+// three projection rows as named parts stored together at the end (retail's i, j, k stores) 555 (2890 B).
+// P582: Rounded persistent minimum/active range/complete angle-limit promoted receiver
+// storage, seven subsets, then immutable range/angle receivers: 658/691/675/722/740/725/784/784. NOT kept: no exact native
+// success/input/hit homes or inactive-exit recovery; original real receivers, helpers and full body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

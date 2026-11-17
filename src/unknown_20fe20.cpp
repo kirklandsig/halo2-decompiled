@@ -2715,6 +2715,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // helper reading `a->y` into a local before its differences 411 (1944 bytes); the helper's differences declared z, x, y
 // but assigned y, z, x 26 (retail's instruction order, registers y XMM1, z XMM2, x XMM3) or y, x, z 19: registers and
 // schedule both follow the assignment order, not the declaration order.
+// Round 252 (m3 lane 3, fast; control 3, only the z load hoisted above the y load and subtract): the helper as a
+// non-static `inline` 3 (same code); the helper returning the z, x, y difference vector by value with the staged sum and
+// the cases reading its fields 506 (2008 bytes, the vector goes through the stack); cases 8 and 9 as `1.0f < z` and
+// `-1.0f > z` 3; the selector local declared at function scope and assigned in place 3; the outer x, y, z in one
+// declaration statement 3 (all same code). No cross-file helper has retail's z, y, x sum (devices.cpp's is file-local).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

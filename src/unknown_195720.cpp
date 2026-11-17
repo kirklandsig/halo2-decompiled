@@ -112,6 +112,10 @@ bool function_1946f0(s_bitstream *stream)
 // `long const &` 54 (reloaded at each use); the pop as `checkpoints[checkpoint_count -= 1]` 2; the bit offset named
 // (`saved % 8`) before the byte index 2; a `byte *const &` to the data field inside the clear's `count >= 0` block only 2.
 // Re-measured: the data-field reference after the index or at the function's top 2/2, the counter stores swapped 13.
+// M3 lane 13 r101 (fast): the count formed as size minus index, tested as `--count >= 0` 2; the bound test as
+// `size_in_bytes - byte_index > 0` 52 (142 bytes); the memset size written out at the call (count kept for the tests) 15
+// (143 bytes); `long bit_offset = saved % 8;` named after the byte index for the mask 2; one `count >= 0` test guarding
+// both the mask and the clear (the separate bound test dropped) 40. Both LEAs stay data-first in each 140-byte form.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

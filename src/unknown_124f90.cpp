@@ -1330,7 +1330,7 @@ long function_2197f0(real gain);
 // is a seven-point gain under the bar; the rest is the XMM colours and the fade-out load order. Body unchanged.
 // MiniMax E (11-15): no new form, no lower score (94): the call boundaries agree with retail's (0x221810), and what is left is the XMM allocation and the division - this build substitutes the reciprocal where retail keeps a real division.
 // MiniMax S (11-15): no new form, no lower score (94).
-// score 94 (was 94): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
+// Earlier at 94 (was 94; a second score line, merged in round 252): left: the arm-3/arm-4 join (ours carries the gain in XMM0 across it, retail re-reads its home in arm 4)
 // and arm 1's product order and XMM colours (fade_out multiplied from memory before the reciprocal, elapsed in XMM2).
 // MiniMax E (11-16): no new form, no lower score (94); the elapsed difference stays in XMM2 where retail keeps it in
 // XMM3, the first arm still multiplies the fade-out time before the reciprocal, and the arm-3/arm-4 join still carries
@@ -1669,6 +1669,14 @@ long function_2197f0(real gain);
 // P575: Previous-release lower-bound decision in positive/complementary bool/byte/short/long
 // storage 94/94/94/94/94/94/94/94. NOT kept: no exact gain-join or elapsed/reciprocal repair;
 // original complete body, arithmetic and unordered clamp selections restored.
+// Round 252 (m3 lane 3, fast with 0x1251e0/0x221810, both matched; control 94): the cause of the colour difference is the
+// reciprocal's place: retail forms it before `elapsed - hold`, so elapsed (live across it) cannot take XMM2; ours multiplies
+// fade_out from memory first and forms the reciprocal after elapsed's last use. A `real fade_out` local in the fade-in block
+// for the tests and the product with the test as `elapsed < fade_out + hold` 98 (683 bytes: retail's product and time-sum
+// order, but colours rotated: fade_out XMM4 for 1, reciprocal 1 for 2, elapsed 2 for 3, 1.0 3 for 4, and the value still
+// `inverse * time`); `real fade_out` and `real hold` locals in that block 161 (685); the fade_out local declared ahead of
+// the fade-in test 112; the fade-out test inverted with arms 1 and 2 swapped 149 (681); the hold test as `hold < elapsed`
+// 94 (same code). No out-of-line interpolation helper exists for LTCG to inline (all are file-local). Body unchanged.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3137,7 +3145,7 @@ static inline short sound_voice_find_available_channel(char type)
 // keeps it in a byte in the frame, so retail's frame is eight bytes and ours carries the extra slot; a form
 // that returns the true and the false value from their own exits reads 135 and changes the prologue's
 // register plan, and the shared exit with the byte in its slot stays closest.
-// score 96 (was 96): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
+// Earlier at 96 (was 96; a second score line, merged in round 252): left: the result byte in a stack slot where retail keeps it in AL (true at the entry) and BL
 // (false across the failure calls), and the block layout that follows from it; the closest form (15) is match-only.
 // MiniMax E (11-16): no new form, no lower score (96); the result still lives in a stack byte where retail keeps it in
 // AL at the entry and BL across the failure calls, and the frame is 0xc against retail's 8; the closest form (15) needs
@@ -3492,6 +3500,15 @@ static inline short sound_voice_find_available_channel(char type)
 // P575: Actual API status-idle/playing admissions in bool/byte/short/long
 // storage 127/127/127/127/96/96/96/96. NOT kept: no native frame/result/exit recovery;
 // original status test, byte result, search helper and complete body restored.
+// Round 252 (m3 lane 3, fast with 0x129100/0x127320/0x12a5d0/0x21de90, all matched; control 96): retail's layout
+// suggests its commit's true is not the entry's true as far as the compiler knows (the early exits share the failure
+// block's tail, the commit has its own `mov al, 1` copy). `bool result = true;` declared first on main's goto body
+// 153 (449 bytes); the byte result declared first 96 (same code); the status test as `(status & ...) == 0` 96 (same
+// code); round 229's flag form (true at entry, false at the channel block's top, true after the commit, failure calls
+// under `if (!result)`) with the complemented status test and buffer-first defaults 126 (430 bytes, frame 0xc); the
+// channel assignment as an inline helper returning true after the commit and false after the failure calls, called
+// as `result = helper(...)` under the early test, 489 (not inlined; 0x129100 then 14), the helper `__forceinline` 126
+// (415 bytes). Body unchanged.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
