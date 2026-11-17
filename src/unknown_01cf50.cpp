@@ -8788,6 +8788,11 @@ real scenario_ramp_evaluate_current(long index);
 // difference is the one unused slot at the top and the frame pointer saved in the prologue where retail saves it
 // around the filter loop; the grid's sixteen stores carry the same values on both sides, only their order differs.
 // MiniMax R (11-15): no new form, no lower score (130): this build still reserves a 0x5c frame and saves the frame pointer in the prologue where retail reserves 0x58 and saves it around the filter loop, so every stack slot sits four bytes off.
+// MiniMax E (11-17): score 125 (was 130): the grid's four bounds are read straight from the globals, as retail
+// does, so the one-use left/top/right/bottom locals are gone; what still differs is the frame, 0x5c here against
+// retail's 0x58 with four unused bytes above the grid, the frame pointer this build pushes in the prologue where
+// retail saves it around the filter loop, so every stack slot sits four bytes off, and the grid's sixteen stores,
+// which carry retail's values but come in the source order instead of retail's.
 // score 130 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
@@ -8837,6 +8842,7 @@ real scenario_ramp_evaluate_current(long index);
 // argument's slot, the weights and grid declared at the top, the grid as real[16]; the blur block alone frames 8
 // and the grid block alone 0x50, so the hole only exists with both and the live `finish` (retail reads it at 0x13b73,
 // after the pop of ebp at 0x13b72).
+// MiniMax E (11-17), NOT kept: 125 (was 130), a 5-point gain, under the 8-point bar for a function above 30.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
