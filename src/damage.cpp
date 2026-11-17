@@ -2451,6 +2451,22 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // (same code, the amode stays [edx + eax + 4]); object declared before info 39; the guard's definition flag ahead of the
 // region flag 81; on the entry local before the guard (the hoisted load): object declared first 228, the end notify
 // through two fresh lookups instead of `damaged` 227, the entry read at the top of the damage block 218 (874 bytes).
+// M3 lane 3 r251 (fast): the register flip that the entry local brings (info EBP, the object stored) follows one thing: whether
+// the entry read shares the info test's basic block. Diagnostics on the two-use entry local (reverted): a conditional store between
+// the read and the info test 208 (882 bytes; retail's registers: object EBP, info stored at entry and reloaded into EBX); the same
+// conditional store ahead of the read 240, between the info test and the entry test 240, after the guard 240 (each still flipped);
+// a plain store between the read and the test 218 (flipped); the float conversion as a cast in place of the fld/fistp pair 243
+// (flipped). New forms: the entry read ahead of the inverse ternary (its diamond then lies between the read and the info test) 10
+// (870 bytes: every register is retail's, the load sits ahead of the ternary's jbe instead of in the join); that with a file-local
+// inline guard taking (info, entry) 9 (the flags address is then retail's too; only the load's place is left); the read at the end
+// of both arms of an if/else for the inverse 10 (the compiler hoists it above the jbe: the same code as the read ahead of the
+// ternary); the lethal test held in a bool flag set by the guard and tested after it, on the entry local 228 (same code as the
+// entry local); the region entry named in a local right before the 0xdb090 call 6 (its load moves ahead of the pushes); the inline
+// guard under a one-pass loop (diagnostic) 228 (same code); the inline guard taking info by const reference 228 and called with
+// info read through its own address (diagnostic) 228 (both the same code: a local's indirection is folded before allocation, so it
+// does not keep info in its stack home as retail has it). Lead: retail's source reads the entry in a block that ends before the
+// info test, yet its load is emitted in the join between the info test and its je; a form that keeps a block boundary there until
+// register allocation, with the inline guard, should match.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
