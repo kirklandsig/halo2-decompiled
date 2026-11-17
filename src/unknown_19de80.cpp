@@ -308,7 +308,8 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
-// score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
+// score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
+// retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
 // and its ESI result register, but it merges the four name/team copy tails into one block, where
@@ -715,6 +716,15 @@ static inline bool teams_enabled_19e1c0()
 // result with the teams at each use and a named player pointer in the spawn-time and lives cases 667 (1196 B), with `best_score
 // <= function_1587f0(team)` too 667; the volatile result with those three together 387 (1443 B, retail's length; 3 points and a
 // one-use pointer, not kept).
+// ordinary rejection assignments 701;
+// qualified rejection assignments 437;
+// ordinary rejection-first branches 657;
+// qualified rejection-first branches 415;
+// ordinary arm-local defaults 695;
+// qualified arm-local defaults 420;
+// ordinary result with reject returns 662;
+// qualified result with reject returns 420;
+// Original body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
