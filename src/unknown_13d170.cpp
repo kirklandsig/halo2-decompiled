@@ -758,6 +758,10 @@ struct s_physical_block_iterator
 // branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
 // NOT kept: no closer case-zero result or native size. Case-zero/case-one
 // placement and the weighted-age register allocation still differ.
+// Eager tie mask, eager earlier-or-smaller mask, guarded mask and eager complement, then the four
+// with symmetric age clamps 231/227/195/232/222/223/236/217. NOT kept: the 195 guard gains six,
+// is 19 bytes short and still misses the native case-zero join. Case-zero materialization and the
+// native weighted-age homes still differ.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

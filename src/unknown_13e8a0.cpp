@@ -671,6 +671,9 @@ struct s_text_line_measurement
 // kerning/offset/advance 73/72/71. NOT kept: the two 38 forms use one-use pixel locals and
 // leave a product after the break branch, where retail completes all three first. The advance
 // copy still differs. In-place forms miss the gain threshold.
+// Two-use glyph sum for offset/kerning/width, offset/kerning, kerning/width, and staged
+// offset/kerning/width, each inline/forceinline 77/77/77/77/77/77/77/77. The independent advance
+// copy and early width load still differ.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

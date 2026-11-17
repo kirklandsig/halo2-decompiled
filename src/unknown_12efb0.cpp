@@ -679,6 +679,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // and both shared locals 607/607/607/607. The same four with signed-byte palette admission
 // score 700 each. NOT kept: no lower score. The native provider/NONE, palette/record and
 // SIMD register assignments still differ.
+// Unsigned palette-byte admission before and after defaults, each with signed char, short, long
+// or signed use-site decoding 604/796/794/604/604/796/794/604. NOT kept: the 604 forms gain three
+// bytes only and still compare BL with an immediate. Provider/NONE, palette/record and zero/SIMD
+// homes still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

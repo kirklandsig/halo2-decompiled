@@ -637,6 +637,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // with the opening sample copy as a loop 690. Frame 0x24 and matched caller
 // transport survive. The supplied direction stays in EBX and the zero moves
 // ahead of the register saves.
+// Shared normalize-or-copy and its guard form, vector and state refresh, each inline/forceinline
+// 603/603/603/603/672/672/671/671. The full refresh forms keep frame 0x24 and move zeroing ahead
+// of the register saves. The sampled-velocity register and stack direction reads still differ.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
