@@ -620,6 +620,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // test. Helper rule: the private dot_product2d (point, vector), magnitude3d and function_x697631 are not written-out
 // bodies of a shared helper that this file may include (magnitude3d's shared form needs slot_handler.h, a new include;
 // recorded above at 244); no new local, helper, double or include.
+// One accepted-edge break, cutoff/advance first 244/244; qualified hit and
+// narrowed raw hit 413/469; qualified hit with either shared break 413/413;
+// edge exhaustion with original/shared break 386/386. NOT kept: ties or
+// regressions. Success/first-byte homes and the common final tail still differ.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
