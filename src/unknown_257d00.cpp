@@ -2076,6 +2076,12 @@ void function_b7360(long object_index);
 // the 1/19 check and copy 272, for case 5's check and point 272, both 270 (the reference folds back, the read stays held
 // across 0x25ab50); case 4's unit test as `arg_1 == local_0->unknown018` 271; case 10's +0x8c clear through a byte
 // pointer 270 (same code: the selector load still moves above the clear); case 7's dot sides swapped 276 (a repeat).
+// Perception accessor 272; acquire actor after guard 272; state view at payload
+// dispatch 272; actor and state after notification 481; shared actor-unit
+// predicate 402; accessor with shared actor-unit predicate 402; completion and
+// state view at payload dispatch 272; capture actor unit before validation 272.
+// NOT kept: all regress. Pool acquisition, actor and output registers, and the
+// packed-point reload after validation still differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2867,6 +2873,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // as `c ? 1 : 0` 610; cases 9 and 11 as `local_0->unknown018 == arg_1` 610; case 6 with g_5023fc read at each use 610
 // (same code); case 1's point at function scope 610 (same code); case 4's facing read from the state's fields 639 (as
 // listed). Every one still gives the actor EDI and the state EBX.
+// The 0x1c frame and entry ownership agree. The default branch span, animation
+// copy registers and post-dispatch completion placement still differ.
+// Case 20 inactive guard 488; existing target first 484; missing-target
+// continue 479; missing-target and distance continues 479; for with a
+// result-tested iterator and missing-target guard 479; inactive and missing
+// guards 488; inactive guard with existing target first 487; clear completion
+// from active-search or wait state 479. NOT kept: tied or longer forms.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
