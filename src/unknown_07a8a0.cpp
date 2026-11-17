@@ -91,7 +91,7 @@ bool transport_security_get_address(long key_index, long local, const XNADDR *xn
 }
 
 // @retail 0x7ab10
-bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr)
+bool function_07ab10(long key_index, long local, word port, const XNADDR *xnaddr, s_type_99af70 *address)
 {
 	if (key_index == NONE)
 	{

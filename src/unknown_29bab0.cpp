@@ -3,7 +3,13 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
+#include "normalize3d.h"
+#include "vector_products.h"
+#include "vector2f_products.h"
 #include <math.h>
+
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 real g_47ffd0 = 0.5f;
 
@@ -44,34 +50,52 @@ bool __stdcall function_110ab0(long arg_0);
 void function_ba1d0(long arg_0, vector3f *arg_1, vector3f *arg_2);
 void function_1e4290(long arg_0, bool arg_1);
 
-PRIVATE __forceinline real function_29bab1(vector3f *arg_0)
-{
-	real local_0 = (real)sqrt((double)arg_0->i * arg_0->i + (double)arg_0->k * arg_0->k + (double)arg_0->j * arg_0->j);
-	if (0.0001f > fabs((double)local_0)) return 0.0f;
-	real local_1 = 1.0f / local_0;
-	arg_0->i *= local_1;
-	arg_0->j *= local_1;
-	arg_0->k *= local_1;
-	return local_0;
-}
 PRIVATE __forceinline real function_29bab2(real arg_0, real arg_1, real arg_2)
 {
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
 }
-PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, real arg_2)
+PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 const *arg_2)
 {
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
-	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2 + arg_0);
+	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const *arg_1)
-{
-	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
-}
-
+// MiniMax G (11-13): no new form, no lower score (715): the body is 3482 bytes against retail's
+// 3499 and the three-way branch and the float constants still differ from retail's own expression
+// trees.
+// MiniMax I (11-17): no new form, no lower score (489): the body is 3503 bytes against retail's 3499 and the slot homes still differ (local_8 at +0x8c against retail's +0x80, with local_14 the other way round), which needs the declarations moved; the normaliser still squares k, j, i where retail has i, k, j, and the retail grouping through normalize_inline for local_9 scores 775; the body is unchanged.
+// score 489 (was 489; 679 before m3 lane 4 r203): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
+// frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
+// local_14 the other way round, local_2 at +0x30 for retail's +0x1c between local_5 and local_6, local_6/local_7/local_15
+// 4-8 bytes low), the normaliser's k, j, i squares (retail i, k, j) and the steering-flag block layout. Tried in r203:
+// constant-left float compares at 12 sites 702 each but the 0x47c test 698 (3477 B, worse code there) and field_1c 704;
+// own dead locals n = 1..7 702/716/716/716/702/702/702; the target point written into the output vector (diagnostic) 679;
+// a three-component initializer `{ x + i, y + j, z + k }` 693; a point3f local_14 with a second cast 679 (same code); on
+// 679 the outputs declared at function scope before/after local_8, local_7 before local_6, local_8 declared first 679
+// each (same code), own dead locals 1..7 679/693/693/693/679/679/681.
+// Earlier at 702 (was 715): m3 lane 16 r119 (plain) kept three retail shapes together: the second radial test's implied
+// `!(local_23 > local_27) &&` dropped with the root written in the first test (no named double; EBX is then pushed after
+// the 0x26c test as retail), `0.0f - local_17.j` named once after the heading's normalize for its three uses (retail's
+// subss from the shared zero, at retail's place), and local_15/local_17 as planar aggregate copies (retail's integer
+// moves). 3473 bytes, frame 0x8c against retail's 0x88: retail keeps local_2 between local_5 and local_6 and shares
+// local_14's home with the 0x1f9760 output vector (+0x8c); ours puts local_2 above local_1 and gives local_14 its own home.
+// Earlier at 715 (was 715): earlier 750. s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
+// third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
+// stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
+// private copy, MIN at both ratio clamps (retail divides twice, 0x29bfdf-0x29c015 and 0x29c3a3-0x29c3d0), float root
+// (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
+// Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
+// double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
+// MiniMax A (11-12): no new form, no lower score (715): the fast check still reads 715 (648 when the reduced image links the same normalize2d differently), and the calls that show up as different in the listing are that helper reached at our own address; what is left is the early input and heading homes, the normalizer memory-product homes, the stack slot order and retail per-region re-reads of its arguments, so the 3482-byte body with the 0x88 frame stands.
+// MiniMax C (11-11): no new form, no lower score (715 in the full build; the fast check gives 648 or 715 depending on
+// how the reduced image links); the calls that show up as different in the listing are the
+// same normalize2d (retail 0x2b400) reached at our own address, so they are not real differences; what is left is
+// the early input/heading homes, the normalizer memory-product homes, the stack slot order and retail's per-region
+// re-reads of its arguments, with retail saving EBX around the middle for the +0x290 pointer where this build holds
+// the input in EBX from the prologue.
 // MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
 // pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
 // EBX from the prologue, and the 748 form is a held lead under the keep bar.
-// score 750 (was 750): Frame 0x88 agrees; early input/heading and normalizer memory-product homes remain.
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading homes and normalizer storage remain. Alias-free normalizer loop 822; early-return clamp 829; output scale loop 824; output clamp loop 812; smoothing loop 825 (fast).
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading and normalization homes remain. Alias-free
 // planar response snapshot 853; shared default vector 807; native input copy 804; shared radial predicate
@@ -322,14 +346,247 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // The negated j named for its three uses reaches retail's 3499 with the reference scale, planar copies and the complement, 758 (masked 152).
 // EBX save still in the prologue (retail pushes it after the 0x26c test, which shifts about 40 lines): empty else arm on the 0x26c test or the arg_8 test, both, a compiled-out loop at the
 // join, or around the whole middle: same code at 748. Retail re-reads its arguments from their stack homes per region (arg_0 in ESI at the top, arg_1 in ESI in the arm).
+// M3 lane 4 r168 (fast; a one-file harness does not reproduce this function, 844). New: the parameter as a function-scope
+// `vector3f const *const &` reference 750 (same code); the stuck test as `*arg_7 || !actor[0x5d0]` 750 (same code); the
+// definition test's arms swapped (`if (local_2) { ... } else` the 0x654 clear) 844 (3524 bytes); the final output stores
+// with arg_3 first 753; the first arm's 0x654 clear before its 0x655 set 749 (one point, under the bar). Re-measured
+// listed forms: arg_2 read directly 804 (LTCG passes it in EAX, frame 0x8c); the input copy before the position query
+// 758; the heading pointer right after the actor lookup 833 (3510 bytes); the reference declared at its first use 750.
+// Retail keeps arg_1 in EDI and reads arg_2 from its slot, loading it into EDI only for the long else arm (a memory
+// variable's loads combined per region); ours holds arg_2 in EBX from the prologue. All restored.
 // M397: Direct input with fixed absolute-residual producer and double root/signed-root/
 // scaled-correction parts, masks 0..7: 804/804/804/810/804/810/810/810. NOT kept: no exact or
 // eligible native-frame gain; original input storage, private helpers and full body restored.
+// DH381: Direct-input query-admission positive/rejecting prefixes at four ordered boundaries
+// 750/750/750/750/750/750/750/750. NOT kept: ties retain frame 0x8c versus 0x88; original body restored.
+// DH383: Complete lower-priority/default numeric clamp producers on direct input:
+// 834/807/837/834/805/834/834/832. NOT kept: all regress, lose the native frame and shorten away from
+// retail. Original input access, clamp and every helper/body restored; early object/input/heading homes
+// remain.
+// Round 76 (m3 lane 10, fast with 0x1f9e70/0x110ab0; aligned = registers and stack offsets kept, base 590): the held
+// lane 12 r91 set rebuilt on this body (0x29b2e0's first vector corrected to the +0x290 pointer, direct input,
+// normalize3d, planar copies, the float root, MIN at both clamps, a named blend complement) 748 (3502 bytes, aligned 517);
+// with the first steering arm as an if / else-if / else chain without an initial value 714 plain (3500, aligned 506),
+// its positive spelling 714; that arm as the direct boolean expression 761 (3499, aligned 509), as one if/else on the
+// combined condition 761. NOT kept: the chain's gain does not hold in the direct form. Leave-one-out on 714: no planar
+// copies 738, no float root 748, no MIN 826, no complement 716, no corrected argument 787, no normalize3d 841, the input
+// reference kept 715 (3499). Float radial squares 771 on 748, 731 on 714. The private normalizer in normalize3d's exit
+// shape with float squares i, k, j 717, with its early return 800, through vector3f_scale 712, written j, k, i 714/719
+// (the squares are reassociated; none gives retail's i, k, j). Retail evidence for the set: each clamp divides twice, the
+// root is a float expression (`fsubr dword [1.0f]`), `1 - field_64` is computed once, and the first steering arm falls
+// through to `mov al, 1` with its false paths in one shared `xor al, al` block. Left: EBX saved in the prologue (retail
+// pushes it after the 0x26c test and pops it before the closing arg_7 test) and frame homes 4 bytes off.
+// DH385: Direct-input complete initial heading/default/normalizer memmove producers,
+// seven subsets then native history transfer: 849/840/822/834/835/835/836/799. NOT kept:
+// no gain or native frame/entry recovery; original input storage, helper arithmetic,
+// vector transfers and complete body restored. Early object/input/heading homes remain.
+// Lane 5 r164 (plain; aligned/register-masked LCS [394/232] for 715): the input copy's length through the existing
+// normalize_inline (retail sums i, k, j; ours k, j, i either way) 807; the +0x290 address written at each use (no local_4)
+// 875; local_15 and local_17 both as planar vector2f copies 723 (3466 bytes [380/226]); the clamp helper as an if/else-if on
+// its parameter 795; field_64 read once into a named local for the three blend rows (retail keeps it in XMM6) 731. The
+// region from local_4 to the end of the if-chain in its own block (diagnostic) 715, the same code. Lead: matched 0x4d640 and
+// 0x9eac0 save EBX around plain sequential statements, so the region's form is not what keeps our push at entry; ours uses
+// EBX only inside that region too (same live range and jumps), and the head/tail esp shifts cost about 70 instructions.
+// Lane 12 r102 (plain; the fast image 648 carries the builds-differently caveat): both planar inputs as aggregate copies
+// (`*(vector2f const *)arg_2`, `*(vector2f const *)local_4`) 723 (3466 bytes; both copies then take retail's integer
+// moves, the shifts cost more), local_17's alone 723, local_15's alone 717; with normalize_inline for local_9 824;
+// local_9 renamed `direction` 715 (identical). EBX: our tail after the arg_7 test uses no EBX either, so retail's late
+// push/early pop has no visible source cause yet.
+// m3 lane 7 r146 (plain unless marked fast; fast builds this function differently, control 648): retail saves EBX only from
+// the `lea ebx, [ebp + 0x290]` join to the closing *arg_7 test; ours uses EBX in exactly the same lines but saves it at entry, and
+// several frame slots (local_6, local_8, local_9) also sit 4 or 0xc bytes apart. The middle region inside `do { } while (false)` 715
+// (same code); the +0x290 pointer read at each use (no local_4) 875 (3569 bytes); point local_8 declared with the opening locals
+// 648 fast (same code); local_7 declared before local_6 651 fast; local_9 declared before local_8 648 fast (same code).
+// Diagnostics: the disabled caller 0x1f38c0 (and 0x1f6090) enabled 715 (same code, so the missing caller is not the cause); the
+// 0x26c conditional call removed 848 (EBX still saved at entry). A retail scan finds 24 matched functions with a mid-function EBX
+// save and no path around it (0x1cbad0, 0x17c040, 0x40e90: EBX used only for a call's register argument, a byte test, or ahead
+// of tail calls); none of their shapes is a natural rewrite here.
+// Round 80 (m3 lane 13; all plain, because the fast image hides the cause below; EBX save given as the listing index
+// of push/pop, retail 45/811): the entry EBX save comes from the named `double local_27` (the radial distance). The
+// fast image already saves EBX late as retail (fast 648 differs from plain only in that save and the esp offsets it
+// moves). In the plain build that double as a `real` (diagnostic) 750 at frame 0x8c gives retail's 45/808; 0x1f9e70's
+// `double dot` as a `real` 715 (EBX still at entry; 0x1f9e70 137 -> 302); both 750. The same double pads 0x1f38c0's
+// callers when that body is enabled (#581, round 78). Leave-one-out of each kept form, EBX still at entry in each:
+// reference input 715, private normalizer 818, clamp temps for MIN 847, double root 775, by-value scale 771, the
+// 0x1f9760 flags swapped back 716; all of them together (lane 12 r91's corrected-argument step) 848 at 3464 bytes,
+// EBX still at entry, so lane 12's mid-function save was a fast result. Retail tests the radial distance once (fsqrt,
+// the gap loaded after it, one fcompi, each arm its own exits): as one test `gap > d ? mode != 2 || !flag : !flag &&
+// local_18 > local_16` with the named double (one use) 805 (EBX at entry); with the square root in the test (no named
+// double) 778 (3460 bytes, frame 0x8c, EBX 45/803 as retail); that with a named blend complement 780, with
+// local_15/local_17 as planar aggregate copies 789, with both 791; `field_50 * 0x1f9e70(...)` 715 and on the
+// square-root form 778 (same code each; retail loads field_50 before the normalize2d call and keeps it in a slot).
+// Next: the double-free forms add a slot (frame 0x8c; retail's lowest slot, shared by the steering scale, the root
+// and the ratio, moves to +0x30); find it. Body unchanged at 715.
+// M3 lane 8 r151 (plain each; fast 648 builds differently): `real perp = -local_17.j;` at its three uses on this base 775
+// (3488 bytes); the forward dot `arg_2->i * local_17.i + arg_2->j * local_17.j` 715 (same code); both 775; the last dot
+// as `local_26.i * -local_17.j + local_26.j * local_17.i` 715 (same code); the side flip as one comparison,
+// `local_21 = (... > 0.0f) == local_22;`, 721 (3484 bytes). Lead on the EBX save: matched 0x17c040 shows the same
+// mid-function `push ebx ... pop ebx` as a short borrow of a callee-saved register no web holds (its byte test needs BL
+// with EAX, ECX and EDX busy), as 0xa5a60 borrows EBP. So retail never gave EBX to a web in the main allocation here
+// and borrowed it for the +0x290 pointer; ours allocates EBX in the main pass. That is register pressure (retail
+// reloads the definition pointer into ESI per region and re-reads arg_0 from its slot), not block structure.
+// m3 lane 14 r84 (plain each, with 0x29b990, 0x1f8510, 0x1f3e40, 0xba1d0, 0x1e4290, 0xb9dd0, 0x1f5f30, 0x1f9e70,
+// 0x29b2e0 and 0x29ab90, all unchanged; aligned/register-masked/register+esp-masked rows, base 583/341/174): re-measured
+// lane 10 r93's trial 2 (the implied `!(local_23 > local_27) &&` dropped, the root written in its test) 776 (3464 B). On
+// it: local_14 computed in the arm that uses it, just before local_25, 770 (3446 B, 531/310/178; frame 0x88 again and
+// EBX pushed where retail pushes it); local_14 folded into local_26's two components 770 (3453 B). On the 715 body:
+// local_14 computed in its arm 694 (3458 B, 510/323/261, EBX still saved at entry; match-only, a declaration moved, and
+// retail computes local_14 early, so the gain is slot packing, not retail's order); local_14 folded into local_26 746
+// (3467 B); with local_14 in its arm, local_19 computed at its one use 786 (3508 B). Retail copies local_15 with integer
+// moves and lays the local_21 chain out differently; those forms are listed.
+// Later, on the 694 form (local_14 in its arm): local_14 after local_25 760 (3464 B); local_20 declared just before the
+// side-test result's `local_5 = *arg_2;` 708 (3455 B); local_25 folded into local_26 655 (3464 B, 588/327/268; match-only:
+// both the moved declaration and the folded point). On 655: local_24 folded too 785, with local_20 declared late 669, with
+// the root in its test (lane 10's base) 771 (3450 B, frame 0x88, 535/314/175), local_23 read before the side test 790.
+// local_25 folded alone on the 715 body 718 (3499 B, retail's length, 548/352/184).
+// Round 93 (m3 lane 10, plain; 0x29b2e0 176, 0x29b990 MATCH and 0x1f9e70 137 unchanged; al/masked = aligned difflib
+// counts, base 583/174): the second radial test's implied `!(local_23 > local_27) &&` dropped (a failed first test with the
+// radius larger already makes `!flag` false), double kept, 805 (3471 B); with the root written in the test 776 (3464 B,
+// al 571, masked 162: EBX saved after the 0x26c test as retail, one fcompi and the flag test threaded as retail, but frame
+// 0x8c); on that form, listed forms re-measured: float squares 781 (3458 B: retail's `fld [x]; fmul [x]` squares), with
+// the distance on the left 781 (same code); `real perp = -local_17.j;` for its three uses 778 (3462 B, al 545); the
+// existing magnitude2d(&local_26) 780 (3462 B). Re-measured on the 776 form: local_15 as a planar aggregate copy 781 (3456 B), with
+// local_17's too 787 (3448 B); frame still 0x8c. There the extra slot is local_14 at +0x20 beside local_3's byte (+0x1f),
+// where retail keeps local_14 at +0x7c and local_3 at +0x27. A no-LTCG compile of the file gives frame 0x90.
+// m3 lane 14 r89 (plain; control 715, aligned 583, register/stack-masked 174): the three `-local_17.j` uses written
+// `(0.0f - local_17.j)`, the decal plane flip's negation, 782 (3508 B, frame 0x90; aligned 539, masked 171); one
+// `real perpendicular = 0.0f - local_17.j;` after the heading's normalize for the three uses 774 (3488 B, masked 271;
+// unary minus and `0 - x` compile differently, so this is not the listed perp form); the side flip as `local_21 =
+// local_22 ? local_21 : !local_21;` 715 (same code), as `(dot > 0.0f) != !local_22` 765 (3499 B, masked 184), as
+// `local_21 ^= !local_22;` 725 (3480 B). Retail ends that arm with `test cl, cl; jne; test al, al; sete al; test al,
+// al; setne al`: the flipped value is converted to bool once more at the join, so its type there is not bool.
+// Round 81 (m3 lane 15; fast with 0x1f9e70, 0x110ab0, 0x29b990 and 0x29b2e0 listed gives the plain build's code on this base: 715,
+// EBX pushed at entry; aligned 394, stack-masked 279, stack-and-register-masked 170). New: retail's side arm ends with `test al, al;
+// setne al` after the optional `sete` (0x29bf27), so the flag there is a byte-sized value that is not a bool, converted to bool at
+// the join. Written `byte side = cross > 0.0f; if (!local_22) side = !side; local_21 = side != 0;` it gives exactly those two
+// instructions (3487 bytes, stack-masked 277) but 772, everything behind sitting two lines later; `char` the same code; `long` 765
+// at 3499 bytes (dword tests, not retail's); the bool compared with false 772. The grid's singles re-measured on this base:
+// local_15 as a planar copy 717, local_17 723, the negated j named 774 (`-x` and `0.0f - x` give the same code), float squares
+// 780, one radial test with the root in it 778 (3460 bytes, frame 0x8c, EBX pushed at retail's place), that with float squares
+// 789. Combined: side byte + named negated j + one radial test + float squares + both planar copies 755 (3468 bytes, frame 0x8c,
+// EBX as retail, masked 163); that with local_14 computed in its arm 790 (3431 bytes, frame 0x88, EBX as retail, aligned 365); one
+// radial test + float squares + local_14 in its arm 783; one radial test + local_14 in its arm 778 (3442 bytes); side byte + named
+// negated j + one radial test + float squares + local_14 in its arm 775 (3444 bytes). Retail keeps local_14 as one 8-byte home at
+// the top of the frame (stored ahead of the two normalizes, read once in the far arm); the forms without the named double split it
+// into two 4-byte slots low in the frame here, which is their extra slot (frame 0x8c). Body unchanged.
+// m3 lane 2 r81 (plain each, with 0x1f9e70, 0x29b2e0 and 0x29b990; fast 648 builds differently; masked = aligned count with
+// registers and esp offsets masked, base 340). Kept at 715: the private k/j/i dot helper replaced by the existing dot3f
+// (same code), the hand-written cross product by the existing cross3f (715, masked 337), the two float dots by the existing
+// dot_product2d (same code each). Trials: the planar copy for 0x1f9e70 as `*(vector2f const *)&local_25` 766 (3470 B,
+// masked 326; retail copies it with integer moves); field_50 read into the scale before that planar normalize, then
+// `scale *= function_1f9e70(...)` 759 (3499 B: retail's spilled scale, `setne cl` and push order there); both 742 (masked
+// 323). In the 0x47c arm: the squared-speed floor as MAX(local_16 * local_16, 0.001f) 713 (retail's `jbe` floor shape);
+// on it `((1.0f - dot) * 0.5f) * ...` 759 (3499 B, retail's separate 0.5 multiply), `(half * half) / floor` 721 (3479 B,
+// retail's square-then-divide in retail's registers), both 730; the dot floor as MAX too 709 (masked 333, but retail keeps
+// the if form there: `ja; movaps`), the later `local_24` floor as MAX (same code). On 709: the side offset as an assignment
+// and an if 728 (3480 B). Same code: the 0.99 dot's products and operands written mirrored, local_17 declared before
+// local_15 (VC orders those operands itself). Left: retail re-reads arg_0 from its slot and holds local_2 and then the
+// saved vector's first component in ESI, where ours keeps arg_0 in ESI throughout; EBX is still saved at entry.
+// P481: Complete established/radial decision byte/char/word/long, original true
+// default then fully assigned leaves: 648/690/648/690/722/721/724/723 (fast control
+// 648, full 715). NOT kept: no native entry/home equality or gain; original full
+// Boolean decision, radial double, helpers and complete body restored.
+// m3 lane 15 r84 (plain each with 0x29b990 MATCH, 0x29b2e0 176 and 0x1f9e70 137 unchanged; control 715; fast gives 648 here):
+// local_6 += local_7 through the existing vector3f_add 757 (3478 B). Same code as the control (not counted): local_26 through
+// the existing vector2d_from_points2d; the side test and the flip test through the existing cross_product2d, each and both;
+// `__assume(local_2 != NULL)` in the steering arm; the output scale through the existing vector3f_scale; `local_27 =
+// MIN(local_27, local_20)`. Retail computes `0 - local_17.j` once (xorps/subss into XMM3) and reuses it in the side test
+// and local_25, where ours folds each negation into a subtraction (the named negation forms are listed above). Body unchanged.
+// m3 lane 16 r119 (plain each with 0x29b2e0 176, 0x29b990 MATCH and 0x1f9e70 137 unchanged; fast gives 648 here): on the 715
+// body both clamps as `MIN(1.0f, ratio)` 715 (retail's `1.0f > ratio` branch shape, count unchanged); the 0.85 dot as
+// dot3f(&local_7, &local_9) 715 (same code). Lane 10 r93's form re-measured 778 (3462 B); on it `real perpendicular = 0.0f
+// - local_17.j;` 764 (3468 B), with `MIN(1.0f, ratio)` 767; local_26 through vector2d_from_points2d 764 (same code); with
+// both planar copies 702 (kept). On 702: float squares in the root 756 (3467 B); `MIN(1.0f, ratio)` at both clamps 702;
+// the 0x654 arm with `else local_21 = true;` and no initial value 746 (3471 B); the squared-speed floor as
+// `MAX(local_16 * local_16, 0.001f)` 704; a named `1 - field_64` complement for the three blend rows 702 (operands move).
+// P512: Actual collision-query blocked/clear result in bool/byte/short/long, on the double-free
+// 702 graph: eight 702 at 3473/3499 bytes. NOT kept: one-use receivers do not recover frame
+// 0x88 or shared query/planar-point home; original complete executable source restored.
+// Round 183 (m3 lane 6, fast with 0x1f38c0, now enabled, and 0x1f9e70, which reads 702 as the full build; all
+// diagnostics, restored): 0x1f9760's two outputs in their own block with the result in a bool 702 (frame stays 0x8c);
+// local_14 declared in the arm that uses it 779 (3437 bytes, frame 0x88 as retail); local_5, local_2, local_6, local_1
+// declared in retail's slot order 702 (same code: local_1/local_2 are spill homes); local_1/local_2 renamed object/
+// definition 702 (same code); local_3 declared first 703 (it then takes retail's home, frame +0x27, but its store
+// moves to the top).
+// P514: Independent configuration/query-vector/planar-point/position/response/correction/
+// persistent-collision/normalized-input lexical identities on the double-free 702 graph:
+// eight 702 at 3473 bytes. NOT kept: frame remains 0x8c versus 0x88; original body restored.
+// P517: Completed collision-query output scope ending before either branch, carrying blocked/clear
+// bool/byte/short/long results; 702/702/702/702/702/702/702/702.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// P529: Actual three-component target/side-point/radial-displacement storage, seven
+// subsets then the complete unused spatial coordinate: 715/606/578/737/745/729/741/717.
+// NOT kept: 578 recovers native frame/length but retail stores and consumes only the two
+// radial components; unsupported workspace width needs equality. Original full body restored.
+// P531: Current double-free target/side-point/radial-workspace member producers, seven
+// subsets then the shared difference producer: eight 702 at 3473 bytes.
+// NOT kept: frame remains 0x8c versus 0x88; native query/planar-point home sharing
+// does not recover. Original complete executable source restored.
+// P534: Immutable complete planar target/side-point/radial-displacement producers, seven subsets,
+// then all with immutable pre-blend snapshot: eight 702 at 3473 bytes. NOT kept: frame remains
+// 0x8c versus 0x88; native query/target home sharing does not recover. Original full body restored.
+// P548: Independent configuration, normalized-input/magnitude, heading/default, planar-input,
+// scalar-control, radial-workspace, pre-blend and velocity-residual declaration phases:
+// eight 679 at 3479 bytes. NOT kept: no native spill/home recovery on the shared query/target
+// storage graph. Every initializer and complete original executable source restored.
+// P550: Complete final latch outcome in bool/byte/short/long 679/679/679/679; backward transfers
+// at heading/paired defaults/normalized input/pre-blend snapshot 779/818/726/770. NOT kept:
+// no qualifying native spill/home repair; original full body and headers restored.
+// Configuration, query/position/target homes and normalization/steering allocation remain.
+// P552: Uninitialized component transfers at heading, paired defaults, normalized input, history,
+// working directions, saved steering, final outputs and the complete graph.
+// Fast scores 779/759/726/810/724/770/743/833. NOT kept: no permitted confirmed gain; original body restored.
+// P554: Scalar correction in-place pointer/reference, separate pointer/reference,
+// returned output pointer/reference and wider already-rounded return: seven 679s;
+// complete residual vector with a plain correction loop 795. NOT kept: no native
+// spill/home repair; original helper, all three correction calls and full body restored.
+// Round 129 (m3 lane 9, plain each; aligned/masked = difflib counts on the listing, masked = registers and esp offsets
+// masked). Kept, 679 -> 489 at 3503 bytes, frame 0x88: the 0x1f9e70 planar copy as `*(vector2f const *)&local_25`
+// (retail's integer moves) with the scale read from field_50 into local_27 before the call and `local_27 *= ...` (retail
+// loads field_50 ahead of the call) 637; the first steering arm as the direct expression (no initial true; retail's
+// false paths share one `xor al, al`) 615 (3499 B); the three velocity dots as one vector3f frame_velocity ahead of the
+// reciprocal (retail divides after the dots) 540; the speed floor as MAX, the half span squared then divided in two
+// statements and the turn factor as `(1 - dot) * 0.5f`, `*= local_26 * 0.5f`, `*= 4.0f` (one expression folds 0.5 * 4.0
+// into 2.0 and divides first) 527; field_64 read once into `blend` for the three rows plus float squares in the radial
+// root (retail's `fld [x]; fmul [x]`; either alone 623/662) 496; the first arm's dot without the double casts 488.
+// Self-review: both clamps as MIN(1.0f, ratio) (retail compares 1.0 > ratio) gives 488 against 489 for MIN(ratio, 1.0f),
+// restored to the latter; the field_50 read placed before the planar normalize 489 (same as after it, so after it).
+// Tried, not kept: MIN(1.0f, ratio) alone 679 (aligned 463 -> 458); with both floors as MAX 723; with the speed floor as
+// MAX 681; the halves as `/ 2.0f` 538 (same code as `* 0.5f`); the square/divide split without the turn-factor statements
+// 669; the dot floor as MAX (retail keeps the if form); the first arm's dot through dot_product2d 660; the three dots as
+// one-use named locals 589; the up vector (object +0x7c) at each use in place of local_28, a field lead: 622 on 527, 498
+// on 496 (first difference +0x60 -> +0xf9, local_6 then register-allocated as retail); slot locals renamed to forced-order
+// names (same code: names do not order these slots). Leads, only keepable with a match (each a reverted form): the side
+// offset ternary written in each coordinate gives retail's per-arm y 550 on 615 (561 on 488, frame moves); the flip through
+// `byte side` with `local_21 = side != 0` (retail's `test al, al; setne al`) 669; local_6.i/.j assigned before the k branch
+// (retail's order; aligned 213 -> 156, masked 57) 676; flip + order 673; all three 708. Left: local_8 at +0x7c with the
+// 0x1f9760 output/local_14/local_25 slot at +0x70 (retail the other way round); the normaliser's squares k, j, i (retail
+// i, k, j); the post-0x1f8510 block's order; the per-arm y and the flip conversion (ours 6 lines short in the steering block).
+// P556: Actual object/configuration/input/query-output/position/response/radial/final-output
+// lvalue receivers 679/679/683/679/682/704/693/766. NOT kept: no native spill/home equality;
+// original executable body, all producer helpers and both final publications restored.
+// P558: Actual collision-query output workspace, six complete flag/flag/vector field orders then both
+// flag-pair orders with the vector independent: 730/730/730/730/730/730/713/713. NOT kept: unmatched
+// output grouping; original independent outputs, all helpers and entire body restored.
+// P560: Actual entry actor/object/settings/query-flag lexical identities on the retained
+// shared query/target frame graph, eight behavioral sets: 679/679/679/679/679/679/679/679.
+// NOT kept: no native object/settings/flag spill equality; original complete body and helpers restored.
+// M3 lane 11 r109 (fast, control 489 as the full build): local_8 renamed body_position (a name sorting ahead of the
+// shared 12-byte home's names) 489 (same code: names do not order these two homes either); the side point written in both
+// arms of `if (local_22)` (the negated distance named in the else arm) 751 (3538 B, frame 0x8c; the arms are not
+// tail-merged, the point gets a stack home); the k clamp as one ternary assignment 489 (same code); the three blend rows
+// reading field_64 at each use with the complement product first 663 (3499 B); the velocity-frame cross through the
+// existing cross3f_staged 489 (same code). Re-measured: the side ternary written in each coordinate 573 (3500 B: two
+// separate ternaries, not retail's per-arm y with the x part after the join); the flip as `== local_22` 658. Body unchanged.
+// M3 lane 14 r105 (fast = full 489 here): the normaliser's input copied component by component 765 (3486 B); that copy
+// made before the 0xb9dd0 call 500; local_13 declared before local_11 489, local_8 or local_9 declared first in the
+// function 489/489, local_10 declared then assigned 489 (all the same code: local_8 stays at +0x8c, the squares k, j, i);
+// the 0.99 test's dot through the existing dot_product2d 661 (3499 B). Kept: the output scale as the existing
+// vector3f_scale(&local_6, local_27, &local_6) 489 (identical code).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
 {
-	vector3f const *const * input_reference = &arg_2;
 	byte *local_0 = (byte *)actor_get(arg_0);
 	s_slot_object_view *local_1 = object_get(arg_1);
 	s_29bab0 const *local_2 = (s_29bab0 const *)function_1e5450(arg_0, local_1->tag_index);
@@ -349,8 +606,8 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f local_7 = *g_4687a4;
 	point3f local_8;
 	function_b9dd0(arg_1, &local_8);
-	vector3f local_9 = *(*input_reference);
-	real local_10 = function_29bab1(&local_9);
+	vector3f local_9 = *arg_2;
+	real local_10 = normalize3d(&local_9);
 	if (!local_2)
 		*(bool *)(local_0 + 0x654) = false;
 	else if (!*(bool *)(local_0 + 0x5d0) || *arg_7)
@@ -363,7 +620,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	{
 		bool local_11;
 		vector3f local_13;
-		if (function_1f9760(arg_0, arg_1, &local_8, local_10, &local_11, &local_3, &local_13))
+		if (function_1f9760(arg_0, arg_1, &local_8, local_10, &local_3, &local_11, &local_13))
 		{
 			*(bool *)(local_0 + 0x655) = true;
 			*(bool *)(local_0 + 0x654) = false;
@@ -373,43 +630,42 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 		else
 		{
 			function_26c180(arg_0);
-			point2f local_14 = { local_8.x + (*input_reference)->i, local_8.y + (*input_reference)->j };
-			vector2f local_15 = { (*input_reference)->i, (*input_reference)->j };
+			vector3f local_14;
+			vector3f_add((vector3f const *)&local_8, arg_2, &local_14);
+			vector2f local_15 = *(vector2f const *)arg_2;
 			real local_16 = normalize2d((point2f *)&local_15);
-			vector2f local_17 = { local_4->i, local_4->j };
+			vector2f local_17 = *(vector2f const *)local_4;
 			normalize2d((point2f *)&local_17);
+			real perpendicular = 0.0f - local_17.j;
 			real local_18 = (real)((double)local_2->field_1c * 0.5);
 			real local_19 = 0.0f >= local_2->field_14 ? local_1->unknown03c : local_2->field_14;
 			real local_20 = 1.0f;
-			bool local_21 = true;
+			bool local_21;
 			if (*(bool *)(local_0 + 0x654))
 			{
-				if ((double)local_15.i * local_17.i + (double)local_15.j * local_17.j < 0.99)
-					local_21 = false;
-				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
-					local_21 = false;
+				local_21 = !(local_15.i * local_17.i + local_15.j * local_17.j < 0.99) &&
+					(*(bool *)(local_0 + 0x4ae) || !(local_18 > local_16));
 			}
 			else
 			{
-				bool local_22 = (*input_reference)->i * -local_17.j + (*input_reference)->j * local_17.i > 0.0f;
+				bool local_22 = arg_2->i * perpendicular + arg_2->j * local_17.i > 0.0f;
 				real local_23 = local_2->field_20;
 				real local_24 = local_22 ? local_23 : -local_23;
-				point2f local_25 = { local_8.x + -local_17.j * local_24, local_8.y + local_17.i * local_24 };
-				vector2f local_26 = { local_14.x - local_25.x, local_14.y - local_25.y };
-				double local_27 = sqrt((double)local_26.i * local_26.i + (double)local_26.j * local_26.j);
-				if (local_23 > local_27 && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
+				point2f local_25 = { local_8.x + perpendicular * local_24, local_8.y + local_17.i * local_24 };
+				vector2f local_26 = { local_14.i - local_25.x, local_14.j - local_25.y };
+				if (local_23 > sqrt(local_26.i * local_26.i + local_26.j * local_26.j) && (*(short *)(local_0 + 0x656) != 2 || !*(bool *)(local_0 + 0x4ae)))
 					local_21 = false;
-				else if (!(local_23 > local_27) && !*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
+				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
-				else if ((*input_reference)->j * local_17.j + (*input_reference)->i * local_17.i > 0.0f)
+				else if (dot_product2d((vector2f const *)arg_2, &local_17) > 0.0f)
 					local_21 = true;
 				else
 				{
-					local_21 = local_26.j * local_17.i + local_26.i * -local_17.j > 0.0f;
+					local_21 = local_26.j * local_17.i + local_26.i * perpendicular > 0.0f;
 					if (!local_22) local_21 = !local_21;
 				}
 			}
-			local_5 = *(*input_reference);
+			local_5 = *arg_2;
 			short local_22;
 			real local_23;
 			if (!(local_2->field_44 > local_16) && local_21 && !*(bool *)(local_0 + 0x4d5) && !*(bool *)(local_0 + 0x5d1))
@@ -426,13 +682,12 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_22 = 2;
 					if (!*(bool *)(local_0 + 0x4ae) && local_2->field_1c > local_16)
 					{
-						real local_25 = (local_2->field_1c - local_16) / (local_2->field_1c - local_18);
-						local_25 = local_25 < 1.0f ? local_25 : 1.0f;
-						local_5.k *= 1.0f - local_25;
+						real local_25 = 1.0f - MIN((local_2->field_1c - local_16) / (local_2->field_1c - local_18), 1.0f);
+						local_5.k *= local_25;
 					}
 					if (function_30bf0(&local_5) > 0.0f && fabs((double)local_5.k) > g_47ffd0)
 					{
-						real local_25 = (real)sqrt(1.0 - (double)g_47ffd0 * g_47ffd0);
+						real local_25 = (real)sqrt(1.0f - g_47ffd0 * g_47ffd0);
 						if (normalize2d((point2f *)&local_5) > 0.0f)
 						{
 							local_5.i *= local_25;
@@ -458,13 +713,15 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_24 = *(real *)(local_0 + 0x47c);
 				else
 				{
-					real local_25 = local_16 * local_16;
-					if (!(local_25 > 0.001f)) local_25 = 0.001f;
+					real local_25 = MAX(local_16 * local_16, 0.001f);
 					real local_26 = local_2->field_1c * 0.5f;
-					local_26 = local_26 * local_26 / local_25;
-					real local_27 = local_15.i * local_17.i + local_15.j * local_17.j;
+					local_26 *= local_26;
+					local_26 /= local_25;
+					real local_27 = dot_product2d(&local_15, &local_17);
 					if (!(local_27 > 0.0f)) local_27 = 0.0f;
-					local_24 = (1.0f - local_27) * 0.5f * (local_26 * 0.5f) * 4.0f;
+					local_24 = (1.0f - local_27) * 0.5f;
+					local_24 *= local_26 * 0.5f;
+					local_24 *= 4.0f;
 				}
 				local_24 = function_29bab2(local_24, 0.05f, 1.0f);
 				if (!(local_24 > local_23)) local_24 = local_23;
@@ -474,7 +731,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			if (local_22 == 3)
 				function_29b990(arg_0, arg_1, local_4, &local_5, &local_5);
 			else
-				function_29b2e0(arg_0, arg_1, &local_5, &local_5, local_24, &local_5);
+				function_29b2e0(arg_0, arg_1, local_4, &local_5, local_24, &local_5);
 			*(real *)(local_0 + 0x668) = local_24;
 			if (local_22 == 1)
 			{
@@ -483,19 +740,18 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			}
 			else
 			{
-				vector2f local_26 = { local_25.i, local_25.j };
+				vector2f local_26 = *(vector2f const *)&local_25;
 				normalize2d((point2f *)&local_26);
-				real local_27 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_8, &local_15, &local_26,
-					&local_17, NULL, local_10, local_22 != 2) * local_2->field_50;
+				real local_27 = local_2->field_50;
+				local_27 *= function_1f9e70(arg_0, arg_1, (point2f const *)&local_8, &local_15, &local_26,
+					&local_17, NULL, local_10, local_22 != 2);
 				function_1f8510(true, &local_9, local_4, &local_6);
 				if (local_22 == 2)
 				{
 					*(bool *)(local_0 + 0x654) = false;
 					if (local_2->field_1c > local_16)
 					{
-						real local_28 = (local_2->field_1c - local_16) / (local_2->field_1c - local_18);
-						local_28 = local_28 < 1.0f ? local_28 : 1.0f;
-						local_6.k *= local_28;
+						local_6.k *= MIN((local_2->field_1c - local_16) / (local_2->field_1c - local_18), 1.0f);
 					}
 					else local_6.k = 0.0f;
 					local_6.i = 1.0f;
@@ -503,31 +759,31 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					*arg_6 = false;
 				}
 				if (local_27 > local_20) local_27 = local_20;
-				local_6.i *= local_27;
-				local_6.j *= local_27;
-				local_6.k *= local_27;
+				vector3f_scale(&local_6, local_27, &local_6);
 				if (local_2->field_68 > 0.0f)
 				{
 					vector3f const *local_28 = (vector3f const *)((byte *)local_1 + 0x7c);
 					vector3f local_29;
-					local_29.i = local_28->j * local_4->k - local_28->k * local_4->j;
-					local_29.j = local_28->k * local_4->i - local_28->i * local_4->k;
-					local_29.k = local_28->i * local_4->j - local_28->j * local_4->i;
+					cross3f(local_28, local_4, &local_29);
+					/* the velocity along the forward, side and up axes */
+					vector3f frame_velocity = { dot3f(&local_1->velocity, local_4), dot3f(&local_1->velocity, &local_29),
+						dot3f(&local_1->velocity, local_28) };
 					real local_30 = 1.0f / local_2->field_68;
-					real local_31 = local_6.i - local_30 * function_29bab4(&local_1->velocity, local_4);
-					real local_32 = local_6.j - local_30 * function_29bab4(&local_1->velocity, &local_29);
-					real local_33 = local_6.k - local_30 * function_29bab4(&local_1->velocity, local_28);
-					local_6.i = function_29bab3(local_6.i, local_31, local_2->field_6c);
-					local_6.j = function_29bab3(local_6.j, local_32, local_2->field_6c);
-					local_6.k = function_29bab3(local_6.k, local_33, local_2->field_6c);
+					real local_31 = local_6.i - local_30 * frame_velocity.i;
+					real local_32 = local_6.j - local_30 * frame_velocity.j;
+					real local_33 = local_6.k - local_30 * frame_velocity.k;
+					local_6.i = function_29bab3(local_6.i, local_31, local_2);
+					local_6.j = function_29bab3(local_6.j, local_32, local_2);
+					local_6.k = function_29bab3(local_6.k, local_33, local_2);
 				}
 				local_6.i += local_7.i;
 				local_6.j += local_7.j;
 				local_6.k += local_7.k;
 				function_1f3e40(arg_1, &local_5, &local_6);
-				local_6.i = *(real *)(local_0 + 0x678) * local_2->field_64 + local_6.i * (1.0f - local_2->field_64);
-				local_6.j = *(real *)(local_0 + 0x67c) * local_2->field_64 + local_6.j * (1.0f - local_2->field_64);
-				local_6.k = *(real *)(local_0 + 0x680) * local_2->field_64 + local_6.k * (1.0f - local_2->field_64);
+				real blend = local_2->field_64;
+				local_6.i = *(real *)(local_0 + 0x678) * blend + local_6.i * (1.0f - blend);
+				local_6.j = *(real *)(local_0 + 0x67c) * blend + local_6.j * (1.0f - blend);
+				local_6.k = *(real *)(local_0 + 0x680) * blend + local_6.k * (1.0f - blend);
 				local_6.i = function_29bab2(local_6.i, -1.0f, 1.0f);
 				local_6.j = function_29bab2(local_6.j, -1.0f, 1.0f);
 				local_6.k = function_29bab2(local_6.k, -1.0f, 1.0f);
@@ -535,7 +791,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			if (*(bool *)(local_0 + 0x482) && *(bool *)(local_0 + 0x5d0) && !function_110ab0(arg_1) && local_10 > 0.0f && (local_22 == 2 || local_22 == 3))
 			{
 				function_ba1d0(*(long *)(local_0 + 0x18), &local_7, NULL);
-				if (function_30bf0(&local_7) > 0.0f && function_29bab4(&local_9, &local_7) > 0.85f)
+				if (function_30bf0(&local_7) > 0.0f && dot3f(&local_9, &local_7) > 0.85f)
 					function_1e4290(arg_0, true);
 			}
 			*(short *)(local_0 + 0x656) = local_22;

@@ -139,9 +139,82 @@ static inline long bungienet_user_voice_setting(short kind)
 // `long setting = kind; if (setting == 1 && available)` 32 (95 bytes); seeded `setting = 1; if (kind == setting && available)` 30
 // (94 bytes); `setting = kind` first in the kind arm 12; inner `else setting = kind` with `available && kind == 1` 4 (same code).
 // The pair follows the kind's surviving references: it outranks the request only with a third use that reaches allocation.
+// Round 85 (fast, plain reads, no volatile): the existing selector called under an outer `kind == 1` test, as a
+// ternary 4 and as if/else 4 (unfolded load, request/kind still EAX/CX); the selector under `switch (kind)` with
+// case 1/default 38 (104 bytes); `kind != 1` chain written in place 32 (95 bytes); availability read into a bool
+// first, `setting = 1` seeded 43 (108 bytes). The matched sibling 0x8c5b0 loads the request into EAX (no kind).
 // Round 114: direct kind as the selector argument 5; register kind/request 4/4; pointer/reference request aliases 4/4
 // (NOT kept: aliases require a match); request-taking selector with the index before/after it 5/23;
 // request-member selector with a kind local/direct kind 4/5. Original helper and body restored.
+// Round 75 (lane 1, fast): an `__assume` on the kind keeps its word load in a register without the
+// volatile read: plain read with `__assume(kind == 1)` in the kind arm 4 (same code; not kept, it is always true where
+// it stands and only holds the value in a register), `__assume(kind >= 0)` after the read, the index or the setting,
+// or in the helper 4 each, two and three assumes 4/4. The pair stays EAX/CX; retail ranks the kind above the request.
+// A 600 s permuter run on the plain-read form: 48 tries, none below 4. With the assume or the volatile read: `__assume(request != NULL)`
+// 4 (plain 32), the index first 5, const reference or pointer local for the kind 4/4, const reference for the index
+// 4, getter helper 4/4, the request read once through its own address 4/4. `setting = kind` on both failing arms 4,
+// a byte-width second test of the kind 33 (103 bytes).
+// Round 172 (m3 lane 4, fast): a shared inline controller-voice setter (index, setting) used by 0x8c5b0 as well
+// (0x8c5b0 stays matched): the plain kind read as the selector's argument 30 (95 bytes), the volatile read in
+// the call 23; the setter taking the request 30/23 (plain/volatile); the kind and index read first, then the
+// setter 4 (same code). Original body restored.
+// Round 156 (m3 lane 6): the selector writing through an out parameter 4 (fast; with a plain read 32); `bool result =
+// true` declared first 4 (fast). LTCG one-file harness (this file, unknown_190001.cpp and the ballast reproduce 4): 45
+// combinations of volatile/plain/cast kind read, five selector shapes, read order and compare sides best 4 (plain reads
+// 11 or more); `switch (kind)` with `case 0:` sharing the default and a plain read 5 (29 instructions, `movsx; dec` for
+// the kind), with the volatile read 30. CL-only: 0x8c790's identical `kind == 1` stays unfolded only beside its
+// 0x80e14 call (nonzero arguments keep the unfold; removing the call folds its compare as well).
+// Round 157 (m3 lane 6, harness): the controller and the setting take EAX and ECX first, then whichever of the request
+// and the kind comes next takes EAX; retail allocated the kind first. Raw byte-offset reads as in 0x8c790, plain 29 (the
+// compare folds); a seeded selector with a plain read 24; `available && kind == 1` 15 (fast 16); the volatile read with the index
+// read after the selector 23; a plain read with a caller-side `kind != 1` test around the selector 4 (fast 4; the unfolded load
+// without the volatile read, same pair; a repeated test, not kept).
+// Round 161 (m3 lane 5, fast, plain reads): the default path as a call of the reset handler 76 (135 bytes, no merge); a word
+// kind through the selector 32 (95 bytes); the selector on the field with the index after 30 (a repeat, re-measured); a
+// switch with `case 1` falling into `default` 19 (95 bytes, `movsx; dec`); that switch with the index read after it 28 (95
+// bytes: retail's ECX request and EAX kind, but the switch keeps `movsx; dec` for the 16-bit compare).
+// Round 171 (m3 lane 6, round 157's harness): 1-8 initialised unused locals at the top 4 each (diagnostic); the
+// volatile read with a seeded default (`long setting = 1; if (kind == 1 && available) ...`) 12; the request's fields
+// read through a const source pointer local 4; index first with the volatile read as the selector's argument 5; the
+// kind held as a long 4; the kind arm's choice as a ternary 4.
+// Round 86 (m3 lane 14, fast, plain reads, no volatile): a top-level const request parameter 32 (95 bytes); the kind
+// held as a long 32; the selection as one ternary in place of the helper call 32; `old_setting != setting` 32; the
+// controller index read after the selector 30 (95 bytes). The compare folds in every plain-read form.
+// Round 174 (m3 lane 6, round 157's harness, counts as its positional differences): the selector taking the
+// request by value 37 (37 instructions, the copy stays), a by-value local copy for both reads 37, the by-value
+// selector with the index read after it 37; the selector taking the request by const reference, plain read 29 (28
+// instructions, folded). Diagnostic: the matched sibling 0x8c790's identical `kind == 1` stays unfolded only
+// through its inlined 0x80e13 time-stamp read (a compile-only copy folds without it, with its result unused, or
+// with 64-bit arithmetic alone); here a plain read still folds with an asm block written into the handler.
+// Round 195 (m3 lane 4, fast, all with the volatile read): `setting = kind` in the not-available arm 4 (same code); a
+// `kind == 0` arm ahead of the `kind == 1` arm 32 (103 bytes: retail's ECX/AX pair, the extra test survives); the volatile
+// read passed straight as the selector's argument, index first 5; the availability test as one returned expression 4;
+// `short const kind` 4.
+// Round 200 (m3 lane 4, fast, all with the volatile read): the controller looked up for the read and again for the store
+// 12 (95 bytes); the changed flag declared above the kind read 33 (94 bytes); the controller as a reference 4; the voice
+// setting read into a local ahead of the availability test 7; setting and old setting as `dword` 4.
+// Round 184 (m3 lane 6, fast, all with the volatile read): the selection written in place as if/else with `kind == 1 &&
+// available` 11, seeded `setting = 1` with the availability fields tested in place 15, one ternary 11; the availability
+// helper taking the header's address 4, also passed through the selector 4 (same code). Diagnostic: the kind compared with
+// the settings definition's first field (a 1 the compiler cannot see) loads the kind with movsx after the request (34).
+// Round 128 (m3 lane 9, fast, all with the volatile read): the index through an inline accessor taking the request 4; the
+// index declared ahead of the kind and assigned after it 4; the setting declared first and assigned after the reads 4;
+// index, setting and kind all declared first and assigned in order 4; a `dword` index 4 (all the same code). Re-measured:
+// the index read first 5 (the kind then takes AX but its load follows the index's). Diagnostic (flags, not kept): the file
+// with `/arch:SSE` like the matched siblings 0x8c790 and 0x194260 (both load the same +0xe word unfolded with a plain read)
+// and a plain read 32 (95 bytes: still folded), so the flag is not what unfolds it.
+// M3 lane 14 r101 (fast with 0x8c5b0): with the existing kind read, no old-setting local (the stored setting compared in the
+// test) 4 (same code), `changed` set by if/else with no initialiser 25 (91 B); plain reads: the selection written in place
+// as `if (request->kind == 1 && available) ... else setting = 1` with the index read first 32, the controller looked up
+// before the selector 31, the read passed straight to the selector ahead of the index 30 (95 B each, compare folded).
+// M3 lane 14 r104 (fast with 0x8c5b0; plain where noted), all with a plain read (no volatile): an `else if (kind == 0)` arm
+// after the kind-1 arm, also giving 1, 4 (the volatile read's code exactly: the second compare keeps the word load in a
+// register, then goes when its two arms merge); `else if (kind == 0) ... else if (kind == 2) ...` with every arm but kind 1
+// giving 1, MATCH (fast and plain), and `else if (kind == 0 || kind == 2)` the same, MATCH (fast): the extra compares give
+// the kind the third use that puts it in AX and the request in ECX. Not kept: those arms are identical to the else (the
+// 2026-10-30 ruling on identical branches). Lead: retail's source tests the kind against 0 and 2 as well, in arms that
+// compile to the default; a natural form of that with non-identical arms should match. Also: a three-case switch
+// (0, 1, 2, default) 33 (100 bytes, `movsx; sub; dec` chain); the selection as one ternary in place 32 (95 bytes).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

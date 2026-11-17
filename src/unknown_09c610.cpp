@@ -86,7 +86,15 @@ struct s_9cca0
     byte field_7e[10];
 };
 
-// score 9 (was 9): the two vector copies and the global's test are ordered
+// score 0 (was 9): matches retail (m3 lane 4 round 193). The record is declared inside the `if` block (its scope
+// starts after the 0x122c10 call, so the flag test moves above the late stores) and the tag is stored before the
+// second vector copy: the tag then holds EAX across that copy, so the second vector goes through EDX and ECX only
+// and the first vector's k is stored last, as in retail. The marker before the tag gives retail's tail. Location,
+// first vector, marker, tag, second vector (kept) matches, and so does the marker moved to the front; found by
+// building all 720 orders of the six stores in both scopes in a two-file link harness with an external 0x184440
+// (0.5 s a variant): at function scope the best order is the old body (9), tag-then-marker ahead of the second
+// vector is 2 off. The escape through 0x184440 was not the cause, so the BLOCKED-BY below no longer holds.
+// Earlier (at 9): the two vector copies and the global's test are ordered
 // differently; retail sinks the k component's store past the global's test and
 // loads the tag after it, ours stores the tag before the test. The test can only
 // move above the event's stores when LTCG knows the event's address does not
@@ -122,21 +130,54 @@ struct s_9cca0
 // Round 109: global guard before the tag and marker stores 11, with their order reversed 11; marker before the guard 11;
 // tag before the guard 12; guard between the vectors 16; guard before both vectors 26; guard before event initialization 55
 // (204 bytes); combined early global/tag guard 60 (208). Original body restored; still BLOCKED-BY 0x184440.
+// Round 88 (m3 lane 16, fast): the recursive location setter taking a const reference (header, definition, every call) 9;
+// the tag lookup's result named 9; a bool result 9; the first vector copied as a point 9; the tag tested before the flag 17;
+// the flag pointer saved at entry 70 (as listed). Still BLOCKED-BY 0x184440.
+// Round 75 (m3 lane 11, fast): the event declared inside the `if` block, not at function scope, 12: the flag
+// test then moves above the late stores as in retail (the escape no longer orders it; the setter's escape need
+// not be the cause), and what is left is the vector copies' store schedule. On that scoped form: the marker
+// stored before the tag 10 (the tail then matches: tag load, marker, tag); the vector copies swapped 12; memcpy
+// copies 10 (same code); the location as one s_location member copied whole (object_queries.h) 10 (same code);
+// the location copied after the vectors 24; its two dwords reversed 13. Left on the 10 form: ours stores the
+// first vector's x before the location's second dword and sinks the second vector's y below the test, retail
+// stores the location dword first and sinks the first vector's z. Another lead: the build's stand-in callers pass
+// 0x184440 and the location setter pointers read from a volatile buffer, which retail's image has no equivalent of.
+// Round 71 (m3 lane 13, fast): all 48 orders of the two location dwords, the two vector copies and marker/tag on the
+// block-scoped record: best 10 (location 1, location 2, first vector, second vector, marker, tag), then 12, 12, 13, 14,
+// 15; that form without the named input pointer 10 (same code); one whole-record memset 75 (173 bytes); the first
+// vector by component with its k after the second copy 57 (movss, 209 bytes); the memsets swapped 17.
+// m3 lane 10 r87 (fast with 0x9c910/0x9f880/0x9ffa0): the input's two vectors through one array pointer (`vectors[1]`,
+// `vectors[0]`) 34 at function scope, 32 block-scoped, 33 block-scoped with the marker before the tag (the input pointer
+// takes a register of its own and the copies lose retail's `lea`); block-scoped with the location pair as one 8-byte
+// memcpy 12 (same code as the two longs), with the marker before the tag 10 (same code as the 10 form). Retail's 0x184440
+// passes `arg_2 + 0x1c` straight to 0x175180 as ours does (same call set), so the escape differs only by summary.
+// Block-scoped with the ten-byte zeroing moved after the vector copies 52 (201 bytes), after the marker 52.
+// Round 109 (m3 lane 16, fast; all with the event declared inside the `if` block, whose marker-before-tag form re-measures 10):
+// the tag stored first after the zeroing 31; marker and tag both first 29; the two vectors copied through references to the input
+// vectors 44; the flag pointer read into a local between the two copies 10 (same code); the marker right after the zeroing 10.
+// Retail's 0x175180 passes its own parameter on to the recursive call as ours does, and 0x184440 calls the same functions in both builds
+// (checked through the link map), so the escape that orders the flag test comes from 0x184440's body (965). Still BLOCKED-BY 0x184440.
+// Round 173 (m3 lane 6, fast): `if (!0x122c10(...)) return false;` before the fill, the record at function scope 9 (same
+// code), declared after that return 9; the record declared inside the `if` block as the matched sibling 0x9c610 does
+// 12 (the flag test then sits where retail's does; ours stores the first vector's i before the location's second dword
+// and its k early, retail sinks that k past the test), with the marker before the tag 10, plus the tag test on the
+// input 10; the early return with the record in a block after it 12; the record in a block that also encloses the 0x122c10
+// test 9 (function-scope code): the flag test moves only when the record's scope starts after that call.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
-    s_9cca0 local_1;
     byte const *local_0 = (byte const *)arg_3;
     if (function_122c10(0x6a707421, *(long const *)(local_0 + 0x30)))
     {
+        s_9cca0 local_1;
         memset((byte *)&local_1 + 4, 0, 0x78);
         memset(local_1.field_7e, 0, sizeof(local_1.field_7e));
         local_1.field_1c = *(long const *)(local_0 + 0xc);
         local_1.field_20 = *(long const *)(local_0 + 0x10);
         local_1.field_30 = *(vector3f const *)(local_0 + 0x24);
-        local_1.field_3c = *(vector3f const *)(local_0 + 0x18);
-        local_1.field_0 = *(long const *)(local_0 + 0x30);
         local_1.field_7c = -1;
+        local_1.field_0 = *(long const *)(local_0 + 0x30);
+        local_1.field_3c = *(vector3f const *)(local_0 + 0x18);
         if (*g_4ed280 && local_1.field_0 != NONE)
             function_184440(*(long const *)local_0, *(long const *)(local_0 + 4), (s_18444a const *)&local_1, *(long const *)(local_0 + 8));
     }
@@ -221,7 +262,7 @@ struct s_damage_report;
 point3f *function_b9dd0(long arg_0, point3f *arg_1);
 void function_d6a70(long arg_0);
 void function_d9640(s_damage_report const *arg_0, long arg_1);
-void __stdcall function_e4a20(long arg_1, point3f const *arg_0, long arg_2, bool arg_3);
+void __stdcall function_e4a20(long arg_1, long arg_2, point3f const *arg_0, bool arg_3);
 
 struct s_9c610
 {
@@ -266,7 +307,7 @@ struct s_input_9c610
     byte field_34;
 };
 
-// score 2 (was 13): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
+// score 2 (was 2): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
 // as the handle, as retail does (`mov ecx, ebx`, with input->field_2e pushed as the contact). The source had
 // passed field_2e as the handle and the biped as the contact. Flag 7 of +0x20 is the plain
 // `input->field_20 & 0x80`, retail's `mov al / test al, al / jns`, now that the call setup is retail's.
@@ -285,6 +326,14 @@ struct s_input_9c610
 // tail read 23; both byte reads 46; word notification read 46; word tail read 23; both word
 // reads 46; signed-byte tail read 23; byte notification/signed tail 46.
 // Round 11 (lane 17): unchanged; 0xe4a20 (contributor code, src/bipeds.cpp) is still todo at 104.
+// MATCH (lane 16 round 99; the call line in 0xcaa60 changed with its owner's OK on #1109): with 0xe4a20's
+// parameters as (handle, contact, point, knocked) this function matches byte for byte, 0xe4a20 stays matched
+// and 0xcaa60 stays at 224. The point is then evaluated between the two
+// pushes, so its EAX is taken when the contact is loaded and the movsx goes to ECX. (handle, contact, knocked,
+// point) matches too; (point, handle, contact, knocked) 4 and loses 0xe4a20.
+// Before the order changed, in this body alone (all 2,
+// same code): a short contact local, a long contact local, a point local; a word contact field 2 (movzx);
+// the contact read back from the filled record 8 (430 bytes).
 // @retail 0x9c610
 bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -338,7 +387,7 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
                 function_d6a70(local_1);
             function_d9640((s_damage_report const *)&local_10, local_1);
             if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && (input->field_20 & 0x80))
-                function_e4a20(local_1, (point3f const *)&input->field_c, input->field_2e, false);
+                function_e4a20(local_1, input->field_2e, (point3f const *)&input->field_c, false);
         }
         local_0 = true;
     }
@@ -349,7 +398,7 @@ struct s_object;
 s_object *function_badc0(long arg_0, dword arg_1);
 void __stdcall function_191fab(long arg_0, long arg_1);
 void __stdcall function_191e51(long arg_0, long arg_1);
-void __stdcall function_191ec4(long arg_0, long arg_1, short arg_2);
+void __stdcall function_191ec4(long player_index, long definition_index, short count);
 void function_f8160(long arg_0);
 long function_1896c0(real arg_0, long arg_1);
 void player_speed_request_14ea20(long arg_0);
@@ -396,7 +445,7 @@ bool c_unit_pickup_event_definition::v11(long arg_0, long const *arg_1, long arg
                         }
                         else
                             function_f8160(*(long const *)(local_4 + 4));
-                        function_191ec4(*(long const *)(local_4 + 4), local_3, *(short const *)(local_4 + 8));
+                        function_191ec4(local_3, *(long const *)(local_4 + 4), *(short const *)(local_4 + 8));
                         break;
                     }
                     case 3:

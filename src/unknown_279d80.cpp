@@ -2000,6 +2000,45 @@ void function_27dd10(void)
 // weight, interpolate_real, no scale local) 2 each, so arms folded away do not count; saved frame state as dword or long, fraction
 // first 2, next index first 6; apply index named in both arms 2; counters pre-incremented or += 1 2; the group end with the compare reversed 8;
 // a named table pointer for the outputs 2.
+// Round 67 (m3 lane 14, fast; 0x281b60 moves with it): in function_288572 the inner bound as an if-clamp
+// after `arg_5 + 8` 208 (0x281b60 241, 0x288570 401), as `local_3 = arg_7; if (arg_5 + 8 < local_3) ...` 5
+// (`jge` for retail's `jg`, the reload pair unchanged; 0x281b60 64); the outer for as a while 2; the
+// output selection as if/else 2; in function_288573 the blend-1 rotation weight named 2.
+// Round 140 (lane 8, fast with the four matched walk users): the wrapper's count local renamed
+// `node_count` or `count` 2/2 and the walk's bit-flags local renamed 2 (the reload pair is not a name
+// tie); the bit flags as int 2; the count parameter `long const` 2 (0x281b60 2 throughout). The two
+// reloads sit on the bit-set path only (the bit-clear path joins at the bound load), after the blend-1
+// asm that clobbers EBX; blend 3 (0x285750, matched) applies through C code and the EAX-only multiply.
+// Round 141 (m3 lane 8, fast over all 78 functions of the file; 0x281b60 2 throughout): the sign mask as a
+// local static inside the blend 2 (no change); the two decode outputs as one two-element array 352 (1742
+// bytes, the file's walk users all regress); the interpolation's translation through orientation_vector_blend
+// 2 (13 matched walk users regress); the destination-mask test and the inheritance map test through
+// BIT_VECTOR_TEST 2/2; the bit flags declared at the walk's top ahead of a count copy 2 (0x288570 120).
+// Round 60 (m3 lane 2, fast over all 78 functions of the file, 0x281b60 2 throughout): in function_288572 the output
+// pointer as an array element address 2; the empty-group test as `!local_2` 2; the bit-flags selection as an if/else-if
+// chain 2; the destination lookup and mask test as nested ifs 2; the destination index initialised to NONE 2 (all the
+// same code).
+// Round 89 (m3 lane 2, fast with the four matched walk users): the shared walk (function_288571/2/3) as
+// __forceinline function templates over method, kind, mask, interpolation and component 2114 (0x281b60
+// 2048; every instance stays out of line, as round 100's template); the blend asm's sign-bit constant
+// typed as reals with -0.0f 2; in function_288572 the output cursor declared ahead of the in-place flag
+// 2 (0x288570 3, 0x289580 78); the inheritance map entry read as short 382 (36 matched walk users
+// regress); this function and 0x281b60 through the existing compute_orientations 4 (a second swapped
+// pair in pass 1: the apply-in-each-arm form is what fixes that pass); the frame-state saves declared
+// at the walk helper's top 2. Diagnostics: the apply as a member of a type derived from the output, 2
+// (same code); a probe global store at the wrapper's end 2. The pair is in pass 0 only (flags in EBX
+// after the blend asm, count in ECX after the decompressor calls). All restored.
+// Round 174 (m3 lane 8, fast with 0x281b60 and the five matched walk users): the multiply's sign mask as a
+// const local 2; the apply helper as plain inline 2 (still inlined); the pass walk as plain inline 1995 (out
+// of line, every walk user regresses); the node flag test returning its expression 2; the inheritance map
+// test through the existing node flag test 2 (0x289580 78). Diagnostic: the kind-2 count clamp removed 2,
+// so the clamp's second definition of the count is not the tie. Retail has no float literal here (only
+// the blend's sign constant); matched 0x285750 references its 1.0f twice. All restored.
+// Round 253 (m3 lane 3, fast over all 78 functions of the file; 0x281b60 alongside): in function_288572 a
+// redundant `if (0 < count)` guard around the group loop 56 (0x281b60 97, 0x285750 56, 0x288570 51, 0x289580
+// 13, 0x28aaa0 10); the same guard around the inner loop 2 (same code); the bit flags bound to a `long &`
+// for the inner loop 2 (0x288570 120); the count bound to a `long const &` at the group clamp 2 (0x281b60
+// 39, 0x288570 120); the pass counters as a switch on the component 2 (0x288570 3, 0x289580 78). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2115,6 +2154,28 @@ void function_2818e0(void)
 // Lane 11 round 70 (fast): a ternary lvalue counter update 2; a counter pointer by ternary at the increment 2 or at the helper's top 2 (0x288570 120 in
 // all three); the bit flags shifted by an explicit assignment 2; the bit test as `(flags & 1) == 1` 2 (0x288570 3, 0x289580 78). Here and in 0x2bdc70
 // ours reloads the later-declared variable first, retail the earlier-declared one.
+// Round 154 (m3 lane 5, fast with 0x27dff0, which has the same pair): in function_288571 the counter resets before the
+// node-count read 6 (both); the resets in reverse order 2; in function_288572 the flags byte read and the cursor stepped
+// as separate statements 2; the outer group loop as `while` 2; the later passes' clamp tested count-first 2 (both
+// functions identical in each but the first).
+// Round 141 (m3 lane 8, fast, the shared-helper trials listed above 0x27dff0): local static sign mask 2; one
+// output array 333 (1681 bytes); vector-blend interpolation 2; BIT_VECTOR_TEST tests 2/2; bit flags ahead of a
+// count copy 2. The multiply asm leaves EBX alone; the EBX reload follows the interpolation's blend asm.
+// Lane 11 round 80 (fast, with 0x27dff0 2 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x2898b0): function_288573 as a
+// switch on the method 2 (0x288570 120); in function_288572 the output cursor set to the scratch output and overridden by
+// `if (in_place)` 2 (0x288570 3, 0x289580 78), the node admission as a bool refined by a second `if` 357 (1690 bytes), the
+// destination index passed straight to the apply 2 (0x288570 3), the group end as `count < index + 8 ? count : index + 8` 8
+// (all controls 6-8), the interpolation test as one if/else holding the root scale 4 (0x285750 184), the flags shift in the
+// inner for's step 12; component_decompress as a switch 2 (0x288570 120, 0x289580 78). All restored.
+// Round 89 (m3 lane 2, fast, the shared-helper trials listed above 0x27dff0): templates 2048; real-typed
+// sign constant 2; cursor declared ahead of the in-place flag 2; short inheritance map entry 367; the
+// existing compute_orientations 4; frame-state saves at the walk helper's top 2. All restored.
+// Round 174 (m3 lane 8, the shared-helper trials listed above 0x27dff0): const sign mask local 2; plain
+// inline apply 2; plain inline walk 1929 (out of line); flag test returning its expression 2; map test
+// through the node flag test 2. All restored.
+// Round 253 (m3 lane 3, the shared-walk trials listed above 0x27dff0): redundant group-loop guard 97;
+// inner-loop guard 2; bit flags by `long &` 2; count by `long const &` at the clamp 39; pass counters as a
+// switch 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

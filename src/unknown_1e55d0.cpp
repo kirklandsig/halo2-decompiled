@@ -67,11 +67,54 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax S (11-16): score 319 (was 319): no new form; the aligned 0x94 frame still agrees, but retail takes its
+// first argument in EAX and keeps the move pointer in EBX and the input pointer in EDI, while this build takes all
+// three arguments on the stack and keeps the move pointer in EDI and the input pointer in EBX; the swap is settled
+// by the stub for the case-3 callee 0x1ec690, which lives in a file this lane may not edit.
+// MiniMax I (11-17): no new form, no lower score (319): the aligned 0x94 frame still agrees, but retail still
+// takes the output pointer in EAX and keeps it in EBX with the input in EDI, while this build keeps the output in
+// EDI and the input in EBX; both take the second argument from the stack, and the trade is settled by the 0x1ec690
+// stub's convention in another file (a 900-second permuter run found no variant below the baseline of 310
+// differing instructions): BLOCKED-BY 0x1ec690 (src/stubs/bipeds.cpp).
+// score 319 (was 319): no new form and no lower score; the aligned 0x94 frame still agrees, but the move
+// pointer is in EDI here and in EBX in retail while the physics pointer trades it with it, and that swap is
+// settled by the stub for 0x1ec690 (src/stubs/bipeds.cpp).
+// MiniMax R (11-14): no new form, no lower score (319): retail keeps the output pointer in EBX and the input
+// pointer in EDI, ours keeps the input in EBX and the output in EDI, and that swap decides the register of
+// every later address field; the state, input and output pointers each taken through their parameters, the two
+// late state reads through the parameter and the input without its const qualifier all compile to the same
+// bytes, and a 300-second permuter run (3 tries) found no better form.
+// MiniMax D (11-14): no new form, no lower score (319): the rate as a named local (one load instead of three) reaches 320, and the move/input registers still trade EBX and EDI, which the case-3 callee 0x1ec690's stub convention settles (BLOCKED-BY 0x1ec690).
+// MiniMax C (11-14): no new form, no lower score (319): retail's prologue takes the state pointer in EAX
+// and puts it in EBX, zeroes [EBX], then takes [ebp+0xc] into EDI; ours takes [ebp+0xc] into EBX and the
+// state pointer into EDI, so every later lea and copy follows the swap and the body runs two bytes longer;
+// the case-3 callee at 0x1ec690 (src/stubs/bipeds.cpp) settles which pointer the callee expects in which
+// register: BLOCKED-BY 0x1ec690.
+// MiniMax A (11-13): no new form, no lower score (319): the output pointer declared before the state
+// pointer and declared after the first store (that store written through the move pointer) both compile to
+// the same bytes; retail still keeps the output pointer in EBX and the input pointer in EDI where ours
+// keeps them the other way round, and that swap is settled by the case-3 callee's own convention:
+// BLOCKED-BY 0x1ec690 (src/stubs/bipeds.cpp).
+// MiniMax G (11-12): no new form, no lower score (319): the velocity pointer as a pointer local gives the same code (the null test still folds), and the move/input register swap stays BLOCKED-BY 0x1ec690.
+// MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
+// EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690
+// (src/stubs/bipeds.cpp).
+// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
+// Walk b3I (11-06): every statement and block checked against retail 0x1e55d0-0x1e5a58 (field offsets, switch table 1..6 with
+// 4/5 shared, case-6 0.3f scale and fistp into the countdown byte, shape compare at 0x1e5740-0x1e5757/0x1e591a, capsule arm at
+// 0x1e5940-0x1e59f9, position range test at 0x1e587f-0x1e58ae, constants 0.3/1e-4/0.001/0.5/+-32768 read from the XBE): no
+// behaviour difference found. Retail inlines 0xb77d0 (0x1e5775-0x1e57e1; angular NULL) and the disabled 0xb7430 position
+// move (0x1e5801-0x1e58ed); the draft writes both out. `function_b77d0(object_index, &velocity, NULL)` instead of the
+// written-out velocity block stays a call: 374 (1076 bytes), and the full build moves its caller 0x118700 from 92 to 148, not kept. Retail's `test ebx, ebx` (0x1e5796) is that
+// inlined parameter's null test and is always false for &velocity, so no behaviour changes. The fast build also
+// inlines the capsule destructor where retail calls 0xdc370 (0x1e59e1/0x1e59f4); full build not affected by this note.
+// MiniMax R (11-10): no new form, no lower score (319); the move and input pointers still trade EBX and EDI,
+// which the case-3 callee's stub convention settles, and the countdown byte is still converted out of line.
+// MiniMax R (11-10): no new form, no lower score.
 // MiniMax I (11-05): no new form, no lower score. Retail takes its first argument in eax and keeps the
 // output in ebx and the physics pointer in edi, ours takes all three on the stack; retail's case-3
 // callee 0x1ec690 also takes the input in edi and the state in eax (src/stubs/bipeds.cpp, another lane).
 // MiniMax B (11-04): no new form, no lower score.
-// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Earlier: Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
 // MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
 // trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
@@ -194,9 +237,35 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // 0x1ed340 where retail calls it; 0x2901e0 29, 0x1ed340 45, 0xb77d0 49, 0x1c4b00 133 stop matching, 0xfa100 holds); fast: state through a pointer to its parameter 319
 // at each use and read once 319, state written as the parameter at each use 319 (all same code); a named base pointer for the three position reads 319; with a named
 // component index too 319.
+// Round 138 (m3 lane 8; plain unless marked): the 0x1ec690 draft activated with its stub removed 349 again (0x2901e0 29, 0xb77d0 49,
+// 0x1c4b00 133, 0x1ed340 45 stop matching; restored), so the move/input roles (retail EBX/EDI, state kept on the stack) stay
+// BLOCKED-BY 0x1ec690. Fast: the shape test as an if/else on the compound result, each arm re-reading the current shape, 388 (1212);
+// `same = compound ? current == shape || inner == shape : current == shape` 335 (1204 bytes, masked 235 -> 110: retail's
+// `cmp eax, 0x17; jne` with the non-compound path out of line); the same ternary in the `if` 335; the `||` written in the `if` 319
+// (same code); the input flag as `(bool)((flags >> 5) & 1)` 325 (1180: retail's `shr ecx, 5; test cl, 1`), with the ternary 351.
+// Round 398: Existing aligned capsule shape/component/flag-word object-reference contracts,
+// seven subsets then ordinary inline: 319/319/319/319/319/319/319/530. NOT kept: forced forms tie;
+// ordinary expansion loses the native frame and regresses. Original helper, caller and full body restored.
+// F402: Four-byte movement/input/state pointer-home lexical identities, seven
+// subsets then the complete graph with the velocity identity, 319 each. NOT kept:
+// all canonicalize; original names, aligned helper and complete body restored.
 // M400: Complete original matrix/position/conversion output defaults, seven subsets and CRT,
 // 312/330/323/319/312/330/323/317. NOT kept: matrix default gives native move/input registers
 // and first +0x8f at 312, but grows to 1200/1164 bytes and gains only seven; all original producers restored.
+// Round 112 (m3 lane 9, fast): both builds end in `mov esp, ebp; pop ebp; ret 8`; retail puts the epilogue
+// mid-body with the non-compound shape test and the capsule/flag arms after it. Ours inlines 0x1c4a80 where retail
+// calls it (an inline budget or site-frequency effect, perhaps of retail inlining 0xb77d0 here). Tried: the position
+// through the existing vector3f_add_scaled 320; case 6 as `0.3f * ticks` 319 (same code); the bounds as
+// `x <= 32768.0f` 319 (same code); `*(long *)(state + 4)` at each use instead of object_index 339 at 1192; object_get()
+// for the two tail lookups 319 (same code). The move/input registers stay BLOCKED-BY 0x1ec690 (stub in
+// src/stubs/bipeds.cpp); M400's matrix default looks like an initialiser that rigid_body_matrix_get overwrites.
+// Round 244 (m3 lane 3, fast): the 0x1ec690 stub (its only caller is this function) declared __cdecl, caller-pops as
+// retail's callee is, 328 (1180 bytes; input stays EBX, output EDI: the stub's ECX argument is not what picks them);
+// 0xb7430's matching body enabled with its stub removed (diagnostic, restored) 319: 0x1c4a80 stays inlined here, so its
+// inlining is not from 0xb7430 being a stub. The velocity block on its own object-index read and a second
+// `*(long *)(state + 4)` read for the position move (retail reads [state+4] once per inlined helper) 319: the tail then
+// has retail's re-read and its lea/object/flags registers, but the count does not move; on it the input flag in shift
+// form 330, the shape match as `compound ? a || b : a` 345 (1204 bytes), both 348. All restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

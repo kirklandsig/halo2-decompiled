@@ -84,7 +84,7 @@ struct s_object_header_291ea0
 	s_unit_291ea0 *object;
 };
 
-inline void dialogue_name_override(long volatile *name, long value)
+inline void dialogue_name_override(long *name, long value)
 {
 	if (value != 0 && value != NONE)
 		*name = value;
@@ -116,6 +116,33 @@ inline void dialogue_name_override(long volatile *name, long value)
 // use 9; an inline element getter 97 (467 bytes). Dead `volatile` load probes (reverted) before the tag, the test, the name or the unit lookup 84-110
 // (440-448 bytes: the name leaves the stack and the frame shrinks), so no rotation step could be located. Retail's lookup shape (scaled index EDX, pool
 // reuses EAX) also matches 0x28f8d0's difference; both shapes occur in matched functions with the same inline.
+// Round 75 (m3 lane 11, fast): the override helper's pointer parameter without `volatile` 9 (same code, kept); `name`
+// declared first in the found block 9; the default name at function scope, zeroed at entry, 146 (450 bytes); the unit
+// lookup through the `unit_index` local 129 (the listed cached unit index, re-measured); the default name from a
+// force-inline helper with early returns 48; the tag table global read at each use, no `tags` local, 9 (same code).
+// Round 78 (lane 10, fast): the vocalization's name now takes the unit stage's override-then-fallback shape
+// (`name = NONE`, dialogue_name_override, then the default while still invalid) 9 with byte-identical code
+// (kept; it replaces a generic local tested twice). Also: `long name = vocalization->default_name` with one
+// fallback test 177 (438 bytes). On the kept form: the search as its own loop with an `i < count` test after
+// it 124 (468 bytes); the one-use unit_index local dropped 9 and default_name declared before the globals tag
+// pointer 9 (same code each). Diagnostics: one variant override in place of two 56 (451 bytes) and a cut-down
+// default block leave the elements/pool registers where they are.
+// Round 160 (m3 lane 6, fast): a 600 s permuter run (59 tries) none below 9; the unit's dialogue state through a
+// force-inline getter taking the unit index 9; the globals-tag pointer declared at function scope 9; the override
+// helper as __forceinline 9; the actor through the byte-offset actor getter 9; the scenario global read at each use 16.
+// Round 187 (m3 lane 4, fast): `name` declared at function scope 9 (same code); `return result` at the definition and
+// sound NONE exits 87 (478 bytes); the masked unit index in a named local 9 (same code); the definition NONE test as a
+// nested block 9 (same code); the variant mismatch as `continue` 9 (same code). Re-measured on the round-78 override
+// form: round 16's vocalization default read ahead of the default name, now 126 (440 bytes, the name leaves the stack).
+// Round 96 (m3 lane 10, fast): the two differing loads are one cause each: retail's elements and pool loads reuse
+// EAX (the pool's `mov eax, [mem]` is a byte shorter, which is the jump and pad differences). Parameters ordered
+// (actor, name, script, duration) at the definition, declarations and all three calls 9 (same code); the default
+// name and the unit's dialogue state both through inline helpers 9; the override helper by reference 9; result
+// declared before the scenario pointer 9; the tag table pointer declared at function scope 9. All restored.
+// Round 253 (m3 lane 3, fast): the object header as a const reference 9; the elements pointer as a
+// const reference in the arm 9; the elements through a trivial inline accessor 9; the vocalization
+// through an inline accessor 9; the unit and its dialogue state as const references 9 (all the
+// same two eax/edx picks).
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {
@@ -145,11 +172,9 @@ bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real 
 						if (globals_tag && globals_tag->count > 0)
 							default_name = *(long *)(globals_tag->elements + 0x68);
 
-						long local_dn = vocalization->default_name;
-						long name;
-						if (local_dn != 0)
-							name = local_dn;
-						if (local_dn == 0 || local_dn == NONE)
+						long name = NONE;
+						dialogue_name_override(&name, vocalization->default_name);
+						if (name == NONE || name == 0)
 							name = default_name;
 
 						s_unit_291ea0 *unit = ((s_object_header_291ea0 *)g_4e0300->data)[actor->unit_index & 0xffff].object;

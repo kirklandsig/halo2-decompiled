@@ -248,6 +248,76 @@ long g_55e6c0;
 // stored before width 30; pitch before the stores 155 (495 bytes); stored fields 29; height part before the clamp 37; packing before the clamp 31 (483: height EAX, zero EDX); copy
 // of count before the stores 166 (503), at the clamp 166 (497); forced-inline pin as a ternary or with returns 29, with a result local 166; forced-inline size helper 29; format local
 // for the call 29; `count >= 0 ?` first 32. Field stores in the clamp's arms 139 (495) give retail's top block and registers exactly, so the merged clamp value is what takes EAX.
+// Round 216 (m3 lane 3, fast): the entry's +0x00/+0x7c/+0x8c typed as long fields (no `*(long *)` casts in the file)
+// 29 (same code; every function of the file still matches); that with the round-51 signed pitch/packed lead 29 (484
+// bytes, packing instructions retail's); on it the height term first in the OR 29 and as its own first statement 29
+// (VC canonicalises both: pitch in ECX first, height in EDX); a named clamped local set by if/else-if 166 (497 bytes).
+// Retail loads the count first (EDX) for the clamp compare, hoisted above the kind store, and the height after it (EAX).
+// Round 142 (m3 lane 8, fast, all on the round-51 signed pitch/packed lead, itself re-measured 29 at 484 bytes): zero arm
+// as its own store, upper clamp a ternary in the else arm 33 (485); clamp through a named level-count copy 29; busy test
+// negated with the work arm first 29; width term first in the OR 29; one merged count zeroed, set and capped under
+// `count >= 0` 43.
+// Round 177 (m3 lane 4, fast, on the round-51 signed pitch/packed lead, 29 at 484 bytes): retail's top block is a
+// source-order allocation (kind EAX, height EAX after the kind store and kept for the packing, clamp value EDX, the
+// count's load and compare then scheduled above the kind store); ours gives the clamp value EAX before the height is
+// placed. New: the clamp as `(4 < (0 > count ? 0 : count)) ? 4 : (0 > count ? 0 : count)` 150 (495 bytes, setl form); a
+// two-stage clamp through a level-count local, `count > 0 ? count : 0` then `< 4 ?`, or `count < 0 ? 0 : count` then
+// `> 4 ?` 150/150; a level-count local read right after the kind store and clamped by if / else-if after the other
+// stores 166 (497: the count takes EBP, the data EBX); the clamp ternary into a local ahead of the kind store 140 (483:
+// the block splits at the clamp). Re-measured: the level-count local set by if / else-if at the store 166 (497).
+// Diagnostic: the packing without its height term 131 (479), the height still in EDX, so the clamp value holds EAX
+// whether or not the height outlives its store. A 600 s permuter run on the lead (57 tries) found none better.
+// Round 95 (m3 lane 10, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp
+// through a named copy and two independent ifs 166 (497 bytes); the element count stored between the height and
+// data stores 41; the resource's first word stored ahead of the packing 31; the linear select as an if/else 148 (471);
+// the busy test as two separate else-if arms 137 (476). Diagnostic, not retail's code: a constant third argument to
+// 0x1d6f0 176 (503: LTCG then passes the count in EAX, held in EBX, and the index in ECX, so the call's raw count use sets the convention).
+// Round 115 (m3 lane 9, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): reading: with no
+// merged clamp value (the three field stores in the arms, re-measured 139 at 495 bytes) the height is placed first
+// (EAX, loaded after the kind store) and the count takes EDX with its compare at the block's top, as retail; with a
+// merged value, that value is placed ahead of the height and takes EAX. An uninitialised level-count local set in three
+// if / else-if / else arms and stored after them 29 (484, same code as the ternary); a level-count copy of the count
+// clamped in place by if / else-if 166 (497: the count takes EBP), the copy read right after the kind store 166, its
+// store written after the packing 166. Diagnostics, not retail's code: one or two more uses of the height in the top
+// block 165/163 (495: the height then takes a callee-saved register).
+// m3 lane 14 r90 (fast with 0x1dc40, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the entry
+// pointer `*const` 29, pitch and packed `long const` 29, the pitch as `(width * sizeof(dword)) >> 6` 29 (all three the
+// lead's code); the offset declared after the width and height stores 31; the offset declared just before the level
+// loop 147 (493 bytes). Retail loads the count and hoists its compare above the kind store, then loads the height into
+// EAX after it; ours loads the height (EDX) first and the count into EAX after the kind store.
+// Round 105 (m3 lane 10, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the count
+// parameter renamed to sort after the height 29 (same code: the swap is not a name tie); the call's count read through
+// `*(long const volatile *)&count` 152 (487 bytes: the count goes to EBX at the top); the height stored after the data
+// pointer 30; the three zero stores (+0x7c, +8, +0xc) ahead of the clamp 35 (the swap stays); the upper bound as its own
+// store with the lower clamp a ternary in the else arm 152 (495 bytes, unmerged).
+// Round 125 (m3 lane 9, fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp's upper
+// test as `count < 4 ? count : 4` 30 (jl); the clamp in a `long const` local at the store 29; `(void)&count` 29;
+// `(void)&height` 29 (the swap stays in all three); the busy test negated with the work arm first and `result = false`
+// in the else 29. Reading: the schedule follows the allocation (the value given EDX is loaded above the kind store,
+// the one given EAX after it), so the open cause is only which of the merged clamp value and the height the allocator
+// colours first.
+// M3 lane 9 r127 (fast, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp's store right
+// after the kind store 156 (493 bytes); the clamp through a levels copy with the upper test nested in the else 29 (same
+// code); the clamp through a plain inline multi-return helper 29; the call's level count through a copy declared just
+// before the call 29 (propagated); the clamp's store just before the linear select's store 70. Diagnostic, not retail's
+// code: the 0x1d6f0 call reading `entry->element_count` instead of the raw count 130 (485 bytes) puts the height in EAX
+// after the kind store as retail does (the clamp then takes EBP), so the call's use of the raw count is what ranks the
+// merged clamp value ahead of the height.
+// Round 111 (m3 lane 10, fast with 0x1dc40/0x1db10, all on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes):
+// the packing as one expression with no pitch local 29 (same code); a level count defaulted to the count and capped by if /
+// else-if tests on the count 166 (497 bytes); the clamp written from the non-negative side, `count >= 0 ? (count <= 4 ? count :
+// 4) : 0`, 32; the data pointer stored ahead of the width and height 31; the height stored ahead of the kind 31.
+// Round 189 (m3 lane 5, fast with 0x1dc40): `long offset = 0;` declared at function scope 36; the count clamped in place by
+// if / else-if with the raw request kept in a named local for the format call 69 (489 bytes, 0x1dc40 9); the three zero
+// stores as one chained assignment (+0x7c, +8, +0xc) 29 (same code); the entry pointer computed at function scope 36; the
+// round-51 signed pitch/packed lead with the field stored in each clamp arm 139 (495 bytes: retail's packing and top
+// registers, three stores). The existing PIN_126660 macro is this ternary (same expansion). All restored.
+// Round 93 (m3 lane 2, fast with 0x1dc40, on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): a
+// copy of the count read right after the kind store and clamped by the ternary at the store 29 (same code: the copy is
+// propagated); width and height stored through a force-inline setter 29 (same code); the count clamped in place inside
+// a force-inline setter that stores it 166 (497 bytes, the listed if / else-if shape); the clamp's store written right
+// after the packing 32 (the height then takes EAX as retail, but the clamp branch follows the zero stores and the
+// packing is scheduled above the dimension stores). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

@@ -317,6 +317,39 @@ struct s_pending_message_storage : s_pending_message_header
 // loop's end 14 each; result declared before start 15; pump count declared at the size block 14; `if (result != 0) break;` for the result test 14; the elapsed arm first 75; elapsed
 // declared with the pump count 14; a named seconds value 14. The frame stays 0x1c in all. Reading of the layout: 8-byte start's spilled half and the 4-byte pump count both fit the dead
 // first time stamp's slot, and whichever is spilled first takes it; ours spills the pump count first, retail spills start first (then 4+4+8+8 = 0x18).
+// Round 153 (fast, in the shared helper, all nine helper users checked): the pump step as `function_12c600(); pumps++;` 75 (0x8c790 73,
+// 0x1241b0 91); the size and page-count guards as early returns 78 (0x1241b0 120); start as a LARGE_INTEGER 14 (every user unchanged); the
+// timeout test without the (real) cast 15 (0x8c790 1, 0x1241b0 1); an int pump count 14. Re-measured: start renamed to sort before the pump
+// count 14; the pump count zeroed before start 105 (286 bytes); a _ReadWriteBarrier() after start 17 (0x18f260 82). Matched 0x1241b0 packs
+// the pump count into the first time stamp's slot as ours does here (its start stays in registers); matched 0x8c790 keeps start in EDI:EBP
+// and gives both time stamps one slot. A 600 s permuter run on the body (47 tries) found none below 14.
+// Round 142 (m3 lane 8, fast, on a copy of the helper in this file, header untouched; the copy reproduces 14): slot names
+// for the same-size ordering rule: pump count sorting before the capacity 14, sorting last 14; time-stamp local sorting
+// last 14, first 14; start sorting first 14. All five give identical stack offsets.
+// Round 177 (m3 lane 4, fast, on a copy of both helpers in this file, header untouched; the copy reproduces 14): the frames
+// read slot by slot: retail is pump count +0, capacity +4, first time stamp +8 with start's 8-byte home on top of it (only its
+// high half at +0xc is used), second time stamp +0x10; ours is first time stamp +0 with the pump count on top of it, capacity
+// +8, second time stamp +0xc, start's home +0x14 (high half at +0x18). So start has an 8-byte home in both and the question is
+// which of start and the pump count is packed onto the dead time stamp first. New: the time stamp local inside its own braces
+// ahead of the read 14; that local declared and then assigned 14; the loop as `for (long pumps = 0; ; )` with a break 14;
+// `elapsed = (now - start) < 0 ? 0 : (now - start)` on a named reading 14; `elapsed = elapsed < 0 ? 0 : elapsed` 14.
+// Re-measured: result declared before start 15; const start 14; a named second reading 14; unsigned time stamp 14; a
+// zero-initialised LARGE_INTEGER time stamp 123 (252 bytes, stores dropped). Diagnostics, code not retail's: `if (now >= start)
+// elapsed = now - start;` on a zeroed elapsed 138 (321 bytes) and it alone gives retail's 0x18 frame; `elapsed = now - start;
+// if (now - start < 0) elapsed = 0;` 108 (288 bytes, frame 0x14); `if (pumps++ < maximum_pumps)` 75 (282 bytes, frame 0x1c).
+// The frame follows how often start is read before the reads merge.
+// Round 95 (m3 lane 10, fast, on a copy of both helpers in this file, header untouched; the copy reproduces 14): the
+// retry helper as a statement macro (no parameter copies) 14; the reader's dead stamp as a two-long volatile array 14;
+// the pump and timeout arms as `result == 0 && pumps < maximum_pumps` then `else if (result == 0)` 14; this file's own
+// existing reader (pending_read_ticks) for the first reading 14, for both readings 14. The frame stays 0x1c in all.
+// Round 115 (m3 lane 9, fast, on a copy of both helpers in this file, header untouched; the copy reproduces 14): reading
+// of the two frames as slots handed out in turn, a later local taking an earlier free slot it fits: retail's order is
+// pump count, capacity, first stamp, second stamp, start (start then takes the first stamp's slot) and ours first
+// stamp, capacity, second stamp, pump count, start (the pump count takes it first). New: the counter read as two
+// emitted opcode bytes in place of the mnemonic 14 (same code), with a plain local 123 (252 bytes, stores dropped);
+// the size and page tests joined in one condition 14; the pump step as `pumps = pumps + 1` 14; start and the result
+// declared first and assigned in the old order 14; the pump arm ending in `continue` with the timeout arm unnested 14
+// (all four same code).
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

@@ -88,6 +88,79 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
 // of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
 // the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
+// Round 132 (m3 lane 7, fast): the call's short arguments without casts 4; the level truncated in the
+// clamp statement 4; an explicit return after the loop 4; the level test as `level < entry level` 4;
+// bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
+// scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
+// may be one hidden allocation off retail rather than a property of the clear.
+// Round 155 (m3 lane 5, fast): the floor's asm split after cvttss2si 4; floor parameter `real const` 4; one-line asm
+// statements 4; adjusted bias as a ternary 65 (399 bytes). Permuter (600 s, 41 variants) found nothing below 4.
+// Round 141 (m3 lane 8, fast with 0x143c0 and caller 0x16b90): the call cast to void 4; the remainder in a named
+// local 4; the bias arm as one combined test without `adjusted` 65 (400 bytes); the entry as `&state[0x1320] +
+// index * 0x40` 4; the frame value named for the magnitude test and the remainder 108 (406 bytes); a pointer to
+// the entry's level used for the test and the store 4. Caution: the compile-only harness is not faithful here
+// (non-LTCG /Gr passes the bitmap to 0x143c0 in EDX, so EDX is natural there; LTCG passes it in ECX), so its
+// screens of the bitmap block say nothing; retail 0x143c0 itself clobbers EDX.
+// Round 79 (m3 lane 11, fast): the NONE test as an early clear plus `continue` 107; the global bias at +0x2c read
+// into a local before the loop 126 (414 bytes); 0x143c0's two size stores through a short pointer (callee form;
+// 0x143c0 still matches) 4; the bit computed at the loop top and cleared at the end 108 (398 bytes); bitmap as dword 4. Diagnostic
+// (reverted): a probe load stored to a global in the latch takes ECX and the clear keeps EDX, so EAX is held off
+// at the latch rather than one rotation step behind. A one-file LTCG link with 0x143c0's file reproduces EDX but
+// not 0x143c0's register convention.
+// Round 165 (m3 lane 5, fast with 0x143c0 and 0x16b90): `fabsf` for the magnitude test 4; `fmodf(frame, (real)count)`
+// for the frame 4 (same code). Diagnostics on the LTCG image (reverted): the clear keeps EDX with the bitmap block
+// removed, the second floor removed, the call removed, a zero bitmap in the call, a void callee in place of 0x143c0,
+// and with the loop body cut to one 0x143c0 call (the cut-down bodies also changed this function's frame or homes:
+// `state` moved into a register, `remaining` into EBP, so they do not isolate the latch); matched 0x18e80's latch takes EAX after a call that leaves EAX
+// unused. No untried natural form of the latch or the frame block is left in this note.
+// Round 189 (m3 lane 4, fast with 0x16b90 and 0x16b10): the shift count as `(byte)index` 111; the render reset state
+// typed (slot fields, +0x2c bias, +0x1420 slot mask) with per-use slot indexing 51 (419 bytes), with a slot pointer 4;
+// an inline pin function for both clamps 4; a short stage local at the loop top 4; the floor result named as an
+// integral before the clamp 4. Diagnostics: a cut-down loop (bsf, NONE test, a call, the clear) keeps EDX with an LTCG
+// or XDK callee, called conditionally or not; a second use of the mask (0x18e80's state clear) gives EAX, `mov ecx` first.
+// Round 78 (m3 lane 15, fast with 0x143c0, 0x16b90 and 0x16b10): `__assume(state != NULL)` at the top 4; `__assume(index
+// >= 0 && index < 4)` after the bit scan 4; `__assume(entry != NULL)` ahead of the NONE test 4 (all the same code);
+// `__assume(count > 0)` after the count read 89 (405 bytes: the count goes through a stack home); `__assume(bitmap >= 0)`
+// ahead of the call 106 (413 bytes: the bitmap gets a stack home). Reading with round 79's latch probe: the clear's
+// temporary is a next-fit choice (the probe took ECX, the clear then EDX), so ours enters the latch one step after
+// EAX (the tag argument's load) and skips the shift's ECX, where retail enters it at EAX. Diagnostic (reverted): 0x143c0's
+// stage parameter as `long` (definition, the six declarations and the three `(short)` call casts; every caller passes a
+// long) 4, with 0x143c0 and its matched callers unchanged: the stage conversion is not the extra step. Probes (reverted):
+// one or two copies between globals ahead of the 0x143c0 call leave the clear in EDX; one after the call takes ECX and
+// the clear EDX; two after the call take ECX and EDX and the clear takes EAX. So the rotation restarts at the call (its
+// result's EAX) and retail has two more steps than ours between the call and the clear, with no code left for them.
+// Round 240 (m3 lane 3, fast with 0x143c0 and 0x16b90): the entry as `state + (index << 6) + 0x1320` 4; the clear as a
+// plain assignment 4, with a `1L` shift 4; `level` declared at loop scope after the entry 4; the mask declared in a
+// `for` header with an empty step 4.
+// Round 106 (m3 lane 1, fast): the clear's count masked, `~(1 << (index & 31))`, 18 (400 bytes: the `and` stays); the
+// entry's current level in a named local for the test 4; `long index` outside and the clear as the step of
+// `for (; remaining; ...)` without a `continue` 4. Diagnostics: the level store ahead of the 0x143c0 call 38, the bitmap
+// declared once outside the loop and not reset 109: the clear keeps EDX in both. Retail 0x143c0 does not read EDX.
+// Round 108 (m3 lane 1, fast): the floor helper `__stdcall` 4, `__cdecl` 4; a `void *` parameter cast to the byte
+// pointer in a local 4; the count as a `real` 4; the truncation written at the compare and the store, no truncated
+// local, 4 (the clear stays EDX in each); the level store re-derived from state and index 51 (419 bytes, no CSE).
+// Round 107 (m3 lane 11, fast with 0x143c0, which matched in each): the magnitude test as a two-sided range test 33
+// (408 bytes); the bias arm as `if (!g_4ba019) bias = PIN(...); else bias = 0.0f;` without `adjusted` 30 (402 bytes);
+// the tag index as a `(word)` cast 24; the bias block ahead of the bitmap block 95 (400 bytes); both fmod operands
+// cast to double 4 (same code; `(double)count` alone does not compile, ambiguous overload). Reading: the floor asm is
+// 0x16ae0's body inlined (other files inline it through the same forced-inline form and match), and matched 0x18e80
+// has this loop's bit-scan and clear shape with EAX; 0x143c0's callee tree holds one unmatched function
+// (0x12ce00, a contributor's), but it uses EAX, ECX and EDX in both builds, so its clobber set is not the cause.
+// Round 187 (m3 lane 6, fast with 0x143c0, which matched in each): the level stored as `((real *)entry)[4]` 4; the entry's
+// tag through a `long const &` used for the NONE test, the count lookup and the call 4; the frame field through a
+// `real const &` for the magnitude test and fmod 4; the entry's level through a `real &` for the test and the store 4;
+// the tag and level references together 4 (all the same code; the clear keeps EDX).
+// M3 lane 5 r190 (fast with 0x143c0, which matched in each; diagnostics, all reverted): no level store after the call
+// 46 (380 B), clear still EDX; the bit-scan asm replaced by a field read 120 (383 B), still EDX; the floor helper as a
+// plain C truncation at both sites 181 (324 B): the clear takes EAX; only the second (level) site as C 123 (356 B): EAX;
+// only the first (bitmap) site as C 112 (362 B): still EDX. So the second floor's inline asm block, not the loop's
+// skeleton or the call, is what pushes the clear's temporary into EDX on this full LTCG build. The floor helper written
+// with the compiler's SSE intrinsics (truncate, convert back, compare not-equal and less-than, mask, subtract) 141
+// (423 B: a `movaps` before the conversion, the constant in a register), so retail's floor is this asm too.
+// M3 lane 10 r114 (fast with 0x143c0, which matched each time): the level steps in three variables (floored, clamped,
+// level) 4 (same code); the floor inside the PIN macro 202 (489 B: the macro evaluates the floor three times); the entry as
+// `state + 0x1320` then `+= index * 0x40` 4; a `long const slot` copy of the scanned index for the entry, the call and the
+// clear 4 (all the same code); the bias zero as an else arm of the flag test 90 (384 B).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -865,9 +938,47 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
+// offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
+// pointer in scan 2, and retail's EBX/EAX pair against our ECX/EDX stays. The permuter (30 tries,
+// annealed) found no better form.
 // MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
 // pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
 // 0x18 against retail's 0x2c.
+// MiniMax E (11-06): no lower score; retail takes the position pointer as its third parameter (EDX)
+// and pops six stack arguments, so retail's declaration has nine parameters against our seven; the
+// call sites are in another file and the parameter order may not change, so this cannot be reached here.
+// b6O (11-06) walk against retail, block by block, all scores fast build with 0x24550 in the image (BASE 547, 2122 bytes):
+// block 1 (0x22cf0-0x22d18, count from the structure bsp and the override flag), the count == 1 copy (0x22d26-0x22d95),
+// the override copies (0x234b6-0x234ec) and the fallback call (0x234ef-0x23537: direction (0, 0, -1), colour (0, 1, 0)):
+// same fields, directions, constants and arguments as the draft. Nearest scan (0x22da0-0x22f6b): z*z + x*x + y*y,
+// strict `distance < closest`, 1048576.0f start, matches. Opposite scan (0x22f6f-0x232e0): delta = position - first
+// (z, y, x subtracted then read), projection (z*dk + y*dj) + x*di tested `<= 0.0f` (retail's `comiss 0, p; jb skip` at
+// 0x23010), distance (z*z + y*y) + x*x, strict `<`: matches. Blend (0x23440-0x234b3): (second - first) * fraction +
+// first per component, fraction `<= 0` copies first (0x2330c), `>= 1.0f` copies second (0x2337d): matches. No behaviour
+// difference found in the arithmetic or the branches.
+// Tried, not kept (same behaviour, retail's shape): both scans count an index (`i`, with `nearest` and `opposite` as
+// indices) instead of walking sample pointers: retail keeps the nearest index in EDI and tests `i != nearest` as
+// `cmp eax, edi` (0x22fd0, 0x23250), and turns `opposite` into a pointer only after the scan (0x232e9 imul), where the
+// old pointer scans made VC divide the pointer difference by 0xdc (a magic multiply); `second` is a pointer that is NULL
+// for opposite == NONE and tested again before the call, which is retail's `cmp esi, -1; je` followed by `add esi, ecx;
+// je` (0x232e4-0x232f3), the position pointer now arrives in EDX as retail's caller sets it (0x239a1) where the old body
+// had it in EAX; and the entries field is read at each use (retail reloads it at 0x22db5, 0x22f0d and 0x22f6f, caches it
+// only for the second scan at 0x22faa and reads it again at 0x2322a). Scores: old body 547; index shape written out 639
+// (2057 bytes); with the nearest distance as the existing distance_sq3f (0x24550, its body was written out in the draft)
+// 583 (2085 bytes; the scan is then byte for byte retail's); delta through vector3d_from_points3d 583 (same
+// code). In the full build on r803 that body also moves the caller 0x23690 330 -> 354, and with this batch's
+// unknown_01cf50.cpp changes it costs the matched 0x41640 (the link-time coin flip), so the pointer body stays; the shape is
+// retail's, and the old body scores lower only by accident.
+// Also tried: scan 2's distance through distance_sq3f with samples read through a local after the first scan
+// 458 (2070 bytes, Round 130's body): it adds x*x before y*y (z*z + x*x + y*y), but retail adds (z*z + y*y) + x*x
+// (0x23021-0x2303a), a rounding difference, so it is not retail's evaluation order; scan 2 through offset =
+// vector3d_from_points3d + dot3f with the distance written k, j, i 652 (2033 bytes), with a samples local after scan 1
+// used by the scan, `first` and `second` 671, by the scan alone 582 (1995 bytes; no gain), by the scan and `second` 671; a
+// vector3f offset in scan 2 639 (same code as scalars). Still missing: the 0x2c frame (retail homes offset.x at +0x24, a
+// dead store at 0x23013 each pass, and delta.k at +0x38), nearest kept in EDI in the unrolled part, one pass counter
+// at +0x18, and the hoisted entries pointer in scan 2; dot3f/length_sq3f are not used for the projection and distance
+// because their sums run i, j, k where retail's run k, j, i.
 // score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
@@ -1064,9 +1175,29 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.
 // Original interfaces, both caller sites, copier and complete body restored.
+// Round 75 (m3 lane 10, fast with 0x24550/0x22750/0x22c30/0x146020/0x23690; [difflib-aligned]): index scans reading
+// `source->entries[i]` at each use with scalar offsets 639 [406] (2057 B), the scan-2 offset as a vector3f 639; round
+// 130's mix (scan 1 through distance_sq3f, a samples local after it) 457 [225] (2070 B; scan 1 byte for byte retail's,
+// nearest in EDI), its consistent direct form 577 [207] (2094 B): VC reuses the remainder loop's `source->entries` load
+// for `first` and the second scan, so that register costs `nearest` its EDI in scan 1 (hence the shared zero and the
+// memory nearest); retail reloads the field after scan 1. On the mix: scan 2 as y, z, x scalars with the kji
+// projection and distance 551 [280] (119 bytes short), the vector offset with a kji distance 549 [267], with length_sq3f 549,
+// with delta assigned k, i, j as well 549 [271] (all 2005 B: the distance no longer shares the subtractions).
+// Y602: Coordinate/reduction/minimum scalar lexical identities, then immutable original-site scratch:
+// 547/547/547/547/547/547/547/547.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// Y607: Existing scalar coordinate scratch shared across both searches, x/y/z subsets
+// then all with shared candidate distance: 547/547/547/547/547/547/547/547. NOT kept: shared
+// lifetime forms do not match. Original complete body restored; native frame/query/ordinal/fraction homes remain.
 // M403: Native sample position/coefficient-triplet/direction readonly members,
 // seven subsets then readonly table input: eight at 547/2122. NOT kept: native
 // frame/query/vector/ordinal/fraction homes unchanged; original record and body restored.
+// N391: Nearest/opposite cutoffs and paired candidate distances in double, seven subsets:
+// 593/630/706/648/692/716/714; all plus projection 820. NOT kept: all regress;
+// original scalar domains, expressions and full body restored. Native vector/query homes remain.
+// N393: Native nearest/anchor/opposite coordinate-difference double residency, seven
+// subsets 648/640/730/645/731/665/753; all plus projection 753. NOT kept: larger,
+// unmatched storage domains; original scalar graph restored. Frame/query/vector homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

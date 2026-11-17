@@ -143,12 +143,49 @@ union s_185be7
     vector2f field_8;
 };
 
-#pragma inline_depth(1)
+// MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
+// MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
+// `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
+// field_18 stays misaligned because retail keeps the flag condition in EDX across the stores and writes the word
+// inside each helper arm while ours re-tests the condition per call; the forms tried this round (nested if, a
+// second bool, a hoisted "local_11 != 0" flag) all scored worse, and the reload of the control global that would
+// free EBX for NONE lives in another file.
+// MiniMax H (11-11): no new form, no lower score (590): retail keeps NONE in EBX for its early uses and re-reads
+// the control global after the call to 0x24590, whose declaration lives in src/unknown_023540.cpp, so the reload
+// cannot be produced from this file; the forms tried here that would force a re-read score worse.
+// MiniMax B (11-11): no new form, no lower score (590): retail's entry block reads the control global into ECX and
+// forms the +0x14 address from it, ours reads it into EBX and keeps it there, and the NONE constant swaps registers
+// with it; I found no spelling that makes this build reload the global.
+// MiniMax C (11-10): score 590 (was 590): no lower score this round. Retail reads the control global
+// twice, into ECX both times: at the top of the entry block, where it only feeds the local_1 address, and
+// again at the flag test after the magnitude and pow calls, so the value is not carried across them and
+// EBX is free for the NONE constant that retail holds for its seven early uses. Ours carries the global
+// in EBX from entry to the flag test, because this build proves that the calls in between cannot change
+// it, and NONE then lives in ECX. The forms that would force a second read were measured before and score
+// worse (a NONE local for the first test and the unit tests 739, a volatile re-read 1020, an unknown
+// extern in place of pow 1013 or magnitude3d 1017); the only spelling seen to reproduce retail's reload
+// exposes the global's address, which this lane may not do.
 // Coordinator (m3, round 56 review): kept at 590 is the consistent part of the 516 form: the five `field_20` flags through SET_FLAG on
 // the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
 // by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a
 // match-only form; it is held as build/held/lane15-r56-185be0-mixed.patch.
-// score 590 (was 622; the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
+// MiniMax E (11-11): no new form tried, no lower score (590): retail reads the control global twice into
+// ECX - once at the top of the entry block, where it only feeds the local_1 address, and again at the flag
+// test after the magnitude and pow calls - while this build carries it in EBX from entry to the flag test
+// and keeps NONE in ECX; the forms that would force the second read score worse (a NONE local for the first
+// test and the unit tests 739, a volatile re-read 1020), and the only spelling seen to reproduce the reload
+// exposes the global's address, which this lane may not do, so the body stands.
+// MiniMax A (11-13): no new form, no lower score (590); retail still reads the control global a second
+// time into ecx at the flag test where this build carries it in ebx from the entry block, and retail still
+// keeps none in ebx for its early tests.
+// MiniMax B (11-14): no new form, no lower score (590); the extent is retail's 3777 bytes to within two, and the walk shows the
+// gap is in the block layout and the stack homes of the input/output records, not in the statements; the earlier rounds' counted
+// mask, selected-byte and input-copy forms are the only ones that moved the frame at all.
+// MiniMax R (11-15): no new form, no lower score (590): the body is still two bytes over retail's 3777 and the
+// control global is still carried in EBX from the entry block, where retail reads it into ECX a second time at the
+// flag test after the magnitude and pow calls and keeps NONE in EBX for its early uses; the only spelling that
+// reproduces the reload takes the global's address, which this lane may not do.
+// score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected
 // input 606, bitfield selectors 604, selector struct copy 606, named selector dword 604, byte-pointer flags 609, word flags 687 (3742 B). On 589, word
@@ -159,6 +196,10 @@ union s_185be7
 // Next: byte offsets run 29 to 49 ahead from the fraction clamp on, because retail sinks that clamp's upper arm and the range <= 0 arm out of line and
 // remakes zero after the 0x24590 call (ours keeps XMM1/XMM6 live across it, which `inline` on 0x24590 may change; that file was on the avoid list);
 // retail reads the selector bytes as one dword (`mov ebx, [esp+0xb8]`, `movzx ecx, bl`/`bh`) and holds NONE in EBX for the first three tests.
+// Coordinator (m3, round 56 review): kept at 590 is the consistent part of the 516 form: the five `field_20` flags through SET_FLAG on
+// the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
+// by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a
+// match-only form; it is held as build/held/lane15-r56-185be0-mixed.patch.
 // Earlier 622 (was 690): Frame 0xe0 and state/output carriers agree (3787/3777 B); control-root EBX versus NONE,
 // settings/zero homes, the range-fraction clamp (retail clamps in local_16's slot, upper arm out of line) and
 // the materialized `&&` flag arguments (retail threads them) remain.
@@ -506,6 +547,58 @@ union s_185be7
 // T59: Complete writable clamp inputs at all nine consumers, pointer/reference inputs and
 // void/value/pointer/reference results: 622 each. NOT kept: native x87 slot and control-root/NONE
 // ownership unchanged; original value clamp, observations and complete body restored.
+// Round 74 (m3 lane 11, plain): the clamp helper with early returns 727, as one conditional expression 730, with a
+// separate result local 970 (3811 B); all seventeen field_18 flags through SET_FLAG 801 (3759 B). The file's
+// `#pragma inline_depth(1)`/`(255)` pair removed: 590, byte-identical code (kept as a cleanup).
+// Round 152 (m3 lane 5, fast; [m, x] masked and exact aligned counts, body [121, 235]): local_2's copy ahead of the rate stores 589
+// [120, 235]; pitch rate first 588 [121, 234]. All 23 action flags through SET_FLAG 776 (3747 B) [96, 211], all ten clamps through PIN
+// 999 (3827 B) [128, 258], both 949 (3795 B) [100, 220]. On the all-flags form what is left in the flags part is mostly local_3's
+// slot (+0x24 for retail's +0x20), the selector pair (retail `mov ebx, [esp + 0xb8]`, then BL and BH) and which constant is CSE'd
+// (ours 0x10, retail 0x20 in ESI). Retail holds NONE in EBX for seven uses (the first test, the three stores, three unit tests), with
+// `or ebx, -1` ahead of the second memset; ours holds the root global there. Diagnostic, reverted: the root global reread through a
+// volatile at the flag test 1003 on the body, 956 (3747 B) [94, 201] on all flags: EBX is then free but NONE stays in ECX for the
+// first block only; one, two, three extra NONE compares in the unit block 953/951/959, with that reread 988: NONE still stays out.
+// Round s1C (statement-by-statement walk against retail 0x185be0-0x186a9e): no logic or behaviour difference found (fields, offsets, test
+// directions, callees, argument order, the 4x-unrolled mask loop and all 23 flag stores agree; float constants read from the XBE agree).
+// Tried, dropped: `real hold_ms` local before the (long) cast 590 (same code); the fraction clamp as `>= 0 ? (> 1) : zero` 950 (3795 B);
+// a `long none_index = NONE` local for the first test and the three unit tests 739. Diagnostics, not kept: an unknown extern in place of
+// pow 1013, or of magnitude3d 1017: the root global is then reloaded at the flag test as in retail (so retail's pow or 0x24590 acts as a
+// clobbering call where ours is known side-effect free), but EBX is still not given to NONE (stays `or ecx, -1`, immediates in the unit tests).
+// Round 63 (m3 lane 2, fast; control 590): the two angle limits through one `real const *` row pointer 962; the
+// settings copy ahead of the angle conversion 589 (order only, not kept); the two clears swapped 592; the flag test's
+// game-time pair as `!(active && unknown01)` 590 (same code); the first test written as an empty `if` with the work in
+// its `else` 989 (3781 B). Retail 0x24590 is pure x87 (no XMM writes), yet retail's callers here and in 0xd1e10 treat
+// it as clobbering (zero remade, root global reloaded): BLOCKED-BY 0x24590's declaration (src/unknown_023540.cpp,
+// avoid list this round; `inline` on it is the open lead).
+// Round 109 (m3 lane 12; 590): `inline` on magnitude3d's definition (0x24590) 942 plain (3795 B): zero is then remade
+// after the call as in retail, but the root stays in EBX, and 0xd1e10 542 -> 596, 0xf6d10 749 -> 759, 0xf8eb0 947 -> 1030,
+// 0x1aa0d0 375 -> 402, 0x1d24a0 902 -> 935, 0x2c0d60 923 -> 991, so that lead is closed. Plain, each restored: the two datum
+// helpers through the shared typed header view (object_header_get) 590 (same code); the latched mask in its own dword
+// local 703 (3770 B: retail's `movzx` load, but the loop entry loses retail's jmp over the pad); the 0.64 sum written
+// field_40 first 590 (same code); the flag helper as one conditional expression 590 (same code). Retail threads each
+// known-false edge of the `local_3[11]` latch into the bit-4 clear arm (its own `[edi + 0x1c]` load); ours hoists the
+// load and keeps `~4` in ESI. No retail code or data takes 0x4ed284's address (58 plain memory operands), yet retail
+// re-reads it after the stores through arg_5.
+// MiniMax G (11-14): no new form, no lower score (590): retail loads the settings global into ECX after the first
+// register save and gives EBX to NONE, this build loads it into EBX before the saves and gives ECX to NONE, and the
+// root global is stored after the second save here and after the first in retail, so every later use of the root and
+// of NONE lands in the other register; the forms tried for that are in the notes below and none lowers the score.
+// MiniMax B (11-14, run 75): no new form, no lower score (590); the body is left as it was. What still differs: retail keeps the root
+// global in ECX and gives EBX to NONE, this build keeps the root global in EBX and gives ECX to NONE, and retail stores the first local
+// after `push ebp` while this build stores it before, so every later use of the root and of NONE lands in the other register; the
+// remaining register pressure comes from retail's out-of-line calls, which this build inlines.
+// m3 lane 11 r102 (plain; the fast check builds this function differently): retail treats 0x24590 like a callee LTCG cannot
+// see into (a /GL- file's): right after it retail remakes its XMM6 zero and later reloads the root global at the flag test,
+// the same way it treats the `_CIpow` call. Retail 0x24590 itself is pure x87, ours is LTCG-visible, and `inline` on it
+// was closed in round 109; a lead for the next round (its build model is the user's decision, not a source form). Forms:
+// local_2 zeroed by `= {0}` in place of its memset 1050 (3830 B); the two scratch arrays zeroed by `= {0}` 1001 (3798 B);
+// the controlled unit index named once for its four uses after the turn clamps 666; the root global held in a named local
+// for its two uses 590 (other code: two scheduling lines swap; the root stays in EBX); the arg_4 table selection as an
+// if/else 1012 (3795 B). Same code: the two scratch arrays declared at the top, the angle record declared before them.
+// MiniMax S (11-15): no new form, no lower score (590): the head differs in register assignment, with the entry record base in
+// EBX where retail keeps it in ECX and the -1 sentinel in the other register, and the two zeroing loops and the store order
+// follow from that.
+// MiniMax I (11-16): no new form, no lower score (590): the head still differs in register assignment - the entry record base in EBX where retail keeps it in ECX and the -1 sentinel in the other register - and the flag test reloads the root global in retail where this build keeps it in EBX; that reload follows from retail treating 0x24590 as an opaque callee, so the fast check builds this body differently from the full image and no source form in this file can force it.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -763,4 +856,3 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
     }
     player_control_update_action_flags((s_player_action *)arg_5, (s_player_action_triggers *)&local_2);
 }
-#pragma inline_depth(255)

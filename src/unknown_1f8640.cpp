@@ -42,8 +42,10 @@ void function_1f86a0(long index)
 	s->unknown504 = 0;
 }
 
+/* inline: link-time code generation expands it at 0x1bf0f0's state test and keeps the
+   out-of-line copy for the other callers */
 // @retail 0x1f86f0
-bool function_1f86f0(long index)
+inline bool function_1f86f0(long index)
 {
 	return OWNER_STATE(index)->unknown504 == 2;
 }
@@ -347,7 +349,13 @@ struct s_path_result_view;
 struct s_29e730;
 struct s_29de21;
 struct s_29e0f9;
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 long function_1e4a50(long character_index);
 void __stdcall function_26c2d0(long prop_index);
 bool function_1f9490(long actor_index, s_reference reference, s_actor_move_request *request);
@@ -367,7 +375,24 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 188 (was 188): Frame 0x80, prologue and first exit agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182; 182 before): earlier 182, 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
+// retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
+// route-found byte into AL; switching on the route word without the long copy measures 397 and returning the
+// route-found byte directly measures 439.
+// MiniMax G (11-12): no new form, no lower score (182): retail's case 2 arm runs the switch's value down through the
+// compare-and-decrement pair and calls 0x262b40, where ours tests the value in place and calls 0x410730, so the arm's
+// shape differs before the twenty bytes of extra code that shift every later branch.
+// MiniMax B (11-13): no new form, no lower score (182): retail's route dispatch is laid out between mode case 5 and case 6,
+// its failure block stores false into the frame byte, calls 0x1f8750 and reloads the byte, and its merged exit returns that
+// byte in AL where ours goes through BL; the permuter (fast, 5 tries in 394 s) found nothing below the 167 differing
+// instructions of the reduced image, so the body is the committed one.
+// MiniMax S (11-10): no new form, no lower score (182): the route dispatch still follows case 7 where retail puts it after case 5 with cases 6 and 7 behind it, and the final result still goes through BL where retail returns its frame byte.
+// MiniMax E (11-09): no new form, no lower score (188).
+// MiniMax E (11-06): 188 then (was 188): no new form lowered it. The byte locals sit two bytes lower
+// than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
+// esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
+// shorter than retail (1632 against 1652).
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
@@ -611,7 +636,6 @@ struct s_1f8a70_actor
 // route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
 // P325: On the two-result graph, inner-result declarations after unit/reset/destination,
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
-// scored 206/206; outer failure result assigned before cleanup 188. All restored;
 // gave 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
@@ -648,12 +672,186 @@ struct s_1f8a70_actor
 // M381: Independent outer byte/short/long/dword completion after terminal stores/cleanup,
 // route-result copies then branch facts: 435/429/432/432/435/429/432/432. NOT kept: result-home
 // diagnostics regress; original outer/inner results, native-word selector and full body restored.
+// DL273: Outer completion at directed/reference/path call producers, seven subsets and
+// all with existing false producers: eight 188s. NOT kept: no byte match; original
+// two-result body restored. Unit/result homes, dispatch and late memory result remain.
 // M3 lane 11 r71 (fast, control 188 at 1632 bytes). Retail: cases through 5, the route dispatch, cases 6 and 7, then
 // the zero test and a failure block with its own 0x1f8750 call and return. Route test nonzero side first: `route != 0
 // ? ... : ...` 188 (retail's `je` to the zero test), `route ? ... : ...` 188, assigned bool 188, `(route != 0 && ...)
 // || (route == 0 && ...)` 188, `... || (route == 0 && ...)` 309, `(route == 0 && ...) || ...` 188 (register-blind
 // aligned 44 for 56). Failure block in the default arm with its own call: returning there 453, with the zero test
 // first 475; through `result` and a goto to the only return 370, with the zero test first 319.
+// Round 133 (m3 lane 7, fast; aligned = difflib count, control 55): route_mode assigned inside the unit-mode block 188
+// (same code); the route result declared just before the mode switch 188 (same code); the path case's result as its own
+// local copied out after the release 327 (1616 bytes, aligned 63); the route test and switch on route_mode directly, no
+// long copy, 398 (aligned 125); case 7 placed before case 6 in the mode switch 335 (1608 bytes, aligned 107). Retail
+// also keeps 0x10ff40's 0xe70b0 short at frame +2, so the +2 slot is not particular to this body. Body unchanged at 188.
+// Round 218 (m3 lane 3, fast; masked = register/stack-masked aligned line pairs x2, control 53): the route test inverted
+// with the failure arm (and its label) first 188 (same code); case 6's inner test with the `route_mode = 1` arm last
+// (`if (!(*movement & 0x20)) { ... = 2; } else route_mode = 1;`) 327 at 1616 bytes, masked 50: case 6 then jumps into
+// case 5's `route_mode = 1` store as retail does, but the join still follows case 7; on that, case 7 ahead of case 6
+// 304 (masked 136), the default label first 327 (same code), the route admission through an if/else `valid` flag 327
+// (same code). Left: the join after case 5, then the result byte's +0x12 home and the failure block's memory result.
+// T72: Complete six-destination conditional chains, one captured selection, branch orders
+// 234567/765432/236745/456723/452367/672345/674523/325476:
+// 369/371/377/385/369/388/387/397. NOT kept: no native dispatch/home equality;
+// original switch, all case bodies, two results and complete body restored.
+// P393: Both route root-override admissions, positive/complementary bool/byte/short/long:
+// 188/188/188/188/188/188/188/188. NOT kept: one-use outcomes do not match; unit/result +0x12,
+// route dispatch and late memory result remain. Original complete two-result body restored.
+// M3 lane 16 r97: kept 188 -> 182 (plain): 0xe70b0 returns its two-byte action state by value (a record with a
+// converting constructor; retail's callee takes the result pointer in ECX and returns it in EAX), so the unit mode
+// here is the call's temporary and sits at frame +0x12 as retail, sharing the route result's byte. Measured first
+// with a one-caller inline wrapper returning such a record 182 (diagnostic), a two-short array with the mode second
+// 206 (frame 0x84). With a default constructor and a named local returned, matched 0x1afb30 (which inlines the getter)
+// read 114; the converting-constructor form keeps it matched. On the 182 body (fast; aligned = difflib count with
+// targets masked, 31 here, 37 before): case 7 storing the destination node before the radius (retail's store order)
+// 360 (1640 bytes, aligned 32); the route admission in a named bool 182 (same code), both 360; the route test nonzero
+// side first 182 (aligned 39); case 6's inner test with the `route_mode = 1` arm last 326 (1616 bytes, aligned 30),
+// both 326 (aligned 38). Left: the route dispatch follows case 7 (retail: after case 5, with cases 6 and 7 behind it,
+// then the zero test and the failure block), and the final result goes through BL where retail returns its frame byte.
+// Round 143 (m3 lane 7, fast): the mode cases in source order 672345 382, 234675 372, 234576 334,
+// 567234 388, the default label first 182 (block layout follows source order); `result = route_found;`
+// once after the final if/else 326, first with the test on it 317, the failing arm first 369.
+// M3 lane 9 r110 (fast with 0x1f86a0, 0x1f8750, 0x1f8780, 0x1f8940, 0x1f90f0, 0x1f8510, 0x1f9580, 0x1f9490, 0xe70b0, all
+// matched; control 182): the mode switch on the actor view's unknown4ac instead of the frame view's mode 182, the route
+// case's mode tests through unknown4ac 182, both 182, `long route = route_mode;` as one declaration 182 (all the same
+// code). Retail's order: cases 2-5, then the route test head, its range checks and the route dispatch (with its false
+// default), then cases 6 and 7 (both jumping back to the head), the zero-route test, the failure block (false stored,
+// 0x1f8750, the result reloaded), route cases 2, 1, 0 and the final block, whose not-found branch enters the failure
+// block after its store.
+// M3 lane 3 r231 (fast, control 182). Re-measured on this body: the failure block as the mode switch's default (round 129's
+// form; here `default: failed: route_found = false; goto finish;` with `finish:` before the final test) 182 (same code: the
+// block is threaded away). New: the success arm returning `route_found` itself 310 (the first exit folds); the route admission
+// as its own switch setting a bool (case 0 the zero test, cases 1-2 true, default false) 182 (same code as the nonzero-first
+// ternary); the zero test as `!(radius == 0.0f && node == NONE)` 182 (same code); the unit action state in a named local 199
+// (homed at +0x10, compared from the frame); the route initializer as `actor->unknown229 ? 1 : 0` 182 (same code). Layout lead
+// (diagnostic on a listed form): with the default as its own 0x1f8750 call and `return false;` (453, a duplicated failure
+// block) the route test moves behind case 5's shared `route_mode = 1` tail with cases 6 and 7 after it, as retail; so the join
+// leaves case 7 only when a block that survives threading follows case 7 in source. Retail's zero test, failure store and
+// failure call after case 7 fit that if the failure block (its false store and the memory reload after 0x1f8750) is that
+// block; ours folds the false, so the block vanishes. A compile-only /Gr harness keeps this layout rule.
+// m3 lane 11 r90 (fast with the file and the eight callers, control 182): re-measured lane 3 r231's success arm returning route_found,
+// written with the success test nested in the route block and `failed:` just before the shared 0x1f8750 tail, 310 (the first exit folds
+// to `xor al, al`). Retail's tail stores false, calls 0x1f8750 and reloads the result from its frame byte, so the result's value is
+// unknown there in retail. Diagnostics: route_found cleared through memset (address taken) 326 at 1680 bytes (store and reload survive,
+// the route test still follows case 7); the failure block as the mode switch's default with `failed:`/`release:` labels and the end's
+// `!route_found` jumping to `release:` 438 at 1640 bytes (first exit folds). No existing helper covers the three-field reset
+// (actor_reset_state and 0x1f86a0 also clear 0x5b4/0x5b6/0x4ac); a scan of include/ found no other helper this body writes out.
+// M3 lane 2 r72 (fast with the file's ten matched functions, all matched throughout; aligned/masked in brackets, base
+// [49/47]): `long route = route_mode;` as one declaration 182 (same code); the failure block (false store, 0x1f8750 call,
+// `return route_found;`) as the mode switch's default with the route test's else as `goto failed;` 453 (1668 bytes)
+// [109/89], that with the join's failing arm also `return route_found;` after its own call 435 (1644 bytes) [99/79] (the
+// two calls are not cross-jumped and the default's false still folds); case 6's `route_mode = 1` arm last together with
+// case 7's node stored before its radius 366 (1624 bytes) [54/52]. Diagnostic: `(void)&route_found;` 182 (same code:
+// taking the address alone does not keep the false store or the reload after 0x1f8750).
+// T90: Destination case orders 324567/342567/423567/432567/245367/253467/352467/425367: 350/366/378/378/359/362/350/378.
+// NOT kept: No native dispatch/result equality; original case order, every case body and full function restored.
+// M3 lane 10 r97 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; base 182): nothing kept. Ours keeps
+// route_found in the shared +0x12 frame byte as retail does (a store after each route call) but folds the failure block's false
+// across 0x1f8750; retail reloads the byte there, and its zero-route test materializes the node test (`setne al; test al, al`).
+// route_found typed byte 184; declared at function scope 182; case 6's `route_mode == 0` test nested around the 0x1f9580 call 182
+// (same code); the zero-route test through a new inline bool helper (diagnostic) 381 (no setne, the layout moves); the first exit's
+// 0x1f86a0 call before `result = false;` 447 (1624 bytes).
+// P434: complete adjacent-family orders 236457/237456/237645/452376/456237/457236/457623/623457
+// gave 211/364/357/388/234/387/383/370. NOT kept: all regress; original cases and full body restored.
+// Native frame, first false BL and unit/result +0x12 home agree; dispatch and late false reload remain.
+// T96: Destination case orders 235467/254367/325467/345267/354267/435267/453267/523467
+// on the native returned-unit graph: 355/366/367/369/225/233/373/378. NOT kept:
+// no native dispatch/result equality; original six cases, two results, shared unit
+// temporary and full body restored.
+// M3 lane 1 r99 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; base 182; block order read off the listing).
+// New cause for the layout: retail's `route_mode = 1` store at 0x1f8c9d is one statement behind the mode switch, reached by cases 3 and
+// 5 and by case 6's 0x20 test and jumped over by cases 2, 4 and 7. With a `direct` flag set in those cases and `if (direct) route_mode
+// = 1;` behind the switch, the route test and what follows it land behind case 5 with cases 6 and 7 after them, at retail's position
+// (the first 154 lines agree): 315 at 1624 bytes, because the rest still differs (ours lays the failure call behind the first tested
+// operand and the route dispatch behind the second; retail has the dispatch behind the range test and the zero test, false store and
+// failure call behind case 7). A flag set in the cases and tested once is kept only with a match, so it is recorded, not kept. On
+// the flag form: nonzero route first 322; the route test inverted with the failure block (false store, 0x1f8750, the result) behind
+// it and the final test's failing path entering after the store (two gotos) 309 (store and reload then as retail, but through BL);
+// that as an if/else-if with the zero route first 302; as its own switch ahead of the route switch (three case orders) 309; as an
+// or of two and-chains 309; with a validity flag (four spellings) 309/315/322, none gives `setne`; the zero test's result in a named
+// bool 309; through an inline bool helper 393; the range failure storing its own false 309; the range test as its own statement
+// first 292 (dispatch behind the zero test, failure block last); the zero test and failure block written in the mode switch's
+// default arm 302; case 7's node stored before its radius 315 (same code); the failure block and the success path returning the
+// route result itself 454 (retail's `mov al, [esp + 0x12]` at both, but the first exit folds). Every spelling of the route test
+// comes out as one of three layouts, so the compiler normalises it; what still decides dispatch-or-failure behind the range test
+// is open. Without the flag: an empty inline taking the route result's address 182 (same code); its address passed to a real
+// call (diagnostic) 498 (frame 0x84, store and reload survive); the inverted test with a shared release tail 306 (four spellings,
+// same code); the mode switch's default as its own 0x1f8750 call and return 453 (the route test then sits behind case 6), with the
+// nonzero route first 477; validity flags 182 (same code). Body unchanged at 182.
+// P466: Destination orders 263475/273645/273465/627345/362745/372645/632745/637245:
+// 367/380/380/387/368/363/373/378. NOT kept: all regress and shorten away from
+// native extent; original cases, shared unit output, two results and full body restored.
+// T107: Overlap-safe library transfers at direct/reference/state/fallback phases
+// 395/392/379/215; paired direct-reference/reference-state 417/408, all destinations
+// 448, with fallback 457. NOT kept: native transfer/layout mismatch; original body restored.
+// M3 lane 14 r94 (fast with the file's ten other functions and 0xe70b0, all MATCH; base 182, aligned 49): route_found declared
+// just before the mode switch, after the 0xe70b0 block, 182 (same code); the position call's index as `unknown26c != NONE ?
+// unknown26c : unknown018` 182 (same code); case 6's `else if` on route_mode as a second plain `if` 182 (same code: the test
+// is threaded). Re-measured: case 7's node stored before its radius 360 (1640 bytes). There, ours schedules case 4's and
+// case 7's radius stores ahead of their node stores, and the two node stores cross-jump, so cases 2-4 lose their shared
+// radius-zero tail. Retail keeps node then radius in both, so the two tails end in different stores and stay separate.
+// Also: the mode switch's default as `route_mode = NONE; break;` (the route test then fails by itself, no goto) 379 (1620 bytes;
+// the head still follows case 7).
+// P506: Actual route switch case/default orders 012d/021d/102d/120d/201d/d210/2d10/21d0 on the
+// native-unit two-result graph: eight 182. NOT kept: no dispatch-adjacency or late memory-result
+// recovery; original cases and full body restored.
+// M3 lane 15 r86: no new form run. Retail's layout (the route test behind case 5's `route_mode = 1` tail, then cases 6
+// and 7) comes only from lane 1 r99's flag form, which is kept only with a match. Retail's failure-path reload of
+// route_found, the materialised `node != NONE` and the case 7 store order are each listed above with their scores.
+// Body unchanged at 182.
+// M3 lane 15 r88 (fast, control 182): the tail as `if (route_found) {...} else 0x1f8750;` with one `result = route_found;`
+// after it 326 (1680 B); the failing arm returning route_found itself with the success stores after it 437 (1640 B, the first
+// exit folds); the destination-node test in a named bool 182 (same code: folded); the route admission as an if/else into a
+// `valid` bool 182 (same code); case 6's 0x20 test inverted with route_mode = 1 in the else 326 (1616 B).
+// P515: Independent inner/outer binary-enumeration results, positive/complementary and complete pairs:
+// 307/376/432/448/467/486/542/553. NOT kept: no native failure-reload or dispatch equality;
+// original two-result flow, cases, unit temporary and full executable body restored.
+// m3 lane 10 r109 (fast, control 182): route_found declared in a block of its own after the 0xe70b0 block (a sibling scope
+// of the record temporary, whose +0x12 slot it shares) 182 (same code); route_found initialised false at its declaration
+// 182 (same code); the route test and switch on route_mode itself (no `route` local) 397; the 0xe70b0 test without its
+// extra braces 182 (same code); re-measured the ternary route initialiser 182. Lead: retail's reload of route_found after
+// 0x1f8750 is what an address-exposed local gets, and the only address retail takes at +0x12 is the 0xe70b0 result's.
+// P543: Standard forward record transfers at direct/reference/state/fallback
+// phases 380/395/339/214; backward counterparts 383/421/381/231.
+// NOT kept: all regress and shorten away from retail; original copies,
+// cases, two results and returned-unit temporary restored.
+// M3 lane 11 r108 (fast with the file's ten other functions and 0xe70b0, all MATCH throughout; control 182): the 0xe70b0
+// result named in its block with route_found declared just before the mode switch 199 (the state homes at +0x10 and is
+// compared from the frame; retail compares through the returned pointer, so retail's is the call's temporary); the
+// admission as an or of two and-chains 182 (same code); the admission stored in route_found itself (`if (route == 0)
+// route_found = radius || node; else route_found = route > 0 && route <= 2; if (route_found) switch ...`) 182 (same
+// code); the three early `return true` paths as `result = true` arms of an else-if chain with the route path returning
+// route_found itself 430 (1680 bytes: the first arm keeps retail's BL, but the true exits then go through BL too);
+// route_found initialised false at its declaration with no store at `failed:` 182 (same code). Reading of the listing:
+// retail's first arm keeps `result` in BL (two defs reach its return) while both route exits return the frame byte
+// (`mov al, [esp + 0x12]`), so retail's route path returns route_found itself and some other path still assigns result.
+// P558: Actual unit-value/route-result phase union, bool/byte/short/word outcomes in both member orders:
+// 400/400/398/398/303/303/303/303. NOT kept: unmatched phase overlay and unit capture; original
+// returned-unit temporary, independent two-result flow and complete body restored.
+// M3 lane 16 r127 (fast with the file's ten other functions, all MATCH throughout; control 182): the success test nested in
+// the route block returning route_found, `failed:` just before one shared 0x1f8750 call and `return route_found;`, with case 7's
+// node stored before its radius 411; that shared tail with the route switch's default as `goto failed;` 455; the default as
+// `goto failed;` on this body 322 (1620 B); the shared tail with the first exit's false assigned after its call 447; case 7's
+// node before its radius alone 360 (re-measure); one result variable (no route_found) with the success return nested and the
+// failure call falling into the first exit's final `return result;` 310 (1628 B: the first exit still folds to `xor al, al`).
+// P586: Unlisted low-family reverse destination orders 524367/542367/543267/534267/
+// 532467/524376/542376/543276: 361/374/235/235/360/376/396/381.
+// NOT kept: no native dispatch/failure-reload repair; original six cases and full body restored.
+// b7O (11-17) walk against retail, fast build on r830: no statement-level or behaviour difference found (182 kept, no
+// source change). Checked block by block: unknown267 and 0x480 exits (0x1f8a96-0x1f8ac3), the 0x504 == 2 test with
+// 0x1e3920 * 3.0f (0x45dbd4) into 0x1f3230 and 0x1f8780 (0x1f8ad3-0x1f8afc), mode 0/1 (0x1f8b0a-0x1f8b1e), the
+// route_mode initial value and the 0xe70b0 block (0x1f8b24-0x1f8b6d), the reset stores and the jump table
+// (0x1f8b82-0x1f8bb9, 0x1f90cc), every case's copy, node and radius (cases 2-7 at 0x1f8bc0/bf0/c14/c5c/ce2/d7c), the
+// 0.0f test of the radius (0x45dbd8; ucomiss, parity-flag test, so NaN counts as nonzero) and the node test
+// (0x1f8e07-0x1f8e2b), the range and route dispatch (0x1f8ca5-0x1f8cd8), route cases 2/1/0 with every argument and
+// register-passed argument (0x1f8e53, 0x1f8e75, 0x1f8f30, 0x1f8f74-0x1f907d), the 0x506/0x504/0x5e8 stores and the
+// two result paths (0x1f9082-0x1f90a0, 0x1f8e31-0x1f8e42). Ours compiles to the same operands and branch senses in
+// all of them (instruction for instruction through 0x1f8c9d). Only layout and scheduling differ: case 7 stores
+// node (0x1f8df6) before radius (0x1f8dfc) where ours stores radius first (no aliasing, so not a behaviour
+// difference), the node test's `setne al` (0x1f8e26), the route dispatch after case 5, and the result read back
+// from [esp+0x12] (0x1f8e42).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
@@ -682,8 +880,7 @@ bool __stdcall function_1f8a70(long actor_index, long unknown)
 
 		short route_mode = actor->unknown229 != 0;
 		{
-			short unit_mode;
-			if (*function_e70b0(&unit_mode, actor->unknown018) == 5)
+			if (function_e70b0(actor->unknown018).value == 5)
 			{
 				byte *properties = (byte *)function_1e4990(actor->unknown054);
 				byte *movement = (byte *)function_1e4a50(actor->unknown054);

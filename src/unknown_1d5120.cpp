@@ -87,7 +87,28 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
-// MiniMax B (11-04): no new form, no lower score.
+// MiniMax E (11-15): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]` where
+// retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX and ECX;
+// retail's own parameter order puts the settling count in EAX with six stack arguments while this build's
+// declaration keeps the count last, and a parameter order may not be changed, so the call site in src/bipeds.cpp
+// cannot match.
+// MiniMax S (11-16): no new form, no lower score (77); the rigid-body lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax I (11-17): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]` where
+// retail reads `[edx + eax + 0x40]`, and the member-of-s_havok_component spelling (76) is a gain of one, under the
+// keep bar, so it stays out; the success tail still pushes what retail hands over in EAX, EBX and ECX, which the
+// 0x1d0cf0 convention in another file decides: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// score 77 (was 77): no new form and no lower score; the rigid-body lookup still reads `[eax + edx + 0x40]`
+// where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX
+// and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax G (11-13): no new form, no lower score (77): retail's tail ends with the same inline
+// `_mm_setcsr(_mm_getcsr() & 0xffffffc0)` before `__clearfp` (the mxcsr scratch at [esp+0x10] and the two
+// control87 calls), so this source is right and the only difference there is the register of the mxcsr
+// temp (EAX here, ECX in retail); dropping that line loses the scratch slot and moves every other home
+// (85, 803 bytes against retail's 819).
+// MiniMax G (11-13): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]`
+// where retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EBX, ECX
+// and EAX: BLOCKED-BY 0x1d0cf0, whose extra push ebx (needed only because the component arrives on the
+// stack) is what makes its frame 0x84 against retail's 0x88 and shifts every esp offset.
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
 // Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
@@ -239,6 +260,79 @@ void function_1d56f0(s_havok_component *component)
 // return 153; persistent body/query receivers 77/77; placement/registration and body/
 // registration 153/153. NOT kept: no gain; registration moves the frame, and cdecl
 // raises both setter users. Original contracts restored; lookup and setter transport remain.
+// Round 153 (m3 lane 5, fast with 0x1d0cf0/0x1d0c20/0x1d1b60; 0x1d0cf0 body varied, restored each time): set copy with a
+// body pointer, m_fixed first, refetch by direct indexing 73 (0x1d0cf0 88); set copy with a slot pointer fetched before the
+// transformed block 73 (85); set copy, slot pointer, direct refetch 73 (90); constructor copy with a body pointer, getter or
+// direct refetch 77/77 (85/85). 0x1d1b60 stays matched in all. A /Gd compile-only first pass puts the component in EBX for
+// every m_fixed-first form (retail's final EBX/ESI/EDI roles) and in EDI for flag5-first ones; LTCG converts only the EDI
+// case, and an EDI component passes through 0x1d0c20 from 0x1d1b60's EDI (retail 0x1d1b60 holds the component in EDI), which
+// is why those forms lose 0x1d1b60. Still BLOCKED-BY 0x1d0cf0 (component in EBX).
+// DH384: shared xyz rotation/translation/all 77/77/77; all-row scalar inputs 77;
+// accepted-pose snapshot 180; shared point setter 77; output/moving-pose zero
+// construction 116/244. NOT kept: no gain; record/zero forms grow the native body.
+// Round 394: complementary blocked result bool/signed-byte/short/long
+// 82/82/147/146; each with nonpositive direction 88/88/153/152. All grow the
+// body; original result, direction, frame homes and complete executable source restored.
+// MiniMax S (11-09): no new form, no lower score; the local block still sits eight bytes higher
+// than retail's and the block around the call to 0x1d0cf0 still differs in register and stack slot
+// use; 0x1d0cf0 is in another lane's file.
+// R223 (lane 3, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10; 0x1d0cf0 varied and restored): retail sets ECX = index, EBX =
+// component, EAX = transform, in that order, which implies 0x1d0cf0(transform, component, index). All six parameter orders,
+// definition, declaration and both calls together: on its current body 77/77/77 for the orders with the index ahead of the
+// component (same code) and 78/78/78 for the others (0x115b10 lost at 4, 0x1d1b60 at 2); on its set-copy, body-pointer,
+// fixed-first body 73 in all six (0x1d0cf0 88, 0x1d0c20 40). On that body, with this function's call removed (diagnostic)
+// 0x1d0cf0 stays 88, with 0x1d0c20's call removed 86: neither caller keeps the component out of EBX. The transformed flag in
+// a named bool ahead of the copy 73; the refetch assigned to the body pointer 73. Still BLOCKED-BY 0x1d0cf0.
+// MiniMax R (11-10): no new form, no lower score (77): the component lookup still reads [eax + edx + 0x40]
+// where retail reads [edx + eax + 0x40], and the tail's register and slot use is set by the callee in the
+// other file.
+// M3 lane 13 r82 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10/0x1d0ee0/0x1d56f0/0xe0c70/0x1d3fc0/0xe1c40): this function,
+// 0x1d0cf0 and 0x1d0c20 all as members of the component (inline free-function spellings kept for the other callers,
+// diagnostic): 77 (only the tail differs), 0x1d0cf0 65 and 0x1d0c20 38 unchanged (component and index still pushed),
+// matched 0x1d1b60 (2) and 0x115b10 (4) lost, 0xe0c70 63 -> 66. Restored. BLOCKED-BY 0x1d0cf0 (component in EBX).
+// MiniMax D (11-11): no new form, no lower score (77): the component lookup still reads [eax + edx + 0x40] where retail
+// reads [edx + eax + 0x40] for the same address, and the tail's registers and stack slots follow the callee, which is in
+// another lane's file.
+// MiniMax A (11-12): no new form, no lower score (77); the rigid-body lookup's two address operands
+// still read in the other order than retail's, and the success tail still pushes what retail passes
+// in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
+// MiniMax H (11-10): no new form, no lower score (77): the rigid-body lookup's two address operands
+// still read in the other order than retail's, and the success tail still pushes what retail passes in
+// EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp) and the call cycle behind it.
+// MiniMax I (11-09): no new form, no lower score; the lookup still reads [edx + eax + 0x40] where retail reads [eax + edx + 0x40], and the rigid body, the motion transform and the index in named locals all leave the same 77; the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax D (11-06): no new form, no lower score; the success tail cannot be matched from this file, because retail's 0x1d0cf0 takes the transform in EAX, the component in EBX and the index in ECX and returns plainly, while our call pushes the component and the index on the stack: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax I (11-06): no new form, no lower score; the lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax G (11-05): no new form, no lower score; the rigid-body lookup's address operands still
+// read `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still
+// pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax B (11-04): no new form, no lower score.
+// M3 lane 12 r119: no trial. The listing is retail's except the lookup's `[eax + edx + 0x40]` and the 0x1d0cf0 call
+// tail (retail: transform in EAX, index in ECX, component loaded into EBX before the call; ours pushes component and
+// index). The forms on this side are listed above (the member form gives retail's lookup order, 76); the tail waits
+// on 0x1d0cf0's EBX component, which lane 5 r153's /Gd screen and round 3 of #1044 tie to LTCG's walk of the call
+// cycle through 0x1d1260/0x1d1540 (disabled 0xb8540/0xb7430 on retail's cycle). Still BLOCKED-BY 0x1d0cf0.
+// Retail's 0x1d0c20 (fast listing) takes the component on the stack and loads it into EBX only just before the
+// 0x1d0cf0 call, so 0x1d0c20 (38) and this tail wait on the same EBX parameter. The flag5-first 0x1d0cf0 body (15
+// here) is not retail's test order and raises 0x1d0c20 and 0x1d3fc0 (avoid-listed this round), so it was not re-run.
+// m3 lane 2 r81: no trial (fast = plain here, 77 with 0x1d0cf0 65, 0x1d0c20 38, 0x1d1b60/0x115b10/0x1d56f0 matched). Read
+// against retail: the body is retail's but the lookup's base/index order and the 0x1d0cf0 call. Retail's 0x1d0cf0 copies the
+// transform with four movaps and takes the component in EBX without saving it (index in ECX moved to ESI); ours copies with
+// `rep movsd`, which needs ESI/EDI/ECX, and loads the component from [ebp + 0xc]. That body (set copy, m_fixed first) is the
+// listed lead that costs matched 0x1d1b60 and 0x115b10. Still BLOCKED-BY 0x1d0cf0.
+// M3 lane 3 r245 (measured, not kept): the count (EAX in retail) declared ahead of the rate, (..., count, rate, result), with the
+// declaration and the one call in 0xe0c70 (src/bipeds.cpp), whose retail call setup loads the rate pointer into EAX before the
+// count: 77 here (same code); 0xe0c70's gain from it needs a second object lookup at the call (see its note).
+// b10G (11-17) walk against retail, fast build on r841: no new form, no lower score (77, 824 bytes against 819). Walked
+// every statement against `disasm 1d5120` and align.py: _control87 masks (0x9001f/0x8001f, 0xfffff) and the mxcsr or/and
+// (0x1f80, 0xffffffc0), the count arriving in EAX (kept in EBX), the field offsets (+0x70 bodies, +0x3c motion, +0x80
+// transform rows, +8 object index, the filter shift), the flag/direction setup (`setg`, `lea ecx,[ecx+ecx-1]`), the loop
+// test senses (jge / jle), the presence callback (vtable 0x455970, found byte at +0x18, query vslot 0x30), the +-1.0
+// step constants (0x45dbc0 = 1.0, 0x45dbcc = -1.0), the dec/inc update and the world add/remove, release and cleanup
+// order: no logic difference; the 19 aligned differences are the lookup and the tail. Lookup: 0x1d517d reads
+// [edx + eax + 0x40], ours [eax + edx + 0x40]. Tail: retail keeps the component in EBX (reloaded at 0x1d53a3 after the
+// count store at 0x1d53a1, `mov edx,[ebp+0x1c]` at 0x1d5306) and calls 0x1d0cf0 at 0x1d53db with EAX = transform
+// (0x1d53cf), ECX = index, plain ret; ours loads the component at once and pushes component and index. Behaviour is
+// retail's. Both remain BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp), the convention picked over its call cycle.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

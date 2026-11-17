@@ -508,6 +508,79 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // clock pointer gives result EBX and NONE EBP but clock EDI and ticks EBP 91 (415 bytes); a ticks-to-seconds inline
 // helper 15; the elapsed test as a bool helper 84; field_6 tested in its own if 15; dword ticks 108 (438 bytes); the
 // settings factor first with the call second 15.
+// Round 75 (lane 1, fast): a named clock, also const, with an `__assume` on the clock or the ticks, declared at function
+// top or with the result, the ticks declared first, `local_3 -= local_5`: 91 each (415 bytes, aligned 15): result EBX and
+// NONE EBP as in retail, but clock EDI, ticks EBP, and the node block's scratch and the EBX save move; declared at the node
+// block 102; the rate through the global 15. `__assume` on the result at three places, on the clock global, on the ticks,
+// on the tested field 15 each. A compiled-out `do { } while (false);` before or after the result, at the settings block
+// head, before the unit index or the first node read 15 each. Diagnostic: one or two dead result reads 82/85: the
+// result goes to EDI and NONE stays EBX. Sibling 0x1ae440 keeps NONE in EBX and reads the clock inline.
+// Round 71 (lane 14, fast with 0x110ab0 listed, which reproduces 15): the unknown225 test in its own nested if 15; the
+// prop-state NONE test nested under the range test as a separate if 15; the ticks read after the 0x18 call 80; the two
+// state/flag tests through an inline predicate 113 (391 bytes); the 0x18 call's result in a named local 78 (417 bytes).
+// Round 79 (fast, plain 15 at the start): the game-time pointer named at its first use 91 (415 bytes: NONE EBP and
+// result EBX as retail, the pointer EDI and ticks EBP), with the ticks read after the 0x18 call 81, for the ticks only
+// 15; the unit index read ahead of the node lookup 97 (415 bytes); a named prop index for its test and the lookup 15.
+// Round 175 (fast with 0x110ab0): the cooldown field read at each use (no `local_5`) 15 (same code); the node state
+// read into a named short for its two range tests 15 (same code), into a long 41; a 600 s permuter run (seed 175, 54
+// tries) none below 15. Diagnostics: comparing the 0x3c state or field_6 with -2 instead of NONE 103/103; the ticks from
+// another global (no game-time pointer kept) 79 with NONE still EBX and the result moved to EDI, so NONE is coloured
+// ahead of the result whether or not the game-time pointer exists (retail colours the result first: EBX, NONE EBP).
+// Round 106 (lane 9, fast with 0x110ab0; diagnostics): one later NONE compare written against -2 (`unknown07c` or
+// `local_5`) 16 each, the swap unchanged, so the -1 constant's use count is not the tie. As in 0x1414d0, retail gives
+// the value live from entry EBP and pushes EBX later for the later value; ours the reverse. No untried natural form
+// is left in this note.
+// Diagnostic: 0x110ab0 as an opaque stub leaves 15 (masked 0), so its unmatched body is not the tie. Matched 0xeb270
+// shows the same retail shape (NONE in EBP from entry, EBX pushed later) with early returns and a field value in EBX.
+// Round 174 (m3 lane 5): no untried natural form found. Read as webs: retail gives EBP to both the NONE constant and the
+// later game-time pointer (they never overlap) and EBX to the 0x1e5380 result, which overlaps both; ours gives that shared
+// register EBX and the result EBP, so the result is coloured after the constant here and before it in retail. Every lever
+// on the two webs' weights (uses, declaration point, typing, the -2 compares) is listed above.
+// Round 86 (m3 lane 13, fast with 0x110ab0): a named game-time pointer, re-measured, 91 (415 bytes; NONE EBP and result
+// EBX as retail, but the pointer EDI, ticks EBP and the EBX save moved to the 0x1e5380 call); the ticks through the
+// existing getter function_146650 15 (same code); the pointer named after the 0x18 call for the rate only 15 (same
+// code); the ticks read from the global first and the pointer named after it, ahead of the call, 15 (same code: both
+// fold into the shared load); the two `state == 1 && flag` tests through one inline predicate 101 (399 bytes, not
+// inlined). Diagnostics: two more late NONE compares 63, the swap unchanged; the 0x3c compare against -2 103: no NONE
+// register at all, yet the game-time pointer still takes EBX and the result EBP, so the contest is between the shared
+// game-time load and the result, not the NONE constant (it only rides in the pointer's register); one extra read
+// through the result 88: the result takes EDI, the pointer EBX, ticks EBP; the unit index read at the top 107: it takes
+// EBP until the result is set, NONE and the pointer stay EBX. Retail = the result ahead of the shared load.
+// m3 lane 14 r90 (fast with 0x110ab0): the 0.5 override as a ternary over a named chance local 59 (419 bytes); the
+// node pointer `const` 15 (same code); the override's state and flag tests as nested ifs 15 (same code); the
+// unknown225 test ahead of the prop-index test 31; the cooldown product as a call result then `*=` the field 78 (417
+// bytes). Re-measured: the elapsed compare written `local_4 <= elapsed * rate` 15 (same code).
+// Round 105 (m3 lane 10, fast with 0x110ab0): a named game-time pointer with the ticks declared bare ahead of it 91
+// (415 bytes: result EBX and NONE EBP as retail, pointer EDI and ticks EBP); the named pointer for the ticks only with
+// the rate read through the global 15 (same code: the re-read folds into the pointer); the 0x1e5380 result renamed to
+// sort ahead of the other locals 15 (same code: not a name tie); on the named pointer, the ticks declared bare at the
+// function top 91, the cooldown product with the settings factor first 91.
+// Round 201 (m3 lane 4, fast with 0x110ab0): the elapsed test negated, `!(elapsed * rate < local_4)` 17; one, two and
+// three initialised dead locals at the top 15/15/15 (diagnostic: not a symbol-count phase); local_6 declared bare at the
+// top 15, local_4 declared bare at the top 15 (same code); the elapsed difference without the (real) cast 15 (same
+// code); the node range test as `> 0 && < 3` 40.
+// m3 lane 14 r99 (fast with 0x110ab0, control 15): the cooldown field local declared ahead of the 0x18 product 94
+// (418 bytes); the 0x17 product into the chance local, then 0x1c9ee0 on it 65 (417 bytes); the unit index as dword 15
+// (same code); the prop state named ahead of the range test 15 (same code: LTCG sinks the pure 0x25d690 call below the
+// test); the range test as `== 1 || == 2` 41. Re-measured, the named game-time pointer 91: result EBX and NONE EBP as
+// retail, but the pointer EDI and ticks EBP, the node block in EAX and the EBX push deferred to the 0x1e5380 call.
+// Round 111 (m3 lane 10, fast with 0x110ab0, control 15): the unit test merged into the node condition with the unit index passed
+// directly 41; the repeated `state == 1 && override flag` test through one force-inline predicate 15 (same code); that predicate
+// with the named game-time pointer 91 (415 bytes); the node state fetched once ahead of the range test 15 (same code); the rate
+// read into a local after the timestamp 97. Re-measured: the named game-time pointer 91 (result EBX and NONE EBP as retail, but the
+// pointer EDI, ticks EBP and the EBX push moved down to the 0x1e5380 call).
+// Round 174 (m3 lane 8, fast with 0x110ab0, control 15): the actor lookup written as the data-array expression 15;
+// the elapsed ticks taken in place, `(real)(local_3 -= local_5)`, 15; this function and its table moved below
+// 0x1ae440's, in retail's order, 15 (0x1ae440 still matches); the guards as `goto done` exits to the one return,
+// locals declared at the top, 17 (the swap kept, the elapsed compare inverted); the 0x1e5380 result read through
+// byte offsets as its other callers do 15. All same code but the last-but-one.
+// Round 93 (m3 lane 2, fast with 0x1ae440; control 15): the result's null and field_6 tests through a force-inline
+// predicate 15; the random value named before its compare 15; the interval field bound by a const reference ahead of
+// the clock read 15 (all same code); the prop index named once for the two final calls 51 (kept in a register across
+// 0x26c2d0, where retail reads it again). Diagnostic: field_6 compared against -2 103 (no NONE use after the 0x3c
+// compare, yet the result stays EBP and the game-time pointer EBX), so the tie is result against game-time pointer:
+// ours ranks ticks, pointer, result; retail ticks, result, pointer; one more result read (listed 88) overshoots to
+// result, ticks, pointer.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

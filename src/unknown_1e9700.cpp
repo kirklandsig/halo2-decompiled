@@ -15,6 +15,8 @@ void function_1fa50(short_rectangle2d const *bounds, word const *text, void cons
 #include "slot_handler.h"
 #include "input_record.h"
 #include "unknown_157450.h"
+#include "player_queries.h"
+#include "unknown_124f90.h"
 
 real function_1e96a0(short column, short row);
 
@@ -38,7 +40,7 @@ struct s_object_values
 void function_b58c0(long index, dword mask);
 struct s_statborg;
 void function_1968b0(long index, long team, long counter, long value);
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
+void function_1e9df0(long team, s_statborg *statistics, long field, long counter, short delta);
 long function_196ef0(byte code);
 void function_196e60(long player_index, long counter, long code, long delta);
 void function_225880(long player_index);
@@ -73,8 +75,42 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
+// MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
+// MiniMax E (11-15): no new form, no lower score (106): the old maximum read as a nested if instead of the conditional expression 111 (the maximum stays in EAX against retail's ECX); retail keeps the enable byte in AL and the maximum in ECX, loads the counter's word with `xor eax,eax; mov ax,[...]` against our zero-extended load, increments `word ptr [eax+edx+0x16]` where we compute the row pointer first, and re-reads the enable byte into CL after the counter store where our build keeps it in DL across that store.
+// MiniMax D (11-16): no new form, no lower score (106): this round re-read the retail diff against ours and the
+// remaining delta is still the three homes and the counter read: retail keeps the old maximum in ECX and tests it with
+// `cmp cx, ax`, loads the 15-bit counter with retail's `xor eax, eax; mov ax, [mem]` idiom where this build zero
+// extends the word into EAX, increments `word ptr [eax + edx + 0x16]` and only then forms the row pointer where this
+// build forms the row first, and re-reads the enable byte after the store where this build keeps it in DL across that
+// store; the counter's type and the enable byte's home are in include/globals.h and the reload's aliasing in
+// src/unknown_1967d0.cpp: BLOCKED-BY both.
+// MiniMax R (11-17): no new form, no lower score (106): spelling the old maximum as a nested double assignment (the
+// outer test, then the inner test) scores 108 and was restored; what still differs is that retail keeps the old
+// maximum in ecx and reads the fifteen-bit counter with the sixteen-bit idiom (xor eax, eax; mov ax, [mem]) where this
+// build keeps the maximum in eax and zero-extends the word, and retail reloads the enable byte after the counter store
+// where this build holds it in dl across that store; the reload needs one object for the enable byte and the counters
+// (include/globals.h and src/unknown_1967d0.cpp) and the maxima's homes follow the held helpers 0x196960 and 0x1968b0
+// in src/unknown_1967d0.cpp: BLOCKED.
+// score 106 (was 106): no frame; enable observations and maximum/register homes differ.
+// M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
+// / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
+// clamp's store through `s_input_counter *counter = &g_511bf4.groups[index][12];` formed before the clamp (the setter
+// helper's own form) 70 plain (427 B): the counter's address is formed ahead of the clamp as in retail and the old
+// maximum then takes retail's `xor eax, eax; mov ax` read, leaving the enable byte held in BL (retail reloads it) and
+// the two maxima's NONE arms; on it the player maximum as a nested init/assign 100, the limits read before a nested
+// index test 106. A one-use pointer: kept only with a match, which the blocked enable reload prevents.
+// MiniMax B (11-12): no new form, no lower score (106): retail keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL, and the enable reload needs one object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
+// MiniMax H (11-10): no new form, no lower score (106): retail keeps the old maximum in ECX with the
+// enable byte in AL and reads the 15-bit counter with the 16-bit idiom, ours keeps them in EAX and DL;
+// the permuter (--fast, 10 and 25 minutes) never reached a search, and the enable reload needs one
+// object for g_510ca0 and the counters: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp.
+// MiniMax D (11-10): no new form, no lower score (106); retail keeps the old maximum in ECX with the enable
+// byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load), ours keeps
+// the maximum in EAX, the enable byte in DL and zero-extends the counter; the enable reloads and the two
+// inlined helpers of src/unknown_1967d0.cpp stay out of reach.
 // MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
-// score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// Earlier 106 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
 // (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
 // reaches 0x51e8d4, so the region is one object); the padding of that trial struct overlaps the separately defined
@@ -138,15 +174,63 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
 // accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-10): no new form, no lower score (106); retail still keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (xor eax, eax; mov ax, [mem]) while ours keeps them in EAX and DL with a zero-extend, and the enable reload stays blocked by src/unknown_1967d0.cpp.
 // MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
 // schedule still differ here.
+// Round 74 (m3 lane 11, fast and plain): the team test through the existing function_x340af0() in the condition 106
+// (kept: it replaces a hand-copied copy of that helper and the reuse of `code`; the helper's result takes code's
+// slot, retail's store), and the player record as the header's s_player_datum (same code; replaces a local struct).
+// Retail's two maxima are 0x196960's inlined body (its `mov eax, -1` preset, the `xor eax, eax; mov ax` read and
+// the team's `or ecx, ecx`), and the player clamp is 0x1968b0's: both sit in /Ob1 src/unknown_1967d0.cpp (held),
+// where `inline` on their definitions is the lead. On 107: the increment before the row pointer is formed 111
+// (retail's `inc word ptr [eax+edx+0x16]; lea edi` shape, but the player/kind homes swap); that with the index taken
+// before the classification call 115; row declared first and assigned after the increment 111. On 106: the
+// increment form 110; the team field read at each use 108; the team read once before the test 113.
+// Round 79 (m3 lane 11, fast): the enable reloads are an escape: retail re-reads g_510ca0 after the store through
+// `statistics` because g_510ca0 shares one object with 0x510cb0, whose address retail pushes (0x1962f6 and four more
+// sites); retail never takes 0x510ca0's own address. A one-file LTCG link adds exactly that reload once &g_510ca0 is
+// stored anywhere. Diagnostic only (a file-scope pointer to g_510ca0, reverted): 74 at 434 bytes. The real form is one
+// object from 0x510ca0 with g_510ca1/ca2/ca4/ca8/cb0/cb1/cb2 as members, but held src/unknown_1967d0.cpp declares
+// g_510ca4/g_510ca8 itself, defines g_510cb2 and takes &g_510cb0: BLOCKED-BY 0x196960/0x1968b0 (their file).
+// Forms on main's body: old maximum as one nested ternary initialiser 109; the counter as long 109; the player clamp as a ternary
+// in the store 100 (427 bytes, a cmp/mov/jg clamp unlike retail's); team maximum as one nested ternary 109; the team
+// test and setter call on `consecutive` in place of the counter re-read 110.
+// Round 187 (m3 lane 4, fast with 0x1968b0, 0x196960, 0x196e60, 0x196ef0, 0x1e9ce0): the threshold test with its arms
+// swapped 105 (positional only: retail keeps the `>=` arm first), its operands swapped 106; the row offset written at
+// each use as 0x1ea770 does 110 (427 bytes); the setter guard nested under the maximum compare 106 (same code); `kind`
+// as a short 111 (428 bytes); the row as the header's player record (`&statistics->players[index]`, fields at +0x12,
+// +0x14, +0x18) 109 (428 bytes).
+// MiniMax G (11-13): no new form, no lower score (106): the reload of the enable flag after the store
+// through `statistics` needs the aliasing that src/unknown_1967d0.cpp gets by taking &g_510cb0, so it
+// stays blocked; retail's old maximum in ECX and its 16-bit counter idiom are still unmatched here.
+// Round 157 (m3 lane 7, no counted trial): still BLOCKED-BY 0x196960/0x1968b0 (src/unknown_1967d0.cpp, held this round) and
+// the held globals.h aggregate for the enable reload; the MiniMax B/H/D/G lines and round 187 above list the in-body forms.
+// Reading of the team block: ours reloads the enable byte into DL ahead of the engine test and holds it through the team
+// byte test, where retail reloads it after that test, so retail's EDX is free for the engine index (EDX/EAX) and ours
+// takes EAX/ECX; the swap follows from the blocked reload, not a separate cause.
+// MiniMax S (11-14): no new form, no lower score (106): the enable flag's reload after the store still needs the aliasing that the held src/unknown_1967d0.cpp gets by taking &g_510cb0, so retail's EDX/EAX turnover stays unmatched here.
+// MiniMax D (11-15): the two maxima and the clamp store now use the held helpers' own forms (0x196960's flat
+// `g_511bf4.all[index * 0x1b5 + 12]` read and 0x1968b0's `s_input_counter *counter` store) 70 (was 106): the
+// counter's address is formed ahead of the clamp as retail does, the old maximum takes retail's `xor eax, eax;
+// mov ax` read and the 15-bit store matches retail's `mov cx, word ptr [esi]; xor cx, ax; and ecx, 0x7fff`.
+// Still differ: the enable byte is held in BL where retail reloads it into AL, CL and DL (that reload needs the
+// aliasing in src/unknown_1967d0.cpp, held), the old maximum's home is EAX against retail's ECX, and the row pointer
+// is formed before the increment against retail's `inc word ptr [eax+edx+0x16]; lea edi, [eax+edx]`.
+// MiniMax D (11-15): the old maximum now reads as an inverted ternary in its own block, which gives
+// retail's `cmp esi, -1` against the copy in ECX 64 (was 70): the block keeps the outer home in ECX and
+// the loaded value in EAX, so the copy to the outer survives. Still differ: the enable byte stays in BL
+// where retail reloads it into AL, CL and DL (the reload needs the flag's aliasing, held in globals.h),
+// the compare against the immediate where retail compares the register, and the row pointer is formed
+// before the increment against retail's `inc word ptr [eax+edx+0x16]; lea edi, [eax+edx]`.
+// NOT kept (coordinator review, MiniMax D 11-15): 106 -> 64 rested on match-only forms: a one-use current_maximum
+// local copied into old_maximum, a one-use counter pointer for the store, and the typed groups[index][12] written
+// as flattened all[index * 0x1b5 + 12] indexing.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
 	long kind = function_196ef0(code);
 	long index = player_index & 0xffff;
-	struct s_team_player { byte before[0xc0]; char team; byte after[0x21c - 0xc1]; };
-	s_team_player *player = ((s_team_player *)g_4e8c24->data) + index;
+	s_player_datum *player = ((s_player_datum *)g_4e8c24->data) + index;
 	function_1e9ce0(player_index, 7, statistics, 2, 1, true);
 	function_196e60(index, 0, kind, 1);
 	if ((code & 0xc0) == 0x40) function_196e60(index, 6, kind, 1);
@@ -163,12 +247,7 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 		else if (value > maximum) value = maximum;
 		g_511bf4.groups[index][12].value = (word)value;
 	}
-	if (g_55e4d0[g_4e9ae8->engine_index])
-	{
-		code = (byte)g_4e6948->flags184.bit0;
-	}
-	else code = 0;
-	if (code && player->team != NONE)
+	if (function_x340af0() && player->team != NONE)
 	{
 		long team = player->team;
 		long team_maximum = NONE;
@@ -212,9 +291,39 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
+// MiniMax D (11-16): no new form kept, no lower score (353): the permuter refuses this function (the reduced image scores
+// 446, the full image 341), so the round was run by hand; the consideration flag as a true default cleared by the
+// same-team test reproduces retail's store pair and gives 344, but that is a test-set flag (match only, as the 11-05 note
+// below says), so the body stays; a record pointer for the selected entry (retail's (selected + 0x2f) * 16 + object
+// address) gives 479 because the pointer spills and the frame grows, the killer's own damage-code test moved inside the
+// selected block (retail's shape) gives 355, the fallback's polarity 354 and the declaration orders 353; the three homes
+// stay rotated and the history cursor stays biased +4.
+// MiniMax H (11-14): no new form, no lower score (353): re-read the diff and the earlier rounds' thirteen trials; the frame stays 0x48 against retail's 0x50 and the three homes stay rotated, and every earlier trial (rounding in place, result lifetimes, short selections, direct duplicate skips, the history cursor) measured above 353.
+// MiniMax E (11-15): no new form, no lower score (353): the three homes stay rotated (ours victim_team/damage_code/killer_team at +0x14/+0x18/+0x1c against retail's killer_team/victim_team/damage_code at +0x14/+0x18/+0x1c), which only a change of the declaration order would turn round, and the history cursor stays biased +4.
+// MiniMax H (11-12): no new form, no lower score (353): the history entries read through a named record
+// pointer (player_index, time and amount off one pointer) compile to the same bytes as the indexed form, and
+// the permuter refuses this function because the reduced image and the full image disagree (446 against 350).
+// The score line above read 344 from a reduced build; the full build gives 353, which is the number here.
+// MiniMax H (11-11): the consideration flag is now a true default cleared by the test, which is retail's shape.
+// Round 170 (m3 lane 5, fast with the file's functions and 0xd9640; base aligned 132, masked 35): slot references counted in
+// both listings: retail killer 8, victim_team 8, damage_code 7 (killer stays in its home and is reloaded into EDX/EDI around the
+// fallback, the code is read once into ESI for both pushes); ours victim_team 8, damage_code 8, killer 6 (killer in EBP through
+// the killer block). Tried: the related-assist limit as `assist_count < 5` (no cast) 353 (aligned 133, masked 36); `self` as
+// `victim == reported_player` 353 (133/36); the selection fallback as `selected = selected != NONE ? selected : reported_slot`
+// 353 (same code); `byte damage_code = code;` declared just before the selected block 470 (1578 B, first difference +0x8);
+// `long killer = NONE;` declared there 409 (1564 B; aligned 137, masked 37).
+// MiniMax C (11-10): the score is 353 (was 353); the three homes sit in rotated slots (ours +0x14/+0x1c/+0x18 against retail's +0x18/+0x14/+0x1c) and our function is four bytes longer, so the first branch's jump lands elsewhere.
+// Round 147 (m3 lane 8, fast; [aligned ours/retail, masked ours/retail], control 353 [128/132, 31/35]): the related unit's
+// player index read at each use (retail reads +0x13c again for the store) 357 (1552 B) [119/124, 29/34]; with the killer's
+// team byte passed to 0x1df560 at the call 370 (1564 B) [131/132, 32/33]; the dedupe searches as `for (j...) if (==) break;`
+// 357 (same code); diagnostic, the dedupe through a two-site inline search returning from its loop (retail's threaded exits,
+// no `j == i` test) 361 (1532 B) [115/126, 25/36], with `player_index == players[i]` (retail's `cmp ecx, [mem]`) 361
+// [113/124, 23/34]; that plus the assist record's player index read at each use 371 (frame moves) [154/161, 35/42].
 // MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
 // kept, the original body is restored.
-// score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
+// MiniMax S (11-06): the record walk is anchored at the field with the most source-level reads, ties going to the lowest offset: reading the timestamp twice moves the selection walk onto retail's 0x2f0 base (373) and reading the assist player index at each use moves that walk onto retail's 0x2fc base (390), both loops together 390; every such form drops a frame word (0x4c against 0x50) and the base spill, so the original body stays.
+// Earlier 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
@@ -418,7 +527,133 @@ struct s_object_damage_view
 // (1569)/247/81. Slots follow memory references, heaviest lowest: ours victim_team 8, damage_code 7, killer 6 references
 // (+0x14/+0x18/+0x1c); retail killer 8, victim_team 8, damage_code 6 (+0x14/+0x18/+0x1c). So retail's killer is read from
 // its home two more times and its damage code once less; the record pointer forms lose `selected`'s EDI and grow the frame.
+// N398: Native post-root shared object-header raw/typed/readonly tables, then related-player observations at every use 353/353/353/353/357/357/357/357.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // MiniMax R (11-05): the team-consideration result is a true default cleared by the query, 344 (was 353); not kept: a test-set flag, match only.
+// Round 79 (m3 lane 11, fast): `s_damage_record *record = &object->history[selected]` in the killer block, declared before or
+// after the damage code read, 454/454 (1583 bytes): victim_team and damage_code take retail's +0x18/+0x1c and the record
+// is retail's `lea [sel+0x2f]; shl 4; add`, but `selected` moves to a parameter home, the pool pointer takes EDI (retail
+// ESI) and the frame grows to 0x54. On it: `selected` declared first 464; `if (killer != NONE) { if (killer ==
+// reported_player) ... } else if (reported valid)` 438 (1567); that with the consideration flag as a true default cleared
+// by the test 433 (match-only flag form; diagnostic). No form reaches below 353.
+// Round 163 (m3 lane 5, fast): the damage code read after the validation block 342 (1568 bytes; retail reads it
+// before the validation's test, a statement order by score, not kept); `if (killer == NONE && reported valid)
+// killer = reported; if (killer == reported) code` 332, discarded: not the same behaviour (retail leaves the code
+// alone when the fallback fails); the selection fallback below the hostile/threshold/count defaults 386; the
+// record's player assigned to killer first and cleared when the validation fails 415 (1612); the credited player's
+// team byte as a twice-used char local for the team store and the query 358 (1552), as a short local 358. Retail
+// keeps the credited player in its home (+0x14; reloaded into EDX at the fallback, into EDI at the team block).
+// M3 lane 13 r72 (fast with 0x1e9ce0 and 0x1ea5b0, unchanged at 13 and 106; brackets: aligned count with registers and
+// stack offsets masked, base 353 [35]). Retail's two award loops have no compare after the prefix search (the search
+// leaves straight to the next award when it finds the player). The search as an inline early-return list predicate
+// used by both loops 366 (1528 B) [37]; with the killer-team call argument read from the player byte again 365 [38];
+// with the consideration flag as a true default cleared by the test 357 [35]; those three with the `if (killer !=
+// NONE) { if (killer == reported_player) ... } else if (reported valid)` layout 358 [33]; plus the assist stores
+// re-reading the record's player index 366 (1544 B, retail's length, first difference +0x8) [39]; the predicate with
+// that killer layout alone 383 (1512 B). NOT kept: all above 353; body below unchanged.
+// M3 lane 14 r79 (fast with 0x1ea770/0x1ea5b0/0x1e9ce0, unchanged): `victim != NONE && assist_threshold > 0.0f` 353
+// (same code); `victim != NONE && killer != NONE` 354; `victim != NONE &&` ahead of the killer-team query 371 (1564
+// bytes); `reported_slot` declared before `object` 355; `hostile = true;` ahead of the hostility count increment 353
+// (same code). The three rotated scalar homes and the biased history cursor stay.
+// Round 228 (m3 lane 3, fast with 0xd9640, 0x1e9700, 0x1ea770 and the other file-mates, which keep their state;
+// aligned counts exact/stack-masked/register-masked in brackets, base 353 [179/160/56]): the assist index short 353,
+// the entry test as an enclosing `if` instead of the early return 353, the award searches as `for` loops with a
+// `break` 353 (same code each). Retail reads the related unit's player field again for the assist store (after the
+// team call): that field read at each use in the related block 357 (1552 B) [170/151/53] (the block is then retail's);
+// with both award searches through a two-caller early-return predicate 361 (1532 B) [166/147/49] (retail's searches
+// leave straight for the next award); with the assist stores re-reading the record's player as well 371 (1544 B,
+// frame 0x4c) [198/141/56], plus one history pointer for both loops 371 [198/141/55]; the selection amount in a local
+// under the time test on those 441/442 (1563 B). All restored.
+// Round 148 (m3 lane 7, fast; [stack+register masked, register masked] aligned counts, control 353 [53, 78]): the reported
+// player's code written once after the fallback (`if (killer == NONE && valid(reported)) killer = reported; if (killer != NONE
+// && killer == reported) damage_code = code;`, the same behaviour with one store fewer) 355 [55, 80]; consider_team as
+// `reported_player == NONE || !function_1df560(...)` 353 (same code); victim_team set in an if/else with no NONE default 422
+// [60, 84]; the victim's team byte through a named player pointer 353 (same code); the hostile arm's flag set before the
+// counter 353 (same code); re-measured: the selection amount named once 454. Retail keeps killer in EDX across the
+// fallback merge and reloads it from its home on the paths that skip the record (0x1ea1de) and at the team block; ours
+// threads those paths into the fallback and keeps killer in EBP.
+// M3 lane 12 r114 (fast with the file's 19 functions and 0xd9640; [masked aligned, register-masked], control 353 [112, 36]):
+// the selection loop as a file-local helper returning the chosen slot, plain inline 686 (1308 B: it stays out of line and
+// 0xd9640 then reads 61), forced inline 509 (1484 B) [155, 98]; assist_threshold set before killer in the selected block 353
+// (one store moves) [112, 37]; the killer choice (selected record, then the reported fallback) as a forced-inline helper
+// returning the killer and setting the damage code and threshold through pointers 366 (1548 B, 450 instructions as retail)
+// [115, 39]: the caller then reloads the killer from a home at the killer block as retail does, but the helper's killer takes
+// a parameter home and the caller's copy EBP; on that helper, consider_team as a true default cleared by the test 366 [113, 37]
+// and the assist stores re-reading the record's player 432 [110, 48]; the object, root header and related unit through the
+// existing object_get/object_header_get 353 (same code). Re-measured (listed): one history pointer for both loops, the amount
+// read once under the time test and the assist stores re-reading the player 451 (1578 B) [170, 54]: the selection base stays
+// +0x2f4 and selected moves to a home, so the amount's read count does not set the cursor. Also seen: ours loads the object
+// pool's data ahead of the 0xbaf80 call in the related block, retail after it.
+// M3 lane 16 r106 (fast with the file's functions and unknown_196d20.cpp's, all matched ones stay matched; [register-masked
+// aligned], base [78]): lead: retail pushes the damage code to 0x197160 straight from its byte home (`mov esi, [esp+0x1c]; push
+// esi`, reused for 0x1ea5b0), so 0x197160's code parameter is a byte (its own body reads only the low byte); typed so at its
+// definition and declaration 354 [78] (0x197160 stays matched; ours then pushes as retail and the damage code has one reference
+// fewer, retail's count per round 53). On it: the killer's team byte passed to 0x1df560 at the call 354 [79] (retail's `movsx edx,
+// al` / `movsx si, al` pair); with `if (killer != NONE) { if (killer == reported_player) ... } else if (reported valid)` as well
+// 353 [73]; that arm order alone 363 (1532 B); the arm order, team byte and a `&history[selected]` record pointer used three times
+// 455 (1583 B). The three slots stay rotated (killer still kept in EBP across its block). Body restored at 353.
+// MiniMax H (11-11), NOT kept (coordinator 11-11): 353 -> 344 only from consider_team set true and cleared by two nested tests in place of its one expression (a bool set by tests: match-only); body at 353.
+// m3 lane 1 r98 (fast with the file's functions and 0xd9640; control 353): `best = object->history[selected].amount;` in the
+// selection (to take one amount read off the walk's anchor), `else if (!consider_team) continue;` in the selection loop, and the
+// assist loop's skip test split into three `continue` tests: 353 each, identical code (the selected index is copy-propagated
+// before the walk is anchored). No other unlisted single form found; the cause stays the allocation one above (killer kept in
+// EBP across the fallback where retail keeps its home, the three rotated slots, the +4 walk base). 0 counted trials: no
+// unlisted code-changing natural form (round 163/lane 14 r79/lane 12 r114 above cover the remaining spellings).
+// Round 157 (m3 lane 7, fast): the killer choice as a force-inline helper setting the killer, the damage code and the
+// threshold through pointers 353 (same code: the pointer outs are promoted after inlining, so the killer does not become
+// memory-resident as retail's is, stored at every assignment and reloaded at the killer block). Re-measured, the
+// `&object->history[selected]` record pointer 454 (1583 bytes): `selected` then takes the reported team parameter's home,
+// where retail keeps `best`, so `best` needs a new slot (frame 0x54) and the killer sorts below the victim. No counted
+// trial: lane 1 r98's survey, round 163, lane 14 r79 and lane 12 r114 above cover the remaining killer-block spellings.
+// P487: Award prefixes through predicate find first/second/both, predicate count
+// first/second/both, both search-n and both first-of: 455/431/468/455/431/468/443/455.
+// NOT kept: all regress and grow; matched caller 0xd9640 becomes 61 in all eight trials.
+// Original body restored; scalar homes and the amount-biased cursor remain.
+// M3 lane 16 r118 (fast with the file's functions and 0xd9640, control 353): both award dedupe searches as `for (j...) if (equal)
+// break; if (j < i) continue;` 356 (1550 B: the found exit is not threaded, a jmp to a separate `cmp eax, esi; jl`); the assist and
+// related-unit stores re-reading their player fields (retail re-reads both after the team call), no predicate, 392 (1564 B, frame
+// 0x4c: the shared object+0x2f0 spill goes); the three inline validations through effects.h's record_pool_lookup_checked 353 (same
+// code); `self` passed straight in the 0x1ea770 call 350 (1544 B, retail's length, but the compare sinks to the call and esi/ebx pop
+// early; 3 points, not kept); the two 0x196dd0 calls' absolute indices as two-use named locals 353 (same code).
+// M3 lane 4 r202 (fast with 0x1e9ce0/0x1ea770/0x1ea880; base 353): consider_team and friendly both as a default then
+// set by an if (retail's shape for both bytes; a flag set by an if, match-only) 344; the selected record's player index
+// named in the selected block 400 (1596 B); consider_team as `reported_player == NONE || !function_1df560(...)` 353
+// (same code); friendly computed before self 350 (1544 B); self and friendly passed as call arguments 359 (1535 B).
+// P542: Complete absent-source/query and unavailable-mode/team result definitions, queried or exhaustive arms, bool/byte: 396/396/397/397/353/351/353/351.
+// NOT kept: at most two points; one-use/test-defined results miss equality. Original complete body restored; scalar homes and amount-biased history cursor remain.
+// M3 lane 3 r249 (fast with 0xd9640, which stays MATCH; base 353): `self` passed in the 0x1ea770 call with the fallback as
+// `if (killer != NONE) { if (killer == reported_player) code; } else if (reported valid) {...}` 368 (1527 B); both award dedupe
+// searches with a `duplicate` flag set and `break` inside the search 366 (1528 B: each search then leaves straight for the next
+// award as retail's does, no `j == i` test; a flag set inside a test, match-only), that with consider_team as a true default
+// cleared by the test 357 (1528 B, both flag forms, diagnostic); the dedupe through a two-caller inline list test with a result
+// variable 366 (same code as the flag form); the assist admission as a positive `if (player && ... && (reported || amount >
+// threshold)) {...}` 353 (same code). Re-measured (listed): the selection amount in a local under the time test 454 (1578 B).
+// Lead: retail's fallback-fail edges reach the `killer != NONE` test (0x1ea227, not threaded), ours skip the killer block
+// directly; retail reloads killer from its home at both merges.
+// P563: Terminal self/other-player comparison results in byte/short/long/dword storage:
+// 365/370/369/369/365/370/369/369. NOT kept: native scalar homes and biased history cursor remain; original comparison, observations, providers and complete body restored.
+// P578: Scalar memcpy at victim team/selection handle/assist handle/selected event/
+// selected amount/credited team/related player/related object: 353/353/353/353/371/353/353/353. NOT kept:
+// no exact scalar-home or history-cursor recovery; original complete body and observations restored.
+// m3 lane 8 r176 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0; control 353): the selection amount in a local under the
+// time test 454 (1578 B: retail's 0x2f0 cursor and damage_code's +0x1c slot, but `selected` loses EDI); read with the player
+// index at the body's top 418; both dedupe loops as a found flag with break 366 (1528 B: retail's exact dedupe exits, no test
+// after the loop, the rise is two pads; a flag, match-only); 0x197160's `code` typed byte (its only caller; retail loads the
+// code's dword once into ESI and pushes it for 0x197160 and 0x1ea5b0) 354 (retail's setup exactly, 0x197160 stays matched:
+// lead for a combined form); the two together 366.
+// b7G (11-17) walk against retail, fast build on r830 (353 unchanged, 0xd9640 MATCH): checked every block of
+// 0x1e9fa0 against retail statement by statement: entry and victim (0x1e9fb7 call 0xbadc0 mask 3, +0x13c), team byte
+// (+0xc0, movsx), both tick windows (0x45dc10 = 4.0 into 0x1ea5b0's cutoff at 0x1ea278, 0x45dbfc = 6.0 for the time
+// test; float store then fld/fistp at 0x1ea02c-0x1ea036), consideration flag (0x1ea09b), selection loop (record
+// +0 time unsigned 0x1ea114, +4 amount strict 0x1ea11e, +0xc player, -FLT_MAX 0x4409d4), slot fallback (0x1ea13e),
+// selected block (code stored before the player test 0x1ea17e, 0.4 = 0x45dd30 at 0x1ea1ba), reported fallback
+// (0x1ea1e2), killer block (victim NONE joins the hostile arm 0x1ea26b), assist loop (4 records, test order, 0.0
+// 0x45dbd8 at 0x1ea2a4), related unit (+0x2c, +0x248, +0x13c, unsigned < 5 at 0x1ea437), callee argument registers
+// and stack orders at 0x1ea271, 0x1ea285, 0x1ea460, 0x1ea486, 0x1ea4db, 0x1ea50f and 0x1ea599, both dedupe loops,
+// self/friendly. Behaviour differences found: none. The lead above is allocation only: every edge into 0x1ea1de
+// has killer == NONE (0x1ea15c, 0x1ea182, 0x1ea191, 0x1ea1a4, 0x1ea1b0), so retail's 0x1ea227 test runs on NONE and
+// leaves at 0x1ea29e; ours skips the killer block directly, the same work. Only non-behaviour spots: retail re-reads
+// the record's player at the assist stores (0x1ea336, 0x1ea33f) and the related player at 0x1ea43c (listed above).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -554,78 +789,20 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 	}
 }
 
-// score 13 (was 13): retail reads the field argument into EDX before the
-// prologue pushes and adds it there; here the load happens after the pushes
-// and goes into ECX, which forces the counter to be moved out first.
-// The first engine test also takes EAX/ECX where retail takes ECX/EAX.
-// Tried: a plain field read 85 (folded into the add); an inline entry
-// accessor 85; game_engine_get() and function_x340af0() for the tests 13;
-// local names 13; an old-value local 16 (engine test then EDX/EAX); a word
-// or dword index 44-61 (convention changes). Each of these folds the field
-// read into the add (85, one row short): a plain short delta, a volatile
-// field parameter, nested row structs, values[0][field + index * 14] and
-// other flat spellings, delta + old, the indirection without volatile; the
-// array re-indexed at each use (also with inline get/set helpers) 80 (the
-// delta read is then the one hoisted into EDX). The clamp as one ternary or
-// into a short local 13 (the engine test swap stays). The arguments arrive
-// as in retail (player in EAX, counter in ECX, four pushes) and 0x1ea5b0's
-// call already matches, so that caller does not decide the load order.
-// 0x15b7c0's clamped-add helper (delta first) 84; a plain short delta and
-// field 85 (and 0x15b7c0/0x15b3a0 lose their match through the declaration);
-// the field read after the index 83, or inside the index expression 85; a row
-// pointer indexed by the field at each use 64 (0x15b3a0 and 0x1ea770 lose theirs).
-// Round 11 (lane 17): the team path through the existing function_x340af0() and
-// datum_get_absolute_inlined() (kept: same code, no parameter reuse); the first engine test
-// through game_engine_get() 13; the clamp as two ifs 13, upper bound first 19; a plain delta
-// parameter 18 (its movsx is then hoisted to entry, the field read folds); the field read
-// through its address without volatile 85; the volatile read after the index 83 (statistics is
-// then hoisted), inside the subscript or as a row offset 85 (folded).
-// Round 43 (lane 15, fast; a CL-only copy with counter in ECX and player in EDX reproduces the folded add):
-// the plain field stops folding (retail's `mov edx, [esp+8]` first line, the plain read hoisted) as soon as
-// the engine globals pointer is a named local defined in the entry block: at the top, after the index or after
-// the entry 24 each (only that global's load then sits at the top instead of the clamp's join, plus the engine
-// test swap). Defined at the join 54 (254 bytes); so what keeps the field unfolded with the load at the join is
-// still open. The engine index read into a local before the store gives retail's ECX/EAX test 12 (its load then
-// sits ahead of the store); after the store 13; the peer read before the store 14; peer and value28 locals 14;
-// the engine pointer through the getter after or before the store 13/13. Statistics first 85; statistics then
-// field first 85 (all callers updated; retail's calls set ECX then EAX and do not order the stack arguments
-// against them). Plain first read with the later read through a plain or volatile reference or volatile cast 85;
-// both reads volatile 85 (diagnostics, reverted); the team call passing 0 (diagnostic) moves the field to a
-// register argument, 92; the players pointer named at the top is propagated, 85. CL-only, all folded: statistics,
-// delta and by_team qualifiers (16 forms), clamp forms (17: pin helpers, min/max, stores in the arms), the entry
-// in two steps (row pointer then `+= field`, offset in place, field first; 7).
-// Round 76: a plain field snapshot reused for the team update 85; a register snapshot with two/one
-// uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
-// plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer
-// local 13. Original body and declarations restored.
-// Round 202 (lane 3): the entry as `values[index] + field` 13, as a byte offset 13; `(short)delta + *entry` 13,
-// `value = *entry; value += delta` 25, delta through a short local 84; a table pointer local 13; the index
-// before the field read 83; a `(word)` index 13; the clamp as one ternary in the store 13; statistics through
-// a volatile reference with a plain field 85; a short field local 81 (263 bytes).
-// Round 89 (m3 lane 12, fast), plain field read: the element indexed twice, with the entry pointer first or the value first, or the entry pointer
-// after the clamp, delta on either side of the sum: 85 each (the field stays folded; two reads do not unfold it). The engine pointer named at the top 24 (the
-// note's form, re-measured: the entry block is then exact but for that load's place, plus the engine test swap); named after the entry 69; named at the top and
-// assigned again at the join 85, declared without a value and assigned at the join 85, NULL then assigned at the join 85 (a dead definition does not unfold it).
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
-	long field, long volatile delta, bool by_team)
+	long field, long delta, bool by_team)
 {
-	long const volatile *field_reference = &field;
-	long stored_field = *field_reference;
 	long index = player_index & 0xffff;
-	short *entry = &((s_object_values *)statistics)->values[index][stored_field];
-	long value = *entry + (short)delta;
-	if (value < -30000) value = -30000;
-	else if (value > 30000) value = 30000;
-	*entry = (short)value;
+	((s_object_values *)statistics)->values[index][field] = (short)PIN_126660(((s_object_values *)statistics)->values[index][field] + (short)delta, -30000, 30000);
 	if (g_55e4d0[g_4e9ae8->engine_index] && g_4e9ae8->value28 != NONE)
 		function_b58c0(g_4e9ae8->value28, 1 << index);
-	if (counter != NONE) function_1968b0(index, NONE, counter, *entry);
+	if (counter != NONE) function_1968b0(index, NONE, counter, ((s_object_values *)statistics)->values[index][field]);
 	if (by_team && function_x340af0())
 	{
 		byte *player = datum_get_absolute_inlined(g_4e8c24, index);
 		if (player && (char)player[0xc0] != NONE)
-			function_1e9df0(field, counter, (char)player[0xc0], statistics, delta);
+			function_1e9df0((char)player[0xc0], statistics, field, counter, delta);
 	}
 }
 
@@ -990,35 +1167,6 @@ D3DTexture *function_3bcb0(s_bitmap_data *bitmap);
 void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordinates,
 	long bitmap_index, long sequence, long color);
 
-// score 2 (was 2): the two words are read in the other order: retail loads the
-// global into CX before it reads the word of the record into AX.
-// Right offset right after its inset 197; bounds copied to a local first 302; the
-// rectangles as short_rectangle2d 2; top inset after the other offsets 123; piece
-// declared before inner 2.
-// Round 41 (lane 10): inset and offset in one expression per edge 207 (1162 bytes);
-// top offset before bottom 2; bounds read directly without the `input` alias 2 (kept);
-// both screen offsets read into named locals first 44; horizontal edges inset and
-// offset before the vertical ones 52. The compile-only harness gives retail's load
-// order for the current source, so the swap comes from link-time scheduling.
-// Round 72 (lane 9, fast): the window offset through a file-local forceinline helper with short
-// dx/dy (left, right, top, bottom) 2, (left, right, bottom, top) 2, (top, left, bottom, right) 19,
-// with long dx/dy 16; `8 + bounds->left` / `8 + bounds->top` 2; fields copied then inset in place
-// 298 (1135 bytes); the subtractions as `+ -8` 2.
-// Round 82: existing alternate predicate 2; existing player lookup 2; member copies with
-// adjacent insets 2; aggregate coordinates at the original place / between right and bottom
-// insets 2/2; reversed bottom addend 2; shared rectangle alias 2; aggregate inner 133 (1163
-// bytes); typed input field pointer / direct indexed view 2/2. Member copies before a separate
-// inset pass reproduced 298 (1135 bytes).
-// Round 43 (m3 lane 2, fast): `inner` declared at function scope 2; insets in field order (top,
-// left, bottom, right) 133 (1163 bytes); top offset before bottom 2 (re-measured); bottom inset after
-// the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
-// 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
-// bottom 20 (top/right registers swap as well).
-// Round 53 (m3 lane 15, fast): the four offset statements in all 23 other orders 2 to 49 (left, right,
-// top, bottom 2); the four insets in all 23 other orders 20 to 170; the window shorts of the camera
-// storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
-// coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
-// the top leave it at 2, so the load order is no numbering tie.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
@@ -1142,8 +1290,10 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 }
 
 // The new statistic callers allow this body without the earlier LTCG regressions.
+// Parameter order from retail's calls: 0x15b650 sets ECX, EAX and then EDX (a register copy) last,
+// 0x15b3a0 computes EDX between the delta and team pushes.
 // @retail 0x1e9df0
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short volatile delta)
+void function_1e9df0(long team, s_statborg *statistics, long field, long counter, short volatile delta)
 {
  short *entry = &((s_object_values *)statistics)->team_values[team][field];
  long value = *entry + delta;
@@ -1313,6 +1463,9 @@ void function_1e6fe0(long local_player_index)
   function_1fa50(&limits, (word const *)text, NULL, NULL, 0, 1.0f, 0, NULL);
 }
 
+/* Each corner is written through a point pointer. 0x1e9140 depends on this: with the
+   corners written as indexed stores, link-time code generation reorders its first loads
+   (the window offset is read after the bottom edge, against retail). */
 // @retail 0x1e90b0
 void function_1e90b0(const s_request_screen_bounds *bounds, point2f *points, long first)
 {
@@ -1320,12 +1473,16 @@ void function_1e90b0(const s_request_screen_bounds *bounds, point2f *points, lon
 	real right = (real)bounds->right;
 	real top = (real)bounds->top;
 	real bottom = (real)bounds->bottom;
-	points[first % 4].x = left;
-	points[first % 4].y = top;
-	points[(first + 1) % 4].x = right;
-	points[(first + 1) % 4].y = top;
-	points[(first + 2) % 4].x = right;
-	points[(first + 2) % 4].y = bottom;
-	points[(first + 3) % 4].x = left;
-	points[(first + 3) % 4].y = bottom;
+	point2f *point = &points[first % 4];
+	point->x = left;
+	point->y = top;
+	point = &points[(first + 1) % 4];
+	point->x = right;
+	point->y = top;
+	point = &points[(first + 2) % 4];
+	point->x = right;
+	point->y = bottom;
+	point = &points[(first + 3) % 4];
+	point->x = left;
+	point->y = bottom;
 }

@@ -48,7 +48,61 @@ static __forceinline long floor_to_long_inline(real value)
 		sub eax, ecx
 	}
 }
+// MiniMax E (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind's shift still lands in the copy to esi where retail shifts the call's result in eax; the pool's argument copy still sits below the jbe.
+// MiniMax A (11-12): no new form, no lower score (10): the OR chain written right-nested and the pool pointer typed as the pool (the cast moved to the active check) both give byte-identical code, and shifting the kind in place (kind = kind << 29) rebuilds the body at 79, so the first word still reads the entry own word before the flags term where retail reads the flags first, the kind shift still comes after the copy to esi where retail shifts before it, and the pool argument is still copied to edx inside the branch where retail copies it before the jbe.
+// MiniMax G (11-14): no new form, no lower score (10): the first word's OR chain written in retail's order (the category's shift, the flags' mask, then the entry's own word) and the same chain through a named local rebuild the body byte for byte, so the chain's terms are re-ordered by the compiler and the entry's own word is still read first; the kind word written as a dword local shifted in place puts the shift in the call result's register as retail has it, but the chain is then re-ordered the other way and the tag's register moves, so the body rebuilds at 79 and the two-statement form stays at 10.
+// MiniMax G (11-14, later): a control run proves the chain is the compiler's own schedule: all six orders of the three OR
+// terms are byte-identical, while dropping a term rebuilds the body at 286, the mask written as ~0x1fffff at 288, the mask
+// written as notmask at 277 and the term joined with + at 12, so the source order is not the lever; a probe that gives the
+// tag parameter the flags' slot measures 42, the key's slot 318 and the instance's slot 86, so the stack home of the masked
+// flags is right; the permuter (27 tries) finds nothing below the baseline 10.
 
+// MiniMax E (11-16): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order (the entry's own word first) where retail takes the flags term first, and the kind's shift still lands in the copy to esi where retail shifts the call's result in eax; the earlier rounds' six OR orders, the split forms and the permuter run leave the bytes unchanged, because MSVC canonicalises the OR's operands.
+// MiniMax B (11-13): no new form, no lower score (10): the two masked words are still combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is still set after the bit-count test here and before it in retail.
+// MiniMax H (11-12): no new form, no lower score (10); the first word's OR chain still keeps the entry's own load
+// before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and
+// the six orders of the OR terms are canonicalised by the compiler into one schedule, so the order cannot be steered
+// from the source.
+// MiniMax I (11-11): no new form, no lower score (10): the first word's OR chain keeps the entry's own load before the parameter's where retail loads the parameter first, the kind is still copied before it is shifted, and the pool's copy is still inside the branch; a second read of the pool global reaches 7 but reads the global twice, so it was not kept.
+// MiniMax D (11-11): no new form, no lower score (10).
+// MiniMax S (11-10): no new form, no lower score (10): the first word's OR chain keeps the entry's own load before the parameter's where retail loads the parameter first, retail shifts the kind in the call result's register and copies it where we copy first and shift in ESI, and retail copies the pool argument above the bit-count test where ours copies it inside the branch.
+// MiniMax R (11-10): no new form, no lower score (10): retail builds the first word's OR chain in the opposite source order (the category's shift, then the flags' mask, then the entry's own word) and MSVC canonicalizes the chain here, so the two loads that feed it come in the other order and every spelling of the chain measures the same.
+// MiniMax S (11-09): no new form, no lower score (10); the six orders of the first word's OR terms are
+// canonicalised by the compiler into one schedule, so the order cannot be steered from the source; the
+// fifteen kind-word spellings tried this round (the shift on the call's result, on a long local, a
+// multiplication by 0x20000000, a two-use temporary, a fresh expression) all keep the copy-then-shift
+// schedule and the score of 10, and the pool argument copied from a local keeps the copy inside the
+// branch; reading the pool's global a second time before the clear hoists the copy like retail and
+// scores 7, but that reads a global twice and was not kept.
+// MiniMax D (11-08): no new form, no lower score (10); retail ORs the first word's terms as (category | flags) | entry
+// bits where ours does (category | entry bits) | flags, retail shifts the kind in the call result's register and then
+// copies it (`shl eax, 0x1d; mov esi, eax`) where ours copies first and shifts in ESI, and retail copies the pool
+// argument above the bit-count test where ours copies it inside the branch; the six orders of the OR chain's terms,
+// six parenthesizations, three temp-local forms, eleven kind-word forms and three pool-call forms are all
+// byte-identical. Reading the pool's global a second time before the clear hoists the copy like retail and scores 7,
+// but that needs a local read once (not kept); reading the global in the call instead scores 26. On 11-09 the call
+// folded into the shift, the call's result in a dword local and the `|=` written as an assignment with `|` were
+// rebuilt and all three keep the copy-then-shift schedule and the score of 10.
+// MiniMax R (11-07): no new form, no lower score (10); the first word's terms in retail's order, split into two
+// statements or swapped, the kind word built from the call's result, the kept bits in a named local and the mask
+// written as ~0x1fffffff are byte-identical; the kind word's operands swapped puts the shift in the result
+// register as retail has it but moves the tag load into ECX (79); either packed word as one expression 79/288.
+// MiniMax I (11-05, run 37): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ.
+// MiniMax H (11-13): no new form, no lower score (10); the two masked words are combined in the other order, so the kind is the word that is shifted here and the flags word is the one retail shifts, and the pool register is set after the bit-count test here and before it in retail.
+// MiniMax C (11-14): no new form, no lower score (10): the first word's OR chain still reads the entry's own word
+// first and masks it twice (the flags term takes the register the entry term had); writing the chain as the flags
+// term, then the category's shift, then the entry's own word rebuilds the body byte for byte, and the permuter
+// (20 tries, 241 s) left the baseline at 10.
+// MiniMax D (11-14, run 90): no new form, no lower score (10): the first word's OR order still differs - retail ORs
+// the flags and the category before the other field while this build ORs them the other way round; thirteen
+// hand-written variants and a 300-second permuter run (26 tries) all produced byte-identical code, so what is left
+// is the order of the two ORs inside that word; re-measured at 10 (1033 bytes, as retail's).
+// MiniMax R (11-15): no new form, no lower score (10): the first word's OR chain still takes the flags term last where retail takes it first - re-associating the chain into retail's shape ((flags | category) | kept) compiles to byte-identical code, so MSVC canonicalises the operand order - and the kind's shift still lands in esi before the copy where retail shifts eax and copies it; the kind as a dword, the shift as a multiply by 0x20000000 and the entry's masked bits in a named local all give the bytes we already have.
+// MiniMax C (11-15): no new form, no lower score (10): seven further spellings of the two words (the call inlined
+// into the shift, the kind as a dword, the shift as a multiply by 0x20000000, the first word as one expression,
+// the three terms in retail's order, the word built in two steps with the flags and the category first, and the
+// category term in the long domain) all compile to the bytes we already have; the whole second word as one
+// expression measures 86 (1036 bytes), and the permuter (3 tries, 375 s) found nothing below 10.
 // score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
 // and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.
@@ -254,6 +308,61 @@ static __forceinline long floor_to_long_inline(real value)
 // pointers 7/11 (flips only the second word, diagnostic); second word through one to four 7/279/279/279, with the array read 8/278/278/278.
 // On the 10 form: a local bitfield view for the first word (selection then category, or reversed) 14/14 (the second word's order flips too), for
 // the kind 79, both 83; low word built in two steps 10; kept bits named, the word's or as an assignment 79.
+// AC555: Owning combined low-29 payload/section-selector fields, subsets
+// 1/2/4/3/5/6/7, 10 each; all with final kind-field store 79. NOT kept: no
+// equality or gain; original header/body restored; OR/shift/pool schedules remain.
+// Y604: Actual declared record bitfields for initial/geometry/final packed words,
+// seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
+// NOT kept: no equality; the real declaration does not recover native OR/shift/pool
+// scheduling. Original record declaration, packed expressions and body restored.
+// MiniMax H (11-12): no new form, no lower score (10): the first word's OR chain was rebuilt in two and three
+// steps with the three terms in four different orders, and the kind's shift was written as a cast of the shifted
+// value, as a dword kind, as an in-place shift and as an assignment - the two- and three-step words all give 10,
+// the one-expression word 79, so the OR chain's order and the shift's copy are decided by the compiler; reading
+// the pool argument at the call scores 26 and the bits test written as != 0 changes nothing.
+// MiniMax A (11-10): no new form, no lower score (10): swapping the first word's three OR terms and
+// the kind's shift term (the shift first) both give byte-identical code, so the OR chain's order and
+// the shift's copy to esi are decided by MSVC, and the pool's `mov edx, esi` stays above the `jbe`.
+// MiniMax E (11-10): no new form, no lower score: the kind's shift still comes after the copy to
+// esi where retail shifts before it, and the two loads that feed the record's OR chain come in the
+// other order; six fresh forms (the kind as a dword, the kind's shift written inline, the pool
+// taken as a local, the pool call without its cast, the second argument read from the entry and
+// the kind and the pool together) all score 10 or worse.
+// MiniMax D (11-09): no new form, no lower score: MSVC canonicalises the order of the first word's
+// three OR terms, so re-writing them in retail's order ((category|flags)|unknown00) gives
+// byte-identical code and the score stays 10; the `long kind_word` spelling, with its extra
+// `sar eax, 0xc`, scores 11, and the kind's shift still comes after the copy to esi where retail
+// shifts before it.
+// MiniMax D (11-09): no new form, no lower score: the body is unchanged at 10 (1033 bytes against retail's 1033); the whole of the difference is still the first word's three-address OR against our one-expression OR, and the pool's `mov edx, esi` above the `jbe`.
+// MiniMax R (11-09): no new form, no lower score (10): the two loads that feed the record's OR chain
+// come in the other order here - the entry's own word and the global's mask - while retail loads the
+// global first; the OR chain itself is canonicalized by MSVC, so reordering the three terms of the
+// store, naming the kept bits or splitting the word's or into an assignment all give byte-identical
+// code and the same score, and the low word built in two steps was measured at 10 as well.
+// MiniMax A (11-14): still no lower score (10): the kind word's shift and the word's OR accumulator move
+// together. Retail shifts the call's result in EAX and copies it to ESI (shl eax, 0x1d; mov esi, eax) and
+// then accumulates the entry's masked bits into ESI; ours copies the result to ESI first and shifts the
+// copy (mov esi, eax; shl esi, 0x1d). With the kind word written as a variable the OR accumulates into it
+// but the shift folds into the copy, and with the shift written inline in the store the shift stays in EAX
+// but the OR accumulates into the entry's masked term instead (79 in both spellings, with the operands
+// swapped as well). The kind as a dword, the shift as a multiply by 0x20000000 and the entry's masked bits in
+// a named local all give the bytes we already have (10).
+// MiniMax A (11-14): still no lower score (10): the entry word's OR chain takes the flags term first
+// and the split form (the masked new bits in a named word, the store as the kept bits or-ed with it)
+// both compile to exactly the bytes we already have, which confirms that MSVC canonicalises the OR
+// operands and the statement split and that the term order in the source cannot be what puts retail's
+// flags term first.
+// MiniMax A (11-14): no new form, no lower score (10): the entry word's OR chain still takes its
+// masked terms in our order (the entry term first) where retail takes the flags term first, and the
+// kind word's shift still lands in esi before the copy where retail shifts eax and copies it;
+// swapping the OR operands changes nothing (10) and merging the kind word into one expression
+// scores 79.
+// MiniMax S (11-15): no new form, no lower score (10): the record's OR chain still takes the entry's masked word before the flags term where retail takes the flags term first, the kind's shift still lands in the copy to esi where retail shifts the call's result in eax, and the pool's argument copy still sits below the jbe; this round the OR terms in six orders (the flags term first, the category term in the middle, the right-deep parenthesised form), the assignment split into two statements, the flags mask in a local and the flags-and-category part in a local all compile to the bytes we already have, because the compiler reads the entry's old word before the flags term however the expression is written.
+// MiniMax C (11-16): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order (the entry's
+// MiniMax C (11-16): term first) where retail takes the flags term first, and the kind word's shift still lands in esi before the copy
+// MiniMax C (11-16): where retail shifts eax and copies it; a permutation run this round (74 tries) and a swap of the OR operands both
+// MiniMax C (11-16): leave the bytes unchanged.
+// MiniMax R (11-17): no new form, no lower score (10): the entry word's OR chain still takes its masked terms in our order where retail takes the flags term first, and the kind word's shift still lands in esi before the copy where retail shifts eax and copies it.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

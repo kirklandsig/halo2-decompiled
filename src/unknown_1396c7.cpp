@@ -38,43 +38,6 @@ long function_14de70(long local_player_index);
 long function_155760(long index);
 s_player_state *function_16f3a0(long index);
 
-// score 28 (was 28): in case 4 retail multiplies a copy of the negated height by memory for x and y
-// (`movaps; mulss [g]`) but loads the z component and multiplies by the height for z; the named
-// height gives memory-first for all three (two bytes longer). Tried: the field through a reference
-// and `(0.0f - height)` at each use 39; a state pointer and the negated read at each use 57 (x/y
-// right, z multiplied in place); that with a named height for z only 39 (CSE folds it); z first 38;
-// a displacement vector 46; the state pointer first 67; eye sums forward-first, feet declared
-// first, z written temp-first 57; the height as a unary minus 28; the feet set through a
-// point-along-vector helper 28; y row before x 37; the height before the eye sums 38; every
-// product written memory-first 28. Retail multiplies a register by a writable global only
-// here and at 0x224fd0 (no matched model); compile-only screens give x/y right only when
-// the negation is an expression at each use, which then multiplies z in place.
-// Round 31: the named height plus the negated read written at the x and y uses 101 (one
-// subtraction, all three products copy the height, z in place; compile-only keeps z right
-// there but not in the real build); the named height defined after y for z only 101; a const
-// pointer to the camera storage for every camera read 66; the forward vector copied to a local
-// 142 (copied to the stack); feet seeded with the eye sums and updated with `+=` 66.
-// Round 69: shared vector3f_add_scaled with separate / in-place output 28/28; expression x/y
-// with z read through the height's address 57, through the existing point setter 57; the union's
-// array view 28; in-place eye construction 28; immutable height 28; split negation 28.
-// Round 58 (plain; the fast build misscores the base as 66): a pointer local to the up vector 28; to the camera
-// storage for all case 4 reads 28; the positive height named with `(0.0f - height)` at the x and y uses and a
-// named negation for z, before or after y, 18/18 (611 bytes: x/y copy the height as retail, but z multiplies
-// in place and the field is loaded apart), with the negation at all three uses 18; unary minus at z 41; unary
-// minus at x/y 43 (a subtraction); a state pointer with the negated read at each use 57, with a named height
-// for z, before or after y, 57/57. Diagnostics: 2, 4, 6, 8, 16, 17 unused initialized locals before the eye 28;
-// 18, 19, 20, 24, 28, 32 57 (all three flip together, so a local's rank never separates z); later reads of up i/j or k 123/101 (no
-// flip); a separate global for up i/j 28. Retail needs z memory-first with a value x/y use height-first.
-// Round 52 (lane 14, fast: base 66 at 609 bytes against plain 28): a volatile later read of the named negation (diagnostic, not kept) gives retail's three
-// products exactly, x/y copying and z memory-first, 108 at 616 bytes for its store: retail's height is still live after z, and no later use shows in
-// its code. An unused later local 79 (removed early: z in place); z written before y 79 (the last row goes in place), z first 79. On the named height:
-// z before y 70; a const reference or a local for k 66/66, a vector pointer for k or i/j 66/66, a const reference height 66, sides swapped 66, k's
-// product named ahead 66. On the expression x/y: the z sum reversed 79, all sums reversed 79, z built with `+=` 79, z's product named 79.
-// Round 149 (plain): height-copy x/y accumulators through `*=` 28; the same in the feet fields 28;
-// height declared before the eye with split assignment 28; const eye aggregate 28; const feet aggregate 28;
-// z-only const with expression x/y 57 (607); vector eye/feet 28; full x/y accumulators through `+=` 28. Restored.
-// Round 61 (plain): up i/j read into locals before the height 28; up k read into a local after the height 28; both 28; z built in a local with
-// `*=` and `+=` 28 (all propagated back, x/y stay memory-first); a state pointer with the negated read at x/y and in z's steps 72 (616 bytes, the negation is split).
 // @retail 0x1396c7
 void function_1396c7(long a, point2f *point)
 {
@@ -123,10 +86,11 @@ void function_1396c7(long a, point2f *point)
 			eye.x = g_4b9da0.x + g_4b9dac.i;
 			eye.y = g_4b9da0.y + g_4b9dac.j;
 			eye.z = g_4b9da0.z + g_4b9dac.k;
-			real height = 0.0f - *(real *)((byte *)function_16f3a0(g_4b9ed8) + 0x48);
+			byte *state = (byte *)function_16f3a0(g_4b9ed8);
 			point3f feet;
-			feet.x = height * g_4b9db8.i + eye.x;
-			feet.y = height * g_4b9db8.j + eye.y;
+			feet.x = (0.0f - *(real *)(state + 0x48)) * g_4b9db8.i + eye.x;
+			feet.y = (0.0f - *(real *)(state + 0x48)) * g_4b9db8.j + eye.y;
+			real const &height = 0.0f - *(real *)(state + 0x48);
 			feet.z = g_4b9db8.k * height + eye.z;
 			point3f transformed;
 			transform4x3f_apply_point((transform4x3f const *)&g_4b9e14, &feet, &transformed);

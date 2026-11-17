@@ -36,18 +36,18 @@ a range, and a prompt you can paste into an AI coding agent. Then see
 
 ## What this repository does not contain
 
-- No Halo 2 game assets: no maps, textures, models, audio or cinematics.
-- No game executable (XBE) and no disc image.
-- No Microsoft Xbox SDK/XDK: no compiler, libraries or headers.
-- No Havok SDK material: no headers, documentation, samples or source. The
+- Halo 2 game assets: maps, textures, models, audio or cinematics.
+- The game executable (XBE) or a disc image.
+- Microsoft Xbox SDK/XDK files: the compiler, libraries or headers.
+- Havok SDK material: headers, documentation, samples or source. The
   Havok code here is recreated from the retail executable and named by what it
   does.
-- No original or leaked Halo 2 source code.
-- No leaked symbols, PDBs or linker maps. Names that came from such sources
+- Original or leaked Halo 2 source code.
+- Leaked symbols, PDBs or linker maps. Names that came from such sources
   through a third-party dataset have been removed from the inventory, and
   names in the source that matched such sources have been renamed; see
   [PROVENANCE.md](PROVENANCE.md).
-- No confidential or internal Microsoft, Bungie or 343 Industries material.
+- Confidential or internal Microsoft, Bungie or 343 Industries material.
 
 ## Requirements
 
@@ -65,13 +65,13 @@ Analysis, documentation and review do not need it.
 
 ## Status
 
-Decompilation is under way, and 10480 retail functions now match byte for
+Decompilation is under way, and 10654 retail functions now match byte for
 byte. The checker reports:
 
 ```
-matched 10480 of 11326 game functions (1945371 of 2786206 bytes, 69.82%)
-matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
-matched 11776 of 17654 functions in scope (2123143 of 3904218 bytes, 54.38%)
+matched 10654 of 11326 game functions (2054373 of 2786206 bytes, 73.73%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+matched 12080 of 17654 functions in scope (2294086 of 3904218 bytes, 58.76%)
 ```
 
 Matched code so far includes:
@@ -298,6 +298,12 @@ Want to be on this list? See [How to help](#how-to-help).
   leads: the subsystem lifecycle table, the data-array layout and some
   register conventions. We verified each one against the retail code
   ourselves; none of its code or text is used here.
+- [Project Cartographer](https://github.com/pnill/cartographer) and
+  [H2Codez](https://github.com/Project-Cartographer/H2Codez) (GPL-3.0): their
+  documented Halo 2 Vista tag definitions gave us tag layouts and field names,
+  which come from the publicly released Halo 2 Vista Editing Kit. We verify
+  each layout against the retail Xbox code and write our own declarations;
+  none of their code or text is copied.
 
 This project is not affiliated with, endorsed by or sponsored by Microsoft,
 Bungie, 343 Industries or Activision. Halo, Halo 2 and Xbox are trademarks of

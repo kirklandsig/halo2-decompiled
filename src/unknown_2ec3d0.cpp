@@ -20,6 +20,43 @@ public:
 	virtual void refresh(child_description_2edd00 const *child, typed_2edd00 **other, context_2edd00 const *context) {}
 };
 
+// makes room for one more child at the end, the array grown first when full
+static __forceinline void add_slot_2ec3d0(keyed_children_2ec680 &children)
+{
+	if (children.size == (children.capacity_and_flags & 0x7fffffff))
+	{
+		function_2d91d0(&children, sizeof(keyed_child_2ec680));
+	}
+	children.size++;
+}
+
+// score 0 (was 6): matched with the slot added by a helper that takes the list by reference and
+// the key stored through the last slot (retail reads the data after the size).
+// Before, 6 (was 141): the key search is the list's own member, reading the
+// child count once and returning the index from inside its loop, so the
+// children are reached through `this` (kept in ebx) as in retail; and the
+// added slot is `grown = size + 1; size = grown; data[grown - 1]`. Left:
+// retail reads `data` after storing the new size, ours before.
+// The six differences are one scheduled block, same instructions: ours loads
+// `data` (and edx) before `inc eax` and the size store, retail loads it after
+// them and keeps the key in ecx throughout. Probed since r813: frame dead
+// locals 4/8/12/16/32 and a long all tie at 6; permuter 697 tries, 223
+// variants tie at 6. `data[size++]` 80, `size += 1; data[size - 1]` and
+// `size++; data[size - 1]` 78, `(&data[size += 1])[-1]` 78; caller-side
+// key/slot locals 6. A compiler barrier between the store and the read leaves
+// the code unchanged. Not a source-form difference.
+// Before: score 141: Frame 0x134 agrees; the saved object and search
+// result use different registers, with an extra array address kept across calls.
+// Decreasing count 141; one search exit 152; added-entry reference 164;
+// buffer declared first 141; stored key inputs 141; existing branch first 146;
+// direct table read 147; member copies 166; loop-index search result 166.
+// Next slot 168; indexed final slot 152; initialized child record 178;
+// outer search index 141; index name 141; key name 141; shared removal 139;
+// named returned record 175. NOT kept: shared removal gains only two.
+// Forced search inline 141; forced insertion inline 141; search cursor 141;
+// search count snapshot 141; direct dispatch 154; rejection first 150;
+// child record name 141; collection reads at calls 138. NOT kept: gain of three and
+// repeated collection reads where retail saves it. Original body restored.
 // @retail 0x2ec3d0
 void keyed_list_2ec680::function_2ec3d0(description_2edd00 const *description, typed_2edd00 **other, context_2edd00 const *context)
 {
@@ -34,12 +71,13 @@ void keyed_list_2ec680::function_2ec3d0(description_2edd00 const *description, t
 	{
 		child.key = (long)shape->child(key, &buffer);
 		child.index = key;
-		long found = children.index_of_key(key);
+		long found = index_of_key(key);
 		if (context->filter->accept(context, other, description, (shape_2edd00 const *)shape, key).value)
 		{
 			if (found == -1)
 			{
-				children.added_slot().key = key;
+				add_slot_2ec3d0(children);
+				children.last_slot().key = key;
 				long arg_3 = field_8;
 				dispatcher_2edd00 *table = context->dispatcher;
 				long first = ((typed_2edd00 *)child.key)->type();

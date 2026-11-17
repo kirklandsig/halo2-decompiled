@@ -273,6 +273,11 @@ static inline void font_copy_wait(bool volatile *done)
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
+// b14F (11-17) walk against retail, fast build on r847: the instructions match; the 4 differing lines are only the
+// three arrays' frame offsets (retail 0x121c5e, 0x121ca3, 0x121e4d: old 0xf70, source 0x1b20, destination 0x26d0).
+// Declaration order and scope of the arrays, the delete loop's spelling and the parse order change nothing. Only an
+// extra use of the old array in the pointer loop `old_file < old_files + old_count` (score 227) moves it first, with
+// different loop code.
 // @retail 0x121b00
 bool function_121b00(void)
 {
@@ -500,13 +505,58 @@ short function_122570(s_font_header const *header, dword first_character, dword 
 
 /* a pixel of a character: 3 bits of alpha (widened to 4) over a 12 bit
    color */
-static inline word font_character_pixel(long alpha, long color)
+static inline long font_character_pixel(long alpha, long color)
 {
 	return (((alpha << 1) | ((byte)alpha & 1)) << 12) | color;
 }
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax I (11-16): no new form, no lower score (59): the alpha's parity is masked in sixteen bits (mov cl, al; and cl, 1; movzx
+// cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); dropping the byte cast
+// from the shared helper gives retail's parity at every site but moves the run out of EBX into EBP and merges
+// the two fill loops (203), and a twin of the shared helper is not kept.
+// MiniMax D (11-15): score 45 (was 59): the two decode sites of the type 3 class now take the alpha in a
+// full register, so the parity is masked in thirty-two bits (xor ecx, ecx; mov cl, al; and ecx, 1) as
+// retail does; still differs in the type 2 decode site, the literal word's loads, the type 3 run (add eax, 2)
+// and the switch case 1 order, and the body is four bytes longer than retail's.
+// MiniMax G (11-14): no new form, no lower score (59): the alpha parity is still masked in sixteen
+// bits (and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and
+// ecx, 1), the literal word is still built from two byte loads and a multiply (movzx eax, byte [edi+1];
+// movzx edx, byte [edi+2]; shl eax, 8; add eax, edx) where retail loads the low byte into ax and the
+// high byte into ch, the type 3 run is still folded to the constant 2 (add eax, 2; add esi, 2) where
+// retail adds the run register (add eax, ebx; add esi, ebx), and the body is eight bytes longer than
+// retail's.
+// MiniMax G (11-13): no new form, no lower score (85): the alpha parity is still masked in sixteen
+// bits (and cl, 1; movzx cx, cl) where retail widens it (xor ecx, ecx; mov cl, al; and ecx, 1); a
+// permuter run (165 tries) found nothing under the baseline and a thirty-two-bit parity local
+// scores 170 and swaps the output and colour registers.
+// MiniMax H (11-13): lower score, 59 from 85: the pixel helper now returns a long so the colour is ored in
+// thirty-two bits and the fill loop matches retail's, the literal word is a multiply of the high byte so the
+// decoder's row count matches retail's again, and case 1 assigns the colour before the run; what still differs
+// is the parity width, the literal word's exact loads, the run-2 reuse and the body's length.
+// MiniMax H (11-13): no new form, no lower score (85): the check's right column is retail, so retail widens the pixel's parity in thirty-two bits (xor ecx,ecx; mov cl,al; and ecx,1) where this build narrows it to sixteen bits (mov cl,al; and cl,1; movzx cx,cl); a word-typed parity (180), a byte-typed parity (222), a byte-truncated parity (85) and a separate parity helper (85) all widen it, and the same source linked on its own gives retail's form, so the width follows the link context and not the source.
+// MiniMax B (11-13): no new form, no lower score (85): the pixel in a long local inside the word helper (226), the same without the byte cast (172, retail's length) and the parity in a long local (230) all widen the parity to thirty-two bits and score worse.
+// MiniMax A (11-13): no new form, no lower score (85): the permuter (1800 s, 165 tries, with annealing) found nothing under the baseline; a long-returning helper now reaches retail's 504-byte length but keeps the parity in sixteen bits (105), a byte alpha parameter scores 201/209, and writing the type-2 count as the literal 2 leaves the body unchanged (85), so the alpha's parity is still masked in sixteen bits where retail widens it to thirty-two.
+// MiniMax B (11-12): no new form, no lower score (85): the body is 512 bytes against retail's 504 and the first
+// difference is the parity test, retail zeroing ECX before the shift where this build shifts first and tests the low bit
+// of the shifted value; the nine decode spellings with the case-1 order swapped measure 83 and the multiplication forms 109.
+// MiniMax H (11-11): no new form, no lower score (85): retail widens the alpha's parity in thirty-two bits (xor ecx,ecx; mov cl,al; add eax,eax; and ecx,1; or ecx,eax) where ours narrows it to sixteen bits (and cl,1; movzx cx,cl), and the body is eight bytes longer than retail's; a helper returning a long scores 105, a parity kept in a long local 170, a pixel kept in a local at the second site 234 and a byte alpha parameter 209, so the word helper and the committed body stay.
+// MiniMax S (11-11): no new form, no lower score (85); the pixel helper returning a long scores 105, taking the alpha as a byte scores 201, widening the parity with a long cast scores 105 and dropping the byte cast scores 204, so the word helper stays.
+// MiniMax I (11-10, run 56): no new form; a long-returning helper (105) and a byte alpha parameter (209)
+// keep the parity masked in sixteen bits, so the word helper stays the best.
+// MiniMax I (11-10): no new form, no lower score (85): the alpha parity is still masked in sixteen bits
+// (and cl, 1; movzx cx, cl) where retail widens it (xor ecx, ecx; mov cl, al; and ecx, 1); a count
+// increment shared by both sub-branches scores 203 and puts the run in ebp, an unsigned modulo parity 212
+// and a thirty-two-bit parity local 170, which swaps the output and colour registers.
+// MiniMax G (11-06): no new form, no lower score: routing the helper's result through a long local and
+// casting it back to word gives 226, and the parity stays masked in 16 bits (and cl, 1; movzx cx, cl)
+// where retail widens it to 32 bits (xor ecx, ecx; mov cl, al; and ecx, 1).
+// MiniMax D (11-06): no new form, no lower score: the alpha parity is still masked in 16 bits where retail widens
+// it to 32 bits, and the literal word is still assembled in one register; a swapped add literal 110, a long-typed
+// literal 85, a dword count 204, a separate switch-run variable 158 and a cast-free helper 204 all leave the
+// alpha parity masked in 16 bits (and cl, 1; movzx cx, cl) where retail zeroes a 32-bit register first
+// (xor ecx, ecx; mov cl, al; and ecx, 1).
 // MiniMax S (11-05): no new form, no lower score: a long helper result 105, an unmasked parity with a word run pixel
 // 208, an int or a long cast on the parity 85, a byte parity local 85 and the OR operands swapped 85 all leave the
 // alpha parity masked in 16 bits where retail widens it to 32 bits.
@@ -518,7 +568,14 @@ static inline word font_character_pixel(long alpha, long color)
 // MiniMax A (11-03): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
 // widens it to 32 bits, and the literal word assembly and the run-two reuse still differ; dropping the byte
 // cast gives 204.
-// score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
+// MiniMax H (11-12): no new form, no lower score (85): a 600 s permuter run (79 differing instructions at its baseline) found nothing lower, and the first branch still leaves for a different place than retail's, which jumps into the shared exit further down.
+// score 59 (was 85): the alpha parity is still masked in sixteen bits (and cl, 1; movzx cx, cl) where
+// retail zeroes a thirty-two bit register first (xor ecx, ecx; mov cl, al; and ecx, 1), the literal word
+// is still built from two byte loads and a multiply (movzx eax, byte [edi+1]; movzx edx, byte [edi+2];
+// shl eax, 8; add eax, edx) where retail loads the low byte into ax and the high byte into ch, the type 3
+// run is still folded to a constant (add eax, 2; add esi, 2) where retail adds the run register
+// (add eax, ebx; add esi, ebx), and the body is still eight bytes longer than retail's; the frame, the
+// fill loops, the switch layout and the exit agree.
 // retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
 // the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so
 // the 16-bit helper is kept.
@@ -726,6 +783,89 @@ static inline word font_character_pixel(long alpha, long color)
 // M401: Complete whole-expression pixel result before the original word return, word/short/long/dword/int/unsigned-int/signed-64/unsigned-64:
 // 85/85/226/226/226/226/210/210. NOT kept: ties or regressions; original helper and complete decoder restored.
 // Frame 0xc agrees; alpha parity widening, literal assembly and run-two reuse remain.
+// N389: Pixel alpha word/uint, color short/uint, result short/uint: 92/91/92/80/85/106/85/105.
+// NOT kept: word alpha with uint color/result 80 gains only five; other type forms tie or regress.
+// Original helper and decoder restored; alpha widening, literal assembly and run-two reuse remain.
+// MiniMax E (11-10): no new form, no lower score (85): retail's own case table confirms the committed switch
+// cases (the second case runs three with the plain colour and the third keeps the run of two with the opaque
+// colour), so the earlier reorder of those cases was wrong and is reverted; a cast-free helper with a long
+// result reproduces retail's thirty-two-bit parity at all three pixel sites but moves the run constant into
+// ebp and scores 212; a parity kept in a long local inside the word returning helper scores 176 and still
+// masks the parity in sixteen bits.
+// N391: Case orders 04651237/04615237/04165237/01465237/06415237/06451237/
+// 06145237/01645237: 115/116/113/113/117/116/115/114. NOT kept: all regress;
+// original cases/body restored. Alpha extension, literal assembly and run-two reuse remain.
+// N393: Packed/ordinary indexed, descending-copy forward cursor and reverse real cursor
+// fill pairs 01/02/10/11/12/20/21/22: 172/174/172/164/166/175/174/199. NOT kept: unmatched traversal forms;
+// original loops/helper/body restored. Alpha widening, literal assembly and run-two reuse remain.
+// N398: Scoped existing pixel macro with word/numeric result, byte/numeric parity, byte/long ordinary alpha 165/218/224/236/132/136/226/234.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// MiniMax E (11-08): no new form, no lower score: retail widens the alpha parity with a 32-bit xor and masks it with 1, ours narrows it to sixteen bits and shifts the byte count instead.
+// MiniMax E (11-09): no new form, no lower score: retail widens the alpha's parity with a 32-bit xor and adds the constant 2 through ebx, ours narrows the parity to sixteen bits and folds the constant; five helper forms and the switch reorder all scored worse.
+// T76: Remaining/source/output formals own their cursors, seven subsets then
+// complete consumed-span for ownership: 103/180/87/182/101/180/182/181.
+// NOT kept: all regress; most also lose the native frame or incoming roles.
+// Original copies, word helper and decoder restored; parity/literal/two-run gaps remain.
+// MiniMax D (11-09): no new form, no lower score: the committed body is the best form of this round (85 in the fast and the full check); retail computes the alpha's parity in thirty-two bits (xor ecx,ecx; mov cl,al; add eax,eax; and ecx,1; or ecx,eax) where ours narrows it to sixteen bits (and cl,1; movzx cx,cl), and the long-returning helper, the byte local and the removed casts all scored worse (105, 209).
+// MiniMax G (11-11): no new form, no lower score: the parity only widens to thirty-two bits when the byte cast
+// leaves the helper, which shrinks the function to 444 bytes and moves the run into ebp (204); a long returning
+// helper scores 105 (byte cast) and 212 (no cast); swapping case 1's two statements gives 83, below the gain
+// needed to keep it.
+// MiniMax R (11-11): no new form tried this round, no lower score (85): the body's first branch is at +0x24, the first argument's zero test, and it leaves for a different place than retail's, which jumps into the shared exit further down; the body is 8 bytes longer than retail's.
+// P465: On the long-result/multiplied-literal graph, numeric parity 203; unsigned alpha 203;
+// expanded opacity 239; named parity 239; split numeric bands 203; scaled byte-parity field 62;
+// disjoint addition 228; split byte-parity bands 59. NOT kept: no native parity/run/literal
+// equality; original helper and complete decoder restored.
+// P481: On the long-result/multiplied-literal graph, shared actual fill-pixel/run
+// workspaces at iteration/entry and consumed-span entry lifetime, eight forms all 59.
+// NOT kept: no native parity/literal/run-two recovery; original helper, runs,
+// pixels, span and complete executable body restored.
+// P492: Native MAKEWORD literal, dword/word literal and long/word fills,
+// byte then long ordinary alpha: 103/103/105/105/108/108/110/110.
+// NOT kept: literal extent recovery does not match parity/run transport;
+// original helper and complete decoder restored at 59.
+// MiniMax I (11-14): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the
+// three pixel sites where retail masks it in thirty-two, the colour literal is still built with a shift and an add
+// where retail keeps its two bytes in separate registers, and the run of two is still folded into the count and the
+// cursor as an immediate where retail adds the register.
+// P505: Existing pixel helper owns encoded-input extraction, long/dword/word/byte input with ordinary then forced
+// expansion: 97/96/96/96/97/96/96/96. NOT kept: All eight regress despite four-byte shortening; native parity,
+// literal assembly and run-two transport are not recovered. All calibrated file and matched-caller controls stay
+// unchanged. Original complete executable body restored.
+// P517: Complete packed-run orders 07362514/07326154/07362541/07653214/07162534/70416235/67401235/37401625,
+// moving case 7 with its real shared fill/count tail; 65/70/66/69/69/59/69/164.
+// NOT kept: no exact or qualifying native-shape gain; original executable body restored.
+// MiniMax D (11-15), NOT kept: 45 (was 59) added font_character_pixel_full, a twin of the existing
+// font_character_pixel without the (byte) cast on the low alpha bit, used at this function's two pixel stores
+// only. A twin helper picked by score is not kept; if retail differs, change the shared helper and keep its other
+// callers matched. Code back to main, notes kept.
+// P530: Plain switch/ordinary fill induction pairs (for/while/body increment),
+// eight nonoriginal pairs: 59/59/59/59/59/59/59/59. NOT kept: no native
+// parity/literal/run-register repair; original indexed fills and complete body restored.
+// MiniMax E (11-16): no new form, no lower score (59): dropping the byte cast from the shared pixel helper widens the alpha's parity to thirty-two bits as retail does and makes the two type 3 pixel sites match, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX, which shifts the whole body (203); the twin helper at the two type 3 sites (45) is not kept.
+// MiniMax E (11-15): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits (mov cl, al; and cl, 1; movzx cx, cl) where retail widens it to thirty-two (xor ecx, ecx; mov cl, al; and ecx, 1); the twin helper without the byte cast measures 45 but a twin of a shared helper is not kept.
+// P576: Long-result helper static forced/ordinary and external ordinary/forced expansion: original byte parity 59/59/59/59;
+// full-width parity 203/203/203/203. Earlier expansion contracts used the word-result graph.
+// NOT kept: no byte equality; original helper, decoder, alias-sensitive reloads and frame restored. Parity/literal/run-two gaps remain.
+// P590: Immutable original size/code/class/literal/alpha/ordinary-pixel bindings
+// and source/output parameter identities: eight 59 at 512/504. Pointer-formal
+// fixed bindings also tie 59 but leave the caller unresolved; excluded. NOT kept:
+// no exact native parity/literal/run-two recovery; original full body restored.
+// P592: Eight-level opacity enum at the existing pixel helper, byte/numeric parity,
+// long/word result and signed/unsigned color: 59/203/109/192/59/203/109/192. NOT kept: no native
+// parity/literal/run-two equality; original helper, calls and complete decoder restored.
+// MiniMax R (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the two fills still merge into one block; a helper without the byte cast gives retail's parity at every site but moves the run out of EBX into EBP (203), a byte alpha in the helper narrows it further (209) and a word result for the two bytes of the type 0 value changes nothing else (103).
+// MiniMax S (11-17): no new form, no lower score (59): the shared helper without the byte cast on the low alpha bit (the
+// lead's form) makes all three decode sites match retail's parity (xor ecx, ecx; mov cl, al; and ecx, 1) and the pixel
+// blocks are retail's, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX (and the fill's
+// duplicated pixel in EBX where retail has EBP), so the body shifts (203); the base keeps retail's registers (EBX run,
+// EBP duplicated pixel) with the sixteen bit parity. Measured with the cast dropped: a dword run (200), a dword run of
+// the type 0/1 branch (200), a dword colour (203), a word pixel in the type 0/1 fill (200), a word fill pixel (203), a
+// pointer walk fill (187), a literal count of two (203) - every one keeps the run in EBP. On the base: a byte alpha
+// parameter (205), a long pixel local at a decode site (226 and 234, the parity is retail's there but the output and
+// colour registers rotate), a dword pixel helper result (59), count += 2 as a literal (59), a dword run (60), and the
+// colour literal as (source[1] << 8) | source[2] (103, retail's length of 504 but three instructions where retail has
+// four: movzx ax, byte [edi+2]; xor ecx, ecx; mov ch, byte [edi+1]; or eax, ecx).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
@@ -771,8 +911,8 @@ long function_122610(long size, void const *pixels, void *destination)
 					pixel = color;
 					goto fill;
 				case 1:
-					run = 4;
 					pixel = color | 0xf000;
+					run = 4;
 					goto fill;
 				case 6:
 					run = 3;
@@ -813,11 +953,11 @@ long function_122610(long size, void const *pixels, void *destination)
 
 			if (run == 0 && type == 0)
 			{
-				word value = (word)((source[1] << 8) | source[2]);
+				dword value = (dword)source[1] * 256 + source[2];
 
 				color = value & 0xfff;
 				if (output)
-					*output++ = value;
+					*output++ = (word)value;
 				count++;
 				length = 3;
 			}

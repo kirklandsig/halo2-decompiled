@@ -24,8 +24,17 @@ real magnitude3d(vector3f const *v);
 extern vector3f *g_4687bc;
 
 __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4,
- long arg_0, void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+ long arg_0, point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
+// score 20 (was 20): round 96 (26 -> 20) typed the origin parameter `point3f const *` everywhere and read it directly (no
+// renaming copy): only the mode-1 positive x row is left (retail adds the centre x as the memory operand, ours
+// loads it first; 1176 bytes). Earlier note, at 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
+// result with `category = 1` on a hit (function_16a040 returns bool, so category gets the same value) are
+// kept. The run's 5 also read the mode-1 rows through a second pointer to arg_1 (`centre`, the same value
+// as local_3): a duplicate local, not kept without a match. At 5 only the mode-1 positive point's x and z
+// rows differed: retail folds the x centre as a memory operand and loads the z centre into a register,
+// that form loaded the x centre ahead of the first multiply and folded the z centre. Scores are from
+// `check.py --fast 0x1c8df0 0x1e55d0` (0x1c8df0 alone gives 360).
 // MiniMax lane C (run 36, 10-31, later pass): no lower score; the fast check has to name both
 // lane files, otherwise the reduced build holds another object set (362 instead of 5), and the add
 // and multiply operand order, the literal quarter, a value or reference centre, the centre
@@ -33,13 +42,6 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // MiniMax lane C (run 36, 10-31): applied the lane-E score-5 body (short category, bool clear
 // state, one bool probe result with `category = 1` on a hit, mode-1 rows reading the centre through
 // a named copy of the cast parameter) to the current parameter order.
-// score 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
-// result with `category = 1` on a hit (function_16a040 returns bool, so category gets the same value) are
-// kept. The run's 5 also read the mode-1 rows through a second pointer to arg_1 (`centre`, the same value
-// as local_3): a duplicate local, not kept without a match. At 5 only the mode-1 positive point's x and z
-// rows differed: retail folds the x centre as a memory operand and loads the z centre into a register,
-// that form loaded the x centre ahead of the first multiply and folded the z centre. Scores are from
-// `check.py --fast 0x1c8df0 0x1e55d0` (0x1c8df0 alone gives 360).
 // Round 75 (all match-only, restored): clear state bool, one bool probe result for the mode-1/mode-2
 // probes with `category = 1` on a hit 28; with short category 26 (frame, slots, cmp ax all retail);
 // centre read through the cast parameter instead of the local copy 20: only the mode-1 x-row fold
@@ -190,14 +192,95 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // (38; its arg_7 compare is loaded early) and takes 0x25f7b0 4 -> 12; six more such orders screened
 // with the fast check break 0x1b0400 (18-38). Only the current order reproduces every retail call
 // setup. All restored.
+// Round 96 (m3 lane 16, fast with 0x1e55d0, plain-confirmed 20): retail's five call sites push arg_9 .. arg_1
+// and set up EBX (arg_0), ESI (arg_4), CX (arg_3), DX (arg_2) last to first, so the order stays. On the 20 body:
+// side vector k component first 28; both quarter points declared once for both modes 43; side vector declared at
+// block top 20; spacing declared before the points 20; spacing at function top 20; clear state at function top 20.
+// P395: Complete quarter/triple/both setters on the typed-origin graph 20/20/26;
+// complete quarter/triple/both aggregates 20/20/20; quarter/triple native component loops 86/104.
+// NOT kept: no x-row scheduling repair; original point producers and full body restored.
+// P397: Complete reused scaled-side scalars, aggregate vectors and field vectors on
+// the typed-origin graph, quarter/endpoint/both producers and immutable scalars:
+// 35/29/44/35/29/44/44/44. Per-row product birth at its first positive consumer,
+// quarter/endpoint/both/immutable-both: 20/20/20/20. NOT kept: all tie or regress;
+// per-row forms recover the original homes but miss the native positive x add.
+// Original complete body, signature and all probe tuples restored.
+// Round 100 (m3 lane 12, fast with 0x1e55d0 and callers 0x1b0400/0x1b2770/0x1be120/0x25f7b0/0x264b50; base 20, M/M/M, 4, 164): parameter orders
+// keeping arg_2, arg_3, arg_4, arg_0 in order and arg_1, arg_5, arg_6 in order, at the definition, every declaration and call. arg_1 after arg_0
+// with arg_5 or arg_5, arg_6 moved ahead of arg_0 (three orders) 20/20/20, callers unchanged; arg_1 ahead of arg_4 or of arg_3 (three) 22 each (the
+// mode-2 x row then loads first), callers unchanged; arg_1, arg_5, arg_6 right after arg_3 or after arg_2 22/22 with 0x25f7b0 12; arg_1, arg_5
+// first (three) 22, callers unchanged; arg_1, arg_5, arg_6 among the first four (five) 22 with 0x25f7b0 12. No order with arg_4 ahead of arg_8
+// folds the mode-1 x row; all restored.
+// P399: Complete origin/endpoint/side/positive/opposite/all component arrays, complete quarter/endpoint array construction:
+// 20/20/20/20/20/20/20/20. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 171 (m3 lane 6, fast with 0x1e55d0): diagnostics: 1-13 initialised unused locals at the top 20, 14-16 26
+// (1175 bytes: a mode-2 z row flips, the mode-1 x row never); 1-8 before the side vector 20; 1-8 file-scope
+// declarations ahead of the definition 20. A copied centre pointer for the mode-1 rows 20 (copy-propagated); the
+// centre read once through the parameter's address for the mode-1 rows 45 (1175 bytes: x and y load first, z
+// folds), for every use 26 (1177 bytes), in the side vector and the rows 34, in the first probe block and the side
+// vector 18 (1175 bytes: z folds where retail loads, x still loads; match-only form, gain of 2, not kept). In every
+// body form the x row loads first.
+// Round 153 (m3 lane 7, fast with 0x1e55d0): retail's negative point shares the side vector's three stack slots in both
+// modes (as ours does, by lifetime); writing the mode-1 negative point into the side vector itself (no second point)
+// 73 (rows x, y, z; the frame changes), rows z, y, x 83, rows y, z, x 79; the two mode-1 points declared in the other
+// order 20 (same code); the negative rows z, y, x 33, y, x, z 32; the negative point through the existing
+// real_point3d_set 20 (same code), both mode-1 points through it 20 (same code). Reading of the six positive rows: a
+// row comes out as retail's `movaps; addss [centre]` when its side product is first formed inside that row's sum, and
+// as `movss [centre]; addss` when the product is already a common value before the row; retail has mode 1 x, y and
+// mode 2 x in the first form, ours mode 1 y and mode 2 x. In ours those are exactly the two centre components the side
+// vector loads as minuends (arg_1->y, arg_4->x); retail adds arg_1->x, its second subtrahend. Side vector forms on that
+// lead: i as `-(arg_4->y - arg_1->y)` 260 (1183 bytes, a real negation), j as `-(arg_1->x - arg_4->x)` 259, as
+// `0.0f - (arg_1->x - arg_4->x)` 259, both from named differences (dy, -dx) 259; j assigned then `-=` 20 (same code).
+// Round 162 (m3 lane 8, fast with 0x1e55d0 and the five callers; control 20, identical listings checked): re-measured round 188's
+// orders with arg_4 after arg_8: (arg_2, arg_3, arg_1, arg_5 .. arg_9, arg_4, arg_0) MATCH with 0x1b0400 38 and 0x25f7b0 12;
+// (arg_2, arg_3, arg_1, arg_0, arg_5 .. arg_9, arg_4) and (arg_2, arg_3, arg_1, arg_0, arg_5 .. arg_8, arg_4, arg_9) MATCH with
+// 0x1b0400 38, 0x1b2770 2, 0x25f7b0 12. Reading: 0x1b0400's retail call computes the arg_7 compare (`cmp [ebx+0x26c], -1`) before
+// `state + 0x30` (arg_4) and arg_0's `mov ebx, eax`, which right-to-left evaluation gives only with arg_4 and arg_0 declared
+// before arg_7, while this body folds the x row only with arg_4 after arg_8: the two want contradictory orders. On the first
+// order, 0x1b0400's compare named before the call 52 (a stack slot). New body forms: the mode parameter declared `short` at the
+// definition and every declaration (casts dropped) 20 (identical); the side vector through the existing vector3f_assign 20 (same
+// code); the 0x10000000 probe bit set before the side vector 36; `hit` initialised false with the final else dropped 20 (identical).
+// Round 122 (m3 lane 9, fast with 0x1e55d0 and the five callers; control 20): on round 188's matching order 0x1b0400 differs
+// only in its call setup (the arg_4 add is evaluated before the arg_7 compare, whose load then goes to EDI ahead of it; with
+// arg_0 earlier the same). New: side vector as an aggregate initializer 20; descriptive parameter names in the definition 20;
+// const on both point parameters 20; the mode read once into a named short 20; the two cell parameters swapped everywhere 20
+// (0x1b0400 7, 0x264b50 107).
+// Round 164 (m3 lane 7, fast with 0x1e55d0): the positive point copied from the centre then `+=` the scaled side 273
+// (re-measure of the listed copy/add form, 1203 bytes); both points copied then `+=`/`-=` 383 (1231 bytes); the scaled
+// side in a named offset vector used by both points 35; `hit` or the side vector declared at the function top 20/20
+// (same code).
+// M3 lane 9 r127 (fast with 0x1e55d0 and the five callers): parameters (arg_2, arg_3, arg_1, arg_5, arg_6, arg_0, arg_4,
+// arg_7, arg_8, arg_9) at the definition, every declaration and call (arg_0 and arg_4 ahead of arg_7, the setup 0x1b0400
+// needs) 22: the mode-1 x row folds and the mode-2 x row then loads first; matched 0x1b2770 2 and 0x25f7b0 8. Round 188's
+// order (arg_2, arg_3, arg_1, arg_5 .. arg_9, arg_4, arg_0) re-measured: MATCH, with 0x1b0400 38 and 0x25f7b0 (matched
+// since) 8, both from the `actor->unknown26c != NONE` argument while the actor sits in EBX, which arg_0 needs; on it,
+// 0x1b0400's compare in a bool just before the call 52 (a stack slot). Body forms: side j as `-arg_1->x + arg_4->x` 20
+// (same code); the first probe's direction written out by components 24 (the x87 distance block's fld order moves, so
+// the inline helper's parameter temps count); the side vector through an inline two-point helper 20, with the points'
+// roles swapped 20; the normalise-or-default step through an inline helper 20.
+// M3 lane 8 r173 (fast with 0x1e55d0): the mode-1 positive point through the existing vector3f_add_scaled 20 (same code);
+// the mode-2 up-offset point through it 20 (same code); the mode-1 positive and the three mode-2 points through it 20 (same
+// code); the quarter as a `static real const` 20 (same code). Diagnostic (removed): a constant store to a probe global at
+// the top 318 (1186 bytes; the mode-1 x row still loads the centre first), so the row does not follow store numbering.
+// M3 lane 12 r131 (fast with 0x1e55d0; control 20): a target-point pointer local (`point3f const *target = arg_4;`) at every arg_4
+// use 20 (same code), in the side vector only 26 (1175 bytes: the mode-2 z row folds, the mode-1 x row still loads first), in the
+// mode-2 block only 20, in the first probe's direction only 20, in the category and tail distances only 20. A 600 s permuter run
+// (anneal, seed 131, context 0x1e55d0): 25 tries, none below its baseline.
+// Round 171 (m3 lane 7, fast with 0x1e55d0): diagnostics, a store through `arg_9` as long, then as real, at the top of the mode-1
+// block 243/257 (1189 bytes; the mode-1 x row still loads the centre first, so it is not the side vector's reads staying
+// available across 0x30bf0). Round 188's order (arg_2, arg_3, arg_1, arg_5 .. arg_9, arg_4, arg_0) re-measured at the
+// definition, every declaration and all seven calls: MATCH, 0x1b2770 and 0x1be120 still match, 0x264b50 91 (was 90), but
+// 0x1b0400 38 (319 bytes) and 0x25f7b0 8: in both the `unknown26c != NONE` argument's field is loaded before arg_0 takes EBX,
+// where retail compares it in memory between the stack pushes and the EBX load (retail evidence for the current order).
+// Body forms: top-level const on both point parameters 20 (same code); both modes' positive/negative points through one inline
+// helper (side, distance, centre, positive, negative) 20, with the centre first 20 (same code).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
- void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
+ point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
 {
  short category;
  real local_1;
  long local_2 = NONE;
- point3f const *local_3 = (point3f const *)arg_1;
  if (arg_9)
   *arg_9 = NONE;
  if (arg_2 != NONE && arg_3 != NONE && !(char)function_11c010(arg_2, arg_3))
@@ -217,8 +300,8 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
   bool local_7;
   {
    vector3f local_5;
-   vector3d_from_points3d(local_3, arg_4, &local_5);
-   if (!function_1697c0(local_4, local_3, &local_5, arg_0, NONE, &local_6))
+   vector3d_from_points3d(arg_1, arg_4, &local_5);
+   if (!function_1697c0(local_4, arg_1, &local_5, arg_0, NONE, &local_6))
     local_7 = true;
    else
    {
@@ -230,8 +313,8 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
   if ((short)arg_5 != 0)
   {
    vector3f local_8;
-   local_8.i = local_3->y - arg_4->y;
-   local_8.j = arg_4->x - local_3->x;
+   local_8.i = arg_1->y - arg_4->y;
+   local_8.j = arg_4->x - arg_1->x;
    local_8.k = 0.0f;
    if (function_30bf0(&local_8) == 0.0f)
     local_8 = *g_4687a8;
@@ -242,12 +325,12 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
     point3f local_9;
     point3f local_10;
     real const spacing = 0.25f;
-    local_9.x = local_3->x + local_8.i * spacing;
-    local_9.y = local_3->y + local_8.j * spacing;
-    local_9.z = local_3->z + local_8.k * spacing;
-    local_10.x = local_3->x - local_8.i * spacing;
-    local_10.y = local_3->y - local_8.j * spacing;
-    local_10.z = local_3->z - local_8.k * spacing;
+    local_9.x = arg_1->x + local_8.i * spacing;
+    local_9.y = arg_1->y + local_8.j * spacing;
+    local_9.z = arg_1->z + local_8.k * spacing;
+    local_10.x = arg_1->x - local_8.i * spacing;
+    local_10.y = arg_1->y - local_8.j * spacing;
+    local_10.z = arg_1->z - local_8.k * spacing;
     if (local_7)
     {
      hit = function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
@@ -280,11 +363,11 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
     local_11.x = arg_4->x + g_4687bc->i * 0.1f;
     local_11.y = arg_4->y + g_4687bc->j * 0.1f;
     local_11.z = arg_4->z + g_4687bc->k * 0.1f;
-    hit = function_16a040(local_4, &local_9, local_3, arg_0, NONE, &local_6);
+    hit = function_16a040(local_4, &local_9, arg_1, arg_0, NONE, &local_6);
     if (!hit)
-     hit = function_16a040(local_4, &local_10, local_3, arg_0, NONE, &local_6);
+     hit = function_16a040(local_4, &local_10, arg_1, arg_0, NONE, &local_6);
     if (!hit)
-     hit = function_16a040(local_4, &local_11, local_3, arg_0, NONE, &local_6);
+     hit = function_16a040(local_4, &local_11, arg_1, arg_0, NONE, &local_6);
     if (hit)
     {
      local_2 = local_6.field_40;
@@ -304,7 +387,7 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
   else
   {
    vector3f local_13;
-   vector3d_from_points3d(local_3, arg_4, &local_13);
+   vector3d_from_points3d(arg_1, arg_4, &local_13);
    real local_12 = magnitude3d(&local_13);
    if (local_12 < 1.0f)
     category = 4;
@@ -320,7 +403,7 @@ local_14:
  if (arg_9 && !arg_8 && category >= 1)
  {
   vector3f local_15;
-  vector3d_from_points3d(local_3, arg_4, &local_15);
+  vector3d_from_points3d(arg_1, arg_4, &local_15);
   if ((1.0f - local_1) * magnitude3d(&local_15) < 4.0f)
    *arg_9 = local_2;
  }

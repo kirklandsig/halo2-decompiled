@@ -61,8 +61,7 @@ PRIVATE __forceinline real function_217c41(real arg_0)
    self-aligning functions showed this). Retail holds no reference to its
    address, and its caller 0x12b450 is LTCG code. With the marker 0x12b450 and
    0x12b690 match; without it they don't. The body itself doesn't match yet. */
-// MiniMax B (11-04): no new form, no lower score.
-// score 25 (was 474): the x87 order of the first offset (retail keeps `angle - table` on the stack past both magnitudes), then the two hoisted
+// score 25 (was 25; earlier 474): the x87 order of the first offset (retail keeps `angle - table` on the stack past both magnitudes), then the two hoisted
 // constant loads (retail loads the coordinate scale first; ours 1.0, which
 // the D3D library defines; retail's copy of the scale lies in the Bink object's data at 0x43ba70). Earlier: frame 0x38 versus 0x40; angle homes and snap-work lifetimes differed.
 // Earlier 501 from 541.
@@ -169,6 +168,66 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // bool/byte/short/long results: 665/665/665/665/585/585/585/585. NOT kept: native branch ownership/frame
 // and extent are not recovered; original helper and complete body restored. Frame 0x38/0x40 and
 // angle/snap homes remain; both exact callers survive.
+// AC551: Double first/second/both offsets, double first/second/both absolute offsets, all four
+// doubles, all four immutable real offsets: 25/395/395/471/388/521/514/25. NOT kept: no qualifying
+// supported improvement; complete executable source restored. First offset x87 retention and
+// hoisted literal-load order remain.
+// DL268: Native sqrtf first/second/both magnitudes, fabsf paired offsets/angles/trig magnitudes,
+// float trig functions and atan2f producer: 25/25/25/25/25/25/25/25. NOT kept: no gain;
+// original scalar interfaces and complete body restored. First offset x87 retention and literal-load order remain.
+// DH378: Paired real-angle identities (two orders), offset identities and absolute-offset identities 25 each;
+// first/second/both compound offset subtraction producers 25/25/25; existing paired magnitude API 26.
+// NOT kept: no exact match or improvement; original complete body, helper, inputs and includes restored.
+// Round 97 (m3 lane 12, fast, on the fabs-at-each-use 2 form): the two hoisted loads follow each constant's first mention in
+// the loop body (a probe use of the scale ahead of the first `1.0f /` flips them to retail's order, one after it does not), so
+// retail's body reaches the scale first. Division by a named maximum 20 (one reciprocal from 1.0, 1.0 still first); the scale
+// as `/ 32767.0f` 2; named maximum then `1.0f / maximum` 2; `coordinate * scale * (1.0f / maximum)` 20 (the constant is
+// reassociated to the end, 1.0 still first); scaled stick locals ahead of the angles 562 (1988 bytes).
+// MiniMax B (11-04): no new form, no lower score.
+// Round 143 (m3 lane 8, fast, all on the fabs-at-each-use 2 form): `coordinate * scale / maximum` 20 (one reciprocal
+// from 1.0, still loaded first); scaled stick locals between the trig and the reciprocal 536 (2020 bytes; scale loads
+// first, products early); a named scale local at the top of the stick block 2 (folded, no flip); a two-use inline stick
+// helper taking the scale as an argument 537 (1996 bytes, 1.0 first); named float coordinates with
+// `x * scale * (1.0f / maximum)` 581 (2036 bytes). Diagnostic (reverted): the scale used in a separate function earlier
+// in this file 2, so the order is set inside this function after inlining and the reciprocal rewrite, not by the module.
+// Round 74 (m3 lane 2, fast, on the fabs-at-each-use 2 form): reciprocal as `scale / maximum` with one product per
+// coordinate 588 (1972 bytes, a real divss); the clamp helper defined after the function 2 (same code, so not a per-file
+// constant order); scaled axes stored first and normalized after the trig 562 (1988 bytes; re-measured, as round 97's
+// scaled stick locals); the reciprocal taken in each arm of the maximum 458; a `real const` coordinate scale at the loop
+// top 2 (same code; re-measured, as round 143's named scale local). Map: our 1.0 comes from the D3D library's state
+// member and the scale from src/unknown_157450.cpp; retail's scale lies in the Bink library's data. Then: atan2 over
+// coordinates already scaled by 1/32767 (named, products from them) 571 (1972 bytes); the raw coordinates as a named
+// point2f for atan2 and the products 554 (1996 bytes).
+// Round 115 (m3 lane 9, fast, all on the fabs-at-each-use 2 form, which the fast image reproduces): the scaled
+// coordinate passed to a two-argument forceinline boost helper that holds the reciprocal (`value * (1.0f / maximum)`
+// or `value / maximum`) 20/20 (1.0 still first; the product becomes inverse * coordinate); the scaled x named ahead of
+// the reciprocal, y in place 557 (1988 bytes: computed ahead of the trig), the same after a named maximum 6 (the scale
+// product then precedes the inverse product in both sticks, 1.0 still first: a one-use value is forwarded to its use,
+// behind the reciprocal); the reciprocal written in place in both products, as `coordinate * (1.0f / maximum) * scale`,
+// `scale * (coordinate * (1.0f / maximum))` or `(1.0f / maximum) * coordinate * scale` 20/20/20, as
+// `coordinate * ((1.0f / maximum) * scale)` 578 (1972 bytes); the reciprocal assigned inside the x product, after the
+// coordinate 2, after `coordinate * scale` 2, after `scale * coordinate` 2, the last with y as `coordinate * inverse *
+// scale` 2 (all same code); the reciprocal, or only the maximum, through a two-argument forceinline helper 2/2 (same
+// code); the clamp as a macro 2 (same code); the numerator as the integer 1, 2 (same code), as a double 1.0, 561 (2044
+// bytes, a double division). In every form the 1.0 of the first reciprocal is reached before the scale.
+// Round 119 (m3 lane 9, fast, on the kept 25 body): the two offsets as one point2f pair 90, as a `real [2]` array 90:
+// either gives retail's offset block instruction for instruction (first offset subtracted on the x87 stack ahead of
+// both magnitudes, second offset by SSE), but the pair takes an 8-byte slot after the double angle, so every home
+// below the axes moves down 4 and the axes and the double 8 (the pair named to sort first or last: 90/90). The two
+// magnitudes as a point2f pair 51 (the offset is still forwarded to its use).
+// Round 128 (m3 lane 9, fast, all on the fabs-at-each-use 2 form): fabsf for the offsets 2; the clamp as a single-exit
+// if/else-if 577 (2048 bytes); the products written constant first (`scale * coordinate * boost`) 2 (reassociated, 1.0
+// still first); a separate first/second boost local 2; the absolute angles written at each use 537 (1996 bytes).
+// Diagnostic (plain, reverted): the scale literal used in a function added to the stub file (built without LTCG) 2: the
+// link keeps the LTCG module's copy of the constant (our link map: src/unknown_157450.cpp's object), not the stub's. Retail's pool matches
+// ours (1/255, 2^32, 0.5, 1.0, -0.5 at 0x45dbb4-0x45dbc4); only the scale lies outside it, in the library's data.
+// Round 189 (m3 lane 5): on the fabs-at-each-use 2 form, the scale as `(1.0f / 32767.0f)` 2 (same code); the scale as a
+// file-private named constant fast MATCH, plain 2 (re-measured with the map: the reduced image links no non-LTCG object ahead
+// of the D3D state member, while the full link's 63rd object, a /GL- Havok file, already defines 1.0 in the first pass and no
+// non-LTCG object defines the scale; the entry loads follow that symbol order, and retail's scale is a library's data defined
+// ahead of 1.0). BLOCKED-BY the link's object order, not this source. On the kept 25 body: both absolute offsets declared
+// after the magnitudes 530 (2000 bytes); offset and fabs through a two-use inline helper 405 (1996 bytes); the magnitudes
+// first in the snap block 47. All restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

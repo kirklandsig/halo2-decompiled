@@ -31,8 +31,10 @@ extern s_16658d_group *g_4e9bc8;
 void first_person_weapon_set_active(long user_index, long field_x11c898, bool active);
 void __stdcall function_167e86(long user_index, long field_x11c898);
 
+/* inline: retail expands it in 0x152f80 (through player_set_local_user's NONE arm)
+   and calls it out of line elsewhere */
 // @retail 0x1682bf
-void function_1682bf(long unit_index, long user_index, long character_index)
+inline void function_1682bf(long unit_index, long user_index, long character_index)
 {
 	s_first_person_user_head *user = &first_person_users[user_index];
 

@@ -519,6 +519,110 @@ s_1a8a10 g_4453c0[] =
 // address-taken is not what re-reads j; the point and four values in one record with the values passed on 27 (frame
 // moves, j still folded); the y store placed after the facing copy, y carried in a local through the switch 24 (j still
 // folded), in the one record 88.
+// Round 90 (m3 lane 16, fast): both sums with the y product first 17 (same code); the best index, identifier and
+// score declared in reverse order 77; the sums written straight into the four-value array 21; the second sum as the
+// existing dot_product2d (kept out of line by inline_depth(0)) 77; the copy declared before the array 17 (same code).
+// Round 99 (m3 lane 12, fast): the rotated point declared at the function's top 17 and the value array declared
+// before the first switch 17 (same code); the identical case 2 and 3 arms merged under one label 139 (540 bytes); the
+// first sum as `i * y - j * x` 86 (a repeat of the listed subtraction form); the unrotated cases copying the point as
+// an aggregate 128 (548 bytes). Diagnostic: the rotated point's address stored to a global after the last call 137
+// (504 bytes: the point then stays in registers and the j re-read still does not appear).
+// Round 140 (m3 lane 7, fast): new: the rotated point as two scalar reals 48 (frame 0x38: both go to dead argument
+// slots, so retail's point is a two-float aggregate); both sums from the copy (negated copy j) 31; the negated j
+// product written point-first 17 (same code); the rotated point written through the existing cross-file point2f_set
+// 122 (524 bytes; inline_depth(0) keeps the setter a call), with the final switch through it too 137 (508 bytes).
+// Re-measured (listed): y carried through the switch in a scalar and stored after the facing copy 24 (round 163),
+// also with the final switch reading the point through a pointer 24 (the scalar takes the 0x50 slot and the point's
+// y is never stored; j still folded); the value array and the copy declared before the first switch 17 (rounds 99, 90).
+// Round 91 (m3 lane 11, fast): what folds j. Facing fields read in place are not merged at all (both i and j load
+// twice, listed form re-measured 91), so retail's one i load with a register copy and two j loads look like i held
+// in a local and j read where it is used. Real: i in a scalar local with j read in place in both sums 31 (the j
+// re-read appears, but the second j load comes after the first sum and the registers move); that with the second
+// sum first 36; the scalar i read ahead of the switch 54. The facing copy ahead of the switch (listed 54) does
+// re-read j: the case stores between the copy and the negation stop the reuse, but the loads then sit before the
+// jump table. On it: stores in [3], [1], [2], [0] order 54; the second sum first 106. Diagnostic only: the point's
+// address stored to a global before the switch keeps the point in registers (508 bytes) and j stays folded.
+// Round 115 (m3 lane 9, fast): what folds j, continued. A dead store into the value array, or a goto to a label, between
+// the copy and the first sum 17/17 (same code: the dead store is removed first). Unary minus inside the sum 86 (it
+// becomes a subtraction), as a named value 17 (same code). A perpendicular 2D local: its j assigned first from the copy
+// 17 (same code), its i first 39, its j from the actor 38, no copy at all 93, with the second sum first 92 (reads in
+// place never merge: four loads). A second actor pointer computed at the top for the negated read 46 (still folded).
+// The negated j named ahead of the copy 17; with the sums stored straight into the array in [0], [2], [1], [3] order
+// 17, in [0], [1], [2], [3] order 21, each sum stored where it is computed 17, the negations stored first 20 (all still
+// folded: a one-use value is forwarded to its use, past the copy). The copy written inside every case arm, after,
+// between or ahead of the point stores 30/31/91 (the loads sink to the join and j is still folded), so of all forms
+// only the copy ahead of the switch (54, re-measured with both sums y product first) keeps the two j loads apart: the
+// reuse does not cross the jump table. The best score, identifier and index initialised between the copy and the
+// sums 23, the score alone there 22, all three ahead of the copy 23 (the score store is emitted where written).
+// Diagnostics, not keepable (the opening pragma dropped so helpers inline; 0x1f57a0 then inlines too, 592 bytes): the
+// perpendicular and both sums through inline 2D helpers reading the actor give four loads; with the copy as their
+// input, one j load. So an inlined call between the copy and the sum does not split the reuse either. The negated j
+// named ahead of the switch 48 (it is computed ahead of the jump table), a perpendicular 2D local there 53. Diagnostic,
+// reverted: the compiler barrier intrinsic between the copy and the first sum 16 (retail's second j load, but the
+// second sum's i product is still computed first and the four stores keep our order), and on it both term orders of
+// each sum, either sum first and six store orders (48 forms) 16-31: the term order inside a sum never changes the code.
+// Round 115, later (fast): LEAD. Retail's block reads as one 2D frame transform: left = i * y + (-j) * x and
+// forward = j * y + i * x, the second sum's i a saved copy (xmm6) and the negated j read in place. The three
+// initialisations written identifier, index, score give retail's tail (`or edi` ahead of the score store) on the kept
+// body: 15 (not kept: a declaration order, a gain of 2); index, score, identifier 77. With that order and a facing
+// copy plus a perpendicular 2D local (its i assigned `0.0f - j` from the actor ahead of the copy's j, its j assigned
+// the actor's i), the sums written `copy.i * y + perpendicular.i * x` and `copy.j * y + perpendicular.j * x` and the
+// stores in [2], [3], [0], [1] order: 27, every instruction retail's (the second j load, the copy ahead of the first
+// sum, both sums in turn, the stores [3], [1], [2], [0]) and only the xmm numbering left: ours j 1, i 2, zero 3,
+// perpendicular j 4, x 5, y 6 against retail's zero 1, i 2, j 3, x 4, y 5, copy 6. On it: the four assignments in
+// every order, the perpendicular's j from the actor or from the copy (36 forms) 20-39 (the perpendicular's j from the
+// copy ahead of its i is folded away: 20, base numbering, base schedule); the two locals as scalars 34-38, both 91-94;
+// the six initialisation orders 27-31; ten declaration orders of the two locals, the point and the array 27 each (same
+// code); the two locals grouped as the transform's rows, all 24 assignment orders 27-37; the perpendicular's j
+// assigned after the first sum from the actor 80 (retail's numbering, but i is loaded again), from the copy 29-34 (the
+// copy is then made at the first product and takes xmm1); only the negated j in an aggregate field with i used in both
+// sums 15-21 (a one-field aggregate is forwarded early: folded j, base schedule); i and the negated j in one aggregate
+// with a scalar j 28-29; a scalar i with the negated j and j in one aggregate 29-35; all three in one three-field
+// aggregate 29-35. Diagnostic: the barrier with the perpendicular forms (9) 16-93. Reading: the numbering puts the
+// perpendicular's j ahead of x and y whenever it is a named value assigned ahead of the first sum; retail numbers
+// that copy last, as the compiler's own copy of a twice-used i, while still evaluating the negated j as a late leaf.
+// Round 162 (m3 lane 8, fast with 0x1f5390 0x1f57a0 0x1f57f0 0x1a8c30; control 17): retail's left sum is the 2D dot product
+// of the point with the facing's perpendicular (`(0 - j) * x + i * y`) and its forward sum the dot product with the facing,
+// the transform src/unknown_0de080.cpp writes with dot_product2d; the inline_depth(0) pragma keeps any helper out of line
+// here. Diagnostic (not keepable): the pragma dropped, the three callees declared noinline, both sums through dot_product2d
+// with a perpendicular local 214 (592 bytes; the function's own convention changes, arg_0 no longer in EBX; 0x1a8c30 49).
+// Round 122 (m3 lane 9, fast; control 17): 0-7 unused locals at the top change nothing here: i in a scalar with j read in
+// place in both sums 31/31/29/29/29/29/29/29, the frame-transform form 31 at every phase, the identifier/index/score order
+// 15 at every phase. On that order the array stores [0],[1],[2],[3] 16, [2],[3],[0],[1] 18, [3],[1],[2],[0] 19,
+// [1],[0],[3],[2] 16; the actor pointer to const 17 (same code).
+// Round 164 (m3 lane 7, fast): the final switch writing a separate 2D point for 0x1f57f0 (as 0x1a83b0 passes one),
+// declared at the switch or with the rotated point 17/17 (same code, it shares the array's slots); the rotated point as a
+// two-element real array 17 or typed as a 2D vector 17 (same code: its y store still does not stop the j reuse); the
+// facing copy made before the 0x1f5390 call 170 (564 bytes); a 600 s permuter run, 54 tries, best 17.
+// Round 166 (m3 lane 7, fast with 0x1f5390 0x1f57a0 0x1f57f0 0x1a8c30; control 17): the facing copy as a two-real array
+// 17; the point's components named x and y ahead of the copy 17; the actor pointer declared `*const` 17 (all same code);
+// the final switch's identical cases 2 and 3 under one label 69; the table entry's fields read in place instead of the
+// three reference names 28.
+// Round 89 (m3 lane 2, fast with 0x1a8c30 0x1f5390 0x1f57a0 0x1f57f0): the forward sum first in retail's
+// term orders 31; the copy's j assigned after the first sum with both sums in retail's term orders 17 (the j
+// re-read appears; the first sum's i product goes through the i copy), with retail's [3], [1], [2], [0]
+// stores 19, with the identifier, index, score initialisation order 15 (the order alone gives that 15); the
+// forward sum and its two stores first, then the left sum and its two 31, the same with the left terms in the
+// original order 31 (same code), with the copy's j assigned before its i 31 (same code). Reading: computing
+// the forward sum first reproduces retail's use of the i copy for the forward product and retail's re-read of
+// j (the copy's j register dies in the forward product), but the point's x then takes XMM3, the forward j load
+// follows the y store and the forward sum is scheduled first; retail has x in XMM4, both facing loads ahead of
+// the y store and the left sum first. All restored.
+// Round 174 (m3 lane 8, fast with 0x1a8c30; control 17): the rotation's negations as unary minus 17 (same code); the
+// two negated values as unary minus 17; the facing copy as a const vector with an initializer 17; the four values
+// stored in index order [0], [1], [2], [3] 18; the negated values read back from the stored [0] and [2] 17. All
+// restored.
+// Round 93 (m3 lane 2, fast; control 17): the point copied from the input then rotated in place by the switch (cases 2
+// and 3 empty) 175 (564 bytes); the left sum reading i and j from the actor 29 (both still one load each, merged with
+// the copy); the forward sum's i from the actor 38 (it is loaded again, late); the left sum accumulated in two
+// statements 17 (same code); i and j as scalar locals with the negation reading j in place 31 (the scalar j is
+// forwarded to its one use, so it loads late into XMM1, as the listed i-scalar form). Re-measured for the folding: the
+// copy's j for the negation with the forward j in place 40 (the in-place j in the forward sum is never merged with an
+// earlier load; the copy's j stays at the copy and is not folded); the i scalar with j in place twice 31 (retail's
+// folded `subss xmm0, [esi+0x294]`, but the forward j load comes after the left sum in XMM1 and the zero takes XMM2).
+// Reading: an aggregate copy's fields load at the copy, a one-use scalar's load moves to its use, and an in-place read
+// in the left sum merges with the copy while one in the forward sum does not; retail needs the copy's j used once (j*y)
+// and the left sum's negated j a separate folded load.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

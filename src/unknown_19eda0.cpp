@@ -385,14 +385,45 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax E (11-17): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not edit.
+// MiniMax R (11-15): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5
+// factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0
+// still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not
+// edit.
+// MiniMax S (11-16): no new form, no lower score (370); retail's 1.5 factor still comes from its writable .data float at 0x47ff94 and the 0x4b2d0 call still takes its three arguments in another lane's order.
+// score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
+// factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
+// 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
+// MiniMax E (11-15): no new form, no lower score (370): the distance's zero test against the float 0.0f
+// constant measures 370 (1518 bytes) as before, and dropping the variant's volatile pointer so that the frame
+// could reach retail's 0x30 measures 419 (1495 bytes); what still differs is unchanged: the frame 0x34
+// against retail's 0x30, retail's 1.5 factor in its own writable .data float, and the 0x4b2d0 call's
+// argument order, which is set in another file.
+// score 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
+// MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
+// third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
+// ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
+// another file, which this lane may not edit; retail also still reads its 1.5 factor from its own writable
+// .data float and still expands two contributor helpers in place.
+// MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
+// still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
+// against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
+// from src/unknown_01cf50.cpp, which this lane may not edit.
+// MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
+// MiniMax H (11-14): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail
+// still reads its 1.5 factor from its own writable .data float at 0x47ff94 and still expands two contributor
+// helpers in place, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX.
+// score 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
+// MiniMax G (11-10): no new form, no lower score (370); retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34 against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from a file this lane may not edit.
+// MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).
 // MiniMax I (11-05): no new form, no lower score. Retail's callee 0x4b2d0 takes the tag in edx, the
 // group in ecx and the variant in eax (src/unknown_01cf50.cpp, another lane's file), so retail loads
 // the variant into ebp at the entry and ours keeps it on the stack.
 // MiniMax B (11-04): no new form, no lower score.
-// score 316 (was 316): the distance to the centre is now computed and compared in double, so the
+// Earlier 316 (was 316): the distance to the centre is now computed and compared in double, so the
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
-// score 316 (was 316): Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
+// Earlier 316 (was 316): Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
 // Lane 18 r37 (fast): retail passes 0x4b2d0 tag/first/second in EDX/ECX/EAX and third/fourth on the stack
 // (ret 8); ours passes tag/fourth in EDX/EAX and three on the stack (ret 0xc). In 0x4b2d0: dropping its
 // `(void)&` reads (one or both) changes nothing; the entry offset computed in place, or named just before
@@ -483,6 +514,46 @@ PRIVATE inline long polygon_round_19f(real value)
 // result 370; the top point as its own initializer with `center->z + height` 359; the alpha clamp as one
 // ternary 316 (same code); the wrapped index as `step < count ? step : 0` 316 (same code); the repetition
 // divisor as `1.2f * height` 316 (same code). BLOCKED-BY 0x4b2d0 and 0x1ccb0 as noted.
+// Earlier 370 (was 316): statement walk against retail (b3K, 11-06). Behaviour fix: the alpha is now
+// `(maximum_distance - sqrt) / (maximum_distance - spread)`. With the denominator in a named local the
+// compiler turned the loop's divide into a reciprocal multiply (1.0f / denominator hoisted, then fmul),
+// which rounds differently from retail's `fdiv dword [esp+0x5c]` at 0x19f997 (316 -> 370, callers 0x244470
+// and 0x2be5d0 stay MATCH). Walked and equal to retail: the fade (0x19f6d3-0x19f711: unrounded distance
+// tested against 0, float-rounded distance against 1.5 * radius, one divss), spread/maximum (0x19f71e-0x19f736),
+// the 4b2d0 arguments, material/group/variant/shader/attribute chain (0x19f75f-0x19f83e), the repetition
+// count and texture scale (0x19f8b3-0x19f927), the wrapped index (0x19f966), the alpha clamp (unrounded value
+// against 0 at 0x19f99f, rounded against 1.0 at 0x19f9be), the vertex records (0x19f9c9-0x19fbd0) and the
+// edge-length walk (0x19fbd7-0x19fc08: sqrt unrounded, scaled, subtracted, one fstp). Not fixable here:
+// retail reads the 1.5 factor from a writable .data float at 0x47ff94 (only this function uses it), ours
+// uses the literal; the `volatile` variant reads are a call-transport trick (retail reads it once into EBP).
+// Round 170 (m3 lane 6, fast with 0x244470/0x2be5d0, both matched in each row): 0x4b2d0 and the two callees retail
+// inlines here (0x1ccb0, 0x1cd90, src/unknown_01cf50.cpp) are now machine 3's. Their `__forceinline` or `inline` declarations
+// in this file 370/370 (same code: both still called); the two bodies written in place (diagnostic, not kept) 433, with
+// round 42's float distance and `g_47ff94 * radius` bound 378 (1530 B, register-masked aligned 138 -> 101). The fade form
+// alone re-measured 389 (1495 B). Through 0x4b2d0's body (its `ret 0xc` and stack/EAX arguments set this call): the selected
+// tag computed just before the 0x1bbf0 call 418 (0x4b2d0 91), the group read ahead of the selected tag 404 (0x4b2d0 78),
+// each with `first * 10` in place 412/427 (ret 8 there, but first in EBX and third in EAX); the previous vertex index as
+// `index != 0 ? index - 1 : count - 1` 406; the texture position as `-=` 370 (same code).
+// MiniMax A (11-11, second pass): no new form, no lower score (370); what still differs is unchanged: retail still loads its constant
+// before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers,
+// and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the
+// pass on the stack (that callee's convention is set in another file).
+// MiniMax A (11-11): no new form, no lower score (370); retail still loads its constant before the frame push where ours pushes first, the inner-radius lifetime still gives the two subtracted vectors different registers, and the 0x4b2d0 call still takes the variant in the register where retail keeps it in the other register with the context byte and the pass on the stack (that callees convention is set in another file).
+// MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
+// third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
+// ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
+// another file, which this lane may not edit; retail also still reads its 1.5 factor from its own writable
+// .data float and still expands two contributor helpers in place.
+// MiniMax H (11-11): no new form, no lower score (370); the body is unchanged, because retail's 1.5 factor
+// still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34
+// against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX
+// from src/unknown_01cf50.cpp, which this lane may not edit.
+// MiniMax G (11-14): no new form, no lower score (370): retail's 1.5 factor lives in a writable .data float this lane may not add, and 0x4b2d0's EDX/ECX/EAX argument order is set in another lane's file.
+// M3 lane 3 r242 (fast with 0x244470 and 0x2be5d0, both MATCH; base 370): the centre distance as its own statement before the
+// radius subtraction 370 (same code: the x87 pops still follow the subtraction, retail pops first); that with the edge
+// distance a real compared with 0.0f 379 (1495 B: rounded through its slot before the compare); the top point initialised from
+// the vertex with `center->z + height` 406; the fade as `1.0f - fade * (1.0f / fade_limit)` 393; `top.z = bottom.z + height`
+// 410. Body unchanged; still BLOCKED-BY 0x1ccb0 (its file is /Ob1, retail inlines it here).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
@@ -544,9 +615,8 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
             long index = step == count ? 0 : step;
             double vertex_x = (double)vertices[index].x - (double)g_4b9da0.x;
             double vertex_y = (double)vertices[index].y - (double)g_4b9da0.y;
-            real radial_denominator = maximum_distance - spread;
             real alpha = (maximum_distance - (real)sqrt(vertex_x * vertex_x + vertex_y * vertex_y)) /
-                radial_denominator;
+                (maximum_distance - spread);
             if (alpha < 0.0f)
                 alpha = 0.0f;
             else if (alpha > 1.0f)

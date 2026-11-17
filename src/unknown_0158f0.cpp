@@ -113,6 +113,16 @@ long g_5093ac;
 dword **g_407488;
 
 
+// score 21 (was 21; fast build 24):
+// b13B (11-17) walk against retail, fast build on r846: no logic difference. Format is a word (movsx at 0x158f4),
+// the flag byte as movzx (0x158f1), the table loads (0x158fe, 0x15909), the pushes into 0x3fde00 (0x1591e-0x1592f),
+// the 0x10000 test (0x15936), the header fill (0x1597c-0x159a2) and ret 0x10 match. Caller 0x1d000 sign-extends before
+// each push (0x1d0a5-0x1d0b5) and `out` travels in ebx (0x1d0b9), so the declared types stand: no type change.
+// Left: the failure tail. Retail makes the NULL in a register (xor ecx,ecx at 0x15971, mov [ebx],ecx at 0x15976) where
+// ours stores an immediate (the 2 bytes of size). Same tail in retail 0x15b10 (0x15b4c-0x15b51). Tried, fast scores:
+// the store as `*out = texture`, a result flag or pointer, a flag branch, a store helper (24); store before the test,
+// `return *out != NULL`, the SDK's HRESULT CreateTexture (35-53, `out` then leaves ebx: ret 0x14); no store on failure
+// (23, drops retail's store at 0x15976: behaviour change, rejected).
 // @retail 0x158f0
 bool function_0158f0(
 	short b,
@@ -133,6 +143,12 @@ bool function_0158f0(
 	return true;
 }
 
+// score 21 (was 21; fast build 24):
+// b13B (11-17) walk against retail, fast build on r846: no logic difference. The edge arrives in eax (0x159e0), the
+// format in cx (movsx at 0x159c9), usage index and levels are dword stack reads (0x159b0, 0x159d8), the cube type
+// and pushes into 0x3fde00 (0x159bd-0x159de), the header fill (0x15a2d-0x15a49) and ret 8 match. Caller 0x1d000 loads
+// eax with the sign-extended width and ecx with the format (0x1d06b, 0x1d071): no type change. Left: the failure tail
+// (xor ecx,ecx at 0x15a22, mov [ebx],ecx at 0x15a27, ours an immediate store); forms tried are listed at 0x158f0.
 // @retail 0x159b0
 bool function_0159b0(
 	long edge,
@@ -151,6 +167,12 @@ bool function_0159b0(
 	return true;
 }
 
+// score 21 (was 21; fast build 24):
+// b13B (11-17) walk against retail, fast build on r846: no logic difference. The format arrives in ax (movsx at
+// 0x15a79), the usage index in ecx (0x15a61), width/height/depth/levels are dword stack reads (0x15a6e-0x15a93), the
+// volume type, the header fill (0x15ae2-0x15afe) and ret 0x10 match. Caller 0x1d000 loads ebx/eax/ecx at
+// 0x1d093-0x1d097: the declared order and types stand, no change. Left: the failure tail (xor ecx,ecx at 0x15ad7,
+// mov [ebx],ecx at 0x15adc, ours an immediate store); forms tried are listed at 0x158f0.
 // @retail 0x15a60
 bool function_015a60(
 	short a,
@@ -173,6 +195,18 @@ bool function_015a60(
 
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 
+// score 103 (was 103), fast build on r846: D3DDevice_CreatePalette2 stays a call; retail inlines it (b13A below).
+// b13A (11-17) walk against retail, fast build on r846: logic matches statement by statement. Retail inlines the SDK's
+// D3DDevice_CreatePalette2: alloc 0xc / 0x64800000 (0x15b20), size read from D3D::g_PaletteSize (0x15b2b, its only
+// reference: retail holds no out-of-line CreatePalette2), data alloc 0xb6800000 (0x15b38), free 0x24800000 (0x15b47),
+// Common = size << 30 | 0x1030001 stored before Data = ptr & 0xfffffff (0x15b63, 0x15b65), no store to Lock; `out`
+// arrives in ebx. Here the library's CreatePalette2 stays a call (103; via the IDirect3DDevice8_CreatePalette wrapper
+// 86), and writing its body out in this file as a static __forceinline helper (reading the library's
+// D3D::g_PaletteSize) gives 20 here and 0x1d3f0 76 -> 64, but DECOMPILING.md says a function that calls the public D3D
+// API must call it, so the body still calls D3DDevice_CreatePalette2; why LTCG keeps this one call out of line is open.
+// Left: retail keeps the NULL in ecx (xor ecx, ecx at 0x15b4c, mov [ebx], ecx at 0x15b51), ours does pop edi; mov
+// [ebx], 0 - the same difference 0x158f0/0x159b0/0x15a60 show with the real inlined body. With the written-out helper:
+// body in the function 25, one result variable 23, *out stored before the test 39, a local for the table read 18.
 // @retail 0x15b10
 bool function_015b10(
 	long index,

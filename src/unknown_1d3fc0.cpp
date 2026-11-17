@@ -30,9 +30,52 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
-// MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
+// MiniMax S (11-16) trial, not kept (body stays 110): score 11 with these forms: the private normalizer's squared length named through dot3f gives
+// retail's sum order and its component registers, and the projection's k row reads the matrix's forward
+// component (a second access path to one field); what is left is the dot's i term, which still copies up's i
+// where retail copies forward's i, and the last normalization's i term, which still multiplies the component by
+// the reciprocal where retail multiplies the reciprocal by the component.
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// MiniMax R (11-15), on its not-kept 11 form (below; main stays 110): the axis block agrees with retail except for the dot product's i-term
+// and the last normalization's i scale, which still multiply their two operands in the opposite order, and the
+// function is 923 bytes against retail's 922; the normalizer's three scale statements in the six orders give
+// 11, 141, 34, 90, 140 and 87 with the i, j, k order the best, and writing the i term with its value first is the
+// same code, so what is left is the choice of which operand each multiply takes from memory.
+// MiniMax G (11-14): no new form, no lower score (110): the frame 0x13c and the 922-byte length agree; the axis
+// block's dot product still multiplies up's i first where retail multiplies forward's i first, and the shapes that
+// flip that need the existing dot3f body written out by hand.
+// MiniMax B (11-12): no new form, no lower score (110, was 110): the frame 0x13c and the 922-byte length agree; the
+// axis block's dot product still multiplies up's i first where retail multiplies forward's i first, and the only
+// shapes that flip it need the existing dot3f body written out by hand and a second access path to one field.
+// MiniMax R (11-11): no new form, no lower score (110); the axis block's dot product still multiplies up's i
+// first where retail multiplies forward's i first, and the only shapes that flip it need the existing dot3f
+// body written out by hand and a second access path to one field, so they stay dropped; swapping the dot's
+// two arguments (dot3f(up, forward)) compiles to the same code, and the normalizer's square order, the
+// reciprocal carriers and the projection schedule are unchanged.
+// M3 lane 1 r96 (fast, 0x1c4a80 matched each time): the normalizer's locals and parameter renamed (length, inverse,
+// vector) 110 (identical code: names move nothing here); the flag9 branch's real declared in that branch 110; the axes
+// addressed through the matrix's rotation member (`&local_1[0].rotation.forward`, up, left) 110; the normalizer's scale
+// through the existing vector3f_scale with the reciprocal local 110 (re-measure of the listed scale helper), with
+// `1.0f / length` as its argument 147 (936 B); the loop counter declared at function scope 110; `up =` assigned from the
+// third normalization's returned pointer 110. The rotation-member addresses re-measure round 222's named rotation member.
+// MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
+// written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
+// MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
+// reciprocal first 110 (the same code); the axis block's dot product still multiplies up's i first where retail
+// multiplies forward's i first, and no shared helper computes that product order.
+// MiniMax H (11-06): no new form, no lower score; the only difference in the axis block is the dot product's
+// i term, where ours multiplies up's i first and retail multiplies forward's i first; the two shapes that flip
+// it need the dot written out by hand and the k term read through the matrix field, so they stay score-picked
+// forms; the normalizer's squared length still has to go through the existing dot3f.
+// MiniMax A (11-05, held at m3 review): 110 -> 2 with the normalizer's squared length through the existing
+// dot3f and the caller's dot3f(forward, up) written out by hand with its k term read as
+// local_1[0].forward.k (the same field forward points to); only the i term then differs (ours copies up.i,
+// retail forward.i). Not kept without a match: an existing helper's body written by hand and a second
+// access path to one field are score-picked forms; the normalizer change alone 172. Addends reordered or
+// pointers declared apart 2; the up side or forward.i from the matrix 145/148; the normalizations swapped
+// 71; calls through the pointer variables 94. build/held/mma-1106-1d3fc0-handwritten-dot.patch
+// MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
 // Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
 // a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
 // preloaded) 111; all three squares named 154; the i and j squares summed j, i, k 111. Restored.
@@ -297,6 +340,171 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // 2 each; cross3f_staged 120; a left pointer for the cross and its normalization 4. The dot's i term stays up-first.
 // Declaration placement on the 2-form: the dot's local first in the block or between the pointers, `up` declared ahead of forward and assigned
 // after, all three declared first, the dot in its own scope, the pointers or the dot's local at function or loop scope: 2 each.
+// Round 59 (m3 lane 15, fast, base 110): a named `transform4x3f *matrix = &local_1[0]` for the combine output, the block and the set call 149 (first
+// difference moves to the +0x44 exit), the same through a reference 149; the flag9 branch on its own block-scoped transform 195 (938 B, frame
+// grows); dot3f(up, forward) with the rows in retail's k, j, i store order 110 (same code); the axis addresses spelled `&local_1->forward` 110;
+// the cross into a local `left` normalized then stored 202 (946 B); up normalized inside the dot's argument 151.
+// AC554: Existing pointer-return normalizer short-vector guard truth in bool/byte/char/
+// signed-char/short/word/int/long 110/110/110/110/110/110/110/110. NOT kept: no exact
+// guard-producer repair; original four-use helper and entire body restored.
+// DL267: Four-use normalizer double magnitude, reciprocal, both, complete squared-length, squared plus magnitude/reciprocal/both, then double j-square: 266/266/281/239/266/266/281/239.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Shared planar dot at projection/magnitude boundaries, native/late-k/squared-length views, then zero/first-product standard numeric reductions with symmetric input roles; late-k mixed views reach 2 but remain unmatched. Scores 110/110/110/64/2/2/111/111/195/195/203/203.
+// DH382: Existing four-use numeric magnitude return, successful/failure-first/common-
+// magnitude/result-first completions with post-normalization receivers 110/110/110/110;
+// early actual receivers 150/150/150/150. NOT kept: no late forward-k/reciprocal repair;
+// original pointer-return helper, all calls and complete body restored.
+// Round 141 (m3 lane 7; one-file LTCG harness with 0x1c4a80 and the callee files, scored on the axis block, which it reproduces
+// exactly: 38 here, 2 for the 2 form): dot3f with each input as the pointer or the matrix field, either order, either normalizer
+// 28/38 (same code); 96 written-out dots around the 2 form (i term through the pointer or the matrix on either side, six term
+// orders, i operand order, `a + (b + c)`) best 2; the normalizer's scale all scale-first or all value-first 2 (no change); rows
+// through vector3f_add_scaled 37/44, rows k, j, i 2/28, cross3f_staged 82/100; the existing normalize3d 80-136. Fast on the current body: rows through
+// vector3f_add_scaled(up, forward, -dot, up) 156 (929 B), with `0 - dot` 156, with dot3f(&up field, &forward field) 156; the normalizer's
+// scale all value-first 110, all scale-first 110 (same code).
+// M3 lane 14 r74 (fast): round 150's 2-form rebuilt (the normalizer's squared length through dot3f, the projection's k row read from the matrix
+// field) 2 at 922 bytes, 0x1c4a80 still matched; left: the dot's i product copies up.i (retail copies forward.i). On it, all still 2 with the same
+// two lines: 1, 2, 3, 4, 6 and 8 unused initialized long locals at the function top, at the top of the axis block, and just before the dot (17 builds:
+// plain dead locals move nothing, not even the term order); the projection rows written k, j, i. Worse: a `transform4x3f &` name for the working
+// matrix 155; the dot, or the cross, taking `&local_1[0].forward` in place of the k row's field read (either dot argument order) 154 each (forward
+// preloads k again). Body unchanged at 110: the 2-form needs the mixed field read, which is kept only with a match.
+// Round 78 (m3 lane 13, fast; register-masked aligned 23 at 922 bytes): mixes of the two existing header normalizers in
+// place of the private helper (normalize3d through a __forceinline redeclaration, axis pointers taken after the first two
+// normalizations): forward normalize_inline, the rest normalize3d 154 (925 bytes, masked 39); forward normalize3d, the rest
+// normalize_inline 148 (926, masked 20; forward's sum and reciprocal become retail's, the reciprocal then copied); that with
+// dot3f(up, forward) 148; forward and left normalize3d, both up normalizations normalize_inline 147 (925, masked 18, the
+// lowest yet without a mixed read); the private helper with normalize3d for left only 152. All move the first difference
+// to the +0x44 exit through the length gap.
+// Round 148 (m3 lane 8, fast with 0x1c4a80, matched each time): the projection rows as `+= forward->x * -local_10` 110; `up` as a
+// reference bound to the helper's result 110; the helper declared `inline` 110; the dot's local declared ahead of the axis
+// pointers 110; both axis pointers `vector3f *const` 110 (perhaps round 34's const forward pointer again); the dot as a
+// `real const` local 110 (all the same code). A compile-only harness of this file (/O2 /Ob1
+// /arch:SSE /Gr, no /GL) reproduces the 2-form's x87/SSE sequence exactly (2, the dot's i term only) and the current body at 23
+// such instructions; on it the helper's squared length through the existing length_sq3f gives the same code as through dot3f.
+// M3 lane 16 r100 (fast, 0x1c4a80 stays matched): the second up normalization folded into the cross argument,
+// `cross3f(function_1d3fc1(up), forward, ..)`, 110 (same code); the header normalize_inline for all four normalizations 155 (first
+// difference +0x44); the private normalizer's sum as `j*j + (i*i + k*k)` 152, through dot3f(arg_0, arg_0) 153 (the 2-form's
+// normalizer alone; aligned 32 against 38, forward then preloads k first), through the existing length_sq3f with dot3f(up, forward)
+// 153; normalize_inline for forward only (the private helper for up and left) 112 (first difference +0x153). Body unchanged.
+// M3 lane 16 r102 (fast, 0x1c4a80 stays matched): the 2-form rebuilt 2 (masked 0: only the dot's i term operands); on it the squared
+// length through the existing length_sq3f 2, `vector3f *const` pointers 2, a `real const` dot 2 (same code each); the shared
+// normalizer's scale stores ordered k, j, i 102, j, i, k 28, i, k, j 140 (925 B). Body unchanged at 110.
+// M3 lane 12 r111 (fast, 0x1c4a80 matched each time): in the normalizer, i and j read into locals first (k read at its uses)
+// 110 (forward still preloads k, j, i); only k read into a local 110; the squared length named as `i*i + j_squared + k*k` 110;
+// a block-scoped `transform4x3f *matrix = &local_1[0]` for the forward, up and left addresses 149 (first difference +0x44);
+// dot3f(&local_1[0].forward, up) with only the forward side spelled as the address 110. Body restored.
+// M3 lane 8 r152 (fast, 0x1c4a80 stays matched; masked aligned 4: forward's k preload and left's k-first sum only): a scan of
+// every retail function for the reciprocal-reuse idiom (`divss xmmA`, two `mulss xmmB, xmmA`, then `mulss xmmA, [mem]`) finds
+// only this function and the unmatched 0x170630, so no matched body shows the form. A compile-only screen of 300 natural
+// combinations (seven sum shapes, four scale spellings, two tests, both dot argument orders, four projection spellings, cross3f
+// or cross3f_staged, helper-return or pointers-first) never drops forward's k preload. Real: the helper's squared length as an
+// i, j, k statement sum 112; a k, j, i statement sum with both pointers taken first 156; products k, i, j with a plain
+// `i*i + j*j + k*k` sum 150, with the squared length named through dot3f 151, with an i, j, k statement sum 117. Re-measured
+// (compile-only identical to listed forms): the j, i, k statement sum 111, the k, j, i statement sum everywhere 154, the squared
+// length named through dot3f 154. Body unchanged.
+// M3 lane 15 r75 (fast, 0x1c4a80 and 0x30bf0 stay matched): the existing out-of-line normalizer function_30bf0 (its definition
+// already `inline`) stays a call in this /Ob1 file, also with a `__forceinline` redeclaration here: all four normalizations 449
+// (624 bytes), forward only 236 (836 bytes, plain 236), the other three 350 (722 bytes). Body unchanged. I found no other
+// untried natural normalizer, dot, projection or cross form; the forms above cover the rest.
+// m3 lane 3 r233 (fast, 0x1c4a80 matched each time; control 110, aligned 38, register-masked 21). Forms: forward through the
+// existing header normalize3d (a __forceinline redeclaration so it expands under /Ob1) with the private helper's sum written
+// plain `i*i + j*j + k*k` for the other three 153 (925 B, masked 21: up, up and left then sum k, j, i as retail, forward sums
+// i, j, k and preloads all three); forward through the existing normalize_inline with that plain helper 153 (masked 22);
+// normalize3d for forward and left, the plain helper for both up normalizations 154 (masked 20); normalize3d for forward with
+// the plain helper's squared length named through dot3f 154 (masked 20); normalize3d run on the matrix field
+// (`normalize3d(&local_1[0].forward);`) and the forward pointer taken after it, plain helper for the rest, 148 at 926 B,
+// aligned 30, masked 12 (forward then preloads only two components and scales one from memory into the reciprocal's register
+// with a reload on the short path, retail's shape, but the one from memory is i, first and through a copied reciprocal, where
+// retail's is k, last, and forward sums k, j, i for retail's j, i, k); the same with normalize_inline on the field 152 (masked
+// 14); with the private helper unchanged 150 (929 B, masked 23). The 148 form reproduces round 78's listed "forward
+// normalize3d, the rest normalize_inline 148 (926 bytes, ...the reciprocal then copied)" (same score, length and shape; the
+// masked counts come from a different script). Still open: a forward normalizer that sums j, i, k and scales k last into the
+// reciprocal's register. Body unchanged.
+// M3 lane 3 r238 (fast, 0x1c4a80 matched): round 150's 2 form re-measured 2 (922 B; the dot's i product copies up.i where
+// retail copies forward.i). No untried natural form found. Body unchanged at 110.
+// Round 194 (m3 lane 4, fast, 0x1c4a80 matched): the projection through the existing helpers with a named offset vector,
+// `vector3f_scale(forward, -local_10, &offset); vector3f_add(up, &offset, up);` 156 (929 B), with `0.0f - local_10` 156;
+// `vector3f_scale(forward, local_10, &offset)` then `up->x -= offset.x` rows 110 (same code); each with the normalizer's
+// squared length through dot3f 155 (925 B) and 154 (922 B). Body unchanged.
+// m3 lane 1 r102 (fast, 0x1c4a80 matched each time; masked = aligned count with registers and offsets masked, base 6):
+// the projection through the existing vector3f_scale into an `along` vector, then `up->i -= along.i` rows 110 (same code);
+// vector3f_scale(forward, -dot) plus vector3f_add(up, &along, up) 156 (929 B, masked 11); the dot negated once with `+=`
+// rows 156 (929 B, masked 11); the cross through the existing cross3f_staged 179 (929 B, masked 39); the third
+// normalization on `&local_1[0].up` in place of `up` 110 (same code); the projection through the existing vector3f_assign(up, ..)
+// 188 (937 B, masked 11).
+// P487: Standard dot/magnitude/scaling on the original j-square/returned-axis graph,
+// seven subsets then explicit operators: 210/306/365/353/371/459/465/515.
+// NOT kept: all regress and grow; original four-use helper and complete body restored.
+// Forward late-k/reciprocal ownership and later magnitude/projection schedules remain.
+// M3 lane 16 r118 (fast, 0x1c4a80 matched each time): the file helper spelled as the out-of-line normalize 0x30bf0 (`i*i + j*j +
+// k*k`, then `i*inv; inv*j; inv*k`) 153: every normalization then sums k, j, i (retail's order for up, up and left) and forward
+// preloads k, j, i into xmm4-6, where retail's forward is that shape without the k preload (j xmm4, i xmm5, `mulss xmm6(inv), [k]`, k
+// reloaded on the short path), so the j-square form only buys forward's first two sum terms; with `i*inv; j*inv; inv*k` and an else
+// zero 153 (same code); with forward through normalize_inline 153 (i, k, j sum); forward through the header normalize3d 236 (836 B,
+// out of line under /Ob1); dot3f(up, forward) on the 0x30bf0 spelling 153 (same code).
+// M3 lane 7 r162 (fast, 0x1c4a80 matched): the normalizer's squared length through reciprocal_normalize.h's k, j, i statement
+// sum 153 (first difference +0x44), through its k, i, j sum 152; forward, up and the dot declared at the function top 110; up's
+// pointer declared at the top before forward's 110; forward's before up's 110 (same code each).
+// M3 lane 8 r169 (fast, 0x1c4a80 matched each time): the 2-form rebuilt 2; on it the shared helper's scale order j, k, i 104
+// and k, i, j 139 (925 B) (all six orders now measured: i,j,k 2, i,k,j 140, j,i,k 28, j,k,i 104, k,i,j 139, k,j,i 102); the
+// reciprocal computed before the short-vector test 140; the third normalization and the cross on `&local_1[0].up` 2 (same i
+// term). On the kept body the helper's scale order j, k, i 153. Body unchanged at 110.
+// P513: Original-site matrix axis admission/exclusion outcomes, bool/byte/short/long:
+// 185/185/185/185/148/148/148/154. NOT kept: no exact reciprocal/late-k or projection repair; original
+// live flag observation, four-use normalizer, shared products and complete body restored.
+// M3 lane 16 r122 (fast, 0x1c4a80 matched each time): round 150's lead rebuilt (the normalizer's squared length named
+// through the existing dot3f, the projection's k row reading local_1[0].forward.k) 2 at 922 bytes, only the dot's i term
+// (ours copies up.i, retail forward.i); an 1800 s fast annealing permuter run on it (seed 122): 75 tries, none below 2. On
+// the lead: a const forward pointee 2, `vector3f *const up` 2, `up =` from the third normalization's returned pointer 2
+// (same code each). On the kept body the normalizer's squared length through the existing length_sq3f 153. Body unchanged.
+// P542: Complete normalized-product standard transforms, real/double and both binders, vector/scalar-setter publication: 513/513/616/616/567/567/685/685.
+// NOT kept: output staging enlarges frame to 0x1a4/0x1c0 versus 0x13c and extent to 1127..1281 versus 922. Original four-use helper/body/includes restored; late forward-k and reciprocal ownership remain.
+// M3 lane 3 r249 (fast, 0x1c4a80 matched each time; base 110): the six-matrix array split into six named transform4x3f
+// locals in the array's order 110 (same layout and code: aggregates keep declaration order, names do not sort them). On that
+// split, round 150's lead (squared length through dot3f, the projection's k row read from the matrix field) 2 again (only the
+// dot's i term: ours copies up.i, retail forward.i); on it: the dot local declared ahead of the pointers 2; the projection
+// rows scalar-first 2; the dot through both matrix fields, either order, 4 (the dot's terms then sum j, i, k); one side
+// through the field, the other through its pointer, 2 / 2. Body restored (array form).
+// MiniMax R (11-16), NOT kept: 11 (was 110) with sqrt(length_sq3f(arg_0)) and the projection's k term read as
+// local_1[0].forward.k while its i and j terms read forward-> (a re-read of the object in place of the named
+// pointer: kept only with a match). The length_sq3f form alone 153 (fast).
+// P563: Four-use private magnitude forward/backward reductions, real/double accumulation and default/explicit operators:
+// 244/309/309/373/483/539/539/595. NOT kept: native late forward-k product and magnitude/projection scheduling remain; original private helper and entire body restored.
+// P579: Existing four-use normalizer scalar memcpy for i/j/k/all inputs, whole-vector memcpy/
+// standard array copy, all scalar inputs after j-square, then all scale inputs inside admission:
+// 240/246/235/342/342/361/349/364. NOT kept: no exact late-k/reciprocal recovery; original private helper,
+// complete target body, all observations and includes restored.
+// MiniMax S (11-16), NOT kept: 110 -> 11 came from reading the projection's k term as local_1[0].forward.k where
+// the body has the alias forward (the same storage, returned by 0x1d3fc1). That re-read through another name is a
+// match-only form; without it the same body measures 153, so the score shape is the re-read alone. dot3f in
+// 0x1d3fc1 did not help. Body back to main.
+// m3 lane 8 r176 (fast with 0x1c4a80): the 2-form rebuilt 2; on it the rows k, j, i 2; the i row written through the matrix
+// field (`local_1[0].up.i = up->i - forward->i * local_10;`) 126 (929 B); the dot given up's normalization call 2; the third
+// normalization given `&local_1[0].up` 2. Compile-only (exact for the 2-form): a 768-form factorial (scale order, scale
+// operand orders, row operand orders, dot argument order) none below 2; ten dot groupings and operand orders (canonicalised,
+// same code); declarations hoisted to the top; the n[] and rotation spellings of every axis access; a project-out helper; up's
+// address taken first. Finding: one field access of up.i anywhere in the function (even a store after the block) gives
+// retail's i product (copies forward.i), but every such access also stops up.i's XMM3 preload, which retail keeps.
+// b9F (11-17) walk against retail, fast build on r839: every byte up to the forward normalization (0x1d3fc0-0x1d4110)
+// equals ours (flag tests, the flag10 path's calls 0x1d3fe0-0x1d400a, the header byte test and `position.z -= local_0`
+// 0x1d4032-0x1d4070, the 0x1d4360/0xba160/0x141590/0x142a60 slots and registers, the loop's calls, the 0x10000 tail
+// 0x1d4348); constants (0x45dbdc 0.0001f, 0x45dbc0 1.0f) and the four `ja` senses agree (NaN scales). No behaviour
+// difference found. Evaluation order: retail sums forward (j*j + i*i) + k*k (0x1d4114-0x1d4136), ours (j*j + k*k) +
+// i*i, and keeps left's k on the x87 stack (`fst [esp+0x28]; fmul [esp+0x28]`, 0x1d42c2). One helper gives all four
+// lengths the same tree, so retail's trees need a second private helper: forward alone (j, i, k statement sum) 109,
+// up/left alone (k, j, i) 152, both 151; not kept, as a twin of the file's helper. Also different, bit-identical: the
+// dot's i term copies forward.i (0x1d41f0), the cross's up.i * forward.k (0x1d42a2), the projection stores k, j, i
+// (0x1d4203, 0x1d4219, 0x1d422f), forward.k loaded at the join (0x1d4162, 0x1d417c). 0x1c4a80 stays MATCH.
+// m3 lane 11 r110, on the 2-form (the normalizer's squared length through dot3f, the dot written out with its k term
+// read from the matrix field; fast 2 at 922 B, 0x1c4a80 matched each time; match-only): the dot as
+// `i + (j + k)` 2 and `(j + k) + i` 2 (same code); `up` declared before `forward`, both assigned after 2 (same code);
+// the normalizer's i scale component-first 2 (same code); the forward pointer taken as `&local_1[0].forward` and
+// normalized through it (the only form whose i term copies forward's i) 16 (its j term, dot order and cross
+// products flip too). Compile-only screen on the 2-form (this file, /O2 /Ob1 /arch:SSE /Gr, which reproduces the
+// 2-form's two-line difference), scored against the 2-form listing with the i operands swapped: every pointer or
+// field access for each of the dot's six operands under four pointer setups (normalizer result or direct address,
+// for forward and up; 256 forms) best 2 (the 2-form itself), next 7 (up's i read from the field: the i term flips
+// but up's i loses its preload and one cross product flips); every pointer or field access for the projection's six
+// reads (64 forms) best 2. The i operands never flip without dropping a preload.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

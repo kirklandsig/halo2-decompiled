@@ -1556,6 +1556,65 @@ void function_2422d0(long slot)
 // object declared at function scope 7; an inline slot accessor at every read 79, with the slot local 7.
 // A copy of the index for both stores 7, across a pointer `__assume` 7; a second read of the team entry for the stores
 // across one 7; a pointer `__assume` between the getter and the slot read 7.
+// Round 75 (lane 1, fast): a compiled-out `do { } while (false);` at the loop top, after the index, object or slot, at
+// either end of each arm, at the loop end, or before or after the first loop 7 each (11 places); the index through an
+// inline getter 7; the index declared at function top 7; object then index declared bare at the loop top 7; the getter
+// taking the index by const reference 7, or filling an out parameter 7; a NULL object seed before the getter, in the
+// loop or at function top, 7/7; an accepted flag then a reject test 7; a named element pointer with `continue` in the
+// accepted arm 7.
+// Round 172 (m3 lane 4, fast): an accepted flag with the reject arm under `if (!accepted)` 7; the function-scope
+// declarations as result, arrays, count, i 7; count before result 9; i before result and count 7; the scalars
+// before the arrays 7; the table filled by `memset(..., 0xff, ...)` 7. Diagnostics: either second-loop call removed
+// 63/67 (the whole allocation moves).
+// Round 156 (m3 lane 6, fast): a per-iteration pool local (`objects = g_4e0300`) with the direct lookup 7; a named
+// masked index for the lookup 7; 30 random combinations of declaration order, function-scope index, getter/direct/pool
+// lookup, short slot, the three reject-arm orders and the inverted test 7 (12), 9 (14), 11 (4); the table initialised
+// by an initializer list 94; separate loop variables for the first and third loops and a named element in the second,
+// all seven combinations 7. 0xb8540 is still a stub here (retail calls the real function).
+// Round 80 (m3 lane 1, fast with 0x2447f0): a const object target 7; a function-scope team base pointer for the
+// index reads 82; the table test written `NONE == ...` 7; a named second-loop element with the rejected store
+// before the result store 9; a function-scope slot local 7.
+// Round 100 (m3 lane 9, fast): the stubbed 0xb8540 replaced by its disabled draft (diagnostic) 7, so the stub is
+// not the cause; one store of the index through a target pointer chosen per arm 100 (300 bytes); a `long const`
+// index 7; the second slot read named and used for the test and the store, with `continue` 7; index and object
+// at function scope with the index reused for the second loop's element 7.
+// Round 156 (m3 lane 8, fast): a function-scope team walker advanced in the for increment 82, advanced at the body's
+// end 81; the 0x243a80 rejection and the taken-slot rejection as separate arms 79; the accept nested under the
+// 0x243a80 test with `continue` and the reject code after it 7; a team entry pointer at the loop top 7 (same code);
+// the two arrays declared the other way round 7; the third loop's test as a `continue` 7; the first loop as `while`
+// with the increment at the body's end 7 (all the same code).
+// Round 86 (m3 lane 14, fast): loop 2 over a stepped `long *` element pointer 70; loop 3's test with the table read
+// before the 0x243a80 call 12; the team count through an inline reader 7 and the team entry through an inline
+// accessor 7 (both the same code); loop 2 as `while` with the increment at the body's end 7 (same code); no slot
+// local re-measured 79 (a repeat of round 42's form). Diagnostics: without loop 3 the swap stays (71); without loop 2
+// the whole allocation moves (108).
+// Round 174 (m3 lane 6, fast; the one-file harness does not reproduce this function): the getter given a second
+// read of the team entry through a `dword const` view, the index local before or after it 7/7 (merged, same
+// code); the object looked up by the entry's low word through a `word const` view 47 (`movzx eax, bx`: the object
+// takes EDI as in retail, but the index takes EBX and the team walker EBP); a header pointer local between the
+// index and the object 7 (same code); the absolute index as a named `word` local 81; the entry held as an
+// index/salt pair with the pair's index for the lookup 81.
+// Round 195 (m3 lane 4, fast): no index local, the team entry read for the lookup and both stores 104 (267 bytes, the
+// stores reload the entry after the call); a const object pointer and a const slot 7; the index assigned inside the
+// getter's argument 7; loop 3's result store ahead of the 0x2422d0 call 9; a short slot with `NONE == ...` 7.
+// Round 200 (m3 lane 4, fast): a 609 s permuter run (seed 2002, 66 tries) none below 7; the slot table as `dword` 7, the
+// others list as `dword` 7, the slot as `int` 7, the object index as `int` 7 (all the same code).
+// Round 184 (m3 lane 6, fast): the slot test through an inline predicate taking the object 79 (the no-slot-local code);
+// the accepted store indexed by a second getter lookup 141 (331 bytes); the rejected store reading the team entry again
+// 50 (the pair flips to retail's, but the entry reloads after the call); a team entry pointer for the index and the
+// getter 7; the object as a reference 7 (same code).
+// Round 128 (m3 lane 9, fast): the reject store and the increment as two statements 7; a `short` loop counter 92 (288
+// bytes); a `short` count 80 (284 bytes; the swap stays); result and count assigned after the memset 7 (same code); the
+// arrays declared slot table first, count before result 9. Re-measured: no slot local 79 (count then takes EBX and the
+// team walker a stack slot). The index/object pair stays EDI/EBP against retail's EBP/EDI in every form.
+// Round 129 (m3 lane 9, fast): a per-iteration team array base (`teams = ...->teams`, then `teams[i]`) 7; the reject arm
+// in retail's store order (`others[count] = index; result = false; count++;`) 7; a `byte` result 18 (289 bytes); a
+// `register` object pointer 7; the object looked up from the team entry first and the index read from the entry after
+// the slot read 7 (all the 7s the same code).
+// Round 94 (m3 lane 2, fast): a redundant `if (0 < team_count)` around the first loop 9 (the guard's jle moves ahead
+// of the i store, the pair stays); `if (0 < count)` around the second loop 71 (the NONE fill takes ECX), around both
+// 71; the slot passed to 0x243a80 through an inline `object_slot(*object)` with no slot local 79; the getter called
+// through an inline wrapper taking the index by const reference 7 (same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {

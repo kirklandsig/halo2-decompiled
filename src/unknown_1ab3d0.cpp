@@ -132,48 +132,8 @@ PRIVATE __forceinline vector3f *function_1ab4b1(vector3f const *arg_0, real arg_
 
 static __forceinline long real_to_long(real value);
 
-// score 2 (was 2): the last product loads the facing first (retail direction.i first);
-// the i term through slot_state->direction 4; direction first in every product 2;
-// direction->n[] 2; a projection local tested < 0 2; the slot pointer at the top 2;
-// every operand and term order ties (the sum is canonicalised).
-// final i-product load/multiply operands differ at +0xf4.
-// Projection in the existing helper 6; Boolean projection 6; facing first 6;
-// Boolean facing first 6; product scalars kji/ijk 2/2; Boolean scalars 2;
-// facing first with scalars 2. Round 14: the data block through slot->unknownc (FORMS
-// report) 6; the else branch through vector3d_from_points3d 2 (kept); the helper's result
-// ignored 2; a facing pointer before the call or before the test 6/6 (j term first); the
-// direction declared from the helper's result 51. Retail keeps each product's text order.
-// Round 88: dot3f argument orders 6/6; direct < 0 2; slot-field projection 50;
-// vector3f_add_scaled 2; with point difference 39; manual point difference 39;
-// real_point3d_set 2. Original two-difference body restored.
-// Round 38 (fast): a facing pointer for the k and i actor reads with slot_state->direction.i 2;
-// slot_state->direction for all three direction reads 50 (472 B); a facing pointer for all three 6
-// (also before the helper call, or for k/j, or j/i with direction.i through the slot 6 each). A
-// one-file LTCG harness (exact: 2) over 136 spellings of the dot never loads direction.i first.
-// Round 134 (fast): the projection named at the block top and tested `< 0` 2; the direction pointer
-// assigned only from the helper's result 4; initialised from the helper call 4; a velocity pointer for
-// the helper's argument 4; a facing reference for the dot 6. Harness probes: parentheses (1-7) anywhere
-// in the function leave it at 2 (only around the i product: 6); unused locals only swap the j/i terms;
-// an earlier read of direction->i or of the facing's i (diagnostic) 80-117.
-// Round 30 (lane 18, fast): result declared before the actor 2; const prop state 2; const prop 2; the
-// k clear through the direction pointer 3; the facing's components through n[] 2. 0x1ac610's forward
-// product shows the same last-term load order, and swapping its source operands changes nothing (29).
-// Round 97 (fast): existing vector3f_assign 2; void helper with output reference 2; vector temporary 2;
-// three-real array temporary 2; const aggregate temporary 2; named output result 6; state/slot declarations
-// swapped 2; const actor view 2. Original two-difference body restored.
-// Round 132 (fast): forward-text dot with direction first in every product 2; a two-pointer inline dot taking a point3f 6, in
-// k, j, i text with the i product swapped 6, its result named 6; direction and slot pointers formed before the actor lookup 112,
-// the direction pointer alone 112. Harness: plane_distance_to_point 79 (0x132fd0 and 0x181800 get retail's i-term load order through
-// it; here the facing's i stays first); an extra subtraction 70, a fourth term 80; a direction pointer read from a global 44; the i
-// product named before the sum 6 (it comes first and reuses xmm0); the direction's i, the facing's i or both named 2/2/2; the partial
-// k + j sum named 2, accumulated with `+=` 2, three `+=` statements 2, `sum < 0` 2, i + j then k 6; the sum tested twice 2.
-// Round 131 (lane 7, fast): integer tuples ahead of the actor lookup, one to four, as diagnostics 18/41/121/129 (sum order moves, the i term's
-// load never does); the existing dot3f at each of those phases 6/14/45/121, either argument order; 1-3 unused locals at the top or before
-// the prop, state, slot or direction locals 4/4/6 (sum order only), after the direction local 2; the i term's leaves as `*(real *)direction`,
-// `((real const *)direction)[0]`, `(*direction).i`, `direction[0].i`, `*direction->n`, `(direction + 0)->i`, a real cast on either leaf,
-// `*(real *)&actor->unknown290`, `*actor->unknown290.n`, `(&actor->unknown290)->i`, and the i term through slot_state 2 each; the i product cast
-// to real 6; a real pointer to the facing with indexed reads 6; the helper's body written in the function 2, its parameters in eight other orders
-// 2 each; inline helpers for the prop state or the direction pointer 2/2, for the dot taking two vectors 6, forced inline 6, taking the actor 2.
+// aims the slot's direction at the prop's position half a second ahead (at the prop itself when that point lies
+// behind the actor's facing); true, with a fresh tick count, when the direction is long enough
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {
@@ -187,10 +147,10 @@ bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 		{
 			s_prop_state_53 *state = (s_prop_state_53 *)function_25d690((s_prop_datum *)prop);
 			s_slot_53 *slot_state = (s_slot_53 *)slot;
-			vector3f *direction = &slot_state->direction;
 
-			direction = function_1ab4b1(&state->velocity, 0.5f, &state->position, &actor->position, direction);
-			if (0.0f > actor->unknown290.k * direction->k + actor->unknown290.j * direction->j + direction->i * actor->unknown290.i)
+			vector3f *direction = function_1ab4b1(&state->velocity, 0.5f, &state->position, &actor->position, &slot_state->direction);
+			vector3f const &facing = actor->unknown290;
+			if (0.0f > facing.k * direction->k + facing.j * direction->j + direction->i * facing.i)
 			{
 				vector3d_from_points3d(&actor->position, &state->position, direction);
 			}

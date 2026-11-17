@@ -6,6 +6,8 @@
 #include "unknown_2551c0.h"
 #include "unknown_0259a0.h"
 #include "unknown_1dacb0.h"
+#include "object_tag_definitions.h"
+#include "axis_rotation.h"
 
 /* the slot state of handler 0xc */
 struct s_slot_0c_state
@@ -23,20 +25,6 @@ struct s_unit_0c_view
 	byte unknown000[0x346];
 	short unknown346;
 };
-
-/* turns a vector about a unit axis by the angle whose sine and cosine are
-   given */
-static inline void function_x84d9e8(vector3f *vector, vector3f const *axis, real sine, real cosine)
-{
-	real vector_k = vector->k;
-	real projection = (vector->i * axis->i + vector->j * axis->j + vector_k * axis->k) * (1.f - cosine);
-	real cross_i = vector->j * axis->k - vector_k * axis->j;
-	real cross_j = vector_k * axis->i - vector->i * axis->k;
-	real cross_k = vector->i * axis->j - vector->j * axis->i;
-	vector->i = vector->i * cosine + projection * axis->i - cross_i * sine;
-	vector->j = vector->j * cosine + projection * axis->j - cross_j * sine;
-	vector->k = vector_k * cosine + projection * axis->k - cross_k * sine;
-}
 
 real function_30bf0(vector3f *v);
 bool function_26bf10(long object_index);
@@ -491,23 +479,50 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
-PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const *arg_1)
-{
-	real local_0 = arg_0->i * arg_1->i;
-	local_0 += arg_0->j * arg_1->j;
-	local_0 += arg_0->k * arg_1->k;
-	return local_0;
-}
-
-// MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
-// score 89 (was 89): the object-plus-radius sum is written at both of its uses, the timing
+// score 87 (was 87): see the forms below.
+// MiniMax C (11-15): no new form, no lower score (87, was 87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, retail looks the object up before either vector is copied and holds the scaled index in EDX where ours keeps it in ECX, and the radius sum, the first length, the adjusted projection and the location index sit one slot lower than retail's.
+// MiniMax E (11-14): no new form, no lower score (87, was 87): retail loads the object index into EAX before it pushes
+// the timing call's buffer and looks the object up before either vector is copied; this build pushes the buffer first,
+// loads the index after and looks the object up between the two copies. The four scalar homes (the radius sum, the
+// first length, the adjusted projection and the location index) also sit one slot lower than retail's.
+// MiniMax G (11-12): no new form, no lower score (87); the unit index in a local read at the guard, the object lookup and
+// the location query, with the lookup ahead of the two vector copies, gives 237 at 958 bytes, so the field is read again
+// where retail reads it; left: the 0x110ab0 argument register (ECX where retail uses EAX), the sum's operand order and the
+// sum, length and projection homes.
+// MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
+// before the two vector copies, so the whole prologue and the guard now match retail's bytes.
+// MiniMax B (11-13): no new form, no lower score (87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, and retail loads the unit-pool global and looks the object up before either vector is copied, so its scaled index takes EDX while ECX still holds the global; here the global is loaded between the two copies and ECX takes both the argument and the index. Moving the lookup ahead of the copies measures 94 and was left alone.
+// Earlier: frame 0x54 and length 963 agree; the unit argument uses ECX
+// instead of EAX, followed by target/vector scheduling and sum/length/projection/query homes.
+// Earlier 20: the frame is 0x54 and the length matches retail's, and the prologue, the
+// guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
+// sum, the first length, the adjusted projection and the location index sit one slot lower than
+// retail's, which writes the adjusted projection into the length's slot, and the side maximum
+// uses XMM3 where retail uses XMM2.
+// the object-plus-radius sum is written at both of its uses, the timing
 // default is a ternary, and the heading vector is declared ahead of the object index; the frame is
 // 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
 // retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
 // adds the field first), the length and projection stack slots (retail's are four bytes higher),
 // the object lookup against the vector copies, and the timing call's argument loads and the
 // request stores.
+// MiniMax C (11-09): no new form, no lower score (89): compared with retail instruction by instruction,
+// the frame homes of both vectors and of the two lengths agree, and what is left is the schedule:
+// retail loads the object table global into ecx before the three pushes and does the object lookup
+// before either vector is copied, ours loads the global in the middle of the first copy and looks
+// the object up inside it; retail copies the first vector in the order i, j, k where ours copies i,
+// k, j, and the second vector is i, k, j in both, retail only storing its i after the first
+// vector's k has been zeroed; retail's argument to 0x110ab0 goes in eax where ours uses ecx.
+// Moving the object lookup ahead of the two vector copies was tried again and gives 94, so it is
+// reverted.
+// MiniMax S (11-06): no new form, no lower score (89): the source permuter (one run stopped, one 420 s
+// with 37 tries) found nothing below 89; the 0x110ab0 argument register, the object-plus-radius operand
+// order and the length and projection homes still differ.
+// MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
+// MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
+// other order 89, and the object lookup moved before the two vector copies 94; no lower score.
 // Earlier score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
+// Earlier 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
 // Fallback timing initialized before query 200; later heading vector 219; later object lookup 223;
@@ -704,6 +719,192 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // T58: Complete readiness partitions 1/2/4/3/5/6/7 and sole-exit entry rejection without a unit snapshot:
 // 89/89/89/89/89/89/89/89. NOT kept: no eligible match or gain; complete original source restored.
 // Unit-call scratch register and first-length/projection/query homes remain.
+// DL273: Default side completion at entry/admission/heading/probe phases, short then long:
+// 214/208/205/169/245/239/235/202. NOT kept: nonexact result storage and lifetimes;
+// original default arms and full body restored; unit-call/scalar/query homes remain.
+// Round 133 (m3 lane 7, fast, on lane 17's match-only 17 form rebuilt): adjusted projection in the length variable 17
+// (groups retail's, {length} at 0x14 and {sum, second side, timing} at 0x18 swapped); on it the plain `length > 0 &&
+// 0x30bf0(heading) > 0` guard 17, the length named aa_/zz_ 17/17, the lateral declared at function top 17, the size
+// declared at function top 17 (all the same code). Body unchanged at 89.
+// Round 218 (m3 lane 3, fast, on lane 17's match-only 17 form rebuilt): with the adjusted projection in the length variable
+// (17; groups retail's, {length, adjusted} at 0x14 and {sum, side1, timing3} at 0x18, retail the reverse) the last
+// subtraction written into it 17 (same code), the length variable declared at the function's top 17, the sides zeroed by
+// one chained assignment 18, the lateral first in the final side comparison 17; the permuter on that form (anneal, 600 s,
+// 53 tries) best 17. Body unchanged at 89.
+// Round 141 (m3 lane 7, fast): lane 17's 17 form rebuilt 17; on it the adjusted projection written into the length local by the last
+// subtraction 17 (groups retail's, the two groups at 0x14/0x18 the wrong way round), with the sides declared swapped 18; the sides
+// swapped alone 19; the size local in the adjusted subtraction 185 (970 B). Diagnostics (one more read of the length, the second side
+// or the sum) grow the frame (979-985 B) and leave the length at 0x14. On the current body: the lateral dot through the file's private
+// dot helper 97, the 0.95 test through it 89 (same code), both 97; the target index initialized at its declaration 89 (same code);
+// the heading length as a ternary 89 (same code). Body unchanged at 89.
+// M3 lane 14 r74 (fast): no existing inline getter or forwarder fits the 0x110ab0 call (include/ has none for the actor's unit), so the EAX
+// argument still needs the one-use unit local. Lane 17's match-only 17 form rebuilt 17 (aligned 17, registers masked 10; left: sum at 0x10 for
+// retail's 0x14, length 0x14 for 0x18, adjusted 0x1c for 0x18, index 0x18 for 0x1c, lateral XMM3 and maximum XMM2 for retail's XMM2, XMM3). On it the
+// whole side decision (location query, reversed probe direction, both probes, the maximum test) as a file-local helper returning the side: `inline`
+// with (target, side vector, lateral), (target, lateral, side vector), (lateral, target, side vector), (side vector, lateral, target) or a
+// `real const &` lateral 382/382/383/383/382 (748 bytes: called out of line); forceinline 17 (same code as the block). Body unchanged at 89.
+// On the kept 89 body (fast, no caveat; aligned 65): the 0x110ab0 result compared `== false` 89 (same code); the last two guard terms as
+// `f(unit) ? false : flag` 89 (same code); the kind test as a one-case switch around the rest of the guard 226 (965 bytes, aligned 67); the argument
+// read through a second actor_get(arg_0) 236 (963 bytes, aligned 40: the argument takes EAX as retail, but the entry then forms the actor in EAX/EDX
+// and tests the target against memory). Diagnostics, reverted at once (a volatile local read, never kept): one dead read before the guard, or
+// inside it just ahead of the call, 240 (975 bytes, aligned 61), two ahead of the call 245 (979, aligned 35): the rotation there is one step
+// from retail's, and no plain spelling of the guard supplies it.
+// Round 78 (m3 lane 13; plain 87, register-masked aligned 23 -> 21): kept: the projection, the 0.95 heading test and the
+// lateral dot through the existing dot3f (the projection's private accumulating helper dropped, the two hand-written dots
+// replaced). Measured alone (fast): projection 87, 0.95 test 89 and lateral 89 (same code each). Left as before: the
+// 0x110ab0 argument's scratch register, the target lookup against the copies, XMM2/XMM3 at the side maximum and the
+// timing-call loads and request stores (the radius sum now loads the field first, as retail). On 87 (fast): the three
+// dot3f calls with their arguments swapped 87/87/87 (same code); the side vector and the reversed probe direction as
+// initializers 87/87 (same code).
+// Round 148 (m3 lane 8, fast with the file's other functions, 0x30bf0, 0x110ab0, 0x26bfa0 and 0x1e4a50; base aligned 65, masked
+// 16): the guard split with a unit-index local used at 0x110ab0 and at one later use, the unit's object lookup 225 (965 B,
+// aligned 47), the 0x10fa80 timing call 228 (968 B), the 0xe6900 request 229 (968 B); the unit-index local read at the top
+// (after actor_get) for the guard and the object lookup 234 (966 B); the side vector as an aggregate initializer 89 (same code).
+// M3 lane 16 r100 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17; on it
+// the side result typed long 128 (931 B), the reverse probe through the existing vector3f_scale (normalize3d.h) 17 (same code), the
+// second object lookup taking the named unit 227 (965 B; round 27's 227 re-measured), the side choice as an if/else 17 (same code),
+// the projection through dot3f(&local_7, &local_3) in place of the private dot 27, a named `point3f *location` for both probe calls
+// 17 (same code). Body unchanged at 89.
+// M3 lane 16 r102 (fast, the file's matched functions unchanged): the request's target argument from the named target index
+// instead of the actor field 109 (957 B; retail re-reads the field there); the target index and its object lookup ahead of the
+// heading copy (round 31's 94 form) with that request argument 106 (958 B, registers masked 19, the request then takes EBP);
+// the target object looked up at each use (no object pointer) 195; the animation id chosen by a ternary 136 (950 B), by an
+// if/else 178 (931 B) in place of the switch; re-measured: the target index initialised at its declaration
+// 89 (same code). Body unchanged at 89.
+// M3 lane 12 r113 (fast with the file's nine other functions, kept; caveat on 0x110ab0): lane 17's match-only 17 form
+// rebuilt 17; its 17 lines are the slot groups (ours {sum, side0} 0x10, {length, side1} 0x14, index 0x18, adjusted 0x1c;
+// retail side0 0x10, {sum, side1} 0x14, {length, adjusted} 0x18, index 0x1c) and the lateral/maximum XMM3/XMM2 swap.
+// No unlisted form; body unchanged.
+// Round 80 (m3 lane 13; plain, since the fast check carries a builds-differently caveat for 0x110ab0): lane 17's
+// match-only 17 form re-measured plain 17 (register-masked aligned 10: only the four scalar slots 0x10-0x1c and the
+// XMM2/XMM3 swap at the side maximum are left). On the 87 body: the two length guards joined (no heading_length) 87;
+// the request arguments through a named argument member of the request (short side at +4, long target at +8, in the
+// header) 87; the projection tests joined into one test 87 (same code each). No other untried natural form found:
+// retail's EAX argument at 0x110ab0 still needs the one-use unit local, so only a full match keeps it, and the 17
+// form's slot spellings are all listed above. Body unchanged at 87.
+// M3 lane 16 r106 (fast; caveat: 0x110ab0 builds differently in the reduced image): lane 17's match-only 17 form rebuilt 17
+// (left as listed: sum 0x10/length 0x14/index 0x18/adjusted 0x1c against retail 0x14/0x18/0x1c/0x18, lateral XMM3 and maximum XMM2
+// against XMM2/XMM3); on it the two side outputs in one declaration 17 (same code), the reversed probe direction built ahead of the
+// side outputs and the location query 170 (951 B), the lateral test as `(size + radius) * 0.6f > fabs(lateral)` 162 (965 B), the
+// timing test as `projection < (...)` 17 (same code), the unit-index local read right after actor_get (ahead of the guard) 46 (964 B).
+// Body unchanged at 87.
+// Typed biped radius 87; complete constant scalars 87; readonly receivers 87; fabsf 87;
+// shared scaled difference 91; double-factor reversal 170; complete first-probe/timing admissions 87/87.
+// NOT kept: no gain; original body retained apart from the required typed radius field.
+// m3 lane 8 r158 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): re-measured the target lookup ahead
+// of the heading copy (round 31's form) 92 (964 B, register-masked 4: left are one scratch-rotation step, 0x110ab0's argument
+// in ECX for EAX, the 0x290 copy's register and the timing call's lea temporaries, then the timing outputs' homes and the
+// request stores); the unit's object looked up at each use (no local_12) 87 (same code); actor_get(arg_0) at every use (no
+// local_0) 277 (999 B). No other untried natural form: the rotation step needs the one-use unit local (match-only), and the
+// homes follow slot packing that the listed renames, scopes and declaration orders do not move.
+// T95: Reverse probe in dead motion/displacement vector storage, original products
+// or existing scaler, before/after location query: 105/105/222/222/87/87/240/204.
+// NOT kept: no exact native query/scalar residence; original separate reverse
+// direction, source vectors, helper inputs and full body restored.
+// M3 lane 3 r238 (fast with the file's matched functions and 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): the target
+// index read from the actor field at the object lookup and at the location query (no target local) 87 (same code); the
+// request local declared at the function's top 110 (966 B). On lane 17's match-only 17 form rebuilt with the adjusted
+// projection in the length variable (17): the third timing output renamed to sort first or last 17/17 (same code: names
+// do not order these slots); the adjusted projection in the heading-length local instead 17 (other slots: sum 0x10,
+// length 0x14, index 0x18, adjusted 0x1c), the lateral/maximum XMM3/XMM2 swap unchanged. Body unchanged at 87.
+// P433: Index/object/motion/heading acquisition orders ABDC/ACBD/ACDB/ADBC/ADCB/CADB/CDAB/DACB,
+// planar clears at their producers: 102/87/101/98/110/101/101/110. NOT kept: no gain;
+// original body restored; unit argument and scalar/query homes remain.
+// T99: Function-owned request/world-query/animation-query output declarations,
+// subsets 1/2/4/3/5/6/7, then all with entry normalization declarations:
+// 110/87/87/110/110/87/110/110. NOT kept: request ownership grows the
+// native frame; other scopes canonicalize. All original workspaces restored.
+// P448: Original-site normalization/projection/type/complete first-probe/complete second-probe/clearance/side-score/animation-distance decisions:
+// 87/87/87/87/87/87/161/87. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// M3 lane 12 r120 (fast with the file's functions, 0x30bf0, 0x110ab0, 0x1e4a50, 0x26bfa0, 0xe6900): lane 17's match-only 17 form
+// rebuilt 17 (same 17 lines: sum 0x10 for retail's 0x14, length 0x14 for 0x18, adjusted 0x1c for 0x18, index 0x18 for 0x1c,
+// lateral XMM3 and maximum XMM2 for XMM2 and XMM3). On it: the location index declared ahead of the two side outputs 17 (same
+// code); the side outputs declared without initializers and zeroed just ahead of the location query 17 (same code); the side
+// outputs declared second first 19; the named size in the final subtraction 185 (970 bytes; the listed form, re-measured).
+// Reading of the homes: retail packs the adjusted projection into the first length's dead slot and the second side output
+// into the sum's, which needs length, sum and adjusted placed ahead of the side outputs; ours places the side outputs and the
+// index first (sum then joins the first side, length the second, adjusted is left alone at the top). No form found that
+// changes that order. Body unchanged at 87.
+// M3 lane 16 r116 (fast with 0x2556b0, which stays matched): lane 17's match-only 17 form rebuilt 17. The adjusted
+// projection as the field subtraction written into the length local 17 (groups retail's: {length, adjusted} 0x14 and
+// {sum, second side, timing} 0x18, retail the reverse; index 0x1c as retail); with the size local in that subtraction
+// 185 (the listed form). New: the adjusted projection as a new local from the last subtraction 17 (same homes as the 17
+// form: the new local does not join the length's slot); the two length guards joined (no heading_length) on the
+// length-local form 17 and on the new-local form 17 (homes unchanged); the reversed probe direction as an aggregate of
+// negations 130 (948 bytes); the radius first in both sums on the length-local form 17. Body unchanged at 87.
+// P477: Standard first-product-seeded forward/lateral/alignment reductions, seven producer subsets, then complete reverse-coordinate transform:
+// 259/248/142/270/251/239/261/281. NOT kept: all regress, with no native unit-argument/scalar-home repair; thirteen matched controls survive. Original reductions, typed radius, observations, helpers and complete body restored.
+// M3 lane 6 r179 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900; control 87): the target index read into
+// local_1 at the top and tested in the guard 237 (957 bytes); the actor pointer typed const 87 (same code); the target lookup
+// ahead of both copies with the two k clears together 93 (964 bytes); the returned global read into a `short result` at the
+// top 242 (969 bytes). LEAD, match-only: the tag table pointer copied into a function-scope local (`s_tag_instance *tags =
+// g_4e3b44;`, read once for the biped radius) 76: the timing call's lea temporaries and the request stores take retail's
+// registers (the 0x110ab0 argument still ECX); with lane 17's unit local before the test as well (written as a comma
+// expression, a diagnostic) 45, first difference +0x5b, so the two do not add (lane 17's form alone was 42).
+// M3 lane 13 r93 (fast; caveat on 0x110ab0): lane 17's match-only 17 form rebuilt 17 (slots: sum 0x10, length 0x14, index
+// and timing distance 0x18, adjusted 0x1c; retail 0x14, 0x18, 0x1c, 0x18). On it: dead-local phase scans (n = 0..7,
+// removed) at the top and in the side block 17/17/17/17/21/21/31/31 each (only lateral/dot operand rows move; the slots and
+// the XMM2/XMM3 swap never), and on the adjusted-in-length form 17 at n = 0..3 with groups retail's and 0x14/0x18 still
+// swapped; the tag table in a function-scope pointer 235 (972 B; round 179's 76 lead does not carry over); the biped
+// definition in a named pointer 17 (same code). Body unchanged at 87.
+// P500: Existing unit/properties/location/side/animation/callback ordinary-inline contracts, six individual and
+// two complete graphs: 87/87/87/87/87/87/87/87. NOT kept: All eight tie 87 at native frame and extent; the unit
+// argument and subsequent scalar/query homes do not move. Every declaration restored. Original complete executable
+// body restored.
+// M3 lane 10 r108 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900; control 87, plain 87): the matched
+// siblings 0x1ae440 and 0x1a9ec0 read the unit into a named long once ahead of the 0x110ab0 test, as lane 17's match-only
+// form does. That form rebuilt 17; on it the guard's tests nested 17 and the unit local declared at function scope 17 (same
+// code); with the adjusted projection in the length local 17 (groups +0x14/+0x18 swapped). On this body: the size named for
+// both sums and the request stores short/long/type 87 (same code without the unit local), with the target lookup ahead of
+// the copies 92 (964 bytes); both k clears after the second copy 88; the radius read after the target vector 96; the adjusted
+// projection written into the length local 88; the unit's object lookup ahead of the lateral test 104; `-local_3.j` for the
+// side vector's i 87 (same code).
+// m3 lane 14 r96 (fast with 0x2556b0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900, all matched; 0x110ab0 164): lane 17's
+// match-only 17 form rebuilt 17 (sum 0x10, length 0x14, index 0x18, adjusted 0x1c). On it: the object size declared at
+// the block's top and assigned at the first test 17 (same code); with the adjusted projection in the length variable as
+// well 17 (groups retail's, {length, adjusted} 0x14 and {sum, second side, timing} 0x18, retail the reverse); on that, the
+// radius sum named at the radius read (`reach`, used by both tests, no radius or size local) 190 (953 B: the size read and
+// the 0x1e4a50 call move); the final side test as `local_11 + local_13 > ...` 17 and as `local_14 - local_11 < local_13 +
+// local_11` 17 (same code each: the lateral reload keeps XMM3, the maximum XMM2). Body unchanged at 87.
+// P534: Independently immutable original length/radius/lateral producers, six individual/pair
+// subsets, complete geometry with immutable target handle, then target handle alone: eight 87
+// at 963 bytes. Complete geometry-only const control also 87, excluded as listed. NOT kept:
+// unit-call scratch and scalar/query homes remain; original complete body restored.
+// Round 203 (m3 lane 4, fast with the file's functions, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900): on lane 17's 17 form with the
+// adjusted projection written into the length local (17; {length, adjusted} at +4 and {sum, side1, timing3} at +8, retail the
+// other way round): a reach declared ahead of the length and assigned `size + radius` at the first test for both tests 197
+// (951 B, the radius call sinks); the size declared ahead of the length 17 and the radius declared ahead of the length 17
+// (identical code each); constant-left float compares one site at a time (`0.f < local_11`, `0.f > local_11`, `0.5f < max`,
+// `0.f < length`, `0.f < heading_length`, `0.f < projection`, `0.95f < dot`) 17 each on that form and 87 each on this body,
+// the three side-block sites together 17. Body unchanged at 87.
+// P565: Zero-seeded standard forward/lateral/alignment whole-coordinate reductions,
+// seven nonempty subsets, then complete explicit operators: 246/227/215/232/170/221/218/255.
+// NOT kept: no native unit-argument/scalar-home repair or equality; original full body restored.
+// M3 lane 4 r206 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900; control 87): the request stores in
+// field order (short, then long) 87 (same code); the unit index named at the top and used at all four later uses (guard,
+// unit object lookup, timing call, request) 241 (971 bytes: it is kept live where retail re-reads the field); the first
+// side output declared at the heading block's top and zeroed in the probe block 87 (same code: scope does not move it);
+// the probe block's index, location and reversed direction declared ahead of the side outputs 87 (same code); the
+// heading's k clear right after its copy 87 (same code). Reading of the homes on this body: ours {sum, side0} +0x10,
+// {length, side1} +0x14, index +0x18, adjusted +0x1c; retail side0 +0x10, {sum, side1} +0x14, {length, adjusted} +0x18,
+// index +0x1c. Body unchanged.
+// P579: Scalar memcpy at lazy unit/readiness/state inputs, target handle, radius, object type,
+// request target and request side: 40/87/227/87/121/87/87/87. NOT kept: no exact unit-argument/scalar-home
+// recovery; original complete body, all observations and request publications restored.
+// b10E (11-17) walk against retail, fast build on r841: every statement, offset, jcc sense and constant checked against
+// 0x255740-0x255b00; no logic difference found, so no behaviour fix. Checked: the 0x5ac/0x5b0 (word)/0x18/0x5d0 guard
+// (0x25575c-0x255795), the 0x5ec/0x290 copies with k cleared (0x2557f2, 0x2557fc), both 0x30bf0 lengths (jbe
+// 0x255814/0x255829 skip NaN as ours), delta 0x30..0x38 minus 0x238..0x240, size 0x3c, type byte 0xaa, tag +0x270
+// (0x255939), constants 0.0/0.95/0.5/1.33/0.4/0.6/-1.0 and the -0.0 at 0x2559d4 (0.f * -1.f), the x87 `fabs < sum *
+// 0.6f` at 0x2558e0-0x255906, the switch default reading the lateral's slot [esp+0x68] at 0x255a88, field re-reads at
+// 0x25590c/0x255a9b/0x255adf (0x18) and 0x255ad0 (0x5ac). Retail's [esp+0x68] is the arg_0 home (radius, lateral,
+// timing output 2); ours uses it too. Retail's order does the target lookup (0x25579b-0x2557ba) before the copies:
+// alone 92 (964 B); with the one-use `long unit` before the 0x110ab0 test (as matched 0x1a9ec0/0x1ae440 write it),
+// nested guard, short/long request stores, named size: 17 (963 B). Left: slots (ours {sum,side0} 0x10, {length,side1}
+// 0x14, index 0x18, adjusted 0x1c; retail side0 0x10, {sum,side1} 0x14, {length,adjusted} 0x18, index 0x1c) and
+// XMM2/XMM3 at 0x255a1c/0x255a42. New on that form: adjusted written into the length local, whole adjustment included:
+// retail's groups, 0x14/0x18 swapped, 17; sum assigned into a side1 variable 164-197; side0 zeroed ahead of the length,
+// dot or size 132-159 (966 B); the four scalars as one local struct 155 (frame 0x64).
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
@@ -727,7 +928,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 			real local_6 = *(real *)((byte *)function_1e4a50(local_0->unknown054) + 4);
 			vector3f local_7;
 			vector3d_from_points3d(&local_0->position, &local_2->unknown030, &local_7);
-			real local_8 = function_255741(&local_7, &local_3);
+			real local_8 = dot3f(&local_7, &local_3);
 			if (local_8 > 0.f)
 			{
 				if (local_2->unknown03c + local_6 + local_5 > local_8)
@@ -736,14 +937,14 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 					local_10.i = 0.f - local_3.j;
 					local_10.j = local_3.i;
 					local_10.k = 0.f;
-					real local_11 = local_7.j * local_10.j + local_7.i * local_10.i + local_7.k * local_10.k;
+					real local_11 = dot3f(&local_7, &local_10);
 					if (fabs(local_11) < (local_2->unknown03c + local_6) * 0.6f)
 					{
 						s_slot_object_view *local_12 = object_get(local_0->unknown018);
 						if (local_12->type == 0)
-							local_8 -= *(real *)(g_4e3b44[local_12->tag_index & 0xffff].bytes + 0x270);
+							local_8 -= ((s_biped_definition *)g_4e3b44[local_12->tag_index & 0xffff].bytes)->biped.physics.radius;
 						local_8 -= local_2->unknown03c;
-						if (local_4.i * local_3.i + local_4.j * local_3.j + local_4.k * local_3.k > 0.95f)
+						if (dot3f(&local_4, &local_3) > 0.95f)
 						{
 							short local_17;
 							{

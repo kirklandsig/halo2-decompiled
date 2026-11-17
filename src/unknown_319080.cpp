@@ -46,7 +46,10 @@ public:
 	s_result_319230 function_319230(s_operand_319230 const *a, s_operand_319230 const *b) const;
 };
 
-// score 16 (was 16): the first receiver is loaded into ECX;
+// Matched: the first owner and its flag are held through references and the
+// test is split in two, so the first shape is loaded into eax and copied to ecx
+// for the call as retail does.
+// Before, 16 (was 16): the first receiver is loaded into ECX;
 // retail loads EAX, its table into EDX, then copies EAX to ECX.
 // Byte output, operand references, const/enum query, destructor slot,
 // concrete slots, inherited slots/base, signed output, owner references,
@@ -65,11 +68,32 @@ public:
 // and negative flag region 16/16; entry result with separate production 29. All restored.
 // Existing byte conversion types on per-use/cached/reference owner graphs
 // 16/16, 22/22, 22/22; operand-reference inputs 16/16. All restored.
+// Stored owner/kind references 16/16; immutable owner/kind links 16/16;
+// on the current first-owner reads: const kind call 16, enum result 16,
+// virtual query 16, Boolean constructor 16. All restored.
+// The retail function is a free __stdcall function taking the result byte
+// through a pointer: three stack words (`ret 0xc`), not a thiscall returning
+// the struct. The method also passes three words (a hidden result pointer,
+// `this`, a, b), so the length fits while the result role is wrong. With the
+// explicit pointer the length is exact (79) and the prologue matches; only the
+// first virtual receiver differs: retail loads the kind into EAX, its table
+// into EDX, then copies EAX to ECX, while VC loads it into ECX directly.
+// Caching the kinds (both or first only), binding a reference and an assignment
+// expression kept that form or cost bytes, and the explicit-pointer form scores
+// 22 against this method's 16, so it is not kept.
 // @retail 0x319230
 s_result_319230 c_query_319230::function_319230(s_operand_319230 const *a, s_operand_319230 const *b) const
 {
+	s_owner_319230 const *first = a->owner;
+	s_owner_319230 const *&first_owner = first;
 	s_owner_319230 const *second = b->owner;
-	if (a->owner->field_40 || second->field_40 || a->owner->field_3c->slot_6() == 6 || second->field_3c->slot_6() == 6)
+	unsigned char flag = first_owner->field_40;
+	unsigned char &set = flag;
+	if (set || second->field_40)
+	{
+		return s_result_319230(1);
+	}
+	if (first_owner->field_3c->slot_6() == 6 || second->field_3c->slot_6() == 6)
 	{
 		return s_result_319230(1);
 	}

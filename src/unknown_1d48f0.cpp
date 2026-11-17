@@ -9,7 +9,11 @@
 extern hkWorld *g_51e9a4;
 struct s_vehicle_ray;
 bool __stdcall function_168f40(long arg_0, s_vehicle_ray const *arg_1, long arg_2, long arg_3);
-bool function_182800(s_vehicle_ray *arg_0, long arg_1, void *arg_2);
+class c_bounded_query_world
+{
+public:
+	bool function_182800(s_vehicle_ray *arg_0, long arg_1);
+};
 void function_1d43d0(s_havok_component *arg_0, transform4x3f const *arg_1, transform4x3f *arg_2);
 void function_11bed0(s_location *arg_0, point3f const *arg_1);
 
@@ -43,8 +47,45 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax H (11-14): no new form, no lower score (298): declaring the result flag before the two
+// optional-state homes, and between them, both measure 400 against the body's 298, so the flag's
+// declaration point is what sets the small homes' packing; the body is unchanged.
+// MiniMax D (11-14): no new form, no lower score (298): the first difference is still at +0x21 with the frame 0x1d4
+// in agreement, and the expansion that shapes everything after it (retail expands 0x279740 at the first release and
+// calls 0x11bed0 out of line where this build does the opposite) is settled in src/unknown_11bed0.cpp, which this
+// lane may not edit. BLOCKED-BY 0x11bed0's own file.
+// MiniMax A (11-13): no new form, no lower score (298): the three-component planar copy (308), that copy with the same three length tests (369), the drop of the explicit epsilon test (321) and the component-wise copy of the two planar components (298) were all tried and restored, so the optional-state homes, the colouring and the 0x11bed0 and 0x279740 expansion stay as they are: BLOCKED-BY 0x11bed0's own file.
+// MiniMax C (11-14): no new form, no lower score (298): the two optional-state homes still sit four bytes below retail's and 0x11bed0 is still expanded here where retail calls it; the callee's own file fixes that boundary, so the webs behind it stay.
+// MiniMax H (11-12): no new form, no lower score (298): retail still expands 0x279740's range test at the
+// first release and calls 0x11bed0 out of line where this build does the opposite, and the caller-side
+// inline/noinline declarations the earlier rounds tried do not move it; the expansion boundary is set by
+// 0x11bed0's own file (src/unknown_11bed0.cpp), which is not mine.
+// MiniMax H (11-10): no new form, no lower score (298): the optional-state homes still sit four bytes
+// low and our LTCG inlines 0x11bed0 where retail calls it, so the webs that follow cannot be recovered
+// here: BLOCKED-BY 0x11bed0's own file (src/unknown_11cc90.cpp).
+// Statement walk (b4L, 11-06) against retail 0x1d48f0-0x1d5110: every field, offset, condition direction, callee,
+// argument order and add order agrees (bounds 0x1d4948-0x1d4a8c, local_1/local_2 0x1d4a9f-0x1d4b26, rigid body and
+// shape 0x1d4b4b-0x1d4c09, release of the info objects 0x1d4c10-0x1d4c39, ray 0x1d4e61-0x1d4ee7 with `&& !local_0`
+// at 0x1d4ee9, copies into the 1d43d0 input 0x1d4ef5-0x1d4fde, location/cluster test 0x1d5007-0x1d501c, release
+// order 0x1d503e-0x1d50de); no behaviour difference found. The only differences in shape: (1) retail has ONE
+// planar-length test (fst dword + fabs at 0x1d4cc1-0x1d4d01, `ja` straight to the loop end), ours has two: the
+// one inside normalize2d_fast and the explicit `fabs(local_16) < 0.0001f` (the second reads the rounded float,
+// retail's only test reads the unrounded x87 value; the table's planar lengths are 0 or >= 0.7, so no change in
+// behaviour). The explicit test and the `1.0f / local_16` that scales the zero k term are the hand-written leftovers
+// of the helper. Dropping the explicit test 321 (2076 B; loop head then equals retail's), and also with
+// `radial_height = 0.0f` 339. (2) retail copies the table entry as three dwords (0x1d4c97-0x1d4cb9) and its k is
+// `0 * (1 / length) * arg_6` (0x1d4d03, 0x1d4d1d): the radial is a vector3f with k cleared (planar normaliser of
+// 0x29b2e0), not a vector2f. With the existing normalize_inline on that copy (`k = 0.0f; if (normalize_inline(&v)
+// == 0.0f) continue;`, scaled by arg_6) 308 (2078 B), with 0x29b2e0's helper copied in 306; neither kept (higher than
+// 298, no behaviour change). All other differences are register/stack homes and the 0x11bed0/0x279740 inlining.
+// MiniMax R (11-10): no new form, no lower score (298); the two optional-state homes still sit four bytes below
+// retail's, and the constant retail scales by is still read from a different address.
+// MiniMax R (11-10): no new form, no lower score; the first difference is at +0x21, where retail reloads the bound's component into xmm3 and adds the offset to it and ours copies the offset into xmm3 and adds the component to it.
+// MiniMax C (11-05): no new form, no lower score; ours is 2123 bytes against retail's 2083.
 // MiniMax A (11-04): no new form, no lower score; the optional-state homes sit four bytes low (retail +0x30/+0x40, ours
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.
+// MiniMax E (11-11): no new form, no lower score (298): the aligned frame agrees; the optional bounds/exclusion homes and the selective helper expansion remain, and the helper 0x11bed0 is defined in its own file: BLOCKED-BY 0x11bed0.
+// MiniMax S (11-16): no new form, no lower score (298); retail still inlines 0x279740 at the first release and calls 0x11bed0 out of line, and both are set in files this lane may not edit.
 // score 298 (was 298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
 // Lane 18 r37 (fast): result flag declared at function entry 400; sample count declared before the FPU
 // setup 529; contact presence declared inside the sample loop 353 (2121 B); result flag declared after the
@@ -280,6 +321,16 @@ const dword g_455978[81] = {
 // then complete CRT defaults: 508/508/298/298/508/508/298/620.
 // NOT kept: ties or regressions; original setters, output lifetimes and whole body restored.
 // Frame 0x1d4 agrees; optional-state homes and selective location/release expansion remain.
+// N393: Excluded handle/radius/magnitude eight-byte storage, seven subsets
+// 548/576/593/376/562/587/607; all with unsigned handle 607. NOT kept: unmatched,
+// larger storage forms; full body restored. Optional homes and selective expansion remain.
+// m3 lane 6 r181 (fast, control 298 = plain): the cluster result as `if (cluster != NONE) { found = true; break; }` 513
+// (2114 B; caller 0xc5460 then 277: the flag moves to a register); the exclusion index as a ternary inside the bounds
+// block 445 (2139 B). Same code as the control (VC canonicalises them): a per-file `inline` declaration of 0x279740,
+// the two 1d43d0 matrices declared at the loop top, the blend sums written radial-first, the sample end through the
+// existing vector3f_add_scaled, the zero-length test ahead of the inverse. Retail's first release is 0x279740 inlined
+// (with its size getter) and its second a call; ours can inline neither from 0x279740's /Ob1 file, which leaves the
+// budget that inlines 0x11bed0 here (build flags: the user's decision; `inline` on its definition is listed above).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
@@ -359,7 +410,7 @@ bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long
    s_1d48f0 local_20;
    local_20.field_0 = *arg_9;
    vector3d_from_points3d(&local_20.field_0, &local_19, &local_20.field_c);
-   if (function_182800((s_vehicle_ray *)&local_20, local_2, local_1) && !local_0) continue;
+   if (((c_bounded_query_world *)local_1)->function_182800((s_vehicle_ray *)&local_20, local_2) && !local_0) continue;
   }
   transform4x3f local_21;
   transform4x3f local_22;
