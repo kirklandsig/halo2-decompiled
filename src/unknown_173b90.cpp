@@ -860,6 +860,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // as the plain bitfield (`if (system->flag10)`) 265 (1118 B), the index stepped right after the definition is formed
 // instead of at the latch 236. On this body: the plain bitfield test 273 (1110 B); the frame call's location flag as
 // `TEST_FIELD_BIT(...)` 42 (same code); the scale default declared after the multiplier block 50. Body unchanged.
+// M3 lane 16 r126 (fast): the particle pointer declared at the emitter scope ahead of the particle loop 42 (same
+// code); the two particle copies made after the field_50 refresh 181; the scale product as `multiplier * value` 42
+// (same code); the emitter definition as a const pointer 42 (same code); the translation as three `+=` rows 42 (same
+// code).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

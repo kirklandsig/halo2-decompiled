@@ -630,6 +630,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // rewrite on that basis). The helper taking its vector by value 1392 (same code as the copy); the two contact arrays
 // declared at the top 1392 (same code); the impact direction through the float normalizer in place of the
 // double-accumulating one 1454 (6307 bytes, frame 0x5dc). All restored.
+// M3 lane 16 r127 (plain; fast prints a CAVEAT here): a contact pointer for the whole contact loop with the contact cross
+// written straight into its field_4c and summed in place 1409 (6182 B, frame 0x5c0; ours still walks a strength-reduced record
+// pointer where retail recomputes `imul index, 0xd8` each pass); the steering product as `field_8c * local_1[0x30]` 1375 (same
+// code); the wave term as a float tree, `((real)(quotient) * 0.10000002f + 0.9f) * game_time * rate * 0.3f + (real)index *
+// 42.0f`, 1421: LEAD, that block is then retail's exact x87 sequence with dword constants, but the first loop's allocation shifts
+// (local_13's sign/field_88 product reassociates); that with field_88 read once for local_12 and local_13 1450 (6275 B); the
+// float wave term with the contact pointer and in-place cross 1439 (6166 B).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
