@@ -1887,14 +1887,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
+// options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax E (11-16): no new form, no lower score (251): the permuter (1500 s, 131 tries, one job) left the baseline at 251, so the pool global is still re-read after each lookup where retail holds it in EDI across the callees, and the actor, options and pool registers still rotate the way the notes below say.
 // MiniMax R (11-17): no new form, no lower score (251): the permuter's 20 tries over the reduced image (311.7 s) reach
 // 246 in the full image as well, a five-point gain that is under the keep bar, so nothing was written; what still
 // differs is that retail holds the pool global in EDI and reloads the seed into EBX where this build keeps them the
 // other way round, the two-weapon index is spilled, and the random-state load rides across the opaque /GL- call
 // 0x259a0 in src/unknown_0259a0.cpp.
-// score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
-// options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax D (11-15): no new form, no lower score (251): naming the object-pool global in a local does not make it live in a
 // register, because the compiler reads the global again after any call it cannot prove pure (the opaque callee in another
 // file the notes above name): the local after the weapon options measures 278 (the copy is spilled to a stack slot and the
@@ -2208,6 +2208,13 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // weapon output only on success, pointer/reference outputs and both formal orders: eight
 // 293 at 1230/1216 bytes. NOT kept: actor/options/pool residence regresses; original private
 // queries, signed slots, lazy observations and complete body restored.
+// M3 lane 12 r135 (fast; control 251): the callee closure's only opaque function is the /GL- 0x259a0, and no file takes the
+// pool global's address. Diagnostic (hand lookups, not keepable): a `long` index with a local pool copy after the options and
+// this function's lookups through it 281 (1187 B: the pool load sits where retail's does, after 0x1e1f20 and above the `je`,
+// but in EBX and spilled; the unit still rides across 0x1e53e0). Forms: the `long` index with block 2's unit looked up at each
+// use 255 (1218 B, frame 0x10); that with block 2's queries written like block 1's (0xcbd50, slot from a fresh lookup) 269
+// (1217 B), without the `long` index 279 (listed); the `long` index with `short rounds[2] = { 0, 0 };` 277 (1190 B);
+// re-measured: the `long` index alone 278 (1191 B).
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
