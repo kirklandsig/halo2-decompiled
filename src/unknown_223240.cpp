@@ -110,6 +110,7 @@ void function_2232a0(void)
 // src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
 // retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
 // (BLOCKED-BY 0x2b5d0).
+// MiniMax C (11-17): score 47 (was 79): the outer traversal is now a pretested while (retail tests the view count at the loop head and the bottom test jumps back into the body), the source pointer is cleared at the loop head and again in the found arm as retail does (its loop head and its found-arm getter each zero the pointer, the getter's default surviving the inline), so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
 // score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
 // layout, source) at its disabled definition and this call passes (3, view_count, ...): the same values as before, in the
 // order retail's own 0x2b5d0 body needs (with these formals it takes the count in EAX and the mode in ECX, lane 11 r50 and
@@ -385,9 +386,10 @@ void function_2234e0(void)
 	else
 		local_3 = 0;
 	long view_count = local_2 + 1;
-	do
+	byte const *local_5 = 0;
+	while (local_0 < local_2)
 	{
-		byte const *local_5;
+		local_5 = 0;
 		for (++local_1; local_1 < 4; ++local_1)
 		{
 			if (local_player_exists(local_1))
@@ -395,17 +397,18 @@ void function_2234e0(void)
 		}
 		if (local_1 >= 4)
 		{
-			local_5 = 0;
 			local_1 = NONE;
 		}
-		else if (g_4686c4 != NONE)
-			local_5 = g_4e9c8c[local_1].field_0;
 		else
+		{
 			local_5 = 0;
+			if (g_4686c4 != NONE)
+				local_5 = g_4e9c8c[local_1].field_0;
+		}
 		function_223080(0, local_0, local_1, (s_223080 *)&g_47f0f8[local_0 + 1],
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
-	} while (local_0 < local_2);
+	}
 	function_2232a1(&g_47f0f8[view_count]);
 	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }

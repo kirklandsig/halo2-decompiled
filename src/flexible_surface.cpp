@@ -7,6 +7,7 @@
 #include "object_markers.h"
 #include "effects.h"
 #include "vector_products.h"
+#include "axis_rotation.h"
 #include "normalize3d.h"
 #include "bit_vector.h"
 #include "vertex_inputs.h"
@@ -365,6 +366,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// score 130 (was 171): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
+// 0x2551f0 inlines (include/axis_rotation.h), which loads the global's i, j and k up front and reloads j, where retail loads
+// j and k early, i late, and spills two cross terms; retail also loads the random-state pointer before the time product.
 // MiniMax E (11-15): no new form, no lower score (117, was 117): the rotation written out with scalar cross and dot
 // terms in retail's own order (the dot as (axis.k*old.k + axis.j*old.j) + old.i*axis.i, then cross j, cross k and
 // cross i inside the i row) gives 156 with the direction copy and 174 with three scalars, and the frame stays 0x24 or
@@ -381,7 +385,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and retail's dot is summed k, j, i, an order the shared
 // dot3f cannot produce; the seed and time register roles remain; the permuter (annealing, 420 s, 49 tries) found no variant
 // below 117.
-// score 171 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
+// Earlier (171, was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
 // before the draw (197) move the seed update up but split the float chain, so both are worse.
 // MiniMax D (11-05): no new form, no lower score.
@@ -786,6 +790,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // 93 (880 B: esi loads first as retail, but `mov dx,[ecx+2]; movsx` and `fst` where retail has movsx and fstp+fld); on
 // 103: draw first 158, `dword *seed` 134; `long ticks` 194. Left at 100: retail copies the axis (xmm7, 0x117f85) where
 // ours copies g.i; g.i stores before the row j loads (0x118006); sine*cross_j reads memory (0x118023).
+// M3 lane 4 r207 (fast, plain for the kept form; 0x118140, 0x117c80, 0x30bf0 and 0x2551f0 matched each time): rotation
+// bodies of matched functions that inline the same rotation, on the global with the axis copy: 0x29b2e0's angle-taking
+// helper 173 (898 B); 0x29c860's 164 (880 B); 0x23d260's block as an in-place helper 156 (880 B), with the sine and
+// cosine as call arguments 156; 0x177d10's in-place form with sine/cosine arguments 171 (863 B); 0x2551f0's in-place
+// helper with the sine and cosine locals 152 (880 B), with them as call arguments 130 (889 B, kept: the helper moved to
+// include/axis_rotation.h and called from both files; 0x2551f0 stays matched). On that helper: without the vector_k
+// capture 147 (884 B) / 171 (864 B) with locals; dot3f and cross3f inside it 157 / 155 (880 B); its dot terms axis-first,
+// its cross terms j, k, i, or its rows scalar-first 130 each (same code); the axis passed as a table pointer (no copy) 183
+// (852 B); sine and cosine as two statements before the axis 152 (880 B); a `dword *seed` local at entry for the three
+// draws 174 (880 B).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -801,15 +815,8 @@ void function_117dd0(long index, vector3f *wind)
 	}
 	if ((long)g_4ba034 > g_55e710)
 	{
-		real sine = (real)sin(angle), cosine = (real)cos(angle);
 		vector3f axis = g_4417f0[random_index(&g_4e7408->seed, 1026)];
-		vector3f old = g_55ecd4;
-		vector3f cross;
-		cross3f(&old, &axis, &cross);
-		real projection = dot3f(&axis, &old) * (1.0f-cosine);
-		g_55ecd4.i = old.i*cosine + axis.i*projection - cross.i*sine;
-		g_55ecd4.j = axis.j*projection + old.j*cosine - cross.j*sine;
-		g_55ecd4.k = axis.k*projection + old.k*cosine - cross.k*sine;
+		function_x84d9e8(&g_55ecd4, &axis, (real)sin(angle), (real)cos(angle));
 		function_117c80(&g_55ecd4, &g_55ecd4, 0.34906584f);
 		/* retail reloads the frame count after the call, as for an address-taken global (0x4a7c0, 0x248620) */
 		g_55e710 = *(dword const *)&g_4ba034;

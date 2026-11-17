@@ -617,6 +617,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 }
 
 // score 115 (was 115; m3 lane 16 r130 at the end): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax C (11-16): no new form, no lower score (115): retail loads the view's vector_e4.i into xmm4 before the
 // forward copy and every term order tried here still leaves that load after the copy, so the register colouring of
 // the first plane's dot stays as it is.
@@ -1025,6 +1026,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // 290 (1867 B); the view's near coefficients bound as `vector3f const &` for plane 0's d 251 (1867 B); plane 0's normal
 // copied through a trivial inline setter 127 (head unchanged, the e4.i load still after the copy); the forward vector
 // bound as `vector3f const &` in place of the pointer 115 (same code).
+// M3 lane 4 r207 (fast with 0x1648d0 and 0x320b0, matched each time): plane 0's d through a `real &` bound to the
+// plane's d (assigned, negated and offset through it) 270 (1867 B); plane 0's normal through a `vector3f &` for the dot and
+// the negations 272 (1830 B); the whole plane through an `s_plane &` 285 (1867 B); the clip delta as the aggregate
+// initializer `{ p1->x - p0->x, ... }` 115 (same code); that with the scale folded into the intersection rows (`delta.i * t
+// + p0->x`, no vector3f_scale) 119.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

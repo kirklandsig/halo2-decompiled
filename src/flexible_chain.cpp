@@ -234,13 +234,13 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// MiniMax R (11-16): no new form, no lower score (171): re-measured in this round's nine-address set, the body is retail's 1368 bytes and the frame 0xa4 with the attachment homes agreeing; what is left is the carrier rotation (the segment's axis load keeps the value in EDI where retail keeps it in EDX and the segment pointer follows in ECX where retail keeps EDX), the scalar spill at +0x1c against retail's +0x14, and the previous/rest-offset and axis/scalar homes exchanging at +0x28 and +0x2c.
-// MiniMax S (11-14): no new form, no lower score (171): the body is still retail's length and the first difference is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and then in ECX, so only the branch targets and the block layout after it differ; the segment's base, its ownership and the frame's homes are the rest of the difference.
-// MiniMax E (11-16): no new form, no lower score (171): the segment base and the segment pointer take EDI/ECX where retail uses EDX for both, and the low stack slots are in another order.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
+// MiniMax R (11-16): no new form, no lower score (171): re-measured in this round's nine-address set, the body is retail's 1368 bytes and the frame 0xa4 with the attachment homes agreeing; what is left is the carrier rotation (the segment's axis load keeps the value in EDI where retail keeps it in EDX and the segment pointer follows in ECX where retail keeps EDX), the scalar spill at +0x1c against retail's +0x14, and the previous/rest-offset and axis/scalar homes exchanging at +0x28 and +0x2c.
+// MiniMax S (11-14): no new form, no lower score (171): the body is still retail's length and the first difference is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and then in ECX, so only the branch targets and the block layout after it differ; the segment's base, its ownership and the frame's homes are the rest of the difference.
+// MiniMax E (11-16): no new form, no lower score (171): the segment base and the segment pointer take EDI/ECX where retail uses EDX for both, and the low stack slots are in another order.
 // MiniMax B (11-12): no new form, no lower score (171): the body is retail's length (1368 bytes) and the first difference
 // is the register pair at the segment's axis load, retail keeping the value in EDX where this build keeps it in EDI and
 // then in ECX; the permuter on this address was killed by its time limit without a result.
@@ -699,6 +699,14 @@ void __stdcall function_1160c0(real dt)
 // (0x1165af, 0x116600); dot k, j, i, each rotation row's grouping and trailing + position (0x1165c9-0x1166ca); velocity
 // rows times 1/dt, node and previous stores (0x1166ce-0x116731). Callers 0x116010, 0x1160c0 and callee 0x116750 stay
 // MATCH. Only allocation differs: segment base and pointer in EDX (0x1162b0-0x1162c0) and the low slot order.
+// Round 189 (m3 lane 6, fast with the file, 0x73360 and 0x54590; control 171, masked 56): the rows through bound
+// references (`real &x = predicted.x`, built as the cosine part, minus the cross term, plus position) 227 (1374 B);
+// `if (0 < definition->segment_count + 1)` around the node loop 180; the velocity rows through `vector3f &velocity =
+// node->velocity` 178; the definition's stiffness read once ahead of the loop 301 (1374 B); the vertical set by
+// component stores (`vertical.i = vertical.j = 0.f; vertical.k = 1.f;`) 173. Same code (not counted): the prediction
+// in its own `{}` block; the segment through a forceinline accessor. Diagnostic dead volatile loads (reverted at
+// once) before the node, after the node, after the segment and before the velocity rows: none moves the segments
+// base out of EDI, so that base is not a scratch-rotation step.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

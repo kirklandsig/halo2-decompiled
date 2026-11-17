@@ -1125,6 +1125,16 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // parameters view through a trivial inline accessor 34; on the no-total-local form (88) the signature sum's header size
 // through that accessor 88 (same code: no rotation shift); the byte count declared inside the not-cancelled block 34;
 // an implied `if (0 < body_size - body_offset)` guard before the buffer arms 179 (701 B, not folded).
+// M3 lane 9 r131 (fast; base 34; compile-only screen build/r131/scr.py, aligned counts in brackets, base [23]): re-measured
+// the total without its own local 88 [64] and that with a forceinline (file, position) seek helper in the signature case
+// 28 [17] (entry exact, every later block retail's but the body case, where size keeps ESI and position EDI and the
+// dispatch hoist is ESI). New on that pair: the scratch-size local with `MIN(remaining, buffer_size)` 156 (691 B) [11:
+// body arm retail's, but the signature case then loads the header first into ESI so the hoist goes); the clamp moved
+// after the if/else for both arms 152 (690 B) [15: size EDI and position ESI as retail, but the clamp becomes `cmova`];
+// the same on main's body 158 (690 B) [21]; a two-use handle local in the signature case 203 [56: no reload before
+// the read]. Compile-only, all [17] on the helper pair: buffer/size declaration order, arm statement order, the clamp as
+// MIN either way round, `if (size > remaining)`, `if (remaining < size)`, the position declared first. On the helper
+// pair, `size = buffer_size; if (size > remaining) size = remaining;` on a scratch-size local 28 (same code as the pair).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -1185,6 +1185,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // it 126; the field-of-view target through a trivial inline accessor at its test and reached arm 126 (all same code); the
 // timer through an inline helper returning a literal zero on the zero-scale path 126 (same code); the plane scale `t`
 // through such a helper 394 (1700 B). Re-measured: `real length_squared` declared at its assignment 126 (same code).
+// M3 lane 9 r131 (fast; base 126): the point-case left vector bound to a `vector3f const &` for the normal copy, the
+// length and the scaled add 416 (1700 B); the command forward bound to a `vector3f const &` for the yaw, the distance dot
+// and the offset rows 232; the distance dot ahead of the yaw 126 (same code); the sine and cosine declared at their
+// assignments 126 (same code); the length test as `0.0f != length_squared` 125 (only the ucomiss operands swap, the
+// zero still XMM1: a positional coincidence, not kept). The compile-only screen does not reproduce this function (263).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
