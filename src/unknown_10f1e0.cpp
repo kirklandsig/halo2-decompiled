@@ -3117,6 +3117,10 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // path only 96 (223 B); a result flag for both failures (the lookup un-nested, `index != NONE && 0x114520`) 57 (249 B:
 // index ESI and priority EBP as retail, the result's zero takes EBX and NONE falls to EAX, so retail's NONE ranks like a
 // function-long variable, not a discounted constant); the extra pointer as a typed local named at entry 16 (copy-propagated).
+// Round 134 (m3 lane 12, fast; combinations the list has only singly): request priority as long with entry_index
+// reassigned as the index 16; the request record at function scope with the default fill storing the flags first 17;
+// the index from a ternary with one NONE test and request priority as long 16; the default arm first (`if (!extra)`)
+// with the sound index stored before the delay 36; the default fill storing the object index first 16. Roles unchanged.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

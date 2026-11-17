@@ -906,6 +906,10 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Round 169 (m3 lane 7, fast with 0x188180, control 2): the sound position's components written z, y, x 8; the sound
 // position record and the forward copy each declared with the outer block's vectors 2/2 (same code); the position computed
 // into a point local and copied into the record 90 (680 B); `along` declared with the outer locals, assigned in place 2.
+// Round 134 (m3 lane 12, fast with 0x188180, control 2): `local_1 = true` right after the forward normalize 181 (663 B);
+// the velocity copied first in the success block 41; to_camera's components written k, j, i 20; the maximum distance
+// looked up after to_camera 178 (661 B); the along test with the length bound first 15. The epilogue order stays the
+// image-wide state described above.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
