@@ -4784,6 +4784,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
 // still stores its three components in the order i, k, j where retail stores them in another order.
 // MiniMax S (11-14): no new form, no lower score (48): the marker count sum still lands in EAX (movsx eax, ax; add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the count taken as the primary count and summed in place, and the sum's operands swapped, all compile to the same EAX form, and the scratch zero store still follows the sum.
+// NOT kept (review 11-17): the 16-bit sum through the one-use local marker_total took 48 -> 24 (fast), but a one-
+// use local is kept only with a byte match; the same truncation written as a cast, long count =
+// (short)(primary_count + ...), is the form to try next.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -4794,9 +4797,8 @@ void __stdcall function_f6060(long vehicle_index)
 	{
 		s_object_marker markers[16];
 		short primary_count = function_b8d30(vehicle_index, 0xf0000bb, markers, 15, false);
-		short marker_total = primary_count + function_b8d30(vehicle_index, 0xd0000bc,
-			&markers[primary_count], 16 - primary_count, false);
-		long count = marker_total;
+		long count = primary_count + function_b8d30(vehicle_index, 0xd0000bc, &markers[primary_count],
+			16 - primary_count, false);
 		short i;
 
 		for (i = 0; i < count; i++)
