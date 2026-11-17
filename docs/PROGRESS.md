@@ -5,6 +5,16 @@ The newest entry comes first.
 ## 2026-11-17: 10646 functions match
 
 ```
+matched 10646 of 11326 game functions (2049568 of 2786206 bytes, 73.56%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, lost 0x41640 only (the link-order-fragile function the maintainer accepted losing on 11-04):
+- @andrewnakas's #1262: `0x2285d0` match.
+
+## 2026-11-17: 10646 functions match
+
+```
 matched 10646 of 11326 game functions (2049982 of 2786206 bytes, 73.58%)
 matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
 ```
