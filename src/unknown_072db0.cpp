@@ -2044,6 +2044,14 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // P587: Existing slot-converter direct result, empty/occupied early exits, complete
 // occupied/empty branches, occupied/empty conditionals and named pointer presence:
 // 782/748/748/748/748/782/782/782. NOT kept: all regress; original converter and complete body restored.
+// M3 lane 3 r254 (fast with the file's 41 functions, 0x641a0 and 0x8df50; control 703): 0x1934f0's callees in
+// src/matchmaking_hopper.cpp are all matched leaf functions with no stores, so retail's per-pass reload of the variant count
+// can only come from how that file was linked (the earlier flag lead). Retail also reads g_50c468 once at its test and
+// reuses it after the clock read, and holds no zero register (ours keeps 0 in EDI/EBX for the request tests and the two
+// counter stores). Forms: the last request time read into one local before the request test 746 (the load hoists to the
+// top); `team` computed before `valid = true` 703 (same code); the two flags declared before the value-group pointer 703;
+// the slot/identity test split into nested ifs 703; the failure delay as `delay = 2000; if (g_50c460 > 3) delay = 300000;`
+// 757.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

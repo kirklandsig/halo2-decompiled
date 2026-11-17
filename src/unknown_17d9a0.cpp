@@ -912,6 +912,15 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // (3631 B, the scaling code unchanged); `sine_i`/`sine_j`/`sine_k` named, each used twice, 569 (3663 B); `short
 // remaining = secondary_count;` ahead of the group pass's flag test 539. Retail keeps the scaled axis in XMM5-7 for
 // the sign dot, computes the squares k, i, j first and forms `axis.i * sine` once on x87 for both of its uses.
+// M3 lane 3 r254 (plain with the file's nine functions): an aligned diff with stack offsets and registers masked leaves
+// 355 lines, nearly all in the normalize/sign/rotation block: retail keeps 1.0f in XMM0 from the reciprocal through the
+// sign (and again after the arccosine call through the four `1 - x` terms) where ours reloads it at each use, keeps the
+// scaled axis in XMM5-7 into the sign dot, forms `axis.i * sine` once on x87 from memory, and shares
+// `one_minus_cosine * axis.k` for the k*i and k*j terms where ours shares `one_minus_cosine * axis.i`. Forms: the axis
+// scaled by three component statements 559 (3631 B); the squares declared k, i, j 537 (masked 352); the nine rotation
+// terms built in a private inline helper (axis, sine, cosine in; forward/left/up out) 718 (3599 B, frame 0x21d4, masked
+// 268, rotation still reloads 1.0); `one_minus_cosine * axis.k` named once for both k terms 536 (3663 B, masked 328); the
+// definition typed as the decal definition with a short limits index at +2 read at each use 535 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
