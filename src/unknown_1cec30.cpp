@@ -828,6 +828,13 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // 141 bytes: the byte register is not chosen by the base register dying, so source cannot reach DL here. Callers
 // pass the same registers as retail (index EAX, velocity ECX), so their setup is not the cause.
 // Permuter (25 min on #1044 round 2, about 1400 variants): nothing below 29.
+// b13C (11-17) walk against retail, fast build on r846: logic matches (flag1 bit, +0x40 slot address kept in eax, body
+// byte at +0x40, x/y/z/0 stores, activate inline, vtable +0x54 as the setter; 0x1d0dd0's +0x50 is the linear one), so
+// only allocation differs. Callers 0x115b10 0x115c70 0x1c4b00 0x1d1b60 stay MATCH. New forms: early returns for
+// flag1 and m_fixed with the slot pointer and the late reload: retail's two body loads and `mov esi,[eax]` at 0x1d0ea6
+// but BL again (push ebx, sub esp 0x18, 141 bytes) 48; second body read through havok_component_rigid_body_get 53.
+// Matched 0x1d0dd0 puts the byte in CL because the dead index register is free; here retail's EDX holds the dying
+// base (0x1d0e74 -> 0x1d0e76), and every reloading form of ours treats EDX as busy, so BL is the remaining cause.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -1672,7 +1679,8 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
-// score 26 (was 26): earlier 43; Acceleration XMM0/memory timestep prefix and stop-test schedule still differ;
+// score 43 (was 26): retail's stop-first test order, see b13C below; earlier 43; Acceleration XMM0/memory
+// timestep prefix and stop-test schedule still differ;
 // negative-target guard 50; stopping branch first 106; step predicate first 26 (kept, plain 26);
 // negative guard with step predicate 32; independent/eager stop decisions 129/124;
 // explicit fraction branches 43; velocity input/output lifetime 219.
@@ -1721,6 +1729,15 @@ PRIVATE __forceinline real const &component_time_step()
 // `g_510c54->rate` at the first product with the reference bound after it, the stop distance in a helper taking
 // the step by reference. Both products through a helper taking `&g_510c54->rate` 138 (462 bytes).
 // Permuter (25 min on #1044 round 2, about 730 variants): nothing below its own baseline (23 in its render).
+// b13C (11-17) walk against retail, fast build on r846: no logic difference (exponent test jbe 0x1d22ca, abs by jb,
+// allow_reverse in BL, every jcc sense incl. the sqrt arm 0x1d237d-0x1d2397 and both clamp tails agree; its only caller
+// 0x1d24a0 stays 902). Remaining: accel XMM1/mass XMM0 against retail's XMM0/XMM1 at 0x1d22d0-0x1d22e7, then retail's
+// `mulss xmm0,[eax+4]; add eax,4` (0x1d22f0, 0x1d22f8) and `mulss xmm7,[eax]` with velocity first (0x1d235d) where ours
+// loads the step first and keeps [eax+4]: the 3 extra bytes. Retail tests the stop distance first (0x1d236d) then the
+// step (0x1d2372); `target > stop_distance && target > step` gives retail's opcode order for that part (43, only
+// xmm2/xmm3 swap, zero register against the stop temp) and is kept, with `velocity * delta_time` (0x1d235d). New forms,
+// all 43 or worse: the stop temp split into a named tick count 43, the stop test inline 43, magnitude after `target -=
+// position` 53 (with the stop-first test).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -1737,8 +1754,8 @@ real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real tar
 			next_velocity = velocity + step;
 		else
 		{
-			real stop_distance = (velocity / step + 1.0f) * (delta_time * velocity) * 0.5f;
-			if (target > step && target > stop_distance)
+			real stop_distance = (velocity / step + 1.0f) * (velocity * delta_time) * 0.5f;
+			if (target > stop_distance && target > step)
 				next_velocity = velocity + step;
 			else if (target < 0.0f)
 				next_velocity = velocity;
@@ -3514,7 +3531,7 @@ struct s_1cf531
  word field_2 : 4;
 };
 
-// score 27 (was 27): the friction magnitude takes another dead slot (retail shares the friction pointer's
+// score 11 (was 27): the friction magnitude takes another dead slot (retail shares the friction pointer's
 // spill slot), the rigid-body element is formed offset-first in retail (data + offset, ours offset + data),
 // retail loads the vector's y early and stores it after z, and the scratch registers rotate from there.
 // Tried: the element through the array's operator[] 27; the vector through _mm_setr_ps or _mm_set_ps 104;
@@ -3538,6 +3555,19 @@ struct s_1cf531
 // declared late: frame grows to 0x64+. Element as `data + index`, pointer arithmetic on bytes, or a long index
 // local: 27 (same code).
 // Permuter (25 min on #1044 round 2, about 3100 variants): nothing below 27.
+// b13D (11-17) walk against retail, fast build on r846: no logic difference (fields, jcc senses, constants, the three
+// vcalls and callees agree; 905 bytes). Kept: the rigid-body type test read from data[index] before the element pointer
+// is formed (retail 0x1cf715 reads [eax+edx+0x44] with eax = data, then 0x1cf719 adds), 27 to 11; it fixes the element
+// order named in the first lines and the register rotation after it. Not kept: the finiteness test through a copy of
+// the by-value helper that src/unknown_0a0190.cpp and src/unknown_14b560.cpp each keep privately (a third copy would be
+// a twin) puts the magnitude in the friction pointer's slot as retail does (0x1cf61e, esp+0x18): 9 with the read above.
+// Still differ (9 with the helper): y (retail loads it at 0x1cf738, stores it at 0x1cf759 after z and the 0.6 load at
+// 0x1cf751) and the corrected vector (retail 0x1cf86a stores it to esp+0x30 and 0x1cf890 folds it; ours esp+0x40).
+// Tried on this base: corrected in place in the impulse 30 (908 bytes, the load is a separate movaps ahead of
+// 0x1cf87a); early copy as an __m128 snapshot with the impulse declared late 99 (frame 0x64); impulse as an inline temp
+// 98; the vector through _mm_setr_ps or _mm_set_ps 99; component stores in x, z, y order, y or x/y/z in locals,
+// havok_from_vector3d 9 (same code, the scheduler orders the loads); the element's data pointer in a local 25 (old
+// base).
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
@@ -3565,9 +3595,9 @@ void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, l
  }
  if (!arg_2 && (arg_1->field_44 & 0x20))
  {
-  s_havok_component_rigid_body *local_6 = &local_2->rigid_bodies.data[arg_1->field_45];
-  if (local_6->unknown44 == 2 && !TEST_FIELD_BIT(local_2->flag18))
+  if (local_2->rigid_bodies.data[arg_1->field_45].unknown44 == 2 && !TEST_FIELD_BIT(local_2->flag18))
   {
+   s_havok_component_rigid_body *local_6 = &local_2->rigid_bodies.data[arg_1->field_45];
    hkVector4 local_7;
    local_7.set(local_6->unknown30(0), local_6->unknown30(1), local_6->unknown30(2));
    hkRigidBody *local_9 = local_6->rigid_body;

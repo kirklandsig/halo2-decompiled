@@ -3337,6 +3337,14 @@ finish:
 // terminating-copy helper (as src/font_loading.cpp has) 2 (plain; 0x41640 flipped to 4); the
 // identity pointer set to the player then overridden by empty 80 (fast); the mask test written
 // mask-first 3 (fast). All restored.
+// b14B (11-17) walk against retail, fast build on r847: statement by statement the body agrees with retail; the only
+// difference is the pair of reloads after the voice_sprintf call (retail 0x5468e ebp = players slot, then 0x54692
+// edi = mask slot; ours loads edi first). It follows the image, not the C text: score 2 on the plain 4-object image
+// and with 0x7f070, 0xb3de0, 0x8e240 or 0x6b4a0 added; MATCH with 0x74aa0, 0x755d0, 0x8df50 (805 objects) or 0x193560
+// added (the shared input there is matchmaking_hopper.obj). The seeded full-build report (r847) has score 2 at +0xff,
+// the same pair. 0x53610 0x53de0 0x55060 0x560e0 stay MATCH. players + i, a byte-offset source and const mask act
+// like the original in all those images; a source or destination pointer local, mask/players declared first or late,
+// long mask: 2 (plain image); mask or players evaluated first/late 163-201; one identity copy 394.
 // @retail 0x54590
 void function_54590(void)
 {

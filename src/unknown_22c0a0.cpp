@@ -160,16 +160,27 @@ void fixed_memory_get_statistics_16(c_havok_fixed_memory *memory, s_fixed_memory
 }
 
 
-// score 133 (was 133): the entry table addressed through one slot pointer gains only 3 (130);
+// score 125 (was 133, fast build on r848): the entry table addressed through one slot pointer gains only 3 (130);
 // with used declared after offset and case 0 dropped it scores 118 but is 8 bytes short (retail
 // keeps case 0, so the dropped case is wrong). Retail keeps m_size in edi and the result in its
 // stack slot.
+// b15C (11-17) walk against retail, fast build on r848: statements, branch senses, offsets and the 0x22c330 call match
+// retail. Case 0 is dropped (the earlier 8-bytes-short variant was another form): retail's switch indexes its byte
+// table with alignment from base 0x22c267 (movzx at 0x22c206), 16 entries for cases 1..16, and ours was 425 bytes with
+// case 0, 424 without (133 -> 132); `offset` declared before `used` gives retail's xor esi/ebp order at 0x22c0db (->
+// 125). Left: retail's tail (0x22c1eb..0x22c24e) is function_22c330 inlined, with `entry` read back on the failing path
+// (0x22c228, 0x22c22c) while the loop keeps the call at 0x22c14e. Without the noinline both sites inline (488 bytes,
+// 235); the tail calling it gives 215 (355 bytes), a written-out copy filling `entry` 182 (388), the hybrid 128 (416).
+// Also differing: result is carried in eax here but retail stores it to [esp+0x10] right after the call (0x22c155);
+// m_size sits in edi from 0x22c101. Tried, no gain: `long *field` at m_buffer + m_size - (i * 8 + 4) (retail's -4 base,
+// 0x22c12c) with a `from[-1] = from[0]` shift (m_size - j * 8 then + m_buffer, 0x22c1a0) 122; do-while, guarded for,
+// `i` outside, local copies of m_size/m_count, a found-local, all 24 declaration orders (125 best).
 // @retail 0x22c0d0
 void *c_havok_fixed_memory::allocate_aligned(long alignment, long size, long memory_class)
 {
     void *result = NULL;
-    long used = 0;
     long offset = 0;
+    long used = 0;
     s_fixed_memory_entry entry;
     if (m_count > 0)
     {
@@ -208,7 +219,6 @@ void *c_havok_fixed_memory::allocate_aligned(long alignment, long size, long mem
             {
                 switch (alignment)
                 {
-                case 0: break;
                 case 1: break;
                 case 2: offset = (offset + 15) & ~15; break;
                 case 4: offset = (offset + 15) & ~15; break;

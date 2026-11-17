@@ -421,6 +421,14 @@ inline real item_real_random_range(real lower, real upper)
 // Product-first range span/sample/offset named subsets 1..7: 2/76/76/61/61/61/61;
 // scalar offset accumulator 61. Original range producer and complete body restored;
 // frame 0x14 and last add/third owner-field load scheduling remain.
+// b14E (11-17) walk against retail, fast build on r847: the body matches retail statement by statement (both ITEM_GET
+// reloads, the seed store, the owner stores in the order unknown4/unknown0/unknown8, the 0.0f/NULL pushes). The one
+// difference is 0x10d583 `fadd st(1)` (the delay's final add), which retail issues between the c4 field load (0x10d57d)
+// and the c2 load `mov cx` (0x10d585); ours issues the c2 load first. Tried, same 2: each field read through
+// ITEM_GET(item_index) (the loads fold into one pointer); `owner` declared before `delay` or before `owner_item`;
+// `location_c2` as word; the helper returning `lower + span * sample`. Worse: the c2 copy before c4 (5, register
+// assignment changes), brace-initialising the owner {c4, c8, c2} (6, c4 loaded first), the helper with a named sample
+// local (76, SSE). No behaviour difference found against retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {

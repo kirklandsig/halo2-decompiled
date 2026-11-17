@@ -2,6 +2,46 @@
 
 The newest entry comes first.
 
+## 2026-11-17: 10654 functions match
+
+```
+matched 10654 of 11326 game functions (2054373 of 2786206 bytes, 73.73%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1277: closer scores and notes, no new match.
+
+## 2026-11-17: 10654 functions match
+
+```
+matched 10654 of 11326 game functions (2054373 of 2786206 bytes, 73.73%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- @coldspear's #1275: `0x2cb350` match.
+
+## 2026-11-17: 10653 functions match
+
+```
+matched 10653 of 11326 game functions (2054229 of 2786206 bytes, 73.73%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- @coldspear's #1273: `0x2758b0` match.
+
+## 2026-11-17: 10652 functions match
+
+```
+matched 10652 of 11326 game functions (2053822 of 2786206 bytes, 73.71%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+2 new matches, 0x41640 lost, the layout-only /GL match the maintainer accepted losing on 11-04:
+- @coldspear's #1271: `0x1f070` and `0x4d830` match.
+
 ## 2026-11-17: 10651 functions match
 
 ```

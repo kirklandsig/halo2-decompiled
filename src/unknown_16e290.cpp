@@ -1530,6 +1530,13 @@ void function_170630(long player_index);
 // element with state inside the guard 7; named delta 7; state-taking inline call helper 7.
 // Round 25 (0x170bb0's file held): real-pointer base with indices 7; pointer-add element 7; byte
 // base from the global 36; flag test through the state pointer 28; timer cursor in the guard 18.
+// b14J (11-17) walk against retail, fast build on r847: the loop, the calls and the countdown match; the base register
+// (retail ecx at 0x16fe9e, command in edx at 0x16fe98) and the lea order out, first, second (0x16feb0, 0x16feb6,
+// 0x16feb9) differ. New evidence on the blocked reorder: with 0x170bb0 declared (second, first, out) its own bytes
+// change (fast score 3, ebx/edi/esi permuted: registers follow the declaration, last parameter in EAX) and the caller
+// stays 7, so retail's callee cannot be declared that way; the callee must keep (out, second, first). Also tried:
+// first computed once with second = first + 0x40 and out as the literal state + 0x320 17, the same with named
+// second 17, out = first + 0x314 / 4 17, a second-based set (out = second + 0x214 / 4, first = second - 0x40) 31.
 // @retail 0x16fe90
 void function_16fe90(long user_index)
 {
