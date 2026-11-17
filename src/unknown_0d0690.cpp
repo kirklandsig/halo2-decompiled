@@ -2007,6 +2007,9 @@ real function_30bf0(vector3f *vector);
 // score 356 (was 378): MiniMax I (11-17): kept the mobile flag cleared in its own store ahead of the length (362)
 // and the squared length summed as (k, i, j) (356); left are the frame (0x4c against retail's 0x40), the zero and
 // the one constant in other registers and the normalize's j and k operand order.
+// NOT kept (review 11-17): the mobile flag as a test-set (bool mobile = false; if (...) mobile = true;) took 378
+// -> 362, but a test-set flag is kept only with a byte match; the squared length summed as (k, i, j) took 362 ->
+// 356, under the 8-point keep bar on a function still over 30. Both measured, code back to main.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2016,11 +2019,9 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 	byte *context = (byte *)g_4e0350;
 	vector3f const *input_normal = (vector3f const *)query;
 	real length = magnitude3d(input_normal);
-	bool mobile = false;
-	if (type == 0 || type == 1 || type == 2)
-		mobile = true;
+	bool mobile = type == 0 || type == 1 || type == 2;
 	vector3f normal = *input_normal;
-	record->length = lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.i * normal.i) + normal.j * normal.j);
+	record->length = lighting_normalize_ordered(&normal, (normal.i * normal.i + normal.k * normal.k) + normal.j * normal.j);
 	color3f base, lightmap;
 	unpack_color3f(query->color_a, &base);
 	unpack_color3f(query->color_b, &lightmap);
