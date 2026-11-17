@@ -812,6 +812,11 @@ extern "C" void _ReadWriteBarrier(void);
 // (208); the busy actor as an early `actor->unknown450 = ...; return;` with the rest unnested, without/with the barrier
 // 46/14 (212/209). Matched callbacks with retail's exact entry (the slot loaded between the data-base load and the mask:
 // 0x1b4490, 0x1b7860, 0x1c10f0) all use the slot on every path; here it is used only under the 0x26c test.
+// Round 253 (m3 lane 3, fast; each without the barrier): the state as `slot ? (s_slot_4c *)slot : NULL` 44
+// (208 bytes); the flags test as a bool and a point pointer, both formed at the top, 44; the state
+// through a const reference to the slot, declared after the actor, 44; the flags through a const
+// reference in the NONE block 44; the actor pointer bound to a const reference 46 (212). Diagnostic
+// (reverted): probe stores of 1 and 0 at the top leave the slot load after the branch (48).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

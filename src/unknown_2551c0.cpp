@@ -492,6 +492,7 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
+// score 87 (was 87): see the forms below.
 // MiniMax C (11-15): no new form, no lower score (87, was 87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, retail looks the object up before either vector is copied and holds the scaled index in EDX where ours keeps it in ECX, and the radius sum, the first length, the adjusted projection and the location index sit one slot lower than retail's.
 // MiniMax E (11-14): no new form, no lower score (87, was 87): retail loads the object index into EAX before it pushes
 // the timing call's buffer and looks the object up before either vector is copied; this build pushes the buffer first,
@@ -504,7 +505,7 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // MiniMax G (11-11), NOT kept (coordinator 11-11: 87 -> 20 by the unit index assigned inside the guard plus local_1 declared ahead of local_3, both match-only; a plain one-use local before the guard 68, the local at all four reads 241; body at 87): the guard's unit index travels in a named local and the object lookup comes
 // before the two vector copies, so the whole prologue and the guard now match retail's bytes.
 // MiniMax B (11-13): no new form, no lower score (87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, and retail loads the unit-pool global and looks the object up before either vector is copied, so its scaled index takes EDX while ECX still holds the global; here the global is loaded between the two copies and ECX takes both the argument and the index. Moving the lookup ahead of the copies measures 94 and was left alone.
-// score 87 (was 87): frame 0x54 and length 963 agree; the unit argument uses ECX
+// Earlier: frame 0x54 and length 963 agree; the unit argument uses ECX
 // instead of EAX, followed by target/vector scheduling and sum/length/projection/query homes.
 // Earlier 20: the frame is 0x54 and the length matches retail's, and the prologue, the
 // guard and the two vector copies all agree. Still differs in the scalar stack homes: the radius
@@ -892,9 +893,31 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // P565: Zero-seeded standard forward/lateral/alignment whole-coordinate reductions,
 // seven nonempty subsets, then complete explicit operators: 246/227/215/232/170/221/218/255.
 // NOT kept: no native unit-argument/scalar-home repair or equality; original full body restored.
+// M3 lane 4 r206 (fast with 0x2556b0, 0x110ab0, 0x30bf0, 0x1e4a50, 0x26bfa0, 0xe6900; control 87): the request stores in
+// field order (short, then long) 87 (same code); the unit index named at the top and used at all four later uses (guard,
+// unit object lookup, timing call, request) 241 (971 bytes: it is kept live where retail re-reads the field); the first
+// side output declared at the heading block's top and zeroed in the probe block 87 (same code: scope does not move it);
+// the probe block's index, location and reversed direction declared ahead of the side outputs 87 (same code); the
+// heading's k clear right after its copy 87 (same code). Reading of the homes on this body: ours {sum, side0} +0x10,
+// {length, side1} +0x14, index +0x18, adjusted +0x1c; retail side0 +0x10, {sum, side1} +0x14, {length, adjusted} +0x18,
+// index +0x1c. Body unchanged.
 // P579: Scalar memcpy at lazy unit/readiness/state inputs, target handle, radius, object type,
 // request target and request side: 40/87/227/87/121/87/87/87. NOT kept: no exact unit-argument/scalar-home
 // recovery; original complete body, all observations and request publications restored.
+// b10E (11-17) walk against retail, fast build on r841: every statement, offset, jcc sense and constant checked against
+// 0x255740-0x255b00; no logic difference found, so no behaviour fix. Checked: the 0x5ac/0x5b0 (word)/0x18/0x5d0 guard
+// (0x25575c-0x255795), the 0x5ec/0x290 copies with k cleared (0x2557f2, 0x2557fc), both 0x30bf0 lengths (jbe
+// 0x255814/0x255829 skip NaN as ours), delta 0x30..0x38 minus 0x238..0x240, size 0x3c, type byte 0xaa, tag +0x270
+// (0x255939), constants 0.0/0.95/0.5/1.33/0.4/0.6/-1.0 and the -0.0 at 0x2559d4 (0.f * -1.f), the x87 `fabs < sum *
+// 0.6f` at 0x2558e0-0x255906, the switch default reading the lateral's slot [esp+0x68] at 0x255a88, field re-reads at
+// 0x25590c/0x255a9b/0x255adf (0x18) and 0x255ad0 (0x5ac). Retail's [esp+0x68] is the arg_0 home (radius, lateral,
+// timing output 2); ours uses it too. Retail's order does the target lookup (0x25579b-0x2557ba) before the copies:
+// alone 92 (964 B); with the one-use `long unit` before the 0x110ab0 test (as matched 0x1a9ec0/0x1ae440 write it),
+// nested guard, short/long request stores, named size: 17 (963 B). Left: slots (ours {sum,side0} 0x10, {length,side1}
+// 0x14, index 0x18, adjusted 0x1c; retail side0 0x10, {sum,side1} 0x14, {length,adjusted} 0x18, index 0x1c) and
+// XMM2/XMM3 at 0x255a1c/0x255a42. New on that form: adjusted written into the length local, whole adjustment included:
+// retail's groups, 0x14/0x18 swapped, 17; sum assigned into a side1 variable 164-197; side0 zeroed ahead of the length,
+// dot or size 132-159 (966 B); the four scalars as one local struct 155 (frame 0x64).
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -831,9 +831,19 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 	return false;
 }
 
-// score 67 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
+// score 69 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
 // instance flags with behind last (ours earlier), and reloads data->lists[3] after function_16e210 in the
 // duplicate-instance branch; writing that reload swaps edx and edi in the instance loop (score 70).
+// b10H (11-17) walk against retail, fast build on r841: fields, offsets, jcc senses (NaN included), call arguments,
+// flag bits and both loops agree with retail; no behaviour difference found. Retail's forms kept: the sign test is
+// ((char)flags >> 7) != 0 (test al,al; jns at 0x1346aa, as 0x1332f0 spells it), and the duplicate branch reloads
+// data->lists[3] after function_16e210 (0x134893; ours held the local in esi): 67 -> 69 together, retail's form.
+// Remaining: (1) the 0x8000 term is last in retail's OR chain (0x13477a-0x1347a2), 4th in ours, and every source order
+// compiles alike; (2) edx/edi swap in the instance loop head (0x13461a-0x134656: instance_index in edx, bsp in edi).
+// Tried: definition computed inside the branch (48, chain then matches; retail computes it first, 0x13463c-0x134649);
+// ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
+// visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
+// shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -901,7 +911,7 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 				if (*(word *)(definition + 0x24) > 0)
 				{
 					bool contained, first, second;
-					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || (char)data->flags2a60 < 0)
+					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || ((char)data->flags2a60 >> 7) != 0)
 					{
 						long entry = NONE;
 						bool behind;
@@ -930,7 +940,7 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 				if (!(list->shorts_b[index] & 0x800))
 					data->entries[list->shorts_d[index]][(short)i >> 5] |= 1 << ((short)i & 31);
 				if (function_16e210(item->value, g_4b9f8c))
-					list->shorts_b[index] |= 0x400;
+					data->lists[3]->shorts_b[index] |= 0x400;
 			}
 		}
 	}

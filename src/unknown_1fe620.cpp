@@ -46,6 +46,10 @@ static __forceinline long real_to_long(real value);
 // input from the stack; a local for the settings pointer scores 378 and was reverted, and the permuter's 21
 // tries over the reduced image (with --allow-mismatch, since the reduced score 464 differs from the full 373)
 // found nothing below the baseline.
+// MiniMax I (11-17): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this build
+// still keeps the random state pointer in ESI and reloads the third input from its stack slot where retail holds
+// that input in ESI from the entry, and the seed is still stored and reloaded per draw where retail forwards it in
+// EAX and stores it once.
 // score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps
 // the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes

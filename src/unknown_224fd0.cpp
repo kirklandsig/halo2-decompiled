@@ -309,6 +309,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // P567: Ordinary inline metadata at existing cache/scalar/perpendicular/composition
 // providers, four isolated, three pairs and all: eight 219. NOT kept: unchanged
 // native square/sine/cosine spills and table placement; all declarations and bodies restored.
+// M3 lane 10 r113 (fast, control 219): in the rotation helper, ij associated as `(1.0f-cosine)*axis->i*axis->j` (retail's
+// second case multiplies (C*i)*j, its first (j*C)*i) 219 (same code); jk as `(1.0f-cosine)*axis->j*axis->k` 219 (same
+// code); both 219 (same code); ik as `(1.0f-cosine)*axis->i*axis->k` 219 (same code: VC canonicalises the inner product
+// order); the helper's statements in retail's second-case flow (k^2, s*j, i*s, s*k, i^2, forward.i, ij, left.i, forward.j,
+// j^2, left.j, ik, up.i, forward.k, up.k, jk) 368 (1824 B). Body unchanged.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
