@@ -7380,6 +7380,12 @@ extern dword g_4e6494;
 // loop 199, the handle tested twice against NONE 240; the material pointer is loaded before the part type is
 // tested and the cull-mode global is no longer zeroed (223 -> 199); the permutations arrive in ecx at 0x3e380
 // as retail, and the handle goes into the context's dword at offset 8.
+// MiniMax S (11-17): no new form, no lower score (184): the zero constant, the outer counter and the section
+// pointer still sit in ebx, edi and esi where retail has them in edi, esi and ebx, and retail's doubled table
+// handle test (a setne'd bool test and then a fresh compare against NONE and the sign) is an always-true test
+// that the rules do not let a body keep; a 300 second permutation run on this body found nothing below the
+// base, and the part type held in a local of its own (188), the transform compared against the word's own
+// sentinel (191) and the three counts tested as not positive (195) all measure worse, so the body stands.
 // @retail 0x4c690
 void function_4c690(long tag, transform4x3f const *nodes)
 {
