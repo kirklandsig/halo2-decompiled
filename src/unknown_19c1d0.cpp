@@ -319,11 +319,11 @@ int __cdecl function_19c9a0(const void *a, const void *b)
 	return *(long *)((byte *)x + 0xc4c) < *(long *)((byte *)y + 0xc4c) ? -1 : 0;
 }
 
-/* the sort routines (0x13dcd0); sort_4byte's third parameter
+/* the sort routines (0x13dcd0); sort_4byte's first parameter
    is never read */
 typedef bool (__stdcall *t_sort_4byte_compare_function)(long, long, const void *);
 typedef long (__stdcall *t_search_4byte_compare_function)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_sort_4byte_compare_function compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_sort_4byte_compare_function compare, const void *context);
 long binary_search_4byte(long key, const long *base, long count, t_search_4byte_compare_function compare, const long *context);
 
 /* the elements of the data arrays these functions fill (8 bytes) */
@@ -358,7 +358,7 @@ void function_19c6d0(s_record_pool *data, long key0)
 		}
 	}
 
-	sort_4byte(values, count, &key0, function_19c7c0, 0);
+	sort_4byte(&key0, values, count, function_19c7c0, 0);
 	record_pool_release_all(data);
 	for (long i = 0; i < count; i++)
 	{
@@ -403,7 +403,7 @@ void function_19c7e0(s_record_pool *data)
 			level_datum_get(data, datum_index & 0xffff)->value = keys[i];
 	}
 
-	sort_4byte(flagged, flagged_count, &flagged_count, function_19c7c0, 0);
+	sort_4byte(&flagged_count, flagged, flagged_count, function_19c7c0, 0);
 	s_record_pool_iterator iterator;
 	s_level_datum *datum;
 

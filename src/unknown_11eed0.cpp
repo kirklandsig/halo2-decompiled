@@ -102,6 +102,9 @@ real function_50650(real cosine);
 // multiply per component that keeps the quotient on the x87 stack) is also what a double parameter
 // of an inlined helper gives, without that effect (0x1197b0 73, this function 2); `real s` or any
 // float or cast form folds the last multiply (89).
+// M3 lane 3 r255 (lead, not kept: a new one-caller helper needs a match): the position step through a file-local
+// forceinline helper taking the distance as a double, with `real angle`: this function 2 (same code), 0xc60c0 268 -> 127
+// and, with block scopes there, 0x1197b0 218 -> 46 (its note); with `double angle` kept 76 (917 B).
 // @retail 0x11f0d0
 void function_11f0d0(
 	vector3f *position,

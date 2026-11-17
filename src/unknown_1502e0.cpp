@@ -1724,6 +1724,11 @@ void function_150820(dword *bits, bool local_only)
 // P582: Original-site hand/signed held-slot/selected-weapon scalar memcpy, seven
 // subsets, then complete scalar memmove: 43/43/43/43/43/43/43/170. NOT kept: no native ESI-player/EDI-hand equality;
 // original producers, signed conversions, complete body and game-call tuples restored.
+// score 43 (was 43): MiniMax D (11-17): no new form, no lower score (43): the whole difference is still one register
+// rotation - retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in
+// edi, esi and ecx - and both bodies are 210 bytes; the rotation starts at the entry block, where retail reuses edx (the
+// pool data pointer's register) for the unit index and leaves ecx free for the policy byte, and this build reuses ecx (the
+// table's register) and takes the policy byte in al, and no declaration order, hand width or result form in the list moves it.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

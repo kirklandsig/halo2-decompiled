@@ -1362,6 +1362,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax E (11-17): no new form, no lower score (83): the two count homes stay swapped (ours item_count -8 and
+// index_count -0xc, retail index_count -8 and item_count -0xc) whatever the declaration order, the initialiser or a
+// plain assignment instead of the initialiser; branch two's counted tail fill does give retail's guarded rep stosd
+// and the index count in EDI, but then the mode moves to the stack and EBX takes the 0x199ef8 result (107, 437
+// bytes), and both fills counted are 172; the permuter's only gain was a two-point argument order at the mode-one
+// query, a parameter order picked by score and below the keep bar.
 // MiniMax S (11-16): no new form, no lower score (83): the two count homes move only when item_count is initialised at its declaration, which then costs the extra prologue store and the spilled mode (121 for a zero initialiser, 145 for another one, 137 with the branch's own assignment dropped); a scan that derives the count from a cursor after the loop gives 164 and 178, and the tail fill as an indexed loop (172), a counted byte fill (164) or a separate cursor (83) does not buy retail's guarded rep stosd without moving the count into EBX.
 // MiniMax R (11-14, run 65): no new form, no lower score (83, was 83): this round measured the declaration order
 // of the two counts and it does not move their homes - item_count declared before index_count, item_count declared
@@ -1595,6 +1601,13 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // EBX and, in the rows loop, `this` in EBX with index_count read from memory (0x251659+); ours gives index_count EBX
 // for the whole body, spills mode and reloads `this` each pass. The branch-two reload after 0x19a9b4 (0x2515a6) is
 // that call's summary. Best match-only recipe: none reached MATCH; the pointer fills of the kept body (83) stand.
+// Round 454: common eligibility scan with pointer tail 176, common eligibility scan with indexed tail 174,
+// common eligibility scan with range tail 181, common eligibility scan with counted tail 172, common
+// eligibility scan with indexed/pointer tails 139, common eligibility scan with pointer/indexed tails 155,
+// common eligibility scan with range/counted tails 153, common eligibility scan with counted/range tails
+// 151. The common scan increased the score in all eight forms. The indexed/pointer tail pair reached retail
+// length with a larger frame and different homes. The two original scans and their pointer fills are
+// restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2676,6 +2689,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax E (11-17): no new form, no lower score (87): retail's last loop computes the four widget indices with the
+// mode switch inline, so they live in EAX, EDI and EBX with only bitmap_b in +0x1c; writing the helper's body out
+// there (its two case arms and its default) reproduces that register choice, but the four values then take two spill
+// slots and the score is 95, and a helper that returns the four indices in one aggregate is 275; the reload of
+// players[i] after the 0x53b40 voice query still needs a store through a pointer in that chain (src/network_voice.cpp,
+// another lane's file) and the last loop still keeps the screen in ebx where retail gives ebx to bitmap_a.
 // MiniMax R (11-14): no new form, no lower score (87): retail's frame homes differ from ours (retail keeps the
 // `&players[i]` temp at -8 and shown_count at -0xc, ours the other way round) and the last loop keeps the four
 // widget indices in registers where ours spills them; the reload of players[i] after the voice query still needs
@@ -2908,6 +2927,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // 0x53750 call 89 (earlier round); still three causes short of a match. New trials (reverted): the last loop as a
 // do-while 92 (919 bytes); a loop-scope const copy of the screen 87 and a pointer to the screen parameter, unused or
 // used by the five calls, 87 (same code). No trial this round beat 87.
+// Round 454: paired text indices from the first text with switch offset 197, paired text indices from the
+// second text with switch offset 183, paired text indices from the first text with switch index 190, paired
+// text indices from the second text with switch index 191, paired text indices from the first text with if
+// offset 216, paired text indices from the second text with if offset 201, paired text indices from the
+// first text with range guard 204, paired text indices from the second text with range guard 177. The
+// paired text producer increased the score in all eight forms. The shown-count slot, voice reload and final
+// receiver still differ. The original four-output helper and target body are restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

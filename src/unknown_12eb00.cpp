@@ -198,6 +198,15 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // build) 11; a const cluster pointer `clusters + i` for the index read and the previous-index store 11; the result
 // declared `register` 11; the count test joined to the table guard 11; const parameters 11 (all the same code).
 // Diagnostic (repeat): the result declared after the offset table 72 (1181 bytes) keeps the result at 0x18.
+// Round 174 (m3 lane 7, fast): the result renamed `written` (sorts after the compiler's temporaries) 11 (same code);
+// the offset table declared inside the table test 135 (its stores move below the test and one low home goes, but the three
+// five-reference homes then come in retail's order: cluster cursor, result, output cursor); the inverse written inline in
+// the accumulation (`* weight * (1.0f / local_6)`, no named local) 219; the table and the loop in a nested block 11 (same
+// code); the function returning `short` (definition and 0x12efb0's declaration) 16 (1194 bytes: `mov ax` loads; retail
+// returns the whole dword). Re-measured for their homes: the previous-index store after the copy 16 and the result
+// declared after the table 72 (1181 bytes) both keep the result at 0x18; the clusters parameter walked 305 (1174 B: the
+// cursor then lives in the parameter's own home, where retail copies it to a frame slot); a walking cluster pointer
+// declared ahead of the result 68 (the clusters parameter then goes in a register, `ret 4`).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

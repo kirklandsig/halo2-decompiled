@@ -52,7 +52,7 @@ struct c_aggregate : c_child
 };
 
 
-// MiniMax I (11-17): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 because
+// score 31 (was 31): MiniMax I (11-17): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 because
 // the address-taken produced count keeps a slot of its own under /GL; the instruction sequence is retail's and only
 // the frame and the slot order differ, the produced count taking the slot at 0x1c where retail keeps it at 0x10 and
 // this build's slot at 0x10 holding the children base where retail's holds the dispatch cursor. The build flag was
@@ -61,7 +61,7 @@ struct c_aggregate : c_child
 // forms measured this round - the produced count at function scope with and without an initializer (42 and 148), a
 // named children list for both loops (126) and the children read without the cast (does not compile here) - are all
 // worse than 31. Body unchanged.
-// score 31 (was 31): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x8024 frame, whose address belongs to this build and cannot match; behind it the frame
 // is still 0x8024 against retail's 0x8020, because the address-taken produced count keeps a slot of its own under
 // /GL, and the two low loop homes stay swapped. Body unchanged.
@@ -537,10 +537,21 @@ struct c_aggregate : c_child
 // count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes
 // off; adding /GL- to this file's own flags line builds the body byte-exact (it matches exactly) but costs
 // 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56), so the flags line stays as it is.
+// M3 lane 3 r255 (fast with 0x97f60/0x97fe0/0x980d0, all still matched): re-measured, one function-scope output for v5's
+// count and the release query 31 (frame 0x8020, first difference +0x23; the output then sits at +0x1c where retail keeps
+// only the query's, and the {children base, inner count, block pointer} and {dispatch cursor, cleanup count} slots are
+// exchanged). On that form: the cleanup indexing blocks[k] directly 31, total declared before error 31, the output declared
+// just above the collection loop 31, the output declared first 31 (slots unchanged in all four), the cleanup over a block
+// pointer to &blocks[total] 104 (391 B). Still BLOCKED by the build flag (retail packs the escaped count with the temps).
 // Round 94 (m3 lane 2, fast with the six file-mates, all still matched): the two address-taken counts renamed so
 // their names sort the other way (the cleanup query output as `information` or `status`, the produced count as
 // `written` or `amount`, both renamed) 31 each (frame 0x8024 in each; name order does not pack the escaped slot).
 // Still BLOCKED by the build flag.
+// M3 lane 9 r133 (fast with the six file-mates, all still matched): a redundant `if (0 < total)` guard around the cleanup
+// 31 (same code); the dispatch child bound by reference to its array element 121 (357 B: the child is re-read at each
+// call); the collection child bound by reference 42; the cleanup item's object field bound by reference (tested, released
+// and cleared through it) 67 (376 B); a redundant `if (starts[i] < starts[i + 1])` guard around the dispatch's inner loop
+// 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

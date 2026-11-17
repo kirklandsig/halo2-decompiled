@@ -620,7 +620,7 @@ bool __stdcall function_199060(long a, long b, const void *context)
 
 /* the sort routines (src/unknown_13dcd0.cpp); the third parameter is never read */
 typedef bool (__stdcall *t_sort_4byte_compare_function)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_sort_4byte_compare_function compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_sort_4byte_compare_function compare, const void *context);
 
 /* lists the active devices and the active entries, each sorted */
 // @retail 0x1990b0
@@ -639,7 +639,7 @@ void function_1990b0(long *devices, long *device_count, long *entry_count, long 
 		{
 			long temporary;
 
-			sort_4byte(devices, *device_count, &temporary, function_199010, 0);
+			sort_4byte(&temporary, devices, *device_count, function_199010, 0);
 		}
 
 		*entry_count = 0;
@@ -651,7 +651,7 @@ void function_1990b0(long *devices, long *device_count, long *entry_count, long 
 		{
 			long temporary;
 
-			sort_4byte(entries, *entry_count, &temporary, function_199060, 0);
+			sort_4byte(&temporary, entries, *entry_count, function_199060, 0);
 		}
 	}
 	else

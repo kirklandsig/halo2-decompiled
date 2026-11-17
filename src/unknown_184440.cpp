@@ -197,6 +197,10 @@ __forceinline bool function_184448(long arg_0)
 // MiniMax S (11-14): no new form, no lower score (965): the two type changes that give retail's frame and
 // length were measured last round at 976, above the score here, so they were not taken again; the body was
 // re-measured after the comment edits and did not move.
+// MiniMax I (11-17): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, and the
+// two type changes retail's bytes show (the axis values reloaded from g_440b94 and the full-width vertex counters)
+// were measured at 976 last round, above the score here, so they were not taken again; the length is retail's 4590
+// bytes, so only the block layout and the stack homes differ.
 // score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
 // callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
 // reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in

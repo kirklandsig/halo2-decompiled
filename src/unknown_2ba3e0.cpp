@@ -511,6 +511,10 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 real g_55e618;
 
 // MiniMax E (11-16): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below retail's and the body is still twelve bytes longer; retail's dot product adds its terms in another order, a spelling the coordinator has already reverted.
+// MiniMax I (11-17): no new form, no lower score (102): retail adds the dot's three terms as
+// (v.i*n.i + n.k*v.k) + n.j*v.j while this build reassociates the same sum to (n.k*v.k + n.j*v.j) + n.i*v.i;
+// writing the sum with += restores retail's order but measures 103, and the sweep and collision homes still sit
+// twelve bytes below retail's, so the first difference stays at +0xfe.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
@@ -819,6 +823,13 @@ real g_55e618;
 // allocation order, which the rules bar me from reshaping.
 // MiniMax A (11-14): no new form, no lower score (102); retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, and retail's dot product still adds its three terms in another order than ours; the permuter (5 tries, 311 s) found nothing below the baseline.
 // MiniMax S (11-14): no new form, no lower score (102): retail's sweep vector and its collision record still sit twelve bytes higher in the frame than ours, a twelve-byte allocation-order difference, and retail's dot product still adds its three terms in another order than ours.
+// M3 lane 9 r132 (fast with 0x2ba3e0, 0x2b8da0, 0x2b8e10, all MATCH; control 102): round 75's base rebuilt without
+// the typed fields (normal locals, velocity pointer, position setter, the dot written at each product) 64 (1537
+// bytes, re-measured); on it the dot computed once: a named local 187 (1533 bytes), a `real const &` bound to the
+// expression 179 (1537 bytes), a `real const` local from the existing dot3f 179, a `real const &` bound to dot3f's
+// result 179. In all four the three products come first with a copy of the normal component as the destination
+// (retail copies the dot, interleaves the tangent rows and multiplies the k row in place), so the perpendicular gets
+// no home and the frame is 0x118: a reference-bound temporary behaves as a named local here. Body unchanged.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -482,6 +482,7 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
+// MiniMax S (11-17): no new form, no lower score (32, was 32); the old team mask is still loaded and spilled as a dword where retail loads and spills a word, and every re-spelling of that pair (word local, word store, dword OR, reversed compares) scores 77 or more, so the body stays as it is.
 // MiniMax S (11-16): no new form, no lower score (32): the permuter over the four sources of the reduced image (3000 s, 60 tries) found nothing below the baseline, a bit local shared by the two accumulators scores 45 because the compiler folds the shift into the first use, and the only form below the baseline is a single-use bit local at 29, which the review drops as a one-use local; retail's changed block still stores the two masks before its not/and and reads the engine index at the head of the block.
 // MiniMax S (11-16): no new form, no lower score (32): the old team mask is still loaded and spilled as a dword where retail loads and spills a word, it is still read from memory at each use where retail keeps it in ECX across the tail, the present accumulator's update still lands in ESI where retail keeps it in EBX, and the engine index is still read after the stores where retail reads it at the head of the change block; the word mask alone scores 77, the non-volatile accumulator alone 102 and the two together 63.
 // MiniMax I (11-15): no new form, no lower score (32): the width-cast form MiniMax D measured (24) and the volatile word (24)
@@ -1865,6 +1866,15 @@ short function_15cca0(long player_index, byte code)
 // the whole lookup. Receiver and other pointer 37; const other pointer 37; target noinline 24;
 // absolute lookup forceinline 24; mark code 24; mark identifier 24; late absolute index 67;
 // counter declared first 24; existing team helper 50; team helper forceinline 50.
+// b13G (11-17) walk against retail, fast build on r846: every branch sense, field offset, compare and callee argument
+// matches retail; all 24 differing lines are one register rotation. Retail receives other_player_index in EAX (the
+// `and eax, 0xffff` at 0x15ce09; the caller 0xd7b80 does `mov eax, edx` at 0xd7d52), so its lookup temporaries take
+// ECX/EDX (0x15cda5, 0x15cda8) and its team pair is DX/AX pushed 0x15ce1f/0x15ce20; ours receives it in EDX (a LTCG
+// custom convention follows from the body), so the lookup takes EAX/ECX and the pair is AX/DX. New on r846 (all 24
+// unless noted): parameters reordered to other, player, identifier 24 (same bytes); a local engine pointer 51;
+// the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
+// pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
+// other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
 // @retail 0x15cd90
 void function_15cd90(long player_index, short identifier, long other_player_index)
 {
@@ -2048,6 +2058,14 @@ void function_15e460(long object_index, long value)
 // exact against ours): result types bool/byte/char/long/int/short/dword, bool or
 // byte return, options local first/second/in the guard, all reads through
 // engine_options(), a split result: none holds the one apart from the result.
+// b13G (11-17) walk against retail, fast build on r846: no logic difference (jcc senses, 0x180/0x22c/0x1c4 fields,
+// the juggernaut_is bit test inlined as in retail, no unconditional false anywhere in retail). The 26 is the register
+// plan only: retail loads the one into EDX at 0x15eb37 and copies it to AL at 0x15eb3c and 0x15eb6e, before the first
+// `je`, and keeps the engine in EDI; ours emits `mov al, 1` or `xor bl, bl` there. Re-measured on r846 with the same
+// scores as above: single || chain assigned to a true-first result 31; true-first with the special arm negated 32;
+// nested ternary return 31; three early returns 30; a local engine pointer with true-first 30; a `long one = 1`
+// local compared against 30, and a long result reused as the comparand (103 bytes) 39: no form makes the early
+// `mov edx, 1` appear ahead of the first branch.
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {
@@ -4841,6 +4859,10 @@ bool function_158eb0()
 // iterator call in the loop test 67 (120 bytes); re-measured a named player index after the flag 5 and
 // `g_4e6948->flag1128 ? 1 : 0` in the argument 38 (144 bytes). Still the
 // mode/index scratch pair (ours EDX/ECX, retail ECX/EDX): BLOCKED-BY 0x23f260 (its file is held this round).
+// Round 179 (m3 lane 8, fast with 0x23f260/0x19f240, both matched each time): `if (count == 1) return false;
+// return result;` 23; `return false;` in the loop with `return count != 1;` and no result 65 (126 bytes); a
+// short count 8 (147 bytes); the short count with the early return 22; the short count with the in-loop
+// return 64 (127 bytes). Still BLOCKED-BY 0x23f260.
 // @retail 0x158f50
 bool function_158f50()
 {
