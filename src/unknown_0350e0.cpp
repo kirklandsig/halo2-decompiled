@@ -4354,7 +4354,8 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at
 // +0xc; that getter lives in another file, and the initial alpha and kind homes still differ.
 // MiniMax R (11-16): no new form, no lower score (51): the frame is still 0x18 against retail's 0x1c, because retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at +0xc; that getter lives in another file.
-// score 51 (was 51; earlier 51 (was 62), 62 (was 177)): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
+// score 51 (was 51): frame 0x18 versus 0x1c. Earlier 51 (was 62), 62 (was 177).
+// Retail inlines the final fade getter 0xc6b90, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
 // alpha/kind and final fade scratch homes remain.
@@ -4584,6 +4585,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
 // NOT kept: no native frame word or final scratch recovery; original common
 // byte outputs, final direct fade path and complete executable body restored.
+// Round 615: frame 0x18 versus 0x1c; the final getter output stores are still absent.
+// Position memcpy 51; direct position distance 221; opacity conversion after switch 262;
+// named transmission 51; fade set in branches 51; header byte member 51;
+// region scope limited to query 51; special result before alpha store 51.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5754,6 +5759,10 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // `group_index = first_group + i`, the `group` reference declared before the loop.
 // Y596: Actual body-stepped entry/group cursors and short list result, seven subsets then all in while:
 // 177/170/179/176/127/173/171/174. NOT kept: no equality or gain; original full loop/pass body restored; scratch registers and pass-11 staging remain.
+// Round 615: four EAX group flag load/store encodings account for the four missing bytes.
+// Named bounds members 47; clip indices 74; first record before flag clear 46 (NOT kept:
+// one point); positive lookup region 47; separate lookup guards 47; clamp assignments 58;
+// shared marker key 147; typed view pointer 47.
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -6154,6 +6163,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // (0x423c0 160), so the alignment demand comes through 0x14ac0, not D3DDevice_Clear. Shared pass helper: the clear
 // test nested under `mode == 1` 138; a `sources` pointer for the flags and g_467138 138; 0x44370's mask-gated
 // flag test 141. 0x44370 is retail-inlined here but lives in an /Ob1 file, so it stays out of line.
+// Round 615: the clear call still pushes its first argument, and the cull fallthroughs differ.
+// One-based payload 233; end cursor 198; separate index base 101; fog mask bit 100;
+// mask set in both arms 113; first record before flag reset 104; direct group fields 100;
+// flags restored before first-record reset 100.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

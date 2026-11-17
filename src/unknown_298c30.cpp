@@ -482,6 +482,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 305; widened x 305; staged y with cosf/sinf/both 305/360/360; y scaled
 // in place 305. Staged y keeps the angle store and first product before the
 // sine and rounds the sine contribution into SSE. Cosine still stays on x87.
+// Round 615: unity still lands in XMM1, and retail spills the cosine before its y product.
+// Signed candidate count with staged y 469 (caller 684); scored calls postincrement 305;
+// separate fixed-turn scopes 305; captured x inputs 379; selected entry pointer 342;
+// upper angle published after wrap 309; two-arm endpoint side 355; role names 305.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1090,6 +1094,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // trace names, the radius read through its own address) all rebuild the same code, and the reload follows from retail's
 // link-time compile treating 0x2108a0/0x210770 as clobbering the XMM registers, which no source form here reproduces.
 // The frame is still 0xa0 against retail's 0x94, so the three trace results' homes (+0xd0 and +0xf4) sit 12 bytes off.
+// Round 615: radius remains in XMM5 from entry; the pivot and side trace homes still differ.
+// Radius local at initial offsets 569, pivot offsets 569, trace scales 569, obstacle range 569;
+// wide obstacle displacement 574; upper range before root 642; explicit clearance arms 569;
+// scoped transform output with pivot height copy 562 (NOT kept: seven-point gain above 30).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
