@@ -953,6 +953,15 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // P598: post-increment at blend/scale/both entry lookups 182/166/183. Continue past unnamed
 // blend/scale/both entries 89/89/89. Exact ordinal termination and outer while 89/89.
 // The input cursor still spills across the inner loops and the output stays in EDI.
+// Round 601: copy the input cursor from the output cursor and rebase the output once before traversal 149; put
+// the input copy and output rebase inside the positive-count block 156; advance the input as its colour is
+// copied and advance the rebased output at the latch 165; advance the input after the colour copy and advance
+// the rebased output in a pointer-step for loop 165; walk the two rebased cursors with an independent
+// descending colour count 149; carry the beginning of the output range as the end of the input walk 112;
+// initialize the input cursor before the size read and then rebase the output cursor 106; rebase the output and
+// walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
+// reshuffles both cursor homes and raises every score. The input spill and the destination register at the
+// blend call still differ.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

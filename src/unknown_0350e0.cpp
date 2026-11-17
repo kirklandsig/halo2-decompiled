@@ -342,6 +342,16 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // with original/named sine products 380/383. Scalar captures with named sine products
 // 400/400, with named diagonal complements 369/376. The 0x90 frame and the square
 // and sine-product register lifetimes still need to agree in one form.
+// Round 601: each axis scalar becomes its sine product immediately after its square 363; capture and square
+// each axis, then reuse all three axis scalars for their sine products 377; capture all axes before their
+// squares, then reuse the three scalar owners for the sine products 391; read each axis into its square's
+// scalar and square that value in place 334; read each independent sine coefficient into its own scalar and
+// multiply it in place 388; build each cross coefficient as two successive multiplies of its own complement
+// accumulator 344; give the three diagonal complements their own multiply stage before summing 334; reuse the
+// three axis scalars for the sine products and compute the cross coefficients with independent accumulators
+// 375. NOT kept: the destructively scaled axis captures either enlarge the frame or leave the opening register
+// assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
+// caller held.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

@@ -3373,6 +3373,15 @@ real g_47ff30 = 2.5f;
 // the same with a mass-field binding 724 each. NOT kept: the field binding
 // recovers frame 0xfc but adds 20 bytes and raises the count. Acceleration,
 // velocity and scalar homes remain.
+// Round 601: store directional mass as the components of a single basis weight vector in the original order
+// 679; store directional mass in its three component slots in forward, lateral and vertical order 679;
+// construct the directional mass vector as one initialized value 679; set the directional mass vector with the
+// shared vector setter 738; use the weight vector to accumulate the complete basis force coefficients 733;
+// accumulate each basis force coefficient in stages in the weight vector 733; combine a basis weight vector
+// with separate mass reads for the linear and angular output scales 719; use the basis weight vector and the
+// shared setter for the final world-space force 679. NOT kept: the shared setter and both in-place weight
+// applications recover frame 0xfc and first difference +0x66, but shorten the body to 3216 or 3220 bytes and
+// raise the score. Acceleration and velocity homes still differ.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5652,6 +5661,15 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // with the entry kind/spin/engine definition 1037/1032/1023/1046.
 // NOT kept: the entry forms collapse separate lookups and shorten the body.
 // Entry definition in EBP, zero/result registers and per-site unity still differ.
+// Round 601: let the ground-contact case fall through to the speed ratio after its guard 858; let the wheels-
+// active case fall through to the speed ratio after its guard 858; share all three speed-ratio cases with
+// separate case-specific rejection tests 920; share all three speed-ratio cases with one case-specific
+// admission expression 920; group the steering pair and select its definition field before the common angle
+// ratio 753; group the turning pair and select its directional limit before the common turn ratio 734; group
+// both engine channels with their shared spin limit 746; group the complete engine channel family around its
+// shared spin limit 762. NOT kept: the grouped turn cases reach 734 at retail length, but add a selector re-
+// test and merge conversions that retail performs separately. The engine pair gains three, below the keep
+// threshold. The entry definition and SSE homes still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -6386,6 +6404,15 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // with a separate relative-rotation product 1027/1056/1056/1056. NOT kept:
 // every form shortens and raises the score. Frame 0xfc versus 0xd8, index
 // placement and matrix homes remain.
+// Round 601: declare the desired matrix at its first actual producer 978; scope the desired and separate
+// relative matrices to the quaternion producer 1051; scope the current, desired and separate relative matrices
+// to the quaternion producer 1051; carry boosting in a byte-sized boolean through the scoped desired and
+// relative matrices 1137; end the facing matrix lifetime after the final strafe consumer 978; end the facing
+// matrix lifetime after strafe and scope all three orientation matrices to the quaternion producer 1051; end
+// the flip-output lifetime after copying it into the selected orientation 978; scope the facing, angular query,
+// relative orientation and state rotation to their actual output phases 1051. NOT kept: the scoped relative
+// product reaches frame 0xdc but shortens the body by 44 bytes and raises the score. Moving the declarations
+// alone leaves code generation unchanged. The index is still in EDI rather than retail ESI.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
