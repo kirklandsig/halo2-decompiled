@@ -6540,6 +6540,20 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // MiniMax D (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx,
 // and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling
 // convention cannot be changed from here.
+// M3 lane 12 r136, HELD (needs the owner's OK: the reorder edits the call line inside 0x116b00, a contributor's function in
+// src/flexible_surface.cpp; the full diff is build/r136/held-4b2d0.patch; code here is main's): retail's own bytes give the order
+// (tag, first, record index, second, pass): the record index is the first stack argument (e+4, loaded late at 0x4b38e), the pass the
+// second (e+8, loaded into EBP at entry), and the tag, first and second arrive in EDX, ECX and EAX. Fast with 0x19f680 (322 on main's
+// order), 0x244470, 0x2be5d0 (both matched in every row) and 0x116b00 (319): that order on this body 62 (same code here; 0x19f680
+// 321, 0x116b00 319); with the lookup chain kept in a local pointer array filled like 0x16b90's state block (entry, range, pass,
+// records, record; `first * 10` in place) 63 at 251 B, first difference +0x32, aligned 48 -> 17: retail's prologue and convention
+// (first in ESI from ECX, second in EDI from EAX, the pass in EBP, `ret 8`) and its formed-then-read entry, range and pass
+// addresses; 0x19f680 311 and 0x116b00 280. On main's order the same array body 64 (252 B: the record index in EAX, the second on
+// the stack; 0x19f680 404 on its old body), `first * 10` in place alone 91 (239 B), the array with a slot for the tag-table entry
+// 78, the program read at the 0x1c590 call 69 (both 251 B, first difference +0x3), the chain in a force-inlined helper filling a
+// record 58 (254 B, first difference +0x32), not forced 217 (114 B: it stays a call); the variant declared last 63 (the pass then
+// arrives in EAX). Left on the array form: retail forms the group read's address first (`add eax, ebx; mov eax, [eax]`), keeps
+// the records chain in EBX and leaves a dead `add eax, edx` for the record address.
 // @retail 0x4b2d0
 // MiniMax C (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here, and the permuter's best (60) only renamed constants and swapped the arguments of the two calls, so it was reverted.
 void function_4b2d0(long tag, long first, long second, long third, long fourth)
