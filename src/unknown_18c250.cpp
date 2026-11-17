@@ -436,6 +436,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // listings: in every plain-sum form the samples take EAX, so the scale load (EAX) waits for the add; retail's samples
 // and offset are both short temporaries (EDX, then EDI only because EAX holds the scale and ECX the set's address and
 // the object index across the add), which needs the add to come after the argument setup in the IR.
+// Round 91 (m3 lane 2, fast with 0x10e480): the plain sum with the scale first copied into a block local passed
+// to the call 8 (samples into EAX, the offset still the add's destination, the add ahead of the scale load); on
+// the copy body: const data, const entry and const sound pointers 2/2/2, a `long const` count 2 (same code). Restored.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

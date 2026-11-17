@@ -1957,6 +1957,9 @@ struct s_actor_looking_structure_view
 // the direction loop as `while (i < 8)` with `i++` last 23 (same code); the best-index test and the selected dot as one `&&`
 // test 144 (928 B); the counter declared beside the best pair 23 (same code); the clamp as `if (0.6f > score) score = 0.6f;
 // score *= fraction;` 141 (927 B).
+// Round 91 (m3 lane 2, fast; control 23): the clamp product written fraction-first 23; best_index stored before
+// best_score 25; `real score;` declared at the loop-body top and assigned at the sum 23; the fraction as
+// `0.2f * trace.distance` 23; a const actor pointer 23 (the 23s the same code). Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
