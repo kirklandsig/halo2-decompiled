@@ -28,7 +28,8 @@ void __stdcall function_2138f0(long arg_0, long arg_1);
 void function_213970(void);
 
 #pragma optimize("s", on)
-// score 44 (was 131; plain check, m3 lane 1 r99's cache-copy object, coordinator 11-13): the cache-copy globals are one
+// score 44 (was 44): HELD (needs the owner's OK), see the last entry. Earlier 44 (was 131; plain check, m3 lane 1 r99's
+// cache-copy object, coordinator 11-13): the cache-copy globals are one
 // object now, cleared with one memset of the whole object (155 bytes, retail's length); member-wise clears were 131.
 // Earlier (131): retail clears two storage blocks; separate globals require separate clears and
 // cache-load scheduling differs. Tried language dirty first 145; version dirty first 145; current version
@@ -223,6 +224,17 @@ void function_213970(void);
 // 155 bytes. On that object: size pragma kept with the re-read getter 40; no pragma with a local holding the re-read
 // value, plain updates or the helper 3 (retail's cmp comes before `push esi`); the existing get_current_language() with
 // the helper 39 (its local copy is not retail's re-read). On the separate globals the no-pragma helper form is 49.
+// M3 lane 17 r45: HELD, build/r45/held-2136c0.patch (needs the owner's OK: two declaration lines and five uses in
+// src/unknown_214c30.cpp, a contributor's file). Block A (0x557c90..0x55b4ec: the six cache files, the current one and
+// the eight copies) as one object g_557c90 with members files, current and copies (a new include/cache_file_table.h;
+// edits in unknown_213760, 213d20, 122870, 2141f0, 214c30 and here), measured in a scratch copy of the tree, so 214c30
+// was never edited in the worktree. On that object: this body under the size pragma 60 fast (135 bytes); no pragma, the
+// shared get_current_language() returning the global read again after filling it, and one inline update helper (field
+// address and value: the test, function_2138f0(0, 6), the store and the dirty flag) called for both preferences: MATCH
+// in the scratch tree's full check, 10653 matched, nothing lost against HEAD (the getter's 15 other users keep their
+// status, 0x213970 stays 33, 0x2141f0 and 214c30's seven functions still match). Also on that object: a file-local
+// re-read getter in place of the shared one MATCH (fast); plain updates with a language local 3 (retail compares
+// before it saves the value in ESI); the getter called at both uses 61 (176 bytes).
 // @retail 0x2136c0
 void function_2136c0(void)
 {
