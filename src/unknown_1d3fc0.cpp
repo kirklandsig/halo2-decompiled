@@ -484,6 +484,16 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // same code); declarations hoisted to the top; the n[] and rotation spellings of every axis access; a project-out helper; up's
 // address taken first. Finding: one field access of up.i anywhere in the function (even a store after the block) gives
 // retail's i product (copies forward.i), but every such access also stops up.i's XMM3 preload, which retail keeps.
+// b9F (11-17) walk against retail, fast build on r839: every byte up to the forward normalization (0x1d3fc0-0x1d4110)
+// equals ours (flag tests, the flag10 path's calls 0x1d3fe0-0x1d400a, the header byte test and `position.z -= local_0`
+// 0x1d4032-0x1d4070, the 0x1d4360/0xba160/0x141590/0x142a60 slots and registers, the loop's calls, the 0x10000 tail
+// 0x1d4348); constants (0x45dbdc 0.0001f, 0x45dbc0 1.0f) and the four `ja` senses agree (NaN scales). No behaviour
+// difference found. Evaluation order: retail sums forward (j*j + i*i) + k*k (0x1d4114-0x1d4136), ours (j*j + k*k) +
+// i*i, and keeps left's k on the x87 stack (`fst [esp+0x28]; fmul [esp+0x28]`, 0x1d42c2). One helper gives all four
+// lengths the same tree, so retail's trees need a second private helper: forward alone (j, i, k statement sum) 109,
+// up/left alone (k, j, i) 152, both 151; not kept, as a twin of the file's helper. Also different, bit-identical: the
+// dot's i term copies forward.i (0x1d41f0), the cross's up.i * forward.k (0x1d42a2), the projection stores k, j, i
+// (0x1d4203, 0x1d4219, 0x1d422f), forward.k loaded at the join (0x1d4162, 0x1d417c). 0x1c4a80 stays MATCH.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
