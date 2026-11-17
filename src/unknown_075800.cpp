@@ -1523,6 +1523,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // check is unsigned in both (retail `ja` at 0x938eb), the in-band types 1/15/16/17/19/20/21 and every type above 24
 // do nothing in both, and the late 18 test with the inlined 0x94420 body (retail calls it at 0x939c4) has the same
 // effect, so there is no behaviour difference to report; the remaining difference is the register assignment.
+// m3 lane 1 r115: no form run. The listing agrees with this note (convention as retail; the early ESI save and the late
+// compare chain that inlines 0x94420 are what is left), and every switch, parameter-order and lookup form found is listed.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

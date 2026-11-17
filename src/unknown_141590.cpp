@@ -1358,6 +1358,11 @@ void function_143250(
 // its two products 1656 (10698 B); band three's r6_r3 the same 1663 (10700 B); band two's entry 18 stored last, just ahead of its
 // 0x143250 call (retail stores it after the call's pushes) 1544 (10755 B); r5_r2_s105_s2_s21 and r5_r5_s21_s35 written at their uses
 // 1333 each (same code). Body unchanged.
+// M3 lane 1 r114 (fast with 0x22850/0x23690, both at their baseline): the convention is already retail's (rotation EAX,
+// coefficients ECX, result ESI, order on the stack, ret 4); the 49-entry matrix tops the frame in both, so retail's
+// extra 4 bytes are one more scalar spill home below it (0x23c bytes against 0x238). s5 folded into `s5_s15 =
+// (real)sqrt(5.0) * s15` 1728 (10712 B); the nine rotation reads as `real const` 1333 (same code); band one's negatives as
+// unary minus 1333; the matrix declared after the rotation reads 1333; band three's s2 declared beside s35 1333.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
