@@ -1051,6 +1051,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // at the entry), the blend-query byte's residency, and the set() call's fourth argument (retail keeps the set
 // name in ebp, ours reloads it from a stack slot).
 // MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
+// MiniMax S (11-16): no new form, no lower score (210); the permuter's only lower form swaps the first and fourth arguments of the channels[2].set call, which retail does not do (retail passes the state's graph tag in ecx and the set name in ebp), so it is not kept; passing the set parameter instead of names.set measures 223, the third parameter 221, and naming the third and fourth parameters the other way round 214.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives

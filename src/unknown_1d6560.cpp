@@ -104,6 +104,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // only with a one-use absolute-index local and a score-picked declaration order, and the one-use-free form scores 98
 // and demotes the matched caller 0x1d5bf0 to 213; retail keeps the object index in ecx (re-masking it in case 0) and
 // reads the type once.
+// MiniMax S (11-16): score 96 (was 96): no new form kept; the 24-point form (the type read once, the headers in
+// ESI, the object index in EDX and the rigid body in ECX) still needs a one-use object-index local to reach its
+// score, and the length is 268 against retail's 256, so the header, index and rigid-body homes still differ.
 // score 96 (was 96; m3 lane 8 r166 and r172 near the end): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must

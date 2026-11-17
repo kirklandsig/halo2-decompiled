@@ -396,6 +396,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // the object/source/platform stores ahead of the flag store 106, the marker size in an if/else 131 (474 bytes). The gains do
 // not stack; no caller lost in any form. Retail's 0x221810 has a stack argument (`ret 4`) and is called at every site, so it
 // behaves like a function LTCG never expands; ours is expanded at the first site here only.
+// MiniMax I (11-16): no new form, no lower score (110): this build still expands the first 0x221810 lookup inline where retail calls it out of line - that helper's inline-ness is set in src/unknown_221490.cpp - and the 0x21d110 call still takes the state by pointer on the stack where retail passes it in a register, so the request copy's field order still differs; the priority read ahead of the copy reaches 106, a gain of 4 that is below the keep bar. BLOCKED-BY 0x221810 and 0x21d110.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

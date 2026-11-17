@@ -3922,6 +3922,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // 19: small AL copied to CL for the neg, alpha in ECX, where retail loads small into CL first and copies it to AL): both selectors
 // ahead of `fixed` 959; small typed byte 19; both selectors typed dword 19; the byte clamp between the alpha and input selectors
 // 973 (4832 bytes).
+// Round 189 (m3 lane 5, fast, base 9: the input word's shl in EBX ahead of the clear and the two reload pairs after modes
+// zero and one's depth-bias write, ours 1.0f first, retail the span first; site one's pair before the clear is span first in
+// both): `long input = small + 4;` 961 (the input then lives in ESI and small is reloaded); the definition cleared before
+// `fixed` 954 (4844 bytes); a named attenuation before each gain 9 (same code); the alpha input word as the stored RGB word
+// `| 0x8000` with no shifted local 948; `small` initialised from its condition 1182 (4840 bytes). All restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

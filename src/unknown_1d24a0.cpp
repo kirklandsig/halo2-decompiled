@@ -124,6 +124,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // MiniMax R (11-15): no new form, no lower score (902): the frame is still 0x1f0 against retail's 0x1d4, so every
 // stack home below the top differs, and the loop head's shape is still decided by the callee 0xbadc0, whose file
 // this lane may not edit.
+// MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add
