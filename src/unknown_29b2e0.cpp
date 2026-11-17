@@ -51,8 +51,22 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// MiniMax C (11-05): no new form, no lower score; the XY vector before the second copy scores 174 and the single-exit normalizer 180/182, both under the eight-point bar, and the permuter reached no variant on this loaded machine.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// MiniMax B (11-12): no new form, no lower score (176); the permuter's 129 tries find nothing better than the
+// baseline (172 on its reduced image), and retail keeps the unity vector in XMM4 where ours keeps it in XMM5
+// and the root at +0xc where ours keeps the yaw there.
+// MiniMax H (11-11): no new form, no lower score (176); a normalizer with one exit 403 and the root taken from
+// the helper's return value instead of the pointer 263, so the root still sits at +0x10 where retail keeps it with
+// the yaw at +0xc.
+// MiniMax I (11-10): no new form, no lower score (176).
+// MiniMax S (11-06): no new form, no lower score; the single-exit normalizer with the XY vector read before
+// the second copy reaches 169, one point short of the eight-point bar, and the original body is restored.
+// The rotation's cross terms and rows written with the axis component first, which is retail's order, score
+// 176 on the restored body, and the permuter reached no variant on this loaded machine.
+// MiniMax C (11-05): no new form, no lower score; the XY vector before the second copy scores 174 and the single-exit normalizer 180/182, both under the eight-point bar, and the permuter reached no variant on this loaded machine.
+// MiniMax D (11-09): no new form, no lower score; the length the normalizer stores sits four
+// bytes higher in the frame than retail's (ours +0x10, retail +0xc), and the unity constant and
+// the scaled components then get different registers.
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
@@ -397,6 +411,146 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // (1690), j 187 (1694), k 183, i+j 181 [244, 128], i+k 193, j+k 183; rows written k,j,i 199 (1683), j,k,i 198 (1687), k,i,j 256 (1675). On
 // SE + XY: limit updates as ternaries 169 (same code); named turn products 278 (1716); named low bounds 277 (1716); rate limits as ternaries
 // 242 (1715); else-arm zeros reversed 172; pitch computed in its target local 173.
+// P388: Complete vector cosine/projection/sine-cross parts through existing
+// shared producers on the in-place graph, seven subsets then shared publication:
+// 234/247/257/265/282/254/262/265. NOT kept: no exact unity/root/yaw/rotation homes;
+// original numeric contract, alias-safe scalar results and full body restored.
+// M3 lane 13 r72 (fast with 0x29b990, which stayed matched except where marked). Both builds put spills in dead
+// parameter homes: retail the final pitch in the scale's home, the first sine at +0x10 and the cosine in the first
+// stack parameter's home; ours the pitch at +0x10, the sine and cosine in those two homes. Retail reads the actor's two
+// angle fields from memory at each use and loads the degree factor into XMM7 ahead of the first limit. New forms: the
+// two turn-rate blocks as one inline helper taking the current angle and the rate by value, on the single-exit
+// normalizer + early XY form 246 (1706 bytes, the fields then read once), on the body below 253 (1706); the same
+// helper taking the angle's address and the rates record 278/285 (1716); both angles as arm locals with the two actor
+// stores written in each arm 244 on the lead, 251 on the body below (1743), with the result store in each arm too 471
+// (1749, 0x29b990 6). Lead re-measured 169. NOT kept: all regress; body below unchanged.
+// P399: Actual previous-yaw/previous-pitch/policy field references, subsets 1-7, then immutable actor/object bindings:
+// 299/280/262/303/305/272/272/272. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 163 (m3 lane 5, fast, sibling 0x29b990 MATCH throughout): the second normalization's length through its
+// out parameter into a local 263 (1719 bytes); the normalizer's length store ahead of the K scaling 176 (same
+// code); the first length from the normalizer's return value 263 (1719); the XY pair built after the second
+// normalization 368 (1712); the first length from the return value with the planar test as `> 0.0f` 316 (1715).
+// M3 lane 10 r90 (fast with 0x29b990, MATCH throughout, and 0x11cc90): no gain. The score line moved to the top of this note (it sat
+// below the MiniMax lines). Lead re-measured: single-exit normalizer + XY vector before the second copy 169. On it: both turn tests as
+// `product >= 0.0f` 174 (masked 196); the second axis through the existing cross3f 234 (1706 bytes, frame changes, first difference +0x2).
+// On 169 the x87 transfer temporaries (roots, acos) still share +0x10 with local_11 where retail packs them at +0xc with the clamp input and
+// the yaw; the yaw clamp's zero copy still sits below its branch.
+// Round 86 (m3 lane 1, fast with 0x29b990, which stays matched; aligned/masked in brackets, base 176 [133/69]): the
+// second axis through the existing cross3f (vector_products.h) on the single-exit normalizer 234 (1706 B [133/75]);
+// the rotation helper's three cross terms through cross3f into a vector 213 (1707 B [131/55], frame 0x24 against
+// 0x2c, the root then at retail's +0xc), with the single-exit normalizer 209 [127/55], plus the rows stored directly
+// 209 (same code), plus the XY vector before the second copy 209 [126/54]. Single-exit normalizer re-measured 171.
+// Round 179 (m3 lane 4, fast with 0x29b990, 0x1e5450, 0x11ce20 and 0x11cc90, all matched each time): the rotation
+// vector as the first input copy's own variable (no separate rotation local) 192 (1708 bytes); the second axis rows
+// with every product's factors swapped 176 (same code); those rows written k, j, i 190 at retail's 1706 bytes (masked
+// 72 against 69), with the single-exit normalizer 185 (that normalizer alone re-measured 171); the rotation's
+// projection computed after the three cross terms 176 (same code). Left: sine/cosine/pitch homes (retail +0x10/arg_3's
+// home/arg_4's home, ours the pitch at +0x10 and sine/cosine in the two homes) and the rotations' schedule.
+// Round 78 (m3 lane 14, fast with 0x29b990; masked aligned in brackets, base 176 [125]): the normalizer with one named
+// inverse for all three components 384 (1715 bytes) [162], 0x29b990 then 6; the else arm's angle zeros chained 179
+// [126]; the result vector stored before the two angle fields 182 [128]; the second normalization's failure test as
+// `!` 203 (1718 bytes); the XY normalization's result tested as a bool 176 (same code).
+// Round 105 (m3 lane 16, fast with 0x29b990, which stayed matched): the entry convention (ECX/EAX indices) agrees and
+// 0x11cc90 is already called. From +0x6e the differences are homes: retail's first root sits at +0xc (ours +0x10), and
+// the rotated result's spill homes use the first input copy's slot (+0x20, as retail's `mov ecx, [esp+0x20]` at the
+// join shows) where ours uses the second's (+0x2c), which moves every load order in the two rotations. New forms: the
+// rotation helper in 0x1f6090's actor_path_rotate spelling (cross with the axis first, aggregate result copy) 289 at
+// 1757; the actor fields and `*arg_5` stored in each arm with no shared result local 246 at 1741; the XY pair read
+// from the `local_5` copy instead of `arg_2` 430 at 1744; the second rotation's axis computed before the first rotation
+// 220 at 1731 (masked 95 -> 89). Re-measured: 0x11d3b0's rotation spelling (k, j, i dot, rows stored in place) 189 at
+// 1706 (the listed direct rows; masked 95 -> 68); the result local declared first 176 (same code).
+// m3 lane 5 r169 (fast with 0x29b990, which stays matched; aligned/masked in brackets): re-measured the r83 lead
+// (single-exit normalizer + the XY vector before the second copy) 169 [147/68]. On it, new: the second axis computed
+// before the first rotation's input copy 213 (1731 B); yaw_limit declared before the yaw delta 169 (same code); the
+// else arm's zeros before its vector copy 169 (same code); the half-pi limit computed before the yaw call 339 (1730 B).
+// The normalizer's single exit through a separate `result` initialised to zero 215 (1718 B). Left on 169: the x87
+// sqrt temporaries at +0x10 (retail +0xc with the yaw), the XMM3/5/6 rotation in the normalizers, the yaw clamp's zero
+// copy above its branch and the rotations' pitch/sine/cosine homes (retail pitch in arg_4's home, sine at +0x10).
+// m3 lane 14 r84 (fast with 0x29b990, 0x11cc90, 0x11ce20 and 0x1e5450; masked = registers and esp offsets masked,
+// base 114): the existing rotate_direction (unknown_1eb8a0.cpp) for both rotations, sin/cos as arguments or one named
+// pair, 817/817 (not inlined here: 1309 B, 0x29b990 48); the helper taking sine/cosine with one pair named here and
+// reused 225 (1735 B; the root temps move to +0x14); four named sine/cosine locals 179 (1710 B). Re-measured on this
+// base: the first rotation reading arg_2 with no copy 265 (1706 B, 0x29b990 1). No untried natural form found: the
+// rest is the rotations' and the second axis's schedule, which every listed spelling leaves. Also new: the two angle
+// fields stored inside each arm (zeros written directly in the else arm, the result vector still shared) 251 (1743 B).
+// Round 93 (m3 lane 10, fast with 0x29b990/0x11cc90/0x11ce20/0x1e5450, all matched): on the re-measured 169 lead
+// (single-exit normalizer, XY vector before the second copy) the rotation's projection dot named before sin/cos, the
+// cross terms before sin/cos, both, `local_11` declared at function scope and `local_4` declared before the first copy
+// all give 169 (same code). The yaw/pitch clamp block already matches retail instruction for instruction. Slot map on
+// the lead: retail packs the root and acos temporaries with the yaw at +0x00 (23 uses), ours with local_11 at +0x04
+// and the yaw alone at +0x00; the XMM numbering and the rotations' schedule follow from that.
+// m3 lane 1 r98 (fast with 0x29b990, 0x1e5450, 0x11ce20, 0x11cc90, all matched throughout; control 176). New, all fruitless: the
+// second angle (arg_2 against its copy) computed ahead of the first 283 (1706 B); the planar test as `> 0.0f` alone 328 (1707 B);
+// the second normalization's failure test as `!function_29b32b(&local_5)` 203 (1718 B); the XY vector as the planar copy
+// `*(vector2f const *)arg_2` 356 (1715 B, first difference +0x60); the pitch field stored before the yaw field at the end 178.
+// Re-measured on this base (listed on the 169 lead): the turn limits as ternary initializers, yaw/pitch/both 261/242/249
+// (1715/1713/1715 B); the elevation limit as a default plus `if` 272 (1709 B; same code on the 169 lead). Same code: the
+// first angle's sign as a self-assigning ternary 176.
+// m3 lane 3 r239 (fast with 0x29b990, 0x1e5450, 0x11ce20, 0x11cc90, all matched throughout; control 176): the second axis
+// read through a named `forward` pointer beside the up pointer 178, on the r83 lead (re-measured 169) 171; the second axis
+// as an aggregate initializer 176 (same code). On the lead retail's pitch, sine and cosine sit in arg_4's home, +0x10 and
+// arg_3's home where ours puts them at +0x10, arg_3's and arg_4's homes, and the acos temporary shares the yaw's +0xc in
+// retail but local_11's +0x10 here.
+// P485: Conditional input/axis/both/shared alias copies in the existing rotation:
+// 286/485/459/428; shared overlap decisions bool/byte/short/long 428 each.
+// NOT kept: no byte match; frames/extents regress, axis-only also loses the sibling.
+// Original alias-safe staging, helpers and whole body restored; unity/root/yaw homes remain.
+// M3 lane 15 r83 (fast, 0x29b990 matched each time; LCS-aligned plain/register-masked/stack-masked, control 153/95/74): any
+// `__assume` (definition, arg_3, arg_2, actor or arg_5 non-NULL) 289 (1724 B). Rotation helper: the projection sum without
+// its parentheses, all six term orders 178 (154/95/74; one code: an unparenthesized float sum is put in a fixed order, the
+// explicit `(i + k) + j` here is honoured and is retail's grouping); rows as `(a + b) - c`, either operand first, 178
+// (157/105/103); retail-ordered operands (axis-first cross terms and rows) 178; the cross product in a named vector3f 214
+// (1707 B, 193/128/61).
+// M3 lane 12 r123 (fast with 0x29b990, matched each time): the single-exit normalizer re-measured 171 (first +0x84); on it the
+// rotation helper's cosine before its sine 173, its cross terms ahead of the projection 171 (same code), the result copy ahead
+// of the two angle stores 177, both turn limits as conditional expressions 244 (1715 B). Retail keeps the rotation's sine at
+// +0x10, its cosine in arg_3's dead home and the final pitch in arg_4's; ours gives the two dead homes to sine and cosine.
+// M3 lane 16 r119 (fast with 0x29b990, 0x11ce20, 0x11cc90, 0x1e5450, all matched each time; control 176): the two angle
+// clamps in the other order 194; the pitch delta computed after the elevation limit 213; the second angle's sign folded
+// into a conditional around the 0x11ce20 call 302 (1724 B); the yaw and pitch deltas as named locals with each clamp
+// result added back in one statement 244 (1712 B); the object lookup ahead of the actor lookup 423 (1708 B, first +0x9).
+// Same code: the rotation helper's cross terms in j, k, i order; the helper made in place (vector, axis, angle); its
+// projection written `(1.0f - cosine) * (...)`. Retail's second rotation writes local_7 over local_3's dead home (+0x20),
+// ours over local_5's (+0x2c).
+// M3 lane 11 r103 (fast with 0x29b990, matched each time; control 176 at 1711 B against retail's 1706): the rotation helper's
+// cross terms and rows in the path-rotate operand order (axis-first cross terms; rows `projection * a.i + v.i * cosine`,
+// `cosine * v.j + projection * a.j`, `projection * a.k + cosine * v.k`) 176 (identical code: the commutative operands are
+// canonicalized); renames of local_7 (direction, result), local_3 (aim, wanted), local_5 (target), local_8/local_9 (yaw,
+// pitch) and the normalizer's root (magnitude, root) 176 each (identical code); local_5 declared ahead of local_3 176
+// (identical); the clamp bounds as `0.0f - limit` for yaw, yaw and pitch, or all four 176 (identical); local_9, local_8,
+// local_7 declared in reverse order 176 (identical). Retail packs the three x87 roots and the inlined 0x11cc90 angle into
+// the yaw's +0xc slot (ours +0x10, with local_11) and the rotated vector into local_3's home.
+// M3 lane 13 r96 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH each run; control 176): the r83 lead (single-exit
+// normalizer, XY vector before the second copy) re-measured 169. Retail packs the rotated vector into local_3's dead home
+// (+0x20); the rotation written into local_3 itself (no local_7) 192 on this body (1708 B: the vector then sits at +0x20, but the
+// pitch, sine and cosine homes stay +0x10/+0x3c/+0x40 against retail's +0x40/+0x10/+0x3c), 185 on the lead; the second axis
+// through the existing cross3f of vector_products.h (`cross3f(&forward, axis, &local_18)`) 239 (frame and first difference
+// +0x2 move); on the lead the XY vector declared before the first copy 365 (1714 B); the angles initialised to zero at their
+// declarations with the else arm copying only the vector 360 (1723 B). Same code on the lead: the angles declared at the
+// top of the function; the normalizer's locals renamed (magnitude, inverse); local_11/local_12 renamed (aim_pitch,
+// target_pitch); rows with the projection term first.
+// M3 lane 2 r88 (fast with 0x29b990, MATCH each time; control 176): the keepable half of the r83 lead, the single-exit
+// normalizer alone, re-measured 171 (first +0x84; a gain of 5, under the bar). On it the remaining slot differences are the
+// normalizer roots and the inlined angle's acos result at +0x10 (retail +0xc with the acos argument and the yaw), and in the
+// rotations the final pitch at +0x10 with sine/cosine in the two dead parameter homes (retail: pitch in arg_4's home, sine +0x10,
+// cosine arg_3's home). New on it: rotation rows with the projection term first in the i and k rows 171; the second
+// normalization's failure test as `!` 198 (1718 B); the half-pi limit as if/else 171; the else arm's zeros chained 174; the
+// two angle declarations moved up to the lookups 171.
+// P538: Unrounded planar-root/rotation-sine/rotation-cosine API producers, subsets
+// 1/2/4/3/5/6/7 then complete immutable: 263/179/179/263/263/177/264/264.
+// NOT kept: all regress; combined root/trig forms lose the matched sibling (24); original helpers and full body restored.
+// MiniMax E (11-15): no new form, no lower score (176): the normalizer's length taken from its return value instead of the
+// out-parameter measures 263 at 1719 bytes, and retail keeps that length in a register where ours holds an address-taken local.
+// P569: Maximum-angle policy positive bool/byte/short/long outcomes 281/281/281/281;
+// complementary outcomes 287/287/287/287. NOT kept: no native storage equality;
+// original producer/body restored. Unity, root/yaw and rotation homes remain.
+// M3 lane 4 r207 (fast with 0x29b990; masked = registers and stack offsets masked, aligned, base 176 at masked 114): the
+// rotations through the in-place helper 0x2551f0 and 0x117dd0 now share (include/axis_rotation.h) with the sine and
+// cosine as call arguments, or as locals before or after the copy: 244 (1694 B, frame 0x28, masked 97); with the second
+// axis through the existing cross3f 257 (1679 B, masked 81); that axis computed before the first rotation 184 (1706 B,
+// frame 0x2c, aligned 187, masked 112; retail computes it after); the matched sibling 0x29c860's angle-taking helper for
+// both rotations 245 (1691 B, masked 97); the first two normalizations through the existing normalize3d after the k
+// store 186 (1718 B, masked 179).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

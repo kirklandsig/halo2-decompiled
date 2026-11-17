@@ -1154,9 +1154,38 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// MiniMax H (11-04): no new form, no lower score; our expected-size and query-size locals sit four bytes above retail's in the frame, which moves every later access.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
+// checksum register and header-validation joins remain.
+// MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
+// at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
+// against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
+// is the same function in the reduced map and is not a source difference.
+// MiniMax C (11-15), on its not-kept 7 form (a new goto, screen-reverted; main stays 33): frame 0x1144 and extent agree; the write call
+// still loads the handle after the flags zero (ours builds the zero in EAX where retail already has the
+// handle in EAX and builds the zero in ECX) and the checksum compare still takes EDX where retail takes EAX.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
+// the read-call value transport differed. The retained API and handle prefix now agree.
+// MiniMax R (11-11): no new form, no lower score (33); the query-size and write-count homes are still four
+// bytes off (ours &size at [esp + 0x34] where retail keeps it at [esp + 0x30], ours &bytes_written at
+// [esp + 0x40] where retail keeps it at [esp + 0x44]), the write call still builds its flags zero in EAX
+// where retail builds it in ECX with the handle already in EAX, the checksum compare still takes EDX where
+// retail takes EAX, and the slot-range test still compares against an immediate 1 where retail holds it in
+// ESI; moving the locals between scopes, changing their types and reordering the declarations all leave the
+// same code, and the permuter leaves the function at 33.
+// MiniMax D (11-09): no new form, no lower score (33); the query-size and write-count homes are still exchanged (ours size at [esp + 0x28], write count at [esp + 0x24], retail the other way round) and the write call still builds its flags zero in EAX where retail builds it in ECX with the handle already in EAX.
+// MiniMax R (11-09): the two out parameters sit in each other's homes, the size at [esp + 0x28] where retail keeps
+// it at [esp + 0x24] and the bytes written the other way round; declaring the bytes written local beside, before
+// or above the size local, and the size local above the loop body, all give 33 with the same code.
+// MiniMax R (11-08): no new form, no lower score (33); the write call still builds its flags zero in EAX where
+// retail builds it in ECX with the handle already in EAX, and the slot-range test still compares against an
+// immediate 1 where retail holds it in ESI.
+// MiniMax D (11-07): 33 (was 33): no new form and no lower score; the write call's flags zero still takes
+// EAX where retail builds it in ECX with the handle already in EAX (ours loads the handle after the zero and
+// reloads it), the checksum compare still takes EDX where retail takes EAX, and the slot-range test still
+// compares against an immediate 1 where retail holds it in ESI.
+// MiniMax h (11-05): the query-size and write-count stack homes are exchanged against retail (retail size@0x24, write count@0x28, ours the other way round); moving either between scopes, changing its type and reordering the two declarations all leave the homes unchanged (33), zero-initialising the write count at its declaration gives 85, and the permuter's best over 300 s is 33.
+// MiniMax H (11-04): no new form, no lower score; our expected-size and query-size locals sit four bytes above retail's in the frame, which moves every later access.
+// Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
 // frame 0x1144 and the entry prefix agree; size/count homes, write setup,
 // checksum register and write/header validity joins remain.
@@ -1547,6 +1576,217 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // through EDX where the first uses ECX, so the two closes are not tail-merged); the failed-resize close arm first 215
 // (994 bytes); `(!resized || ...)` with `resized` declared at the top of the size-mismatch block 157, renamed
 // size_changed/extended 157/157, declared beside `done` 157 (frame 0x1140 each: resized packs beside done).
+// Round 75 (m3 lane 11, fast): the size local renamed to a name sorting before `bytes_written` 33, homes
+// unchanged; that with both out-parameters declared together in the handle-valid block 33 (so neither names nor
+// scopes set these two homes); `resized` declared beside the size local 33; the write length and its check spelled
+// with sizeof of the header 33 (same code); the count zeroed before `if (resized)` in place of the else arm 85.
+// MiniMax D (11-06): no new form, no lower score.
+// P384: Complete complementary one-time cleanup state, byte/char/signed-char/short/word/int/long/dword:
+// 36/36/36/154/154/252/252/252. NOT kept: all regress; original cleanup producer, every asynchronous
+// operation/wait/output, failure-only count and complete body restored. Query/count homes and write/header joins remain.
+// P397: Actual asynchronous size/resize/write outputs with local qualifiers,
+// seven subsets then all at function scope: 33/33/104/33/104/104/104/104.
+// NOT kept: the asynchronous-output exception requires equality; query/count
+// homes and write/header joins remain. Every trial qualifier and complete body restored.
+// Round 140 (m3 lane 7, fast): every form re-measured a listed one, no new form found: one `success` flag for the
+// resize result, `success = bytes_written == 0x800` in the write block 112 (DL262's assigned form); the size test's arms
+// swapped 175 (937 bytes, B444's equal-size-first form); `(!resized || bytes_written != 0x800)` with no zero store 157
+// (round 90). Round 53's 7 form on this body 7 (the write's handle after the flags zero, the checksum in EDX); on it the
+// checksum `&&` 78 and if/else 15, the empty header declared after the resize call 7 (listed before it: 7), the byte
+// count outside the write block 7 (T7). All restored: the 7 needs match-only forms.
+// Round 100 (m3 lane 12, fast): the slot range as `index > 0 && index < 2` 104 (932 bytes); the write count typed long 33 (same code); the
+// remove-later flag cleared before its call with `resized` declared above it 35; the checksum as `!(a != b)` 33 (same code); the size test as
+// `expected > size || expected < size` 171 (942 bytes); the open test through `g_557c90[index].handle` 33 (same code). All restored.
+// Round 165 (m3 lane 6, fast): round 53's 7 form rebuilt again 7 (aligned 6, masked 2: the write's handle loaded after
+// the flags zero, the checksum compare in EDX), its write-handle local 114 at 917 (only the close argument copy and the
+// checksum register left). New on the 7 form: one handle copy declared before `if (resized)` and passed to both the write
+// and the close 127 (915 bytes: the copy stays in ESI); the close test nested under `if (!written)` 7; the wait helper
+// taking the flag by reference 7 (both the same code); the handle as a reference to the element instead of a pointer
+// (`handle.handle`, `handle` passed by value) 7 (same code); `valid` declared at the loop top 7 (same code); a 1200 s
+// permuter run (146 tries) none below 7.
+// M3 lane 10 r88 (fast with 0x213800, 0x213760; base 33): round 53's 7 form rebuilt (`else if (cache_file_header_read(index))` with
+// `valid = true`, the count scoped in the write block and the success set by its own test) reproduces at 7, the write-handle local on it 114
+// (917 bytes). On the 7 form: the handle pointer declared `s_file_handle *const` 7 (same code); the write block as `do { if (!resized) break;
+// ... } while (false);` 7 (same code). Retail loads the write's handle (`mov eax, [ebp]`) ahead of its pushes, so the flags zero takes ECX,
+// and the checksum load takes EAX; both need the scratch steps the earlier rounds located. The note already lists every helper, local, view
+// and spelling form found for them, and none is natural without a match.
+// Lane 12 r104 (fast): with the count scoped to the write block and no zero store, a goto past the close when all
+// 0x800 bytes were written (`if (bytes_written == 0x800) goto written;`, the close test on the handle alone) 83: the
+// frame, the size/count homes and retail's `je` from the resize test straight to the close are retail's (B446 and
+// round 56 reached 83 the same way), the range test's merged compare shifts the rest; with the header read as
+// `else if (cache_file_header_read(index))` and `valid = true` 7 (the round 53 plateau through the goto; left the
+// write's handle loaded after the flags zero and the checksum in EDX). On that 7: the empty header declared at the top
+// of the size-mismatch block 7, the write's buffer as `(void const *)&empty_header` 7, each async call's returned task
+// passed into the wait helper 7 (all the same code), the stored checksum read through `handle` 7 (same code), a named
+// `s_file_write_flags flags(0)` at the top of the size-mismatch block 141 (917 bytes). Restored: the 7 needs the goto and
+// the set-in-test validity.
+// Round 153 (m3 lane 8, fast): `!resized ||` in the close test with the count declared at the loop body's top 157 (frame
+// 0x1140, as with the count beside size). Round 80's 7 form rebuilt (goto past the close, header-read `else if` with
+// `valid = true`) 7: left the write's handle load after the flags zero and the checksum in EDX. On it: the close test and
+// store through `g_557c90[index]` 7 (same code); the stored checksum through `g_557c90[index]` 114 (frame moves); one handle
+// copy after the resize wait for both the write and the close 127 (915 B); matched 0x2151f0's pattern (a handle copy, then a
+// named flags local, just before the write) 114 (917 B, the close copy dropped as with the write-local form).
+// Round 87 (m3 lane 11, fast; aligned/masked in brackets): lane 12's 6 form rebuilt 6 [6/0]. New on it: the resize
+// helper's handle taken as `s_file_handle const &` 114 [6/3] at 917 bytes (resize handle ECX and header lea EDX become
+// retail's); with a by-value close helper (call and wait) as well 114 [4/3]: the checksum compare then takes EAX as in
+// retail and only the close's `mov ecx, eax` copy is missing (917 against 930 bytes; the two loop pads follow). On that:
+// the write helper returning the count or `== 0x800` 114/114 [4]; a close helper by pointer owning the INVALID test and
+// store 114 [6]; by value returning false on INVALID 114 [4]; by const pointer 114 [6]; the close written in both arms
+// of `if (resized)` (no goto) 145 (962 B), on the reference form alone 184 (995 B). The write helper taking the flags
+// by value 120 [12]; the write helper's handle by const reference 122 [14]. Diagnostic dead loads after the write,
+// before the close test or inside the close block 103/100/97 (none restores the copy). Permuter on the 114 [4] form
+// (600 s, 47 tries): best 64 from casts and a split range test only. All of these need match-only forms (new
+// one-caller helpers, the goto, the set-in-test validity).
+// M3 lane 12 r108 (fast; all on round 53's 7 form, whose goto past the close and set-in-test `else if` validity are match-only,
+// so none of this is keepable short of a match): an inline write helper taking the handle by value 114 (917 B, as round 149's
+// DDHD); with a matching resize helper, `(s_file_handle file, dword size, bool *success, bool volatile *done)`, 6 at 930 B (as
+// round 149's DHHD): the checksum compare is then EAX, and each of the last three spots is one register step off: the resize's
+// handle (ours EAX, retail ECX), the write's header lea (ECX/EDX) and the close copy (EDX/ECX). On that 6: a query helper 6; a
+// close helper 118 (917 B, the copy coalesces); value-returning write (bool or count) and resize (bool) helpers 6 each; helpers
+// taking the handle pointer: resize 114, write 122, both 7; one resize-and-write helper returning success (early return or
+// single exit, handle by value or pointer) 429 (770 B, `inline` not expanded), 134/111 as `__forceinline`; a write helper that
+// owns the empty header 6 (`__forceinline`; plain `inline` is not expanded, 349 at 850 B); a blocking open helper 494 (696 B); a
+// handle-valid predicate, by value or pointer, at the close test and at the open test 6; a forwarding helper for the remove-later
+// call 6. Permuter (anneal, 600 s, 71 tries, 921 s full-image baseline) on the 6 form: best 6. Probes (dead volatile loads of
+// `index`, diagnostic, reverted at once): one placed before the resize call is scheduled after the handle load; one between the
+// write's wait and the byte test removes the close copy. Restored to the 33 body.
+// M3 lane 16 r108 (fast with 0x213800/0x213760; register-masked aligned 12: the size/count homes, the write's handle load
+// ahead of its pushes, our `bytes_written = 0` store on the failed-resize path that retail does not have (it jumps
+// straight to the handle test) and retail's 1 in ESI for two unmerged range compares): the range written `1 <= index
+// && index <= 1` or `index >= 1 && 1 >= index` 33 (same code, canonicalized). No other untried natural form found.
+// Round 111 (m3 lane 9, fast with the callees, control 33): on lane 11 r87's near form (const-reference resize helper,
+// by-value write and close helpers, the goto past the close and the set-in-test validity, all match-only; re-measured 114 at
+// 917 bytes, aligned 4: only the close's `mov ecx, eax` copy and the loop pads after it): the close helper taking the handle
+// by const reference 114 (aligned 6, checksum load ECX); re-measured: the close written out directly on that form 114 (round
+// 87's [6/3] form: the copy is lost through the resize/write helpers, not the close helper); same code as the near form:
+// `INVALID_HANDLE_VALUE != handle->handle`, `0x800 == bytes_written`. On the 33 body: `valid = valid_types[type] &&
+// CompareFileTime(current, stored) == 0;` 80 (934 bytes); the closing switch as an if/else-if chain 136 (936 bytes); the
+// stored file time as a pointer advanced with the type 35; same code: `!CompareFileTime(...)`, the stored time indexed as a
+// FILETIME array, `!(index == 0 || index == 1)`.
+// M3 lane 4 r190 (fast with 0x2138f0, 0x213800, 0x2149c0): the write count renamed to sort after the size, the size renamed
+// to sort last, the expected size renamed: 33 each (same code: names do not order these slots). Retail's size/write-count
+// homes come from declaring the write count inside the resized block (with the header): the close written in both arms
+// 179 (994 bytes, not tail-merged; both homes as retail); the write success from that block, `written = bytes == 0x800` 98,
+// `if (bytes == 0x800) written = true;` 83 (the whole resize/write/close block then matches retail except the write's
+// handle-first setup; the range test's ESI 1 shifts the rest; match-only flag form); the not-resized arm dropped and
+// `(!resized || bytes != 0x800)` tested 157 (frame 0x1140); the write's flags as a named `s_file_write_flags` local (as
+// font_loading.cpp writes it) 33 (same code). Body unchanged. Lead for the next round: the in-block write count combined
+// with Round 53's three forms; even then the write's handle-first setup (flags zero in ECX) is still left.
+// MiniMax A (11-12): no new form, no lower score (33); the write's handle-first setup (the flags zero in ECX) and the query/count homes still differ, and the 6 form needs the goto and the set-in-test validity, which are match-only.
+// M3 lane 2 r77 (fast with 0x2138f0, 0x213800, 0x2149c0): re-measured: the count renamed `written` 33 (same code, as lane 4
+// r190); the count in the write block with the success set by its own test and `else if (cache_file_header_read(index))`
+// with `valid = true` 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX); that plus an
+// `s_file_handle` write local 114 (917 bytes: the write as retail, the close's `mov ecx, eax` copy dropped, the checksum in
+// ECX), the local declared at the loop body's top 114 (same code). New on that write-local form, none moves a register:
+// the close test through `file->handle` 114, `bool written = resized;` cleared when the count is short 114, the path and
+// stored checksum read through `file->unknown04` 114/114, the header-string helper without its byte pointer, with four
+// named string pointers or through a one-store string helper 114/114/114 (also 7/7/7 on the 7 form: inlined parameters
+// and folded addresses add no rotation step); the header read as `valid = cache_file_header_read(index); if (valid)` 119
+// (914 bytes). Lane 6 r149's two missing steps (after the write's wait, before 0x213800) still have no natural source.
+// Body unchanged.
+// Round 175 (m3 lane 6): no new trial. Every form derivable from the listing (range-test spellings, close conditions,
+// write-block shapes, write/close/resize helpers, the flags object, size/count homes, names and types, the validity array
+// initializer, the cleanup flag) is listed above. Lane 4 r190's lead (the in-block write count with round 53's forms) is
+// measured at 7 by round 56 (m3 lane 1) and round 80 (m3 lane 12). Lane 2 r77's open lead (member objects with
+// constructors in the shared header type) changes a shared header and a global's initialization. Body unchanged.
+// M3 lane 13 r89 (fast with 0x2138f0, 0x213800, 0x2149c0; control 33): the range bounds read from an extern const pair
+// defined in another file, so only the link-time compile can fold them (diagnostic) 33: LTCG still folds them to the
+// immediate and merges the two compares, so retail's ESI 1 is not a late-folded bound (it is the `valid = true` constant
+// of the listed set-in-test form, shared with the compares); the not-resized arm first (`if (!resized) bytes_written =
+// 0; else { ... }`) 123. Re-measured: the zero as a statement ahead of `if (resized)` 85 (the listed zero-at-declaration
+// 85), `expected_size != size` on this body 33 (same code). The header-read result normalised, `valid =
+// cache_file_header_read(index) ? true : false;` 105 (932 bytes: a `setne` that is tested again, no threaded continue),
+// `!= false` 105 (same code); the close test with the handle test first 68; the cleanup's slot switch ahead of the header
+// memset 49; `remove_later = false;` ahead of the remove call 35. Body unchanged.
+// M3 lane 9 r120 (fast): the close repeated in both resize arms with no zero store 179 (994 bytes, VC keeps both tails);
+// the checksum operands swapped 33; `bool valid_types[3] = { true, true, true };` 263; the write count also zeroed at its
+// declaration 96 (934 bytes); the query size as unsigned long 33. The size/count homes look ordered by reference count:
+// the zero-store arm gives the count a third reference that retail's threaded join does not have.
+// P478 m3: Complete checksum memcmp/range-equal/typed-equality/short-circuit-memcmp
+// on positive-validation/native-count completion: 67/32/12/76; original checksum/query
+// and completed-query/count predicate forms: 90/250/248/119. Control 7 remeasured, uncredited.
+// NOT kept: unmatched completion flags require equality; 12 adds a nonnative comparison call;
+// other forms regress or move extent/frame away. Original helpers and full body restored; query/count/write/checksum remain.
+// P480 m3: Native by-value query/resize/write copy constructions, subsets 1/2/4/3/5/6/7,
+// then all four I/O boundaries on failure-only count flow: 43/43/35/36/32/32/32/39. NOT kept:
+// one-point gains to 32 fail the bar; original handles, helpers and complete body restored.
+// M3 lane 11 r100 (fast): on the 33 body, the header-read arm as `else if (cache_file_header_read(index))` with
+// `valid = true` 103 (that arm then has retail's `mov esi, 1` compares; the zero-store arm shifts the rest); with the
+// write success as a flag set by its own test (count scoped in the write block) 7 (round 53's plateau: left the write's
+// handle load and the checksum register EDX); on that a write-handle local 114 (917 B: write exact, the close loses
+// `mov ecx, eax` and the loop padding shrinks); write and resize handle locals 6 (round 56's form: resize EAX, header
+// address ECX, close copy EDX, each where retail has ECX/EDX/ECX; checksum then EAX as retail); on the 6 form the
+// write handle copied from the resize handle local 139 (917 B); on the 7 form write and close handle locals 114 (917 B;
+// aligned against retail only the close call's `mov ecx, eax` copy and two loop paddings differ: the copy appears when the
+// close argument is a scratch temporary one register after the test load, as in the 7 form). All match-only forms; the
+// 33 body is unchanged.
+// m3 lane 8 r168 (fast with 0x213800, 0x2149c0; on round 53's 7 form, rebuilt at 7): the header-string clears through a nested
+// one-byte clear helper 7 (same code); the checksum read as `file->unknown04 + 0x144` 7 (same code); `if (0x213800 call) valid =
+// a == b; else valid = false;` 15; the write's handle as an explicit `s_file_handle(*handle)` temporary 114 (917 B, the write-local
+// code), with the close's handle that way too 114; diagnostic dead local ahead of the 0x213800 header 7 (same code). Relative to the
+// 7 form the write-local and temporary forms are one register step behind from the write on (close copy coalesced, checksum EDX ->
+// ECX); retail is level with the 7 form at the close and one step ahead of it at the checksum (EAX). Body unchanged.
+// m3 lane 15 r85 (fast with 0x2138f0, 0x213800 and 0x2149c0, all MATCH; control 33, masked 14/10). Re-measured round 56's
+// 7 form (the count scoped in the write block with `if (bytes_written == 0x800) written = true;`, `else if
+// (cache_file_header_read(index))` with `valid = true`): 7, left the write's handle loaded after the flags zero and the
+// checksum load in EDX (retail EAX). New, all the same code as their base: on the 7 form `valid = true;` written only in
+// the range test's else 7, the write header declared at the top of the size-mismatch block 7, the path buffer declared
+// once above the loop 7; on main the write header at the top of the size-mismatch block 33 and the path buffer above the
+// loop 33.
+// M3 lane 15 r88 (fast; control 33; round 56's 7 form rebuilt at 7: left the write's handle loaded after the flags zero
+// and the checksum load in EDX). On the 7 form: the header check as `if (0x213800 call) valid = a == b; else valid =
+// false;` 15 (the header clears then zero AL and the call result is tested with `test al, al`); `written` declared
+// before the resize call 7; the resize handle through `file` 7; the write header declared at the loop body's top 7; the
+// open given `&g_557c90[index].handle` with every other use through `file` 7 (same code each). Body unchanged at 33.
+// P516: Independent completed header-read result, bool/byte/short/long, reused by validity and admission:
+// 191/191/191/191 (frame 0x1140); independent checker result 116/116/115/116 (946 B).
+// NOT kept: all regress; original progressive validity, count homes, waits and full body restored.
+// m3 lane 10 r109 (fast with 0x2138f0, 0x213800, 0x2149c0, all MATCH; control 33): the write's flags passed as a plain `0`
+// (the implicit conversion builds the record in its argument slot: `mov edx, esp; mov [edx], ebx`) 91 (932 bytes); the
+// cleanup flag declared after the first 0x2138f0 call 36; the handle pointer taken from `file` instead of indexing the
+// array again 81; `done` declared ahead of the expected size 33 (same code); `valid` declared at the top of the loop body
+// 33 (same code). Retail loads the write's handle (`mov eax, [ebp]`) before any of the call's pushes and zeroes the flags
+// in ECX; ours zeroes the flags in EAX first and loads the handle after them.
+// P543: Standard native-width query/count/checksum/handle predicates
+// 250/139/36/224; exact complementary providers 250/139/97/224.
+// NOT kept: all regress; original comparisons, asynchronous calls/waits,
+// progressive validity and failure-only count initialization restored.
+// NOT kept (coordinator screen, MiniMax C 11-16): a goto the function on main does not have (kept only with a byte match): `goto validation_done;`; the body is main's again.
+// M3 lane 11 r108 (fast with 0x2138f0, 0x213800, 0x2149c0, all MATCH; control 33). Round 56's 7 form rebuilt at 7 (left:
+// the write's flags zero in EAX with the handle loaded after it, retail's flags in ECX with the handle loaded first, and the
+// checksum load in EDX for retail's EAX). On the 7 form: the write's flags as a copy-initialised `s_file_write_flags flags =
+// 0;` local 7 (same code); the stored checksum named where it is read 7 (same code); the 0x213800 result in its own bool
+// copied to `valid`, the checksum tested under it 7 (same code: VC copy-propagates, so `valid` stays one web over the
+// checksum load); the close test with the handle test first 165 (946 bytes); `written` typed long 7 (same code).
+// Re-measured: the written flag alone on main's body 83 (the checksum still EDX there). Body unchanged at 33.
+// P562: Whole dependency validity as valid/invalid bit sets in dword/long/word/byte:
+// 175/175/182/274/293/293/298/292. NOT kept: no exact native byte-table/stack-home
+// recovery; original validity bytes, all I/O and complete body restored.
+// M3 lane 12 r133 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33): round 53's 7 form rebuilt
+// at 7 (left exactly seven lines: the write's flags zero in EAX ahead of the handle load, retail's handle into EAX first
+// with the zero in ECX, and the checksum load in EDX for retail's EAX; both sit right after a header-string init). New
+// on the 7 form, each the same code as it: the asynchronous write count declared `dword volatile` 7, the resize result
+// `bool volatile` 7, the query size `dword volatile` 7 (all three outputs filled by the worker thread); the existing
+// async wait 0x120d50 (idle false) at all five waits in place of the file's wait helper 7; the header-string
+// initializer `__forceinline` 7. Body unchanged.
+// P588: Fixed file/handle/current-time/stored-time bindings, immutable expected
+// size, original file/handle/cleanup identities on the native handle graph:
+// eight 33 at 930/930. NOT kept: no query/count/write/checksum-home repair; original body restored.
+// M3 lane 15 r94 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33): the write filling its own
+// block-scoped count, copied into an outer `dword bytes_written = 0;` that is not address-taken, 83 (first difference
+// +0x1e1: the failed resize jumps straight to the close's handle test and the size/count homes and frame are retail's,
+// the first route to that plateau without a goto or a set-in-test flag; a one-use copy, so match-only); with the listed
+// set-in-test header read 7 (masked 2: the write's handle loaded after the flags zero, the checksum in EDX); on that 7 the
+// empty header declared and its strings initialised ahead of the resize call 169 (917 B), the checksum compare's operands
+// the other way round 7 (the header's word now loads into EDX); `index == 1` for the slot range 406 (789 B, the type loop
+// folds; listed 414 on another base). Same code: on the 83 form the else-arm zero, the close test nested under the count
+// test, the header test merged into `valid && index >= 1 && index <= 1`, the query size copied out of a block-scoped
+// local; on the 7 form the outer count declared before the resize, the write's handle as `*(s_file_handle *)&file->handle`
+// or a const reference, the stored checksum as a const reference; on main the merged range test 33. Later on the 7 form:
+// the type loop's check as `if (valid_types[type]) valid = ...; else valid = false;` 59 (934 B); the checksum test as
+// `valid = valid && stored == read;` 78; same code: `resized` or
+// `size` declared at the loop body's top, the count declared beside the outer count, the copy written `+= count` (the 83
+// form's count beside the outer count also 83, same code).
 // @retail 0x213970
 void function_213970(void)
 {

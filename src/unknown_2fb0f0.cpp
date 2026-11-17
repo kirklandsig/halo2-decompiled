@@ -52,6 +52,22 @@ struct body_2fb150
 	long key;
 	void const *placement;
 	body_2fb150 const *parent;
+
+	body_2fb150() {}
+	// the wrapped child of a side, in the same place
+	body_2fb150(body_2fb150 const *parent_, void const *placement_, shape_2fb150 const *wrapper)
+	{
+		placement = placement_;
+		parent = parent_;
+		shape_2fb150 const *child = wrapper->child;
+		key = parent->key;
+		shape = child;
+	}
+	void set_shape(shape_2fb150 const *shape_, long key_)
+	{
+		shape = shape_;
+		key = key_;
+	}
 };
 
 struct settings_2fb150
@@ -105,6 +121,11 @@ public:
 	contact_manager_2fb150 *manager;
 	agent_entry_2ea410 *entries;
 	long entry_count;
+
+	__forceinline long count() const
+	{
+		return entry_count;
+	}
 };
 
 // a triangle part's contact: its point with the separation in the fourth
@@ -216,19 +237,44 @@ __forceinline float along_normal_2fb150(contact_2fb150 const *other, contact_2fb
 	return along;
 }
 
+// whether a contact lies deep or in front of a closer one's plane
+__forceinline bool apart_2fb150(contact_2fb150 const *other, contact_2fb150 const *closer, float tolerance)
+{
+	if (other->point.value.m128_f32[3] < -0.1f)
+	{
+		return true;
+	}
+	if (along_normal_2fb150(other, closer) <= tolerance)
+	{
+		return false;
+	}
+	return true;
+}
+
 // whether a contact only repeats a closer one's plane: it does not lie deep,
 // and lies no further in front of the closer one's plane than the tolerance
 __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, contact_2fb150 const *closer, float tolerance)
 {
-	bool const apart = other->point.value.m128_f32[3] < -0.1f ? true : along_normal_2fb150(other, closer) > tolerance;
-	return answer_2fb150(!apart);
+	return answer_2fb150(!apart_2fb150(other, closer, tolerance));
 }
 
 // a query against a container's triangles, each through its part's agent:
 // the triangles' contacts are gathered, sorted closest first, those that
 // only repeat a closer one's plane dropped, and the rest passed to the
 // collector with ids from the contact manager
-// score 330 (was 344): receiver register, body homes and plane branch still differ.
+// score 22 (was 244): rewritten in the shape of its sibling 0x2fa2f0: the part
+// body has a constructor and a set_shape member, the none-agent test reads the
+// entry directly, the entry count comes through an accessor, and the hit is
+// appended with the count stepped through the collector while the data is read
+// through the local list. Left: the append itself (retail derefs the collector
+// once and reloads the list from its home).
+// Before, 244 (was 276): the plane helper tests the fourth component first and
+// returns from each arm (retail's byte result with the along-normal arm out of
+// line).
+// Before, 276 (was 330): the plane test is a nested helper, the contact count is
+// raised before the new index is taken, the other branch re-reads the entry's
+// agent, and the third loop names the kept and the added contact.
+// Before, 330 (was 344): receiver register, body homes and plane branch still differ.
 // Object/entry/body/output/selection references 344; const list view 344; settings pointer 452;
 // one-exit answer 470; swap pointers 344; void vector assignment 330; direct plane tests 368;
 // shared contact type 345, with void assignment 332; parent-first and swap assignment 330.
@@ -236,6 +282,14 @@ __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, co
 // 330; reused selection pointer 423; declaration swap 330; tolerance
 // reference 369; vector-input references 330; implicit vector copy 496.
 // Equality operands exchanged 330, with agent reads at use 427.
+// New: immutable body/shape pointers 330; later receiver alias 330;
+// input argument at use 330; entry cursor 470; final contact reference 364;
+// minimum-search cursor 405; int dispatch ordinals 330.
+// P453: separate part-body scopes 330; separate child buffers 330; body
+// aggregate initialization 330; hit element reference 330; paired memcpy
+// 379; minimum field at use 600; output header at use 317; final cursor 383.
+// NOT kept: header reloads differ from the native saved header; the gain
+// comes with a different observation pattern. Original body retained.
 // @retail 0x2fb150
 void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *input_, void *collector)
 {
@@ -243,30 +297,25 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 	body_2fb150 const *b = (body_2fb150 const *)b_;
 	input_2fb150 const *input = (input_2fb150 const *)input_;
 	agents_2fb150 *agents = (agents_2fb150 *)this;
-	body_2fb150 container_side;
-	container_side.shape = b->shape->child;
-	container_side.key = b->key;
-	container_side.placement = b->placement;
-	container_side.parent = b;
+	body_2fb150 container_side(b, b->placement, b->shape);
 	((class_2e96a0 *)this)->function_2e96a0(a, &container_side, input, function_2e90f0);
-	stack_array_2faeb0 contacts(agents->entry_count);
+	stack_array_2faeb0 contacts(agents->count());
+	__declspec(align(16)) char buffer[0x100];
 	shape_2fb150 const *container = container_side.shape;
 	body_2fb150 part;
 	part.parent = b;
 	part.placement = b->placement;
-	__declspec(align(16)) char buffer[0x100];
-	for (long i = 0; i < agents->entry_count; i++)
+	for (long i = 0; i < agents->count(); i++)
 	{
 		agent_entry_2ea410 const *entry = &agents->entries[i];
-		if (function_301a40() == (object_4805a4 *)entry->agent)
+		if ((object_4805a4 *)entry->agent == function_301a40())
 		{
 			continue;
 		}
-		part_agent_2fb150 *agent = (part_agent_2fb150 *)entry->agent;
-		part.shape = container->child->part(entry->key, buffer);
+		shape_2fb150 const *shape = container->child->part(entry->key, buffer);
+		part.set_shape(shape, entry->key);
 		shape_2fb150 const *a_shape = a->shape;
-		part.key = entry->key;
-		long const kind_b = part.shape->kind();
+		long const kind_b = shape->kind();
 		long const kind_a = a_shape->kind();
 		if (input->dispatcher->handlers[kind_a][kind_b] == (handler_2ed170)function_2f0e70)
 		{
@@ -274,9 +323,11 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 			{
 				function_2d91d0(&contacts, sizeof(contact_2fb150));
 			}
-			long const index = contacts.size++;
+			contacts.size++;
+			part_agent_2fb150 *agent = (part_agent_2fb150 *)entry->agent;
+			long const index = contacts.size - 1;
 			contacts.data[index].agent = agent;
-			contacts.data[index].part = part.shape;
+			contacts.data[index].part = shape;
 			contacts.data[index].key = entry->key;
 			contacts.data[index].point.value.m128_f32[3] = 3.40282347e+38f;
 			contact_2fb150 *contact = &contacts.data[index];
@@ -285,7 +336,7 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 		}
 		else
 		{
-			agent->slot_4(a, &part, input, collector);
+			((part_agent_2fb150 *)entry->agent)->slot_4(a, &part, input, collector);
 		}
 	}
 
@@ -331,17 +382,18 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 			{
 				function_2d91d0(hits, sizeof(hit_2fb150));
 			}
-			hit_2fb150 *hit = &hits->data[hits->size++];
-			hit->point = contacts.data[k].point;
-			hit->normal = contacts.data[k].normal;
+			hit_2fb150 *hit = &hits->data[(*(hits_2fb150 **)collector)->size++];
+			contact_2fb150 const *kept = &contacts.data[k];
+			hit->point = kept->point;
+			hit->normal = kept->normal;
 			if (contacts.data[k].agent->id == 0xffff)
 			{
 				part.parent = b;
 				part.placement = b->placement;
 				shape_2fb150 const *shape = container->child->part(contacts.data[k].key, buffer);
-				part.key = contacts.data[k].key;
-				part.shape = shape;
-				contacts.data[k].agent->id = agents->manager->add(a, &part, input, hit);
+				contact_2fb150 *added = &contacts.data[k];
+				part.set_shape(shape, added->key);
+				added->agent->id = agents->manager->add(a, &part, input, hit);
 			}
 			unsigned short const id = contacts.data[k].agent->id;
 			if (id != 0xffff)

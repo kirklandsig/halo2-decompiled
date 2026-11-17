@@ -541,6 +541,10 @@ bool function_2160b0(long file_index, char *path)
 char *function_216400(long memory_unit, char *buffer, short capacity);
 bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long language);
 
+// score 11: argument-setup scheduling and call-layout differences. Permuter:
+// 292 tries in 600 s, best 4 only by swapping the name/display_name arguments
+// at the matched 0x216da0 and reading language through a volatile char, both
+// rejected; the honest form stays at 11.
 // @retail 0x215e60
 void __stdcall function_215e60(long file_index)
 {

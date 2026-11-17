@@ -133,7 +133,7 @@ struct tables_316dd0
 {
 	char unknown0[0xc];
 	creator_316dd0 *creators[12][8];
-	handler_316dd0 handlers[1][32];
+	handler_316dd0 handlers[32][32];
 };
 
 struct dispatcher_316dd0
@@ -200,6 +200,8 @@ public:
 	void function_316dd0(handle_pair_316dd0 const *pair);
 };
 
+// The remaining byte differences are the two first-handle loads in the
+// duplicate check. Capture the selected callback before passing its arguments.
 // score 71 (was 115): saved dispatcher restores the entry registers; record
 // and object spill homes, repeated loads and later agent scheduling differ.
 // Record ref/post-increment 71; island locals/if-else 71; filter arms 71;
@@ -220,6 +222,8 @@ public:
 // with stored-id-first 8; id accessor 5, reversed equality 11; shared member
 // id test with pointer/ref 8/8, reversed operands 8/8; insertion guard 2;
 // parameter rename 2. Callback forms discarded without an exact match.
+// Review cleanup score 71: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x316dd0
 void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 {

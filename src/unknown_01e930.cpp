@@ -353,7 +353,7 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // MiniMax B (11-03): no new form, no lower score. Retail's frame is 0x40 against our 0x3c and its
 // timeout compare (`fld`/`fcompi`) and its `movss` stores need /arch:SSE, which this file's flags line
 // does not carry; the build flags are the user's decision, so this file was not changed.
-// score 246 (was 246): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
+// score 272 (was 272): earlier 246; frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
 // size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
@@ -572,6 +572,62 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH378: Direct combined rejection and readiness/loading/both positive pipeline ownership 246/246/246/246;
 // complete skip expression 277, direct mode-arm publication/both local outcomes/direct query-arm stores 272/272/272.
 // NOT kept: native 1098-byte skip forms regress and keep frame 0x3c; original complete body restored.
+// b5G (statement walk against retail, 2026-11-06, fast, base 8cda3c91d): every block compared with 0x156090..0x1564da
+// (entry check and 0x100 override, finished/unknown03 stores, size (flags & 0x100 | 0x40) << 16, retry loop and its
+// 30-attempt limit, tsc elapsed clamp, 0.1 s test, XPhysicalProtect 2 / 0x404, direct sound call order, movie open
+// 0x8002000, surround bins {0,1,4,5} volumes {0x8000,0x8000,0x5472,0x5472} and stereo, 0x23e340 argument order, material
+// memset 0x98 and the four 1.0f stores, bitmap fields and size, flags & 4 pair, final flag stores): no behaviour difference.
+// Retail keeps the seconds unrounded: `fld dword [0.1f]; fcompi st(1)`, no fstp dword, and ours has no (real) cast either.
+// Changes (246 -> 272, 1098 bytes = retail's size): the timeout test is `!(seconds < 0.1f)` (retail's jbe also leaves the
+// loop on NaN; was `>= 0.1f`; same code), and the skip flag is `!function_2148b0(0)` (ternary and `== false` the same) instead of
+// `bool skippable = true; if (call) skippable = false;` (Kirk undoes a value set before a test and overridden; that form scored
+// 246 and is the closest to retail's `mov byte [esp+7], 1` before the call; plain form gives neg/sbb/inc). 0x1568d0 shows
+// score 7 in fast checks that also list the callers, base included (image composition, not this body). Callers 0x12bf90
+// 0x163890 0x223a21 0x2ab8c0 and callees stay MATCH.
+// `dword large = flags & 0x100; size = (large | 0x40) << 16` 273 (1102) on the old skip, 290 (1087) on the plain one. The rest of the gap is
+// flags: retail is SSE code (movss 1.0f stores, `fld dword; fcompi` timeout), this file has no /arch:SSE, so it cannot match here.
+// M3 lane 1 r99. In this file (fast, base 272): the retry loop as `while (!block)` with the allocation as its first statement 299
+// (1067 bytes); that with the direct sound object read once into a local 306; that with block cleared after the start time 326.
+// In a file of its own with /arch:SSE (the allowed move; fast with this file's ten matched functions, all MATCH throughout; the
+// body unchanged there reads 272, aligned 170): retail's listing read slot by slot gives these forms, each checked in the listing.
+// (1) `bool skippable = true; if (loading) skippable = false;` is retail's `mov byte [esp+7], 1` ahead of the call and the
+// `xor al, al` / reload after it; one `bool loading` for both 0x2148b0 results gives both `cmp al, bl`. (2) The size stored by
+// `(flags & 0x100) ? 0x1400000 : 0x400000` and read back from permanent_memory_size after the three stores gives the and/or/shl
+// in EAX, the mask spill and the size in EBP, block in ESI, start in EDI. (3) The movie open as one call per arm of `flags &
+// 0x100`. (4) `(real)timing_ticks_to_seconds(elapsed) < 0.1f` gives `fld dword; fcompi`. (5) `block = NULL;` after the start
+// time and `while (!block) { block = ...; if (block) break; if (attempts < 30) { ...; continue; } ... }` gives retail's
+// unrotated loop with one allocation call, two `jmp`s back and D3DDevice_IsBusy still inline (the allocation in the while
+// condition, or `for (;;)`, duplicates the call; the tests nested as if/else leave IsBusy a call, 335 at 1050 bytes). (6) The
+// direct sound object read once into a local (retail's ESI across 0x155e50). (7) The last texture test written positively with
+// the rest of the function inside it puts the one shared 0x1565e0 exit last. (8) `function_1358c0(g_55ece8.format)`. With all
+// of these and `__int64 start = 0;` at the top: 150 at 1098 bytes, retail's length (aligned 80, most of it frame offsets). Left
+// there: frame 0x44 against 0x40 (ours gives the first clock temporary its own eight bytes at +4, retail has it at +0x10 with
+// start's high half sharing its high dword and the surround volumes over it); retail's two zero stores to one dead slot at
+// entry (`mov [esp+0x3c], ebx` twice, ahead of the memory-status clear: a 64-bit `start = 0` or clock value zeroed at the top
+// gives two stores but to two slots, 32-bit, float and elapsed-time initialisers vanish; texture size/data initialisers take
+// real homes, frame 0x4c); the constant 10 held in EBP for the texture call, the format store and 0x1358c0, and 3 through EDX
+// for copy_flags (retail reads like an inlined helper's parameters); the texture pointer loaded early at the tail; the order of
+// the surround volume stores. Also measured there: no top initialiser 302 (1085 bytes); the clock values zeroed at their reads
+// with a plain rdtsc helper 311 (frame 0x3c, the zero stores vanish); the retry as a `static inline` helper taking the stored
+// size 465 (909 bytes: it stays a call). The move is kept only with a match, so the file is as it was and the body below is
+// unchanged; the lead version is build/r99/body156_h3.cpp with build/r99/mk156.py.
+// P482: Actual selected 2/4 channel count reused by both audio calls, char/signed-char/byte/
+// short/word/int/long/dword: 284/284/284/290/290/281/281/281. NOT kept: every form
+// regresses and lengthens; original arrays, layout test, helpers and complete body restored.
+// Frame 0x3c/0x40, native zero/clock/output homes and instruction policy remain.
+// T105: Finite pump budget, long/dword/short/byte with positive/nonzero
+// guards: 272/272/272/284/272/272/272/284. NOT kept: native ordinal/frame
+// equality absent; original retry, clock producers and complete body restored.
+// M3 lane 13 r99 (fast, in a file of its own with /arch:SSE from M3 lane 1 r99's 150 lead, this file's other functions
+// MATCH throughout): the texture format as a named local used for the texture, the bitmap format and 0x1358c0 150
+// (same code: retail's EBP-held 10 and EDX-held 3 are not a propagated local); the existing function_155e50() called at
+// entry in place of the inline memory-status helper 356 (LTCG keeps it a call, frame 0x34); the surround bins declared
+// before the volumes 150 (same code); the elapsed clock declared at the top with the start 150 (same code); the copy
+// flags stored before the movie size 152. Diagnostic: the same file built /O1 464 (an EBP frame), so /O2 stays. Retail's
+// two dead zero stores at entry fall on the memory-status block's +0x18 dword. Not moved (kept only with a match).
+// P574: Actual audio-layout admission, positive/complementary bool/byte/short/long:
+// 272/272/272/272/272/272/272/272. NOT kept: no exact native frame/status/clock/audio-home
+// recovery; original layout test, arrays, helpers and complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
@@ -591,11 +647,7 @@ void function_156090(char const *name, dword flags)
 	}
 	else
 	{
-		bool skippable = true;
-
-		if (function_2148b0(0))
-			skippable = false;
-		g_4e9188.unknown03 = skippable;
+		g_4e9188.unknown03 = !function_2148b0(0);
 	}
 
 	bool large = (flags & 0x100) != 0;
@@ -623,7 +675,7 @@ void function_156090(char const *name, dword flags)
 			__int64 elapsed = bink_read_tsc() - start;
 			if (elapsed < 0)
 				elapsed = 0;
-			if (timing_ticks_to_seconds(elapsed) >= 0.1f)
+			if (!(timing_ticks_to_seconds(elapsed) < 0.1f))
 				break;
 			D3DDevice_KickPushBuffer();
 			D3DDevice_IsBusy();

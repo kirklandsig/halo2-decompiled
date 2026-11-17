@@ -37,6 +37,13 @@ bool function_7af40(s_type_99af70 const *address);
 // (16), a value local (16), nested ifs / sizeof(dword) / (long) cast / reference before
 // result (all 14), early return true (48), "result = true; if ((byte)*ipv4_address) result = false;" (23, but the
 // tail is mov al, 1 / je / xor al, al), (output & 0xff) == 0 (28), swapped parameter order (14).
+// b13O (11-17) walk against retail, fast build on r846: from 0x7aeff on the if-form is byte-identical to retail (the
+// byte-swap tree, "mov cl, dl / test cl, cl / jne / mov al, 1" at 0x7af25-0x7af2d); only the incoming address register
+// differs (edx here, ecx at 0x7aec2), so it is an allocation difference, not a logic one. With the if-form the callers
+// 0x784a0 (score 1) and 0x7ab60 (3) stop matching (0x7acc0 and 0x7acf0 still match); the sete form leaves all four
+// matching. More if-form spellings, all unchanged or worse: result as byte (58) or long (61); (short) length cast,
+// result declared first, a copy of address, a byte local for the low byte, empty-if/else, "!(word)(output << 8)"
+// (all 14); "!(output << 24)" (28); the value swapped in a local then stored (29); "address &&" first (86).
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

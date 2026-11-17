@@ -374,7 +374,11 @@ struct s_1aa0d0
 	bool field_16;
 	bool field_17;
 	bool field_18;
-	byte field_19[0x2c - 0x19];
+	byte field_19;
+	short field_1a;
+	point2f field_1c;
+	real field_24;
+	real field_28;
 	bool field_2c;
 	bool field_2d;
 	bool field_2e;
@@ -409,8 +413,29 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
+// score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
+// difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
+// the result returned in the arm plus that aggregate planar copy 408 (1530 B); actor first with the aggregate copy alone 408;
+// the prop pointer declared and cleared at the top 394, on the actor-first order 408 (1550 B); original order with the result
+// returned in the arm and the aggregate copy 433 (1524 B).
+// MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
+// entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the
+// facing pointer is formed in esi from the view call here and late from eax in retail, which 0x25d740's inlining decides;
+// taking the actor view before the settings call, as retail does, measures 413.
+// MiniMax B (11-11): no new form, no lower score (375); retail loads the actor table before its register saves,
+// keeps arg_0, the actor, the slot and the prop in edi, ebp, esi and ebx and computes the actor's table entry
+// before the settings call, where ours keeps that entry in ebx after the call and the slot in ebp; the frame
+// itself agrees (0x40), so only the carriers and the prediction homes differ.
+// MiniMax G (11-12): no new form, no lower score (375): the frame agrees, but retail still loads the actor table before its register
+// saves and holds the actor in ebp, the slot in esi and the prop in ebx, where ours computes the actor's table entry after the settings
+// call and keeps the entry in ebx; moving the actor lookup ahead of the settings lookup still regresses (413), as the four entry
+// declaration orders recorded below do.
 // MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
-// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// b2G walk (r719): every block, field offset, constant and call argument checked against retail 0x1aa0d0-0x1aa6da; no logic or
+// precision difference found (float sums in retail's k,j,i order, 0x24590 called, 0x2b400/0x30bf0 results as retail); the 20 matched callees and
+// the file's matched siblings still match. What remains is allocation and scheduling only.
 // Lane 6 r85: retail returns constants (`mov al, 1` / `xor al, al`, every push at entry, the early tests
 // jumping to the false exit); `if (...) return true; ... return false;` without the result byte gives that
 // 440 (frame 0x3c); with the actor looked up before the settings call 413 (retail's 0x40 frame and hoisted
@@ -606,10 +631,133 @@ extern point2f *g_468778;
 // order, `comiss` against the memory zero after the normalize, and the request's word/dword store order. On that base the slot as the parameter itself 422/1532 (60), the
 // prop at function scope 397/1560 (73). Same code, no change: slot declared first or middle, all six dot term orders, dot operands swapped, renamed locals (three sets).
 // One-link harness not faithful here (control 442 at 1580 bytes).
+// AC560: Proven metadata/returned state/view record references, seven subsets, then facing
+// reference: 375/375/375/375/375/375/375/375. NOT kept: no byte equality; early actor/settings/prop homes remain.
+// Original receivers, early distance, result, observations and full body restored.
 // Round 90 (m3 lane 16, fast, on the 375 form): the prop pointer uninitialised and cleared in the prop-less arm 399
 // (1558 bytes); the slot pointer declared first 375 (same code); the prop lookup before the clock 380; a velocity
 // pointer for the magnitude call and the eight prediction reads 397 (1576 bytes); the request direction stored
 // through its pointer 375 (same code). Aligned by sequence, 263 rows differ.
+// Round 179 (m3 lane 4, fast, the file's 15 matched functions and 0x265d30 matched each time): actor first with
+// `return !f14 && !f13 && !f2d;` in the arm re-measured 393 (arg_0 EBX, actor EDI, settings ESI, slot EBP, prop in
+// arg_1's home); on the 375 body: the distance left uninitialised and zeroed in the copy arm 384 (1551 bytes); a
+// separate local for the second prediction time 375 (same code); the prop index in a two-use local 375 (same code);
+// the facing pointer taken straight from the 0x25d740 call, no view local, 375; the settings test as its own `if`
+// around the flag tests 374 (one count, not kept); the facing-test planar pair copied whole 384. Retail's two
+// `local_9 = *local_8` copies stay separate (the copy arm jumps past a local_6 reload); ours cross-jumps them.
+// Round 106 (lane 9, fast; re-measures of lane 1 r71's chain on the current base): actor first with constant returns
+// 393 (1549 bytes, masked 134), plus the velocity field through a named pointer 417 (1563), plus the direction
+// pointer inside its test 412 (1560), plus the second distance's zero in its arm 420 (1560), plus the planar pair
+// copied whole 412 (1552). Retail's homes: arg_0 EDI, actor EBP, slot ESI, prop EBX, settings in memory.
+// Diagnostic: 0x110ab0 as an opaque stub leaves 375 (masked 134), so that unmatched callee is not the cause.
+// Lane 12 r107 (fast; masked aligned count with registers and esp offsets masked in brackets, 124 at 375): lane 1 r71's lead
+// rebuilt (actor first, constant exits, a velocity pointer for every field_1c read, the direction pointer declared inside the
+// 0x110ab0 test, the second distance's zero in its arm, the planar pair copied whole) 422 [90] (1532 B, frame 0x44: ours arg_0
+// ESI, actor EDI spilled around 0xe6900's EDI argument, slot EBP; retail arg_0 EDI, actor EBP, slot ESI). On it: a separate
+// local for the second prediction time 422 (same code); the first prediction in i, j, k order 418 [91] (1535 B); without the
+// velocity pointer 420 [111] (1525 B); `return !f14 && !f13 && !f2d;` in the arm 411 [99] (1549 B); that with the distance zero
+// at its declaration 403 [102] (1549 B), and with the planar pair as `{i, j}` 407 [106] (1555 B).
+// Round 169 (m3 lane 6, fast with the file's 15 matched functions and 0x1aab50): a forceinline facing-request helper shared
+// with 0x1aab50 (memset, mode, type, planar direction, both normalize2d fallbacks, 0x0e6900 and the entry request) 375 (same
+// code); a forceinline predicted-offset helper (target velocity times scale plus its point minus the origin, i, j, k: retail
+// gives i, j, k xmm1/xmm2/xmm3 in both functions) for both predictions here and 0x1aab50's 375 (same code; 0x1aab50 444);
+// a forceinline planar facing test shared with 0x1aab50 (cosine as a parameter) 384; the final result set by
+// `if (...) result = true;` 380; the first facing dot read through the prop view (retail's `[edi + 0x34]`, then `add edi,
+// 0x2c`) with the facing pointer kept for the rest 394 (1555 bytes).
+// M3 lane 1 r90 (fast with the file's functions and 0x265d30; aligned/register-masked counts in brackets, control 375
+// [263/104]): base B = the actor looked up first, `if (!local_1 || f13 || f14 || f2d) return false;` and `return !f14 &&
+// !f13 && !f2d;` in the arm, re-measured 393 [266/104]; B with the -0.4 facing dot read off the view (round 145's form,
+// re-measured 408 [179/99], 1556 B) = B2. New on B2: a pointer for the prop velocity's eight reads 451 [322/83] (frame
+// 0x44, 1588 B); the planar pair copied whole 402 [281/89] (1536 B); the second distance left uninitialised and zeroed in
+// its copy arm 395 [175/97] (1558 B, line count equal to retail's) = B3; on B3 the planar pair copied whole 399 [288/98]
+// (1549 B), and a late pointer to field_2d for the tail 395 (same code). Retail keeps the prop in EBX, then the velocity
+// pointer (`add ebx, 0x1c`) for magnitude3d, and the weight in memory across that call (our link keeps it in XMM4: the
+// same magnitude3d register-summary lead as 0x1d24a0's). All restored.
+// M3 lane 14 r80 (fast; masked = aligned count with registers masked, 106 at 375): retail keeps the view pointer in EDI across the
+// second 0x110ab0 call and turns it into the facing pointer in place (`add edi, 0x2c`) in the middle of the first dot, reading
+// facing.k/j off the view (+0x34/+0x30); ours forms the facing pointer in ESI straight after the view call, and so does every
+// facing form tried. Retail likewise turns local_6 into its field_1c pointer in place (`add R, 0x1c`) for the magnitude call.
+// New: the facing read through the view at each use plus a velocity pointer for the magnitude and all nine field_1c reads 450
+// (1601 bytes, masked 163); that with the actor first 457 (1593, 264); the facing through the view with the actor first 389 (1556,
+// 129); that with the result returned in the arm (`return !f14 && !f13 && !f2d;`, `return false;` last) 386 (1549, 154); the facing
+// through the view with that return on the original order 408 (1549, 153). Re-measured: actor first 413 (1555, masked 134); the
+// velocity pointer alone 397 (1576, masked 136).
+// M3 lane 2 r73 (plain with the file's 17 functions and 0x265d30; aligned 263, masked 102 at 375): the 0.866 planar test
+// through vector2f_products.h's dot_product2d 375 (masked 103: the -0.4 dot's j product takes the actor field first).
+// Census of the other natural forms, all listed above with scores: dot3f at the three facing dots 407/398/398 (all 407),
+// the one-use clock read at its use 391, the facing pointer straight from the 0x25d740 call 375, the actor first 413,
+// constant exits 440, the prediction pipelines through the point helpers 375-377, a separate second prediction time 375,
+// the slot pointer declared first 375, the prop lookup before the clock 380.
+// M3 lane 1 r99 (fast with the file's 17 functions and 0x265d30, all MATCH throughout; base 375). Reading of the listing: retail
+// gives EBX to the prop, so arg_0 takes EDI and is copied to EBX for 0x1e4f90, and the settings pointer is the one left in memory;
+// ours loads arg_0 straight into EBX (the register 0x1e4f90 takes it in), keeps the settings in ESI and leaves the prop in arg_1's
+// home, so the question is why the prop outranks the settings in retail (both have six reads). The prop pointer declared first at
+// function scope and cleared where it was 375 (same code); that with the actor looked up first 413 (same code as actor first
+// alone, re-measured 413); retail's entry read literally (actor, settings tested at once with `return false`, then the slot and
+// its three flags, the result returned as the expression) 410 (1549 bytes); that with the prop declared first 410, with the prop
+// declared and cleared at the very top 409; the slot and the actor ahead of the settings call 413; the settings distance read
+// once into a local for its three later reads 406 (1533 bytes), with retail's entry 421 (1529 bytes). Declaration order and
+// position do not decide the tie. Body unchanged at 375.
+// Round 103 (m3 lane 10, fast with 0x1aab50 382): the rejection as an early `return false` and the end as `return !f14 && !f13 &&
+// !f2d;` on the settings-first order (no result byte) 425 (1532 bytes); the request's type-0x1a direction as a typed point2f
+// member at +8 of the request arguments (shared header; here and in 0x1aab50) 375/382 (same code, not kept); the velocity weight as
+// one conditional expression 388 (1556 bytes); the zero length local declared just before the facing test 379; the second
+// prediction vector declared at the top of the prediction arm 375 (same code). Register-masked, 249 lines still differ, all
+// homes: retail puts the weight and then the zero length in arg_1's home and keeps the zero length in the comparison's XMM0.
+// T105: Progressive final-result logical/bitwise refinement, bool/byte/short/long:
+// 375/395/404/406/375/373/406/407. NOT kept: two-point best is below the gate
+// and no native result/carrier equality; original result and complete body restored.
+// M3 lane 11 r100 (fast with the file's functions and 0x265d30, 16 MATCH in each; 0x1aab50 at its own 382): the actor
+// looked up before the settings call with constant exits (`if (!local_1 || f13 || f14 || f2d) return false;`, the
+// final expression returned) re-measured 393 (frame 0x40): ours then gives arg_0 EBX (0x1e4f90's register), the actor
+// EDI (spilled at [esp + 0x20]), settings ESI (split: ESI later serves the facing pointer) and arg_1 EBP, prop in
+// arg_1's home; retail arg_0 EDI, actor EBP, arg_1 ESI, prop EBX, settings at [esp + 0x10] only. On it: the arg_1 view
+// declared first 393 (same code); the settings test as its own early return 410. Diagnostics (reverted, not source
+// forms): one settings read fewer (the -0.4 test's distance replaced) 403 and one prop read more 407, settings still
+// ESI in both, so reference counts alone do not rank prop over settings here. Body unchanged.
+// m3 lane 12 r125 (fast with 0x1aab50 and 0x265d30, control 375): the view and state pointers through the existing
+// prop_node_view / prop_node_state 375 (same code). The actor looked up before 0x1e4f90 crossed with constant exits,
+// local_2 declared first and the prop pointer at function scope: 413 (1555 bytes), 408 (1550), 413, 408, 393, 398, 393,
+// 398 (the constant-exit four at 1549 bytes); every actor-first form keeps arg_0 in EBX and the prop in memory.
+// m3 lane 15 r85 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
+// register-masked 106). Re-measured lane 11 r100's actor-first, constant-exit form 393 (masked 113: arg_0, actor, settings,
+// arg_1 and prop sit in EBX/EDI/ESI/EBP/arg_1's home where retail has EDI/EBP/[esp + 0x10]/ESI/EBX). New: the prop arm
+// tested as `else if (local_0->prop_index != NONE)` in place of `else if (local_3)` 370 (1549 B, but masked 118: a
+// positional drop only, five points, not kept); that on the 393 form 393; that with the prop's NULL default dropped 392
+// (1550 B), on the 393 form 391; the actor looked up inside the block after the slot tests 408 (1558 B), with the prop-index
+// test 427 (1570 B). The tail's `lea R, [slot + 0x2d]` field pointer is the same code in both builds (ESI here, EBP in retail).
+// M3 lane 13 r95 (fast with the file's functions and 0x265d30, all matched but 0x1aab50 at its own 382; control 375):
+// `s_unit_request local_17 = {0};` for the memset 374 (positional only: it drops the zero store to the type field that
+// retail keeps before its 0x1a store; one point, not kept); in the 0.8 arm the field_15 store ahead of the copy 387; in
+// the first arm the field_15 store after the two negated components 379; the request's unknown6 store ahead of the
+// direction copy 375, field_12 set ahead of the submit call 375, the second prediction's field_15 store after its copy
+// 375 (other code each). Same code (not counted): the view fetched ahead of the state. Body unchanged.
+// M3 lane 7 r165 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375,
+// aligned 263): the first arm's negated facing as `-local_8->i` / `-local_8->j` 390; the planar copy for the 0.866 test as
+// `*(point2f *)&local_9` 384; the facing pointer declared inside the `!function_110ab0` block 378; the actor's facing through
+// a named pointer for its six reads 375 (aligned 265); the actor's position through a named pointer for its six reads 377.
+// Body unchanged.
+// P539: Isolated first facing-test outcome, positive/complementary bool/byte/short/long:
+// 377/377/377/377/377/377/377/377. NOT kept: no native entry/carrier repair or byte equality; original direct
+// comparison, early distance, all predicate calls and complete body restored.
+// M3 lane 1 r109 (fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control 375):
+// `bool result = false;` declared after the three lookups 409 (1519 B, frame 0x3c: the result goes to AL); diagnostic,
+// restored: `inline` on magnitude3d's definition (src/unknown_023540.cpp) with the actor first and constant exits 391 (1555 B,
+// frame 0x44, the actor spilled; lane 11's 393 form without the inline); the zero length left uninitialised and zeroed in
+// the copy arm (on the main order) 384 (1551 B); the first prediction written i, j, k 375 (same code); the request declared
+// at the top of the facing block 375 (same code). Retail keeps the weight in memory and rebuilds 0.0 after the magnitude3d
+// call, where ours holds the zero in XMM5 across it (the 0x24590 register-summary lead again).
+// MiniMax I (11-15): no new form, no lower score (375): the actor looked up before the settings call, with the entry
+// declarations in that order, measures 413 (1555 bytes) again - the actor pointer then takes edi and is spilled at
+// [esp + 0x20] and the frame grows to 0x44, where retail holds the actor in ebp, the slot in esi and the prop pointer
+// in ebx, and keeps the settings only in its home. The frame, the length and the carriers are the whole difference.
+// P575: Near-distance/prediction admission, positive/complementary bool/byte/short/long:
+// 377/377/377/377/377/377/377/377. NOT kept: no exact actor/prop/prediction-home repair;
+// original comparisons, receivers, lookups, vector operations and complete body restored.
+// m3 lane 1 r115 (fast with 0x1aab50 and 0x265d30, control 375, register-masked 103): the 0.8 arm's `field_16 ? 2 : 0` as
+// if/else 378 (1553 B, masked 112); the field_34 arm's one as if/else 374 (1549 B, masked 110: positional, not kept); both
+// 375 (1552 B, masked 112). The tail around 0x1f4280 / 0x1a9d80 / 0x1a9e00 differs only in registers (retail's field_2d
+// pointer in EBP); the actor-first, constant-exit, velocity-pointer and prop forms and their combinations are listed above.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -767,18 +915,45 @@ struct s_1aab50
 	real field_2c;
 };
 
-struct s_1aab51
-{
-	byte field_0[0x1c];
-	point2f field_1c;
-	real field_24;
-	real field_28;
-};
-
 static __forceinline long real_to_long(real value);
 
+// MiniMax H (11-13): no new form, no lower score (382): retail's early false exit (xor al, al; pop ebp; add esp,
+// 0x58; ret 8) sits in the middle of the body where ours lands after the main exit, and in the velocity block retail
+// keeps the view pointer in eax and forms the facing pointer late where ours forms it in esi from the view call; the
+// single-exit bool spelled as a direct return true and return false measures 508.
+// MiniMax B (11-12): no new form, no lower score (382); the normalised instruction streams differ in two ways: the
+// early false exit (xor al, al; pop ebp; add esp, 0x58; ret 8) sits at retail's 0x1aac35, in the middle of the
+// body, while here it lands after the main exit at the end of the function, so every later branch target is
+// displaced, and the velocity block colours its registers differently (retail keeps the view pointer in EAX and
+// the zero vector in XMM4, ours in ESI and XMM3). Writing the rejection as an early return (the entry tests
+// returning false at once, the body outside them, or the three tests as separate else branches) gives 508 or 527
+// at a 0x54 frame, since the result byte is then folded away and the frame loses four bytes, so the shared exit
+// with the result byte in its stack slot stays as it is. The permuter (run with the 0x25d740 and 0x25d690
+// contexts, since retail inlines those two callees) finds no rewrite that matches retail, so the body stays.
+// MiniMax E (11-11): no new form, no lower score (382): the frame and the length agree and the early false exit's place is right, but the object/magnitude and query scalar homes still differ, and the helper retail keeps out of line is expanded here (0x25d740, in another file): BLOCKED-BY 0x25d740.
+// MiniMax S (11-11): no new form, no lower score (382): the frame and the length agree, but the early false exit's place, the object/magnitude homes and the query scalar homes still differ.
+// MiniMax G (11-14): no new form, no lower score (382): an early `return false` for the three flags folds the result byte away (frame 0x54, 508); retail keeps the byte and puts its false exit at +0xe5.
+// MiniMax H (11-14): no new form, no lower score (382): the frame and the length agree, but the early false exit's
+// place, the object and magnitude homes and the query scalar homes still differ, and any early return form here
+// folds the result byte away and shrinks the frame to 0x54, which reads 508.
+// MiniMax C (11-14): no new form, no lower score (382): the frame and the length agree (1904 bytes against
+// retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
+// in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
+// differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
+// MiniMax D (11-16): no new form, no lower score (382): the frame and the 1904-byte length agree and the early false
+// exit's place is right, but retail keeps the view pointer in EAX and forms the facing pointer late with
+// `lea esi, [eax + 0x2c]` where this build forms it in ESI from the view call, and the helper retail keeps out of line
+// (0x25d740) is expanded here: BLOCKED-BY src/ai.cpp; the two early-exit forms fold the result byte away and read 508
+// and 495, so the shared exit with the result byte in its stack slot stays as it is.
+// score 382 (was 382): MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
+// velocity block (retail keeps the view in EAX and forms the facing pointer late with `lea esi, [eax + 0x2c]`) and from
+// 0x25d740 being expanded here where retail keeps it out of line, and that body is in src/ai.cpp: BLOCKED-BY that file.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
+// b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose
+// first output is the reused speed local) checked against retail 0x1aab50-0x1ab2bd; no logic or precision difference found. The written-out
+// object-speed root now uses length_sq3f (same code, 382); magnitude3d would be a call (481, 1887 bytes) where retail inlines the x87 body;
+// dot3f sums i,j,k where retail sums k,j,i, so it is not used. What remains is allocation and scheduling only.
 // Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
 // target the prop's position (retail passes the prop's point in EAX and the actor's in ECX, the registers the
 // matched 0x2900b0 uses for target and origin) 384 -> 382. Tried: the entry flags through a forceinline
@@ -1006,10 +1181,66 @@ static __forceinline long real_to_long(real value);
 // F385: Existing vector-union component-array observations in target velocity, facing
 // and working vectors, seven subsets, then actual position arrays: eight at 382.
 // NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
+// AC560: Returned actor/state/view record references, seven subsets, then complete facing
+// reference: 382/382/382/382/382/382/382/382. NOT kept: no byte equality; early rejection and magnitude/query
+// homes remain. Original receivers, query aliases, arithmetic and full body restored.
 // Round 90 (m3 lane 16, fast): the query vector and scalars declared in reverse order 382 (same code); the else arm as
 // `return false;` 509; the result declared before the slot view 382 (same code); the prediction scale written rate first
 // 382 (same code); the entry tests as `f13 || f14` and `else if (f2d)` false arms ahead of the body 382 (same code).
 // Aligned by sequence, 160 rows differ: the false exit placed last shifts everything up to retail's place for it.
+// m3 lane 8 r146 (fast; aligned/masked base 155/105): `local_2 = true` at the end of its block 508; `local_4 = NULL` declared before
+// the actor pointer 494 (1913 bytes); `bool local_2 = true;` at its declaration 397; local_2 declared before local_0 382 (same code);
+// local_6 computed directly from its three tests, no else arm 389.
+// Lane 12 r107 (fast; masked aligned count in brackets, 105 at 382): retail reads `local_8->field_4.x` and the actor
+// position's x through the two addresses it later passes to 0xfa1a0 (`lea ecx, [esi+0x238]; lea ebx, [edi+4]` ahead of the
+// direction vector), y and z off the bases. Named actor/target position pointers for the direction vector and both 0xfa1a0
+// calls 453 [104] (1906 B; every component then reads through them); the facing pointer formed after the first dot (that dot
+// through the view's field) 494 [164] (1918 B), formed after the direction vector 509 [168] (1940 B); lane 6's computed
+// entry flag with an object pointer for the velocity reads 533 [129] (1945 B); the 0.95 facing test through the existing
+// dot_product2d 382 [103] (same score; retail's j-then-i product order is not restored).
+// Round 68 (m3 lane 15, fast): the admission as an else-if chain setting the result false per flag 527 (1885 B); the
+// result as `char` returned as `!= 0` 438 (1925 B); `bool local_2 = false;` with nested flag ifs 495; the else arm as
+// `return false;` 508; the result declared before the state pointer 382 (same code).
+// Round 169 (m3 lane 6, fast with the file's 15 matched functions and 0x1aa0d0 unless noted): the object-speed root
+// through the existing magnitude3d, plain check, 481 (1887 bytes: still a call in the full build too); the facing-request
+// helper shared with 0x1aa0d0 382 (same code); the prediction products written field first 382 (same code); the weight's
+// dot read through the prop view (retail's `[eax + 0x34]`) 401 (1909 bytes); no facing pointer until after the prediction
+// 516 (1944 bytes); the shared predicted-offset helper 444 (1906 bytes); the shared planar facing test 480 (1915 bytes).
+// M3 lane 1 r90 (fast with the file's functions and 0x265d30; aligned/register-masked counts in brackets, control 382
+// [155/82]): BLOCKED-BY 0x25d740's inlining. Lane 6's computed entry result (`bool local_2 = !f13 && !f14 && !f2d;
+// if (local_2) {...} return local_2;`, re-measured 508 [239/121], 1921 B, frame 0x54) is retail's shape except that our
+// link inlines 0x25d740 there (20 calls against retail's 21). Diagnostic, reverted at once: the same form with 0x25d740
+// kept out of line (a noinline declaration in its own file) gives retail's frame 0x58, the false exit at retail's place
+// (after the first `goto` jump), retail's 1904 bytes and the first difference at +0x147: 394 [151/88]. The call sits
+// under three tests there, and one more test (diagnostic) also keeps it out of line, so the inliner goes by the call
+// site's static frequency: the && test in the `if` (this body) keeps the site cold but leaves the false exit last, and
+// the computed result threads the exit but warms the site. Retail never inlines 0x25d740 (24 callers), and matched
+// 0x1b4560 needs `#pragma inline_depth(0)` around its call, so the getter's inline availability (its file's flags) is
+// the question for a ruling. Forms: the computed result with the facing read off the view at each use and an AI object
+// pointer for the velocity reads 577 [285/160] (frame 0x50; with 0x25d740 out of line 435 [207/118], 1956 B); with the
+// object pointer only 533 [241/116] (with 0x25d740 out of line 416 [207/72], 1924 B, frame 0x54); with the f12/f18
+// test as nested ifs 514 (still inlined); with the existing magnitude3d for the object-speed root 508 (same code: in this
+// form our link inlines magnitude3d, as retail does, and 0x25d740 too); on this body `return local_2 != false;` 438
+// [173/96] (1925 B, exit still last; the same numbers as round 68's char result).
+// M3 lane 14 r80 (fast; masked = aligned count with registers masked, 111 at 382): register-blind, ours differs from retail in the
+// early false exit's place and in the velocity block, where retail keeps the view pointer in EAX (facing read as [view+0x34], the
+// facing pointer formed late with `lea esi, [eax+0x2c]`) and the actor in ESI, ours the facing pointer in ESI from the view call with
+// the actor spilled. The first dot written facing first 382 (same code); `bool local_10 = 0.8f > unknown28` with the copy arm only
+// 481 (masked 186); the distance local_17's zero declared at the top of the far arm 466 (112); the weight local_14's zero declared
+// before the magnitude 382 (112); the 0.8 test negated with its arms swapped 468 (129). Re-measured: the facing field read through
+// the view at each use, no pointer, 517 (1945 bytes, masked 154): it gives retail's view-in-EAX reads and late `lea` for the
+// facing pointer, but local_8 and the actor swap ESI/EDI and the object velocity pointer is still formed (+0x88). On it, the
+// object read through an `s_ai_object *` local (as this file's 0x1aa9f0, 0x1a9ec0 and 0x1aa750 do) 531 (1960 bytes, masked 152); that
+// object pointer alone on the original body 486 (1924 bytes, masked 169).
+// MiniMax I (11-16): no new form, no lower score (382): the rejection path still ends at a copy of the
+// final exit at the end of the function instead of retail's own epilogue between the inner test's arms,
+// so every later instruction pairs against the wrong one; the facing pointer is still formed by copying
+// the view pointer into ESI instead of adding 0x2c to it, the actor handle is still re-read from the
+// stack instead of the actor record, and the velocity block still multiplies different operands.
+// MiniMax A (11-11, second pass): no new form, no lower score (382); the entry tests returning false straight away (the body outside them) makes our build fold the result byte away and shrink the frame to 0x54 (508), so retail's two exits - the false one at 0x1aac35 with its own epilogue and the true one reloading the result byte from the stack - are still not both there: ours ends the rejection path at the false exit at the end of the body instead of retail own epilogue, and in the velocity block ours still forms the facing pointer in ESI from the view call while retail keeps the view pointer in EAX, reads the facing field through it and forms the facing pointer late with lea esi, [eax+0x2c] with the actor in ESI.
+// MiniMax I (11-17): no new form, no lower score (382): the rejection path still ends at a copy of the final exit
+// at the end of the function instead of retail's own epilogue between the inner test's arms, and the helper retail
+// keeps out of line is still expanded here; an early exit for the three flags folds the result byte away and reads 508.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
@@ -1067,7 +1298,7 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 			}
 			else
 			{
-				real local_12 = (real)sqrt(local_8->field_1c.i * local_8->field_1c.i + local_8->field_1c.j * local_8->field_1c.j + local_8->field_1c.k * local_8->field_1c.k);
+				real local_12 = (real)sqrt(length_sq3f(&local_8->field_1c));
 				vector3f const *object_velocity = &ai_object_get(local_1->unknown018)->velocity;
 				real local_14 = 0.0f;
 				if (local_12 > 0.0f)
@@ -1107,11 +1338,10 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 								if (normalize2d((point2f *)&local_22) == 0.0f)
 									local_22 = *g_4687a8;
 							}
-							s_1aab51 *local_24 = (s_1aab51 *)local_0;
-							local_24->field_24 = local_20;
+							local_0->field_24 = local_20;
 							local_0->field_18 = true;
-							local_24->field_1c = *(point2f *)&local_22;
-							local_24->field_28 = local_19;
+							local_0->field_1c = *(point2f *)&local_22;
+							local_0->field_28 = local_19;
 						}
 					}
 				}
@@ -1164,7 +1394,7 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 		{
 			if (local_0->field_17)
 			{
-				if ((real)*(short *)((byte *)local_0 + 0x1a) * g_510c54->rate > 0.5f)
+				if ((real)local_0->field_1a * g_510c54->rate > 0.5f)
 					local_0->field_14 = true;
 			}
 			else

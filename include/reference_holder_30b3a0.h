@@ -6,6 +6,7 @@
 #include "unknown_0a9f20.h"
 #include "reference_counted_2d88a0.h"
 #include "description_312430.h"
+#include "collidable_state_30b340.h"
 
 struct element_30b3a0
 {
@@ -27,21 +28,6 @@ struct elements_30b3a0
 			element_30b3a0 *block = data;
 			g_memory_2d88a0->release_block(block, (capacity_and_flags & 0x7fffffff) * sizeof(element_30b3a0), 0x12);
 		}
-	}
-};
-
-// the shape, a key (-1 when built) and two words
-struct body_30b3a0
-{
-	referenced_2d88a0 *shape;
-	long key;
-	long field_8;
-	long field_c;
-
-	body_30b3a0(referenced_2d88a0 *shape_) : shape(shape_), field_8(0)
-	{
-		field_c = 0;
-		key = -1;
 	}
 };
 
