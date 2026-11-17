@@ -554,6 +554,12 @@ PRIVATE inline long polygon_round_19f(real value)
 // distance a real compared with 0.0f 379 (1495 B: rounded through its slot before the compare); the top point initialised from
 // the vertex with `center->z + height` 406; the fade as `1.0f - fade * (1.0f / fade_limit)` 393; `top.z = bottom.z + height`
 // 410. Body unchanged; still BLOCKED-BY 0x1ccb0 (its file is /Ob1, retail inlines it here).
+// MiniMax D (11-17): no new form, no lower score (370): retail has no frame pointer here and takes its
+// first three arguments in registers (EAX into EBX, EDX into ESI, ECX into EDI), so its frame is 0x30 and
+// its argument homes are the register ones, while ours still takes them on the stack under a frame
+// pointer with a 0x34 frame; that transport is decided by this function's two callers, which this lane may
+// not edit. Retail also still reads its 1.5 factor from its own writable .data float before the frame
+// push, where ours materialises the literal, and still expands the two contributor helpers in place.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
