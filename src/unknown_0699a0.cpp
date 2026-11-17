@@ -360,8 +360,10 @@ void function_69b50(c_class_6a600 *world, dword mask, const byte *input)
  }
 }
 
+/* parameters in 0x69b50's order: retail's caller sets the input up before
+   both pushes, as the last parameter */
 // @retail 0x69a00
-void function_69a00(const byte *input, c_class_6a600 *world, dword mask)
+void function_69a00(c_class_6a600 *world, dword mask, const byte *input)
 {
  for (long i = 0; i < 16; i++)
  {

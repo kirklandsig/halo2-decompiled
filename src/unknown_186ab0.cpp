@@ -150,6 +150,7 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax E (11-17): no new form, no lower score (134): the frame agrees; the counted byte is still read without retail's sign extension, the selection comparison still has its operands the other way round, and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which the count helper's body fixes in src/unit_object_type.cpp; the permuter's 22 variants over this body found nothing below the kept form. BLOCKED-BY 0xcbec0.
 // MiniMax C (11-15): no new form, no lower score (134): the body stands as found.
 // MiniMax D (11-14), NOT kept (a 1-point gain, under the 8-point bar): score 133 (was 134): the selection comparison now reads the record's field 212 first
 // (cmp cx, ax against our cmp ax, cx), which is the one difference this round could close; the counted byte
@@ -188,7 +189,7 @@ void player_action_initialize(s_player_action *arg_0);
 // retail's sign extension (mov al / test al against retail's movsx ax / test ax, ax), the selection comparison still
 // has its operands the other way round (cmp ax, cx against retail's cmp cx, ax), and the inlined count read still has
 // retail's index operands the other way round, which is set in src/unit_object_type.cpp.
-// score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
+// score 114 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
 // MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
@@ -369,6 +370,17 @@ void player_action_initialize(s_player_action *arg_0);
 // read does not follow the symbol phase that orders float operands); the cycle loop written in the body (main's own loop text) in
 // place of the 0xcbec0 call 1 (same [edx + edi]); that with the count read into a named char before its test 1; that with the
 // unit lookup placed after the start-type normalization 316 (the lookup moves, everything after shifts). BLOCKED-BY 0xcbec0 stands.
+// MiniMax I (11-16): no new form, no lower score (134): the permuter tried 22 variants of this body in 300 s and none came below the kept form (112 differing instructions in both images); the remaining difference is still the inlined 0xcbec0 count read [edx + edi] against retail's [edi + edx], and that helper is defined in src/unit_object_type.cpp, which this lane may not edit. BLOCKED-BY 0xcbec0.
+// b8L (11-17) walk against retail, fast build on r836: every statement, jcc direction (NaN included) and constant
+// agrees with retail, so no behaviour difference was found. Kept, retail's evaluation order: the first count as a
+// short local, `count = type == NONE ? 0 : counts[type]; if (!count)` (retail 0x186c64 movsx ax, 0x186c6d test ax,
+// ax; 0xcdff0's body written out, since a call there stays out of line, 403 in earlier lanes) 134 -> 114. Not kept:
+// the selection compare field-first (retail 0x186c22 movsx cx, 0x186c2a cmp cx, ax) 114 -> 113 (alone 133), an
+// operand swap with no behaviour change. Measured on the 113 base and not kept: nested 0x40 latch (0x186eb8 skips the field_92 store while set) with the 0x60 and
+// 0x4630200 masks apart (0x186ed2, 0x186ed9) 140, its arm still inline; + movss stores for field_20/24 (0x186f45,
+// 0x186f56) 136; + one object pointer in the angle block (0x186f88) 143 (commit 03893fe0f); count + pointer 163, +
+// stores 157; latch spellings 150/147/149/145; three sqrt respellings (0x186fbc fld st(2), 0x186fbe fmulp st(3))
+// unchanged. Left: tail load order, cold arm, [edx + edi].
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
@@ -418,8 +430,9 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
         }
         if (local_1->field_2a == local_1->field_2b && local_1->field_2a != NONE)
             local_1->field_2b = NONE;
-        if (local_1->field_2c == NONE ||
-            !(short)((s_186ab6 *)g_4e0300->data)[local_1->field_0 & 0xffff].field_8->field_23e[local_1->field_2c])
+        short grenade_count = local_1->field_2c == NONE ? 0 :
+            (short)((s_186ab6 *)g_4e0300->data)[local_1->field_0 & 0xffff].field_8->field_23e[local_1->field_2c];
+        if (!grenade_count)
             local_1->field_2c = local_4->field_23d;
         if ((request_flags & 2) || local_1->field_2c == NONE || !function_cdff0(local_1->field_0, local_1->field_2c))
         {

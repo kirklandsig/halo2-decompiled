@@ -694,6 +694,7 @@ static inline bool teams_enabled_19e1c0()
 // MiniMax E (11-15): no new form, no lower score (390): the extra dword in our frame is the length temporary at +0x14
 // beside the volatile result at +0x10, and retail's first name case stores the buffer's zero word before taking its address
 // while its second case takes the address first, so retail's two copy tails stay apart where ours merge.
+// MiniMax I (11-16): no new form, no lower score (390): the plain result still merges the four name and team copy tails where retail keeps them apart - its first name case stores the buffer's zero word before taking its address and its second case takes the address first - and retail keeps `remaining` in EBP and reloads the token for every compare where ours keeps the token in a register; the clamps and the copy helper of the earlier rounds come to 385 at best, a gain of 5 that is below the keep bar.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

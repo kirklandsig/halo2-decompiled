@@ -1147,6 +1147,21 @@ real normalize2d(point2f *v);
 // P573: Original-site forced type-mask admission, accepted/rejected outcomes in
 // bool/byte/short/long: eight 135. NOT kept: no native DL/independent-return repair;
 // original mask observations, validity/type producers and complete body restored.
+// P588: Fixed original actor/type/unit/selected-table/base-table bindings,
+// immutable retry speed, fixed requested-type and target inputs: eight 135 at
+// 923/935 bytes. NOT kept: no native DL or independent-return repair; original body restored.
+// b8J (11-17) walk against retail, fast build on r836 (score 135 before and after): the chosen-speed test is now
+// `!(base_speed * 1.2f >= chosen_speed)`. Retail does `comiss xmm0, xmm3` then `jae` to the shared exit (0x1f83f7,
+// 0x1f83fa), so an unordered compare (NaN chosen speed) falls through into the movement stores; the old
+// `base_speed * 1.2f < chosen_speed` compiled to `comiss xmm3, xmm0; jbe` and skipped them on NaN. A behaviour fix.
+// The other branches already agree with retail's polarity, NaN included: retry on `speed * 1.25f > minimum`
+// (0x1f82d9, 0x1f82de), vertical `> 1.2f` (0x1f8400, 0x1f8419), planar `> 0.0f` (0x1f843b, 0x1f843e), facing height
+// `!= 0.0f` (ucomiss/jnp 0x1f847a, 0x1f8489) and the normalized-facing test (0x1f849d, 0x1f84a0). Correction to the
+// 11-14 note above: the `mov al, byte ptr [esp + 0x50]` at 0x1f84c2 is the result, not an unwritten byte: three pops
+// (0x1f84af, 0x1f84b0, 0x1f84bd) precede it, so it reads frame +0x5c, the target slot that holds the trajectory result
+// (0x1f82c5, 0x1f8336); retry speed shares the force slot (0x1f82f6 `fstp [esp+0x6c]`). Our build reads the same slot.
+// Constants checked: 1.25f (0x45dc88), 0.03f (0x4508f8), 1.2f (0x45dce8). Offsets, call tuples and the force/fast and
+// scan logic agree statement by statement; no other logic difference found. Callers 0x1be8f0, 0x1f7c70 still MATCH.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1233,7 +1248,7 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
                 byte *globals = (byte *)g_4e034c;
                 if (globals && *(long *)(globals + 0xc8) > 0)
                     base_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80);
-                if (base_speed * 1.2f < chosen_speed)
+                if (!(base_speed * 1.2f >= chosen_speed))
                 {
                     actor->unknown464 = true;
                     actor->unknown466 = true;
@@ -1382,6 +1397,13 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax D (11-16): no new form, no lower score (120): this round read the retail diff against ours again and the
+// remaining delta is the prologue and the two pointers: retail masks and scales the actor index into EDX before it
+// pushes and forms the actor with `lea edi, [edx + esi]` (actor in EDI, object in ESI) where this build loads the pool
+// first, keeps the scaled index in ESI and forms the actor with `add esi, edi` (actor in ESI, object in EDI); the two
+// 1.0 entry stores are still the other way round (ours +0x10 then +0x1c, retail +0x1c then +0x10) and the length is
+// 1326 against retail's 1324; retail's own call site takes the object index first and the same function is declared
+// in four other files: BLOCKED-BY those declarations.
 // score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
@@ -1765,7 +1787,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
-// score 238 (was 238): no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
+// MiniMax D (11-16): no new form, no lower score (238): this round compared the two bodies side by side and the delta
+// is still the frame's slot map and the colouring of the vector block: this build keeps the two squared components at
+// +0x28/+0x2c, the normalizer's length at +0x14 and the flag byte at +0x54, where retail keeps the components at
+// +0x1c/+0x20, the length in the dead argument slot at +0x54 and the flag byte later; the products after that are
+// coloured xmm2/xmm5/xmm6/xmm7 against retail's xmm1/xmm3/xmm4/xmm6/xmm7, and the length is 1182 against retail's
+// 1173.
+// score 239 (was 238): no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
 // +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
 // +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
 // xmm1 and multiplies the direction's y first where retail multiplies the x first.
@@ -1929,6 +1957,17 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // uses (the actor in ecx, the object in eax, the target in edx and the tag type as the first stack argument) is the one
 // the note below reports; the declaration is shared with four other files, so it stays as it is, and the direction swap,
 // the swap with the shared origin local and the swapped operands still measure worse than the 238 they start from.
+// b7J (11-17) walk against retail, fast build on r830: went statement by statement through every block (entry and
+// radius, direction, side test, type 0/1 centres, lateral/forward, fraction, desired point, both transforms, trace
+// call, cosine and arccosine, exits) and every field, offset, jcc sense, argument and constant (0x45e238 0.11,
+// 0x45dff0 1.3, 0x45e2f8 1.19, 0x43ff08 1.5, 0x45dbdc 1e-4, 0x45dbc0 1.0, 0x45dbcc -1.0, qword 0x45dcc0 1.0): no
+// behaviour difference found; the dot terms add in retail's order (0x1f9b4d, 0x1f9b5a, 0x1f9b81, 0x1f9b91). Changed,
+// same behaviour: the side flag is `bool left = <dot> > 0.0f;` instead of a flag set true and then overridden (retail
+// stores 1, ja, stores 0 at 0x1f9ac4/0x1f9acb after the comiss at 0x1f9abb, which VC emits for this form) 238 -> 239.
+// Not kept: the first cosine clamp through the file's MIN macro, `MIN(cosine, 1.0)` 224 (the macro compares in double
+// where retail compares the float with comiss at 0x1f9de5 before its fld qword 1.0 at 0x1f9df0, so the written-out
+// clamp is retail's form), `MIN(cosine, 1.0f)` 264; without the volatile origin read 273 at 1173 bytes. 0x29a190
+// stays MATCH and 0x29cbb0 378.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)
@@ -1937,15 +1976,13 @@ real function_1f99d0(long actor_index, long object_index, short type, point2f co
     point2f const *local_1 = *local_0;
     s_actor_view *actor = actor_get(actor_index);
     byte *entry = (byte *)function_1e5450(actor_index, object_get(object_index)->tag_index);
-    bool left = true;
     real result = 0.0f;
     real radius = *(real *)(entry + 0x28);
     point2f direction;
     vector2d_from_points2d(local_1, target, &direction);
     movement_normalize2d(&direction);
     point2f side = { 0.0f - direction.y, direction.x };
-    if (!(facing->y * side.y + facing->x * side.x > 0.0f))
-        left = false;
+    bool left = facing->y * side.y + facing->x * side.x > 0.0f;
     point2f center;
     if (type == 0)
     {

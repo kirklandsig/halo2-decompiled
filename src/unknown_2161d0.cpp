@@ -173,6 +173,12 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // only its reduced-image 72); the bit test through TEST_FIELD_BIT 10; the location type read into a named local for
 // the build 10; the bounded index as an if/else-if chain 10 (all same code). Diagnostic (reverted at once): speed
 // preference off around the function 143 (229 bytes; 0x2161d0 31), it reshapes the whole function.
+// Round 111 (m3 lane 1, fast with 0x2161d0, which stays matched): a pointer local to the done flag, taken before the copy 10
+// or just before its store 10 (`pop esi` still first); pointers to done and succeeded 10 (both stores now rise above `pop
+// esi`, where retail lifts only done); pointers to done, succeeded and state 13 (all three rise above `pop edi`); the location
+// and path at function scope with a `built` flag set after the path build and the read under `if (built)` after the whole
+// if/else 10 (threaded and merged: `mov edx, esi` stays). So separate store bases give the stores an alias chain that lifts
+// them, but no split leaves done alone; the path reuse (8 of the 10) is untouched by any of these.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

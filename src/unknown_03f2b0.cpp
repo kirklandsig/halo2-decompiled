@@ -1316,6 +1316,10 @@ struct s_batch_cache_4b5d0
 };
 
 struct s_133f70;
+// MiniMax E (11-16): no new form tried this round, no lower score (93 on the full image, 355 on the reduced one): the plain
+// build's first difference is still at the 0x4bcc0 call, where retail loads the distance into EAX and this build loads it into
+// ECX, and the first distance setup, the cache and coefficient homes and the tail that 0x23690 owns are unchanged; the reduced
+// image's 355 is not the measure, because the globals it leaves out are not masked.
 // MiniMax H (11-13): no new form, no lower score (93 on the full image, 355 on the reduced one): the plain
 // build's first difference is at +0x21, where the call to 0x4bcc0 sets up its arguments - retail loads the
 // distance into EAX and pushes that, this build loads it into ECX and pushes that; what follows are the two
@@ -1565,6 +1569,7 @@ struct s_133f70;
 // Retail's 0x3e380-like allocate-and-fill sequence (count, bytes, render_memory_allocate, 0x137800) is one inlined helper in
 // retail; the existing 0x3e380 differs (NONE object, extra bytes), so no existing helper fits.
 // @retail 0x4b5d0
+// MiniMax C (11-17): no new form, no lower score (93 plain; the reduced image's fast score is 344 and is only a screen): every difference sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the signed-char and inline-getter forms of the earlier rounds all raise the positional count, so the body stands.
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
 {
