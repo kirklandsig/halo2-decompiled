@@ -2407,6 +2407,7 @@ void function_144f0(short stage, long fallback, long tag, short fallback_index, 
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
+// MiniMax E (11-17): no new form, no lower score (140): the flag byte is still loaded into cl before the branch where retail loads it into al after it, and the value stored to the global still comes after that load where retail stores it first; the body's length matches retail's (1729 bytes).
 
 // MiniMax E (11-16): no new form, no lower score (140): the body's length matches retail's, but this build still hoists the preserve_alpha load above the `simple` branch where retail loads it after, and the callee at 0x131fc0 that decides the reload lives in src/unknown_131e50.cpp, which this lane may not edit.
 // MiniMax D (11-14): no new form, no lower score (140): frame and length agree, but the byte test load is still hoisted above the global store where retail keeps the store first; the preserve_alpha load that is hoisted instead comes from the callee 0x131fc0 in src/unknown_131e50.cpp: BLOCKED-BY the callee.
@@ -2818,6 +2819,7 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
+// MiniMax E (11-17): no new form, no lower score (330): the first difference is still at +0x52, where retail takes a level's -1 with a lea and this build decrements the register, and the body is still 1591 bytes against retail's 1543.
 // MiniMax C (11-11): no new form, no lower score (364); retail keeps the second copy of 0x235a0 out of line because of its call-site frequency (the call appears 17 times in retail), and the sample block's second test and the allocator still differ; the forms tried here score 401 and above.
 // MiniMax I (11-10): 364 (was 401): the sample flag is written the way retail writes it (0 at 0x23716 before the
 // admission chain, 1 at 0x23745 after it, read at 0x238ad and 0x23b62), the level clamp is `>=` (retail's cmovge),
@@ -3074,6 +3076,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[0] = ((x * cosine - y * sine) * scale + 1.0f) * 0.5f;
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
+// MiniMax E (11-17): no new form, no lower score (54): the x87 chain's store still comes before the SSE subtract where retail takes the subtract first and stores after it, and the scheduler still places the x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527).
 
 // MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
 // MiniMax C (11-15): no new form, no lower score (54): the body is retail's length and the first difference is at +0x527, where this build places each x87 coordinate step one slot ahead of retail's in both corner sets, so what is left is the inlined rotation's schedule.

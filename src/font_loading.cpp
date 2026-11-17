@@ -850,6 +850,17 @@ static inline long font_character_pixel(long alpha, long color)
 // long/word result and signed/unsigned color: 59/203/109/192/59/203/109/192. NOT kept: no native
 // parity/literal/run-two equality; original helper, calls and complete decoder restored.
 // MiniMax R (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the two fills still merge into one block; a helper without the byte cast gives retail's parity at every site but moves the run out of EBX into EBP (203), a byte alpha in the helper narrows it further (209) and a word result for the two bytes of the type 0 value changes nothing else (103).
+// MiniMax S (11-17): no new form, no lower score (59): the shared helper without the byte cast on the low alpha bit (the
+// lead's form) makes all three decode sites match retail's parity (xor ecx, ecx; mov cl, al; and ecx, 1) and the pixel
+// blocks are retail's, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX (and the fill's
+// duplicated pixel in EBX where retail has EBP), so the body shifts (203); the base keeps retail's registers (EBX run,
+// EBP duplicated pixel) with the sixteen bit parity. Measured with the cast dropped: a dword run (200), a dword run of
+// the type 0/1 branch (200), a dword colour (203), a word pixel in the type 0/1 fill (200), a word fill pixel (203), a
+// pointer walk fill (187), a literal count of two (203) - every one keeps the run in EBP. On the base: a byte alpha
+// parameter (205), a long pixel local at a decode site (226 and 234, the parity is retail's there but the output and
+// colour registers rotate), a dword pixel helper result (59), count += 2 as a literal (59), a dword run (60), and the
+// colour literal as (source[1] << 8) | source[2] (103, retail's length of 504 but three instructions where retail has
+// four: movzx ax, byte [edi+2]; xor ecx, ecx; mov ch, byte [edi+1]; or eax, ecx).
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

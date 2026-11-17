@@ -584,6 +584,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // input copy 559 (the zero still in XMM1 before the input copy); the inactive test as `!(0.0f < field_48)` 558 (same
 // code); the ray lengths by one chained assignment 558 (2872 B, aligned 497); the hit flags declared ahead of `*arg_5 =
 // 0` 558 (same code); the input copy after `*arg_5 = 0` 559.
+// M3 lane 13 r104 (fast; control 558): the range local dropped and field_48 read from the definition at each use 631
+// (2892 B); `*arg_5 = 0.0f;` after the hit-flag initialisation 558 (same code: the zero still takes XMM1 ahead of the
+// minimum's store); the minimum update as a ternary 558 (same code); the root helper's product written root * angle
+// 558 (same code; retail multiplies angle * root for rays 1 and 2 but root * angle for rays 3 and 4, ours root * angle
+// for all four); `*arg_4 = 1.0f;` right after the output clear 664 (2912 B).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

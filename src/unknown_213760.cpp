@@ -1154,6 +1154,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
+// checksum register and header-validation joins remain.
 // MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
 // at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
 // against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
@@ -1161,8 +1163,6 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // MiniMax C (11-15), on its not-kept 7 form (a new goto, screen-reverted; main stays 33): frame 0x1144 and extent agree; the write call
 // still loads the handle after the flags zero (ours builds the zero in EAX where retail already has the
 // handle in EAX and builds the zero in ECX) and the checksum compare still takes EDX where retail takes EAX.
-// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
-// checksum register and header-validation joins remain.
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
 // MiniMax R (11-11): no new form, no lower score (33); the query-size and write-count homes are still four
@@ -1772,6 +1772,21 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P588: Fixed file/handle/current-time/stored-time bindings, immutable expected
 // size, original file/handle/cleanup identities on the native handle graph:
 // eight 33 at 930/930. NOT kept: no query/count/write/checksum-home repair; original body restored.
+// M3 lane 15 r94 (fast with 0x213760, 0x213800, 0x2138f0, 0x2149c0, all MATCH; control 33): the write filling its own
+// block-scoped count, copied into an outer `dword bytes_written = 0;` that is not address-taken, 83 (first difference
+// +0x1e1: the failed resize jumps straight to the close's handle test and the size/count homes and frame are retail's,
+// the first route to that plateau without a goto or a set-in-test flag; a one-use copy, so match-only); with the listed
+// set-in-test header read 7 (masked 2: the write's handle loaded after the flags zero, the checksum in EDX); on that 7 the
+// empty header declared and its strings initialised ahead of the resize call 169 (917 B), the checksum compare's operands
+// the other way round 7 (the header's word now loads into EDX); `index == 1` for the slot range 406 (789 B, the type loop
+// folds; listed 414 on another base). Same code: on the 83 form the else-arm zero, the close test nested under the count
+// test, the header test merged into `valid && index >= 1 && index <= 1`, the query size copied out of a block-scoped
+// local; on the 7 form the outer count declared before the resize, the write's handle as `*(s_file_handle *)&file->handle`
+// or a const reference, the stored checksum as a const reference; on main the merged range test 33. Later on the 7 form:
+// the type loop's check as `if (valid_types[type]) valid = ...; else valid = false;` 59 (934 B); the checksum test as
+// `valid = valid && stored == read;` 78; same code: `resized` or
+// `size` declared at the loop body's top, the count declared beside the outer count, the copy written `+= count` (the 83
+// form's count beside the outer count also 83, same code).
 // @retail 0x213970
 void function_213970(void)
 {

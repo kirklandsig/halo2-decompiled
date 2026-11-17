@@ -253,6 +253,11 @@ void juggernaut_set(long player_index, bool juggernaut)
 // Round 91 (m3 lane 2, fast with 0x192530): the draw guarded by `0 < count` 20; `bool const waiting` 20; `long const
 // player_index` 20; the mask as `1L << ...` 20; the random value cast to `int` before the modulo 20 (all the same code).
 // Restored.
+// Round 94 (m3 lane 2, fast with 0x192530): count bound by reference (`long &total = count;`) at every use 20, in
+// the loop only 20, `long const &` in the draw only 20; the candidate list through a `long *const &` 20; the player
+// pointer bound by reference to the iterator's field 20; the draw through an inline range helper (lower + random %
+// (upper - lower), called with 0 and count) 20 (all the same code). The compile-only screen does not reproduce
+// this body (without link-time code generation g_510c9c is not hoisted), so trials need the fast check.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

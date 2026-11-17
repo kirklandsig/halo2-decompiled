@@ -1736,6 +1736,7 @@ struct s_summary_player_sort_entry
 // conditional move (cmovne esi, dword ptr [0x527334] at 0x64fac), which needs /arch:SSE, and this file's @flags
 // line does not set it, and retail inlines 0x5a680 where this build calls it, so the membership pointer and the
 // member index never get retail's frame homes.
+// MiniMax C (11-17): no new form, no lower score (339, was 339): the frame is still 0xa9c against retail's 0xaa8, and the type, membership and member-index homes and the saved registers still differ.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
 // code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
