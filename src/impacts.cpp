@@ -664,6 +664,13 @@ PRIVATE __forceinline void function_227814(vector3f const *arg_0, vector3f const
 // differences are the CALL alignment that follows the extra byte). One-line
 // multiplication, a named factor and the commutative order kept or worsened
 // the form. Permuter: 174 tries in 300 s (seed 999), no lower form.
+// b14I (11-17) walk against retail, fast build on r847: statements, constants, branch senses and callees all agree
+// with retail (no sort_4byte call here); the one real difference is the scale of the i component at 0x2278e4:
+// retail `movaps xmm1, xmm0; mulss xmm1, [edi]`, ours reloads `movss xmm1, [edi]; mulss xmm1, xmm0`. Measured and
+// not kept: all eight commutative orders of the three products, as separate `local_1` fields (7) or directly into
+// `arg_1->` (22), all six statement orders of the products (7, 10, 10, 11, 12, 12), and
+// `local_1.i = local_0 * arg_0->i` in one line (7: it also swaps the operands of the left component's first product
+// in the cross product). The commutative order does not reach the code, so there is no behaviour difference to record.
 // @retail 0x227810
 void impact_build_matrix(
 	long component_index,

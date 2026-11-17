@@ -95,11 +95,19 @@ struct s_planar_camera_source
 
 PRIVATE inline void matrix_cross(vector3f const *a, vector3f const *b, vector3f *out);
 
-// score 7 (was 7): only the operand order of two products in the inlined matrix_cross differs (retail a.j*b.i and
-// b.k*a.i for the k and j terms, ours b.i*a.j and a.i*b.k) plus the placement of one store before function_163db0.
-// Swapping the operands in matrix_cross (k and j terms, four spellings) gives identical bytes: the compiler
-// canonicalizes them; 0x3c9a0 shares the helper and stays MATCH.
+// score 4 fast (was 7): only the operand order of two products in the inlined matrix_cross differs (retail loads
+// up.j then multiplies by left.i, 0x4420e/0x4421c, and loads up.k then multiplies by left.i, 0x44221/0x44226; ours
+// loads left.i first in both). Swapping the operands in matrix_cross (k and j terms, four spellings) gives identical
+// bytes: the compiler canonicalizes them; 0x3c9a0 shares the helper and stays MATCH.
 // Permuter (25 min on r643): best 6, only with volatile stores to the state's count and valid flag; not kept.
+// b14K (11-17) walk against retail, fast build on r847: the statements agree with retail one for one (stores, calls,
+// constants, corner copy order). Two source changes took 7 to 4: the cross product now takes the field addresses
+// directly instead of the old `vector_reference` pointer-to-pointer (13 with the plain `left`, 11 with only the left
+// field direct, 5 with both fields direct), and the corner stores go through a local `corners` pointer, which put the
+// last corner store (0x1b8) before the `lea edi`/`push esi` of the 0x163db0 call as in retail (5 -> 4). Tried and
+// dropped (no change or worse): all 64 operand spellings of the six products (5), every statement order of the
+// three terms (no better, most also break 0x3c9a0), reference parameters, swapped helper parameters, `count`/`valid`
+// stores moved or swapped (9-25), a frustum local (7). Callers 0x3f2c0 MATCH and 0x3f660 97 unchanged.
 // @retail 0x441b0
 void function_441b0(s_planar_camera_source const *source, s_planar_camera *state, byte const *view)
 {
@@ -113,8 +121,7 @@ void function_441b0(s_planar_camera_source const *source, s_planar_camera *state
 	up->j = 0.0f - source->normal.j;
 	up->k = 0.0f - source->normal.k;
 	function_30bf0(up);
-	vector3f *const *vector_reference = &left;
-	matrix_cross(*vector_reference, up, &state->matrix.forward);
+	matrix_cross(&state->matrix.left, &state->matrix.up, &state->matrix.forward);
 	function_30bf0(&state->matrix.forward);
 	state->matrix.position = source->origin;
 	state->matrix.scale = 1.0f;
@@ -126,15 +133,16 @@ void function_441b0(s_planar_camera_source const *source, s_planar_camera *state
 	state->plane.d = normal.k * source->origin.z + normal.j * source->origin.y + normal.i * source->origin.x + source->offset;
 	*(bool *)state->unknown84 = true;
 	state->depth = source->depth;
+	point2f *corners = state->corners;
 	box2f const *rectangle = (box2f const *)(view + 0x68);
-	state->corners[0].x = rectangle->x0;
-	state->corners[0].y = rectangle->y0;
-	state->corners[1].x = rectangle->x1;
-	state->corners[1].y = rectangle->y0;
-	state->corners[2].x = rectangle->x1;
-	state->corners[2].y = rectangle->y1;
-	state->corners[3].x = rectangle->x0;
-	state->corners[3].y = rectangle->y1;
+	corners[0].x = rectangle->x0;
+	corners[0].y = rectangle->y0;
+	corners[1].x = rectangle->x1;
+	corners[1].y = rectangle->y0;
+	corners[2].x = rectangle->x1;
+	corners[2].y = rectangle->y1;
+	corners[3].x = rectangle->x0;
+	corners[3].y = rectangle->y1;
 	state->count = 4;
 	state->valid = true;
 	function_163db0((s_camera_163db0 *)state, rectangle, 0, (s_frustum_1648d0 *)state->frustum);
