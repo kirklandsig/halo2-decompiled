@@ -616,6 +616,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // movement arm first, query outputs declared before admission 753. The common fallback reaches 3499 bytes
 // with frame 0x8c and shifts the position to +0x90. All scores rise. Restored the original path check and
 // fallback branches.
+// Planar target with point-difference helper 699; target from the planar
+// input 729, with the point-difference helper 745; shared three-component
+// input for target and planar copy 729; planar pre-turn snapshot 706;
+// snapshot normalized directly 752, with planar target 785, with shared
+// planar input and point difference 776. The position and alternate
+// vector homes remain interchanged in the retained body.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

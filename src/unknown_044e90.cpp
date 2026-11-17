@@ -447,6 +447,7 @@ struct s_visibility_bound_record
 // NOT kept: seven forms come within two bytes of retail at 449 differences. All eight preserve the first entry-address difference and increase the score.
 // Original executable body restored.
 // MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// Re-measured at 443. MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
 // against retail's 1742): the first difference is still at +0x10, where retail forms the entry address as a scaled index
 // added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and this build forms it
 // as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`), and retail then loads the tag table into esi and
@@ -460,6 +461,11 @@ struct s_visibility_bound_record
 // range grid 443, conditional query displacement 460. NOT kept: geometry
 // field read at the join 438 is below the gate and grows to 1764/1742.
 // The entry address and register-save order still differ.
+// Fallback base plus displacement 443, fallback geometry-address join 460, same-base structure reads
+// with a displacement join 464, one tagged/fallback address join 452, per-path flags with the
+// displacement join 462, displacement before the base 464, address join with the bool selector 441,
+// displacement join with the entry by reference 443. NOT kept: 441 saves two points. The entry
+// address and tag-table saves still differ.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

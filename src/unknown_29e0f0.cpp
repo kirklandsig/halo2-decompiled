@@ -78,7 +78,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 382 (was 382): frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
+// score 382 (was 382): The selected indexes have different stack homes at +0x11. The group loop shares the bitmap mask and address where retail recomputes them.
+// frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
 // and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
 // separate byte rather than the dead argument slot.
 // point bitmap, endpoint homes and x87 scheduling differ.
@@ -582,6 +583,15 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // flag/local_0/local_1/local_2/best 380 (five different codes) and local_0/flag/local_1/local_2/best 381. Same code: the group
 // bitmap and loop in their own `{}` block. Round 64's recipe rebuilt on this body re-measures 155 (aligned 22); on it
 // the redundant guard around the pass while 482 (1569 B), around the group loop 157, around the record search 158.
+// Extract the group bitmap bit by shifting its word 426.
+// Extract the point bitmap bit by shifting its word 425.
+// Extract both bitmap bits by shifting their words 387.
+// Compare the masked group bitmap word to its bit 458.
+// Compare the masked point bitmap word to its bit 423.
+// Compare both masked bitmap words to their bits 424.
+// Shift the group bitmap read and compare the masked point bitmap word to its bit 430.
+// Compare the masked group bitmap word to its bit and shift the point bitmap read 482.
+// NOT kept: every bit-read form regressed; the original bitmap updates and body were restored.
 // m3 lane 10 r115 (fast with 0x29e730 and 0x29de20, both MATCH; control 382). Three rounds above record that no untried
 // natural form is left (m3 lane 2 r70, m3 lane 11 r90, m3 lane 9 r118). Two forms I did not find listed, both other
 // code at the same count: the length helper's three deltas declared z, y, x 382 (the deltas then load z, y, x and

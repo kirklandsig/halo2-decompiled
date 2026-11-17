@@ -978,7 +978,8 @@ void function_143250(
 	}
 }
 
-// score 1333 (was 1333): frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
+// score 939 (was 1333): frame 0x2fc versus retail 0x300, displaced scalar homes and differing schedules at entries 25 and 28 remain.
+// frame 0x2fc versus retail 0x300 and 10752 of 10773 bytes; `ret 4` with rotation in EAX as retail. 80 of the 83
 // matrix entries have retail's value tree; band three's entries 8, 25 and 28 and the stack homes (140 of 216 stores) differ.
 // g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
 // constants from the XBE kept) against this body: all 83 values handed to the three function_143250 calls (3x3, 5x5, 7x7) are identical,
@@ -1384,6 +1385,24 @@ void function_143250(
 // after the rotation reads 1333). Diagnostic: `#pragma optimize("s", on)` around the body 3394 (9134 B, an EBP frame), so
 // retail's source-order schedule is not the size preference either. Retail's band-three entry 8 is the source's
 // left-to-right sum, with its partial sum spilled once to a scalar home.
+// Named scalar prefixes for third-band entries 8 1376.
+// Named scalar prefixes for third-band entries 25 1379.
+// Named scalar prefixes for third-band entries 28 1333.
+// Named scalar prefixes for third-band entries 8, 25 1411.
+// Named scalar prefixes for third-band entries 8, 28 1376.
+// Named scalar prefixes for third-band entries 25, 28 1379.
+// Named scalar prefixes for third-band entries 8, 25, 28 1411.
+// Compound-assignment prefixes for third-band entries 8, 25, 28 1303.
+// Compound-assignment prefixes for third-band entries 8 1315.
+// Compound-assignment prefixes for third-band entries 25 1337.
+// Compound-assignment prefixes for third-band entries 28 1333.
+// Compound-assignment accumulation through the entire third-band entry 8 939.
+// Kept the complete six-term accumulation for entry 8, which restores the separate multiplies and the four-term spill. NOT kept: the prefix-only forms tie, regress or still fold the final pair.
+// Weighted squares produced together 1556; both cubic consumers at each
+// weighted square 1612; paired sqrt(35) components 1498, with derived squares
+// 1566; named entry-27 weighted product 939; const weighted products 939;
+// two-step weighted-component consumers and weighted cubic consumers 939/939.
+// The dedicated weighted product homes and the extra frame word still differ.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
@@ -1626,7 +1645,13 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 		real r4_r0_s105_s35_s2 = r4_r0 * s105_s35_s2;
 		matrix[7] = r4_r3 * s105_s35_s2 * r5 * 0.014285714f - r3_r1 * s105_s35_s2 * r2 * 0.014285714f
 			- r5_r0 * s105_s35_s2 * r1 * 0.014285714f - r4_r0_s105_s35_s2 * r2 * 0.014285714f;
-		matrix[8] = r3_r2 * r7 + r5_r1 * r6 + r5_r0 * r7 + r4_r2 * r6 + r4_r0 * r8 + r3_r1 * r8;
+		real second_diagonal_sum = r3_r2 * r7;
+		second_diagonal_sum += r5_r1 * r6;
+		second_diagonal_sum += r5_r0 * r7;
+		second_diagonal_sum += r4_r2 * r6;
+		second_diagonal_sum += r4_r0 * r8;
+		second_diagonal_sum += r3_r1 * r8;
+		matrix[8] = second_diagonal_sum;
 		matrix[9] = r6_r4 * s105_s2_s21 * r8 * -0.023809524f - s105_s2_s21 * r8 * r7 * r3 * 0.023809524f
 			- r6_r5 * s105_s2_s21 * r7 * 0.023809524f;
 		matrix[10] = s7_s105 * r8 * r7 * r6 * 0.14285715f;

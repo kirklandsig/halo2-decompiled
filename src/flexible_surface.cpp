@@ -1063,6 +1063,11 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // select entry then field 404.
 // apply lighting in both lookup arms 322.
 // NOT kept: Both null-first typed forms gained seven points, below the eight-point minimum. The original cache expression and body are restored.
+// Record reference 322, object index before the definition lookup 300, with null-first lighting 296,
+// embedded vertex base at the record, after lighting, or after Begin 316 each, strip element
+// references 322, direct material arm first 322. NOT kept: the 300/296 forms use a one-use
+// object-index local. Retail reads the definition first. Other forms gain fewer than eight or tie.
+// The record spill, material-call convention and state expansion remain.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

@@ -2491,7 +2491,8 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them in place, and the i component
 // still ends up in xmm1 where retail keeps it in xmm4; reading the three components into locals ahead of the
 // branch moves the material loop's accumulation order instead (159), so the body stands.
-// score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
+// score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
+// aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
 // three), the speed products the same way (retail scales j, k in place), and the property value 0 kept
@@ -2692,6 +2693,15 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
 // NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
 // Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// Generic property replacement at first hot zero 159.
+// Generic property replacement at hot vector address 91.
+// Generic property replacement at last hot zero 155.
+// Generic property replacement at first hot zero and hot vector address 159.
+// Generic property replacement at first hot zero and last hot zero 155.
+// Generic property replacement at hot vector address and last hot zero 155.
+// Generic property replacement at first hot zero and hot vector address and last hot zero 155.
+// Generic replacement for all hot writes with one empty property word 163.
+// NOT kept: generic property writes tied for the vector address and regressed for the zero paths; the original body was restored.
 // MiniMax D (11-17): no new form, no lower score (91): the only difference left is the velocity's
 // normalisation, where retail keeps the velocity's j and k in registers across the epsilon branch and
 // multiplies them in place, while ours rebuilds each product from memory and reloads all three in the

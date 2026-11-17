@@ -181,6 +181,18 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 84; writable while-loop cursor with indexed terminator 83; cursor with plain-name
 // guard before the suffix 84; opaque base and writable cursor with indexed terminator
 // 84.
+// Field-derived string capacity 67, direct indexed destinations 84, wide empty
+// suffix initialization 67, first-word clear with remaining zero fill 67,
+// suffix initialization in the append branch 76, completed index search 80,
+// plain-name arm first 67, guarded entry range with recovered index 89,
+// conversion-terminated suffix 104. The entry-range form reaches frame 0x28
+// but spills the result rather than the entry base and grows to 224 bytes.
+// Indexed terminator with direct exits 83; plain exit first with indexed
+// formatted result 83; separate search cursor with direct exits 83;
+// skip unmatched entries before the direct exits 83; plain direct exit
+// and shared fallback 83; formatted direct exit and shared fallback 77;
+// indexed terminator with final concatenation result 85; shared plain-name
+// input with direct exits 98. The entry base still has no stack slot.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
