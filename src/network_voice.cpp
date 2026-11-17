@@ -4006,6 +4006,13 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // P574: Original per-packet byte-budget admission, positive/complementary
 // bool/byte/short/long: 139/139/139/139/139/139/139/139. NOT kept: no exact native channel,
 // cursor/member or route-home recovery; original budget test and full body restored.
+// M3 lane 14 r103 (fast with 0x564c0, matched throughout; none kept): on the packet-cursor form (re-measured 164, 478 B):
+// the member declared at the loop-body top 164, the loop as a while with `i++` last 164, the member at function scope
+// initialised to NONE 164, the members word declared at the loop-body top 164 (all same code); probe, not retail's order:
+// the member bit cleared before the talker calls 161 (469 B): the member then no longer lives across the calls, the
+// channel takes EBP from entry as in retail and the frame shrinks to 0xc, so the member's life across the three calls is
+// what wins it EBP in our build (retail keeps it in its frame slot); the permuter on the cursor form (613 s, 39 tries)
+// best 148 (a volatile cursor and numbered constant locals, not a form).
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
