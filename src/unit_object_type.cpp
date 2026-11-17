@@ -3600,6 +3600,12 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // per-arm load. The copies through a file-local inline record-copy helper holding the five field assignments, `inline`
 // or forced, with or without the source locals, 91 each (same code as the body: the offsets still fold).
 // MiniMax S (11-17): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat lookup are scheduled differently; the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once.
+// Round 562: seat index after parent tag lookup 91; masked parent with delayed seat index 102; shared
+// header with delayed seat index 91; conditional seat index 91; parent index shared by lookup and marker
+// 102; masked parent getter 102; shared parent object getter 102; masked parent with shared index 102;
+// separate parent-test receiver with masked getter 91.
+// NOT kept: The 400-byte forms delay scaling but replace the native memory test and parent reload. The
+// separate test receiver reproduces the opening 91-point comparison.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -5138,6 +5144,11 @@ void __stdcall function_cc810(long vehicle_index)
 // radicand 173; conditional double radicand 169; rounded double root carrier 173.
 // NOT kept: conditional root gains only two at 708 bytes and retains frame 8;
 // the shared float radicand removes the frame but grows to 716 bytes.
+// Round 562: SSE square term 203; SSE acceleration term 213; both SSE products 217; SSE subtraction 196;
+// SSE square and subtraction 203; SSE acceleration term and subtraction 211; full SSE discriminant 210;
+// SSE stopping-distance chain 234; SSE discriminant with scalar store 215.
+// NOT kept: All forms raise the score and introduce a 16-byte aligned frame. The scalar-store form also
+// demotes two matched controls in the reduced image.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -6705,6 +6716,12 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // NOT kept: all regress; tables add a frame and transfers lose the native extent;
 // original header addressing, scratch plan and three return blocks remain.
 // MiniMax D (11-15): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's five camera copies keep the source in ecx and the destination in edx where retail has them the other way round.
+// Round 562: header getter at entry 59; header getter at animation test 59; header getter at entry and
+// animation test 59; header getter after allocation 59; header getter at entry and after allocation 59;
+// header getter at animation test and after allocation 59; header getter at all three lookups 59; object
+// getter at all three lookups 59; damage-source element pointer 64.
+// NOT kept: The getter forms preserve the same code. The damage-source element pointer raises the score
+// without fixing the header reads.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {

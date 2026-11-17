@@ -3716,6 +3716,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state
 // with the homes swapped); the natural spellings of the two homes (the declaration orders, the names and the
 // index and the found flag first) are listed above and measure the same, so the body stands.
+// Retained-boundary cursor through the paired, fallback, creation and first-sort phases scored
+// 422/440/479/479 with the paired flag and 425/451/485/485 with cursor equality.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4584,6 +4586,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
 // NOT kept: no native frame word or final scratch recovery; original common
 // byte outputs, final direct fade path and complete executable body restored.
+// Stored point by byte-range copy, coordinate stores, setter or coordinate
+// aggregate, then each with the region output scoped to its query:
+// 51/205/205/205/51/205/205/205. NOT kept: the range copies tie; coordinate forms
+// use SSE differences and grow the frame to 0x20. Final fade scratch remains.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

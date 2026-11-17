@@ -2014,6 +2014,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // head, so `inc`/`idiv` run first and the successor is stored at once; ours keeps the successor in EBP across the body.
 // Retail tests the edge count and zeroes the index with fresh literals (`test ecx, ecx`, `xor eax, eax`), so its
 // function-level zero dies into the prism cursor (ESI) while ours keeps it in EBX for the edge loop's start.
+// AC564: End-pointer walks, edge < and != 678/678, prism < and != 670/650,
+// both < or != in prism/edge order (<,<), (<,!=), (!=,<), (!=,!=) 726/726/660/660.
+// NOT kept: all increase the score and length. Face-sum home, query-zero register
+// and early signed remainder remain.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

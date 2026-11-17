@@ -1807,7 +1807,8 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
-// score 87 (was 87): round 112 (m3 lane 12) note at the end.
+// score 87 (was 87): Retail keeps the pool in EBX and the selected handle on the stack. The score comparison uses x87.
+// round 112 (m3 lane 12) note at the end.
 // M3 lane 6 r188 (fast with the file's functions and 0x1e46c0/0x268bb0/0x269580/0x2694d0/0x269250, control 87): on the
 // in-arm compare (126) every remaining difference follows from the selection held in EDI (the walk's found block after the
 // score block, the pool reloaded, the tail's merged `push edi`). On it: the actor's team read once before the walk 168 (497 B);
@@ -2164,6 +2165,15 @@ void function_269250(long clump_index, long actor_index);
 // (to let the pool be hoisted as retail's EBX) 126 (same code: the pool is still reloaded, the selection still in EDI); an
 // `if (active)` guard around the walk loop 163 (453 B); the team mismatch as `continue` re-measured 126, with an activity guard
 // around that loop 136 (488 B). Body unchanged.
+// pool iterator in activity test 187;
+// guarded pool iterator 185;
+// guarded pool iterator and team-arm comparison 180;
+// pool iterator and early team filter 182;
+// guarded datum iterator 185;
+// datum iterator in activity test 187;
+// guarded datum iterator and team-arm comparison 180;
+// absolute-index scan and current-datum setter 158;
+// Original body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

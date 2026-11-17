@@ -758,6 +758,8 @@ struct s_physical_block_iterator
 // branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
 // NOT kept: no closer case-zero result or native size. Case-zero/case-one
 // placement and the weighted-age register allocation still differ.
+// Case-zero non-later admission, combined admission, later rejection and non-earlier rejection
+// scored 222/222/222/201, also when reading each timestamp once.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

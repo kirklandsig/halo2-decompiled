@@ -744,6 +744,12 @@ void __stdcall function_1160c0(real dt)
 // as `sine * (...)` in all three rows 171; the dot named ahead of the complement (`projection * (1.f - cosine)`) 171;
 // a `vector3f const` vertical 171; a `vector3f const` rest offset 171 (all the same code). The segments base still
 // takes EDI and the segment ECX where retail uses EDX for both.
+// Round 563. The selected segment still uses EDI/ECX and +0x1c against EDX and +0x14. point setter for the
+// anchor position 356; vector setter for the anchor direction 306; point setter for the interpolated position
+// 171; point setter for the predicted position 171; vector setter for the node velocity 175; point setters for
+// the committed and previous positions 359; vector setter for the angle reference 171; point and vector
+// setters for both attachment outputs 380. NOT kept: the anchor-position and commit setters shorten the body
+// and demote the update caller.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

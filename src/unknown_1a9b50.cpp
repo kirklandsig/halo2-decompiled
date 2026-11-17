@@ -414,7 +414,8 @@ real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
-// score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// Earlier at 375 (was 375).
 // M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
 // difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
 // the result returned in the arm plus that aggregate planar copy 408 (1530 B); actor first with the aggregate copy alone 408;
@@ -758,6 +759,9 @@ extern point2f *g_468778;
 // if/else 378 (1553 B, masked 112); the field_34 arm's one as if/else 374 (1549 B, masked 110: positional, not kept); both
 // 375 (1552 B, masked 112). The tail around 0x1f4280 / 0x1a9d80 / 0x1a9e00 differs only in registers (retail's field_2d
 // pointer in EBP); the actor-first, constant-exit, velocity-pointer and prop forms and their combinations are listed above.
+// AC564: Explicit false result from split admission, settings-first 440/440/440/427
+// and actor-first 413/413/413/400 (last in each group gives each test its own arm).
+// NOT kept: all shorten and regress. Early actor, settings, slot and prop homes still differ.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

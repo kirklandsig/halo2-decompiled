@@ -2230,6 +2230,13 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // location cursor alone: 126/129/169/128/126/129/169/128. NOT kept: no exact native frame/color/query recovery;
 // original spawn publication, parameters, helpers and complete body restored.
 // Best preview 126 gains only 2; below the keep threshold.
+// Round 563. The frame is 0x40 against 0x44 and the first colour lacks its retail spill. paired colour
+// initializers before the spawn stores 184; paired colour initializers at the type query 184; entry colour
+// declarations with paired assignments after the spawn stores 184; entry colour declarations with paired
+// assignments before the spawn stores 184; paired colour assignments in the type query scope 184; paired
+// colour initializers with a native tag index at lookup 184; paired location cursor and short cluster test
+// inputs 140; paired colour initializers in a distinct post-location scope 184. NOT kept: paired early colour
+// reads introduce a 0x48 frame and 20 extra bytes over retail.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3731,6 +3738,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // P594: Scalar memcpy at first/second/both colors, successor, effect cursor, particle
 // cursor, mode and all original acquisition boundaries: 93/93/93/93/93/93/93/93. NOT kept: no exact
 // native frame/system/successor/color recovery; original complete body restored.
+// Round 563. The frame is 0x4c against 0x54 and the system/successor registers still trade places. word slot
+// for the effect datum 90; word slot for the system datum 80; word slot for the particle-location datum 94;
+// word slots for both entry datums 93; word slots for the effect and particle location 91; word slots for the
+// system and particle location 88; word slots at all three datum lookups 100; both entry slots acquired before
+// the pool lookups, plus the word location slot 100. NOT kept: the gains shorten the body past retail length.
+// The system-slot forms also demote the matched update caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
