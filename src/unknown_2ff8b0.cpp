@@ -117,7 +117,14 @@ ELEMENTS_2D91D0(keys_300290, long);
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
-// score 216 (was 234): cases 0x60..0x63 read the byte before stepping and
+// score 197 (was 216): cases 0x23..0x25 read the
+// upper bound from the range, as retail does (it was read from the query's own
+// bounds, a different value), and the corner case adds one to each upper bound and
+// takes the corner off in a second statement (retail's inc before sub); with the
+// second change the first no longer costs a frame slot. Left: the default case loads
+// the reporter before pushing the command, and the four times-three cases
+// (0x19..0x1c) read each byte into eax and form the product in another register.
+// Before, 216 (was 234): cases 0x60..0x63 read the byte before stepping and
 // storing, as in 0x300290.
 // Before, 234 (was 466): each case continues the loop itself instead of breaking
 // to a shared step (the compiler merges the copies where retail has its step),
@@ -293,7 +300,7 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			long const high_2 = node[2];
 			long const below_2 = range->lower[op - 0x23];
 			long const first_skip = READ_2_300290(node + 3);
-			long const above_2 = upper[op - 0x23];
+			long const above_2 = range->upper[op - 0x23];
 			node += 7;
 			if (above_2 <= high_2)
 			{
@@ -364,9 +371,12 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			copy.lower[0] = (lower[0] >> shift) - copy.corner[0];
 			copy.lower[1] = (lower[1] >> shift) - copy.corner[1];
 			copy.lower[2] = (lower[2] >> shift) - copy.corner[2];
-			copy.upper[0] = (upper[0] >> shift) + 1 - copy.corner[0];
-			copy.upper[1] = (upper[1] >> shift) + 1 - copy.corner[1];
-			copy.upper[2] = (upper[2] >> shift) + 1 - copy.corner[2];
+			copy.upper[0] = (upper[0] >> shift) + 1;
+			copy.upper[0] -= copy.corner[0];
+			copy.upper[1] = (upper[1] >> shift) + 1;
+			copy.upper[1] -= copy.corner[1];
+			copy.upper[2] = (upper[2] >> shift) + 1;
+			copy.upper[2] -= copy.corner[2];
 			copy.values[0] = range->values[0];
 			copy.key_base = range->key_base;
 			range = (cell_range_2ff8b0 const *)&copy;
