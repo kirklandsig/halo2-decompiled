@@ -443,6 +443,11 @@
 // home (fstp, movss) and multiplies by 0.03 in SSE, where ours multiplies by 0.03 on the x87 stack before the one store.
 // Round 401 tested complete perspective side/up and ordinary side output values, subsets 1/2/4/3/5/6/7, then both full projection cases: 618/617/620/652/657/657/682/721.
 // All retain the 0x54 frame and grow. Original vector stores restored.
+// In-place wave scaling at first/combined/both definitions 642/589/653; both after
+// the wave pair or at both position updates 652/655; first sine before the cross
+// with scales at use 655; incremental first phase or named double combined wave
+// with scales after both waves 651/651. NOT kept: the frame reaches at most 0x5c.
+// Separate rounded-wave and cross homes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

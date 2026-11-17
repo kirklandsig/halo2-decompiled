@@ -1674,6 +1674,10 @@ long function_10f5f0(long object_index);
 // steering block and entry, plus axis bounds with separate velocity outputs and
 // call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
 // 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
+// Shared two-vector bounds workspace for the initial, boundary and falling
+// velocity outputs, alone and combined, and the fully shared workspace declared
+// before the physics state: eight at 561. NOT kept: sharing puts the bounds
+// and velocity at +0x24 and separates the request names. Frame still 0x1990.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

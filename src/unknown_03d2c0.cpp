@@ -406,6 +406,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // path returning the cached index, the record setup unconditional after the allocation and walk) 186 (474 B).
 // Round 401 tested cache-hit index unchanged, stale cache index reset, or result initialized then invalidated, with index/initial-age/negative-age exhaustion as applicable: 103/81/77/103/81/148/134/148.
 // The frame agrees but the cache-hit bypass and trailing register return remain. Original body restored.
+// Conditional record before initialization, before or after the flag test, 80/101;
+// record assigned under the result guard 102; record carried from both paths 149;
+// owner through the carried hit record 172; miss-only record with two/one returns
+// 173/178; initialization within the miss path 176. NOT kept: the native cache-hit
+// bypass and trailing register return remain.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
