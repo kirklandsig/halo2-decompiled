@@ -4829,6 +4829,11 @@ bool function_158eb0()
 // on the iterator call 5, `(bool)` on the flag read 5, `count++` 5, `/ 2 >= 1` 7, `return count != 1 && result;` 11.
 // Round 247 (m3 lane 3, fast): the count declared after the iterator setup 10; the test as `<= 0` with `continue` 67; an
 // options pointer local in the loop for the flag read 5; `flag == false ? 0 : 1` 5; the iterator named `players` 5.
+// Round 170 (m3 lane 7, fast with 0x23f260/0x19f240, both matched each time): an `unsigned long` count 5; the result
+// assigned from the halved rank's `<= 0` test with `if (!result) break;` 64 (129 bytes); `result &&` ahead of the
+// iterator call in the loop test 67 (120 bytes); re-measured a named player index after the flag 5 and
+// `g_4e6948->flag1128 ? 1 : 0` in the argument 38 (144 bytes). Still the
+// mode/index scratch pair (ours EDX/ECX, retail ECX/EDX): BLOCKED-BY 0x23f260 (its file is held this round).
 // @retail 0x158f50
 bool function_158f50()
 {

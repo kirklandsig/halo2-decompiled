@@ -389,6 +389,9 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // code); `initialize = true;` closing each allocation arm (no early-return change) 83 (508 bytes). Reading: in round 99's
 // single-return form (85) everything from the walk on is retail's except the merge block's EAX (found path) and the init
 // tail keeping the result in ESI across 0x3dd10, which merges retail's two epilogues. Body unchanged.
+// P586: Four-copy counter int/dword/short/word/char/byte/signed-eight-byte/unsigned-eight-byte:
+// 77/77/77/77/77/77/130/127. NOT kept: no cached-hit/merge/trailing-return recovery;
+// wide counters also grow frame/extent. Original memcpy loop and complete body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

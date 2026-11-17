@@ -34,7 +34,8 @@ public:
 
 // the contact of a sphere with a box, added to the output with the id the
 // owner hands out; a miss drops it and hands the id back
-// score 37 (was 37): the centre and body B take edi and ebx where retail has
+// Matched: see 0x2f1ea0 in unknown_2f1ea0.cpp (the shared contact helper's face arms).
+// Before, 37 (was 37): the centre and body B take edi and ebx where retail has
 // ebx and edi, and three 4-byte stack slots are packed differently.
 // Further trials: output element reference 37; native signed or unsigned
 // held id 64; direct id consumers 37; common held-id lifetime 37; common

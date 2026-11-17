@@ -1571,16 +1571,20 @@ static __forceinline bool view_needs_join_buffer(short type)
  return result;
 }
 
-// score 183 (was 183): frame 0x18 agrees; transition scratch, table addressing and cold branches differ.
-// P568: Existing type classifier case returns/order/both 183/183/183; false/true
-// default results 199/214; mixed direct exits 199/214; ordinary inline metadata 183.
-// NOT kept: no transition-argument, embedded-table address or cold-branch repair; original helper restored.
-// P570: Complete timer admission at its producer, positive readiness then waiting complement,
-// bool/byte/short/long: 183/183/183/183/183/183/183/183. NOT kept: no transition-scratch,
-// cold-branch or table-address recovery; original complete body restored.
-// P573: Final player-coverage admission at its producer, positive bool/byte/short/long
-// 188/188/192/193; missing-player complements 188/188/194/193. NOT kept: added
-// result materialization grows code; transition scratch/table base/cold tails remain. Original body restored.
+/* whether the view already carries every player the world holds */
+static __forceinline bool view_has_world_players(c_class_6a600 *world, c_simulation_view *view)
+{
+ dword current = view->player_mask;
+ dword players = function_696f0(world);
+ return (current & players) == players;
+}
+
+/* sets the handle table's +9 flag (its v1 and function_98120 report work only while it is set) */
+static __forceinline void handle_table_enable(c_handle_table_450cd0 *table)
+{
+ table->unknown09 = true;
+}
+
 // @retail 0x6a040
 long function_6a040(c_class_6a600 *world, c_simulation_view *view)
 {
@@ -1590,56 +1594,61 @@ long function_6a040(c_class_6a600 *world, c_simulation_view *view)
  {
   bool ready = view_needs_join_buffer(view->type);
   if (!ready)
+   ready = view_has_world_players(world, view);
+  if (ready)
   {
-   dword current = view->player_mask;
-   dword players = function_696f0(world);
-   ready = (current & players) == players;
+   long id = view->state_id;
+   view->set_state(3, id);
   }
-  if (ready) view->set_state(3, view->state_id);
  }
  state = view->state;
  if (state == 3)
  {
   if (!view_needs_join_buffer(view->type))
   {
-   view->data->unknown39 = true;
-   view->set_state(4, view->state_id);
+   handle_table_enable(&((c_replication_view_storage *)view->data)->handles);
+   long id = view->state_id;
+   view->set_state(4, id);
   }
-  else if (g_510c54->game_time == 0)
-   view->set_state(4, view->state_id);
   else
   {
-   bool available = true;
-   long count = 0;
-   s_view_iterator iterator = {4, 0};
-   c_simulation_view *other;
-   while (world_next_view(world, &iterator, &other))
-    if (other->buffer) count++;
-   if (count >= g_network_configuration.valued08) available = false;
-   long time = *(long *)world->unknown1208;
-   if ((time == NONE || function_75890(time) >= g_network_configuration.valued14) && available)
+   bool ready = false;
+   if (g_510c54->game_time == 0)
+    ready = true;
+   else
    {
-    if (function_862e0(view))
-     view->set_state(4, view->state_id);
-    else
+    bool available = true;
+    long count = 0;
+    s_view_iterator iterator = {4, 0};
+    c_simulation_view *other;
+    while (world_next_view(world, &iterator, &other))
+     if (other->buffer) count++;
+    if (count >= g_network_configuration.valued08) available = false;
+    long time = *(long *)world->unknown1208;
+    if ((time == NONE || function_75890(time) >= g_network_configuration.valued14) && available)
     {
-     long attempts = view->unknown90;
-     *(long *)world->unknown1208 = function_75870();
-     if (attempts >= g_network_configuration.valued10) result = 3;
+     if (function_862e0(view))
+      ready = true;
+     else
+     {
+      long attempts = view->unknown90;
+      *(long *)world->unknown1208 = function_75870();
+      if (attempts >= g_network_configuration.valued10) result = 3;
+     }
     }
    }
+   if (ready) view->set_state(4, view->state_id);
   }
  }
  if (view->state == 4)
  {
-  result = 0;
-  if (view->function_85cb0())
-  {
-   dword current = view->player_mask;
-   dword players = function_696f0(world);
-   if ((current & players) == players)
-    result = 1;
-  }
+  bool complete = view->function_85cb0();
+  if (complete)
+   complete = view_has_world_players(world, view);
+  if (!complete)
+   result = 0;
+  else
+   result = 1;
  }
  if (result == 1)
  {
@@ -1853,7 +1862,7 @@ void function_195e90(void);
 void function_68c00(s_simulation_world_owner *owner, void *definitions,
  s_simulation_distribution *distribution, c_class_6a600 *world);
 
-// score 34 (was 35): retail computes the mode as `xor ebx, ebx; cmp eax, 2; setne bl;
+// score 34 (was 34): earlier 35. Retail computes the mode as `xor ebx, ebx; cmp eax, 2; setne bl;
 // lea ebx, [ebx + ebx + 2]` after a dead `mov ecx, eax; sub ecx, 2` (5 bytes, perhaps
 // left by a lowered switch; no switch tried here gives it), and loads its fields in the
 // order state, owner, +0x14, distribution. Ours computes 4 - 2 * (state == 2) as sete/sub/shl; the rest is the
@@ -1871,6 +1880,20 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // P573: Immutable saved mode/owner/distribution/local/address/preservation captures:
 // 34/34/34/34/34/34; signed-byte/word preservation 34/51. NOT kept: native state-first,
 // overwritten subtraction and SETNE/LEA remain; word grows. Original complete body restored.
+// M3 lane 5 r191 (fast with 0x83220/0x6aee0/0x68e20, all matched throughout): `long state = world->state;` with
+// `long mode = state != 2 ? 4 : state;` 59 at 172 bytes: LEAD, every instruction is then retail's (state in EAX, owner
+// EBP, xor/cmp/setne/lea into EBX, +0x14 in ECX, the same frame, homes and tail) except retail's dead `mov ecx, eax;
+// sub ecx, 2`, which is missing (the +0x14 load then moves up into the free ECX). `char mode` with `state == 2 ? 2 : 4`
+// 64 at 170 bytes (no `xor ebx, ebx`; from `lea edi` on the same code as retail); `long mode = state == 2 ? 2 : 4` 62
+// at 172 bytes (state in EDX); switch with case 2 and default re-measured 58 (180 bytes, mode in memory); that switch
+// into a `char` 59 (174 bytes); `long mode = world->state;` then a switch overwriting it with 4 for the other states
+// 56 (176 bytes, mode in memory). Retail's dead `sub ecx, 2` is the only dead subtract in the whole retail image; a
+// compile-only screen of about 660 switch, ternary, conditional-overwrite and assume spellings never left one beside
+// a setne, so it is probably a lowered switch the link-time code generator if-converted afterwards.
+// P585: Overlap-safe library transfers at address save/restore, scalar save/restore,
+// preservation byte, owner/distribution captures, complete input and complete transfer graphs:
+// 56/51/81/81/80/79/121/133. NOT kept: no native state/mode recovery; original six-byte
+// transfer, scalar snapshots, calls and full body restored.
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {

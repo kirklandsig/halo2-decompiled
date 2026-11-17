@@ -472,6 +472,9 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax C (11-16): no new form, no lower score (42): the i row of both rotations still sums the up product before
+// the forward one and that term order is the shared rotation helper's own text in include/matrix_transform.h, a file
+// this lane may not edit.
 // MiniMax S (11-16): no new form, no lower score (42): the emitter walk wrapped in an if with the offset's zero store inside it puts the store after the list test but shrinks the frame to 0x94 against retail's 0x98 (306), and moving the cache call ahead of the definition's test puts the two reloads in retail's order but flips the prologue's push order (140); the rotation's call sites (a temporary copy, a separate result, the two calls swapped and the origin added the other way round) leave the row-i order alone, as does the particle mask read before the particle loop.
 // score 42 (was 42): left: the offset's zero store before the list test, the 1.0 defaults' order, three
 // reload pairs and row i of both rotations. Round 176 (m3 lane 5, fast): on indexed emitter definitions with
@@ -860,6 +863,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // as the plain bitfield (`if (system->flag10)`) 265 (1118 B), the index stepped right after the definition is formed
 // instead of at the latch 236. On this body: the plain bitfield test 273 (1110 B); the frame call's location flag as
 // `TEST_FIELD_BIT(...)` 42 (same code); the scale default declared after the multiplier block 50. Body unchanged.
+// M3 lane 16 r126 (fast): the particle pointer declared at the emitter scope ahead of the particle loop 42 (same
+// code); the two particle copies made after the field_50 refresh 181; the scale product as `multiplier * value` 42
+// (same code); the emitter definition as a const pointer 42 (same code); the translation as three `+=` rows 42 (same
+// code).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1992,6 +1999,15 @@ bool function_17afd0(long effect_index, long value);
 // branchy test in the if/else 113 (498 B; availability AL, cleared in the else block, so not live across the query);
 // lead form re-measured 12 (owner, then `same_view = true`, `available = false`, set, one clearing test); its true default
 // declared before the early clear 24, after the availability set 145 (513 B), with the clear after the owner as well 141.
+// P589: Original pool/salted-index/current-system identities, seven subsets then
+// cluster identity too: 47/47/47/47/47/47/47/47. NOT kept: no availability-clear/result
+// or later-view recovery; complete original body and observations restored.
+// MiniMax D (11-17): score 12 (was 47): the same_view flag is set true and cleared by one test, the availability is
+// MiniMax D (11-17): cleared and then set by the query's result, and the view global is read at each use instead of
+// MiniMax D (11-17): through a local; one byte store of the true value sits ahead of the query call, where retail
+// MiniMax D (11-17): stores it in the flag's set path.
+// MiniMax D (11-17): retail's shape needs the flag written as the conjunction of the owner test and the availability,
+// which moves the constant and the owner out of EBP (138); copying the availability into the flag gives 56.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
@@ -2008,23 +2024,24 @@ void __stdcall function_174220(bool view_pass)
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
-            bool available = false;
             definition = system->function_1751d0();
             long owner;
             if (effect_index != NONE)
                 owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
             else
                 owner = NONE;
-            long view = g_4b9ed8;
-            if (view != NONE)
-                available = !function_155760(view);
-            bool same_view = owner != NONE && view == owner && available;
-            bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
+            bool same_view = true;
+            bool available = false;
+            if (g_4b9ed8 != NONE && function_155760(g_4b9ed8) == 0)
+                available = true;
+            if (owner == NONE || g_4b9ed8 != owner || !available)
+                same_view = false;
+            bool attached = available && effect_index != NONE && function_17afd0(effect_index, g_4b9ed8);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
             {
-                if (view != NONE && *(short *)((byte *)g_4ed284 + view * 0x94 + 0x42) != NONE)
+                if (g_4b9ed8 != NONE && *(short *)((byte *)g_4ed284 + g_4b9ed8 * 0x94 + 0x42) != NONE)
                     draw = definition->flag6;
                 if (definition->unknown0c != 0) camera_relative = true;
             }

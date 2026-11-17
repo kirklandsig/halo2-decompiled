@@ -65,7 +65,11 @@ public:
 	void function_2f1ea0(void const *a, void const *b, void const *input, void *collector);
 };
 
-// score 20 (was 20): body A and the sphere take edi here and ebx in retail
+// Matched: in the shared contact helper's inside branch each face arm sets its
+// normal last and reads it through `b->motion` (no motion local). The four arms then
+// begin with the same load in the same register, which the compiler merges into the
+// one load retail has above the branch, and `b` stays live through the arms.
+// Before, 20 (was 20): body A and the sphere take edi here and ebx in retail
 // (the centre the other way round), body B's motion in the inside branch
 // takes esi where retail has edx, and the collector's table and the record's
 // address (and the end mark's time) have eax and edx swapped.
@@ -86,7 +90,8 @@ void class_2f1ea0::function_2f1ea0(void const *a, void const *b, void const *inp
 }
 
 // the same as a function
-// score 20 (was 20): as 0x2f1ea0. Inside-first dispatch 124; centre value
+// Matched: see 0x2f1ea0 (the shared contact helper's face arms).
+// Before, 20 (was 20): as 0x2f1ea0. Inside-first dispatch 124; centre value
 // 188; default face first 93; byte result 20; first/half product parts 20/20;
 // point displacement/distance parts 20/20; default normal value 54.
 // as 0x2f1ea0.
