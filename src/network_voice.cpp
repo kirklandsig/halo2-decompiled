@@ -1868,6 +1868,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // 213/213/210/210; lower/upper/both comparison providers 208/207/218;
 // invalid-clamp equality producer 222. NOT kept: no native independent zero or bit/size recovery; original clamp restored.
 // MiniMax I (11-17): no new form, no lower score.
+// m3 lane 11 r110 (fast with 0x56380, matched each time; both builds `ret 0xc`): the loop test recomputing `1 << player`
+// 60 (same code); a redundant `if (0 < queue->count)` guard around the entry loop 176 (472 B); the success length
+// through `long &length = result;` 60 (same code); the player bit computed before the active test 195 (488 B); the
+// capacity through `long &remaining = capacity;` for its decrement, tests and subtraction 60 (same code: still a
+// register, not retail's in-place decrement).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
