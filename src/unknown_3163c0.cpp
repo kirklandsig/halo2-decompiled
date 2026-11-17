@@ -12,7 +12,10 @@
 #include "reference_counted_2d88a0.h"
 #include "timer_mark_2ebc80.h"
 
-// a body's motion: its time, and the slot that moves it to another time
+// a body's motion: its time, and the slot that moves it to another time of
+// the step (0x31b700: the time as a fraction of
+// the step, and the step's length in seconds; both floats, which matters on
+// ARM64, where floats and integers travel in different registers)
 class motion_316460
 {
 public:
@@ -45,7 +48,7 @@ public:
 	virtual void slot_26() {}
 	virtual void slot_27() {}
 	virtual void slot_28() {}
-	virtual void move_to_time(float time, long context) {}
+	virtual void move_to_time(float time, float step_length) {}
 
 	char unknown04[0x78];
 	float time;
@@ -67,7 +70,8 @@ struct member_316460
 struct input_316460
 {
 	char unknown00[0x10];
-	long context;
+	// the step's length in seconds
+	float step_length;
 };
 
 struct contact_316460
@@ -194,7 +198,7 @@ void time_search_316460::function_316460(input_316460 *input, pair_316460 *pair,
 	if (reached_a != reached_b)
 	{
 		motion_316460 *later = reached_a > reached_b ? first : second;
-		later->move_to_time(earliest, input->context);
+		later->move_to_time(earliest, input->step_length);
 		output->contacts->size = 0;
 		world->state->mode = 2;
 		world->state->tolerance = tolerance;
@@ -209,7 +213,7 @@ void time_search_316460::function_316460(input_316460 *input, pair_316460 *pair,
 				float time = earliest + step;
 				while (step > world->smallest_step)
 				{
-					later->move_to_time(time, input->context);
+					later->move_to_time(time, input->step_length);
 					output->contacts->size = 0;
 					world->state->mode = 2;
 					world->state->tolerance = tolerance;
@@ -230,7 +234,7 @@ void time_search_316460::function_316460(input_316460 *input, pair_316460 *pair,
 				}
 				if (classify(output, tolerance) == 0)
 				{
-					later->move_to_time(earliest, input->context);
+					later->move_to_time(earliest, input->step_length);
 					pair->result = -3;
 					output->contacts->size = 0;
 					world->state->mode = 2;
@@ -246,8 +250,8 @@ void time_search_316460::function_316460(input_316460 *input, pair_316460 *pair,
 	float step = time;
 	while (step > world->smallest_step)
 	{
-		first->move_to_time(time, input->context);
-		second->move_to_time(time, input->context);
+		first->move_to_time(time, input->step_length);
+		second->move_to_time(time, input->step_length);
 		world->state->mode = 2;
 		world->state->tolerance = tolerance;
 		output->contacts->size = 0;
@@ -271,8 +275,8 @@ void time_search_316460::function_316460(input_316460 *input, pair_316460 *pair,
 		if (classify(output, tolerance) == 0)
 		{
 			pair->result = -3;
-			first->move_to_time(reached_a, input->context);
-			second->move_to_time(reached_b, input->context);
+			first->move_to_time(reached_a, input->step_length);
+			second->move_to_time(reached_b, input->step_length);
 			world->state->tolerance = -1000.0f;
 			output->contacts->size = 0;
 			pair->collector->collect((char *)pair->first - 0x10, (char *)pair->second - 0x10, input, output);
