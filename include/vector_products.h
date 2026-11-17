@@ -5,12 +5,12 @@
 
 #include "unknown_0259d0.h"
 
-/* the cross product a x b */
+/* the cross product a x b; the subtracted product is written b first, which gives retail's loads in 0x16ebf0 */
 static inline void cross3f(vector3f const *a, vector3f const *b, vector3f *result)
 {
-	result->i = a->j * b->k - a->k * b->j;
-	result->j = a->k * b->i - a->i * b->k;
-	result->k = a->i * b->j - a->j * b->i;
+	result->i = a->j * b->k - b->j * a->k;
+	result->j = a->k * b->i - b->k * a->i;
+	result->k = a->i * b->j - b->i * a->j;
 }
 
 /* the cross product a x b, every component computed before the stores, so
