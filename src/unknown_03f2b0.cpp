@@ -1326,6 +1326,10 @@ struct s_133f70;
 // globals' addresses, which differ between the two builds, and the layout of the entry test.
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
 
+// MiniMax S (11-17): no new form, no lower score (93 on the full image): every difference still sits before the
+// 0x4c190 call - the previous level is still a dword against retail's byte, the distance argument still travels
+// in ecx against retail's eax, and success is still stored after the esi spill against retail's before it; the
+// reduced image of this file is not faithful, so the permuter cannot search this body.
 // MiniMax E (11-11, run 80): no new form, no lower score (93 on the full image, 355 on the reduced one); a byte
 // previous level with the 0xbc offset folded into the levels base measured 328 and the same offset with a dword
 // previous measured 326, so both forms were restored; what still differs is that the previous level is a dword
