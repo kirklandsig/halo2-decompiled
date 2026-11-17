@@ -6,6 +6,26 @@ The newest entry comes first.
 
 ```
 matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1257: `0x2f3030` match.
+
+## 2026-11-17: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
+matched 1392 of 1436 Havok functions (233001 of 290362 bytes, 80.25%)
+```
+
+0 new matches, none lost:
+- @andrewnakas's #1256: closer scores and notes, no new match.
+
+## 2026-11-17: 10644 functions match
+
+```
+matched 10644 of 11326 game functions (2049201 of 2786206 bytes, 73.55%)
 matched 1392 of 1436 Havok functions (233001 of 290362 bytes, 80.25%)
 ```
 

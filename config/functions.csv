@@ -12166,7 +12166,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002f2870,58,third:havok,speed,a16 pad,,,,src/unknown_2f2870.cpp,matched
 002f28b0,52,third:havok,speed,a16 pad,,,,src/unknown_2f28b0.cpp,matched
 002f28f0,1850,third:havok,speed,a16 pad ebp,,,,src/unknown_2f28b0.cpp,matched
-002f3030,2287,third:havok,speed,a16 pad ebp,,,00020670 002d91d0,src/unknown_2f28b0.cpp,near
+002f3030,2287,third:havok,speed,a16 pad ebp,,,00020670 002d91d0,src/unknown_2f28b0.cpp,matched
 002f3920,989,third:havok,speed,a16 pad ebp,,,00308590,src/unknown_2f3920.cpp,near
 002f3d00,987,third:havok,speed,a16 pad ebp,,,00308590,src/unknown_2f3920.cpp,near
 002f40e0,422,third:havok,speed,a16 pad ebp,,,00308590,src/unknown_2f3920.cpp,matched
