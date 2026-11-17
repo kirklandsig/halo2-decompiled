@@ -1009,13 +1009,19 @@ void __stdcall function_105dd0(long object_index, long unused, s_weapon_sound_ev
 long function_101f20(long object_index);
 bool function_1061c0(long object_index, long *out_index, byte *out_entry);
 
+/* the weapon's control flags from its holder: a word, passed by value */
+struct s_weapon_control_flags
+{
+	word bits;
+};
+
 // @retail 0x100430
-void function_100430(long weapon_index, long value, real amount)
+void function_100430(long weapon_index, s_weapon_control_flags value, real amount)
 {
 	s_weapon *weapon = WEAPON_GET(weapon_index);
 	s_weapon_definition *definition = WEAPON_DEFINITION(weapon);
 
-	weapon->value_16e = (short)value;
+	weapon->value_16e = (short)value.bits;
 	weapon->value_170 = (byte)(long)(amount * 255.0f);
 	if (definition->trigger_count > 0 && definition->triggers[0].behavior == 5 && weapon->triggers[0].state != 6)
 	{
@@ -1034,7 +1040,7 @@ void function_100430(long weapon_index, long value, real amount)
 			}
 		}
 	}
-	if (value & 0x1df)
+	if (value.bits & 0x1df)
 		function_b7360(weapon_index);
 }
 
@@ -2897,6 +2903,11 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax I (11-17): no new form, no lower score (389): this build still reserves eight bytes where retail reserves one
+// four-byte slot and still keeps the weapon index in ebp with the weapon in edi where retail takes the table entry into
+// ebp, so the prologue and the switch tree's block order differ (ours branches `jg` to an out-of-line greater block,
+// retail branches `jle` to an out-of-line less-or-equal block); the SDK builds the same tree for the same 27 values
+// whatever the case order, and the permuter over 42 tries found nothing below 389, so the body stands;
 // MiniMax H (11-14): no new form, no lower score (389): retail opens with one four-byte slot (`push ecx`) and takes
 // the table entry into ebp with the name in esi, the weapon index in edi and the definition in ebx, where this build
 // reserves eight bytes, keeps the weapon index in ebp, the weapon in edi and spills two pointers; the switch tree is
@@ -3256,6 +3267,11 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax I (11-17): no new form, no lower score (190): the conversion scan still needs its entry tested for null, and the
+// destination weapon's register and the acquisition flag's sense still differ (this build holds the destination in edi and
+// stores the not-acquired flag with `setle`, retail holds it in ebp and stores the acquired flag with `setg`); the forms
+// measured around it (a found flag 206, the entry kept by its index 194, clearing the available count when the scan finds
+// nothing 206, the scan counter as a long 210) all rise, so the body stands;
 // MiniMax S (11-16): no new form, no lower score (190): the conversion scan still needs its entry tested for null - using the scan counter for the entry with a local found flag scores 206, keeping the entry by its index 194, clearing the available count when the scan finds nothing 206, and the pointer form with the skip as the else of the found test stays 190; the scan counter as a long instead of a short gives 210, and the destination weapon's register and the acquisition flag's sense still differ.
 // MiniMax G (11-14): no new form, no lower score (190): the type byte re-read at each of its three tests 212, the acquisition flag with retail's polarity 211 (715 bytes), the same with a found flag in the conversion scan 216, the destination magazine without its own pointer 207, both of those together 211 (743 bytes), the capacity minimum without its cast 190 (unchanged code, different allocation); a 300 s permuter run found nothing below 190.
 // MiniMax B (11-12): no new form, no lower score (190): the difference is in the homes and the
@@ -3540,6 +3556,11 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax I (11-17): no new form, no lower score (607 plain, 643 fast): the frame still agrees with retail at 0x1c60 but
+// ours is 2545 bytes against retail's 2533, retail keeps the weapon index in ebx, the weapon pointer in ebp and the barrel
+// offset in edi and spills the definition to [esp+0x14] where this build keeps the weapon index in a stack slot, the
+// barrel offset in ebx and the definition in edi, so the prologue and every later home differ; the permuter cannot search
+// this function on the reduced image and its full-image baseline is 604 differing instructions, so the body stands;
 // MiniMax H (11-14): no new form, no lower score (607 plain, 643 fast): the frame agrees with retail at 0x1c60, but
 // the length is 2545 bytes against retail's 2533 and the homes do not: retail keeps the weapon index in ebx, the weapon
 // pointer in ebp and the barrel offset in edi and spills the definition to [esp+0x14], where this build keeps the weapon

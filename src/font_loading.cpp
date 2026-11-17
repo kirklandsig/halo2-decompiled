@@ -855,6 +855,9 @@ static inline long font_character_pixel(long alpha, long color)
 // long/word result and signed/unsigned color: 59/203/109/192/59/203/109/192. NOT kept: no native
 // parity/literal/run-two equality; original helper, calls and complete decoder restored.
 // MiniMax R (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the two fills still merge into one block; a helper without the byte cast gives retail's parity at every site but moves the run out of EBX into EBP (203), a byte alpha in the helper narrows it further (209) and a word result for the two bytes of the type 0 value changes nothing else (103).
+// P594: Separate word-store/cursor-advance boundaries at packed first/second/both, single,
+// literal, single-literal, all packed and all stores: 59/59/59/59/59/59/59/59. NOT kept: no exact native
+// parity/literal/run-two recovery; original scalar helper and complete decoder restored.
 // MiniMax S (11-17): no new form, no lower score (59): the shared helper without the byte cast on the low alpha bit (the
 // lead's form) makes all three decode sites match retail's parity (xor ecx, ecx; mov cl, al; and ecx, 1) and the pixel
 // blocks are retail's, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX (and the fill's

@@ -1175,6 +1175,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // new, old 114 (same code); the side product named before the test 140 (1382 B, retail's length). Re-measured (listed):
 // the rotation angle computed before the forward copy 125. Retail inlines the same rotate-about-axis helper here as in
 // 0xd0080, 0xe3910, 0x1ff360 and 0x297d30, but not in 0x1ecf50, which shares rotate_direction with them in this build.
+// M3 lane 3 r256 (fast with 0x1cd6c0, 0x1ecf50, 0x1e5af0, all MATCH; control 114): the rotation through the existing
+// rotate_vector_170d70 (0x170d70 listed, inlined) 119 (1389 B: its dot sums k first, the j/k products stay axis-loaded);
+// the up input copied per component 320 (1439 B: direct [edi+N] stores, no ECX copy), the facing-goal input per component
+// 236 (1382 B), both 394 (1423 B); a `vector3f const *axis = &state->up;` for the rotation only 144 (1397 B). Reading of
+// the listing: in the rotation, retail keeps every product with axis.j or axis.k text-ordered (vector copy, axis from
+// memory) while ours loads axis.j/axis.k first; the axis.i products and those with vector.i agree in both.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

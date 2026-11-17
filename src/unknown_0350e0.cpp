@@ -3701,6 +3701,16 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `if (!found)`) 394; the clamp as a value-returning helper at both loops 383 (1287 bytes); pass 1's `++first; found =
 // true;` ahead of the swap 360; pass 3's two tests as nested ifs 317 (same code); pass 3's tail as `swap(entry,
 // &entries[last]); --i; --last;` 316 (only the tail's instruction order moves). Body unchanged.
+// M3 lane 11 r111 (fast; compile-only screen in brackets, which reproduces this listing but for the 0x4b160 register
+// setup): a redundant `if (first <= last)` before pass 4 [flips `first` to EDX, state EBP, homes +0x10/+0x14 as retail,
+// aligned 164 -> 115] 353 for real (LTCG keeps `first` in EBP); on it R149's decay form 358 (1335 B), plus the growth
+// step through `initial`/`elapsed` pointers with the pin written out 382 (1354 B) [56, growth loop exact]; other guards:
+// pass 1 321, pass 2 354, pass 3 357/357, output loop 349, decay 373 (1341 B). R149's always-true loop-3 test re-measured
+// 227, with that decay form 212 (1324 B), with that growth form 198 (1338 B, aligned 17) [compile-only: it alone takes
+// the pass-3 head out of the loop alignment, as retail, and flips the registers]. Natural loop-3 spellings on the decay/
+// growth forms: `i < last + 1` 440, `i <= last; i++` 388, `continue` after `--i` 388, decay/growth alone 388; one more
+// index use in loop 3 (flag test 372, created test 372, zero store 388); compile-only, none of a while form, an outer
+// entry pointer, `--last` apart, postfix steps, a named removable test, a negated `continue` or nested ifs flips them.
 // MiniMax S (11-17): no new form, no lower score (317): the body is retail's 1324 bytes and the whole
 // difference is the register allocation (retail keeps the state pointer in ebp and the swap counter in edx with
 // their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state
@@ -3829,13 +3839,14 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 486 (was 486): see the forms below.
 // MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
 // the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this
 // build's locals and register plan differ from the start.
 // MiniMax I (11-15): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position and reads the delta from the stored view position, while this build's locals and register plan differ from the start.
 // MiniMax R (11-16): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, so this build's locals and register plan differ from the start; the permuter (18 tries in 307 s, annealing) reached only 484 by splitting the flags declaration, narrowing the cycle flag to a byte and swapping two stores, so it was reverted.
-// score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
+// Earlier 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
 // MiniMax C (11-15): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, and this build's locals and register plan differ from the start.
@@ -4045,6 +4056,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // MiniMax C (11-16): no new form tried this round, no lower score (486): the frame is still 0x60 against retail's 0x38, so the returned
 // MiniMax C (11-16): projected-point temporaries and the phase publication are still laid out differently; the earlier rounds' projection,
 // MiniMax C (11-16): publication and offset-order forms are recorded above.
+// M3 lane 11 r111 (fast): the delta through the existing vector3d_from_points3d from `previous` to the stored view
+// position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
+// copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
+// view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -4867,6 +4882,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z += 0.001f;
 }
 
+// score 231 (was 231): see the forms below.
 // MiniMax H (11-06): score 231 (was 231): no new form, no lower score.
 // The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
 // (+r,-r), while ours twists the quad as (-r,-r), (+r,-r), (+r,+r), (-r,+r), and the vertex writes follow
@@ -4892,7 +4908,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // left, forward, up where retail adds forward, up, left and up, left, forward), so the source already is retail's
 // evaluation order; this is not a behaviour difference. Frame 0xd0 versus 0xe0 (retail's unwritten 12 bytes below
 // the alpha at [esp+0x78]), spill homes and the one-byte length difference remain as listed below.
-// score 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
+// Earlier 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
 // 1820 bytes (retail 1819), first difference the frame size at +0x2.
 // Earlier 394: the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
@@ -4988,6 +5004,12 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // Original helper, all input captures, full geometry, scalar alpha and body restored.
 // P349: Complete scale classification before alias-safe inputs, bool/byte/short/long and complementary truth:
 // 446/446/446/446/462/462/458/458. NOT kept: no byte equality; original executable source restored.
+// M3 lane 11 r111 (fast; "col" = the vertex colour as a color4f, alpha then red/green/blue 1.0, 225 at 1826 B
+// re-measured): col with each corner's offset in its own block 225 (no slot moves); the same blocks without col 230;
+// col with a const reference to the collision point passed to the four corners 225; col with the corner rows in
+// y, x, z order 219 (picked by score: retail computes x, y, z), z, y, x 387 (1806 B), as forward*x + left*y + up*z
+// 225. Compile-only: renaming radius or the corner locals moves no stack slot (radius stays at frame +8), and that
+// build keeps up.i/up.j across the corners where LTCG keeps up.i/left.j (retail forward.i/up.j).
 // MiniMax S (11-17): no new form, no lower score (231): the corner helper is private to this file and its four
 // call sites are all here, so its shape is ours to pick, but the spill homes (x 4 / z 8 / radius 0xc /
 // -radius 0x10 against retail's x 4 / radius 8 / -radius 0xc / z 0x10) do not move with the declarations:

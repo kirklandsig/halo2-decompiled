@@ -51,6 +51,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax C (11-17): score 176 (was 176): no new form, no lower score. The first normalizer's magnitude still spills
+// to -0x10 where retail spills it to -0xc (the vector homes differ too), the unity constant still loads into XMM5
+// against retail's XMM4; the length from the helper's return (263), the shared length slot (422) and the length local
+// declared first (176) were measured and dropped.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // MiniMax B (11-12): no new form, no lower score (176); the permuter's 129 tries find nothing better than the
 // baseline (172 on its reduced image), and retail keeps the unity vector in XMM4 where ours keeps it in XMM5
@@ -544,6 +548,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // P569: Maximum-angle policy positive bool/byte/short/long outcomes 281/281/281/281;
 // complementary outcomes 287/287/287/287. NOT kept: no native storage equality;
 // original producer/body restored. Unity, root/yaw and rotation homes remain.
+// M3 lane 11 r111 (fast with 0x29b990, 0x11cc90, 0x11ce20 matched): the rotation dot's products with their factors in
+// each order (v first in i, in k, in both, k term first) 176 x4 (same code: products and sums are canonicalized); the two
+// pitch terms in their own block 176 (same code); single-exit normalizer re-measured 171, with that block 171; the
+// rotation vector or either input copy renamed (rotated, aim_direction, zz_direction, unit_facing, unit_target) 176 each:
+// names do not move retail's packing of the rotation vector into the first copy's slot.
 // M3 lane 4 r207 (fast with 0x29b990; masked = registers and stack offsets masked, aligned, base 176 at masked 114): the
 // rotations through the in-place helper 0x2551f0 and 0x117dd0 now share (include/axis_rotation.h) with the sine and
 // cosine as call arguments, or as locals before or after the copy: 244 (1694 B, frame 0x28, masked 97); with the second
