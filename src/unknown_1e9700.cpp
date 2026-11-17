@@ -634,6 +634,19 @@ struct s_object_damage_view
 // after the loop, the rise is two pads; a flag, match-only); 0x197160's `code` typed byte (its only caller; retail loads the
 // code's dword once into ESI and pushes it for 0x197160 and 0x1ea5b0) 354 (retail's setup exactly, 0x197160 stays matched:
 // lead for a combined form); the two together 366.
+// b7G (11-17) walk against retail, fast build on r830 (353 unchanged, 0xd9640 MATCH): checked every block of
+// 0x1e9fa0 against retail statement by statement: entry and victim (0x1e9fb7 call 0xbadc0 mask 3, +0x13c), team byte
+// (+0xc0, movsx), both tick windows (0x45dc10 = 4.0 into 0x1ea5b0's cutoff at 0x1ea278, 0x45dbfc = 6.0 for the time
+// test; float store then fld/fistp at 0x1ea02c-0x1ea036), consideration flag (0x1ea09b), selection loop (record
+// +0 time unsigned 0x1ea114, +4 amount strict 0x1ea11e, +0xc player, -FLT_MAX 0x4409d4), slot fallback (0x1ea13e),
+// selected block (code stored before the player test 0x1ea17e, 0.4 = 0x45dd30 at 0x1ea1ba), reported fallback
+// (0x1ea1e2), killer block (victim NONE joins the hostile arm 0x1ea26b), assist loop (4 records, test order, 0.0
+// 0x45dbd8 at 0x1ea2a4), related unit (+0x2c, +0x248, +0x13c, unsigned < 5 at 0x1ea437), callee argument registers
+// and stack orders at 0x1ea271, 0x1ea285, 0x1ea460, 0x1ea486, 0x1ea4db, 0x1ea50f and 0x1ea599, both dedupe loops,
+// self/friendly. Behaviour differences found: none. The lead above is allocation only: every edge into 0x1ea1de
+// has killer == NONE (0x1ea15c, 0x1ea182, 0x1ea191, 0x1ea1a4, 0x1ea1b0), so retail's 0x1ea227 test runs on NONE and
+// leaves at 0x1ea29e; ours skips the killer block directly, the same work. Only non-behaviour spots: retail re-reads
+// the record's player at the assist stores (0x1ea336, 0x1ea33f) and the related player at 0x1ea43c (listed above).
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
