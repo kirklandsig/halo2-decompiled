@@ -795,6 +795,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Shared direction/heading renamed or declared after forward 153/153.
 // NOT kept: the shared direction/heading swaps the velocity and forward slots.
 // Velocity-copy registers, early unity and the normalizer/angle registers still differ.
+// Round 563. Velocity-copy registers and the early unity load still differ. point setter for velocity copy
+// 239; point setter for in-place velocity scale 235; point setter for forward copy 118; point setter for
+// heading copy 122; point setter for input rotation 120; point setter for both perpendiculars 116; point
+// setter for heading blend 218; point setter for all three vehicle vector copies 247.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

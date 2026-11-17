@@ -740,6 +740,12 @@ void __stdcall function_1160c0(real dt)
 // cross3f(v, axis, &cross) inside the helper 143 (1368 B); the cosine taken ahead of the sine 121 (1369 B); the helper
 // writing a separate `rotated` vector that the rows add to position 164 (1368 B); the cosine complement named, or the
 // dot named ahead of the sine and cosine, the same code as the lead.
+// Round 563. The selected segment still uses EDI/ECX and +0x1c against EDX and +0x14. point setter for the
+// anchor position 356; vector setter for the anchor direction 306; point setter for the interpolated position
+// 171; point setter for the predicted position 171; vector setter for the node velocity 175; point setters for
+// the committed and previous positions 359; vector setter for the angle reference 171; point and vector
+// setters for both attachment outputs 380. NOT kept: the anchor-position and commit setters shorten the body
+// and demote the update caller.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
