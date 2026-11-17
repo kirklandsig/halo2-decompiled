@@ -1819,6 +1819,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
 // MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
 // MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.
 // MiniMax I (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the 0xd37f0 call
@@ -2345,6 +2346,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax S (11-16): no new form, no lower score (542): the frame is 0x90 as in retail and the call boundaries agree with retail's; what is left is the status, mesh, colour and sample homes and the 0x30bf0 call, which is expanded here where retail calls it out of line - that definition is in another file this lane may not edit: BLOCKED-BY 0x30bf0.
 // MiniMax E (11-16): no new form, no lower score (542): the frame is 0x90 as in retail and the call boundaries agree with retail's; what is left is the status, mesh, colour and sample homes and the expansion of the 0x30bf0 call, whose definition is in another file.
 // MiniMax E (11-15): no new form, no lower score (542): the call boundaries agree with retail's except that 0x30bf0 is expanded here where retail calls it out of line, and its definition is in another file. What is left in this file is the status, mesh, colour and sample homes.
 // MiniMax I (11-15): no new form, no lower score (542): the frame is retail's 0x90, but the status, mesh, colour and sample

@@ -220,6 +220,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax S (11-16): no new form, no lower score (241): the frame is still 0x78 against retail's 0x6c and the call to 0x1faf80 still takes the 0x148 and 0x13c addresses by adding to ebp where retail leas them, so the tail's registers differ; reading the speed scale at each use instead of once measures 250 in this build, and the block-scope form that gives retail's 0x6c frame needs 0x11f0d0's double local and its double parameter, whose body is in src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
 // MiniMax E (11-16): no new form, no lower score (218): BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp) - that callee's named double local and double parameter give this function its 8-byte stack parity under LTCG, so the frame stays 0x78 against retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
 // MiniMax E (11-15): no form kept, the body is the original one again; the reduced image (--fast, one
 // address) prefers the speed scale read twice from the definition (222 -> 213), one basis vector shared
@@ -1131,6 +1132,7 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax S (11-16): score 45 (was 92): the 0x119bc0 result is stored in the physics-move struct's byte member, so the byte store retail makes appears here too and the force argument is widened out of that member instead of straight out of al; the argument's own zero extension and the member's slot are what still differ.
 // MiniMax E (11-16): no new form, no lower score (92): the frame is 0x1f0 as in retail and the first 200 aligned rows match; the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition (src/unknown_1c25a0.cpp) and in its declarations, which live in files this lane may not edit. Still BLOCKED-BY 0x1c4b00.
 // MiniMax I (11-16): no new form, no lower score (92): the first 200 aligned rows match and the tail still
 // diverges where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this
@@ -1372,10 +1374,10 @@ bool __stdcall function_118700(long arg_0)
         vector3f *local_12 = (vector3f *)((byte *)&local_3 + 0x138);
         bool local_13 = local_12->k * local_12->k + local_12->j * local_12->j + local_12->i * local_12->i > 0.0f;
         forward_flags_set(&local_0->flags, 0x10, local_13);
-        bool local_14 = function_119bc0(arg_0);
+        local_11.field_8 = function_119bc0(arg_0);
         s_forward_object *local_15 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
         *(vector3f *)((byte *)local_15 + 0x88) = local_11.field_c;
-        function_1c4b00(arg_0, &local_11.field_c, NULL, local_14);
+        function_1c4b00(arg_0, &local_11.field_c, NULL, local_11.field_8);
         function_119500(arg_0, local_11.field_4, (s_orientation_request_118f90 *)&local_6);
         function_1195c0(arg_0, (s_orientation_request_118f90 *)&local_6);
         if (!TEST_FIELD_BIT(local_0->frozen) && (*((byte *)local_0 + 0x144) & 8)
