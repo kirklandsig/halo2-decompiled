@@ -1009,6 +1009,8 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // Round 169 (m3 lane 7): listing re-read (fast 4), still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
 // M3 lane 8 r177: baseline listing (full build, 4) still differs only in 0x11e800's four argument registers (ours a/b/c/point
 // in eax/esi/edx/ecx, retail eax/edx/ecx/esi); 0x11e800 is still contributor code; BLOCKED-BY 0x11e800.
+// Round 194 (m3 lane 5): baseline listing (full build, 4) still differs only in 0x11e800's four argument registers;
+// 0x11e800 is still contributor code; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
