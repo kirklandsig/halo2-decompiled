@@ -138,6 +138,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 
 // score 607 (was 607): frame 0x4820, clears and metadata cursor agree; first +0x15f spans the loop; provider/NONE, palette/record and zero/SIMD homes differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// MiniMax S (11-16): no new form, no lower score (607): the palette slot is still sign-extended and read as a word where retail reads the byte unsigned at each use, and the 0x130f60 result still stays in EAX where retail moves it to EDX and keeps NONE in EAX; the native byte palette measures 611 and the signed short 616 in this build, and that register home is set by the clamp in the three-scalar helper in this file, whose other callers keep their own match.
+// score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
 // sign extension and the helper differences in the notes below are unchanged. Body unchanged.
 // MiniMax H (11-12): no new form, no lower score (607); the palette slot is still sign-extended and compared 16-bit where retail compares the byte with -1.
