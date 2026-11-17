@@ -1537,6 +1537,17 @@ void function_170630(long player_index);
 // stays 7, so retail's callee cannot be declared that way; the callee must keep (out, second, first). Also tried:
 // first computed once with second = first + 0x40 and out as the literal state + 0x320 17, the same with named
 // second 17, out = first + 0x314 / 4 17, a second-based set (out = second + 0x214 / 4, first = second - 0x40) 31.
+// M3 lane 2 r97 (fast with 0x16f280, 0x170bb0): the out address through a trivial forceinline accessor 7 (folds); out
+// formed into a local and passed through a reference bound to it 11, or `real *const &out = ...` at the call 11: the
+// argument block is then retail's exactly (command EDX, base ECX, out/first/second, `add ecx, 0x10c` last) but the user
+// index moves to ESI and the cursor to EDI, and the matched caller 0x16f280 follows (10); all three arguments as const
+// references 17 (formed in declaration order); that form with a reference-bound loop cursor 11, with the reference in its
+// own block 11, with a redundant `if (0 < remaining)` guard 11, with the command read through `state` 30, the countdown
+// declared before the test 11, the cursor formed ahead of the state 11, both declared inside the test 12. A reference
+// bound to first or second alone (argument order unchanged) also moves the index to ESI (17), and so does dropping a call
+// or adding a cursor read (diagnostics), so any reference-bound temporary causes it. Without references: out through
+// `&observers[user_index]` 7, through the global 24, first and second that way 7; the cursor formed in the loop's
+// scope 24 (the state then lives in ESI).
 // @retail 0x16fe90
 void function_16fe90(long user_index)
 {
