@@ -3318,6 +3318,18 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // MiniMax C (11-16): no new form tried this round, no lower score (54): the block's own order of the loads and its call setup still differ
 // MiniMax C (11-16): from retail in the ways the notes above record, and no form of this file's own moves them.
 // MiniMax R (11-17): no new form, no lower score (54): the block's own order of the loads and its call setup still differ from retail in the ways the notes above record, and no form of this file's own moves them.
+// b11B (11-17) walk against retail, fast build on r843: no logic difference found. Every instruction from 0x29b00 to
+// the first fcos (0x29fb4) equals retail's, so the early exits, the screen/target call, the stage loop (0x29cf0), the
+// render-state and shader constants, both alpha clamps (jbe targets 0x29ddf/0x29e43, NaN stored as is), the maximum (ja
+// target 0x29ee8), the zero tests (jp targets 0x29f93/0x29fa8) and the bounds block are retail's. readf.py: 0x45dbc0
+// 1.0, 0x45dbbc 0.5, 0x45dbcc -1.0, 0x45dbd8 0.0, 0x45dc38 255.0, 0x45e490 320.0, 0x45e2b4 240.0 match the source; the
+// 91 ours-to-retail address operands pair one-to-one. Corner region 0x29fb4-0x2a1f4: the same 121 instructions as
+// retail's (ours has fmul [esp+0x8c] where retail, after its push 7 at 0x2a1c9, has [esp+0x90]); only the schedule
+// differs, first at 0x2a027 (ours stores x87 coordinate 3 before `subss xmm1, [esp+0x90]`). The second set's store
+// order is retail's (coordinates 0,3,1,4,2,6,7,5); the first set's is 0,3,4,7,1,6,2,5 in retail and 0,3,4,6,7,1,2,5 in
+// ours. Tried, all 54 (same code): outputs by reference, `/ 2.0f`, u and v as two helpers; with each of a set's 8
+// statements written separately: retail's first-set order 219, single swaps in one set 54-225 (none under 54), 6 random
+// orders 96-247. Nothing kept: the body is as on r843.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

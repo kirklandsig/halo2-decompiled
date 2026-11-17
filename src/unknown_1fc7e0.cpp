@@ -254,7 +254,7 @@ void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2);
 real function_1e9700(short row);
 real weapon_barrel_estimate_time_to_target(long weapon_index, short barrel_index, real distance);
 real function_30bf0(vector3f *v);
-bool function_1c8d20(long actor_index, point3f const *origin, long excluded_object,
+bool function_1c8d20(long actor_index, long excluded_object, point3f const *origin,
 	vector3f const *direction, long *blocking_index);
 
 /* whether a ray from the actor's eyes reaches the target point: 0 when
@@ -760,7 +760,7 @@ aim:
 			aim.i = actor->aim_point.x - origin.x;
 			aim.j = actor->aim_point.y - origin.y;
 			aim.k = actor->aim_point.z - origin.z;
-			if (function_1c8d20(actor_index, &origin, ignore_object, &aim, &blocker))
+			if (function_1c8d20(actor_index, ignore_object, &origin, &aim, &blocker))
 			{
 				actor->blocked_ticks = 0;
 				if (actor->second_barrel)

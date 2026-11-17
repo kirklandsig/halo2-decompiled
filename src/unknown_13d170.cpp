@@ -730,6 +730,20 @@ struct s_physical_block_iterator
 // P582: Original policy Boolean scalar memcpy at case zero/case one/default, seven
 // subsets, then complete scalar memmove: 286/201/201/286/286/201/286/273. NOT kept: no exact native common-result materialization,
 // age-mask/product or policy placement recovery; original comparisons and complete body restored.
+// b9L (11-17) walk against retail, fast build on r840: no behaviour difference found, no new form, score unchanged
+// (201). Walked every statement, field offset, jcc sense, constant and callee argument. Agrees: pages and the 0..8
+// clamp (0x13d3a3, 0x13d3b3-0x13d3ce), limit test (jl 0x13d3da, jg 0x13d3de) and the failure update (cmovg
+// 0x13d423); ring fields (previous +0, time +4, offset +8, pages +0xc) stored in retail's order (0x13d465-0x13d46c);
+// expiry adds the `type` argument [esp+0x1070], not limit_index, unsigned (0x13d4e0-0x13d4e4); oldest test unsigned
+// (jae 0x13d4f9); `head = tail` on busy (0x13d537); scan compares: time unsigned (jbe 0x13d5a1), pages signed (jl
+// 0x13d5b6); switch 0/1/default (0x13d5c7-0x13d5cd); case 0 unsigned time then signed pages (0x13d616-0x13d620);
+// case 1 call 0x13d606 with ECX physical, ESI candidate, EDI &best as the matched 0x13d320 reads them; the walk's
+// tests (jge 0x13d738, jle 0x13d747, handle built from the salt before the tests); oldest/best.previous fix-up
+// (0x13d6ea-0x13d701); allocation failure to the limit update (je 0x13d76e); the three link arms (0x13d790,
+// 0x13d7d6, 0x13d816). Retail's clamps are unsigned (cmp 0,x / sbb / and, 0x13d5d9-0x13d5ed), so identity on a
+// dword: retail evaluates the candidate's age, then the best's, then multiplies candidate pages by the best's age
+// first (0x13d5f3) and best pages by the age second (0x13d5f6). Left (layout and registers only): clock in EDX vs
+// our EAX at 0x13d5cf, cases 0/1 in place (0x13d600, 0x13d60d), walk roles, data reload 0x13d7e1.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

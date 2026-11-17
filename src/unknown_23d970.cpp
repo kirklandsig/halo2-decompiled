@@ -1022,6 +1022,18 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // cross3f_staged second 248 (1267 B); in place through function_1f087b with cross3f_staged second 247 (1265 B); the three
 // camera locals declared together ahead of the arm in the orders p/d/r, d/r/p, d/p/r, r/d/p, p/r/d 47 each (same code).
 // Body unchanged.
+// b11G (11-17) walk against retail, fast build on r843 (`--fast 0x23de50 0x1f0870`, 45): every statement, field offset,
+// jcc sense and callee argument agrees with retail, so no behaviour fix. Checked: the target repair (badc0 with -1
+// 0x23de6a, dda0 0x23de7b/0x23de90, dd30 0x23de97), the reset byte (`test al,al; jbe` 0x23df28, three separate
+// `field_2_3 * 0.33f` roundings, fistp 0x23df47/0x23df79/0x23dfc2), the player-state guard (0x23dfde), the camera arm's
+// flags 0x19 and zero timer, the else arm's flags 1 and `0.f > timer` clamp (comiss/ja 0x23e1fa), the timer == 3.f NaN
+// test (ucomiss 0x23e22d, `jp` skips), the delay clamp (comiss/jbe 0x23e26f), the 3.f/15.f delay choice (comiss; ja
+// 0x23e2ff) and the final `0.f == delay` NaN test (ucomiss 0x23e30d, `jp`). Constants read from the XBE: 0.33f, 3.0,
+// 0.5, 1.0, 15.0. The 45 left is register colour and schedule only: the first product's f.k/f.j temporaries in
+// xmm1/xmm2 (retail xmm2/xmm1; the rows are cross3f's u.j*f.k - u.k*f.j, u.k*f.i - u.i*f.k, u.i*f.j - u.j*f.i), the
+// second product's k, j, i schedule with copies of right's registers (retail up.k = r.j*f.i - r.i*f.j, stored after all
+// three), and the else arm's forward.j/k stores through ecx. No form beyond the listed ones; the best match-only
+// recipe is still the else-arm forward pointer, 43 (one-use pointer, not kept).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
