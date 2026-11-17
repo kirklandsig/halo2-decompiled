@@ -4073,6 +4073,11 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // the existing point-difference helper 498; in place 500; in place with typed offset 500;
 // signed projection result 530; signed result in place with typed offset 530.
 // NOT kept: all regress or move length away from retail. The velocity and projection homes remain.
+// Five stride groups with countdown 530 or phase end 542; independent arrays
+// with countdown 505 or phase end 504; random-base cursor 526; screen-y cursor
+// 530; separate position/random cursors 485; independent view scalars 507.
+// NOT kept: the separate position/random form gains one at retail length
+// and grows the frame to 0x64.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5033,6 +5038,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // F408: In-place offset in destination, shared scratch, initialized array, and scoped points:
 // 385/698/388/698. With the four-channel color: 375/700/383/696.
 // NOT kept: all regress, including native-length forms. Frame and corner scalar homes remain.
+// Depth bias at each used corner 231 or after all corners 393; named final depths
+// at their corners 401 or after all corners 393; with four-channel color,
+// 225/390/376/387. NOT kept: the 225 form gains six and grows to 1826 bytes;
+// the 0xe0 frame and radius/scaled-zero homes do not recover together.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

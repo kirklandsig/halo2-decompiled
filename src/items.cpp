@@ -821,6 +821,11 @@ struct s_item_collision_bsp
 // 198; getter result used in the normal rows 252. NOT kept: the six-point
 // receiver gain falls short of the threshold. The instance address sequence
 // and native plane and spin register allocation still differ.
+// Transformed surface first 220; separate section displacement 198; instance byte
+// displacement 235, with section displacement 235 or one surface read 235; typed
+// base and section displacement 201; shared byte-displaced receiver 192; collision
+// displacement 235. NOT kept: the shared receiver gains only six; instance indexing
+// still adds the base before the section read.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

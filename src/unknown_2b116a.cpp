@@ -5735,6 +5735,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // eligibility branches 433; joint mute action branches 325; add-member query
 // branches 299; removal eligibility branches 92.
 // NOT kept: the removal form gains five and the other alternatives tie or regress.
+// Exclusive join branches 92; shared join permission 365; friend-action branches
+// by roster state 388 or addition gate 381; add/pending branches by roster state
+// 381 or admission 86; shared removal gate 360; joined title and joinability 95.
+// NOT kept: the admission form gains three; the title-state output slot still differs.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
