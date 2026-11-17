@@ -570,6 +570,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // (right*x + up*y) + forward*z). Rows 304 (1084 B), 0x4f7e0 stays 325, 0x30290 and 0x30bf0 stay MATCH. The clamp at
 // 0x505fa..0x50626 is PIN_126660's body; its header needs a new include, so it stays written out. Not kept: the
 // segment and both offsets through vector3d_from_points3d, which this file doesn't use yet, 301 (no behaviour change).
+// Complete view aggregate 278; staged coordinate stores 304; staged coordinate aggregate 278;
+// scoped raw displacements with aggregate/staged stores/staged aggregate 278/304/278;
+// first/second displacement scoped to its transform with aggregate 279/270.
+// NOT kept: the lower scores have frame 0x2c versus 0x14, even at retail length.
 // M3 lane 17 r45 (fast with 0x30290, 0x30bf0 and 0x142640, all MATCH, 0x4f7e0 unchanged at 325; the kept form confirmed plain;
 // "sums" = the six view sums compared symbolically with retail's (forward*z + up*y) + right*x, build/r45/symtree.py). Kept: each
 // offset transformed in place by the unchanged helper, the views living in the offset vectors as in matched 0x30290, 304 -> 234

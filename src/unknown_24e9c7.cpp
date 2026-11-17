@@ -543,6 +543,9 @@ struct s_24e9c7_points
 // The first upper vertex before side scaling recovers the return and metadata slots at frame
 // 0x48, but the shallow spill holds the converted half width and the body grows. Early across j
 // spill remains. Original body restored.
+// The across/side spill above the result still differs. Backward addition of the negated side, with original
+// across scalars, a separate pair, a sized side scaled in place, or an in-place two-stage side: 167, 161, 161,
+// 163. Backward subtraction on the same four producers: 167, 161, 161, 163. All eight shrink the frame to 0x40.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

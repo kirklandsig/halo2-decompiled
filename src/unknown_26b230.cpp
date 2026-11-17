@@ -2156,6 +2156,8 @@ void function_269250(long clump_index, long actor_index);
 // guarded datum iterator and team-arm comparison 180;
 // absolute-index scan and current-datum setter 158;
 // Original body restored.
+// Pool EBX, stack-only selection and the x87 compare still differ. Actor, candidate and position
+// record references in all seven subsets, plus the shared clump layout for the team read: eight at 87.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

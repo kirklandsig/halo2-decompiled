@@ -1684,6 +1684,13 @@ long function_10f5f0(long object_index);
 // steering block and entry, plus axis bounds with separate velocity outputs and
 // call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
 // 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
+// Integration branch before bounds branch, with branch-owned state, separate integration/damage velocity
+// and final request scope. All eight combinations score 561. NOT kept: 0x1990 frame and distinct
+// bounds/velocity slots persist. The flag-byte stores remain absent.
+// Boundary fields through pointer/reference, separate limits with direct/shared point difference
+// 561/567/561/567, vertical range value with either binding and point difference 559 each.
+// Range value with separate initial velocity 559, all three separate velocity outputs 558.
+// NOT kept: 0x1988 frame is four bytes larger than retail and the three-point gain is below threshold.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4610,6 +4617,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // or the complete setter 116 each, first +0x108. On that form the vehicle cross
 // 129 and sequential rotated-up stores 121. NOT kept: two-point gain only on
 // the projection forms. First cross and trig homes remain.
+// Facing forward/up and rotated up field references, seven subsets 184/170/182/166/200/139/133,
+// then all with rotated forward 196. NOT kept: the first preload, cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

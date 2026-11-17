@@ -4127,6 +4127,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 530; separate position/random cursors 485; independent view scalars 507.
 // NOT kept: the separate position/random form gains one at retail length
 // and grows the frame to 0x64.
+// DH393: Half-angle, tangent and radius-product locals 486/498/486.
+// Half-angle/tangent, half-angle/product and tangent/product 505/490/489.
+// All three with direct assignment or a short producer scope 494/494.
+// NOT kept: ties or regressions. The 0x60 frame, velocity reads and projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5100,6 +5104,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // at their corners 401 or after all corners 393; with four-channel color,
 // 225/390/376/387. NOT kept: the 225 form gains six and grows to 1826 bytes;
 // the 0xe0 frame and radius/scaled-zero homes do not recover together.
+// DH393: One scale observation, unity-first input assignment, scaled-first input assignment,
+// and scaled-first with one scale observation. Scalar alpha 403/412/412/411.
+// Four-channel color 369/398/398/397. NOT kept: the color recovers the frame but radius remains
+// at +0xc instead of +8. All eight regress. Original helper and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

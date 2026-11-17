@@ -802,6 +802,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // separate position displacement then local/shared scale 69/69; complete corrected vector in
 // the correction or delta 37/37; common final velocity 37; selected velocity pointer 84.
 // The first store and delta order remain coupled. The corrected-result forms grow the body.
+// The i-first velocity spills and correction products still differ. Residuals paired with squares after the tick-scale
+// helper, indexed field 86, indexed local 77, named squares 32, named residuals and squares 32. Tick scaling fused
+// with those four forms 84, 77, 58, 58. The two 32 forms still spill j first. Body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

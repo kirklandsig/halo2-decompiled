@@ -605,6 +605,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // 685/689/681/689. Opposite pairs with separate cursors 683, signed passes with one
 // cursor 680, nested signed-offset and axis loops with cursor/index 775/777.
 // The success, input and hit homes remain different. Original body restored.
+// DH391: Shared origin generation/query cursor, hit query/response cursor and hit-distance
+// query/response cursor, seven subsets 563/563/663/558/665/665/670; all with origin
+// advance and rewind 651 (2886 bytes). NOT kept: no gain or matching success-byte home.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

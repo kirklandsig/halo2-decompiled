@@ -1072,6 +1072,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // in all combinations, 60 each. All three with the existing message lookup 89.
 // The reference forms retain the second induction variable. The lookup restores
 // per-pass subtraction but reloads oldest and changes the saved registers.
+// Window references in index/count/first helpers, seven subsets, and all three with the loop
+// limit read at use: 60 each. NOT kept: the latest-sequence load and reduced offset remain.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

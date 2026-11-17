@@ -961,6 +961,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // function-scope local for second's shape at all ten uses 350 (1251 B); the data test ahead of the kind call in the
 // exclusion test 257 (1249 B); the first node's kind-4 test ahead of the root walk 342 (1243 B). Reading: retail's `mov
 // ecx, [eax+0x18]; cmp ecx, 1` is the code matched 0x1388e0 shows for a field compared twice (one CSE'd load).
+// Earlier context (238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end).
+// Shared plane-side distance with aggregate normal or setter, plane/collector scope 337/349 each;
+// shared side predicate with the same publications and scopes 316/328 each. The shared publication
+// shortens the body and keeps the 0x40 frame. The second node still needs retail's +0x20 slot.
 // m3 lane 10 r115 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH throughout; control 238). KEPT, a
 // behaviour fix at the same count (238, 1247 B): the three plane-normal rows written forward, left, up. VC orders a
 // float sum's terms by its own ranking, not by the source: the old rows (up, left, forward) compiled to (forward +
@@ -985,6 +989,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // either scope. Separate body material before/after the index lookups 261/258,
 // also from branch entry 261/258. NOT kept: the shared output restores frame
 // 0x44 but raises the score and grows the body; separate outputs also regress.
+// DH393: Branch-owned plane with instance/level/both immutable returns 317/297/310.
+// Both returned planes with shared pointer 310, branch-owned buffers with local/shared
+// pointers 310/310, immutable returns 310, both with existing normal setter 305.
+// NOT kept: frame 0x44 and 1243 bytes recover in several forms but every score regresses.
+// Root classifier and output homes remain. Original collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

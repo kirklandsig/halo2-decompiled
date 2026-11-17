@@ -3606,6 +3606,10 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // separate parent-test receiver with masked getter 91.
 // NOT kept: The 400-byte forms delay scaling but replace the native memory test and parent reload. The
 // separate test receiver reproduces the opening 91-point comparison.
+// DH391: Typed seat marker, typed acceleration source, both, named and direct
+// acceleration copies 91/91/91/91/91; typed full-record assignment 132, aggregate
+// snapshot 250, typed sources with byte result 85 (396 bytes). NOT kept: best gains
+// six and merges the retail's three epilogues.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -6731,6 +6735,9 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // getter at all three lookups 59; damage-source element pointer 64.
 // NOT kept: The getter forms preserve the same code. The damage-source element pointer raises the score
 // without fixing the header reads.
+// DH391: References to the initial, animation-check and refreshed unit records in
+// seven subsets, then all with a separate initial reset scope, eight at 59.
+// NOT kept: the header SIB and success-arm scratch allocation are unchanged.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
