@@ -6,6 +6,7 @@
 #include "globals.h"
 #include <string.h>
 #include "units.h"
+#include "object_tag_definitions.h"
 #include <xmmintrin.h>
 
 /* a player (g_4e8c24, 0x21c bytes): +0x28 is its local player slot */
@@ -175,7 +176,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // retail hands it to ECX and keeps the result in EAX; four spellings of the getter (the early return, the negated
 // condition, pointer arithmetic instead of the subscript and the two tests split apart) all compile to the same
 // bytes, so the rotation is not the getter's shape but the allocation around it.
-// score 117 (was 118): no new form and no lower score; every instruction but a register rotation among EAX,
+// score 117 (was 118): Case 4 still exchanges the parent and iterator setup, and the entry table and child-seat bit use different registers.
+// no new form and no lower score; every instruction but a register rotation among EAX,
 // ECX and EDX differs, and it starts at the inlined lookup where retail keeps the table in ECX and the null
 // result in EAX; the permuter's 24 tries found nothing below 118, and 0xd0590 in another file settles it.
 // MiniMax A (11-12): no new form, no lower score (118): the frame, the length and every case still agree
@@ -192,7 +194,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax H (11-14): no new form, no lower score (118): every instruction but a register rotation among EAX, ECX
 // and EDX differs, and it starts at the entry getter, where retail keeps the table in ECX and the result in EAX;
 // the rotation is decided by 0xd0590's parameter order, which is in another file.
-// score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
+// Earlier score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every
 // difference is a register rotation: retail keeps the table in ECX and the null result in EAX in the inlined
@@ -489,6 +491,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // exactly, but the body grows to 2312 bytes against retail's 2308, so every later jump target moves (164), and
 // case 4's parent still sits in ECX where retail holds it in ESI (a hoisted parent read and the inlined
 // parent-unit expression do not move it).
+// M405: Typed seat array; iterator exhaustion via while/for, each with direct/sampled seat; single exit with typed/raw seats; copied child flags.
+// Scores 117/484/484/484/484/117/117/117. Typed seat-array field confirmed in a plain check at the same score. Other forms restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
@@ -540,8 +544,8 @@ bool function_1e7ab0(long local_index, long type)
       short seat = *(short *)(unit + 0x1fc);
       if (seat != NONE)
       {
-       byte *definition = g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
-       s_unit_seat_definition *seats = *(s_unit_seat_definition **)(definition + 0x1cc);
+       s_unit_definition const *definition = (s_unit_definition const *)g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
+       s_unit_seat_definition const *seats = (s_unit_seat_definition const *)definition->unit.seats.address;
        s_unit_seat_definition const *seat_data = &seats[seat];
        if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
        {
