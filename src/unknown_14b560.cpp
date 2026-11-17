@@ -950,6 +950,9 @@ bool function_e4050(long object_index);
 // score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
+// MiniMax I (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where
+// retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp,
+// which this lane may not edit.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2734,6 +2737,8 @@ static __forceinline long player_round_ticks(real value)
 // 0xccd20 and the first 0x151b80 call where retail calls them.
 // score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
+// MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
+// build still expands 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3362,6 +3367,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // score 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
 // where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
 // out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
+// MiniMax I (11-17): no new form, no lower score (plain 103, fast 193 - the fast build of this function is not
+// faithful): our build still keeps the players-globals pointer in EDI across both loops where retail keeps it in
+// ESI and reloads it late, and retail still inlines the status test this build calls out of line.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

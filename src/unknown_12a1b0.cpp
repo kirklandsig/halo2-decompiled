@@ -2378,6 +2378,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P583: Actual paired created/replacement handle presence outcomes, positive/
 // complementary bool/byte/short/long: 479/479/479/479/479/479/479/479 (reduced control 479; full 305). NOT kept: no exact native
 // NONE/playback/frame recovery; original handle tests, request and complete body restored.
+// MiniMax I (11-17): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 and the
+// native request, range and pitch homes still sit at other offsets.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
