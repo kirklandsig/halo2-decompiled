@@ -414,6 +414,11 @@ real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
 // score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// M3 lane 6 r188 (fast with the file's functions, 0x265d30 and the five callees, control 375; masked diff shows no block-order
+// difference, only homes, the planar test pair (retail: an aggregate copy, integer moves) and the result byte): actor first with
+// the result returned in the arm plus that aggregate planar copy 408 (1530 B); actor first with the aggregate copy alone 408;
+// the prop pointer declared and cleared at the top 394, on the actor-first order 408 (1550 B); original order with the result
+// returned in the arm and the aggregate copy 433 (1524 B).
 // MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
 // entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the
 // facing pointer is formed in esi from the view call here and late from eax in retail, which 0x25d740's inlining decides;
