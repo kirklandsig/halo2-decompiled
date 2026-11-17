@@ -1512,6 +1512,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // flying, direct, damping, gravity 228 (3050 B, first difference +0x31: the damping bit then takes EDX as retail; under the
 // bar, a declaration order, not kept). On the 469 form (re-measured 469): the direct arm's `limited` renamed `bounded`
 // 469 (identical listing: names do not place the delta/limited slots, retail delta +0xc, limited +0x14, ours the reverse).
+// P599: Damping ECX/EDX, gravity-spill order and the reversed raw/bounded homes remain.
+// planar selected pointer by branch 321.
+// planar selected pointer by conditional 572.
+// planar selected whole value 536.
+// planar component selection 586.
+// spatial selected pointer by branch 586.
+// spatial selected pointer by conditional 576.
+// spatial selected whole value 610.
+// spatial component selection 491.
+// NOT kept: All eight selection forms raised the score. Both original workspaces and fallback copies are restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

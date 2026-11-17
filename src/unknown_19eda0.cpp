@@ -585,6 +585,16 @@ real g_47ff94 = 1.5f;
 // pointer with a 0x34 frame; that transport is decided by this function's two callers, which this lane may
 // not edit. Retail also still reads its 1.5 factor from its own writable .data float before the frame
 // push, where ours materialises the literal, and still expands the two contributor helpers in place.
+// P599: Frame 0x34/0x30 and the EBP vertex-Y/step allocation remain.
+// shared vertex input search 322.
+// material setup scope 371.
+// texture scale scope 322.
+// material and texture scale scopes 371.
+// initial texture position scope 322.
+// material and initial position scopes 371.
+// scale and initial position scopes 322.
+// all three setup scopes 371.
+// NOT kept: Shared search and texture-only scopes tied. Material scopes raised the score. Both matched callers stayed matched in every preview.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

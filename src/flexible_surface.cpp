@@ -1043,6 +1043,16 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // inline helper taking the object index and returning the pointer, 316 with an early-return helper); left are the same
 // retail inlines of 0x1ccb0/0x1cd90 (0x116d0b-0x116d3a), 0x4b2d0's register convention, and the stack homes of the
 // scans.
+// P599: Frame 0x2c agrees. The record/object-index setup, lighting result, and format-helper expansions still differ.
+// typed field conditional 322.
+// typed field initialized before lookup 315.
+// typed field assigned in both arms 322.
+// typed field passed directly 322.
+// typed field inside setup scope 322.
+// typed entry inside present arm 315.
+// select entry then field 404.
+// apply lighting in both lookup arms 322.
+// NOT kept: Both null-first typed forms gained seven points, below the eight-point minimum. The original cache expression and body are restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
