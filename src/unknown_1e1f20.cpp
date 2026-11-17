@@ -895,6 +895,10 @@ void swarm_leader_detach(long actor_index);
 // separately scores 237 with the existing tracking receiver. Refreshing the receiver after the callback
 // follows the retail load but scores 278. The original walk and body are restored. The two opening score
 // headings are merged into one.
+// MiniMax D (11-17): no new form, no lower score (236): the first difference is still at +0x3, where retail
+// loads the record pool pointer into ECX and this build loads it into EAX, and the body is still 22 bytes
+// short of retail's 980 because retail expands 0x26ed40 into it; BLOCKED-BY 0x26ed40
+// (src/unknown_26e370.cpp), which this lane may not edit.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
