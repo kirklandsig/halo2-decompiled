@@ -1560,6 +1560,11 @@ bool function_108530(long device_index, long name)
 // M3 lane 7 r163 (fast, callers 31/13 throughout): 1-7 unused locals 121 each; the cruise numerator's products velocity
 // first (re-measured) 121; both distance denominators as `2.0f * rate` 121; the denominator summed half ramp-up, cruise,
 // half ramp-down 121; the reset stores in field order 121; the deceleration from the local cruise velocity 121.
+// MiniMax S (11-17): no new form, no lower score (121): retail's callee takes the initial velocity in xmm6
+// with five stack floats and returns with ret 0x14, while this build passes it on the stack and returns with
+// ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7,
+// retail's in xmm5); the split between xmm6 and the stack is the callee's own convention, set by the
+// definition that the six float signature may not change, so the body stands.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2416,6 +2421,9 @@ bool function_0b6760(s_index_pair const *pair);
 // acceleration read at the top of the position-group block 118 (1510 B); the 0x40 update with the arms swapped 61. Same
 // code as the lead: the speed/acceleration or the target named just before the call, `state != NULL` / `!= false` in the
 // refresh, a `real position = 0.0f` argument, the group index in a local.
+// MiniMax D (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off, and the body is still
+// sixteen bytes short of retail's 1495.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

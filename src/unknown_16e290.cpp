@@ -1796,6 +1796,9 @@ struct s_camera_clip_reference_16ebf0
 // MiniMax S (11-15): no new form, no lower score (87): the cross-product rows differ, with retail keeping the first product
 // in the register ours uses for the second and adding the two products in the other order, and the clip call's block follows
 // from it; the shared cross product's text fixes that order and it lives in another file.
+// MiniMax I (11-17): no new form, no lower score (87): the clip block still folds the cluster address into the load
+// where retail materialises it, and the cross product's colouring is still the other way round; the cross helper's
+// text lives in include/vector_products.h, which this lane may not edit.
 // @retail 0x16ebf0
 void function_16ebf0(long user_index)
 {
