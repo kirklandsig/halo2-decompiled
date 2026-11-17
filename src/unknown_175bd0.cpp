@@ -392,7 +392,7 @@ struct s_effect_object_placement
 /* set once an effect part of an unknown type was seen */
 bool g_55e756;
 
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 long function_baf40(long object_index);
 long function_1469f0(real seconds);
 bool function_172750(long mode, point3f const *point, real radius);
@@ -2906,7 +2906,7 @@ void function_179fb0(s_effect_datum *effect)
 					}
 					vector3f impulse;
 
-					random_vector_in_cone(&direction, &impulse, &g_4e7408->unknown0, acceleration->inner_cone_angle, acceleration->outer_cone_angle);
+					random_vector_in_cone(&g_4e7408->unknown0, &direction, &impulse, acceleration->inner_cone_angle, acceleration->outer_cone_angle);
 					normalize3d(&impulse);
 					vector3f_scale(&impulse, acceleration->acceleration * object_definition->unknown14, &impulse);
 
