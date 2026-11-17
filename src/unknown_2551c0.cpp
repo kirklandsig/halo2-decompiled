@@ -901,6 +901,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // heading's k clear right after its copy 87 (same code). Reading of the homes on this body: ours {sum, side0} +0x10,
 // {length, side1} +0x14, index +0x18, adjusted +0x1c; retail side0 +0x10, {sum, side1} +0x14, {length, adjusted} +0x18,
 // index +0x1c. Body unchanged.
+// P579: Scalar memcpy at lazy unit/readiness/state inputs, target handle, radius, object type,
+// request target and request side: 40/87/227/87/121/87/87/87. NOT kept: no exact unit-argument/scalar-home
+// recovery; original complete body, all observations and request publications restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

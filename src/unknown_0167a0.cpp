@@ -291,6 +291,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // the tables and entry fields written through one two-field `byte **` view of the state 178 (+0x148); the direct store with
 // the chain index named where it is computed 5 (+0x1a7); the entry reference bound at function scope 5 (+0x19e, same code);
 // the direct store written `first * 10 + base` 5 (+0x1a7). Body unchanged.
+// Round 102 (m3 lane 14, fast, control 5): the restore block's entry from the `tables` local through a chained store
+// into the existing entry local 210 (974 B); the entry stored directly from the `tables` local and read back from its
+// field 210; the four restore fields through a `byte **` view of the state 289 (977 B); the parameters store chained
+// with the lookup 5; the tables store chained with its read 5 (same code).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

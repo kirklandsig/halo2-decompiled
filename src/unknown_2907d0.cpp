@@ -138,6 +138,14 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // (462 bytes); a byte return type 19 (same code, the constant 1 still shared); field1c and field2e stored right after the
 // constructor, ahead of the position, 39; the vector declared ahead of the address local and the point 19 (same code); the
 // else arm's point copied per component through a position pointer 143 (485 bytes). All restored.
+// Round 132 (m3 lane 12, fast with 0xb8c00, 0x142570 and 0x200e60, matched throughout): the record now arrives in EDI
+// as in retail; what is left is the transform in EBX (retail EBP), the point's y in EBP (retail EBX) and the shared
+// constant 1. The parameter orders retail's caller setup suggests (EDX first, the push, EAX, EDI last): record,
+// object, transform, node 19; record, object, node, transform 19; transform, record, object, node 19 (same code: the
+// body alone picks the registers); the transform read through the address local into a pointer local in each arm 19;
+// the node pointer declared at function scope 19; the record filled through a reference 19; the else arm through
+// pointers to the position and forward 81. Diagnostic: plain parameters with `__stdcall` and the function's address
+// taken by a probe global (no address local) 137 (479 bytes: every argument on the stack, the transform in EDI). All restored.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

@@ -307,6 +307,11 @@ long g_55e6c0;
 // the packing as one expression with no pitch local 29 (same code); a level count defaulted to the count and capped by if /
 // else-if tests on the count 166 (497 bytes); the clamp written from the non-negative side, `count >= 0 ? (count <= 4 ? count :
 // 4) : 0`, 32; the data pointer stored ahead of the width and height 31; the height stored ahead of the kind 31.
+// Round 189 (m3 lane 5, fast with 0x1dc40): `long offset = 0;` declared at function scope 36; the count clamped in place by
+// if / else-if with the raw request kept in a named local for the format call 69 (489 bytes, 0x1dc40 9); the three zero
+// stores as one chained assignment (+0x7c, +8, +0xc) 29 (same code); the entry pointer computed at function scope 36; the
+// round-51 signed pitch/packed lead with the field stored in each clamp arm 139 (495 bytes: retail's packing and top
+// registers, three stores). The existing PIN_126660 macro is this ternary (same expansion). All restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

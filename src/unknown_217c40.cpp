@@ -221,6 +221,13 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // Diagnostic (plain, reverted): the scale literal used in a function added to the stub file (built without LTCG) 2: the
 // link keeps the LTCG module's copy of the constant (our link map: src/unknown_157450.cpp's object), not the stub's. Retail's pool matches
 // ours (1/255, 2^32, 0.5, 1.0, -0.5 at 0x45dbb4-0x45dbc4); only the scale lies outside it, in the library's data.
+// Round 189 (m3 lane 5): on the fabs-at-each-use 2 form, the scale as `(1.0f / 32767.0f)` 2 (same code); the scale as a
+// file-private named constant fast MATCH, plain 2 (re-measured with the map: the reduced image links no non-LTCG object ahead
+// of the D3D state member, while the full link's 63rd object, a /GL- Havok file, already defines 1.0 in the first pass and no
+// non-LTCG object defines the scale; the entry loads follow that symbol order, and retail's scale is a library's data defined
+// ahead of 1.0). BLOCKED-BY the link's object order, not this source. On the kept 25 body: both absolute offsets declared
+// after the magnitudes 530 (2000 bytes); offset and fabs through a two-use inline helper 405 (1996 bytes); the magnitudes
+// first in the snap block 47. All restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

@@ -46,7 +46,10 @@ public:
 	s_result_319230 function_319230(s_operand_319230 const *a, s_operand_319230 const *b) const;
 };
 
-// score 16 (was 16): the first receiver is loaded into ECX;
+// Matched: the first owner and its flag are held through references and the
+// test is split in two, so the first shape is loaded into eax and copied to ecx
+// for the call as retail does.
+// Before, 16 (was 16): the first receiver is loaded into ECX;
 // retail loads EAX, its table into EDX, then copies EAX to ECX.
 // Byte output, operand references, const/enum query, destructor slot,
 // concrete slots, inherited slots/base, signed output, owner references,
@@ -81,8 +84,16 @@ public:
 // @retail 0x319230
 s_result_319230 c_query_319230::function_319230(s_operand_319230 const *a, s_operand_319230 const *b) const
 {
+	s_owner_319230 const *first = a->owner;
+	s_owner_319230 const *&first_owner = first;
 	s_owner_319230 const *second = b->owner;
-	if (a->owner->field_40 || second->field_40 || a->owner->field_3c->slot_6() == 6 || second->field_3c->slot_6() == 6)
+	unsigned char flag = first_owner->field_40;
+	unsigned char &set = flag;
+	if (set || second->field_40)
+	{
+		return s_result_319230(1);
+	}
+	if (first_owner->field_3c->slot_6() == 6 || second->field_3c->slot_6() == 6)
 	{
 		return s_result_319230(1);
 	}

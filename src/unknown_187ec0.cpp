@@ -676,6 +676,10 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax I (11-16): no new form, no lower score (165): the whole difference is still that this build expands 0x1765e0
+// (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in src/unknown_175bd0.cpp,
+// which this lane may not edit; the declarations that would give retail's own parameter list are fixed by call sites in
+// other files: BLOCKED-BY that file.
 // MiniMax A (11-14), NOT kept (coordinator: 6 points, under the 8-point bar): a dword index for the scan over the
 // first values (like retail's) gave 159 from 165 by dropping one instruction from the scan. What still differs: retail calls 0x1765e0 out of line with the
 // promoted register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c

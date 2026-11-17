@@ -722,6 +722,19 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // named once for the maximum test and store 412 (same code); `p` fetched first with `node` cast from it 412 (same code);
 // `byte *const actor` 412 (same code); the list head read through the held actor pointer 442 (1616 B, re-measure of
 // round 46's form). Body unchanged.
+// b7A (11-17) walk against retail, fast build on r829: every condition, offset, call argument (register-passed ones
+// too: 0x263670 reads only ESI, 0x2683f0/0x1e2150/0x25ac00 take the actor in EBX) and constant (0x45dbc0 1.0, 0x45e1f4
+// 0.33f, 0x43ff08 1.5, 0x45dbd8 0.0, 0x45dc00 10.0) agrees with retail except one BEHAVIOUR FIX in case 2: retail
+// releases the prop (0x262f27 calls 0x25c860) when the squared planar distance between the known state and the object
+// exceeds 1.0 (0x262f1a comiss against 1.0, 0x262f21 `jbe 0x2630a4` skips the release when it is <= 1.0; a missing view
+// or a zero timer at 0x262edc/0x262ee6 also reach it), where the old source broke out when the distance exceeded 1.0
+// and released when it did not (`ja`). Now `if (!(y * y + x * x > 1.0f)) break;` compiles to retail's `comiss xmm2,
+// [1.0]; jbe` (412, 1620 bytes, unchanged: that is a positional count); the `<= 1.0f` spelling gives 424 (1624 bytes:
+// it loads the 1.0 into xmm0 and uses `jae`). Also tried: retail's code order of the cases (0x262d70, 0x262e2a,
+// 0x262e81, 0x262f35, 0x262fad = 0/4/2/1/3) 422 (1624 bytes); the final `current != NONE` guard split in two as
+// retail's second `cmp esi, -1` at 0x26316c 412 (the compiler folds the second test); both reverted but the fix. No new
+// include, helper or double. Checked with the file's callers/callees (0x1e34e0 25, 0x264b50 91 as before; the rest
+// MATCH).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -783,7 +796,7 @@ void function_262ba0(long actor_index)
 					byte *state = (byte *)function_25d690(node);
 					real y = *(real *)(state + 8) - position.y;
 					real x = *(real *)(state + 4) - position.x;
-					if (y * y + x * x > 1.0f) break;
+					if (!(y * y + x * x > 1.0f)) break;
 				}
 				function_25c860(index);
 			}
