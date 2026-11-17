@@ -175,7 +175,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // retail hands it to ECX and keeps the result in EAX; four spellings of the getter (the early return, the negated
 // condition, pointer arithmetic instead of the subscript and the two tests split apart) all compile to the same
 // bytes, so the rotation is not the getter's shape but the allocation around it.
-// score 118 (was 118): no new form and no lower score; every instruction but a register rotation among EAX,
+// score 117 (was 118): no new form and no lower score; every instruction but a register rotation among EAX,
 // ECX and EDX differs, and it starts at the inlined lookup where retail keeps the table in ECX and the null
 // result in EAX; the permuter's 24 tries found nothing below 118, and 0xd0590 in another file settles it.
 // MiniMax A (11-12): no new form, no lower score (118): the frame, the length and every case still agree
@@ -474,6 +474,16 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // two points is off by one, and case 4 still holds the parent in ECX where retail holds it in ESI. The form that puts the
 // parent in ESI reads it before the 0x13cb40 call and measures 115, under the retention margin, and the forms that move
 // the child's seat product or the seat-flag copies into EAX change the length or the reads.
+// b9O (11-17) walk against retail, fast build on r840: every block, field offset, jcc sense (NaN included: the two
+// 0.25f tests are `comiss; ja` in both), callee argument, switch/jump-table slot and constant agrees with retail; with
+// registers, call targets and globals normalised only 5 rows differ and the function differs by no behaviour. Case 4
+// now reads the seat after the parent test as retail does (parent 0x1e7d3c, its test 0x1e7d3f, seat 0x1e7d48),
+// 118 -> 117 (fast); this is retail's evaluation order, not a behaviour fix, and it aligns case 4's opening rows.
+// Left: (1) case 4 call setup, retail `lea ecx,[esp+0x18]` (0x1e7db5) then `mov edx,esi` (0x1e7db9) with the parent in
+// ESI, ours `mov edx,ecx` then `lea ecx` with the parent in ECX; retail's order is why the parent cannot stay in ECX,
+// and it is 0xd0590's parameter order in another file (round 197, 111 under that order); (2) case 23, retail loads
+// the table global (0x1e809c) before the unit index (0x1e80a5), ours the reverse, a scheduling choice, same values.
+// 0x1e83c0, 0x1e6bd0 (303 before and after), 0x1e8eb0, 0x1e7a10, 0x1e7a60, 0xd0590 and 0xd05c0 unchanged.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
@@ -520,24 +530,27 @@ bool function_1e7ab0(long local_index, long type)
     if (!function_13cb40())
     {
      long parent = *(long *)(unit + 0x14);
-     short seat = *(short *)(unit + 0x1fc);
-     if (parent != NONE && seat != NONE)
+     if (parent != NONE)
      {
-      byte *definition = g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
-      s_unit_seat_definition *seats = *(s_unit_seat_definition **)(definition + 0x1cc);
-      s_unit_seat_definition const *seat_data = &seats[seat];
-      if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
+      short seat = *(short *)(unit + 0x1fc);
+      if (seat != NONE)
       {
-       s_unit_child_iterator iterator;
-       function_d0590(&iterator, parent);
-       bool blocked = false;
-       while (function_d05c0(&iterator))
+       byte *definition = g_4e3b44[*(long *)request_unit(parent, g_4e0300->data) & 0xffff].bytes;
+       s_unit_seat_definition *seats = *(s_unit_seat_definition **)(definition + 0x1cc);
+       s_unit_seat_definition const *seat_data = &seats[seat];
+       if (!((bool)seat_data->flags.bit2) && !((bool)seat_data->flags.bit3) && !((bool)seat_data->flags.bit11))
        {
-        if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
-         ((bool)seats[iterator.seat_index].flags.bit2))
-        { blocked = true; break; }
+        s_unit_child_iterator iterator;
+        function_d0590(&iterator, parent);
+        bool blocked = false;
+        while (function_d05c0(&iterator))
+        {
+         if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
+          ((bool)seats[iterator.seat_index].flags.bit2))
+         { blocked = true; break; }
+        }
+        if (!blocked) result = true;
        }
-       if (!blocked) result = true;
       }
      }
     }
