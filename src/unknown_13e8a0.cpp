@@ -505,7 +505,7 @@ struct s_text_line_measurement
 // score 77 (was 77): frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
 // MiniMax S (11-16): no new form, no lower score (77): retail reloads the width into xmm4 right after the scale and copies the advance product with movaps, so the sum lands in xmm5 and the bound in xmm0, where this build sinks the width's reload past the three products and sums into xmm4 with the bound in xmm5; copying the width into a local right after the kerning call is the same code, the sum in a local before the can_break test 75, the can_break block before the products 85, and a permuter run found nothing below 77.
-// score 77 (was 77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// Earlier (77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
 // XMM0 and XMM3 colouring (retail moves the width into xmm4 early and copies xmm0 into xmm3, ours accumulates the
 // advance in xmm0 and moves the width late) and the one-use width local the rules drop. Body unchanged.
 // MiniMax S (11-16): no new form, no lower score (77): the remaining differences are still the XMM0/XMM3 colouring (this build gives XMM0 to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps inside the update arm while ours run ahead of the test; the summed-width spelling that reached 65 is not kept, a one-use local being kept only with a byte match.
@@ -655,6 +655,11 @@ struct s_text_line_measurement
 // P591: Original incoming iterator/position/bounds fixed-binding subsets 1/2/4/3/5/6/7,
 // then immutable returned measurement: eight 77s. NOT kept: no independent advance web
 // or early-width recovery; original complete input/output bindings and body restored.
+// Round 179 (m3 lane 8, fast with 0x13f700/0x13f0e0, both MATCH; control 77): the update as `width = width + advance +
+// offset + kerning;` 77 (same code); the break point as a measurement aggregate (`break_point.index/.width`) 81 (frame
+// order moves, first +0x2); the running width/index and the break point both as measurement aggregates, the result
+// returned directly 83 (398 bytes); the update through `real &running = width;` 77 (same code); the scale read once
+// into a `real const` local before the loop 77 (same code: propagated away). Still the advance copy and early width load.
 // M3 lane 9 r133 (fast with the file's other 17 functions; control 77): reference-bound forms meant to keep a second advance
 // range (a bound reference is not folded back into its expression): the update through `real &running = width;` 77; the
 // update reading the advance through `real &step = advance;` 77; the test reading it through that reference 77; the update

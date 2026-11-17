@@ -272,6 +272,11 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // position shares the post-walk vector's slot, ours the offset); the neighbour test as `local_26 > 0.0f && field_34 >
 // local_26` 256 [95/30]; the squared distance named once and used for the reciprocal and the separation test 281 (3717
 // bytes) [106/38]; the nearest point copied before its distance 255 [91/27].
+// M3 lane 3 r255 (plain with 0x293b30, which stays matched; with offsets masked and registers kept only 22 hunks differ, so
+// nearly all of 252 is the three swapped slot pairs): the centroid scaled in place by vector3f_scale and taken from the sum
+// 455 (3712 B); the sum's adds written position-first 252 (same code); the first 3.0 clamp after 0x295600 through
+// function_294b56 with the still-zero total 252 (same code: the zero folds, so retail's lone clamp is that helper too);
+// the nearest distance and point declared before the sum 252 (same code); the sum through vector3f_add 533 (3725 B).
 // m3 lane 5 r192 (plain with 0x293b30/0x293d30/0x294050/0x295600, all unchanged; control 252, aligned 90, masked 25): the
 // centroid sum typed as a vector (no casts) 252, the post-walk vector and its scalar in a block ending after the waypoint
 // step 252, the nearest test as `local_26 < local_10` 252, the scalar declared at the top uninitialised 252 (all the same code:
