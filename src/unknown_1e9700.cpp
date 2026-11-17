@@ -621,6 +621,12 @@ struct s_object_damage_view
 // P578: Scalar memcpy at victim team/selection handle/assist handle/selected event/
 // selected amount/credited team/related player/related object: 353/353/353/353/371/353/353/353. NOT kept:
 // no exact scalar-home or history-cursor recovery; original complete body and observations restored.
+// m3 lane 8 r176 (fast with 0x1e9ce0, 0x1ea770, 0x1ea880, 0x1ea5b0; control 353): the selection amount in a local under the
+// time test 454 (1578 B: retail's 0x2f0 cursor and damage_code's +0x1c slot, but `selected` loses EDI); read with the player
+// index at the body's top 418; both dedupe loops as a found flag with break 366 (1528 B: retail's exact dedupe exits, no test
+// after the loop, the rise is two pads; a flag, match-only); 0x197160's `code` typed byte (its only caller; retail loads the
+// code's dword once into ESI and pushes it for 0x197160 and 0x1ea5b0) 354 (retail's setup exactly, 0x197160 stays matched:
+// lead for a combined form); the two together 366.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
