@@ -568,7 +568,9 @@ struct s_physics_object
 		{
 			word unknownc0_0 : 6;
 			word bit6 : 1;
-			word unknownc0_7 : 5;
+			word unknownc0_7 : 1;
+			word bit8 : 1;
+			word unknownc0_9 : 3;
 			word bit12 : 1;
 			word unknownc0_13 : 3;
 		};
@@ -797,99 +799,7 @@ void function_1c54b0(char const *variants, long object_index)
 }
 
 
-// score 4 (was 4): two swapped pairs are left. After the entity loop ours reloads the
-// island index before the world pointer and retail reloads the world pointer first;
-// ours stores the removed flag before the discard call and retail stores it after the
-// call (moving that store after the call always swaps ebx/ebp in the entity loop).
-// Further trials: local names count to flagged_entities 4; local names island_index to
-// group_index 4; local names entity_count to total_entities 4; local names i to
-// entity_index 4; local names count to flagged_entities, island_index to group_index 4;
-// local names island_index to island_ordinal, entity_count to entity_total, count to
-// accepted_count, i to entity_index 4; all named loop state with flag after discard 18;
-// named loop state, flag after discard, native int entity counts 18. Round 87, all with the flag
-// after the discard call: entity_count renamed total/size/a_count, i renamed entity_index/j, count
-// renamed matched, island renamed group, removed renamed discarded: 18 each (names never move the
-// ebx/ebp swap).
-// Round 42 (a compile-only build reproduces all four; 158 forms screened there): entity count read at each use 4,
-// with the flag after the call 18; world local read at each iteration 4; entity local 4; nested tests 4.
-// Round 89, with the flag after the discard call: entity-array pointer 75; island_index renamed
-// active_island 18; increment in the outer for clause 18; scoped object, entity or flags locals 18 each;
-// inner while 18; const entity count 18; function-scope flag cleared after the index update 63.
-// Lane 10 round 42 (a compile-only harness reproduces ours and the 18 form exactly; every one of 60
-// declaration orders and 27 name sets keeps EBP for the count with the flag after the call, and the island
-// index is reloaded before the world in every form): `if (!removed) island_index++;` 91; flag set in an
-// else arm without an initialiser 73; island-array local with the flag after the call 18; function-scope
-// flag cleared at the top of each iteration 18; `entity_count == count` with the flag after the call 18;
-// a 600 s permuter run (71 tries), none below 4.
-// Lane 15 round 42 (fast): outer while with the flag after the call 18; a named next index 4; a named step
-// with the flag after the call 18; an island-table local with the flag after the call 18; a for-scoped entity
-// index with the flag after the call 18; a byte flag with the flag after the call 18. Compile-only, 26 forms
-// of the index update, flag type and world read (`island_index = !removed + island_index`, a bool kept flag,
-// a world local read per iteration with the discard through the global): the reload pair never swaps.
-// Round 31 (lane 18, fast): a force-inline flagged-entity count helper compared with the island's count 6;
-// a force-inline helper for the whole per-island body returning the flag 4 (flag after the call 18, its
-// result added straight into the index 4); a world local read just before the count test 4; a world local
-// at the iteration top for the island and the discard 4. Original body restored.
-// Round 98, with the flag after discard and a world local before the count test except the pre-call control:
-// that world-local form 18; a guarded do inner loop 79; component_index declared at island scope 18; an
-// explicit walking entity pointer 20, with the flag before the call 8; a const island pointer 18; a per-element
-// entity local 18; the post-call flag assigned from `count == entity_count` 18. Original body restored.
-// Round 127 (lane 7, fast): the flag as the existing hkBool, after the call 25, before it 12; an inline island
-// getter with the flag after the call 321 (12 bytes); an inverted kept flag before the call 24, after it 36; the
-// flag declared at the count test 69, stored after the call 82; a world local reassigned on the back edge 37 (253
-// bytes). Compile-only, 31 forms (world getter, for-scoped index, while, guarded do, ternary and `== false` steps):
-// the reload pair never flips. Original body restored.
-// Round 131 (lane 7, fast, all with the flag after the call): 1-3 unused locals at the top or inside the loop 18 each; the flag stored both before
-// and after the call 18 (the first store dies before allocation); the flag declared then assigned 18; i declared before the flag 18; the flag
-// declared before the count 20; the flag assigned from `count == entity_count` 18, from `!removed` 18; a two-use local for the index step 18.
-// Diagnostics: an index offset in the island read 12, a count offset 64 (253 bytes), an entity index offset 69 (254 bytes): none moves the pair or
-// the ebx/ebp choice. With the flag ahead of the call it crosses the call and retail's ebx/ebp follow; after the call, cursor takes ebx. An inline
-// helper for the discard taking the world and island, or the island: flag first 4/4, flag after 18/18, forced inline after 18; one returning true 18;
-// the whole per-island body as a plain inline helper is not inlined here 286/288 (45-47 bytes), four call forms with either flag order.
-// Round 219 (lane 3, fast): the flag as char before/after the call 4/18; as long, int or dword 79 in either order; a long `kept` step (1,
-// cleared on discard, added to the index) 36 in either order.
-// Round 173 (m3 lane 4, fast): the island re-read from the world in the discard call's argument, flag after/before the call 18/4
-// (same code as the island local); with the flag after the call: the entity index declared at function scope 18, the island
-// index declared in the for statement 18, count and flag declared ahead of the island and entity count 18. Diagnostic: with the
-// flag after the call the tail is retail's from the call on; only the entity count/cursor ebx/ebp swap and the reload pair remain.
-// Round 137 (lane 7, fast; a one-file LTCG harness reproduces 4 and 18 exactly): with the flag after the call, the step as
-// `removed ? 0 : 1` 18, as `removed == false` 18, as `island_index = island_index + !removed` 18; count declared before the
-// entity count 18; the flag address-taken (harness only) 18, set through a force-inline discard helper taking its address
-// (harness only) 18. The ternary step with the flag before the call 4 (same code).
-// Round 162 (m3 lane 5, fast, all with the flag after the call): a 600 s permuter run from that form (40 tries) best 4, by
-// moving the flag back before the call; count and entity index at function scope 20; the component test as `continue` then the
-// flag test 18; a world local inside the discard block 18; the count test inverted with an empty then-arm 18; `while` with nested
-// tests and `entity_count <= count` 55. Retail's zero-trip jump lands on the count test, past both reloads: the world pointer and
-// the island index are both reloads on the entity loop's exit edge, world first in retail, index first here.
-// Round 152 (m3 lane 7, fast; round 137's one-file harness re-pointed at this file, exact at 4 and 18): with the flag
-// after the call, `removed++` 18, `removed |= true` 18 (harness), `removed = !removed` 18 (harness), an unsigned or signed
-// char flag 18/18 (harness), the object test nested 18 (harness), `++count` 18 (harness); a world local declared at
-// function scope and assigned at each iteration top 18 (flag first 4), assigned in the loop condition 37 (253 bytes; flag
-// after 40), assigned once before the loop 59/58 (harness); the island declared at function scope 18 (flag first 4); the
-// entity count declared at function scope 18 (flag first 4). Naming the world never moves the reload pair.
-// Round 94 (m3 lane 11, fast; flag before/after the call): the component index through the existing out-of-line
-// getter 0x1cf280 124/124 (208 bytes: the reduced image calls it); the per-entity test in an inline bool helper
-// 172/172 (156 bytes, not inlined); the island's entity count and entity through inline accessors 4/18 (same code);
-// the island through an inline (world, index) accessor 4/18 (same code). Compile-only diagnostic: the outer loop
-// written as a guarded do-while, so the world is read ahead of the index's first assignment, keeps the pair in either
-// flag order, so the pair does not follow which of the two values is defined first.
-// Round 91 (m3 lane 14, fast; flag before/after the call): the outer loop as a guarded do-while 4/18; count and
-// flag declared at function scope and assigned at the island top 4/18; the entity index declared in the inner for
-// statement 4 (all the 4s the same code).
-// Round 107 (m3 lane 10, fast): the count typed dword, with the flag before/after the call 4/18; no island local (the island
-// read from the world at each use, the discard argument included) 4/18; the component index from an inline getter
-// returning the property value type (`.m_data` read at the call) 4/18 (all six the same code as the 4 and 18 forms).
-// M3 lane 2 r87 (fast; flag before/after the discard call where both measured): the per-entity test as a force-inline
-// bool predicate on the entity 4/18 (same code); no flag, `else island_index++;` 91 (231 B); `island_index = removed ?
-// island_index : island_index + 1;` 91 (231 B, the flag disappears); `count += (tests) ? 1 : 0;` 78 (253 B); the final
-// test as `count == i` 48 (253 B); re-measured the entity count read at each use 18/4. Original body restored.
-// Round 91 (m3 lane 15, fast): a permuter run with a new seed (30+ tries before a 10-minute stop) none below 4; the flag
-// assigned `count == entity_count` before/after the call 4/18 (folded to the constant); `entity_count == count` 5; the
-// island index declared in the for statement 4. Diagnostics (probe global, reverted): one store of 1, -1, 0x2001 or 4
-// anywhere flips the reload pair to retail's (0, 2, 5, 256 and 1000 do not); with the flag after the call a store of 0
-// gives retail's EBX/EBP and a store of 1 the pair, and both together give retail's whole body, so retail is the
-// flag-after form plus some code that perturbs both ties. On the flag-after form `count += 1`, `i += 1` and an explicit
-// `!= 0` on the flag test 18 (same code); `(void)&` on the count, the flag or both 4/18 (flag before/after).
+/* discards every physics island whose entities all belong to objects with bit 8 of the physics flags set */
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -908,15 +818,15 @@ void function_1c50c0(void)
 			long component_index = havok_entity_property_get(island->m_entities[i], HAVOK_PROPERTY_COMPONENT_INDEX);
 
 			if (component_index != NONE &&
-				(physics_object_get(havok_component_flags_get(component_index)->object_index)->flags & 0x100))
+				physics_object_get(havok_component_flags_get(component_index)->object_index)->bit8)
 			{
 				count++;
 			}
 		}
 		if (count == entity_count)
 		{
-			removed = true;
 			g_51e9a4->world_island_discard(island);
+			removed = true;
 		}
 		island_index += !removed;
 	}

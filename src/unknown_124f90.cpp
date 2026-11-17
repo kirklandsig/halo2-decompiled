@@ -726,6 +726,11 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // (voice index, type), called with `voice_index++`, 186 (504 bytes: kept out of line); the voice, both counters and the
 // index declared C-style at the block top 3. Diagnostic (reverted at once): the later stores through an integer-cast copy
 // of the voice pointer 3 (the cast folds; no alias edge from the first two stores).
+// Round 102 (m3 lane 13, fast): the type and reset bytes as one word's 8-bit fields with the type stored first 3
+// (the type store rises above `inc esi`, the sound-index store stays behind it; 0x128920, 0x128500, 0x128700, 0x1295e0
+// lost); the inner loop as a guarded do-while ending `while (++i < count)` 3; the type byte as `(byte)(type & 0xff)` 3;
+// the voice as `voice = g_4e6378; voice += voice_index++;` 3. Re-measured: the type stored first 2 (`inc esi` still
+// right after `inc edi`, so the store order does not move it).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -4067,6 +4072,11 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // as a `s_animation_ref *` local for both pitch-range calls (0x219070's spelling) 78; 0x2193d0 returning short
 // (definition and declarations) 78, on the 24 form 24 (0x2193d0 itself 5 at 90 bytes, restored). The flag is the
 // bit 5 of the word at +0xa of 0x221810's record, which 0x2193d0/0x219310 test themselves after their own inlined lookup.
+// Round 102 (m3 lane 13, fast): 0x2193d0 as a member of the animation-state aggregate (like 0x2192b0/0x219310; its
+// definition, declarations and the calls here and in 0x219070 together, all six matched siblings unchanged) 24, with the
+// range in case 0 78; the range in case 0 with its 0x219310 use through a trivial forced-inline accessor 78. On the 6
+// form (re-measured 6): the absolute index named at the loop top for the start test, the pointer and the increment
+// 174 (572 bytes); the increment's search and datum both through the global with `sounds` assigned first 29 (563 bytes).
 // @retail 0x1282d0
 void function_1282d0(void)
 {
