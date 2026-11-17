@@ -755,6 +755,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // normalize3d.h) 98 (377 bytes); every `tracked` use (location tests, final copies) through the parameter reference 57
 // (369 bytes, the copies reload it); the output defaulted to the prediction ahead of the clamp test, the else arm
 // dropped 93 (368 bytes). Body unchanged.
+// P588: Repeated state-velocity/output-velocity/state-location field lvalues,
+// seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
+// NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

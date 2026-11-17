@@ -661,6 +661,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 702, a `long palette_index = palette_slot;` for the table test and lookup 751 (3842 B, first difference +0x2e); on the
 // short slot, the tag arm's radius read from the field at each use (as the palette arm reads its own) 610 (3835 B).
 // Body unchanged.
+// P591: Incoming binding masks 1/2/4/8/3/5/9/15: eight 607s; seven pointer forms
+// excluded for unresolved caller 24. Original-site count/radius/contribution/fraction/
+// reciprocal/coefficient bindings: seven 607s. NOT kept: native homes unchanged; all restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -1117,6 +1117,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // local 159. Reading: both sums retail forms into a fresh register (entry total EDX, signature `lea esi, [ecx + edx]`)
 // and the body case's remaining count stays in the hoisted ECX until the shared `mov edi, ecx`; ours targets each sum
 // and the remaining count at its variable's register. Body unchanged.
+// P588: Repeated file/signing-handle/phase field lvalues, seven subsets,
+// then all with mutable offset: 161/161/162/161/162/162/38/191. NOT kept:
+// no fresh-total/seek/size recovery; original body, scratch getter and record restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

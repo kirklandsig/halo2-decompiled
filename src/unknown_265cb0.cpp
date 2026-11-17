@@ -821,6 +821,9 @@ real function_30bf0(vector3f *vector);
 // pointer kept for the second cross and 0x263740 152 (1312 bytes). Retail treats every forward component as the
 // memory operand in both crosses (loading the world-up and side components), ours loads the forward component in
 // three of them. All restored.
+// P592: Original incoming origin/actor/point/endpoint/posture/mode/facing/output fixed
+// bindings: eight 84 at 1310/1308. NOT kept: no native result/range/projection-home
+// or cross-product operand recovery; original complete body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

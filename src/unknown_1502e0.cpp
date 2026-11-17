@@ -1911,6 +1911,9 @@ void function_150820(dword *bits, bool local_only)
 // M3 lane 2 r92 (fast, control 43): the player as a const reference (`s_tail_player const &player`) 43; the unit as a
 // const reference 43; the slot as `char const &slot` 49 (207 B); the unit lookup with the index masked into a local and
 // the header array in a local first (0xce0c0's helper shape) 43; the hand from one read of `primary` through its address 43.
+// P582: Original-site hand/signed held-slot/selected-weapon scalar memcpy, seven
+// subsets, then complete scalar memmove: 43/43/43/43/43/43/43/170. NOT kept: no native ESI-player/EDI-hand equality;
+// original producers, signed conversions, complete body and game-call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

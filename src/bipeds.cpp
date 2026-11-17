@@ -1957,6 +1957,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P581: Rounded speed/boost/planar-length promoted receiver storage, seven subsets and
 // immutable planar receiver: 613/659/432/587/611/681/606/606. NOT kept: no exact native tag/material/animation homes
 // and walking/planar schedule; original real producers, shared helpers and complete body restored.
+// P585: Scalar lexical homes on the repaired 0xfc frame: airborne/speed/boost/turning/
+// movement/distance/paired size/all, eight 203. Earlier scalar-name checks used the
+// older 0xf8 frame. NOT kept: no tag/material/animation-home or schedule change; body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3169,6 +3172,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // [esp+8] and a byte store into +0x3aa) where this build's is the long of 0x1d5120's declaration, and retail
 // passes the settling count in EAX with six stack arguments, so the call setup follows 0x1d5120's count-first
 // order, whose definition lives in another file.
+// P587: Fixed original biped/tag/component pointer bindings in seven subsets,
+// then all with the native body producer immutable: eight 63 at 245 bytes.
+// NOT kept: no EBP/count/body or byte-mask repair; original full body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4343,6 +4349,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // (reduced control 614, full 548). NOT kept: no improvement or native result/flight-home
 // equality; original complete executable source restored.
 // MiniMax S (11-16): no new form, no lower score (548): this build's frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx with a home at +0x18 that the rate then reuses where this build keeps it in ebp with a home at +0x1c, so every later home sits four bytes high; the flight call's arguments are still one register out.
+// P583: Actual paired aim/look validation-call outcomes, positive/complementary
+// bool/byte/short/long: 638/638/638/638/638/638/638/638 (reduced control 612; full 548). NOT kept: no exact frame/result/flight-home
+// recovery; original nested calls, tests and complete body restored.
 // MiniMax C (11-16): no new form, no lower score (548): our frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx, spills it to its frame slot and reloads it after the flight call where this build keeps it in ebp for the whole body, so the biped, state and definition homes sit four bytes apart and the flight call's arguments are still one register out.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
@@ -4913,6 +4922,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // 344/343/348/346/344; pivot/scaled/coordinate scalar names 336/336/336.
 // NOT kept: no native matrix/origin/property-home recovery or exact bytes;
 // original alias-safe helper and complete executable body restored.
+// P582: Rounded distance/clearance/collision-fraction promoted receiver storage, seven
+// subsets, then immutable original-site distance/clearance: 344/345/379/342/379/371/376/376. NOT kept: no exact native
+// matrix/origin/property/pivot-home recovery; original real receivers and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5896,6 +5908,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax C (11-15): no new form, no lower score (79): retail keeps the first product in xmm1 alive across the
 // block and computes the next value into xmm2, where this build spills xmm1 to [esp+0x10] and reloads it later;
 // the reduced check has to list 0x1ecf50 and 0x30bf0 as well, or it reports 621 against the 79.
+// P586: Immutable actual angle/cosine/sine producer subsets 1/2/4/3/5/6/7, then
+// complete producers with immutable biped receiver: 79/79/79/79/79/79/79/79.
+// NOT kept: first-rotation spill/operand and final-cross reload gaps remain; original body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

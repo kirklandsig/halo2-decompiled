@@ -184,6 +184,7 @@ struct s_physical_block_iterator
 // EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead
 // of loading it into EAX; the 194 form in the notes below is a seven-point gain under the bar. Body unchanged.
 // Earlier at 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; a second score line, merged in round 252): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
+// Earlier header detail: 201 (was 201; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): earlier 209, 347; case 0 is jump-threaded into the take test (retail materialises `xor al, al ... mov al, 1`
 // MiniMax R (11-15): score 194 (was 201): the default arm matches retail instruction for instruction now (both ages
 // clamped with cmp/sbb/and, the two products in the same registers), but the case 0 and case 1 blocks still sit after
 // the loop instead of in place between the default arm and the merge, the deletion walk and the insertion still use
@@ -725,6 +726,9 @@ struct s_physical_block_iterator
 // best_age * candidate->pages` 209 (same code); the products named in retail's order (`candidate_weight` then
 // `best_weight`) 209 (same code); case 0 as `if (older, or the same time and fewer pages) better = true;` on main 201
 // (1214 B), with the two clamps and the clock local 209. Case 0 stays threaded into the take test. Body unchanged.
+// P582: Original policy Boolean scalar memcpy at case zero/case one/default, seven
+// subsets, then complete scalar memmove: 286/201/201/286/286/201/286/273. NOT kept: no exact native common-result materialization,
+// age-mask/product or policy placement recovery; original comparisons and complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

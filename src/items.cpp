@@ -802,6 +802,9 @@ struct s_item_collision_bsp
 // then paired plane-index field transfers: 198/198/198/198/198/198/198/198. NOT kept: no exact acquisition/frame-home
 // recovery; original complete body, plane interface, observations and arithmetic restored.
 // MiniMax C (11-16): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order; the marker's y is the one read, as retail does.
+// P591: Actual matrix receiver before the query/section derivation, ordinary/fixed
+// pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
+// 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1492,6 +1495,10 @@ struct s_item_flags_view_10b850
 // 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
 // point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
 // complete body restored.
+// P585: Existing carrier-query result on the corrected single-position-flag graph, false/true
+// defaults, positive/complementary exhaustive bool, then false-default char/byte/short/long:
+// 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
+// misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

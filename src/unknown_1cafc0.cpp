@@ -796,6 +796,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // original success merges afterward; byte/char/signed-char/bool/word/short/long/dword:
 // 643/643/643/643/643/643/643/643. NOT kept: matching lookup prefix and request graph/base
 // homes regress; original success stores, shared request call and complete body restored.
+// P587: Eight independent original graph-pointer identities on the recovered twelve-byte
+// query frame: eight 348 at 1782 bytes. NOT kept: no native destructive graph-base,
+// lazy graph reload or byte-return repair; original complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

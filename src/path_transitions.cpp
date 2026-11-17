@@ -984,6 +984,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // surface_index, ...) on the a, b, c, d form 287; the surface as a const reference 218 (same code). Diagnostic: on the
 // a, b, c, d form an actor copy declared after the surface 295 (still EDX). Retail's 270400 calls take the actor in
 // EAX; its case 5 compares the entry-loaded EAX first.
+// P586: Actual final interpolation argument table, long/dword/short/word/byte/char for,
+// then long/short while: 369/369/408/408/408/408/369/408. NOT kept: argument grouping and
+// traversal miss native entry/frame/extent; original scalar outputs and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

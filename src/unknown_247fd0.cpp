@@ -778,6 +778,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // for the gate and the velocity 414 (1633 bytes); the gate flag as the named effect's `flag3` bitfield 334 (same code).
 // Retail forms both effect addresses unfolded (gate `add eax, edx; mov dl, [eax + 2]`, velocity `add eax, edx; add
 // eax, 0x30`) where ours folds them into one operand or `lea`; no pointer-returning getter exists in retail to call.
+// P589: Original incoming system/settings/flags/blend/step/scale/link/cache parameter
+// identities, eight independent forms: 334/334/334/334/334/334/334/334. NOT kept:
+// no split effect-address or gate/settings-home recovery; complete original body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

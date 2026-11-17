@@ -2046,7 +2046,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax E (11-05): no new form, no lower score.
 // At 307: extending the detail request to retail's 0xa0 bytes (the callee 0x125f70
 // reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
-// score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
+// Earlier header detail: does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
 // retail's layout: the original body is restored.
 // Lane 14 r57 (plain, from 305): the range gain through the existing decibels_add 432 (1939 bytes); track_definition
 // renamed 305 (no slot moves); the two arrays declared at the update block's top 419 (and they would be filled
@@ -2374,6 +2374,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // values, their subsets and immutable full bounds: 469/502/518/458/468/503/522/522 reduced
 // (control 479, full 305). NOT kept: repeated native input observations and the
 // conditional upper-bound load do not match; original complete body restored.
+// P583: Actual paired created/replacement handle presence outcomes, positive/
+// complementary bool/byte/short/long: 479/479/479/479/479/479/479/479 (reduced control 479; full 305). NOT kept: no exact native
+// NONE/playback/frame recovery; original handle tests, request and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3322,6 +3325,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // rejection, bool/byte/short/long: 791/770/768/787/791/770/768/787 reduced (control 694,
 // full 597). NOT kept: no equality or native true/flags recovery; original
 // initial state test, completion polarity and whole body restored.
+// P591: Complete reused start/resume classification after request-state adjustment,
+// bool/byte/short/long in both polarities: 755/755/746/727/755/755/746/727. NOT kept: all regress
+// against calibrated 597; original repeated tests and full body restored. Entry true/flags and record homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

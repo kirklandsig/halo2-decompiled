@@ -1890,6 +1890,10 @@ void function_68c00(s_simulation_world_owner *owner, void *definitions,
 // 56 (176 bytes, mode in memory). Retail's dead `sub ecx, 2` is the only dead subtract in the whole retail image; a
 // compile-only screen of about 660 switch, ternary, conditional-overwrite and assume spellings never left one beside
 // a setne, so it is probably a lowered switch the link-time code generator if-converted afterwards.
+// P585: Overlap-safe library transfers at address save/restore, scalar save/restore,
+// preservation byte, owner/distribution captures, complete input and complete transfer graphs:
+// 56/51/81/81/80/79/121/133. NOT kept: no native state/mode recovery; original six-byte
+// transfer, scalar snapshots, calls and full body restored.
 // @retail 0x6ae20
 bool function_6ae20(c_class_6a600 *world)
 {

@@ -573,6 +573,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // (2879 B, positional only: the copy goes through the stack where retail stores the three rows straight from XMM, and a one-use
 // local); the range read once before the inactive test (retail compares and later stores field_48 from one register) 661; the
 // three projection rows as named parts stored together at the end (retail's i, j, k stores) 555 (2890 B).
+// P582: Rounded persistent minimum/active range/complete angle-limit promoted receiver
+// storage, seven subsets, then immutable range/angle receivers: 658/691/675/722/740/725/784/784. NOT kept: no exact native
+// success/input/hit homes or inactive-exit recovery; original real receivers, helpers and full body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

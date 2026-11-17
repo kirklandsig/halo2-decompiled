@@ -1996,6 +1996,9 @@ bool function_17afd0(long effect_index, long value);
 // branchy test in the if/else 113 (498 B; availability AL, cleared in the else block, so not live across the query);
 // lead form re-measured 12 (owner, then `same_view = true`, `available = false`, set, one clearing test); its true default
 // declared before the early clear 24, after the availability set 145 (513 B), with the clear after the owner as well 141.
+// P589: Original pool/salted-index/current-system identities, seven subsets then
+// cluster identity too: 47/47/47/47/47/47/47/47. NOT kept: no availability-clear/result
+// or later-view recovery; complete original body and observations restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

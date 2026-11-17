@@ -836,6 +836,9 @@ struct s_1f8a70_actor
 // `goto failed;` on this body 322 (1620 B); the shared tail with the first exit's false assigned after its call 447; case 7's
 // node before its radius alone 360 (re-measure); one result variable (no route_found) with the success return nested and the
 // failure call falling into the first exit's final `return result;` 310 (1628 B: the first exit still folds to `xor al, al`).
+// P586: Unlisted low-family reverse destination orders 524367/542367/543267/534267/
+// 532467/524376/542376/543276: 361/374/235/235/360/376/396/381.
+// NOT kept: no native dispatch/failure-reload repair; original six cases and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

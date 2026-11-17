@@ -1147,6 +1147,9 @@ real normalize2d(point2f *v);
 // P573: Original-site forced type-mask admission, accepted/rejected outcomes in
 // bool/byte/short/long: eight 135. NOT kept: no native DL/independent-return repair;
 // original mask observations, validity/type producers and complete body restored.
+// P588: Fixed original actor/type/unit/selected-table/base-table bindings,
+// immutable retry speed, fixed requested-type and target inputs: eight 135 at
+// 923/935 bytes. NOT kept: no native DL or independent-return repair; original body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

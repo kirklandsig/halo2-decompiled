@@ -2220,6 +2220,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // 124 and the location cursor assigned after the declarations 124 (both same code); the spawn stores moved after the
 // colour call 186 (572 bytes). Our loop already reloads the system from its argument home for 0x175270 as retail
 // does; the gap stays in the entry block (system EDI against ESI, colour A's frame slot, frame 0x40/0x44).
+// P589: Placement cases 1302/1320/3012/3021/3102/3120/3201/3210:
+// 128/128/128/138/128/128/138/138. NOT kept: no native frame/color/query/zone recovery;
+// original complete body and case order restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3702,6 +3705,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // reference with the cached mode 93 (same code); that with colour B read first 93; the reference on the spawn-record
 // cursor with the mode per call 109 (0x176f60 25); on the spawn-record cursor with a long cached mode and colour B
 // first 87 at 337 bytes (the listed 87 form; the reference changes nothing).
+// P589: Existing effect/system/successor/settings/matrix/query/tint/location bindings,
+// independently fixed on the simple-cursor graph: 93/93/93/93/93/93/93/93. NOT kept:
+// no native frame/residence recovery; original complete body, mode and callers retained.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

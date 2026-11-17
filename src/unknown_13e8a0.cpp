@@ -650,6 +650,9 @@ struct s_text_line_measurement
 // is then re-read in the can_break arm and at the test; only the alignment of the tail improves); the listed next-width forms
 // before the test 65 and before the can_break block 68 (the second gives retail's copy right after the products, but the
 // adds stay ahead of the branch, where retail runs them in the update arm). Body unchanged.
+// P591: Original incoming iterator/position/bounds fixed-binding subsets 1/2/4/3/5/6/7,
+// then immutable returned measurement: eight 77s. NOT kept: no independent advance web
+// or early-width recovery; original complete input/output bindings and body restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

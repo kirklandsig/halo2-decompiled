@@ -1769,6 +1769,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `bool volatile` 7, the query size `dword volatile` 7 (all three outputs filled by the worker thread); the existing
 // async wait 0x120d50 (idle false) at all five waits in place of the file's wait helper 7; the header-string
 // initializer `__forceinline` 7. Body unchanged.
+// P588: Fixed file/handle/current-time/stored-time bindings, immutable expected
+// size, original file/handle/cleanup identities on the native handle graph:
+// eight 33 at 930/930. NOT kept: no query/count/write/checksum-home repair; original body restored.
 // @retail 0x213970
 void function_213970(void)
 {
