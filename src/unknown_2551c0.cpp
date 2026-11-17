@@ -910,6 +910,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // {sum, second side, timing3} groups at +0x14/+0x18, retail the reverse) the timing reals declared distance-last 17, the
 // location index and record ahead of the side outputs 17, the second side output declared at function scope 17 (same code
 // each: shared slots follow liveness, not scope or declaration order). Body unchanged at 87.
+// Sole-return rejection at heading normalization, projection, reach, lateral clearance and alignment: 87 each.
+// Ordered rejection pairs for the normalizations and for projection/reach: 87 each. Timing rejection 110 (966 bytes).
+// Unit-argument scratch register and first-length/projection/output homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -2086,6 +2086,12 @@ void function_b7360(long object_index);
 // shared validation with point-path break 485;
 // shared validation with point-path success return 499;
 // Original body restored.
+// Perception accessor 272; acquire actor after guard 272; state view at payload
+// dispatch 272; actor and state after notification 481; shared actor-unit
+// predicate 402; accessor with shared actor-unit predicate 402; completion and
+// state view at payload dispatch 272; capture actor unit before validation 272.
+// NOT kept: all regress. Pool acquisition, actor and output registers, and the
+// packed-point reload after validation still differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2887,6 +2893,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // cases 7/8 fall through with direct case 1 completion 619;
 // case 5 falls through with direct case 1 completion 620;
 // Original body restored.
+// The 0x1c frame and entry ownership agree. The default branch span, animation
+// copy registers and post-dispatch completion placement still differ.
+// Case 20 inactive guard 488; existing target first 484; missing-target
+// continue 479; missing-target and distance continues 479; for with a
+// result-tested iterator and missing-target guard 479; inactive and missing
+// guards 488; inactive guard with existing target first 487; clear completion
+// from active-search or wait state 479. NOT kept: tied or longer forms.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

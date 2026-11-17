@@ -2114,7 +2114,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 168 (was 168; m3 lane 8 r166 at the end): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
+// score 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
+// The players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
 // block's established/visible layout. Round 64, fast, masked aligned in brackets (start 194 [66]): the block entered on
@@ -2645,6 +2646,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // still takes ECX); the first normalize through the header's inline normalize3d 405 (2954 B), the relative one 507 (2967 B);
 // approach and facing in two declarations 168 (same code); the player pointer as `if (index == NONE) player = NULL; else
 // player = &...;` 374.
+// Named primary/other/both reference handles 168/168/168, proximity assigned from both 587.
+// Observed object and both handles 163. NOT kept: the five-point gain at 163 is below the eight-point cutoff.
+// Actor lookup delayed 595, both lookups delayed 592, shared separation 379. Iterator SIB, player searches
+// and direction residence still differ.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -4984,6 +4984,11 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // overwrites it) and tested there 368 (1906 bytes, the frame moves); the rotated pivot declared with the other parent-arm
 // locals 336 (same code), with the placed change 368; the second collision arm's pulled-back fraction as its own local 336
 // (same code); collision.t read at the first arm's uses with the second arm's fraction a new local 336 (same code).
+// Round 407: shared y/z stores 379; all final components at join 388; placement point at join 350; shared point
+// setter 388; whole root point snapshot 342; root coordinate snapshot 336; root point snapshot with shared y/z
+// stores 350; early placement rejection 470.
+// NOT kept: shared stores shorten the body and raise the score. Independent root coordinate reads tie. The body
+// matrix and origin retain their baseline slots.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

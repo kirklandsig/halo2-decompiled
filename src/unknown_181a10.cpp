@@ -534,6 +534,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 
 // score 238 (was 238): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // Earlier at 238 in round 95. See the m3 lane 11, lane 2 r79 and lane 8 r164 forms below.
+// frame 0x40 versus 0x44, with a different second-node slot.
+// Retail reuses the origin y/z slots and leaves two dwords below the plane unused.
+// Earlier score 238 in lane 11 round 95, lane 2 round 79 and lane 8 round 164.
 // MiniMax E (11-17): no form kept; the score is unchanged at 238. New readings: the 1..16 classifier keeps retail's
 // `mov ecx, 1; cmp ecx, edx; jg` form out of reach (an unsigned word, a signed long, the constant written first, two
 // separate ifs and an if/else chain all compile to a compare with an immediate, 238 each, as in the earlier rounds);
@@ -978,6 +981,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // and indexed element pointer 327/327/339/341. Break with one result in the same
 // forms 347/347/325/326. NOT kept: all raise the score and retain frame 0x40.
 // The second-node spill, repeated classifier reads and plane homes remain.
+// One material output with branch stores 250 or one later store 316, at
+// either scope. Separate body material before/after the index lookups 261/258,
+// also from branch entry 261/258. NOT kept: the shared output restores frame
+// 0x44 but raises the score and grows the body; separate outputs also regress.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

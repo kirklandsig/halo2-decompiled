@@ -158,6 +158,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 }
 
 // score 846 (was 846): unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
+// unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
@@ -616,6 +618,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Complete source/default, default-first, initialized-default and common-predicate gain staging,
 // published before scaling 939/939/936/932 and after scaling 984/984/984/933.
 // NOT kept: all regress. The predicate with publication after scaling keeps 3327 bytes but changes the first load.
+// F408: Shared query-gain and existing-index buffer 846; full-width query 919, choice 967, both 968.
+// With the count also shared: 848/919/970/957 in the same order.
+// NOT kept: full-width choices recover the entry ESI zero but shorten the body and raise the score.
+// The target-count, primary and query-array homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

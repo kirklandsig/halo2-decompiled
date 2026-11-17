@@ -8,6 +8,7 @@
 #include "object_iterator.h"
 #include "sound_sources.h"
 #include "vector_products.h"
+#include "object_tag_definitions.h"
 
 /* the item (the object data) */
 struct s_item
@@ -814,6 +815,17 @@ struct s_item_collision_bsp
 // pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
 // 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
 // MiniMax S (11-17): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order.
+// Typed section with embedded collision 198; const section 198; instance
+// receiver shared with the matrix 192; shared signed surface index 198;
+// named section index 198; section reference 253; collision member reference
+// 198; getter result used in the normal rows 252. NOT kept: the six-point
+// receiver gain falls short of the threshold. The instance address sequence
+// and native plane and spin register allocation still differ.
+// Transformed surface first 220; separate section displacement 198; instance byte
+// displacement 235, with section displacement 235 or one surface read 235; typed
+// base and section displacement 201; shared byte-displaced receiver 192; collision
+// displacement 235. NOT kept: the shared receiver gains only six; instance indexing
+// still adds the base before the section read.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1509,6 +1521,12 @@ struct s_item_flags_view_10b850
 // 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
 // misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
 // MiniMax S (11-17): no new form, no lower score (824): the frame still misses retail's size (0x150/0x154 against 0x12c) and the entry, carrier, contact and rotation homes stay in other registers; the seven forms tried earlier all grow past the native extent or land below the eight-point gate.
+// Shared lateral direction 820; existing output cross 932; staged
+// cross 928. With a ray scoped to its query 840/944/955.
+// Shared direction with endpoint query 857; early collision and settle
+// initialization 820. NOT kept: shared-motion forms miss the native
+// frame or the gain threshold. Entry flag and motion workspaces still differ.
+// Contacted object tag flags read through the typed definition field 824.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1555,7 +1573,8 @@ void __stdcall function_10b850(long object_index)
                 long other = *(long *)(hit + 0x40);
                 s_item_header *header = &((s_item_header *)g_4e0300->data)[other & 0xffff];
                 surface = ((1 << header->type) & 0x3c0) != 0;
-                if (!surface) surface = (g_4e3b44[header->item->definition_index & 0xffff].bytes[2] & 0x40) != 0;
+                if (!surface)
+                    surface = (((s_object_definition const *)g_4e3b44[header->item->definition_index & 0xffff].bytes)->flags & 0x40) != 0;
             }
             if (((surface && floor) || item->value_13a >= 4) && slow && !(collision.value_58 & 0x20))
             {

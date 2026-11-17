@@ -452,7 +452,8 @@ struct s_record_collision_view
 
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
-// score 45 (was 45; 71 before): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// Earlier score history (71 before).
+// score 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
 // (retail's cvtsi2ss/store/fld/mulss/fmul) and the frame now agree: the distance is computed in the trace call's
@@ -1002,6 +1003,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // crosses, best 43 (any cross ahead of the dot puts the direction's i in retail's XMM4, but j and k come out XMM5/XMM3 for
 // retail's XMM3/XMM5); the dot written k, i, j or j, k, i 45 (same code). The matched 0x1ecf50 sums the same helper's dot
 // (k + j) + i as this build does here, so retail's (j + i) + k at this site comes from the caller's context, not the helper.
+// Deep round 410: scaled addition for trace endpoint 45; scaled addition for collision point
+// 42; scaled addition for both points 51; trace endpoint setter 26; read-only trace pathfinding
+// pointer 45; fresh destination pathfinding view 71; collision declared before world point 45;
+// collision point setter 45. Kept the existing point setter at 26, confirmed at retail length
+// by the plain check. The three endpoint expressions and the half-axis lift are unchanged. The
+// sector-trace and collision calls keep their argument roles. The 0xd8 frame and the matched
+// companion functions agree. The initial rotation loads, planar-dot order and collision-marker
+// scheduling still differ.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -1034,9 +1043,8 @@ long function_26d570(long object_index)
 				{
 					real trace_distance = trace.distance;
 					point3f point;
-					point.x = direction.i * trace_distance + origin->x;
-					point.y = direction.j * trace_distance + origin->y;
-					point.z = direction.k * trace_distance + origin->z;
+					real_point3d_set(&point, direction.i * trace_distance + origin->x,
+						direction.j * trace_distance + origin->y, direction.k * trace_distance + origin->z);
 					for (long component = 0; component < 3; ++component)
 						point.n[component] += g_4687b0->n[component] * 0.5f;
 					s_location_entry_view *entry = (s_location_entry_view *)&record->entries[record->count];

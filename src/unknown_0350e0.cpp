@@ -2410,6 +2410,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Center components through saved-position stores 469, with aggregate saved-position transfer 486.
 // NOT kept: 469 grows to 2288 bytes and emits scalar stores instead of the integer-word transfer.
 // 486 preserves length and the transfer, but gains six and keeps the 0x90 frame.
+// Round 407: entry rejection guard 487; separate opacity/size guards 487; bind rejection guard 492; entry and
+// bind rejection guards 487; while entry loop 556; depth-disable arm first 495; draw point aggregate 492; draw
+// color aggregate 492.
+// NOT kept: the entry rejection forms gain five at retail length, below the eight-point threshold. The 0x90
+// frame and the draw point overlap remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3084,6 +3089,10 @@ real magnitude3d(vector3f const *v);
 // inline 195, with staged current bound 274; both reciprocals defined before either normalized vector
 // 170. The raw length still shares the clamped slot and the dot keeps a promoted copy in the restored
 // body.
+// F408: Two-direction magnitude loop 294; magnitude and reciprocal loop 292;
+// original magnitude with scale/point-setting loops 190/190; separate magnitude and
+// normalization loops 297/296; fused magnitude and normalization with the scale helper
+// or component products 349/353. NOT kept: all regress. Raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4083,6 +4092,15 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
 // copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
 // view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
+// F408: Velocity setter 513; moved-point setter 561; both 561. Signed screen displacement with
+// the existing point-difference helper 498; in place 500; in place with typed offset 500;
+// signed projection result 530; signed result in place with typed offset 530.
+// NOT kept: all regress or move length away from retail. The velocity and projection homes remain.
+// Five stride groups with countdown 530 or phase end 542; independent arrays
+// with countdown 505 or phase end 504; random-base cursor 526; screen-y cursor
+// 530; separate position/random cursors 485; independent view scalars 507.
+// NOT kept: the separate position/random form gains one at retail length
+// and grows the frame to 0x64.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5049,6 +5067,13 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
 // before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
 // the keep bar, so the body stands.
+// F408: In-place offset in destination, shared scratch, initialized array, and scoped points:
+// 385/698/388/698. With the four-channel color: 375/700/383/696.
+// NOT kept: all regress, including native-length forms. Frame and corner scalar homes remain.
+// Depth bias at each used corner 231 or after all corners 393; named final depths
+// at their corners 401 or after all corners 393; with four-channel color,
+// 225/390/376/387. NOT kept: the 225 form gains six and grows to 1826 bytes;
+// the 0xe0 frame and radius/scaled-zero homes do not recover together.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
