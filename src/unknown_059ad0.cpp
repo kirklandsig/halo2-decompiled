@@ -4646,6 +4646,11 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the
 // identity byte at +0x9 against retail's +0xa) and the two peer bytes are zeroed at +0x11/+0x13 where retail
 // zeroes its pair at +0x11/+0x12.
+// score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305): the frame and the body length agree with
+// retail's, but the three boolean homes stay a rotation from retail's (this build's acceptance byte at +0xa against
+// retail's +0xb, its identity byte at +0x9 against retail's +0xa, and its third byte at +0xb against retail's +0x9),
+// retail reads the acceptance byte back where this build folds it to a constant, and this build zeroes its pair of peer
+// bytes at +0x11/+0x13 where retail zeroes its pair at +0x11/+0x12.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

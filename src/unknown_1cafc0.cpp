@@ -1213,6 +1213,11 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // unknown80 = 0 (0x1cd3e2-0x1cd3ee); flags &= ~1 (0x1cd3f6); name compare before the store, request guard and
 // the three loop clears (0x1cd3fa-0x1cd4b9); state_flags & 4 fallback (0x1cd4ce). No hand-expanded helper bodies
 // (channel_loop_clear, channel_valid, PIN are used), no in-body pragma, no new include, helper or double local.
+// MiniMax D (11-17): no new form, no lower score (210): the frame of 0x38 still agrees, but retail keeps the
+// transition id at [esp+0x14] and the animation id at [esp+0x18] while ours has the two the other way round
+// (declaring the transition id first at the top was screened before and gave 342-344), and retail keeps the
+// blend byte in memory across the 0xe6800 call while ours keeps it in a register, because the build knows
+// that callee's clobbers; that callee's file is not this lane's to edit.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

@@ -1237,6 +1237,12 @@ void function_2118c0(void)
 // zero above the band loop and stepped by 8 at its foot beside b 150 (all rows reduced to pointers, hoisted to the
 // knot level); the three knot rows through references into a `long [3]` (`r3 = row; r3 += w3;` from `b * 8`) 157 (790
 // B: one row from a row IV, one reduced); the band counter itself through a `short &` 10 (same code).
+// Round 194 (m3 lane 5; round 102's compile-only harness, exact here, counts as aligned differences against its 5):
+// knot indices `long` at the sample loop's head with `long row = b * 8` 194 fast (743 B); `long row = (long)b * 8` 150
+// fast; `b * 8` rows with p1/out from `noise[row + k]` and `short` knot indices 109; `long k` with `b * 8` rows 133;
+// `dword` knot indices with `dword row = b * 8` 135; the band counter byte/char/word/dword/unsigned char/long with `b * 8`
+// or `8 * b` rows 105 each; diagnostics: the knot indices in a function-static or a local `word[3]` with `b * 8` rows
+// 108/105 (all rows still reduce, so an aliasable index home is not what keeps retail's knot rows unreduced).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

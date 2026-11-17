@@ -149,6 +149,12 @@ union s_6ec80
 // reference bound to it 225; the active test through a trivial inline accessor taking the player record 225; the mask and
 // counter zeroed by one chained assignment, mask first 227, counter first 225; the bit or-ed in branch-free from the active
 // byte 247 (286 instructions). Each keeps NONE in EDI and the entry zero in ECX.
+// M3 lane 11 r112 (fast with 0x6ec10/0x5b120; base 5): the mask scoped with the counter zeroed before the guard and the
+// 0x49c8 read by hand 194 (first difference +0x101); the scoped mask with a redundant `if (local_15 < 16)` ahead of the do
+// loop 225; the mask declared among the top declarations and zeroed in the guard with the counter zeroed before the guard
+// 88 (r101's registers, the counter's zero misplaced); the scoped mask with the mask tested ahead of the machine word 225;
+// the scoped mask with the 0x49c8 getter's result in a local stored and tested 225. A compile-only screen shows why `for`
+// costs bytes: the 16-trip `for` is unrolled four times, the do loop is not.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

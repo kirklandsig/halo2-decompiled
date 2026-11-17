@@ -711,6 +711,39 @@ void __stdcall function_1160c0(real dt)
 // refreshed count, original selector/branch index/terminal decrement/index plus base 171/171/175/171,
 // while with refreshed count, same four selectors 171/171/175/171. NOT kept: the refresh and selection
 // forms leave the segment register and stack allocation unresolved.
+// m3 lane 10 r115 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 171; body unchanged). Reading
+// from retail's operand orders: VC 7.1 puts the younger of two fields first in each float product, and here retail has
+// every axis component ahead of every offset component, the reciprocal ahead of axis i but behind axis j and k, the
+// projection ahead of axis i but behind axis k, and the cosine ahead of the offset. That fits an axis reached only
+// through helper addresses (never named component by component in this function), an offset named directly in this
+// function, and a projection and cosine that live inside an inlined helper: the axis built by cross3f(&vertical,
+// &direction, &axis), normalize3d, and the rest offset copy rotated in place by a helper of 0x170d70's shape (v, axis,
+// angle; sine and cosine taken inside), then `predicted.x = offset.i + position.x` rows here. LEAD, not kept (a new
+// helper with one caller; the same-shaped existing helper is file-private in src/unknown_170d70.cpp, held this round):
+// that form with the helper's statements projection, cross_k, cross_j and cross_i written in row i 113 (1369 B; every
+// stack home then agrees with retail, the normalization block agrees, and the rotation starts as retail does: dot,
+// `axis.j * offset.i` in place, sine and cosine, projection; left are the segment base in EDI/ECX for retail's EDX with
+// the ECX/EDX swap it carries through the first node's copies and the 0x211060 set-up, retail finishing cross_j ahead
+// of cross_k, and its component load order axis k, offset j, offset k, axis j, axis i with offset i loaded late). The
+// patch is build/r115/lead-1161f0-113.patch in the m3-lane10 worktree. Other statement orders of that helper (all with
+// cross_j and cross_k named, which an in-place rotation needs): cross_k, projection, cross_j 122 (1369 B); projection,
+// cross_j, cross_k (0x170d70's order) 144 (1371 B, with cross_i named first the same code); cross_j or cross_k ahead
+// of the projection with the other after it, or both ahead, 147 (1371 B). Sine and cosine as the call's arguments the
+// same code as taking them inside; as locals of this function ahead of the call 169 (1373 B: the cosine is then older
+// than the offset and `offset * cosine` comes out). New components held in three locals before the stores 213. A
+// helper that takes the three offset components as reals and writes position + rotation through a pointer 202 (1381
+// B; its expression trees are retail's, its schedule is not). Not usable: cross_j or cross_k written in their rows of
+// an in-place helper read the already rotated components (126 at 1368 B, wrong arithmetic). On the lead: the segment
+// as `segment = definition->segments; segment += index` 274 (1368 B, retail's length; aligned 109 against the lead's
+// positional 113: the base takes EDX but loads ahead of the ternary); the index named first then base and `+=` the
+// same code as the lead; `position.x + offset.i` rows and the vertical declared after the axis the same code. On main:
+// the index named, then `segment = definition->segments; segment += index` 171 (same code as the body). A compile-only
+// screen of this file reproduces the rotation block of the fast build (but for the angle's reload), and 1,200 helper
+// forms on it (statement sets and orders, sine/cosine order, a named dot, dot3f either way, row groupings) never give
+// retail's schedule, so the helper's shape is not the whole cause. Also on the lead: the cross terms through
+// cross3f(v, axis, &cross) inside the helper 143 (1368 B); the cosine taken ahead of the sine 121 (1369 B); the helper
+// writing a separate `rotated` vector that the rows add to position 164 (1368 B); the cosine complement named, or the
+// dot named ahead of the sine and cosine, the same code as the lead.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
