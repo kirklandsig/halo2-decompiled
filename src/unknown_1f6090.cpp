@@ -97,7 +97,13 @@ long function_1e4a50(long character_index);
 long function_1e4990(long character_index);
 void *function_1e4ef0(long actor_index);
 bool __stdcall function_110ab0(long unit_index);
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 bool function_114b60(short entry_index, short fallback_index, long unit_index, long priority, void const *extra);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_b9fc0(long object_index, vector3f *forward, vector3f *up);
@@ -124,7 +130,7 @@ void function_e64e0(vector3f const *reference, vector3f const *direction, vector
 void function_1f40b0(long actor_index, real *stopping_distance, real *round_trip_distance);
 bool function_1f58c0(long actor_index, vector3f *facing, short *unknown);
 bool function_1f9240(long actor_index, s_path_settings *settings);
-bool function_26f2d0(s_path_settings const *settings, point3f const *start, point3f const *end);
+bool function_26f2d0(point3f const *start, point3f const *end, s_path_settings const *settings);
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force);
 bool function_2702a0(long actor_index, long mode, long set, long target_mode, long target_set,
 	point3f const *position, vector3f const *forward, point3f *out_position,
@@ -217,9 +223,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 		!actor->unknown264 && !actor->unknown229)
 	{
 		long unit_index = actor->unknown018;
-		short action;
-		function_e70b0(&action, unit_index);
-		if (action == 0)
+		if (function_e70b0(unit_index).value == 0)
 		{
 			if (function_e68c0(0x33, unit_index))
 				function_114b60(NONE, 0x10, actor->unknown018, 0xd, NULL);
@@ -672,9 +676,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 			}
 			else
 			{
-				short action;
-				function_e70b0(&action, actor->unknown018);
-				lined_up = action == 5;
+				lined_up = function_e70b0(actor->unknown018).value == 5;
 			}
 			if (!lined_up || (surface && surface->type == 1 && (surface->flags & 1)))
 			{
@@ -755,7 +757,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 					function_1f9240(actor_index, &settings);
 					point3f const *vertices = pathfinding->vertices;
 					point3f const *end = &vertices[surface->second_vertex];
-					if (function_26f2d0(&settings, &actor->position, end))
+					if (function_26f2d0(&actor->position, end, &settings))
 					{
 						point3f const *away = &vertices[surface->unknown0a];
 						s_request_vector request;

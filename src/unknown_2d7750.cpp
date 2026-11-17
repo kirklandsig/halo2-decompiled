@@ -1,11 +1,12 @@
 // @flags /O2 /GL- /GX
 #include "stdio_reader_2d7880.h"
 #include "buffered_reader_2d9c00.h"
+#include "service_streams_2d8780.h"
 
 bool __cdecl function_279740(long value);
 
 // @retail 0x2d7750
-c_sized_reference_a9ef0 *reader_factory_2d7750::open_reader(const char *name)
+c_sized_reference_a9ef0 *debug_stream_factory_2d76f0::open_reader(const char *name)
 {
 	stdio_reader_2d7880 *file_stream = new stdio_reader_2d7880(name);
 	if (!file_stream->mark_supported())

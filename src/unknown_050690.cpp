@@ -4,6 +4,7 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "impacts.h"
 #include "camera_storage.h"
 #include "reset_storage.h"
 #include "sound_sources.h"
@@ -258,8 +259,8 @@ byte *function_c4210(long index, long element_index);
 long function_c4250(long index);
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision);
-void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index,
-	long entry_element_index, long index, long variant, long *first_value04, long *second_value04,
+void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, c_type_47f957 element_index,
+	c_type_47f957 entry_element_index, long index, long variant, long *first_value04, long *second_value04,
 	long *first_value, long *second_value, long *first_value0c, long *second_value0c);
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
@@ -403,8 +404,8 @@ void __stdcall function_508d0(void *payload_data)
 					bases[1].origin[2] = collision.point.z;
 					if (arc->effect_tag_index != NONE && function_30bf0(&ray) > 0.0001f)
 					{
-						function_1883e0(arc->effect_tag_index, false, &collision.point, g_47d8e0,
-							collision.material, 15, 0, &first_values[0], &second_values[0],
+						function_1883e0(arc->effect_tag_index, false, &collision.point, c_type_47f957(g_47d8e0),
+							c_type_47f957(collision.material), 15, 0, &first_values[0], &second_values[0],
 							&first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 						for (long n = 0; n < 3; n++)
 						{
@@ -477,8 +478,14 @@ void __stdcall function_508d0(void *payload_data)
 	g_46713c = true;
 }
 
+// MiniMax D (11-17): no new form, no lower score (626, was 626); the frame stays 0x1490 against
+// retail's self-aligned 0x1474 and the mode stays a stack home against retail's CL, so nothing else
+// in this file can be reached from here.
 // MiniMax D (11-05): no new form, no lower score; retail's self-aligned 0x1474 frame and its sole
 // caller at 0x508d0 (still a stub) keep this function out of reach.
+// MiniMax E (11-06): no new form, no lower score; retail's flag is its second parameter (CL) and it
+// pops six stack arguments, so retail's declaration has nine parameters against our seven; the frame
+// stays 0x1490 against retail's aligned 0x1474.
 // score 626 (was 626): frame 0x1490 versus aligned 0x1474; mode stack home versus CL remains.
 // Earlier 638 from 693: ESP realignment and mode convention still differ; native pair results improve length.
 // ESP realignment and mode convention still differ; native pair results improve length.
@@ -549,6 +556,24 @@ void __stdcall function_508d0(void *payload_data)
 // memset 631, as `= {}` 631 (both give retail's whole-array 0x202/0x101 rep stosd fills, register-blind
 // differences 331 -> 337); `= {}` with the flag declared last 630 (register-blind 326); the exponent read first
 // and clamped by an if 643; the level counter without volatile 652. Still BLOCKED-BY 0x508d0 (a stub).
+// b6N walk (11-06) against retail, statement by statement: no logic or offset difference found. Checked: exponent
+// clamp (0x516ee-0x516f9), count / level_count / inverse_count, both zero fills, the active-level word at +0xd0, phase
+// factors, the three seeded fills (state, +1, +2; x then y), midpoint pass, interpolation (clamped right index, index
+// range test, left = right), weight pow (2.0 to -((1 - value) * level)), weights > 0 normalise, delta, bias remap,
+// horizontal then vertical accumulation, width/amount/flags stores, return count; field offsets +2/+0x34/+0x3c/+0x44/
+// +0x48/+0xd0 of the definition, basis stride 0x34 (forward +4, left +0x10, origin +0x28) and point stride 0x18 agree.
+// Retail's evaluation order, not a behaviour fix: retail converts the level to float once before the weight loop
+// (0x51bed, stored 0x51bfd) and multiplies by it (0x51c8b); the draft's per-iteration (real)level compiles to fimul.
+// Scores (fast = 0x516d0 alone, +508d0 = fast with 0x508d0 added, the proxy for the full build): `real octave =
+// (real)level;` before the loop 708 fast / 622 +508d0 (2384 bytes, was 626), a new real local, score-only, not kept;
+// with `= {}` fills 642, with the helper below 623, without volatile 636. Not kept either (score-only): fields stored
+// directly without the `sample` temporaries (retail's fills store straight to [esp+ecx*8+0x68], 0x5184a) 662 fast /
+// 729 +508d0; plus a helper returning random_draw_real * 2.0f - 1.0f (keeps retail's unfolded fmul, fadd st(0),st(0),
+// fsub at 0x51833) 643 / 678; plus `= {}` fills (retail's whole-array fills, frame 0x1474 in the fast image) 626 / 689.
+// Helper alone with the temporaries 637 +508d0. Flag declared last (call updated) 626 fast, still a stack load, 689
+// +508d0; exponent as `exponent - 2 < 0 ? 0 : exponent - 2` (retail's exact sequence) 688 / 633; `weight + weights[i]`
+// 680 fast, unchanged. The caller loads the flag as a raw byte (0x5123d), no != 0 test, so the parameter may be a byte;
+// the callee only tests cl (0x516e0), so no behaviour difference.
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

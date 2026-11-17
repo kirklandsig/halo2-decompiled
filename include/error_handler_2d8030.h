@@ -112,7 +112,7 @@ public:
 	virtual void slot_11() = 0;
 	virtual void slot_12() = 0;
 	// the name kept for a source file
-	virtual char const *file_name(char const *path) const = 0;
+	virtual char const *file_name(char const *path) const;
 
 	// whether a report from `file` at `line` with `id` is silenced
 	flag_2d8e70 is_silenced(char const *file, long line, long id);

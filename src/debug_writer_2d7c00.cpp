@@ -37,11 +37,7 @@ public:
 
 // @retail 0x2d7720 deleting debug_writer_2d7c00
 
-class debug_stream_factory_2d76f0
-{
-public:
-	debug_writer_2d7c00 *open(long stream_id);
-};
+#include "service_streams_2d8780.h"
 
 // @retail 0x2d76f0
 debug_writer_2d7c00 *debug_stream_factory_2d76f0::open(long stream_id)

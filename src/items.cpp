@@ -421,6 +421,14 @@ inline real item_real_random_range(real lower, real upper)
 // Product-first range span/sample/offset named subsets 1..7: 2/76/76/61/61/61/61;
 // scalar offset accumulator 61. Original range producer and complete body restored;
 // frame 0x14 and last add/third owner-field load scheduling remain.
+// b14E (11-17) walk against retail, fast build on r847: the body matches retail statement by statement (both ITEM_GET
+// reloads, the seed store, the owner stores in the order unknown4/unknown0/unknown8, the 0.0f/NULL pushes). The one
+// difference is 0x10d583 `fadd st(1)` (the delay's final add), which retail issues between the c4 field load (0x10d57d)
+// and the c2 load `mov cx` (0x10d585); ours issues the c2 load first. Tried, same 2: each field read through
+// ITEM_GET(item_index) (the loads fold into one pointer); `owner` declared before `delay` or before `owner_item`;
+// `location_c2` as word; the helper returning `lower + span * sample`. Worse: the c2 copy before c4 (5, register
+// assignment changes), brace-initialising the owner {c4, c8, c2} (6, c4 loaded first), the helper with a named sample
+// local (76, SSE). No behaviour difference found against retail.
 // @retail 0x10d4e0
 void function_10d4e0(long item_index)
 {
@@ -504,7 +512,7 @@ void function_10cd50(long item_index)
 struct s_slot_entry_list;
 extern s_slot_entry_list *g_4e0340;
 struct s_bsp3d;
-plane3f *bsp3d_get_plane(s_bsp3d const *bsp, short plane_index, plane3f *plane);
+plane3f *bsp3d_get_plane(s_bsp3d const *bsp, long plane_index, plane3f *plane);
 real function_30bf0(vector3f *vector);
 void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool flag);
@@ -572,10 +580,31 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
+// expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
+// three products followed by three adds 207 - all worse. Reverted.
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
-// score 202 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
+// MiniMax E (11-16): the transformed-plane rows written as accumulating statements score 176 (the compiled tree then matches retail's (up*k + left*j) + forward*i) but that is under the keep threshold, so the body stands; a double spin scale keeps it in x87 but grows the frame to 0xa4 (238), so the scale still sits in a stack slot where retail holds it in st(1).
+// score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
+// Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
+// Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips
+// the settle call 0x10d056 (ja 0x10d245); contact marker query args 0x10d05f..0x10d06d; surface_index == NONE test 0x10d082; instance
+// row 0x58, section 0xc8 + 0x70 and matrix products (up.k, left.j, forward.i order) 0x10d0c2..0x10d19f; distance sum z,y,x then -d
+// 0x10d1b8..0x10d1ed; 0.05 - distance 0x10d1f1..0x10d1fb; spin gate (ignore_object NONE, flag0 of 0xc1, flag5 or flag6) 0x10d245..0x10d275;
+// axis from marker up or the g_4687b0 vector 0x10d293..0x10d2c8; random range -pi/2..pi/2 0x10d2d6..0x10d2e0; sqrt sum order j,k then i
+// and float rounding of the speed (fst dword) 0x10d310..0x10d328; seed step, unsigned >>16 convert and 1/65535 0x10d338..0x10d35c; cross
+// product components and the length test 0x10d366..0x10d3d1; second seed draw x speed x pi/2 0x10d3de..0x10d413; linear (velocity + impulse)
+// and angular (spin + angular for i, angular + spin for j and k) sums 0x10d439..0x10d4a7; all constants read from retail match.
+// Only change: the path-A plane copy runs d, k, j, i (retail loads them in that order, 0x10d0a5..0x10d0bd; evaluation order only), 202 -> 200 in that fast build.
+// Precision difference (not fixed): retail keeps the spin scale unrounded on the x87 stack from 0x10d2e0 / 0x10d413 to the final fmul
+// st(1) at 0x10d439 (spin i/j are float-stored products 0x10d2eb, 0x10d41f, and k is scaled at 0x10d439 after the join); ours stores the scale
+// as a float first. Retail passes the plane index to 0x14a300 sign-extended (movsx edx at 0x10d097 and 0x10d0f4; the other callers do the
+// same, e.g. 0x17ddcb and 0x245870); ours has a word move. Declaring 0x14a300's parameter `long` (the definition in src/unknown_14a280.cpp and the
+// declarations in items.cpp, unknown_17d9a0.cpp, unknown_181a10.cpp, unknown_1fa590.cpp) keeps 0x14a300 MATCH and gives 200 -> 198 here (both movsx, fast build), not applied: other files.
+// Tried: y*j + z*k term order for the distance (200). Frame 0xa0 agrees; plane-index width, plane joins and pending spin-k homes differ.
+// Earlier 202 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
 // Earlier 211 (was 249): one shared spin scale for both spin branches, with the third spin
 // component scaled after the branch so the pending value and the scale stay on the x87 stack.
 // Plane-index width, plane-join registers and the transform product rows still differ.
@@ -764,6 +793,26 @@ struct s_item_collision_bsp
 // accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
 // 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
+// P544: current baseline already sign-extends both plane-query indices correctly;
+// instance-address scheduling, transformed-plane registers and spin/speed homes remain.
+// Whole plane/marker-axis/fallback-axis/both-axis memmove 336/247/196/264;
+// whole-object forward copies 342/240/194/263; shared instance receiver 192,
+// shared signed ordinal 207 (receiver/selector revisited after query-width repair).
+// NOT kept: fallback copies gain only two/four and the receiver only six, below
+// eight above 30; original complete body, observations and calls restored.
+// P564: Actual instance-table base captures or two-step advanced receivers, mutable/readonly
+// and existing/direct matrix consumers: 201/288/201/288/192/192/192/192. NOT kept: six-point best below
+// threshold; base/direct forms also raise controls. Original instance reads, plane math and body restored.
+// MiniMax E (11-16), NOT kept: position.y built from marker.matrix.position.x scored 178 (main 198), but it
+// changes what the code does: retail adds the marker's y (the same [esp+0xa4] slot the distance product reads, at
+// [esp+0xac] after the two pushes). Body back to main.
+// P578: Actual surface/section/material signed ordinal memcpy acquisitions, seven subsets,
+// then paired plane-index field transfers: 198/198/198/198/198/198/198/198. NOT kept: no exact acquisition/frame-home
+// recovery; original complete body, plane interface, observations and arithmetic restored.
+// MiniMax C (11-16): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order; the marker's y is the one read, as retail does.
+// P591: Actual matrix receiver before the query/section derivation, ordinary/fixed
+// pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
+// 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -793,10 +842,10 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 				{
 					s_item_collision_data *collision = (s_item_collision_data *)g_4e0340;
 					bsp3d_get_plane((s_bsp3d *)collision, collision->surfaces[item->material_index].plane_index, &plane);
-					surface_plane.i = plane.i;
-					surface_plane.j = plane.j;
-					surface_plane.k = plane.k;
 					surface_plane.d = plane.d;
+					surface_plane.k = plane.k;
+					surface_plane.j = plane.j;
+					surface_plane.i = plane.i;
 				}
 				else
 				{
@@ -888,6 +937,7 @@ struct s_item_impact_definition
 	long sound_index;
 };
 
+#include "impacts.h"
 struct s_item_impact
 {
 	long type;
@@ -895,7 +945,7 @@ struct s_item_impact
 	point3f point;
 	byte unknown14[8];
 	s_location location;
-	short material;
+	c_type_47f957 material;
 	byte unknown26[2];
 	vector3f normal;
 	byte unknown34[0x40 - 0x34];
@@ -904,7 +954,7 @@ struct s_item_impact
 
 real function_1201a0(vector3f *v, vector3f const *fallback);
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long unused, long effect_value, s_location const *location, real scale);
+	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
@@ -928,7 +978,7 @@ void function_10c880(long item_index, s_item_impact const *impact, vector3f cons
 			kind = definition->kind > other_kind ? other_kind : definition->kind;
 		}
 		function_188180(&impact->point, &impact->normal, effect_index, item_index, kind + 10, kind,
-			(word)impact->material, (long)&direction, &impact->location, scale);
+			impact->material, (long)&direction, &impact->location, scale);
 	}
 	if (definition->sound_index != NONE)
 	{
@@ -1168,9 +1218,61 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 813 (was 813): Frame 0x154 versus 0x12c; entry Boolean publications and collision/carrier/rotation homes remain.
+// MiniMax H (11-11): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c from the first instruction, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where ours holds them in registers.
+// MiniMax D (11-11): no new form, no lower score (824); the frame is still 0x154 against retail's 0x12c from the
+// first instruction, so every stack home sits 0x28 further out, and retail still extracts the flag bits in place
+// through a byte field view and folds the 0x20000000 bit into the field in memory where ours copies the word
+// out first. The open behaviour differences stand as they were: the node handed to 0xb8bd0 as a raw dword and the
+// type chain's compare at 0x10bd1c.
+// MiniMax S (11-11): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, the two entry
+// bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and
+// the definition pointer sits at 0x38 against retail's 0x1c.
+// MiniMax A (11-10): no new form, no lower score (824): our frame is 0x154 against retail's 0x12c
+// from the first instruction, so every stack home sits 0x28 further out and the two open behaviour
+// differences - the node handed to 0xb8bd0 as a raw dword and the type chain's compare - stay.
+// MiniMax E (11-11): no new form, no lower score (824); our frame is 0x154 bytes where retail's is 0x12c, so every
+// stack slot sits 0x28 higher, and the entry flag test reads the definition's byte in the other order.
+// MiniMax H (11-12): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, and the entry Boolean and the carrier, collision and rotation homes still differ.
+// MiniMax S (11-14): no new form, no lower score (824): the frame here is 0x154 against retail's 0x12c, but the
+// marker's address and the block copy's source sit at the same distance from the entry stack pointer in both, so
+// the forty spare bytes lie below the homes and the rest of the gap is in the block bodies.
+// MiniMax I (11-15): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home
+// sits 0x28 higher; the marker's address and the block copy's source are at the same distance from the entry stack pointer
+// in both, so the forty spare bytes lie below the homes and the rest of the gap is in the block bodies, which this round
+// did not move.
+// MiniMax E (11-16): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c, retail keeps the two entry flags in stack bytes where this build holds them in registers, and the item walk still differs.
+// score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
+// the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
+// before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
+// `update_position = fixed` skipped the position update after a bounce when the bit was clear (retail 0x10c136
+// tests the flag, bounce never touches it); (2) the 0.05 nudge before function_10c880 is added to the predicted
+// `position`, not to the hit point (0x10bac7 adds [position], only the later bounce nudges at 0x10c0ca use the
+// point); (3) the flow side vector is normal x flow (0x10beb0..0x10bef8), not flow x normal. Not kept: along_side and
+// along_flow are i,j,k dots in retail (0x10bf06..0x10bf22, 0x10bf96..0x10bfc2; the other three are j,i,k, as item_dot); dot3f
+// from vector_products.h gives that order and the same 824, but in the full build it costs matched 0x54590
+// (src/network_voice.cpp, 0 -> 2) through LTCG, so both stay item_dot (a rounding-order difference only).
+// Open behaviour differences: retail passes the node as a raw dword at hit+0x46 (push [esp+0x9e], 0x10bd2b) and
+// stores its low byte, ours zero-extends one byte (callee 0xb8bd0 only reads the word, `long` forms 887/902);
+// the type chain at 0x10bd1c compares 4 and falls into the same code either way (switch with case 4/default merges
+// it away, 837). Frame 0x154 versus 0x12c; entry Boolean publications ([esp+8], [esp+0x10]) and slot homes remain.
+// Frame forms (all behaviour-neutral): ray in an inner block 846 (frame 0x148); inner ray + scalar side vector 949
+// (0x130); + `x < 0 ? -x : x` instead of fabs 940 (frame 0x12c, 4013 bytes, slots all differ); scalar side alone
+// 925; cross3f into a vector 931; ternary abs alone 860; merged value_13a store 866; declaration reorders of
+// carrier_delta/collision with the 0x12c form 940 each.
+// MiniMax S (11-10): no new form, no lower score (824); the frame is 0x154 against retail's 0x12c, the two entry bit tests stay in registers here while retail keeps the bytes in stack slots and re-reads the flags word, and the definition pointer sits at 0x38 against retail's 0x1c. The 815 of the earlier round is the two-flag body (a separate flag for the definition bit and another for the position update); retail keeps one flag, set before the ray query and cleared only by the settle branch, so that body is not restored.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
+// MiniMax I (11-16): no new form, no lower score (824): retail extracts the two flag bits into a byte in the frame (mov byte ptr
+// [esp+8], al) where this build tests them in place, and this build's frame is forty bytes larger (0x154
+// against 0x12c); a named bool for the bits measures the same 824.
+// MiniMax E (11-15): no new form, no lower score (824): the frame is still 0x154 bytes against retail's 0x12c, so every stack home sits 0x28 further out, and retail keeps the two entry flags in stack slots where this build holds them in registers.
+// MiniMax G (11-13): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c,
+// the entry's flag byte differs (retail shifts the value and stores the parity byte where this
+// build tests a bit of a shifted register), and the walk still differs in the item table's own
+// expressions.
+// MiniMax B (11-12): no new form, no lower score (824): the frame is 0x154 against retail's 0x12c and the entry's flag
+// byte differs - retail shifts the value and stores the parity byte where this build tests a bit of a shifted register;
+// the permuter on this address was killed by its time limit without a result.
 // Earlier: Frame 0x154 versus 0x12c, entry Boolean bytes and collision/carrier/rotation homes still differ.
 // Earlier: Frame 0x154 versus 0x12c and Boolean/vector homes remain.
 // Frame 0x154 versus 0x12c and Boolean/vector homes remain.
@@ -1374,6 +1476,37 @@ struct s_item_flags_view_10b850
 // then two reversed geometry-label priorities: 863/863/863/863/863/863/863/863. NOT kept: all regress and lengthen;
 // original classification, observations, helpers and full body restored. Frame 0x154/0x12c
 // and entry Boolean/carrier/collision/rotation homes remain.
+// P460: Corrected single gravity/query/settle update carrier char/signed-char/byte/short/word/int/long/dword: 824/824/824/843/843/858/858/858. NOT kept: native frame and entry-byte homes remain; original behavior fixes and whole body restored.
+// Earlier: the frame is 0x154 against retail's 0x12c, the entry's flag byte differs
+// (retail shifts the value and stores the parity byte where this build tests a bit of a shifted
+// register), and the walk still differs in the item table's own expressions.
+// P482: Standard copies at settled velocity/published spin-axis/paired contact-position
+// outputs, subsets 1..7, then all with fallback position: 824/862/862/824/824/862/862/862.
+// NOT kept: ties/regressions; spin-axis copies grow to 4137 bytes. Original semantic fixes,
+// every record assignment, input observation, include, helper and complete body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/contact/rotation homes remain.
+// P486: Existing shared direction rotation at matrix forward/up and item forward/up,
+// individuals, matrix/item pairs, all and paired forward outputs:
+// 821/838/843/821/830/823/841/824. NOT kept: three-/one-point best gains; frame remains 0x154.
+// Original private helper, four call sites, declaration set and complete body restored.
+// MiniMax H (11-14): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so every stack home sits 0x28 further out, and retail still keeps the two entry flags in stack slots where this build holds them in registers.
+// T108: Ordinary inline motion/marker-query/marker-publish/inverse-point metadata: eight at 824;
+// existing point-to-point query wrapper 857 (frame 0x148 versus native 0x12c), same 4096 bytes.
+// NOT kept: no qualifying gain; original complete body and every provider declaration restored.
+// P509: Exclusive geometry/object contact-result graphs with guarded/logical tag fallback:
+// 852/897/857/878/828/877/821/876. NOT kept: best gains three at retail length;
+// frame stays 0x154/0x12c. Original classifier, helpers and full body restored.
+// P523: Actual collision-kind long/dword/int/unsigned-int full-width fields, flag-byte
+// unsigned/signed fields and material/surface word fields: eight at 824/4096. NOT kept:
+// frame remains 0x154/0x12c; original record, helpers, semantic fixes and body restored.
+// P571: Actual flow-magnitude nonzero/zero decision at its consumer, bool/byte/short/long:
+// 817/817/817/817/817/817/817/817. NOT kept: no byte match; the seven-point improvement is below the eight-
+// point gate and grows beyond native 4096 bytes. Original magnitude test, corrected flow operands and
+// complete body restored.
+// P585: Existing carrier-query result on the corrected single-position-flag graph, false/true
+// defaults, positive/complementary exhaustive bool, then false-default char/byte/short/long:
+// 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
+// misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1391,9 +1524,9 @@ void __stdcall function_10b850(long object_index)
         bool carrier = function_109a00(object_index, &local_c01284_3, true, &carrier_delta);
         vector3f velocity = item->linear_velocity;
         vector3f angular = item->angular_velocity;
-        bool fixed = ((*(dword *)(definition + 0xbc) >> 2) & 1) != 0;
+        bool update_position = ((*(dword *)(definition + 0xbc) >> 2) & 1) != 0;
         bool settled = false;
-        if (!fixed)
+        if (!update_position)
         {
             velocity.k -= g_51e9c4->unknown0 * dt;
             local_c01284_3.k -= g_51e9c4->unknown0 * dt;
@@ -1402,7 +1535,7 @@ void __stdcall function_10b850(long object_index)
         vector3f ray = {position.x-item->position.x, position.y-item->position.y, position.z-item->position.z};
         s_collision_result_1697c0 collision;
         collision.unknown24 = NONE;
-        bool update_position = true;
+        update_position = true;
         if (function_1697c0(0x24909c0d, &item->position, &ray, item->ignore_object_index, NONE, &collision))
         {
             byte *hit = (byte *)&collision;
@@ -1410,9 +1543,9 @@ void __stdcall function_10b850(long object_index)
             point3f const &point = *(point3f *)(hit + 8);
             bool floor = normal.k > 0.707099974155426f;
             bool slow = 1.5f > -item_dot(local_c01284_3, normal);
-            position.x = point.x + normal.i*0.05f;
-            position.y = point.y + normal.j*0.05f;
-            position.z = point.z + normal.k*0.05f;
+            position.x += normal.i*0.05f;
+            position.y += normal.j*0.05f;
+            position.z += normal.k*0.05f;
             function_10c880(object_index, (s_item_impact const *)&collision, &velocity, &position);
             bool surface = collision.type == 1 || collision.type == 3;
             if (collision.type == 4)
@@ -1431,7 +1564,7 @@ void __stdcall function_10b850(long object_index)
                 real dot = item_dot(angular, normal);
                 angular.i = normal.i*dot; angular.j = normal.j*dot; angular.k = normal.k*dot;
                 item->spin_axis = normal;
-                fixed = false;
+                update_position = false;
                 settled = true;
                 function_b9b90(object_index, true);
                 if (collision.type == 1 || collision.type == 3)
@@ -1476,7 +1609,7 @@ void __stdcall function_10b850(long object_index)
                         if (length != 0.0f)
                         {
                             real amount = g_510c54->rate * 12.0f;
-                            vector3f side = item_cross(flow, normal);
+                            vector3f side = item_cross(normal, flow);
                             real along_side = item_dot(side, local_c01284_3);
                             if (fabs(along_side) < 3.25f) item_add_scaled(&velocity, side, along_side < 0.0f ? -amount : amount);
                             real along_flow = item_dot(flow, velocity);
@@ -1498,7 +1631,6 @@ void __stdcall function_10b850(long object_index)
                 if (function_168f40(0x24909c0d, (s_vehicle_ray const *)&position, object_index, NONE)) position = item->position;
             }
             item->ignore_object_index = NONE;
-            update_position = fixed;
         }
         if (update_position) function_b75a0(object_index, &position, NULL, NULL, (s_location *)((byte *)&collision + 0x1c), false);
         if (carrier) item_add_scaled(&velocity, carrier_delta, 1.0f);
@@ -1594,7 +1726,43 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax R (11-16): no new form, no lower score (140): the release scale's two factors swapped in the source leave the
+// bytes unchanged (the compiler picks the operand order), retail clears the release flag with one byte read-modify-write
+// where this build splits it into a load, an and and a store, retail keeps two copies of the release impulse (the flag-5
+// path computing the first two components and the flag-6 path its own) where the shared helper here gives one copy that
+// both paths jump to, and the returned byte still sits at esp+0xe where retail keeps it at esp+0xf. This round's battery
+// on the flag clear (the byte-bitfield view, a byte pointer local, the plain assignment and the inverted mask) leaves all
+// four at 140 with the same bytes: this build always splits the byte mask into a load, an and and a store.
+// MiniMax H (11-11): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the damage data block and the position local still sit twelve bytes below retail's.
+// MiniMax A (11-06, run 52): no new form, no lower score (140) - retail keeps the two release
+// impulse paths apart with the flag clear at a different point in each, so splitting ours that way
+// (223) and giving the clear a byte-unit bit field (206) both score worse.
 
+// MiniMax E (11-15): no new form, no lower score (140): the return byte still sits at esp+0xe where retail keeps it at esp+0xf, and the release flag is still cleared with a load and a store where retail masks the byte in place.
+// MiniMax B (11-13): no new form, no lower score (140): retail clears the release flag with one byte read-modify-write (a narrower cast of the field's own address, a banned form) and keeps two separate copies of the release impulse, one clearing the flag before it and one after it, where a shared helper gives one copy and the two calls then merge.
+// MiniMax G (11-12): no new form, no lower score (140): nothing new this round; frame 0xac agrees; the return bytes +0xe/+0xf,
+// the release-byte read-modify-write and the tail still differ.
+// MiniMax G (11-12): no new form, no lower score (140): frame 0xac agrees; the return bytes +0xe/+0xf, the
+// release-byte read-modify-write and the tail still differ.
+// MiniMax H (11-12): no new form, no lower score (140): the return byte still sits at esp+0xe where retail has esp+0xf, the release byte is still cleared with a load, an and and a store where retail masks the byte in place, and the transform helper is still called out of line.
+// MiniMax G (11-11): no new form, no lower score (140); the return byte sits at esp+0xe where retail puts it at esp+0xf, the
+// release flag is cleared by a load, an and and a store where retail masks the byte in place, and retail expands the transform
+// helper into the call site while this build calls it out of line from a file this lane may not edit.
+// MiniMax S (11-10): no new form, no lower score (140): the return byte sits at esp+0xe where retail puts it at esp+0xf, the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, our frame carries an extra byte local at 0x12, and the damage data block sits twelve bytes below retail's.
+// MiniMax I (11-10): no new form, no lower score (140); the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
+// MiniMax D (11-05): no new form, no lower score.
+// MiniMax S (11-14): no new form, no lower score (140): the release helper was respelled so that the rate is
+// loaded into a local of its own before the direction pointer, which compiles to the same code; retail's spin
+// branch writes the flag byte directly and keeps no home of its own for the spin bit, and retail keeps two
+// separate copies of the release impulse where this build merges them into one.
+// MiniMax I (11-15): no new form, no lower score (140): the release byte is still cleared by a load, an and and a store
+// where retail clears it with one byte read-modify-write - neither the raw byte mask nor the byte-bitfield view
+// (s_item_flags_view_10b850) makes this build emit the memory form; dropping the spin local so that the returned byte
+// could sit at esp+0xf costs eighteen bytes of body length (874 against 892) and raises the score to 190, so the body stands.
+// MiniMax S (11-16): no new form, no lower score (140): the release byte is still cleared by a load, an and and a store where retail
+// clears it with one byte read-modify-write, and the return bytes, the event-point homes and the location-call setup remain; that call
+// setup follows the allocation callee 0xba300's own convention (retail takes the object in ecx and the location in eax), whose body is
+// in another file: BLOCKED-BY 0xba300; the permuter (annealing, 420 s, 15 tries) found no variant below 140.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
@@ -1851,6 +2019,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N375: Complete post-decrement mode/count expiry admission in positive/complementary
 // native truth domains, eight valid forms 140 each; original full body restored.
 // NOT kept: no byte match or frame/home gain; return byte and release/event homes remain.
+// MiniMax C (11-06): no new form, no lower score - retail still emits the release impulse once per clear
+// branch and still clears the flag byte with a read-modify-write on both paths; the callee 0xba300's
+// convention lives in src/unknown_0b8bd0.cpp, which this lane may not edit.
+// Earlier note: the return byte and the release-byte read-modify-write still sit in other homes,
+// and the callee's parameter order is fixed in a file this lane may not edit.
 // N377: Existing release producer time/gain root pointers, both and native references,
 // then release-completion success at first/second/both sites and accumulated completion:
 // 140/140/171/171/140/140/140/140. NOT kept: no equality or gain; full helper and body restored.
@@ -1863,6 +2036,62 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // submission in the existing producer or its returned output: 169/140/140/140/140/171/171/171.
 // NOT kept: ties/regressions; original private producer and full body restored. Return byte,
 // release-byte RMW/tail and contact/event homes remain.
+// MiniMax A (11-11): no new form, no lower score (140); the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write (the flag is a bitfield in a header-owned struct); the callee 0xba300's parameter order is fixed in src/unknown_0b8bd0.cpp, which this lane may not edit.
+// MiniMax E (11-08): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
+// MiniMax E (11-09): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
+// P402: Complete definition-flag input at original gate, dword/long/unsigned-int/int/word/short/byte/signed-
+// byte domains:
+// 140/141/140/141/142/142/195/195. NOT kept: one-use field inputs require equality; original direct flag
+// expression, two-use spin, release helper and full body restored. Return byte and release/contact/event homes
+// remain.
+// MiniMax R (11-10): no new form, no lower score; the release flag is still cleared by a load and a store where retail clears it with one byte read-modify-write (a byte pointer cast, a masked assignment and a narrowed mask all leave the code as it was), the return byte still sits at esp+0xe where retail puts it at esp+0xf, and the callee 0xba300's parameter order is fixed in a file this lane may not edit.
+// MiniMax B (11-11): no new form, no lower score (140); the return flag still lands on esp+0xe where retail keeps
+// it on esp+0xf, the release byte is still cleared with a load, an and and a store where retail masks the byte
+// in place, and retail expands the transform helper into the call site while this build calls it out of line
+// (its declaration is in src/unknown_09b910.cpp).
+// MiniMax A (11-13): no new form, no lower score (140): retail clears the release flag with one byte read-modify-write (a narrower
+// cast of the field's own address, a banned form), keeps two separate copies of the release impulse, one clearing the flag before it
+// and one after it (a shared helper gives one copy and the two calls then merge), and returns the byte at esp+0xf with the flag byte at
+// esp+0x13; dropping the spin flag's own local and setting the flag inside that branch moves the returned byte to esp+0xf but leaves
+// the body 874 bytes long (190), and giving the flag6 path its own copy of the impulse makes it 936 bytes (227).
+// P442: Actual activity-derived accumulated result, bool/byte/short/long, positive then
+// complementary outcomes: 273/277/232/239/197/196/194/196. NOT kept: no exact result-home repair;
+// original parent, spin, release, event and full body restored. Return/release/contact homes remain.
+// P478 m3: Standard damping transform, origin/position/both coordinate copies,
+// complementary/logical Boolean spin joins, parent predicates and countdown predicates:
+// 231/165/164/181/212/170/195/195. NOT kept: no native return/release/event home repair;
+// original complete body and helpers restored. Unsupported bitwise-OR functor did not compile, uncredited.
+// P480 m3: Point lifetime through origin/pair publication, damage/expiry event storage,
+// mutable/readonly returned receiver: 140/140/140/140/140/140/140/140. NOT kept: no native
+// return-byte or event-home repair; original full body, helpers and interfaces restored.
+// P486: Actual last surface/attachment/spin/activation/timer update ordinal,
+// byte/char/signed-char/short/word/int/long/dword: 251/251/251/252/252/251/251/251.
+// NOT kept: no return-byte/release/event-home repair and larger extents;
+// original Boolean result, spin capture, helpers and entire body restored.
+// T104: Returned contact-transform/origin-setter chains, mutable/readonly and actual filled
+// point-query outputs: 178/171/180/171/180/157/176/176. NOT kept: all regress; original
+// two-use spin, release helper, paired setters and full body restored. Return/release/event homes remain.
+// MiniMax H (11-14): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where retail clears the byte in place, and the return byte still sits at esp+0xe where retail puts it at esp+0xf.
+// T108: Ordinary inline metadata at existing node-transform/point/owner/point-transform providers, four isolated, three pairs and all:
+// 140/140/140/138/138/138/140/138. NOT kept: no qualifying native-shape gain or equality; original complete source
+// and every provider declaration restored. Native frame and first storage/scheduling gap remain.
+// P509: Two-consumer isolated spin-bit mask across damping, char/signed-char/byte/short/
+// word/int/long/dword: 174/174/174/169/169/173/173/173.
+// NOT kept: all regress at 892 bytes; original Boolean capture, helper and body restored.
+// Return-byte, release RMW/tail and contact/event homes remain.
+// P523: Actual object activation bit 8, dword/long/word/short/byte/signed-char/char/bool
+// allocation units: 140/201/205/203/205/205/205/205. NOT kept: no exact activation/return-
+// byte or release/event recovery; original record overlay, entry test and full body restored.
+// P527: Native coordinate-array impulse/damping/both for loops, then while loops;
+// independent fixed-three do loops on the current spin/paired-setter graph:
+// 171/140/140/171/140/140/256/208. NOT kept: no exact return-byte/release/event-home recovery; original
+// shared impulse producer, damping statements and complete body restored.
+// P540: Eight coordinated contact-provider orders at its definition and both callers, 140 each. NOT kept: no return-byte/release/event-home recovery; original contracts, calls, helper and entire body restored.
+// MiniMax C (11-16): no new form, no lower score (140): retail still clears the release flag with one byte read-modify-write where this build splits it into a load, an and and a store, and retail still keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
+// MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where
+// retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf, and retail still
+// keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

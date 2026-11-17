@@ -2,6 +2,7 @@
 #include "unknown_0259d0.h"
 #include "unknown_030290.h"
 #include "globals.h"
+#include "reset_storage.h"
 #include <math.h>
 #include "normalize3d.h"
 #include "vector_products.h"
@@ -68,7 +69,6 @@ void __stdcall function_31f50(long index, point3f const *origin, vector3f const 
 
 /* ---- globals ---- */
 #define BIT(n) ((bool)((g_4ba014 >> (n)) & 1))
-byte *g_4858c4;
 long g_4ba134;
 
 /* the vector scaled and rotated into the camera's frame (no translation) */
@@ -227,6 +227,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 }
 
 // MiniMax D (run 46): no new form, no lower score.
+// MiniMax C (11-17): score 195 (was 195): no lower score; the frame is still 0x30 against retail's 0x2c
+// because the second point transform spills both its scaled x and scaled z into two local slots, where
+// retail keeps them in xmm7 and xmm4 and spills only the scaled z into the scale parameter's home, so our
+// inverse defaults land in one local and in that dead parameter slot instead of the two fresh locals at
+// [esp+4] and [esp+8]. Tried: the three orders of the scaled components inside transform_point, a hoisted
+// scale local and the swapped multiply operands, all 195 with identical code.
 // score 195 (was 195): Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
@@ -494,6 +500,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
 // to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
 // through a pointer local 216.
+// Round 217 (m3 lane 3, fast; m = masked aligned count, base 195 m82): the parameters (d, a, camera, scale, ...) with every declaration and call 193 (m82, under the bar); fa/fb dropped, the inverses used directly with `inv_a = inv_b = 1.f` in the orthographic arm 207 (974 B, m53),
+// the two stores in either order or chained the other way 207; that with the parameters 205 (m53); on it displaced rows zyx 199 (968 B, m50), yzx 201, zxy 204, yxz 204, xzy 205; helper coordinates declared z, x, y 213 (963 B, m113), z, y, x 216, y, x, z 216 (971 B). Frame stays 0x30.
 // Round 66 (m3 lane 14, fast): the inverses used directly (no fa/fb) re-measured 207 (974 bytes); the scale default applied
 // inside the negate block 222 (972); the displaced and reversed points through the existing vector3f_add_scaled with 1.f and
 // -1.f, both/forward only/reverse only, 195/195/195 (same code: the unit factors fold); the reversed retransform under its own
@@ -508,6 +516,28 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // N396: Complete ordered epsilon outcomes, direct/exhaustive/default-false/default-true
 // bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
 // restored, native inverse homes and the second-transform X/Z spill remain.
+// MiniMax D (11-06): no new form, no lower score.
+// b6S (11-06, fast build 195, 985 bytes vs retail 955): statement-by-statement walk against retail, no behaviour difference
+// found. Checked: a/camera/scale defaults (cmove 0x30838 loads the pointer stored at 0x468788, the other two are addresses
+// 0x30854/0x3085d); b = a + d with the displaced sums (0x30872-0x30884); both transforms' scale tests at 0x30866/0x30935
+// and rows; perspective flag test 0x30988 (je 0x30b48 = orthographic: both factors 1.0, zero test skipped); `|tb.z| < eps` retransform
+// of a - d (0x30a15 jbe, 0x30a26-0x30a3d) and the re-test of tb.z after it (0x30b2d-0x30b3d); `|ta.z| < eps` keeps the 0 default
+// from [esp+4] (0x30b1c/0x30b27) and `|tb.z| < eps` the one from [esp+8] (0x30b3d/0x30b58); both factors tested against 0 with
+// `jnp` = equal only (0x30b61-0x30b6a, so NaN passes, as `!=` does); dx/dy = tb*fb - ta*fa (0x30b79-0x30b8d); negate = 0 - scale*d
+// (0x30b93-0x30bae); outputs stored before the success test (0x30bb9-0x30bbd), then `dx != 0 || dy != 0` -> 1 (0x30bcd) else 0
+// (0x30be2); factor-zero path stores 0 to both outputs, returns 0 (0x30bd9). Stack args scale/perspective/negate = [esp+0x34/38/3c]
+// (ret 0xc); callers 0x4f7e0 (0x4f951-0x4f969) and 0x4ff50 (0x500e3-0x500fb) push 1, 1, scale and use only al.
+// Operand order only (not behaviour; adds commute exactly): retail sums b as d.i + a.x, a.y + d.j, d.k + a.z (0x30872-0x30884);
+// the source has them the other way round. Writing retail's order gives 195 and the same code (the compiler picks the load order),
+// not kept. transform_point (outside this edit) sums right, up, forward; retail sums x*[camera+4] + z*[camera+0x1c] first,
+// then y*[camera+0x10] (0x308cc-0x308f2); an earlier round measured that order as 195 with the same code. Frame is still
+// 0x30 vs retail 0x2c (retail packs inv_a, inv_b, b, ta, tb into 11 slots; its a - d point reuses b's y/z slots 0x30a49/0x30a4f).
+// m3 lane 11 r110 (fast): the helper's scale bound by const reference 195 (same code); the displaced point bound
+// by reference for its sums and the second transform 268 (1001 B); the two inverses bound by reference in the
+// perspective block 195 (same code); the helper's rows through a camera reference 267 (998 B); the displacement
+// bound as `vector3f const &displacement = *d;` for the sums 193 (the z row then loads d first as retail, like the
+// (d, a, ...) parameter order without touching the callers; x still loads a first), with retail's operand text
+// 193 (same code), with the rows z, y, x 211 (979 B). Restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

@@ -4,7 +4,22 @@
 // child, with the wrapping side replaced by its child at the same key and
 // placement; the kind used with the two bodies the other way round turns what
 // it finds back.
+// Construction resolves the child pair once; later queries reuse that agent.
 #include "lane_b_wrapper_agents.h"
+
+// Construction establishes the parent before copying its placement. Query
+// forwarding below retains the shared body's placement-first construction.
+struct wrapper_creation_body_2e63a0 : body_2ea940
+{
+	wrapper_creation_body_2e63a0(body_2ea940 const *p, void const *where, wrapper_2f9950 const *wrapper)
+	{
+		parent = p;
+		placement = where;
+		void const *inner = wrapper->child;
+		key = parent->key;
+		shape = inner;
+	}
+};
 
 static __declspec(align(16)) const unsigned long g_4124a0[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
@@ -27,7 +42,7 @@ static __declspec(align(16)) const unsigned long g_4124a0[4] = {0x80000000, 0x80
 // @retail 0x2e63a0
 lane_b_wrapper_agent::lane_b_wrapper_agent(body_2ea940 const *a, body_2ea940 const *b, lane_a_dispatch *const *input, void *manager) : lane_a_agent_base(manager)
 {
-	body_2ea940 child(a, a->placement, (wrapper_2f9950 const *)a->shape);
+	wrapper_creation_body_2e63a0 child(a, a->placement, (wrapper_2f9950 const *)a->shape);
 	lane_a_dispatch *table = *input;
 	long first = ((typed_2ed170 *)child.shape)->type();
 	long second = ((typed_2ed170 *)b->shape)->type();

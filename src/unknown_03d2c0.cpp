@@ -22,6 +22,7 @@ struct s_3dd10_object_header
 void function_3dd10(long object_index, bool force);
 struct s_interface_function_context;
 void function_2c3b0(s_interface_function_context *context);
+void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 real __stdcall function_be8b0(long object_index, long name);
 struct s_object_list;
 extern s_object_list *g_4de2f4;
@@ -129,13 +130,280 @@ s_lighting_record *function_3db00(long object_index, real priority)
     function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
-// score 77 (was 77): retail keeps the result in esi and tests it before the
+// score 77 (was 77): from +0x54: the found path enters the merge test (retail jumps past it to the reload), the merge
+// block tests EAX (retail ESI), and the walk's NONE return folds to a constant inline (retail: trailing `mov eax, esi`
+// epilogue); 510 bytes against 518. Notes below, merged into one; m3 lane 11 r104's findings at the end.
+// MiniMax D (11-16): no lower score (77): the arrangement that reproduces retail's layout (the merge block's flag set
+// before the reload, the record block placed right after the found path) gives a byte-identical record block, but
+// MSVC then drops the merge test there as provably redundant, because the walk block has already returned when the
+// result is NONE (86); the arrangements that keep the test relayout the function instead (138), and moving the flag's
+// set or the record pointer's index stays at 77 or 79.
+// MiniMax D (11-16): no lower score (77): retail's walk exit jumps to a trailing epilogue at 0x3dfca and falls through to
+// the merge test at 0x3deee, which sets the flag (mov cl,1) between the test and the reload, while this build ends the
+// walk with its own epilogue and reloads the result into eax at the merge. Tried this round: the flag set before the
+// allocation's NONE test instead of after the walk block (115, 495 bytes), and the record pointer's index taken from the
+// merge's reload. The plain form that sets the flag on each path without copying the statement into both arms is still
+// missing.
+// MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
+// form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
+// stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
+// else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
+// MiniMax S (11-14): no new form, no lower score (77): the first difference is still the jump target at +0x54 and the block layout that follows it - retail keeps the result in ESI and tests it before the reload where this build copies it into EAX at the merge point and puts the cold "no result" return block ahead of the initialization instead of after it - and this body is 510 bytes against retail's 518; the forms tried this round (the flag set in both arms of the allocation test, the walk's NONE exit as a then-arm return, the allocation test inverted, the flag hoisted above the allocation) score 83 or worse, so the body stands.
+// Earlier (77): m3 lane 4 r196 note at the end; round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
+// m3 lane 4 r196 note at the end; round 116 (m3 lane 9, fast with 0x3db00 and 0x3dd10): lane 14 r84's `long result = NONE;` and
+// `if (result == NONE) { allocation; walk; }` skeleton with round 99's `if (result != NONE) initialize = true;` after the
+// walk (no walk return) 99 (491 B: the walk's NONE exit jumps to the end as retail, but the allocation and walk paths are
+// threaded over the merge test retail keeps); re-measured the 9 form (9, 519 B). Every spelling that keeps the merge test
+// sends the found path through it; every spelling that threads the found path threads or folds the other paths too.
+// MiniMax H (11-12): no new form, no lower score (77); this round tried the cached and the allocated index in one variable (151), the allocation test inverted (151), the flag starting true and cleared on the hit (130), the initialization nested in the allocation arm (176), the hit returning early (186), one guard for the two tests (132) and the early return moved to the tail (152), and the permuter over the function managed 129 tries in 900.4 s without a confirming build (best 71, baseline 71), so the merge's register choice stands.
+// Earlier at 77 (was 77): retail keeps the result in esi and tests it before the
+// retail keeps the result in esi and tests it before the
 // reload, ours copies it into eax at the merge point and puts the cold "no
 // result" return block ahead of the initialization instead of after it
 // (retail returns it with mov eax, esi; ours folds it to the constant).
+// MiniMax H (11-12): no new form, no lower score (77); this round tried the cached and the allocated index in one variable (151), the allocation test inverted (151), the flag starting true and cleared on the hit (130), the initialization nested in the allocation arm (176), the hit returning early (186), one guard for the two tests (132) and the early return moved to the tail (152), and the permuter over the function managed 129 tries in 900.4 s without a confirming build (best 71, baseline 71), so the merge's register choice stands.
+// MiniMax H (11-12): no new form, no lower score (77); this round added the flag set before the walk, the flag in
+// both arms of the allocation test, the allocation stored straight into the result and the allocation stored into the
+// result with the flag after the walk, and they score 115, 83, 116 and 141. What is left is that retail tests the
+// result in ESI at the merge and sends the failure to a trailing return where ours reloads the result into EAX before
+// the merge test, and the walk's NONE exit returns the constant -1 where retail returns the reloaded value.
+// MiniMax A (11-11, run 58): score 77 (was 77): no lower score; retail's cache-hit path stores the index and
+// jumps past the merge test straight to the record lookup, ours jumps into the merge test and reloads the index
+// into EAX there; the copy of the cached index into the result between the two tests hides the known condition
+// from the compiler, and every spelling that keeps one variable for the cached and the allocated index or moves
+// the merge test onto the cached index scores worse (155 and 36).
 // Tried: return NONE (77); the NONE test after the inner if (77); no early return (161);
 // "if (result != NONE) initialize = true; else return" (83); one variable for the
 // allocation and the result (141); result = cache_index at its declaration (148).
+// Round 99 (lane 16): the region lookup through the existing 0xba690 (count and states): 77 (same code; kept).
+// After the walk: `cache_index = result;` and both later tests on cache_index 79; only the early return on
+// cache_index 77; the walk's best index in its own local 162 (524 bytes), the same copied back through
+// cache_index 128 (522); no early return, `if (result != NONE) initialize = true;` 85 (504 bytes, aligned
+// 15: retail's block structure, the walk's NONE exit jumps to the end and the alloc success joins at the
+// second test; left: the join reloads the result into EAX where retail tests ESI, and ours keeps the result
+// in ESI across 0x3dd10 so the two epilogues merge); the same with cache_index = result and the final test
+// on cache_index 141 (518 bytes, aligned 24), with only the initialize test on it 85; `initialize = result
+// != NONE;` 116 (495); the walk as a forceinline helper writing the best index through a pointer 85 (same
+// code as the 85 form), returning it 108.
+// Round 101 (lane 16, fast with 0x3dd10): ours returns the constant on the walk's NONE path (`or eax, esi`, ESI known -1); retail
+// returns the variable (`mov eax, esi`) from a second epilogue after the main one. The early return returning cache_index 77,
+// `long result = NONE;` 77, `result = cache_index = record_pool_allocate(...)` 77 (all same code); one early return after the
+// if/else in place of the `if (result != NONE)` block 152 (497 bytes); the early return as `goto done` to the only return 85
+// (504 bytes, the two NONE tests merge).
+// m3 lane 15 r72 (fast with 0x3db00/0x3dd10): re-measured round 99's single-return form (`if (result != NONE) initialize = true;`
+// after the walk, no early return) 85 (504 bytes): its walk exit reaches an unfolded copy of the final return as retail's does.
+// New: on that form, `long result = cache_index;` with one inverted test 168 (491 bytes); one variable for lookup, allocation,
+// walk and return 129 (504) (on main it re-measures the listed one-variable form, 141 then, 151 now, 508); `initialize = true;` then `if (result == NONE) return result;` at the end of the
+// else arm without the outer test 145 (508), with the walk's early return kept too 138 (518 bytes: the else arm moves to the end
+// and both returns fold to `or eax, -1`); the found test inverted with the found arm as the else 77 (same code), on round 99's
+// form 157; the outer `if (result != NONE)` dropped (it is redundant after main's else arm) 86 (506), with round 99's inner
+// test 98. Finding: with no test between the found arm and the record lookup (the last two forms), the found path jumps
+// straight to the lookup and the lookup, the 0x3dd10 call setup and the reload after it are retail's exactly; retail keeps
+// its NONE test after `initialize = true` on the allocation and walk paths only. VC threads a join only from a test of the
+// same variable just before it (diagnostic: the found test written NONE-last on `result` threads the found arm, 172; written
+// NONE-last on cache_index it does not, 96): a copy of the tested index (`result = cache_index`) does not carry the knowledge.
+// Goto forms to the one final `return result;` (match-only): the walk's early return kept, `initialize = true;` then
+// `if (result == NONE) goto done;` closing the else arm, outer test dropped 83 (508 bytes: from the walk's exit on, the C
+// test, the record lookup, the 0x3dd10 call and the main epilogue are retail's; left: the walk's NONE return, inline and
+// folded to `or eax, esi` where retail jumps to an unfolded second epilogue after the main one, `mov eax, esi`); both NONE
+// exits as that goto 85 (504: the epilogues merge and the join loads result into EAX); the same with result declared first 85;
+// the second NONE test ahead of `initialize = true;` 99 (491), with no walk test 99; round 99's inner test then the goto 99;
+// the inner test in the walk arm with an else 100; re-measured round 101's early return as `goto done` 85. Matched 0x23600 shows
+// the second epilogue is VC's copy of a single return for a path that holds the value in a register.
+// M3 lane 8 r151 (fast; control 77): retail's found path skips the merge test on a constant, not on the index: with the
+// merge test spelled `!initialize || result != NONE` (diagnostic, an implied test) the found path jumps straight to the
+// record block and the merge block becomes retail's `cmp esi, -1; mov cl, 1; je` (83, 508 bytes; only the walk's NONE exit
+// still differs: ours inline returning the constant, retail a second epilogue at the end returning ESI). Our build folds
+// `return result` after any direct NONE test of result to the constant (the walk exit returning cache_index, a copy of
+// result tested, `result == cache_index`, the result typed dword, the walk writing through a pointer: 83/83/83/83/83; on the
+// plain body dword 77 and the pointer 77, same code). New forms: the found test as the else arm of an alloc-first
+// `cache_index == NONE || owner != object_index` 77 (same code); `if (initialize && result == NONE) return result;` ahead of an
+// unconditional record block 138 (518 bytes, merge block as retail, the else arm laid out after the main return), with
+// `return NONE` 138; the NONE test with its return at the end of the else arm, record block unconditional, 138 (518 bytes);
+// that without the walk's own return 145. Re-measured: the listed `if (result != NONE) initialize = true; else return
+// result;` 72 now (519 bytes: the walk's NONE return moves to the end as retail, but returns `or eax, -1`), with the merge
+// test spelled as above 87; one variable for the allocation and the result 141.
+// m3 lane 14 r84 (fast with 0x3dd10 and 0x13ddd0, both matched; aligned rows in brackets, base 11): re-measured the
+// `initialize = true` in both arms of the allocation test 9 [6] (match-only: a flag set inside two tests). New: the
+// allocation arm first (`cache_index == NONE || owner != object_index`) closed by `initialize = true; if (result ==
+// NONE) return result;` with the record block unconditional 138 (518 B [125]: the record block becomes the found arm's
+// fall-through and the allocation arm moves after the return); `long result = NONE;`, the found test only setting
+// `result = cache_index`, then `if (result == NONE) { allocation and walk; initialize = true; }` and main's outer test 83
+// (508 B [16]: the found path now skips the merge test and enters the record lookup as retail; left only the walk's NONE
+// return, inline and folded to `or eax, esi` where retail has an unfolded `mov eax, esi` epilogue after the main one, and
+// one alignment pad); on that the 9 form's arms 86 (506 B), no walk return 101 (491 B, the two NONE tests merge), the
+// found test as a ternary initialiser 147 (524 B).
+// Round 171 (m3 lane 5, fast; control 77). Lead 9, match-only (plain 9, 519 B, aligned 3): `initialize = true` set in
+// both arms of the allocation test, `if (cache_index != NONE) initialize = true; else { walk; if (result != NONE)
+// initialize = true; else return result; }`, the outer test unchanged. Not kept: the flag is set inside two tests and
+// tested later, and main's direct form (one `initialize = true;` after the early return) is this 77 body. Left on 9:
+// the found path jumps to the result reload ahead of the merge test where retail's jumps past the test to the record
+// lookup (so retail compares ESI before reloading it), and the walk's NONE return at the end folds to `or eax, -1`
+// (retail `mov eax, esi`). On 9: `long result = NONE;`, `return NONE;`, `return cache_index;`, the merge test as `if
+// (result == NONE) return result;` before an unconditional block, the else-first found test, a dword cache index, a
+// dword result, both: 9 each (same code); one variable for the cached and allocated index 155 (the found path then
+// skips the test as retail, but the index is stored at its read and the allocation arm is laid out first); no walk
+// return 85 (round 99's code); `!initialize || result != NONE` (implied test) 87; the allocation stored into result
+// 138; the walk test as `if (result == NONE) return result; initialize = true;` 83; `return index` 117; result
+// assigned only in the allocation success arm 131; `long result = cache_index;` with no found arm 153; the merge test
+// on cache_index with `cache_index = result` in the walk arm 36 (the found path still enters the test); `cache_index =
+// result = index` in the walk with that test 159; one variable with initialize assigned in each arm 155. The NONE test
+// closing the else arm with an unconditional record block: with no walk return 86 (the walk's NONE return is then `mov
+// eax, esi` as retail, but inline, and the merge test goes for every path), with the walk return 87; main with that
+// test 138 (518 B, aligned 67, else arm laid out after the main return); the 72 form with it 86. Other forms: the
+// early return after the inner if 77 (same code as main); initialize assigned in every arm on the 72 form 142, on main
+// 143; the 72 form with the allocation stored into result 131; the single-return form with `!initialize || result !=
+// NONE` 98; the 72 form returning cache_index 72 (same code); the found arm's store through a pointer to result 72
+// (same code). Reading: VC drops the merge test only when every incoming path knows the result; a copy into result
+// between the cached-index test and the merge test hides it on the found path; a NONE return reached only through a
+// threaded jump stays unfolded.
+// MiniMax R (11-11): reached 9 from 77: the flag is now set in both arms of the allocation test (the allocation
+// succeeded, or the walk found a record) instead of after the walk, which is the same behaviour and gives retail's
+// merge block; left: the found path reloads the result from its stack home before the merge test where retail tests
+// the register value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail
+// returns the reloaded value, and the function is one byte longer than retail's.
+// MiniMax H (11-12): no new form tried, no lower score (77); retail's body was read again instruction by instruction.
+// Its merge block (after the allocation and after the walk) is `cmp esi,-1; mov cl,1; je`, so the flag is set at the
+// merge and the cached path jumps past the merge straight to the record lookup, while ours reloads the result into EAX
+// before the test and keeps the flag in a byte of its own. The walk's exit jumps over the return where retail jumps to
+// it, and retail's init block copies the four state blocks itself (a 16-byte copy loop over an array in the object,
+// with the counts at 0x118 and 0x11a) where ours calls function_ba690 and copies with memcpy, so the score is not only
+// the merge block. The plain forms that set the flag on each path keep the score where it is.
+// Earlier at 77 (was 77): the flag is set in both arms of the allocation test now, which gives retail's merge block;
+// left: the found path reloads the result from its stack home before the merge test where retail tests the register
+// value first and reloads it after, the walk's NONE exit still returns the constant -1 where retail returns the
+// reloaded value, and the function is one byte longer than retail's.
+// MiniMax R (11-11), NOT kept (coordinator 11-11): 77 -> 9 with the allocation test inverted (cache_index != NONE first) and `initialize = true` written in both arms, the oldest-record search's arm setting it when a record was found and returning otherwise (a statement copied into both arms: kept only with a byte match); body at 77. Lead: retail sets the flag on each path; find the plain form that does that.
+// Round 116 (m3 lane 12, fast with 0x3db00 and 0x3dd10; control 77): the walk as a `for` loop with the next-index call as
+// its increment 77 (same code). Correction to MiniMax H (11-12) above: ours inlines 0xba690 here as retail does (the same
+// `movsx [eax+0x11a]`, `movsx [eax+0x118]`, divide by ten and `rep movsd`/`rep movsb` copy loop); all 77 differences are
+// the block layout from +0x54 (the found path, the merge test and the walk's NONE epilogue). No untried natural form found
+// that changes this code.
+// m3 lane 14 r89 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the found test held in a named bool 77
+// (same code); the merge and initialize tests joined as `result != NONE && initialize` 132 (506 B: the record pointer
+// then comes after the initialize test, retail computes it before); the walk's best index stored before its age 79;
+// the negative-age reset as a ternary 77 (same code); the found test written `!(cache_index == NONE || owner !=
+// object_index)` 77 (same code). Re-measured: the walk's NONE exit returning cache_index 77. As round 116 found, no
+// untried natural form changes the layout from +0x54.
+// M3 lane 13 r89 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the flag computed from the found test, `bool
+// initialize = cache_index == NONE || owner != object_index;`, then `if (initialize) { allocation } else result = cache_index;`
+// 157 (498 bytes), with the arms the other way round 148 (495 bytes); the cache index stored into the object before the four
+// state copies 107; `state_count`/`states` declared at the top 77 (the code changes); the tail as `if (initialize && result !=
+// NONE)` 176 (488 bytes). Re-measured: the record pointer inside `if (initialize)` 132 (506 bytes, the listed joined-test 132).
+// Rebuilt for reading: 9, 83, 85, 86, 138, 145. VC folds `return result` after any NONE test of result (`or eax, esi` / `or
+// eax, -1`); retail's walk exit returns the register unfolded from a second epilogue, which no listed spelling gives.
+// M3 lane 4 r196 (fast with 0x3db00/0x3dd10, both stay matched). A two-function LTCG link harness (build/r196/h/h3dd.py and
+// gen3dd.py of m3-lane4, about 1 s a form; it reproduces this body's code and the listed 9 form's) screened 120 forms: found
+// arm (if/else, inverted, `result = NONE` then `if (result == NONE)`), walk exit (return, none, goto to the only return,
+// `if (result != NONE) initialize = true; else ...`), merge (guarded, `!initialize ||`, closed arm). Every goto form merges
+// the two epilogues on ESI and every explicit walk return folds to `or eax, esi`. Real: `result = NONE`, the found test only
+// setting result, `if (result == NONE) { allocation; walk; if (result == NONE) goto done; initialize = true; }` and the only
+// return at `done` 85 (504 B); main with the walk's return as that goto 85 (504 B); the first with the walk closing `if (result
+// != NONE) initialize = true; else goto done;` 100 (491 B); the first with no walk exit test 101 (491 B); main with that close
+// 85 (504 B).
+// P472: Byte/char/word/short initialization decision, integer negative-age normalization, promoted age/oldest/both: 77/77/74/74/140/160/136/164.
+// NOT kept: word/short gain three, below the threshold; other scalar-domain forms tie or regress. Original merge, scan and full body restored; cached-edge and trailing-return layout remain.
+// M3 lane 6 r179 (fast with 0x3db00 and 0x3dd10, both stay matched; control 77): the cached record's address named ahead of the
+// found test 77 (same code); `initialize` declared first 79 (first difference +0x19); the walk's best index stored before its
+// age 79; the walk's first index declared ahead of the oldest age 91; the negative-age test as `0.0f > age` 77 (same code); the
+// record pool read once into a function-scope local used for all six pool accesses 77 (same code).
+// P509: Ordinary inline visibility at allocation/scan/state-output/update providers,
+// four isolated, three update pairs and all four: 77/77/77/77/77/77/77/77.
+// NOT kept: no cached-hit/merge/trailing-return equality; every declaration and body restored.
+// m3 lane 15 r85 (fast with 0x3db00, 0x3dd10 and 0x3d2c0, all MATCH; control 77, register- and stack-masked aligned 20).
+// Retail's own code shows the found path skips the merge test while the allocation-success path tests the allocated index
+// again (`cmp esi, -1; mov cl, 1; je`), so the merge test is on a copy of the allocation test's variable. Grid on lane 14
+// r84's base (`long result = NONE;`, the found test only setting result, `if (result == NONE) { allocation; walk ... }`),
+// walk exit x initialize x merge variable: no exit 101/101, 99/146, 101/134; main's exit 83 (re-measured)/137, 83/137,
+// 111/165; `cache_index = result;` closing the walk 101/104, 99/141, 85/141; that copy then `if (cache_index == NONE) return
+// result;` 83/79 for each initialize form (initialize as `= true`, `if (result != NONE)`, `if (cache_index != NONE)`; merge
+// on result/cache_index). Best structure: the copy closing the walk, `if (cache_index != NONE) initialize = true;` and the
+// merge on result, 85 (504 B, masked 12): the walk's NONE test, its unfolded `mov eax, esi` return and the merge test on ESI
+// are retail's; left: the join reloads result into EAX ahead of `je` (the found path brings it in EAX) where retail reloads it
+// into ESI after, and result stays in ESI across 0x3dd10 so the two epilogues merge. On that form: returning cache_index 146,
+// storing it into the object 148, both 161, the record from cache_index 147, all three 151. Also new: the object's cache
+// index read straight into the returned variable with the allocation in its own local (`allocated`), exits as main 148,
+// `if (cache_index != NONE) initialize = true;` 168, with `else return` 153, inside the walk arm 152 (the found path then
+// skips the test as retail, but the index is stored at its read); main with `cache_index = result;` after the walk and the
+// merge on cache_index: the exit tested on result or cache_index, returning either, 79 in all four, no exit 104.
+// On the listed 9 form (initialize set in both arms of the allocation test): re-measured 9 (519 B; left the found path's jump
+// into the reload ahead of the merge test, the merge reload/test order and the walk's folded `or eax, -1`); new on it,
+// `cache_index = result;` closing the walk with the test on cache_index, returning result or cache_index, 9/9 (same code),
+// the copy without the else-return 85; with the merge on cache_index 156/87/87/100. On lane 14 r84's `result = NONE` base
+// with the 9 form's arms: 9's walk exit 86 (re-measured), copy then test 86, copy alone 100, `if (result != NONE)
+// initialize = true;` alone 100; merge on cache_index 159/86/100/170.
+// M3 lane 11 r104 (fast with 0x3db00 and 0x3dd10, both matched). New lead: the merge test written `if (!initialize ||
+// result != NONE)` on main's body 83 (508 B): the found path then skips the test as retail (flag threading), and every
+// instruction from the merge block (`cmp esi, -1; mov cl, 1; je`, the reload of the result into ESI after it) to the
+// main epilogue (result reloaded from its home after 0x3dd10) is retail's; only the walk's NONE return is left (ours
+// inline with `or eax, esi`, retail a trailing epilogue with `mov eax, esi`). On that merge: the walk closed by
+// `cache_index = result` with the exit tested on it 83 (still folded), the exit as `if (result != NONE) cache_index =
+// result; else return result;` 83 (the dead copy folds back), the exit test after the walk block 86, no walk exit 101
+// (491 B), the walk keeping its pick in cache_index 147, the copy plus `if (cache_index != NONE) initialize = true;` 104
+// (521 B, the flag in a stack byte), the exit as a jump to the only return 85 (504 B: the two epilogues merge on ESI),
+// lane 5 r171's 9 form 87 and the T form below 87 (both drop the merge test altogether: the flag is then set right
+// after a test of the result). The found path as a `goto` to a label at the record lookup (diagnostic): on main 83 (same
+// code as the merge above), with the copy 83, with the copy-and-flag form 85, on the 9 form 87, on T 87. Also new:
+// `if (result != NONE) initialize = true; else return result;` once after the walk block (T; a flag set in a test,
+// match-only) 72 (519 B): the found path is threaded and the walk return trails as retail's; left the merge block's
+// EAX (the found path's register; retail reloads into ESI after the test) and the folded trailing return (`or eax, -1`
+// before the pops for retail's `mov eax, esi`); T returning cache_index 72 (same code); the 9 form with the walk closed
+// by the copy 9 (same code); the walk keeping its pick in cache_index with the plain merge 151; the exit test after the
+// walk block on main 77 (same code); the walk exit as `if (result != NONE) cache_index = result; else return result;`
+// with the object's cache index stored from cache_index (a live copy) 149 (521 B), with the implied merge 144 (519 B;
+// both change the frame at +0x2). Lead: retail's walk exit is a separate trailing return that is not folded while the
+// merge block keeps its test; no form here gives both.
+// MiniMax G (11-13): no lower score (77); the flag set in both arms of the allocation test reaches 9 again, but that is the
+// form the coordinator reverted on 11-11 (a statement copied into both arms, kept only with a byte match), so the body
+// stays as it is; the walk's NONE exit spelled as a then-arm return 83, the allocation test inverted with the flag in the
+// else arm 83, the flag hoisted above the allocation 116, and the permuter over the 9 form found nothing better.
+// MiniMax S (11-14): no new form, no lower score (77): the first difference is still the jump target at +0x54 and the block layout that follows it - retail keeps the result in ESI and tests it before the reload where this build copies it into EAX at the merge point and puts the cold "no result" return block ahead of the initialization instead of after it - and this body is 510 bytes against retail's 518; the forms tried this round (the flag set in both arms of the allocation test, the walk's NONE exit as a then-arm return, the allocation test inverted, the flag hoisted above the allocation) score 83 or worse, so the body stands.
+// M3 lane 7 r163 (fast with 0x3db00/0x3dd10, both MATCH): the allocation as `result = cache_index =
+// record_pool_allocate(...)` 77 (same code); the walk's NONE return after `initialize = true;`, outside the walk block,
+// 145 (508 bytes); the found arm without braces 77; the merge test as `if (result == NONE) return result;` before an
+// unconditional record block 79 (507); the walk step's ternary as `index != NONE ? ... : 0` 81.
+// M3 lane 2 r87 (fast with 0x3db00/0x3dd10/0x3d2c0): the 9 form re-measured 9 (519 B); on it `initialize` declared first
+// 9 (same code), the cached index read straight into result in the found test 153 (506 B), the walk closed by `if (result
+// == NONE) return cache_index; initialize = true;` 83 (508 B), `if (result == NONE) return result;` closing the else arm
+// with the record block unconditional 87 (504 B); on main the three record lookups through a three-use inline getter 77
+// (same code). Original body restored.
+// MiniMax C (11-16): no new form tried this round, no lower score (77): the body is still 510 bytes against retail's 518 and the blocks'
+// MiniMax C (11-16): order still differs in the ways the notes above record.
+// Round 125 (m3 lane 16, fast with 0x3db00/0x3dd10, both MATCH; control 77): one variable for the cached and the allocated
+// index, early walk return kept 151 (508 B; the found path still enters the merge test, the index stored at its read); lane 14
+// r84's skeleton (`long result = NONE;`, the found test only setting result, `if (result == NONE) { allocation; walk; if (result
+// == NONE) goto done; initialize = true; }`, the only return at `done`) 85 (504 B), on it `initialize` declared first 85, the
+// found arm re-reading the object's field (`result = *(long *)(object + 0xcc);`) 150, the cached index as `long const &` to the
+// field 85. Reading of the 85 form: from the found test to the 0x3dd10 call it is retail's but for registers; the found path
+// brings the result in EAX, so the merge block preloads EAX (retail reloads ESI after the test) and the init tail keeps the
+// result in ESI across 0x3dd10, so one epilogue serves every path where retail has the reloading main epilogue plus the walk
+// exit's `mov eax, esi` copy.
+// P565: Cached/returned/scanned index signed/unsigned eight-byte homes, then full
+// domains: 167/168/171/167/168/171/252/252. NOT kept: no native merge/trailing-return
+// equality and narrow indices in retail; original complete body restored.
+// M3 lane 12 r133 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77): the walk's pick written through a `long *`
+// to result (diagnostic) 77 (same code); `long initialize` 75 at 518 bytes (only the flag's wider `xor ecx, ecx` / `mov
+// ecx, 1` / `test ecx, ecx`; the layout from +0x54 is unchanged, so the length match is a coincidence); the walk's steps
+// through the existing record_pool_next_used (0x16bbc0) 220 (442 bytes: called, not inlined); the record typed as
+// s_3dfe0_cache (parent, sample/update times, valid/initialized) at the owner test, the age and the init stores 77 (same
+// code); `initialize = true;` closing each allocation arm (no early-return change) 83 (508 bytes). Reading: in round 99's
+// single-return form (85) everything from the walk on is retail's except the merge block's EAX (found path) and the init
+// tail keeping the result in ESI across 0x3dd10, which merges retail's two epilogues. Body unchanged.
+// P586: Four-copy counter int/dword/short/word/char/byte/signed-eight-byte/unsigned-eight-byte:
+// 77/77/77/77/77/77/130/127. NOT kept: no cached-hit/merge/trailing-return recovery;
+// wide counters also grow frame/extent. Original memcpy loop and complete body restored.
+// M3 lane 7 r172 (fast with 0x3db00/0x3dd10, both MATCH; control 77, aligned 20 of 159 instructions): the walk as a
+// `for` over the iterator (init, test, step in the header) 77; the age clamp as `age = age < 0.0f ? 1000.0f : age;` 77;
+// the merge test as `NONE != result` 77; `initialize` declared ahead of `result` 77 (all the same code); `oldest`
+// declared at the top of the allocation arm, ahead of the allocation, 83. The aligned difference is only the merge
+// block (our found path enters the test, so the join reloads the result into EAX; retail tests ESI and reloads after
+// it), the walk's NONE return (inline and folded to `or eax, esi`; retail a trailing epilogue with `mov eax, esi`) and
+// one loop pad.
+// M3 lane 13 r104 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the walk's NONE exit returning the walk
+// iterator 119 (506 B: the exit jumps to the end as retail's, but into the main epilogue, and the walk's registers change);
+// no walk exit with `initialize = result != NONE;` closing the else arm 116 (495 B); the walk's exit as `return NONE;` 77
+// (same code); the tail nested as `if (initialize) { record; if (result != NONE) ... }` 166 (497 B); no flag (the found
+// path returning the cached index, the record setup unconditional after the allocation and walk) 186 (474 B).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
@@ -185,11 +453,11 @@ long __stdcall function_3ddd0(long object_index)
             *(long *)(record + 0x44) = object_index;
             *(long *)(record + 0x48) = (long)function_be8b0;
             *(long *)(record + 0xbc) = NONE;
-            byte *copy_object = ((s_3dd10_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-            byte *data = copy_object + *(short *)(copy_object + 0x11a);
-            long bytes = *(short *)(copy_object + 0x118) / 10;
+            long state_count;
+            byte *states;
+            function_ba690(object_index, &state_count, &states, NULL, NULL);
             for (long i = 0; i < 4; ++i)
-                memcpy(record + 0xc0 + i * 16, data, bytes);
+                memcpy(record + 0xc0 + i * 16, states, state_count);
             *(long *)(object + 0xcc) = result;
             function_3dd10(object_index, true);
         }

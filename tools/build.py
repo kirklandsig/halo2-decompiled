@@ -35,6 +35,7 @@ import json
 import os
 import pickle
 import re
+import signal
 import subprocess
 import sys
 import time
@@ -59,10 +60,13 @@ from xbe import ROOT, xdk_dir
 # emits for a virtual member reached through a base at that offset: a class
 # name alone means its deleting destructor, class::member that member (a
 # marker with no function under it, and no stand-in of its own: the class's
-# vtable, which the vtable stand-in emits, brings the thunk in)
+# vtable, which the vtable stand-in emits, brings the thunk in); "abstract"
+# marks the constructor of an abstract class, which a placement-new stand-in
+# cannot instantiate: its stand-in calls the constructor on the buffer instead
 MARKER = re.compile(r'^\s*//\s*@(retail|stub)\s+(0x[0-9a-fA-F]+)'
                     r'(?:\s+(deleting)(?:\s+([A-Za-z_][\w:]*))?|\s+destructor\s+([A-Za-z_][\w:]*)|\s+(standard)'
-                    r'|\s+vcall\s+(0x[0-9a-fA-F]+)|\s+adjustor\s+([A-Za-z_][\w:]*)\s+(0x[0-9a-fA-F]+|\d+))?\s*$')
+                    r'|\s+vcall\s+(0x[0-9a-fA-F]+)|\s+adjustor\s+([A-Za-z_][\w:]*)\s+(0x[0-9a-fA-F]+|\d+)'
+                    r'|\s+(abstract))?\s*$')
 DELETING = "`deleting destructor'"  # the compiler's deleting destructor (??_G or ??_E), as linkmap names it
 FLAGS = re.compile(r'^\s*//\s*@flags\s+(.+?)\s*$')
 FLAGS_LINES = 30
@@ -100,6 +104,9 @@ REDUCED_NAME = 'reduced'  # build(units=...): build/reduced.img, build/reduced.m
 # docs/DECOMPILING.md.
 INLINE_THRESHOLD = 81
 BALLAST_FUNCTIONS = 9000  # comfortably past the size where inlining changed
+TOOL_TIMEOUT = max(1, int(os.environ.get('HALO2_TOOL_TIMEOUT') or 600))
+# ^ seconds one cl/link/lib run may take before it is killed and retried once;
+#   Wine occasionally wedges a tool at 0% CPU, and one wedge must not stall a build
 
 
 @dataclass
@@ -114,6 +121,8 @@ class Marked:
     kind: str = 'function'  # 'function', 'method', 'constructor', 'destructor', 'deleting', 'vcall' or 'adjustor'
     const: bool = False  # a const method
     standard: bool = False  # "standard": its address escapes (a constructor: a caller outside LTCG calls it)
+    abstract: bool = False  # "abstract": a constructor of an abstract class, which its stand-in cannot instantiate
+    convention: str = ''  # an explicit calling convention in the header (a method's address escape must name it)
 
 
 def _split_params(text):
@@ -145,6 +154,7 @@ def _param_type(param):
 
 QUALIFIERS = re.compile(r'\b(?:__stdcall|__cdecl|__fastcall|__thiscall|__clrcall|__inline|__forceinline|'
                         r'inline|PRIVATE|static|extern|virtual)\b')
+CONVENTION = re.compile(r'\b(__stdcall|__cdecl|__fastcall|__thiscall)\b')
 HEADER = re.compile(r'^(.*?)\s*((?:[A-Za-z_]\w*::)*~?[A-Za-z_]\w*)\s*\(')
 CLASS_DECLARATION = re.compile(r'\b(?:struct|class|union)\s+([A-Za-z_]\w*)')
 CLASS_TYPEDEF = re.compile(r'\btypedef\s+(?:struct|class|union)\b[^;{]*(?:\{.*?\})?\s*([A-Za-z_]\w*)\s*;', re.S)
@@ -230,10 +240,14 @@ def scan(text, path):
         if standard and (m.group(1) == 'stub' or kind not in ('function', 'method', 'constructor')):
             raise SystemExit(f'{path}:{i + 1}: "standard" marks a decompiled function, method or constructor, '
                              f'not {name}')
+        abstract = bool(m.group(10))
+        if abstract and (m.group(1) == 'stub' or kind != 'constructor'):
+            raise SystemExit(f'{path}:{i + 1}: "abstract" marks a decompiled constructor, not {name}')
         trailer = header[h.end() + len(inner) + 1:]
+        convention = CONVENTION.search(h.group(1))
         found.append(Marked(path, int(m.group(2), 16), name, returns or ('int' if kind == 'function' else ''),
                             params, m.group(1) == 'stub', cls, kind, bool(re.match(r'\s*const\b', trailer)),
-                            standard))
+                            standard, abstract, convention.group(1) if convention else ''))
     return found
 
 
@@ -343,7 +357,10 @@ def _escape(m, name):
     if m.kind == 'method':
         member = m.name.rpartition('::')[2]
         const = ' const' if m.const else ''
-        return f'{m.returns} ({m.cls}::*volatile {name})({", ".join(m.params)}){const} = &{m.cls}::{member};'
+        # a method declared __stdcall (or another explicit convention) needs it in the pointer's type too
+        convention = f'{m.convention} ' if m.convention else ''
+        return (f'{m.returns} ({convention}{m.cls}::*volatile {name})({", ".join(m.params)}){const} = '
+                f'&{m.cls}::{member};')
     return None
 
 
@@ -377,7 +394,12 @@ def tu_source(source_abs, marked, prefix, classes=(), polymorphic=(), outside=()
             continue  # the source's own code, or the class's vtable, emits the thunk
         args = ', '.join(_argument(p, ARGUMENT_STRIDE * n, prefix, classes) for n, p in enumerate(m.params))
         member = m.name.rpartition('::')[2]
-        if m.kind == 'constructor':
+        if m.kind == 'constructor' and m.abstract:
+            # an abstract class cannot be instantiated; call the constructor
+            # on the buffer directly instead (MSVC accepts the explicit call)
+            member = m.cls.rpartition('::')[2]
+            call = f'(({m.cls} *){buffer})->{m.cls}::{member}({args})'
+        elif m.kind == 'constructor':
             call = f'::new ((void *){buffer}) {m.cls}({args})'
         elif m.kind == 'destructor':
             call = f'(({m.cls} *){buffer})->{m.cls}::{member}()'
@@ -456,16 +478,44 @@ def tool_arg(arg):
     return arg
 
 
+def _run_tool_once(command, cwd, env):
+    """Runs command in its own process group, so a timeout can kill the whole
+    tree. The SDK's tools are launched through a wrapper that execs Wine, and
+    Wine leaves a wineserver behind; killing only the wrapper would leave that
+    server wedged for the next attempt."""
+    posix = os.name == 'posix'
+    p = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         text=True, start_new_session=posix)
+    try:
+        stdout, stderr = p.communicate(timeout=TOOL_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        if posix:
+            os.killpg(p.pid, signal.SIGKILL)
+        else:
+            p.kill()
+        p.communicate()
+        raise
+    return p.returncode, stdout, stderr
+
+
 def run_tool(tool, args, cwd, xdk):
-    """Runs one of the SDK's tools and returns what it printed."""
+    """Runs one of the SDK's tools and returns what it printed. A tool that
+    produces nothing for TOOL_TIMEOUT seconds is killed and tried once more:
+    Wine sometimes wedges cl.exe or link.exe at 0% CPU."""
     include, lib = (tool_arg(os.path.join(xdk, d)) for d in ('include', 'lib'))
     env = dict(os.environ, INCLUDE=include, LIB=lib)
-    args = [tool_arg(a) for a in args]
-    p = subprocess.run([os.path.join(xdk, 'bin', 'vc71', tool), '/nologo', *args], cwd=cwd, env=env,
-                       capture_output=True, text=True)
-    if p.returncode:
-        raise SystemExit(f'{tool} failed:\n{p.stdout}{p.stderr}')
-    return p.stdout
+    command = [os.path.join(xdk, 'bin', 'vc71', tool), '/nologo', *(tool_arg(a) for a in args)]
+    for attempt in (1, 2):
+        try:
+            returncode, stdout, stderr = _run_tool_once(command, cwd, env)
+            break
+        except subprocess.TimeoutExpired:
+            if attempt == 2:
+                raise SystemExit(f'{tool} timed out after {TOOL_TIMEOUT}s; set HALO2_TOOL_TIMEOUT to change it')
+            print(f'{tool} timed out after {TOOL_TIMEOUT}s; retrying once', file=sys.stderr)
+    if returncode:
+        raise SystemExit(f'{tool} failed:\n{stdout}{stderr}')
+    return stdout
 
 
 def d3d_objects(root, xdk):

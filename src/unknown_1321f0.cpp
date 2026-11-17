@@ -609,6 +609,10 @@ struct s_visibility_object_header
 	s_visibility_object *object;
 };
 
+// score 4: only the two bool locals' stack slots differ (behind/in_front at
+// esp+0x17 and esp+0x38). Permuter: 280 tries in 600 s, best 2 — but that form
+// swaps the two pointer arguments at the matched 0x132fd0 and leaves `index`
+// uninitialized, so it was not kept.
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
@@ -734,6 +738,24 @@ short function_2cbf0(long arg_1, short arg_2, dword arg_3,
     bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
     real arg_21, word arg_22, point3f const *arg_23, real arg_24);
 
+// score 2 (was 86, fast build on r848): only the order of two register-argument loads before the call differs.
+// b15F (11-17) walk against retail, fast build on r848: fields, offsets (cluster stride 0xb0, bounds +0x54..+0x68,
+// indices byte at arg_1 + 0x1c), the 0x1332f0 and 0x2cbf0 arguments, flag bit 0x40, jae 0x13349c / ja 0x1334ac and
+// the loop agree; no behaviour difference. Forms kept, each on retail evidence: (a) the cluster index is a plain
+// long in esi (0x1333b8) and its (short) cast is a register movsx at 0x1333d7, before the bounds loads (the byte
+// load stays at 0x13344b); the old `long const &` re-read a word. (b) The extent follows the file's 0x134390 idiom
+// (centre and corner point3f through real_point3d_set, vector3f through vector3d_from_points3d); retail reads
+// +0x60/+0x68 a second time for the corner (0x1333f8, 0x1333fd). Its sum is retail's tree (x*x + y*y) + z*z (fld
+// 0x13341d, 0x13342f, 0x133451), which compiles only when written k, j, i; length_sq3f compiles (z*z + x*x) + y*y
+// (34), i, j, k gives 33. (c) The plane sum is retail's tree ((z*g38 + x*g20) + y*g2c) + g44 (0x133455-0x13347b)
+// only when written y, x, z; z, x, y compiles ((y + x) + z), a last-bit rounding difference (12). The three
+// volatile locals are gone (slots match retail's). Remaining 2: retail loads ecx (or ecx, -1 at 0x1334fd) before
+// edx (xor edx, edx at 0x133500) for 0x2cbf0, ours edx first; 0x2cbf0 is todo and two constants are no evidence of
+// its parameter order, so no swap. sort_4byte is not called here.
+// Tried (fast, r848; entries before the last four were measured on earlier bases, before the cast move or the k,
+// j, i sum): volatile locals as before (86; 96 with a plain long), real locals (114), volatile vector3f (96),
+// double sums (82-93), no corner point (38+), centre orders (16-20), corner orders (19, 35), plane test before the
+// extent (85), corner before centre (49), sqrt inlined (84).
 // @retail 0x133390
 void function_133390(s_bit_vector_pool const *arg_1)
 {
@@ -741,23 +763,26 @@ void function_133390(s_bit_vector_pool const *arg_1)
 	for (long local_2 = 0; local_2 < local_1->count; local_2++)
 	{
 		dword local_3 = function_1332f0(arg_1, local_1->shorts_b[(short)local_2]);
-		long const &local_4 = local_1->longs_a[(short)local_2];
+		long local_4 = local_1->longs_a[(short)local_2];
+		short local_13 = ((signed char const *)arg_1->indices)[(short)local_4];
 		s_visible_cluster const *local_5 = &((s_visibility_bsp *)g_4e0348)->clusters[local_4];
 		point3f local_6;
-		local_6.x = (local_5->bounds[0][0] + local_5->bounds[0][1]) * 0.5f;
-		local_6.y = (local_5->bounds[1][0] + local_5->bounds[1][1]) * 0.5f;
-		local_6.z = (local_5->bounds[2][0] + local_5->bounds[2][1]) * 0.5f;
-		volatile real local_7 = local_5->bounds[0][1] - local_6.x;
-		volatile real local_8 = local_5->bounds[1][1] - local_6.y;
-		volatile real local_9 = local_5->bounds[2][1] - local_6.z;
-		real local_10 = (real)sqrt((double)local_7 * local_7 + (double)local_8 * local_8 + (double)local_9 * local_9);
-		real local_11 = local_6.z * g_4b9e38 + local_6.x * g_4b9e20 + local_6.y * g_4b9e2c + g_4b9e44;
+		real_point3d_set(&local_6, (local_5->bounds[0][0] + local_5->bounds[0][1]) * 0.5f,
+			(local_5->bounds[1][0] + local_5->bounds[1][1]) * 0.5f,
+			(local_5->bounds[2][0] + local_5->bounds[2][1]) * 0.5f);
+		point3f local_15;
+		local_15.x = local_5->bounds[0][1];
+		local_15.y = local_5->bounds[1][1];
+		local_15.z = local_5->bounds[2][1];
+		vector3f local_7;
+		vector3d_from_points3d(&local_6, &local_15, &local_7);
+		real local_10 = sqrt(local_7.k * local_7.k + local_7.j * local_7.j + local_7.i * local_7.i);
+		real local_11 = local_6.y * g_4b9e2c + local_6.x * g_4b9e20 + local_6.z * g_4b9e38 + g_4b9e44;
 		if (!(local_11 >= 0.0f))
 			local_11 = 0.0f - local_11;
 		if (!(local_11 > 0.1f))
 			local_11 = 0.1f;
 		real local_12 = (g_4b9ed0 / local_11) * local_10 * 2.0f;
-		short local_13 = ((signed char const *)arg_1->indices)[(short)local_4];
 		function_2cbf0(local_4, NONE, local_3 | 0x40, NONE, NONE, 0, 0, NULL,
 			local_13, 0xff, NULL, NONE, local_12, NONE, NONE, false, false,
 			false, 0.0f, 0.0f, 0.0f, 0, g_468788, 0.0f);
@@ -765,6 +790,16 @@ void function_133390(s_bit_vector_pool const *arg_1)
 	}
 }
 
+// score 24 (was 24, fast build on r846): remaining diffs are register choices only (see walk below).
+// b13F (11-17) walk against retail, fast build on r846: fields, offsets, jcc senses (NaN included: jae 0x1335c3,
+// ja 0x1335da, jbe 0x13361d/0x133640, ja 0x13365b, jbe 0x133691), constants, the 0x1332f0 and 0x2cbf0 arguments,
+// the flag bits (0x40/1 by the 0x800 test at 0x13367c, 0x1008) and the loop shape agree; no behaviour difference found.
+// Remaining: retail reloads data->lists[3] after the 0x1332f0 call as ecx -> eax -> edx -> ax (0x1335df-0x1335ee),
+// ours ecx -> edx -> eax -> cx; the same swap recurs at 0x133672-0x13367c, the argument pushes at 0x1336a0-0x1336bf
+// and 0x1336da-0x1336e8. The volatile on arg_1 stays: without it ours keeps lists[3] in ebp across the call (134).
+// Tried: local_8 hoisted to five other places (38, 59, 129, 137), pointee-volatile cast on arg_1 (24, same code),
+// volatile local pointer (142), volatile on local_3 (50), local_3 reassigned after the call (134), the 0x800 test as
+// a ternary (128) or with the branches swapped (27).
 // @retail 0x133520
 void __stdcall function_133520(s_bit_vector_pool *arg_1)
 {
@@ -827,9 +862,19 @@ __forceinline bool visibility_append(c_entry_list *list, long index, short flags
 	return false;
 }
 
-// score 67 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
+// score 69 (was 340): retail tests the flags' sign bit with test/jns where ours uses jge, combines the
 // instance flags with behind last (ours earlier), and reloads data->lists[3] after function_16e210 in the
 // duplicate-instance branch; writing that reload swaps edx and edi in the instance loop (score 70).
+// b10H (11-17) walk against retail, fast build on r841: fields, offsets, jcc senses (NaN included), call arguments,
+// flag bits and both loops agree with retail; no behaviour difference found. Retail's forms kept: the sign test is
+// ((char)flags >> 7) != 0 (test al,al; jns at 0x1346aa, as 0x1332f0 spells it), and the duplicate branch reloads
+// data->lists[3] after function_16e210 (0x134893; ours held the local in esi): 67 -> 69 together, retail's form.
+// Remaining: (1) the 0x8000 term is last in retail's OR chain (0x13477a-0x1347a2), 4th in ours, and every source order
+// compiles alike; (2) edx/edi swap in the instance loop head (0x13461a-0x134656: instance_index in edx, bsp in edi).
+// Tried: definition computed inside the branch (48, chain then matches; retail computes it first, 0x13463c-0x134649);
+// ->add() at both list sites (fast 280, not inlined in the reduced image; retail inlines at 0x1345a5 and 0x1347c5, so
+// visibility_append and the written-out add predate this note); function_132b10 for the flags (72, same chain);
+// shared behind/in_front pair, selected local, per-term ifs, centre pointer, slot local (109-166); long index (151).
 // @retail 0x134390
 void __stdcall function_134390(s_bit_vector_pool *data)
 {
@@ -897,7 +942,7 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 				if (*(word *)(definition + 0x24) > 0)
 				{
 					bool contained, first, second;
-					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || (char)data->flags2a60 < 0)
+					if (function_132e60(data, &instance->center, instance->radius, filter, instance_index, (short)i, false, &contained, &first, &second) || ((char)data->flags2a60 >> 7) != 0)
 					{
 						long entry = NONE;
 						bool behind;
@@ -926,7 +971,7 @@ void __stdcall function_134390(s_bit_vector_pool *data)
 				if (!(list->shorts_b[index] & 0x800))
 					data->entries[list->shorts_d[index]][(short)i >> 5] |= 1 << ((short)i & 31);
 				if (function_16e210(item->value, g_4b9f8c))
-					list->shorts_b[index] |= 0x400;
+					data->lists[3]->shorts_b[index] |= 0x400;
 			}
 		}
 	}
@@ -1110,6 +1155,17 @@ struct s_view_collection_1733e0;
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index, s_view_collection_1733e0 *collection);
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera);
 
+// score 26 (was 26, full build; fast build on r846 reads 25): the diff is the g_4e7c18 flag, see below.
+// b13F (11-17) walk against retail, fast build on r846: the arguments of 0x132b80, the switch (0x13213f-0x132149)
+// and the three case bodies with their call arguments (0x13214b-0x132157, 0x132159-0x13215b, 0x132162-0x13217d) agree.
+// Retail keeps `mov byte ptr [0x4e7c18], bl` (0x13218f) before the call to 0x134390; ours drops it as a dead store,
+// so retail's `mov bl, 1` (0x13218c) shared by the stores at 0x1321b6 and 0x1321c2 becomes `mov al, 1` after the call,
+// and `inc dword ptr [0x4e7c1c]` (0x132186) becomes load/inc/store through ebx. 0x4e7c18 is never read in retail
+// (writes at 0x13218f, 0x1321a9, 0x1699f8, 0x169e10, 0x16a52a, 0x16a773), so the store survives only if the compiler
+// thinks 0x134390 may read it: untried lead, as for cluster_marks_storage.h: 0x4e7c18 flag, 0x4e7c1c tick and the
+// 0x4e7c20 table are one 8 + 0x1000 byte block (the callee reads tick and table), which needs edits outside this
+// function (unknown_1689b0.cpp:713, unknown_244c10.cpp:9, and the table above). Also: retail loads ebx (data->context)
+// before eax (cluster) at 0x13214b-0x13214d, ours eax first (a local for the collection leaves it as is).
 // @retail 0x1320f0
 s_bit_vector_pool *function_1320f0(long mode, long count, bool use_plane, long flags, byte const *frusta,
 	byte const *center, real radius, void *filter, real plane_offset, long cluster)

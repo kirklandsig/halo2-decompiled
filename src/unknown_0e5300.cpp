@@ -156,7 +156,9 @@ PRIVATE inline long e5470_unit_current_weapon(long unit_index)
    g_4e0300's data pointer again for each object (0xe54bc, 0xe54e2) as
    retail does. Retail also reads the player's unit again for each use
    (0xe551f, 0xe5595, 0xe5638), which only a volatile player pointer
-   reproduces here (11 instructions left with it); not kept. */
+   reproduces here (11 instructions left with it); not kept. Re-measured on
+   r809: adding `volatile` to the player pointer in the current body gives 121,
+   so the 11 form above was a different body; the 47 body stays. */
 // @retail 0xe5470
 bool __stdcall function_e5470(long player_index, long unit_index)
 {

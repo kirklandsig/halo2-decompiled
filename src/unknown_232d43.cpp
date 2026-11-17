@@ -1024,6 +1024,81 @@ struct s_string_buffer
 // (482), the arms negated or swapped 65/65/65/93; each arm with its own score1 format call, or the else arm formatting 0, 99 (483),
 // one combined test with its own format calls 100 (483), the `== 9` arm and else sharing a call 84 (502). All leave 9 in line.
 // `__assume` (fast) at the head or tail of either arm, on the mode or the row, or in a flag form, nine placements 65 each; on the flag itself 100 (485).
+// Round 71 (lane 14, plain; compile-only reproduces this layout at 0.7 s per form): the values loaded under one chain of all seven
+// modes with 2 first, then `if (== 2)` time else `%d`, 96 (471 bytes); a switch with a separate identical arm per case 90 (475,
+// dec/je chain); a switch with case 2 and the six cases falling into the `%d` default 102 (475); the `== 9` else-if arm after a
+// chain whose 7/8 tests are a range 50 (481); the `== 9` arm's loads through byte offsets (to keep the arms apart) 50 (481).
+// Compile-only, all 9 in line: the `== 9` arm's loads reversed, through pointer arithmetic, `(long)(dword)` casts or a row
+// pointer; a separate-arm switch in descending order; a 1/3/4 + 7/8/9 two-arm switch; a 1/3/4/7/8 + 9 switch; speed preference.
+// Round 142 (m3 lane 8, plain): compile-only builds do not reproduce the after-return blocks of matched 0x257320/0x1a391f
+// (LTCG threading of a repeated identical test), so compile-only screens cannot show this layout. The 2 test first in a
+// seven-mode chain with the loads, then `if (== 2)` time else `%d` 94 (472 bytes); the six-mode chain written twice
+// (value1, value2) 104 (517); one named bool for the chain tested twice 50 (481, merged); a 1/3/4/7/8/9 switch holding the
+// loads 100; the 9 test through an inline multi-return predicate 50 (481).
+// Round 177 (m3 lane 4, plain): matched 0x257320's after-return block (0x257626) is a copy of its `else if (pointer)` test made
+// for a conditional branch that enters it from an earlier term, after the fall-through path (the previous condition's last term,
+// `|| !pointer`) was routed past the test; the copy even jumps past a reload in the arm's head. So a form is needed in which the
+// path that falls into the loads (mode 8) passes the 9 test's place already decided, while retail's loads reuse EAX (the mode is
+// dead there, so that is decided before allocation). New: that shape, `1/3/4/7 || (== 8 && != 9)` then `else if (== 9)` with
+// the same loads 50 (481 bytes: the `!= 9` term folds away); the chain arm with its own format call and an else holding
+// `if (== 9)` loads and the format call 71 (503); `if (!chain) { if (== 9) loads } else loads` 50 (481); the mode read once
+// into a local for every test, with the six-way chain 50 (481) or the five-way chain and an `else if (== 9)` arm 50 (481).
+// Re-measured: the five-mode chain and a separate `if (== 9)` 63 (501 bytes: the loads keep the mode in EAX and the 9 test
+// follows them, nothing routed past); three arms (chain, `== 9`, else) each with the score1 format call, the else passing the
+// value 95 (484) or 0 95 (484: merged, the format string in EDI, the values out of ESI/EDI). All leave 9 in line: identical
+// arms merge into the one that falls into the format call, which is the 9 arm in every order tried.
+// Round 95 (m3 lane 10, plain; fast gives 34 at 475 bytes on this body): the 2 arm with its time format, the rest
+// loading under a six-mode chain arm, then `if (!= 2)` the `%d` format 90 (493 bytes: the second mode test stays, not
+// threaded); separate 1/3/4/7/8 else-if arms then a separate `if (== 9)` 67 (501: the identical arms merge before any
+// threading and the mode stays in EAX for the 9 test); the same with the 8 arm's loads reversed 67 (normalised, merged);
+// with the 8 arm reading through a row pointer 85 (507: that arm stays apart and still falls into an in-line 9 test, so
+// LTCG does not thread equality facts here); an early return when either score text is missing 13 (same code).
+// Re-measured: chain, `== 9` and else arms each with the score1 format call 95 (484 bytes: merged at IL level, the 9
+// test jumps straight to the loads, the format string CSEd into EDI).
+// Round 115 (m3 lane 9, fast; the reduced image scores the unchanged body 34 at 475 bytes, so these show the layout
+// only): a named bool for the 1/3/4/7/8 chain tested with `|| == 9` 65 (480 bytes, 9 in line); the chain's last two
+// modes as `1/3/4/7 || (== 8 ? true : == 9)` 69 (489); the 1/3/4/7 chain with an else holding a two-case 8/9 switch
+// and the same loads 65 (480, 9 in line); the bool assigned `== 9` when the chain fails, then tested 100 (485); the
+// bool started as `== 9` and set by the chain 105 (487). Diagnostic, not kept: the `== 9` arm with its own copy of the
+// whole tail and a return 171 (541 bytes: the copy is not folded back and the 9 test stays in line). None places a
+// block after the return.
+// m3 lane 14 r90 (plain): the 7-9 range written first in the chain 18; the 3-4 pair as a second range beside the 7-9
+// range 15 (both ranges become jl/jle compares); the chain as 1/3/4/7 then an 8-9 range 50 (481 bytes); the time arm's
+// minutes and seconds named before the format call 13 (same code); the time arm's two loads after the format string's
+// load 79 (474 bytes). All leave the 9 test in line.
+// Round 105 (m3 lane 10, plain): the 1/3/4/7/8 chain and an `else if (== 9)` arm whose loads go through `(long)(dword)`
+// casts, in a full build (earlier only compile-only) 50 (481 bytes, merged); the six equalities grouped as
+// `... || 7 || (8 || 9)` 50; fully right-nested 50 (481, 9 in line: grouping is normalised); a named `timed` bool for
+// the 2 test used twice, the values loaded under a seven-mode chain led by it, then `if (timed)` time else `%d` 115 (478
+// bytes: the bool is materialised with `sete`, never threaded); the chain through an inline helper returning the row
+// pointer or NULL, tested for NULL 112 (452 bytes: this file does not inline it).
+// Round 125 (m3 lane 9, plain; fast scores the reduced image, 65/70 for the first two): the six-mode chain with a
+// `== 2` term (known false in the else) 50 (481 bytes: the term folds, 9 in line); the six-mode chain in descending
+// order 55 (481: source order kept, the last term 1 in line); the 9 term as `== 9 && != 2` 50 (folded); the chain
+// under a leading `!= 2` 50 (folded); a 1-9 range excluding 5 and 6 107 (470 bytes). VC keeps the chain's source order
+// and folds every implied term before layout, so none places the 9 test past the return.
+// M3 lane 9 r127 (fast used only as a layout screen; it scores this body 34): two if-arms with the same loads, 1/3/4
+// then 7/8/9 as equalities, 65 (480 bytes, merged, 9 in line); the loads under a seven-mode chain in numeric order (2
+// second), then `if (== 2)` time else `%d`, 105 (470 bytes); the same with 2 last 87 (466). Re-measured: the chain, `== 9`
+// and else arms each with the score1 format call 99 at 483 bytes: the else path becomes `push esi; jmp` into the merged
+// tail right after an in-line 9 test, where retail merges the push as well and moves the 9 test past the return.
+// Round 111 (m3 lane 10, plain): a 1/3/4/7 chain and an `else if (== 8 || == 9)` arm with the same loads 50 (481 bytes, 9 in line);
+// the time arm's minutes value in its own local, the score value declared in the else arm 13 (same code); on that, the 1/3/4/7/8
+// chain with an `else if (== 9)` arm 50 (481), the six-way equality chain 50 (481); each arm formatting its own second score 94
+// (493 bytes).
+// Round 189 (m3 lane 5, plain): one const row-record pointer shared by the timed arm and the loads arm 122; the six-mode
+// equality chain in a bool evaluated ahead of the timed test 121 (491 bytes); the timed test negated with the score arm first
+// 52; each value loaded under its own identical six-mode chain (a repeated test for LTCG to thread) 104 (517 bytes, not
+// threaded); the six-mode chain through a plain file-private function 75 (460 bytes: this /O1 file keeps it out of line).
+// All restored; the 9 test still sits in line.
+// Round 93 (m3 lane 2, fast as a layout screen; this body screens 34 at 475 bytes, plain 13 at 476): the membership as
+// `mode >= 7 ? mode <= 9 : (1 || 3 || 4)` 76 (489 bytes, a materialised setle bool); a const row-record pointer set
+// under the six-way chain and the loads under `if (pointer)` 71 (486 bytes: the null test is not threaded into the
+// chain, 9 still in line); the 1/3/4/7/8 chain and an `else if (== 9)` arm reading the row through `(g_55caf0 + row)->`
+// 65, with a `__noop()` ahead of its loads 65 (both merged into the six-way chain); with a repeated `score2[0] = 0;`
+// ahead of its loads 70 (487 bytes: the arm stays apart and the chain's loads cross-jump into it, but the 9 test and
+// its arm stay in line ahead of the format call, where retail keeps the chain's loads in line and the 9 test past the
+// return). All restored.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

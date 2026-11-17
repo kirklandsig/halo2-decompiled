@@ -5,6 +5,7 @@
 #include "havok_reference.h"
 #include "kind_object_3192b0.h"
 #include "reference_counted_2d88a0.h"
+#include "constraint_helpers_314090.h"
 
 class hkEntity;
 
@@ -19,17 +20,6 @@ public:
 	virtual void slot_5() {}
 	virtual void slot_6() {}
 	virtual long kind() { return 0; }
-};
-
-// the object of kind 2
-class c_314710 : public c_havok_reference_counted
-{
-public:
-	REFERENCED_NEW_2D88A0(0x26)
-
-	c_314710(hkEntity *arg_0);
-
-	char field_8[0x60 - 0x8];
 };
 
 // the entity as the game's 0x1d8df0 sees it: it takes a reference to the new
@@ -68,8 +58,8 @@ void c_library_311690::update(long value)
 	case 2:
 		{
 			c_314710 *object = new c_314710((hkEntity *)this);
-			function_1d8df0(object);
-			havok_reference_remove(object);
+			function_1d8df0((c_havok_reference_counted *)object);
+			havok_reference_remove((c_havok_reference_counted *)object);
 		}
 		break;
 	}

@@ -132,15 +132,27 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 	return destination;
 }
 
-// MiniMax D (run 46): the start copied into a local before or after the guard gives retail's body
-// (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
-// A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
-// caller loss, and the scanner helper without __forceinline gives 56 here and 49 for 0xb61d0.
-// score 40 (was 40): the string pointer and the character counter are kept in different registers
+// score 21 (was 21): the string pointer and the character counter are kept in different registers (40 before the early source)
 // here, and an extra register is pushed and restored around the copy loop. Tried: count before
 // start in the parameter list 40; the length in a named local after the sign tests 40;
 // string + start with start unmodified 28 but start then arrives in edx (0xb5f10 differs);
 // that with a plain string parameter 41; start = string + start 40.
+// MiniMax H (11-07): the sign and count tests with the bounded length in a named local and the
+// source pointer named before the compare give 21 with the matched caller 0xb5f10 and the matched
+// 0xb61d0 unchanged: the start now reaches EDI at entry as in retail, but the inlined scan still
+// walks the text in ECX and counts in EDX where retail walks in EDX and counts in ECX, so the
+// bounded-length sum and the copied source stay one register off. Tried and not kept: the source
+// named after the compare (28, the start then arrives in EDX and 0xb5f10 differs at 6); a local
+// copy of the start (28, same caller loss); the count tested before the start (27); the source
+// named but the length inlined (28, caller loss); the source and the sum written through the text
+// pointer (34, caller loss); the length masked with 0x1ff, which gives retail's scan registers but
+// an extra instruction (29); the compare as count <= length - start (35, caller loss); the scan
+// helper walking a local (0xb61d0 then differs at 2).
+// MiniMax R (11-06): no lower score (40); the matched caller 0xb5f10 sets the start in ECX and the count in EAX with the string and the destination on the stack, so the declared order already produces retail's call setup; what is left is retail's start saved in EDI and its scan in EDX/ECX against our start in ECX and scan in EDI/EDX.
+// MiniMax D (run 46): the start copied into a local before or after the guard gives retail's body
+// (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
+// A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
+// caller loss, and the scanner helper without __forceinline gives 56 here and 49 for 0xb61d0.
 // Cursor displacement with fixed/explicit maximum, unequal/ordered end tests and signed/unsigned
 // returns: eight forms 36 each; threshold rejected, shared find changed.
 // that with a plain string parameter 41; start = string + start 40; a local copy of the start
@@ -404,18 +416,91 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (aligned 20, masked 12); clamp written `count + 1 > 0x200` 53 (90 bytes) [104]. Plain string: early source 49 (92 bytes) [6]; source at
 // clamp 41 (104) [35]; early text 41 (104) [35]; string kept through its own address: at clamp 40 (104) [6], text read 40 [6], reversed
 // 40 [6], early 49 (92) [6], `start +=` 40 [6]. Left: count and walk swapped on the match-keeping form, or start's entry register on the other.
+// Round 96 (m3 lane 12, fast with 0xb5f10/0xb61d0; [0xb5f10]): nested tests with the source before the named length 37 [84] (250-byte
+// caller); the length named first, then the source, re-measured 21 [match] (walk ECX/count EDX, retail EDX/ECX), with its compare
+// reversed 21 [match]; the copy's end named before the scan 40 [83] (96 bytes); the original compare reversed 40 [match]; the
+// `start +=` ahead of the clamp 36 [6].
+// Round 138 (m3 lane 7, fast with 0xb5f10/0xb61d0, both still matched in each): a 600 s permuter run on this body
+// (78 variants, full and reduced image both 21) found nothing below 21; `result = true` before the copy call 27
+// (101 bytes); the two sign tests as separate nested ifs 21; `count + start` in the compare 21; the early source
+// pointer `const` 21 (all three the same code). In retail AL holds the false result through the scan, so only ECX
+// and EDX are free for it: retail colours the counter first (ECX), ours the walk.
+// Round 76 (m3 lane 13, fast with 0xb5f10/0xb61d0; [0xb5f10]; compile-only /Gd harness with every parameter on the stack):
+// the natural body (named length, `string + start` at the call) is retail's body in that pass (start EDI, walk EDX, count
+// ECX), and LTCG then passes start in EDX. Over eight forms a start loaded into EDI in that pass arrives in the first of
+// ECX/EDX written after entry (the walk's), so the 21 form's early source is what puts the walk in ECX; by that rule retail's
+// own body would also give EDX. New: a named end after the scan with the source at the call 28 [6]; the guards as `break`s
+// out of `do { } while (false)` 28 [6], with the length call in the test 28 [6], with the early source 21 [match] (the 21
+// code). Re-measures: `long end` before the scan 49 [83]; `length >= start + count` 29 [6]; one condition with the length
+// call 28 [6]; nested tests, named length and `start += (long)string` after the clamp 40 [match].
+// Round 110 (m3 lane 16, fast with 0xb5f10/0xb61d0, both matched each time; [0xb5f10] unchanged at match): on main's 21
+// body, true facts `__assume(start >= 0 && count > 0)` inside the guard, `__assume(length >= 0 && length < 0x200)` after the
+// scan, `__assume(count > 0 && count <= 0x200)` after the clamp 21/21/21; the source declared (not assigned) before the
+// length 21; the length renamed to sort after source, start and string 21. All the same code: value facts, declaration
+// order and names leave the walk ECX / count EDX split. The rename repeats round 118's names finding; no untried natural
+// source form was found this round.
+// Round 237 (m3 lane 3, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): a plain string parameter with
+// a second forceinline length helper taking the pointer by reference (the counter then starts before the pointer is
+// read) 40 [35] at 104 bytes with the natural body, 49 [6] with the early source: the reference is folded and the string
+// arrives in ECX, start in EDX, `ret 4`. A plain string read through its own address at the scan 40 [6], at both uses
+// 40 [6] (the string stays a stack argument but is loaded once into EBX at entry, the scan's byte in AL and two exits).
+// The body in a forceinline inner function called from this one (inline parameter copies of start and count) 46 [94],
+// with the unnamed length 46, with `start += (long)string` 46, the inner plain inline 130 [31], with the volatile
+// parameter on this function 52 [84]. Re-measured: the natural body with the volatile parameter 28 [6] (start arrives
+// and stays in EDX, the walk in EDI); `start += (long)string` after the clamp 40 [match] (start stays in its arrival
+// ECX, `add ecx, [string]`, the walk in EDI). In retail start is moved to EDI at entry and the two loop values take
+// ECX/EDX, so start is coloured after them; here it keeps a scratch register unless the early source is present.
+// Round 119 (m3 lane 9, fast with 0xb5f10/0xb61d0; [0xb5f10]): the length helper walking a local copy declared after
+// the counter, with the natural body (source at the call) 40 [35] (0xb61d0 2): the body then has retail's start EDI,
+// walk EDX, count ECX, but start arrives directly in EDI (no entry move); the same helper on the kept 21 form 21 [match]
+// (0xb61d0 2: its retail sets the walk before the counter, so the helper's order is right). Natural body with
+// `__assume(start >= 0)` inside the guard 28 [6]; with `count + start <= length` 28 [6]; the length taken before the
+// sign tests 50 (92 bytes) [35].
+// M3 lane 2 r85 (fast with 0xb5f10/0xb61d0; [0xb5f10]): the scan helper walking a local declared after the counter with
+// the named length and `start += (long)string` after the clamp 40 [match] (diagnostic: start stays in ECX, walk EDI; 0xb61d0
+// 2); the walk local declared before the counter on the current body 21 (same code, 0xb61d0 matched); on the current body:
+// the count tested before the start 27 [match]; `if (++count > 0x200)` 21 (same code); `length - count >= start` 35 [35].
+// M3 lane 5 r187 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the clamp as
+// `count = count + 1 > 0x200 ? 0x200 : count + 1` 35 [104] (caller 262 bytes); `bool result;` set false in both else arms 46
+// (96 bytes) [6]; `long length;` declared above the result 21 [match] (same code); the clamped size in its own named local
+// 35 [104]; early `return false` guards with `return true` at the end 46 (96 bytes) [6].
+// Round 186 (m3 lane 6, fast with 0xb5f10/0xb61d0; [0xb5f10]): the early source as `(char const *)(start + (long)string)` 21
+// [match] (same code); `if (++count > 0x200)` with `start += (long)string` after the clamp 40 [match]; one combined guard with the
+// length call and `start +=` after the clamp 40 [match]; the increment folded into the compare (`start + count++ <= length`) 31
+// [6]; `result = true` before the copy with `start + string` at the copy 38 (102 bytes) [6].
+// M3 lane 2 r90 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the length bound to a `long const &`
+// 21 [match] (same code); the source as a `char const *const &` to `(char const *)string + start` after the compare 32 [6]
+// (start arrives in EDX); the count used through a `long &` 27 [39] (237-byte caller); the start used through a `long const &`
+// 26 [25]; the early source as `&string[start]` with the compare as `count + start` 21 [match].
+// Round 170 (m3 lane 7, fast with 0xb5f10/0xb61d0; [0xb5f10]): the length helper's walk renamed to sort before its
+// counter 21, its counter renamed to sort after the walk 21 (both the same code: names do not break the walk/counter tie);
+// the function `static` 21 (same code). With the count tested first and no early source 39 [35] (walk EDX, counter ECX as
+// retail, but start arrives in EDI unsaved); the same with `start += (long)string` after the clamp 40 [match] (start arrives
+// in ECX and stays there, walk EDI, counter EDX); with the early source 27 [match] (re-measure). In retail the counter is
+// coloured ahead of start (start is moved out of its arrival ECX); here start keeps ECX whenever nothing else claims it.
+// M3 lane 5 r193 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the source named before the scan 37
+// [84] (250-byte caller); the definition moved below its caller 0xb5f10 21 [match] (same code); a trivial inline accessor
+// around the scan's string 21 [match], around start in the compare of the natural body 28 [6] (both fold away); the
+// natural body with the destination parameter volatile too 50 (92 bytes) [6]. Re-measured listings: the natural body 28
+// (start EDX for life, walk EDI, the sum `mov eax, string; add eax, edx` where retail adds the string into start's EDI);
+// `start += (long)string` 40 (start ECX for life, the string folded as `add ecx, [esp + 0x14]` where retail loads it
+// into EAX first); a plain string with `start +=` 41 (104 bytes, string ECX -> EBX, the scan byte in AL and two exits).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
 	bool result = false;
-	if (start >= 0 && count > 0 && start + count <= (long)string_length_512_ab(string))
+	if (start >= 0 && count > 0)
 	{
-		count++;
-		if (count > 0x200)
-			count = 0x200;
-		start += (long)string;
-		upload_copy_ab(destination, (char const *)start, count);
-		result = true;
+		long length = (long)string_length_512_ab(string);
+		char const *source = string + start;
+		if (start + count <= length)
+		{
+			count++;
+			if (count > 0x200)
+				count = 0x200;
+			upload_copy_ab(destination, source, count);
+			result = true;
+		}
 	}
 	return result;
 }
@@ -685,60 +770,18 @@ bool function_b6320(s_upload_ab *upload, byte *buffer, long maximum, long *writt
 
 short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short length);
 
-// score 10 (was 10): retail lays the shared false exit out after the would-block test and the
-// restore exit last; ours puts the restore exit first. Tried: `return true` in the would-block arm 44;
-// direct returns everywhere 72 (retail's block order, but the results fold to constants); the
-// plain failure as `return false` behind `if (sent != -2)` 20; looping while the iteration
-// succeeded with the completion guarded after the loop 44; success arm ending in `continue` 10;
-// `if (sent != -2) return result;` then the restore and the goto 25 (retail's order, folded false);
-// success arm first in an if/else 10; position declared before the loop 10. Retail's shared
-// return (BL, not folded) follows the would-block test, so it comes first in its source order.
-// Round 90: accepted-send else/continue with the restore after it 10; the nonnegative-guard
-// equivalent 10; result from the sentinel before the conditional restore 74; result assigned
-// before the restore 10; both negative paths returning result 37; only the blocked path returning
-// result 44; result from a second sentinel test after the restore 75; success-first direct negative
-// return 30; error/sentinel else-if chain 50. Original body restored.
-// Round 118 (lane 5, fast): `if (sent != -2) goto return_exit;` then the restore and a second goto 10
-// (same code); the would-block arm ending in its own `goto return_exit` 10 (same code); the count as
-// `written ? send : 0` 44; `result = true` after the partial-position update 30; `sent = 0` then
-// `if (written)` 47. Every same-CFG spelling keeps the restore exit ahead of the shared false exit.
-// Round 134 (lane 5, fast; a one-file LTCG harness of this file plus its two callees' files gives 10 here):
-// the shared return as a label inside `if (sent != -2)` with the would-block arm `return true` 72 (retail's
-// block order, but every result folds to a constant); the same label with every exit jumping to it 10;
-// a completion flag set in an `if` and tested after the loop 10 (VC threads it away); the flag assigned from
-// the comparison 41 (sete); the restore after the loop on a `sent` re-test 10; break exits with the completion
-// re-tested after the loop 47; an empty `else` beside the would-block arm 10; the would-block arm returning
-// true with the other exits sharing the label 44 (208 bytes: success shares BL and falls into that return);
-// `while (result && ...)` with the completion guarded after the loop 44. Retail = four-way join (BL for the
-// false exits, CL for success, constant 1 for the restore) with the restore's copy laid out last; VC keeps the
-// function's single return block last whatever the source order.
-// Round 41 (lane 2, fast): the sentinel test inverted with the restore in the else arm: `result = false` in the
-// then arm 74 (226 bytes); gotos in both arms 10; `return result` / `return true` 20 (retail's block order, but the false exit
-// folds to `xor al, al` and BL takes the true result); `return false` then the restore and the goto 25; a `would_block` local
-// assigned to the result 74; the result from the sentinel, tested, then the restore 74.
-// Round 127 (lane 7, fast): `sent = -1` threaded from the failed call 10, with the `!= -2` test and two gotos 10; long
-// sent 33; `sent == -2` ahead of `sent < 0` 38; a named bool for the prepare call 10; `sent = 0` then `if (written)` 47.
-// Compile-only: direct returns fold with the result written through an inlined reference or pointer, a reference local,
-// an address-taken local, or as char/byte/long; the single-join form puts the false exit's compensation block after the restore.
-// Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
-// swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
-// would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.
-// Round 215 (lane 3, fast): the would-block arm as a goto to a block after the shared return, `return true` 44 (208 bytes), ending
-// `result = true; return result` 44 (208), with `if (sent != -2) goto` first 44 (208), and falling into a single shared return 10; a
-// one-case switch on sent 10; `if (sent != -2)` with the restore in the else arm and an empty do-while 10, plus a goto 10, a dead
-// `written = 0` 10, a dead `sent = 0` 10, `__assume(!result)` 10, `result = result != false` 74 (226), `result = sent == -2` 74 (226);
-// the shared return as a label inside `if (sent != -2)` with the restore's goto to it 67, with an else 67, with the restore ahead of the
-// label 67 (the false result in a stack byte); that label with `return true` 72, plus `result = false` ahead of the test 72 (false folds,
-// EBP dropped). Every form that puts the false exit between the sentinel test and the restore adds a third false copy or folds or
-// spills the false result. Original body restored.
+/* sends the upload a buffer at a time until everything is out (then waits for the response) or the
+   endpoint would block. A would-block leaves the loop with the result still false: the test after the
+   loop tells it from completion and rewinds the position past the buffer that was not sent. */
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {
     bool result;
     byte buffer[0x518];
+    long position;
     do
     {
-        long position = upload_position;
+        position = upload_position;
         long written = 0;
         result = false;
         if (!function_b6320((s_upload_ab *)((byte *)this + 0x30), buffer, sizeof(buffer), &written))
@@ -750,19 +793,24 @@ bool s_http_connection_ab::send()
             sent = function_b5000(endpoint, buffer, (short)written);
         if (sent < 0)
         {
-            if (sent == -2)
-            {
-                upload_position = position;
-                result = true;
-            }
-            goto return_exit;
+            if (sent != -2)
+                goto return_exit;
+            break;
         }
         result = true;
         if (sent < written)
             upload_position = position + sent;
     } while (upload_position != upload_file_length + upload_ending_length + upload_part_length + upload_header_length);
-    response_length = 0;
-    state = 3;
+    if (result)
+    {
+        response_length = 0;
+        state = 3;
+    }
+    else
+    {
+        upload_position = position;
+        result = true;
+    }
 
 return_exit:
     return result;

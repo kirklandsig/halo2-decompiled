@@ -61,6 +61,70 @@ bool function_1946f0(s_bitstream *stream)
 // the byte 9; block-local data, own division, direct subscript 35 (its memory operand is [index + data], not a LEA); inline mask helper 35;
 // inline address helper with the index first 2. One-file harness (exact here; diagnostics): identity pointer chains of 1 to 8 locals, at the top
 // or used for both reads 2 each; one or two new stored fields 3/4; extra arithmetic at the top, in the block or after it 33/16/6, always data first.
+// Round 77 (m3 lane 1, fast): the count tests and memset as a forceinline clear helper 2; a data local assigned
+// before the index, used for the masked byte only 39 (that access becomes index-first `[edx + edi]`); single-use
+// `saved / 8` index expressions and a single-use start index 2 (identical); the early data local used for the clear
+// only 40 (the clear LEA becomes retail's `[edx + edi + 1]`); the data local read at the function's top for both 52.
+// The newer value goes first, so retail orders its in-block field loads as values older than the index.
+// Round 173 (m3 lane 4): compile-only screen of 22 forms (size-first compare, data + index pointer sum, `saved / 8` at the
+// mask or the clear, a named next index, a named bit first, counter stores after the index, a size local, the count before
+// the mask, buffer member or char casts, data locals at the function, discard-block, mode-block or mask-block top): no
+// spelling flips the masked-byte LEA; only a data local read before the index flips the clear LEA (and keeps the data in
+// a register). Real (fast): size-first compare 4; char-typed masked byte 2; data local at the mode block's top 49; data
+// local in the mask block 35; counter stores after the index 17.
+// Round 142 (m3 lane 8, fast): the pop as a separate decrement then the read 2; the read from `count - 1` with the decrement
+// after 62; a named popped checkpoint index 2; the mask without the byte cast 2; the subscript through `(dword)byte_index` 2.
+// Compile-only, both LEAs data-first: embedded index assignment in the bound test, a byte mask local in a block,
+// `*(byte_index + stream->data)`, `saved % 8` named before the index.
+// Round 162 (m3 lane 5, fast; all the same code, 2): a local view of the stream with a plain data pointer, with data and size
+// as a nested first member, as a base type, or the data as a one-element array (diagnostics); the index cast to a pointer and
+// the data to an integer at both addresses (diagnostic); forceinline address helpers taking (data, index), (stream, index) or
+// (index, data); the address as an integer sum from the dword buffer member.
+// Round 95 (m3 lane 10, fast): the whole discard block as a force-inlined helper taking (stream, bit) 2; the byte
+// index from a force-inlined bit-to-byte helper at each of its four uses 2; `if (!discard) return;` then the flat body
+// 2; a named bit-position local for the compare and the subtraction 4; the masked byte as `mask & byte` 2. A 600 s
+// permuter run on the body (76 tries) found none below 2.
+// Round 76 (m3 lane 2, fast): the clear from `saved / 8` with the count from the index 2; a second named index in the mask block
+// 2; the mask indexed by a copy of saved 2; the mask index as `(long)(saved / 8)` 2; the mask as `(byte)~(-1 << (saved % 8))` 4.
+// Compile-only screen (exact here): every spelling whose index value numbers to the named index (`saved / 8` at each use, in an
+// inline, through a copy, with `+ 0`, through a second local, in the join block) keeps both LEAs data-first; only an index that
+// stays a separate computation (`saved >> 3`, `(saved & ~7) / 8`, a reread checkpoint) ranks first, and it is then recomputed.
+// Round 192 (m3 lane 4, fast): the mode and position tests as nested ifs 2; the mask as `(byte)~(0xff << (saved % 8))` 4;
+// `unknown30 += 1` with the clear under one `count >= 0 && count != 0` 3; the count as `size_in_bytes - 1 - byte_index` 2;
+// the pop as a decrement statement then the read 2. Compile-only screens (diagnostic): 0 to 40 unused locals at the top and
+// 1 to 8 dead inline-helper locals at the top, the mode block, before the bound test or before the count: both LEAs stay
+// data-first.
+// Round 119 (m3 lane 9, fast): the index bound to a `long const &` 2; `int saved` 2; `register` on the index 2; a
+// `s_bitstream *const` parameter 2; the index incremented after the mask with count and clear from it, as a statement
+// or as `size - ++byte_index`, 11 each (first difference +0x15: `inc edx` then `add edi, edx`, no clear LEA).
+// M3 lane 2 r85 (fast): the definition moved to the end of the file 2 (same code; diagnostic, so source position is not
+// the lever); the mask shifted from `1u` 2; the index as `(saved + (saved < 0 ? 7 : 0)) >> 3` 74 (151 bytes; the stream
+// then arrives in EDX; diagnostic); the bit-position test ahead of the mode test 7; the mask's bit offset as
+// `saved - byte_index * 8` 36. Re-measured: the explicit masked assignment 2, the clear from `&data[index + 1]` 2.
+// M3 lane 5 r187 (fast): a data local inside the clear's `count > 0` block 2; the mask as a `long` local in a braced mask block 2;
+// the index as `saved` then `byte_index /= 8` 2; a data local after the mask block, before the count, used only by the clear 2;
+// the same local after the count 2. Both LEAs stay data-first in each.
+// Round 186 (m3 lane 6, fast): the member form (`s_bitstream::function_194710(bool)`, every call `stream->function_194710(true)`,
+// all callers still matched) 2 (same code); the mask as `(byte)~(~0u << (saved % 8))` 4; the index renamed to sort first or
+// after the count 2/2; the mask under the clear's `count >= 0` test (the bound test folded into it) 40. Diagnostic: constant
+// stores (1, 0, -1, 4) to a scratch global after the pop leave both LEAs data-first.
+// M3 lane 2 r90 (fast): the masked byte through a `byte &` element reference in its block 9; the checkpoint bound to a
+// `long const &` 54 (reloaded at each use); the pop as `checkpoints[checkpoint_count -= 1]` 2; the bit offset named
+// (`saved % 8`) before the byte index 2; a `byte *const &` to the data field inside the clear's `count >= 0` block only 2.
+// Re-measured: the data-field reference after the index or at the function's top 2/2, the counter stores swapped 13.
+// M3 lane 13 r101 (fast): the count formed as size minus index, tested as `--count >= 0` 2; the bound test as
+// `size_in_bytes - byte_index > 0` 52 (142 bytes); the memset size written out at the call (count kept for the tests) 15
+// (143 bytes); `long bit_offset = saved % 8;` named after the byte index for the mask 2; one `count >= 0` test guarding
+// both the mask and the clear (the separate bound test dropped) 40. Both LEAs stay data-first in each 140-byte form.
+// M3 lane 5 r193 (fast): the mask named as a byte local at the mode block's top (sunk to its use) 2; `saved / 8` written
+// at every use, re-measured 2; a data local at the mode block's top used by the mask 48 (the mask access becomes
+// index-first `[edx + edi]` but folded into both memory operands, no LEA, data held in EDI); an unused read of the data
+// field at the mode block's top or the function's top 2/2 (diagnostic, dead, folded away before ordering); block-local
+// data locals in both the mask and the clear blocks 35. Sibling evidence: retail 0x1957d0 and 0x195820 put the value
+// computed after the data load first (`[eax + edx]` index first, `add esi, edi` index destination), so retail's two
+// LEAs need data loads ordered before an index that is still computed once.
+// Then the clear's start as a `byte &` element reference passed by address 2 (same code); with the mask's element
+// reference as well 9 (round 90's mask form).
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

@@ -14,49 +14,45 @@ inline pair_handler_30dc80 *handler_3728c0(dispatcher_3728c0 *dispatcher, pair_3
 }
 
 // Equal keys cancel before either callback. Removal needs no admission test.
-// score 15 (first implementation): OR comparator 114; aggregate bool 122;
-// explicit key branches 22, then 15. Two-dimensional handler indexing and
-// direct index expressions leave 15. Secondary-key and handler registers differ.
 // @retail 0x3728c0
 void dispatcher_3728c0::function_3728c0(pair_30d870 const *added, long added_count,
 	pair_30d870 const *removed, long removed_count, pair_listener_315a10 *listener)
 {
+	pair_30d870 const *added_pair = added;
 	pair_30d870 const *added_end = added + added_count;
+	pair_30d870 const *removed_pair = removed;
 	pair_30d870 const *removed_end = removed + removed_count;
 	pair_filter_3728c0 *filter = (pair_filter_3728c0 *)listener;
 	pair_order_372a80 less;
-	while (added != added_end && removed != removed_end)
+	while (added_pair != added_end && removed_pair != removed_end)
 	{
-		if (((pair_handle_3728c0 *)added->first)->key == ((pair_handle_3728c0 *)removed->first)->key &&
-			((pair_handle_3728c0 *)removed->second)->key == ((pair_handle_3728c0 *)added->second)->key)
+		if (((pair_handle_3728c0 *)added_pair->first)->key == ((pair_handle_3728c0 *)removed_pair->first)->key &&
+			((pair_handle_3728c0 *)removed_pair->second)->key == ((pair_handle_3728c0 *)added_pair->second)->key)
 		{
-			++added;
-			++removed;
+			++added_pair;
+			++removed_pair;
 		}
-		else if (less(*removed, *added))
+		else if (less(*removed_pair, *added_pair))
 		{
-			handler_3728c0(this, removed)->slot_2(removed);
-			++removed;
+			handler_3728c0(this, removed_pair)->slot_2(removed_pair);
+			++removed_pair;
 		}
 		else
 		{
-			if (accept_pair_3728c0(filter, added))
-				handler_3728c0(this, added)->slot_1(added);
-			++added;
+			if (accept_pair_3728c0(filter, added_pair))
+				handler_3728c0(this, added_pair)->slot_1(added_pair);
+			++added_pair;
 		}
 	}
-	for (; added < added_end; ++added)
+	for (; added_pair < added_end; ++added_pair)
 	{
-		if (accept_pair_3728c0(filter, added))
-			handler_3728c0(this, added)->slot_1(added);
+		if (accept_pair_3728c0(filter, added_pair))
+			handler_3728c0(this, added_pair)->slot_1(added_pair);
 	}
-	for (; removed < removed_end; ++removed)
-		handler_3728c0(this, removed)->slot_2(removed);
+	for (; removed_pair < removed_end; ++removed_pair)
+		handler_3728c0(this, removed_pair)->slot_2(removed_pair);
 }
 
-// score 2 (first implementation): natural pivot alignment 89; retail-aligned
-// pivot and explicit comparator 12; swap direction and key guards leave 2.
-// Early partition exit and index declaration order leave 2: inverse cmp/jump.
 // @retail 0x372a80
 void __cdecl sort_pair_range_372a80(pair_30d870 *pairs, long first, long last, pair_order_372a80 less)
 {
@@ -69,7 +65,7 @@ void __cdecl sort_pair_range_372a80(pair_30d870 *pairs, long first, long last, p
 		while (less(pairs[left], pivot)) ++left;
 		while (less(pivot, pairs[right])) --right;
 		if (right < left) break;
-		if (left != right)
+		if (right != left)
 		{
 			pair_30d870 temporary = pairs[right];
 			pairs[right] = pairs[left];

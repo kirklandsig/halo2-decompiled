@@ -227,6 +227,12 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
+// score 46 (was 54): MiniMax S (11-05): the countdown is kept as an int holding the same signed
+// byte value, so the expiry test drops the unsigned byte cast, and the tally is counted before the
+// timer is reset. Still different: retail builds the ceiling in esi and keeps the state pointer in
+// ebx, ours builds the ceiling in ebx and keeps the state in esi; retail copies the timer into cl,
+// decrements it there and tests a copy in al with a single branch, ours decrements it in al and
+// tests it with two.
 // MiniMax B (11-04, not kept, m3 review): 34 with `unsigned char timer` (the field is a signed char) tested
 // `!= 0xff` and the countdown computed before the test; the unsigned local is the same steering as MiniMax G's
 // `(unsigned char)` cast (a type picked by score), and without it the form is 55, under the keep bar. Left at 34:
@@ -236,7 +242,7 @@ struct s_item_object_2bc1
 // counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
 // retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.
 // A byte cast that only steers the compare is kept only with a byte match.
-// score 62 (was 97): retail spills the item pointer to the stack before it
+// Earlier, at 62 (was 97): retail spills the item pointer to the stack before it
 // reads the rate, so the rate and its forty-times multiply land in different
 // registers than ours; the countdown is also still decremented in al, while
 // retail keeps the decremented byte in cl.
@@ -282,6 +288,37 @@ struct s_item_object_2bc1
 // `countdown <= 0` 91 (one jg, state moves to ESI); the decremented value stored and the field
 // tested 91; `--field <= 0` 91; `= --timer` then `timer <= 0` 69 (state back in EBX, only the copy
 // and later offsets differ); the decremented value assigned back to the timer 91.
+// Round 160 (m3 lane 6, fast; counts are positional, so a one-instruction shift shows as ~60): `countdown <= 0` on the
+// int countdown 91 (543 bytes, one jg); a char countdown tested `<= 0` 91 (542, `dec al; test al, al`); `state->point_timers
+// [team] = --timer; if (timer <= 0)` 69 (542; the state back in EBX and the ceiling in ESI as retail, only the prologue's
+// spill order, the missing `mov cl, al ... mov al, cl` copy and the tally's load order differ); on that form the timer
+// reset ahead of the tally 69, the field decremented and tested 91, `= timer = timer - 1` 69, `timer = field = timer - 1`
+// 91, `timer--` then the store 69, `--field <= 0` 91, the field re-read after the store 91, the countdown computed ahead
+// of the NONE test 91 (543), a pointer to the timer element with `--*timer <= 0` 91, the stored assignment's value
+// tested 91, an unsigned local timer 69, with the countdown ahead of the test 70 (543): every form decrements in al.
+// On the base: the timer reset ahead of the tally 55. The copy sequence occurs nowhere else in retail. Diagnostic on the
+// 69 form: the countdown from a force-inline one-line helper 91 (the copy is propagated; still `dec al`).
+// Round 74 (m3 lane 2, fast, 542 bytes unless noted; t = timer reset written before the tally). Re-measured, as round 160:
+// `= --timer` then `timer <= 0` t/a 69/69 (state EBX, ceiling ESI as retail; `dec al; test al, al` is two instructions
+// short of retail's copy pair, so the rest shifts); `timer--` then the store 69; the stored value re-read from the field
+// t/a 91/91; `--field <= 0` 91; `field = timer = timer - 1` 69; `timer = field = timer - 1` 91; main's countdown with the
+// timer reset first 55 (as round 160's 55). New: a char countdown t/a 91/91; `field--` then re-read 91; `timer = --field`
+// t/a 91/91; `!(timer > 0)` 69; a long countdown tested `(char)countdown <= 0` / `< 1` / stored uncast 85/85/85 (int
+// arithmetic); `(char)(timer - 1) <= 0` 91; a short countdown 90 (543); the tally through a char pointer to its element on
+// the 69 form, with `--timer` or the long countdown, 156/157 (frame 0x34; as round 8's 97 on another base); the field and
+// the local decremented separately (both orders), `field = timer - 1; timer--` and `field = timer - 1; if (--timer <= 0)`
+// 91 each; a byte timer tested `(char)timer <= 0` (two spellings) 65/65, `(char)(timer - 1)` 69; int/long countdown tested
+// `<= 0` 91/90/90 (543). Every form decrements in AL in place; none gives the copy pair.
+// b11I (11-17) walk against retail, fast build on r843: fields, offsets, jcc senses (ticks `cmova`/`jae` unsigned, NONE
+// tests) and callee arguments (register arguments, 0x1972a0's value04 and 3) all agree with retail; no behaviour
+// difference found. One order fix: retail resets the timer (0x2bcb2a `mov [eax+ebp+0x18], dl`) before it loads and
+// increments the tally (0x2bcb2e `mov bl, [esi]`); ours loaded the tally first and sank the reset. Written first via
+// a local pointer to the field (`char *timer_slot`, as 0xe18d0) the reset stays first and the tally block is identical:
+// 54 -> 46 (plain reset-first, no pointer: 55). Not kept: the pointer used for the timer's load and decrement too 79;
+// state declared at the top 46 (same); a separate local for the tally block's state 46 (same); maximum computed after
+// the 0x10da60 call 144. Left: state/maximum swap ebx/esi (0x2bc9d4-0x2bc9dc, `push esi; lea esi`) and the copy pair
+// (0x2bcaef-0x2bcaf3). The existing `countdown == 0 || countdown < 0` is score-steered (`<= 0` is 91, same 542 bytes,
+// one `jg` as retail): kept as merged, flagged for review. No match-only recipe found.
 // @retail 0x2bc990
 void __stdcall function_2bc990(long team)
 {
@@ -332,14 +369,15 @@ void __stdcall function_2bc990(long team)
 
 			if (timer != NONE)
 			{
-				char countdown = (char)(timer - 1);
-				state->point_timers[team] = countdown;
-				if ((unsigned char)countdown == 0 || countdown < 0)
+				int countdown = (char)(timer - 1);
+				state->point_timers[team] = (char)countdown;
+				if (countdown == 0 || countdown < 0)
 				{
 					function_1972a0(entry->player_index, 3, entry->value04);
 					function_2bce70(entry->player_index);
 					state = (s_state_2bc1 *)g_51ecc4;
-					state->point_timers[team] = (char)g_510c54->field_2_3;
+					char *timer_slot = &state->point_timers[team];
+					*timer_slot = (char)g_510c54->field_2_3;
 					state->point_tallies[team]++;
 					function_15b930(entry->player_index, function_15eaf0(), 0x17, 1);
 					if (state->point_tallies[team] % 5 == 0)

@@ -804,12 +804,19 @@ static inline long view_buffer_write(s_ring_buffer *buffer, long count, const vo
  }
  return result;
 }
+static inline void view_buffer_advance(c_simulation_view *view, long count)
+{
+ s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
+ long next = buffer->start + count;
+ next %= buffer->size;
+ buffer->used -= count;
+ buffer->start = next;
+}
 static inline void view_buffer_read(c_simulation_view *view, long count, void *destination)
 {
  s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
  buffer->read_wrapped(buffer->start, count, destination);
- buffer->start = (buffer->start + count) % buffer->size;
- buffer->used -= count;
+ view_buffer_advance(view, count);
 }
 bool function_1995a0(const byte *source, dword source_size, byte *destination, long *compressed_size, dword capacity, long level);
 
@@ -880,32 +887,10 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
  return (byte *)function_80e14(size, owner, 0, release, 30, 0.1f);
 }
 
-// score 22 (was 22): ours hoists the time stamp's volatile low store and the header memset's
-// low store, and packs start's spill apart from the volatile. The dword local is written before
-// the byte local; retail writes the byte first and then the dword into the structure. Tried: the
-// volatile and start renamed 22; used zeroed before start 22; the header declared before the
-// view stores 22. _ReadWriteBarrier before the first allocation 19 (retail's store order; start's
-// spill still apart from the volatile's slot); before the count increment 27; before both
-// allocations 19. Each stamp's start spill shares its own volatile's slot in retail (ours pairs
-// the two volatiles): the helper's volatile renamed after `start` 22; the helper's result declared
-// before start 32 (and 0x6a8a0, 0x80e10, 0x18f260 worse). With the barrier: the header memset
-// before `unknownac = 0` 19; `long size` before the count increment 19. A compile-only build
-// gives the +0xc/+8 ring stores and the hoisted header store for every statement order.
-// Round 140 (lane 4): the ring pointer declared first in the block 25; `unknownac = 0` ahead of the
-// ring stores 200 (644 bytes); `header.value` assigned before kind and size 25; the count increment
-// after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
-// wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
-// the reader's local non-volatile 250 (its zero stores vanish).
-// Round 135: allocation helper shapes: elapsed declared at its top 22; elapsed test as a nested inline
-// helper taking start 22; start declared then assigned 22. Reader: memset of a local, a volatile, a
-// long[2], a LARGE_INTEGER 250, 250, 250, 250 (621 bytes, the zero stores vanish).
-// Round 114: separate allocation scopes 22; one combined allocation-output declaration 22;
-// a ring reference 22; a const ring pointer 22; the size output declared before the count 22;
-// `+= 1` for either count 22; result declaration split from its initialization 22;
-// the header scoped to the write/serialization block 22.
-// Round 52 (lane 14, fast; see 0x80e10's note for the shared helper's forms): `buffer->data` before `buffer->size` 21 (the only store order that
-// moves; not kept for one line); with `used` before `start` 21, the header after `result = true` 21, `size` declared before the increment 21,
-// `count = count + 1` 21. Without it: chained `start = used = 0` 22, `used` first 22, all three zeros chained 22, a memset of the two fields 97.
+/* starts sending the world's state to a joining view: allocates the view's ring buffer and a scratch buffer, writes
+   the opening chunk, then the compressed state (0x86800). The ring is filled in through `buffer` and written through
+   its own address expression, as 0x86800 takes the ring just before its write; with one pointer for both, the
+   compiler tells the ring's fields apart and reorders the stores. */
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -931,17 +916,18 @@ bool function_862e0(c_simulation_view *view)
    header.kind = 0;
    header.size = 0;
    header.value = view->world->unknown28;
-   if (view_buffer_write(buffer, sizeof(header), &header) != NONE)
-   {
+   if (view_buffer_write((s_ring_buffer *)&view->unknown9c, sizeof(header), &header) != NONE)
     view->unknownac++;
+   else
+    result = false;
+   if (result)
+   {
     long size;
     function_6a860(view->world, &size);
     if (!function_86800(0x40000, view, size, scratch)) result = false;
     view->world->flag11fc = 0;
     g_46e320[4](0);
    }
-   else
-    result = false;
    if (!result) view->release_buffer();
   }
   else
@@ -952,22 +938,15 @@ bool function_862e0(c_simulation_view *view)
 }
 
 
-bool function_685f0(void *block, long *size, byte *destination, long capacity);
+bool function_685f0(long capacity, byte *destination, void *block, long *size);
 
-// score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
-// the address first. The registers that carry the destination and the capacity are the
-// callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
-// off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
-// in edx; its body is contributor code).
-// Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
-// `mov edi, edx`) and this is its only caller, so no caller form was retried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
  byte encoded[0xffff];
  long encoded_size;
  bool result = false;
- if (function_685f0(block, &encoded_size, encoded, sizeof(encoded)))
+ if (function_685f0(sizeof(encoded), encoded, block, &encoded_size))
  {
   struct { short kind; short size; long sequence; } header;
   memset(&header, 0, sizeof(header));
@@ -986,9 +965,18 @@ bool function_869a0(c_simulation_view *view, void *block)
 }
 
 
-bool function_68670(byte *source, long size, void *block);
+bool function_68670(void *block, byte *source, long size);
 
-// score 24 (was 24): lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
+// score 2 (was 2): MiniMax C (11-10): no lower score this round. The two remaining instructions are the
+// order of the argument address computations for 0x68670: this body sets up the block address before the
+// source address, retail the other way. Passing the source as `&payload[0]`, naming it in a local
+// pointer, or casting the block to a byte pointer all leave the order unchanged (2 each), so the
+// difference is the callee's declared parameter order, which lives in a contributor's file. The
+// block as a plain byte array instead of the aligned union is 2 as well, with the same two `lea`s.
+// score 2 (was 24): MiniMax C (11-10): the ring advance is now a helper of its own, so it reads the
+// ring's start from memory again after the wrapped read, as retail does, and the header size is
+// loaded after the start and used stores; only case 2's two 0x68670 argument loads differ now (ours
+// sets up the source address before the block address, retail the other way). Lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
 // retail call to show it, 10-30 rule). That 2 form is retail's code but for case 2, which sets up 0x68670's source before its block (ours after). Only the
 // declared order of that contributor function moves it: (block, source, size) or (block, size, source) gives a byte match in
 // a diagnostic, so BLOCKED-BY 0x68670. This round (fast): the read taking its offset, one `ring` local before the first read and
@@ -1246,6 +1234,28 @@ bool function_68670(byte *source, long size, void *block);
 // at all five sites) 24 [9]; ring local with plain statements and no helper 153 (534) [52]; ring local + read call + advance helper taking the
 // view 121 (554) [25], taking the ring 154 (533) [51]. Control: the 2 form re-measured 2 [2]; it needs the ring local's `start` evaluated by the
 // caller while the callee's receiver comes from the helper's own derivation. Case 2's two loads stay BLOCKED-BY 0x68670.
+// Round 217 (lane 3; harness exact at 24, then fast and plain; NOT kept, match-only: the gain needs `next`, a one-use local computed ahead of the intervening used store): 24 -> 2 (plain 2, file otherwise unchanged) with no offset parameter: the read split into a position-read helper and an advance helper that each derive the ring from the view, both called at both
+// reads, and the advance taking the remainder first (`long next = start + count; next %= size; used -= count; start = next;`). Retail's own order there is idiv, used update, start store. The remainder in the local's initializer 2; returned from the helper and stored by it 2;
+// `buffer->start = consume(view, count)` with a returning helper 2. Same helpers, start stored before used 121 (554), with no named next 121; used first with no next 133 (559). The one read helper calling a view advance helper 2, without next 121 (554); advance on `this` or on the ring pointer, without next 24 (553), with next 133 (558);
+// next and used-first in one read helper with no advance 133 (558), start first 24; used first without next 29; a whole read member 24; forced-inline read or both helpers 121; the advance through a re-derived ring inside one helper 26 (559); direct read calls plus the advance helper 24 (556).
+// MATCH (applied 11-10 by the m3 coordinator from lane 15 r65's held patch; full check: lost []): 0x68670 takes
+// (block, source, size) and main's ring-buffer helpers already have the read split.
+// Round 73 (m3 lane 13), held then (0x68670 is a contributor's function). Re-measured on this tree:
+// round 217's two-helper read (a position-read helper and an advance helper taking the remainder first) 24 -> 2 (fast),
+// and with 0x68670 declared (block, source, size) at its definition, declaration and this call 0x865d0 and 0x68670
+// both MATCH in the plain check of both files, nothing else in them changed. Code put back; the full diff is
+// build/r73/held-0x865d0.patch. Without the owner's change the read form stays match-only (2), so it is not kept.
+// Leave-one-out with that order in place (fast): this body alone 22; one helper with the named remainder 133; two
+// helpers without it 122, with the used update first 133; one helper with the used update first 27; two helpers with
+// `long next = (start + count) % size;` as one initialiser MATCH (the patch uses this, the smallest form that
+// matches); one helper with that initialiser 133. Both the helper pair and the named remainder are needed.
+// Round 65 (m3 lane 15), held then, build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
+// matches and no other function of the two files changes) with round 217's read split (a position-read helper, then an
+// advance helper that names the remainder ahead of the used update) and 0x68670's parameters declared block, source,
+// size at its definition in src/unknown_067e10.cpp (a contributor body), its declaration and its one call here: retail
+// sets EAX to the payload before ESI to the block. On the split form the other orders: source, block, size 2; size,
+// source, block 2; main's order 2. The advance with the named remainder inside the one read helper 133 (558 bytes).
+// Body, helper and 0x68670 put back to main (24).
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
@@ -1283,7 +1293,7 @@ void __stdcall function_865d0(c_simulation_view *view)
    {
     union { __int64 alignment; byte bytes[0x4048]; } block;
     memset(&block, 0, sizeof(block));
-    if (!function_68670(payload, header.size, &block))
+    if (!function_68670(&block, payload, header.size))
     {
      view->fail(5);
      return;
