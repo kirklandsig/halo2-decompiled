@@ -1693,12 +1693,16 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 	memcpy(settings, &g_54e5d0.settings, sizeof(settings));
 }
 
-// score 2 (was 2): the base-call argument push and this-pointer move are
+// score 2 (was 2): the event push and ECX receiver setup are reversed before the matched base call.
+// Earlier: the base-call argument push and this-pointer move are
 // reversed; the base handler already matches. Retry, 20 reduced variants:
 // flat/nested ifs and do exits 5; one shared call/return 26; direct returns,
 // this/base casts, event local/reference, initialized bool, guarded parameter
 // switch and saved event fields 2; long result 11; outer switch/early type
 // return 7; copy loop 26; memmove 27; changed-first guard 16. Original kept.
+// Copy-only forwarding 35, default-button forwarding 2, conditional button selector 27,
+// button equalities 9, typed settings assignment 2, non-button guard/shared result 2,
+// non-button switch default 2, named short-circuit cancellation 9.
 // inherited handler qualified through immediate base 2; base call inside the changed-
 // settings branch 29; button guard with base call inside the changed-settings branch
 // 29; copy sequenced in the changed-settings return 23; restore result assigned by
@@ -2192,7 +2196,10 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 	delegate_register(&item_handlers, &handler);
 }
 
-// score 7 (was 7):
+// score 7 (was 7): retail clears ESI before the lookup-result comparison and uses that zero for field_c.
+// Early null return 7, typed pointer test 7, success-path request value initialization 62,
+// function-scope value initialization 64, callback local 49, separate request-mode test 54,
+// split selector dispatch 45, selector read after setup 58, shared word flag setter 14.
 // Retail clears ESI before comparing the pool result, then uses it in the parameter setup. Ours tests EAX
 // first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
 // tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
@@ -3688,9 +3695,14 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
-// score 9 (was 9): only the EAX/EDX roles in the `1 << controller_index` mask and the
+// score 9 (was 9): the screen setup builds the mask in EDX. Retail uses EAX and loads the controller through ECX.
+// Earlier: only the EAX/EDX roles in the `1 << controller_index` mask and the
 // zero store differ. A named controller_mask local keeps the same code.
 // Permuter: 295 tries in 600 s, no lower form.
+// Shared word flag setter after/before the clear 9/12, shifted word 35,
+// controller object reference 9, clear after setup 16, callback local 125,
+// shared ordinary-edit mode 116, mask through the request field 118.
+// only the EAX/EDX roles in the `1 << controller_index` mask and the
 // aggregate initialization of screen parameters 184; byte-zero initialization of
 // screen parameters 173; only field_c zeroed with memset 168; controller flags
 // initialized in the request field 111; field_c memset followed by compound short
