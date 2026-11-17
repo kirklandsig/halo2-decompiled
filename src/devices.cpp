@@ -1042,6 +1042,9 @@ struct s_device_machine_view
 // group pointer 122; a dead `else` on the group test 122; both value updates as ternaries on function_value 122; the
 // machine test spelled per bit (`(f & 1) || (f & 4) || (f & 8)`) on the lane S form 2 (merged into `test dl, 0xd`).
 // Re-measured round 62's both-arm read: 3 (the pointer takes EAX, the load hoists above the `je`).
+// M3 lane 1 r117 (fast with 0x107870, 0x1071e0): on the group pointer read after the machine test (122, pushed ESI): an
+// `s_device_group *&` bound to it 122; the word through a `word &` bound to a word local 122; `__assume(group != NULL)`
+// placed between the machine test and the word read 122; a word local read after the machine test 122.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1806,6 +1809,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // and the fstp follows `push edi` as in retail, while dropping only its second half keeps the reload and our order; the
 // state renamed to sort first or last 2. In every build the fstp is the eighth instruction after the flag branch;
 // retail's is ninth, as if the state's reload were not in the block when it was scheduled.
+// M3 lane 1 r117 (fast): the render model typed dword 2; the first sample call's render model through a `long const &`
+// 2; that call through an `s_animation_state *const &` to the state 2; the time assigned through a `real &` 2; the
+// first call's output through a matrix pointer local 2.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

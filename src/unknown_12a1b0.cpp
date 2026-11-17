@@ -1387,6 +1387,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // `s_sound_playback &` passed to a reference-parameter helper 35, declared at function scope 35. All keep retail's
 // registers (index EDI, element ESI) with the state load hoisted above the element's add (`mov al, [esi + edx + 2];
 // add esi, edx`): the offset is computed in the element's register whenever the element is a named variable.
+// M3 lane 1 r117 (fast with the same four, all matched; `ret 8` and 210 B in both builds): a named element with
+// `__assume(sound != NULL)` after it, call kept, 24; the same `__assume` inside the state arm 24; the loop under a
+// code-free `if (0 <= iterator.count)` guard 24; the element through an `s_sound_playback *&` 24. Diagnostic (the
+// fade-in half written out, not keepable) with the `__assume` after the named element 35 at 211 B: the state load
+// still folds ahead of the add, so a pointer boundary does not split the offset from the element's register.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

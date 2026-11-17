@@ -805,7 +805,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                         local_54 = MIN(local_54, MAX(8.0f, g_510c54->field_2_3 * local_47));
                         vector3f local_55;
                         function_206096(local_46, g_510c54->rate * local_54 * -1.0f, &local_55);
-                        havok_component_rigid_body_linear_velocity_change(local_50, local_49, &local_55);
+                        local_49->rigid_body_linear_velocity_change(local_50, &local_55);
                     }
                 }
                 vector3f local_56 = local_0->field_b10[local_38].field_4;
