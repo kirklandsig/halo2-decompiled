@@ -303,6 +303,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // reference form 5 (same code); a named chain index 5 (same code); `different_tag || changed` re-measured 7; `first` read through
 // its address on the direct form 5 (same code); round 64's tables reference re-measured with a non-const binding 5 (same code).
 // Body unchanged.
+// M3 lane 4 r209 (fast, control 5 at +0x19e), all on the direct entry store (re-measured 5 at +0x1a7: the reload of
+// `second` into ESI lands right after the entry lea, where retail fills that slot with the entry store and loads `second`
+// after the two table loads): the chain index built in two steps through a `long &` binding 5; the chain table base bound
+// to a `word *const &` before the entry word is read 5; the entry/chain/pass statements in a bare block scope 5; the chain
+// index as `second + (**(word **)(state + 0x14) & 0x1ff)` with no packed carrier 5 (all +0x1a7, same code).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

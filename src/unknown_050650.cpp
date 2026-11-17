@@ -987,6 +987,10 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// score 257 (was 257): retail keeps case 1's and case 2's identical 0xcafc0 blocks inline where this build
+// tail-merges them (that moves case 2's block and the direction chain's fall-through predecessor); retail's failure
+// exit stores result = false (F+2, point-valid at F+3); the weapon block keeps the direction pointer in EBX where
+// retail uses EDI and reloads the actor index. Round 209 (m3 lane 4) at the end of this note.
 // MiniMax R (11-15), not kept (the merge measured 341 -> 340 fast, under the bar): reported 175 (was 257): case 1's and case 6's player test inverted, so the NONE arm comes
 // first and retail's case-1 block layout returns (the body is 1424 B against retail's 1444). Left: retail keeps
 // the non-NONE arm inline in both cases where this build keeps the NONE arm inline, this build's case 1 and
@@ -1023,7 +1027,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // what is left is the byte homes of the result and the point-valid flag plus the direction chain's fall-through
 // predecessor, where retail enters case 2's remembered 0x1e3b00 block and ours falls into the merged 0xcafc0 block;
 // the reduced image scores higher because the helper it calls is laid out differently in that build.
-// score 257 (was 257): frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
+// Earlier at 257: frame 0x8c agrees; left: the result/point-valid byte homes and the direction chain's
 // fall-through predecessor (retail: case 2's remembered 0x1e3b00 block; ours: the merged 0xcafc0 block).
 // Round 176 (m3 lane 5, plain): case 1's object index local renamed 257 (same code: the merge is
 // machine-level cross-jumping into whichever block is laid out before the chain); one case-2 object index for
@@ -1370,6 +1374,18 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // MiniMax S (11-16): no new form, no lower score (257): the instructions match one for one and only the branch
 // targets differ, because this build lays the case blocks out in a far cold section where retail keeps them next
 // to the function.
+// M3 lane 4 r209 (fast with 0x297660/0x297a50/0x2980d0 and the callees 0x1ffe00/0x1e1f20; without the two callees the
+// fast build reads 341 at 1404 bytes, with them 258 at 1448 as the full build): MiniMax E's three forms together (flags
+// cleared `point_valid = result = false`, `result = false; goto done;` at the two trailing case exits, NONE-first player
+// tests in cases 1 and 6) 166 (1428 bytes, aligned 28); with case 6's player test as on main 168 (aligned 19: only case
+// 1's merged 0xcafc0 block and the weapon block's EBX/EDI left). On that 168 form: case 1 reading
+// `reference->object_index` at each use 168, the weapon locals scoped in the weapon block 168, case 1 with its own prop
+// pointer 168 (all same code: the merge is not operand identity), `point_valid = true;` ahead of case 1's
+// `goto aim_at_point` (case 6's tail) 164 (aligned 25), the case 1/2 failure tails as `return false;` 188 (its own
+// xor-al exit). Case 1's object arm in case 6's shape (all three calls then `goto aim_at_point`) on main's player test
+// 255, on the 166 form 166 (same code); cases 1 and 6 through a shared object-point inline helper: plain inline 392
+// (1300 bytes, kept out of line), forceinline 255, forceinline with the NONE-first test 166. None kept: each gain rests
+// on forms kept only with a match.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
