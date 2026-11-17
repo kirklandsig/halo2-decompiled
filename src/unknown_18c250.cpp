@@ -663,6 +663,11 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // the lower scores needs the inline contract on 0x188790, whose definition is in src/unknown_1887d0.cpp, and the rest
 // of that chain (the flags cleared by memset, the named listener, the named object index) may be kept only with an
 // exact match.
+// MiniMax I (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80 and the
+// constant 1 still sits in EBX; retail reads the top field through a pointer (`lea eax, [esi + 0x10]`, then
+// `mov eax, 0x444ae0; mov eax, [eax]`), which this build only reaches by taking the address of the shared
+// constant g_444ae0, and the rest of the chain that reaches the lower scores needs the inline contract on
+// 0x188790, whose definition is in src/unknown_1887d0.cpp.
 // score 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
 // where this build keeps it in ECX with a 0x84 frame, and that follows whether 0x188790 is expanded, which is decided
 // by its definition in src/unknown_1887d0.cpp: BLOCKED-BY that file.
