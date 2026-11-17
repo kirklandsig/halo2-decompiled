@@ -164,6 +164,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
+// into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
+// 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
+// with early returns, as a guard returning NULL then `table->entries + index`, and as one ternary 117 each (same code);
+// case 4's child test as `continue` on the seat/unit tests then the flag test 117 (same code); the child loop as `while
+// (!blocked && function_d05c0(&iterator))` setting the flag without `break` 509 (2288 bytes).
 // MiniMax E (11-16): no new form tried this round, no lower score (118): the gap is still the register rotation that starts at
 // the inlined lookup, where retail keeps the table in ECX and the null result in EAX while this build keeps them the other way
 // round; that rotation follows 0xd0590's parameter order (retail takes the iterator in ECX and the object index in EDX, while
@@ -176,7 +182,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // retail hands it to ECX and keeps the result in EAX; four spellings of the getter (the early return, the negated
 // condition, pointer arithmetic instead of the subscript and the two tests split apart) all compile to the same
 // bytes, so the rotation is not the getter's shape but the allocation around it.
-// score 117 (was 118): Case 4 still exchanges the parent and iterator setup, and the entry table and child-seat bit use different registers.
+// Earlier (117, was 118): Case 4 still exchanges the parent and iterator setup, and the entry table and child-seat bit use different registers.
 // no new form and no lower score; every instruction but a register rotation among EAX,
 // ECX and EDX differs, and it starts at the inlined lookup where retail keeps the table in ECX and the null
 // result in EAX; the permuter's 24 tries found nothing below 118, and 0xd0590 in another file settles it.
@@ -194,7 +200,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // MiniMax H (11-14): no new form, no lower score (118): every instruction but a register rotation among EAX, ECX
 // and EDX differs, and it starts at the entry getter, where retail keeps the table in ECX and the result in EAX;
 // the rotation is decided by 0xd0590's parameter order, which is in another file.
-// Earlier score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
+// Earlier (118, was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // MiniMax I (11-09): no new form, no lower score (118); the aligned view (build/mm/align.py) shows that every
 // difference is a register rotation: retail keeps the table in ECX and the null result in EAX in the inlined
