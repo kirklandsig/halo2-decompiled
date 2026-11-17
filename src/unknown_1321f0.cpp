@@ -769,6 +769,16 @@ void function_133390(s_bit_vector_pool const *arg_1)
 	}
 }
 
+// score 24 (was 24, fast build on r846): remaining diffs are register choices only (see walk below).
+// b13F (11-17) walk against retail, fast build on r846: fields, offsets, jcc senses (NaN included: jae 0x1335c3,
+// ja 0x1335da, jbe 0x13361d/0x133640, ja 0x13365b, jbe 0x133691), constants, the 0x1332f0 and 0x2cbf0 arguments,
+// the flag bits (0x40/1 by the 0x800 test at 0x13367c, 0x1008) and the loop shape agree; no behaviour difference found.
+// Remaining: retail reloads data->lists[3] after the 0x1332f0 call as ecx -> eax -> edx -> ax (0x1335df-0x1335ee),
+// ours ecx -> edx -> eax -> cx; the same swap recurs at 0x133672-0x13367c, the argument pushes at 0x1336a0-0x1336bf
+// and 0x1336da-0x1336e8. The volatile on arg_1 stays: without it ours keeps lists[3] in ebp across the call (134).
+// Tried: local_8 hoisted to five other places (38, 59, 129, 137), pointee-volatile cast on arg_1 (24, same code),
+// volatile local pointer (142), volatile on local_3 (50), local_3 reassigned after the call (134), the 0x800 test as
+// a ternary (128) or with the branches swapped (27).
 // @retail 0x133520
 void __stdcall function_133520(s_bit_vector_pool *arg_1)
 {
@@ -1124,6 +1134,17 @@ struct s_view_collection_1733e0;
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index, s_view_collection_1733e0 *collection);
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera);
 
+// score 26 (was 26, full build; fast build on r846 reads 25): the diff is the g_4e7c18 flag, see below.
+// b13F (11-17) walk against retail, fast build on r846: the arguments of 0x132b80, the switch (0x13213f-0x132149)
+// and the three case bodies with their call arguments (0x13214b-0x132157, 0x132159-0x13215b, 0x132162-0x13217d) agree.
+// Retail keeps `mov byte ptr [0x4e7c18], bl` (0x13218f) before the call to 0x134390; ours drops it as a dead store,
+// so retail's `mov bl, 1` (0x13218c) shared by the stores at 0x1321b6 and 0x1321c2 becomes `mov al, 1` after the call,
+// and `inc dword ptr [0x4e7c1c]` (0x132186) becomes load/inc/store through ebx. 0x4e7c18 is never read in retail
+// (writes at 0x13218f, 0x1321a9, 0x1699f8, 0x169e10, 0x16a52a, 0x16a773), so the store survives only if the compiler
+// thinks 0x134390 may read it: untried lead, as for cluster_marks_storage.h: 0x4e7c18 flag, 0x4e7c1c tick and the
+// 0x4e7c20 table are one 8 + 0x1000 byte block (the callee reads tick and table), which needs edits outside this
+// function (unknown_1689b0.cpp:713, unknown_244c10.cpp:9, and the table above). Also: retail loads ebx (data->context)
+// before eax (cluster) at 0x13214b-0x13214d, ours eax first (a local for the collection leaves it as is).
 // @retail 0x1320f0
 s_bit_vector_pool *function_1320f0(long mode, long count, bool use_plane, long flags, byte const *frusta,
 	byte const *center, real radius, void *filter, real plane_offset, long cluster)

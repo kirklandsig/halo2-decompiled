@@ -451,7 +451,7 @@ void c_screen_24a7bf::v25(s_screen_focus *arg_0)
 	function_249fcc((c_unknown_249fa3 *)&field_614);
 }
 
-void function_2b10a3(dword const *arg_0, c_class_2b0b5e *arg_1, long arg_2);
+void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type);
 
 // @retail 0x24a7ec
 void function_24a7ec(dword const *arg_0, c_class_2b0b5e *arg_1, long arg_2, bool arg_3)
@@ -461,7 +461,7 @@ void function_24a7ec(dword const *arg_0, c_class_2b0b5e *arg_1, long arg_2, bool
 		if (arg_3)
 			arg_1->value6e = false;
 		else
-			function_2b10a3(arg_0, arg_1, arg_2);
+			function_2b10a3(arg_1, arg_0, arg_2);
 	}
 }
 

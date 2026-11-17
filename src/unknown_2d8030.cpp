@@ -83,6 +83,17 @@ void error_handler_2d8030::set_enabled(long id, bool enabled)
 // and lose the deleting body; explicit cleanup definition order 39.
 // Member cleanup contracts: force-inline 39; id noinline 55; location
 // noinline 59; both noinline 83. Class-table store and first release remain.
+// b13J (11-17) walk against retail, fast build on r846: the body is the same as ours statement by statement: state 1
+// then silenced (data 0x14, capacity 0x1c: 0x2d852d-0x2d8557), state 0 then counts (0x2d8558-0x2d857e), then only the
+// base table store (0x2d8585). Retail has no store of the class's own table at entry (nothing between 0x2d8529 and
+// 0x2d852d), and its first release loads data into edx (0x2d853c) before the allocator, so the table goes to a
+// pushed edi (0x2d8545-0x2d8557); ours stores the class table first and loads data last. Both fixes are needed:
+// `__declspec(novtable)` on the class (30, as listed) plus a local `id_value_2d8410 *storage = data;` in
+// ~id_values_2d8410, passed to release_block, gives MATCH 135 bytes, but the deleting body at 0x2d84e0 is then not
+// emitted (no vtable) and it is a matched function; the same local without novtable is 42. New: the two arrays as
+// base classes (counts, silenced after c_sized_reference_a9ef0) keep 0x2d84e0 MATCH but score 43 (extra unwind
+// slot, `sub esp, 8`, class table store still there), so retail's table store is not an inherited-member effect.
+// No form found that keeps the class table out of the destructor while the deleting destructor is still emitted.
 // @retail 0x2d8510
 error_handler_2d8030::~error_handler_2d8030()
 {
