@@ -830,6 +830,19 @@ real function_30bf0(vector3f *vector);
 // and scale ahead of range at the settings block's top 84 (same code), `range` given a longer name 84 and `result` another
 // name 84 (same code: neither names nor declaration order move these homes); the facing pair as one
 // two-element array (primary [0], secondary [1]) 103; the seat loop counter as long 173 (1308 B).
+// b12K (11-17) walk against retail, fast build on r846: every statement, field offset (+7, +0x26c,
+// +0x2a8/+0x2b4/+0x2c0, seat object +0x13c/+0x18c..+0x194, settings +0/+4), argument and constant checked
+// (0.0025f, 0.0f as a memory operand at 0x26399c, 1.0f, 0.3f, 0.7f shared with the scaled secondary at 0x263cc6,
+// 36.0f) and every jcc sense: jbe at 0x263911, 0x26398e, 0x26399c, 0x263a14, 0x263a66, 0x263c9a, 0x263ca7,
+// 0x263cf0 skip NaN and ja at 0x263981 lets it through, as ours does; the shared out-of-range tail 0x263d0c, the
+// `test ax,ax; jle` seat guard at 0x263adb and the dword result with `mov ax, word` reloads agree. No behaviour
+// difference found, so the body is unchanged. New measurements (fast, with 0x263740/0x25c9d0/0x26d370): both seat
+// crosses written out as component expressions 148, the second alone 84 (same code as cross3f), the first alone
+// 148, and ten of the twelve products' source operand order flipped one at a time 148 each: the emitted operand
+// side does not follow source order. The emission still differs from retail in the first cross's world-up.i *
+// forward.k and world-up.j * forward.i (retail loads the up component first, 0x263b57 and 0x263b7d) and in the
+// second's side.j * forward.k and side.i * forward.k (retail copies the register first, 0x263bd2 and 0x263bf7);
+// the second cross's two are the 2 extra bytes. Best match-only recipe: none (84).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
