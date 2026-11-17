@@ -588,11 +588,25 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
 // rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
 // this lane may not edit.
+// MiniMax E (11-17): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, and the rotation helper (0x170d70) is defined in src/unknown_170d70.cpp, which this lane may not edit.
 // score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
 // `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
 // MiniMax S (11-15): no new form, no lower score (13): only the j and k rows of the inlined rotation differ, where the
 // helper adds the projection term after the cosine term and retail adds it before; the helper's own text fixes that order
 // and it lives in another file.
+// b16E (11-17) walk against retail, fast build on r852 (0x170d70 in the image; control 13): statements, offsets,
+// jcc senses, draws, flag store and the i row agree with retail; only the j and k rows of the rotation differ
+// (retail 0x1551ba-0x1551fb: v.j loaded at 0x1551ba before the i store, then (axis.j * projection) + (v.j * cosine),
+// k likewise; ours adds v * cosine first and loads v.j after the store). The lanes' premise that the shared helper's
+// TEXT in src/unknown_170d70.cpp decides this is refuted: j,k rows projection-first 13, all three rows 13, every
+// row-sum order (7), cosine/v and axis/projection factor orders (9 more) 13, 0x170d70 MATCH in each; a same-file
+// rotate_slot_vector twin (static, inline, forceinline) with j,k projection-first or with the helper's text 13.
+// Retail's own 0x170d70 shows v-first i and projection-first j,k rows from the same text; matched 0x1055b0 and
+// 0x177d10 spell v-first text: no retail evidence for a helper change. Helper local orders: 4 of 18 keep 13/MATCH,
+// the other 14 give 24-47 (0x170d70 46-110); parameters v-first (6 orders) 13, axis first 19. function_259d0 as
+// random * range + lower 13 (lerp form 171); `volatile real scale` 17 (retail loads the scale at 0x155204 after the
+// k store at 0x1551fb, ours hoists it once xmm0 is free). No outside piece changed; the operand order follows
+// register state, not any text.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -811,6 +825,10 @@ struct s_player_axes_153d10
 // a `(real)` cast on this product's up.k or forward.i operand alone 2/2 (same code); the axis pointers, the axes view, or
 // cross/relative/delta renamed 2/2/2 (names do not key the order); in the real build the forward and up dots ahead of the
 // cross 115 (1300 B), the forward dot only 47, the up dot only 46.
+// M3 lane 3 r256 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70, control 2; without 0x154df0 listed every form reads
+// 345 at 1335 B): the second unit index as one ternary 2 (same code); as `unit_index = NONE;` then the lookup under the
+// player test 63 (1296 B); the cross as three named scalars feeding relative.i (real build) 47; delta declared after
+// the cross 121 (1303 B); all three dots written delta-first 2 (same code).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

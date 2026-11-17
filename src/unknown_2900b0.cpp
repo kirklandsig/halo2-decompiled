@@ -454,6 +454,10 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // scratch rotation: the actor index test through one 30, the origin pointer through one 28, the
 // pool data through one 28 (the prologue unchanged in each); the centre update as a member of the
 // record 60; the origin as a const reference passed to the copy 28.
+// Round 106 (m3 lane 14, fast with 0x1e3b60 and 0x28f890): the pool's data bound to a const reference ahead of
+// the copy 99 (the reference is read again at the add, after the copy); a redundant `!= NONE` guard around the
+// centre loop 28 (same code); the copy's destination through a trivial inline centre accessor 28 (same code); the
+// actor through swarm.h's swarm_leader_get after the copy 99, ahead of the copy 38 (the add then precedes the copy).
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

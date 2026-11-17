@@ -1485,75 +1485,43 @@ long function_26bc60(long clump_index)
 	return 2;
 }
 
-/* the clump pool walk 0x269040 makes: like s_clump_pool_iterator with a trailing index slot,
-   as s_ai_importance_squad_iterator (ai.cpp) has; retail's frame keeps the slot */
-struct s_clump_walk_269040
-{
-	s_clump *clump;
-	s_record_pool_iterator pool;
-	long clump_index;
-};
-
-/* record_pool_iterator_step with its result cleared before the search */
-PRIVATE __forceinline byte *clump_walk_step_269040(s_record_pool_iterator *iterator)
-{
-	byte *result = NULL;
-	s_record_pool *data = iterator->data;
-	long index = function_16bc00(data, iterator->index + 1);
-	if (index != NONE)
-	{
-		result = data->data + data->size * index;
-		iterator->index = index;
-		iterator->datum_index = (*(short *)result << 16) | index;
-	}
-	else
-	{
-		iterator->index = data->maximum_count;
-		iterator->datum_index = NONE;
-	}
-	return result;
-}
-
-PRIVATE __forceinline s_clump *clump_walk_advance_269040(s_clump_walk_269040 *walk)
-{
-	s_clump *clump = NULL;
-	if (g_4f55d0->active)
-		clump = (s_clump *)clump_walk_step_269040(&walk->pool);
-	walk->clump = clump;
-	return clump;
-}
-
 /* a new clump at the center for the team; when the pool is full, the clump
    whose active time is oldest is freed first */
-// score 106 (was 127): the frame and the walk's slots now match; retail clears the clump
-// register (ebp) before testing the active flag and keeps the result in ebx, the pool in esi
+// score 48 (was 106, 127): the frame and the walk's slots now match; with the former hand-written walk retail
+// clears the clump register (ebp) before testing the active flag and keeps the result in ebx, the pool in esi
 // and the index in edi; ours clears it just before the search call and keeps the result in
 // ebp, NONE in ebx and the pool in edi. Tried: the stock data_iterator_next_calling in the
 // loop body (139, the empty search jumps straight out), next_clump_in_pool (125),
 // record_pool_iterator_step (164, not inlined), the step written into one helper with the
 // clump cleared first (139), the stock step under this walk (124). Tried at 127 (lane): plain
 // oldest-time/index storage separately 136/126; byte activity 127; native pool step 160; activity while 136.
+// b15G (11-17) walk against retail, fast build on r848: fields, offsets, branch senses, callees and arguments all agree
+// with retail (no behaviour difference). The walk is now this file's s_clump_datum_walk (clump_datum_walk_new, then
+// clump_datum_walk_next_calling with the oldest index read from clump_index): the register assignment of the loop and
+// the 0x269054/0x269108 NONE reloads then match retail, 106 -> 48 (355 bytes needed, 351 made). What remains is the
+// center copy at 0x269122-0x26914d: retail loads z and y with movss (0x269126, 0x26912b) and x into ecx (0x269130),
+// stores x first (0x269132), loads the game-time pointer (0x269135), stores z and y (0x26913b, 0x269148) and only then
+// team (0x26914d); `clump->center = *center` compiles to three integer moves instead. Not kept (one-use locals, match-
+// only): real cz, cy, cx loaded in that order and stored x, z, y gives 355 bytes, score 8 (the team store at +0x12 is
+// hoisted above the x store; moving the team, count or time statements changed nothing); a field-wise copy 111, a copy
+// through a point3f local 77.
 // @retail 0x269040
 long function_269040(point3f const *center, short team)
 {
 	long result = record_pool_allocate(g_502420);
 	if (result == NONE)
 	{
-		s_clump_walk_269040 walk;
-		if (g_4f55d0->active)
-		{
-			walk.pool.data = g_502420;
-			walk.pool.index = NONE;
-		}
+		s_clump_datum_walk clumps;
+		clump_datum_walk_new(&clumps);
 		long oldest = NONE;
 		long oldest_time = 0x7fffffff;
 		s_clump_activity_view *clump;
-		while ((clump = (s_clump_activity_view *)clump_walk_advance_269040(&walk)) != NULL)
+		while ((clump = (s_clump_activity_view *)clump_datum_walk_next_calling(&clumps, g_4f55d0->active)) != NULL)
 		{
 			if (clump->active_time < oldest_time)
 			{
 				oldest_time = clump->active_time;
-				oldest = walk.pool.datum_index;
+				oldest = clumps.clump_index;
 			}
 		}
 		if (oldest != NONE)
@@ -2190,6 +2158,12 @@ void function_269250(long clump_index, long actor_index);
 // P572: Existing-selection transfer admission, positive/complementary bool/byte/short/long:
 // 87/87/87/87/87/87/87/87. NOT kept: no exact admission/selected-handle lifetime repair;
 // pool EBX, memory-only selection and native x87 score homes remain. Original full body restored.
+// M3 lane 6 r190 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510/0x1e46c0, all matched
+// each time): the actor's best-clump search moved whole into a forceinline helper returning the selection 87 (same code); the
+// same helper with the in-arm compare 126 (480 B); on it a private step that reads the walk's pool ahead of the activity test
+// (to let the pool be hoisted as retail's EBX) 126 (same code: the pool is still reloaded, the selection still in EDI); an
+// `if (active)` guard around the walk loop 163 (453 B); the team mismatch as `continue` re-measured 126, with an activity guard
+// around that loop 136 (488 B). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

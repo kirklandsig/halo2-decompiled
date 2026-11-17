@@ -1769,6 +1769,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // with main's 0xd4080 body (only its call reordered, scales through the lead's helper) 452 with 0xd4080 479; on main the
 // chained length 562.
 // MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// Round 179 (m3 lane 8, fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542, all unchanged): retail's exits
+// are a false hoisted into the entry block for the count test, a fresh false for the not-found test and a true at the
+// end. On main's count test, `if (!parameters) return false;` with `return true;` at the end 568 (2168 B, first +0xc);
+// the count guard and the loop reading `block->count` (no count local) 567 (2176 B); the query's normal pointer declared
+// at the top 529 (same code); the block and the found parameters `const` 529 (same code); the scan through an entry
+// pointer stepped with the index 568 (2175 B). Block EDX / query EAX against retail's EAX / EDX still.
 // M3 lane 15 r94 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/442): the
 // scan's guard written `if (0 < count)` 568 (520/441): the guard merges with the loop's own test (one count test as
 // retail), the block moves to EBX and the query to EDI and the flags reuse EBX, all as retail, but the block still arrives
@@ -1857,6 +1863,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax I (11-17): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears the mobile flag byte in the entry block where this build clears it after the first branch, the four query components still reach the x87 stack in the other order and the three colour scales still multiply in the other order; the normalize's squared length summed as (k, i, j) measures 372, six points and under the keep bar, and the flag as a test-set measures 362 but is kept only with a byte match, so the body is as it was.
 // MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
 // MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
 // MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.

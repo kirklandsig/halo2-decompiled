@@ -1232,6 +1232,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax I (11-17): no lower score (94): a permutation run over this function's source (4 tries in 375 s) left the
+// score at 94; the total, the cursor and the flag in the orders total-cursor-flag, total-flag-cursor and
+// cursor-flag-total measure 94, 108 and 99, the channels walked by position with the flag read before the total
+// measure 120, and the channel value read into a named local compiles to the same code.
 // MiniMax R (11-16): no new form, no lower score (94): the identity flag still lands in BL where retail keeps it in AL, and the flag-first order moves the channels pointer into EBP and still leaves the flag in BL (111), so the kept mask, the value load and the accumulate follow that allocation; the flag, pointer and total order still reaches only 93.
 // MiniMax C (11-15): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in al, this build still sets the total to two and the channel pointer before the compare that retail does after it, and the inner channel blocks are still not unrolled.
 // MiniMax G (11-14): no new form, no lower score (94): the identity flag still lands in bl where retail keeps it in
@@ -1480,6 +1484,19 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // the compiler unroll the loop four times, which reaches retail's length (347) and its four blocks at 0, 0x170, 0x2e0 and 0x450
 // with the 0x5c0 step, but the identity flag still takes bl and the channels pointer still takes ebp, so the score is 109; the
 // flag read before the total measures 112, and four written-out blocks in a four-group loop are unrolled away into 1020 bytes.
+// b16H (11-17) walk against retail, fast build on r852: every statement matches retail (initialized byte [ebx], call
+// 0x56160 with ecx=player edx=channels, getter 0x4c99b8/0x476fcc/0x4c9878 then cmp eax,esi; sete, 2, 16 channels at +4
+// step 0x170, mask word +8, values +0x130, 11 + 2 * flag, + 2): no behaviour difference; the 94 is all allocation.
+// Retail's flag takes al (channels still in ebx when the flag is made, so A/B land in cl and the mask in ebx); ours
+// puts the flag in bl because the lea of the cursor is scheduled before the compare. Retail also loads the value into
+// ebp, then imul ecx,ebp; add ecx,2; add edi,ecx (ours: imul ecx,[mem]; lea edi,[edi+ecx+2]); three more spellings of
+// the add (bandwidth local, total += 2 then product, value/size locals) 94 each. New, all worse: flag, cursor, total 93
+// (350 bytes: channels in edi, the early-exit zero in ebx); total, flag, cursor 108 (channels in ebp from the stack,
+// `ret 4`); indexed `&channels->channels[i]` 109 (IV biased to channel 1's mask at +0x17c, bl flag, stack argument);
+// four `channel[k]` blocks per pass, i += 4 110 (second IV, player lands in ecx); a loop-level inline helper taking the
+// flag is not inlined (182/287); do/while `++i < 16` 287. Outside piece voice_get_unknown00 (ternary / early-return
+// body) 96 each, not kept. Lead: the unbiased IV and one 0x5c0 step in retail need the flag made while channels is
+// still in ebx; every order that does that makes the allocator move channels to ebp or edi instead of the flag.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1883,6 +1900,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // MiniMax D (11-17): no new form, no lower score (60): the player bit still lands in ebx where retail holds it in ebp (and
 // the clamp's value in ebp where retail holds it in ebx), and the body is still eleven bytes longer than retail's 449; the
 // shared helper's spelling decides the register the bit takes, and every form tried here moves both scores together.
+// M3 lane 6 r190 (fast with 0x56380/0x564c0/0x53b00/0x56000; both `ret 0xc`): retail's entry size comes from `setne bl`,
+// which needs a byte register (so the size takes EBX and the bit EBP), and its result zero stays live in EAX to the
+// capacity exit. New: the capacity failure as an early `return result;` 161 (452 B; 0x56380 73); the entry size and the
+// capacity debit ahead of the player tests 176 (472 B; 0x56380 2); the capacity test as `entry_size <= capacity` 60 (same
+// code); the player bit typed `word` 139 (445 B; 0x56380 13); the success length assigned after the two header stores
+// 164 (462 B). Re-measured: `include_mask ? 13 : 11` 147 (461 B: setne lands in CL and the size still moves to EBP).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -2026,6 +2049,11 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax I (11-17): the inner loop's condition now tests the two port flags before the muted lookup, which takes
+// the function from 85 to 64; the three tests read only globals and have no side effects, so their order does not
+// change the result, and 0x54890, 0x53a20 and 0x53bb0 stay matched. Still differs: retail keeps the second port
+// flag query inline (the getter, the shift and the availability tests at the end of the loop body) where this build
+// calls the out-of-line copy, so the body is 12 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (85): retail loads both ready bytes before the first test and keeps the second in DL, while this build reloads it for the mode test and takes the mode in EAX; the remote mask rides in EDX here and in ESI there, and the flags held in locals are re-read from the globals at every use (96 to 104).
 // MiniMax C (11-15): no new form, no lower score (85): the availability bytes are still read into locals for the muted test and the mode helpers are still parameterised on them, so the second byte still loads lazily inside the muted test where retail loads both before it and keeps the remote mask in esi.
 // MiniMax G (11-14): no new form, no lower score (85): the availability bytes read into locals for the muted test
@@ -2238,7 +2266,7 @@ void function_55990(s_voice_player_values *values)
 				for (long j = 0; j < 16; j++)
 				{
 					if ((mask & (1 << j)) &&
-						(function_57d63(j, i) || voice_port_flag1(j) || voice_port_flag2(j)))
+						(voice_port_flag1(j) || voice_port_flag2(j) || function_57d63(j, i)))
 						mask &= ~(1 << j);
 				}
 				values->values[i] = mask;
@@ -4048,6 +4076,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // channel takes EBP from entry as in retail and the frame shrinks to 0xc, so the member's life across the three calls is
 // what wins it EBP in our build (retail keeps it in its frame slot); the permuter on the cursor form (613 s, 39 tries)
 // best 148 (a volatile cursor and numbered constant locals, not a form).
+// M3 lane 6 r190 (fast with 0x564c0, matched each time): on the packet-cursor form (re-measured 164, 478 B; the member
+// still takes EBP and the channel no register): the member bit as a `word` local for the test and the clear 168 (471 B);
+// the channel bound as `s_voice_channel *const &` to the parameter 164 (same code); the NONE and kind tests split with
+// the channel bound as `s_voice_channel &` for every index read 164 (same code); an `if (0 < data[1])` guard around the
+// loop 166 (494 B: the clamp's count takes EBP instead); the cursor, consumed and size advances in the order cursor,
+// consumed, size 167. Body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

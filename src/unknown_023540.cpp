@@ -2671,6 +2671,12 @@ dword __cdecl function_131fc0(real alpha);
 // bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves
 // them; the score also moves with the reduced image's source set, as the note above records.
 // MiniMax R (11-17): no new form, no lower score (140): the body's length matches retail's (1729 bytes) but the blocks' order still differs in the ways the notes above record, and no form of this file's own moves them; the reload's order is decided by the callee at 0x131fc0 in src/unknown_131e50.cpp.
+// M3 lane 3 r255 (fast, single-function image, control 140): the short arm's last word as `preserve_alpha ? 0 : 0x18 << 8`
+// 145 (1728 B); as `(!preserve_alpha ? 0x18 : 0) << 8` 140 (same code); stored right after the combiner count, ahead of the
+// 0x131fc0 call 152 (1730 B); the texture-mode store moved into each arm 151 (1735 B); the 0x131fc0 result named before its
+// store 140 (same code). Reading of the flag difference: ours loads preserve_alpha once above the `simple` branch (CL, kept
+// across 0x131fc0) because both the test and the short arm read it; retail loads it after the global store into AL (the
+// call's result register), so it must load it again after the call (BL).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2965,7 +2971,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
 // MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax D (11-17): no new form, no lower score (330): the full image counts the same as the reduced one, and both
+// copies of 0x235a0 are still inlined here (the body is 1591 bytes against retail's 1543) where retail inlines the first
+// and calls the second, so the shared exit sits 48 bytes further out and the first difference is the jump to it at
+// +0x52; the forms measured this round (the level's limit through a named local before the level 349, the same local
+// after it 350, the matrix through a pointer local 369) all score worse, and a permuter run (27 tries) finds its only
+// lower form (four instructions under the baseline) by making a local volatile and reordering the sum terms, which is
+// not kept.
 // MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3083,6 +3097,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[0] = ((x * cosine - y * sine) * scale + 1.0f) * 0.5f;
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
+// MiniMax I (11-17): no new form, no lower score (54): what is left is the scheduler's order of the x87 and SSE chains of the four corners and the XMM registers they take (retail's four scale multiplies use XMM3, XMM7, XMM1, XMM6 and ours XMM1, XMM3, XMM7, XMM6); the first set's store order is 0,3,4,7,1,6,2,5 in retail and 0,3,4,6,7,1,2,5 in ours, and no spelling of the corner helper moves either.
 // MiniMax E (11-17): no new form, no lower score (54): the x87 chain's store still comes before the SSE subtract where retail takes the subtract first and stores after it, and the scheduler still places the x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527).
 
 // MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
@@ -3957,6 +3972,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // every gain register moves; the pairs stay constant first); both selectors defaulted then set under one `if (small)`
 // 948. Diagnostic: mode zero's blending and depth-bias writes without the skip test 894 (4816 bytes): the reloads
 // right after the call are still 1.0f first, so the join is not what orders them.
+// Round 180 (m3 lane 8, fast, base 9; all restored): the switch's default case setting maximum and both permissions with no
+// initialisers 1207 (4856 B); `register` on the shifted input word 9 (same code); mode zero's extra-texture test declared ahead
+// of the mode chain 761; both selectors typed byte with the shifted local kept 861 (4848 B), typed short 480 (4816 B).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
