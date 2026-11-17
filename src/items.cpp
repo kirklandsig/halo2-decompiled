@@ -2081,6 +2081,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P540: Eight coordinated contact-provider orders at its definition and both callers, 140 each. NOT kept: no return-byte/release/event-home recovery; original contracts, calls, helper and entire body restored.
 // MiniMax C (11-16): no new form, no lower score (140): retail still clears the release flag with one byte read-modify-write where this build splits it into a load, an and and a store, and retail still keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where
+// retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf, and retail still
+// keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

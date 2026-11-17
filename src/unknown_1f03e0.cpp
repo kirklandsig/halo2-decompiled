@@ -390,9 +390,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 43 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
-// arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
-// (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// score 31 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
+// since r192 both dots too. Left: case 3's arms are laid out none-first (retail selected-first, about 22 lines), the first cross's
+// a.k * b.i and average.i load a first (retail b.i first) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// Before r192 both dots summed k, j, i (retail i, k, j).
 // MiniMax D (11-11): no lower score (43): the permuter over the case arms and the dot products found nothing better in its
 // time; re-laying the arms the way retail has them breaks the tail that the two selected arms share, so the body stands.
 // Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
@@ -647,6 +648,31 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // as `z < lowest` or `-0.999f < z` 43/43 (same code); case 2's selected normal as `selected == 0 ? a : b` 261 (983 bytes); the two
 // selected arms crossing with a and b directly (no normal lookup) 258 (980); `selected >= 0` for the case 2 test 192 (975); the
 // component index as a dword 43 (same code).
+// m3 lane 5 r192 (fast with 0x1f2250/0x1f2e60/0x1201a0/0x1f19c0, plain for the kept form; aligned/masked in brackets): kept 43 -> 31
+// [12/10]: both dots through the existing basis_dot_xzy (0x143120's i, then k, then j sum, moved unchanged from
+// src/unknown_141590.cpp to include/vector_products.h; 0x143120 stays matched), which gives retail's dot code exactly (either
+// argument order, same code). Before it: case 3's normal read inline with no pointer local 240 (1010 B: the two address
+// computations are not merged), selected-first that way 227; the normal as a `vector3f const &` 43 (same code). On 31:
+// re-measured on the new base, case 3 selected-first 178 (991 B), case 3 without the none-arm copy 192 (988 B), the average
+// through vector3f_add(b, a) 61 (974 B); velocity declared first (definition and call) 31 and an early `break` after the
+// none-arm copy 31 (both the same code now); new, case 3's row as vector3f_scale then vector3f_add 296 (1013 B, 0x1f2250
+// 414). Diagnostic (match-only, as lane 8 r135's lead): case 3 selected-first with a case-3 up pointer for both of its
+// reads 9 [7/5], left the first cross's j-row first product, average.i and the tail's j product. Also on 31: the entry copy of
+// the up vector ahead of the loop 347 (1042 B, 0x1f2250 419); dot_average computed before dot_a 31 and both dots inside the
+// compare 31 (both the same code).
+// b12B (11-17) walk against retail, fast build on r846: no logic or behaviour difference found. Fields, offsets, the
+// guard (jle 0x1f2b30 at 0x1f2abe), `lowest > z` and `z > -0.999f` (jbe 0x1f2ad9, 0x1f2ae7: both skip NaN), the
+// stepping bit (0x1f2af5), case 2's je 0x1f2cdd / jne 0x1f2c89 (0x1f2be9, 0x1f2c46), `dot_a < dot_average` (jbe
+// 0x1f2d67), the epsilon test (ja 0x1f2df6 lets NaN normalize) and constants 0x45e1b0 (-0.999f), 0x45dbdc (0.0001f),
+// 0x45dbc0 (1.0f) agree; velocity is the register argument (EAX, copied to ESI at 0x1f2a91). Left at 31: case 3's none
+// arm is laid out first (retail 0x1f2b66 `je 0x1f2bbe` keeps the selected arm inline, none arm `mov edx, ecx; jmp
+// 0x1f2db4` after it), a.k * b.i (0x1f2c05 loads b.i first), average.i (0x1f2cdd loads b.i first) and the inlined
+// 0x1201a0 j product (0x1f2e13 copies inv, as standalone 0x1201ef does; ours loads j; retail's k row 0x1f2e20 is
+// load-first, so the inline is not a plain paste). Match-only recipe, 9 on r846 (fast, 8 lines: those three sites, the
+// ja displacement and the pop order): case 3 selected-first with `vector3f const *up = g_4687b0;` read at its two uses;
+// not kept (the local is only for the score). On it 384 one-use-local combinations (case 2 index locals, entries base,
+// selected-index local in either case, case 1 element forms, function-level up): floor 9, bands 9/13/28/201+, nothing
+// lower; velocity declared first 9 (same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -694,8 +720,8 @@ void function_1f2a80(byte const *request, bool moving,
                 average.j = b->j + a->j;
                 average.k = b->k + a->k;
                 function_30bf0(&average);
-                real dot_a = dot3f(desired, a);
-                real dot_average = dot3f(desired, &average);
+                real dot_a = basis_dot_xzy(desired, a);
+                real dot_average = basis_dot_xzy(desired, &average);
                 if (dot_a < dot_average)
                     *out = *a;
                 else
@@ -1039,6 +1065,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
 // (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
 // where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
+// MiniMax I (11-17): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where retail uses EDX, and the two cross-product terms that involve up.k keep the other side in the register where retail keeps up.k (commuting the shared cross helper's six products leaves the code, and the file's nine matched functions, unchanged), and the general arm's k row still ends in XMM2 where retail's ends in XMM0, so the first arm's out.k store is not shared with it; the body is unchanged.
 // score 234 (was 234): m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
@@ -1478,6 +1505,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `addss xmm2, [eax + 8]`, so the first arm keeps its own out.k store); vector3f_add(&limited, current, out) there 469 (same
 // code); on the body, the first arm clearing gravity as its first statement 233 (a one-point gain); all three together 468
 // (aligned 153, masked 55). Body unchanged.
+// M3 lane 2 r95 (fast with 0x1f0450/0x24590/0x30bf0/0x1f1e50/0x1f1ee0, all MATCH; base 234): the contact flags word as
+// 1-bit fields beside the dword (bits 0, 1, direct, gravity, damping) read through TEST_FIELD_BIT for the three entry
+// flags 232 (3050 B, entry unchanged: damping still in ECX); every flags test through the bits 599 (3025 B, first +0x6);
+// the bits with `gravity = false` ahead of the first arm's last add-scaled 231 (3050 B); the bits with the flags declared
+// flying, direct, damping, gravity 228 (3050 B, first difference +0x31: the damping bit then takes EDX as retail; under the
+// bar, a declaration order, not kept). On the 469 form (re-measured 469): the direct arm's `limited` renamed `bounded`
+// 469 (identical listing: names do not place the delta/limited slots, retail delta +0xc, limited +0x14, ours the reverse).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1913,6 +1947,20 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // it too (same code), case 2's normals through it as well 557; plain count + switch + the bit helper at both flying tests re-measured 423
 // (case 1 or case 2 first, same code), the list base on it 551 (2035 B); the first loop's negation through a named normal pointer 413
 // (six lines move; the fallback's negation the same way is identical); the selected contact as a normal pointer for the one-contact arm 419.
+// m3 lane 5 r192 (fast with the file's functions and 0x1201a0/0x30bf0/0x109fd0/0x1e5af0/0x23de50; masked = aligned rows with
+// registers and esp offsets masked; control 413 [118]): retail's final loop saves `(flags >> 1) & 1` as a byte before the loop
+// (in the dead surface parameter slot) for the stepping test only, and recomputes the flag for 0x1f2e60's argument. A
+// `stepping` bool before the final loop used for both the call and the test 413 [126] (2088 B: the byte is stored as retail,
+// the call then reads it); plain count + switch + the bit helper at both flying tests re-measured 423 [124], with that bool
+// 422 [118]; on 422 count declared between the surface and object NONE stores 420 [116], the selected contact formed before
+// the surface/index stores 419 (2072 B) [107]; the tangent as contact_cross(second, first) (sign-free under the projection)
+// 413 [118]. Lead (match-only: the contact formed before the two stores is a statement move): lane 10 r91's 397 form (plain count,
+// switch, bit helper, contact before the stores, count between the NONE stores, the inner loop's candidate as
+// `list + i * 0x48`, counts read in the loop heads, case 2's normals through the list) plus the bool for call and test 384
+// (2088 B) [85]; with the bool for the test only (retail's call) 391 (2096 B) [71: left are the velocity subtraction merging
+// into the flying copy, the persistent zero, the fallback's -1 and the final loop's zero/0.001 hoisting]. Without the contact
+// move 483/481 (with the count move), without the count move 386; on 384 the height summed settings-first 384 (same code),
+// the flying arm second with the test inverted 388 [113]. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

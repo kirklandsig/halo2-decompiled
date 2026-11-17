@@ -277,6 +277,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // 455 (3712 B); the sum's adds written position-first 252 (same code); the first 3.0 clamp after 0x295600 through
 // function_294b56 with the still-zero total 252 (same code: the zero folds, so retail's lone clamp is that helper too);
 // the nearest distance and point declared before the sum 252 (same code); the sum through vector3f_add 533 (3725 B).
+// m3 lane 5 r192 (plain with 0x293b30/0x293d30/0x294050/0x295600, all unchanged; control 252, aligned 90, masked 25): the
+// centroid sum typed as a vector (no casts) 252, the post-walk vector and its scalar in a block ending after the waypoint
+// step 252, the nearest test as `local_26 < local_10` 252, the scalar declared at the top uninitialised 252 (all the same code:
+// neither scope nor type moves the swapped slot pairs); the half radius computed where the cohesion arm uses it 500 (3703 B);
+// the walk test as `cos(...) < dot` 628; the steer flag's declaration moved to the top 772 (3730 B); the path step's maximum
+// declared just before the 0x294050 call 726 (3718 B); the strength total declared after the walk 785 (3731 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

@@ -223,6 +223,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the frame (152), so the original is kept, and casting the index to a word keeps the same code. The stage and pass
 // homes (ESI and EBP against ours' EBP and EDX) and the unfused element loads are unchanged. The score-8 chain needs
 // the head, stage and pass elements bound by reference and is kept only with an exact match.
+// MiniMax I (11-17): no new form, no lower score (117): the else path's in-place `and edx, 0xffff` needs the `& 0xffff`
+// spelling, which hoists the tag table global into ECX before `sub esp` (152), while the `(word)` cast keeps the table in
+// EDI but gives `movzx eax, dx` (117); the mask assigned back to the tag, a masked-tag local and a named element address
+// leave the code unchanged (117) or worse (152). The block chain's argument registers and unfused element loads stand.
 // score 117 (was 117): M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
@@ -661,6 +665,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the loop, or right before the flags) 143, 0x224d90 kept, arg_0 in EBX: neither is kept (retail stores the
 // context at 0x224f25). Ours reads its in-file copy of g_43f408 (identical to unknown_01cf50.cpp's); retail reads
 // the one at 0x43f408 (0x224ec6): no code effect.
+// m3 lane 11 r110 (fast, 0x2243c0 and 0x224d90 matched each time), on lane 8 r170's score-8 chain rebuilt on this
+// main (8 at +0x9e, 544 B; left only the pass-tag and material definition lookups: retail puts the first tag data in EAX,
+// the material tag in EDX and its tag data in EDI over the dying table base, with the cache zero scheduled before the
+// last shift; ours EDX, ECX, EDX): the material lookup through the chain's tag-data and record accessors 8 (same code);
+// the pass-tag lookup through the tag-data accessor too 8 (same code); the pass tag's data bound by reference 36; the pass
+// reference in its own block 8 (same code); the pass tag read through a by-value inline accessor 8 (same code), the pass
+// element passed straight to a by-reference accessor parameter 121 (no dead lea, like by value). Main body unchanged.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

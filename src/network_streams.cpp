@@ -1055,6 +1055,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // each pass and no second counter, but the count folds oldest into `sub eax, [edi + 0x34]` and the preheader reloads it);
 // the 44 form with main's `long newest = window->newest;` bound 117 (197 B); the 44 form with the index through
 // `&m_message_window` 89.
+// M3 lane 7 r173 (fast with 0x96510/0x94df0, control 60): `long next = m_next_sequence; while (++next < newest)` 60; the
+// shared window-head helper as `count != 0 ? head : NONE` 60 (and 15 of the file's matched users lose: reverted at once);
+// the window pointer declared at the top (before the send call) for the bound local and the index, the count through
+// the member, 60; the bound compare written `newest > next` 60; a guarded do-while (`if (next < newest) do {...} while
+// (++next < newest);`) on the window-pointer form 60. All the same code: the offset is still strength-reduced.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

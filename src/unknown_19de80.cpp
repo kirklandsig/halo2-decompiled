@@ -308,16 +308,16 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
-// MiniMax b (11-11): no new form, no lower score (390); our frame is still 0x208 against retail's 0x204, the
-// volatile result keeps our four name and team copy tails apart where retail keeps a copy of the length and
-// clamp in each case, and retail's prologue forms the first token compare with the string, the stack argument
-// and the token in the other registers.
-// MiniMax G (11-12): no new form, no lower score (390): the volatile result still keeps our four copy tails apart but frames 0x208 against retail's 0x204, and a plain result reaches that frame and retail's ESI result register only by merging the four tails into one block (691 this round); the permuter's 319 seconds over the body found nothing below its 385 baseline.
 // score 390 (was 390): retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,
 // with a plain result 652 (against 390 and 691). The plain result does match retail's frame 0x204
 // and its ESI result register, but it merges the four name/team copy tails into one block, where
 // retail keeps a copy of the length and clamp in each case and shares only the copy itself.
+// MiniMax b (11-11): no new form, no lower score (390); our frame is still 0x208 against retail's 0x204, the
+// volatile result keeps our four name and team copy tails apart where retail keeps a copy of the length and
+// clamp in each case, and retail's prologue forms the first token compare with the string, the stack argument
+// and the token in the other registers.
+// MiniMax G (11-12): no new form, no lower score (390): the volatile result still keeps our four copy tails apart but frames 0x208 against retail's 0x204, and a plain result reaches that frame and retail's ESI result register only by merging the four tails into one block (691 this round); the permuter's 319 seconds over the body found nothing below its 385 baseline.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax h (11-04): no new form, no lower score; the volatile result keeps our case tails apart and our frame is 0x208 against retail's 0x204.
 // Earlier: this round confirmed the blocker is the frame: the `volatile` result keeps the
@@ -702,6 +702,12 @@ static inline bool teams_enabled_19e1c0()
 // (1169 B). On the volatile result: the cause-team local ahead of the scan 415 (1436 B); the local-team value as `long` 393
 // (1436 B). Body unchanged.
 // MiniMax I (11-16): no new form, no lower score (390): the plain result still merges the four name and team copy tails where retail keeps them apart - its first name case stores the buffer's zero word before taking its address and its second case takes the address first - and retail keeps `remaining` in EBP and reloads the token for every compare where ours keeps the token in a register; the clamps and the copy helper of the earlier rounds come to 385 at best, a gain of 5 that is below the keep bar.
+// M3 lane 12 r135 (fast with 0x19e0f0/0x19ea60/0x19eae0, matched throughout; control 390, plain result 691 at 1170 B):
+// the volatile result makes ours hold a constant zero in EBP for the whole function (every `text[0] = 0` stores `bp`, the
+// event tests compare against EBP), the register retail gives to `remaining`; on the plain result ours sets up 0x19ea60's
+// ESI argument ahead of the first case's `text[0] = 0` (an immediate store) where retail stores the zero result register SI
+// first. Forms: the player index read into a local ahead of `text[0] = 0` in both player cases, plain/volatile 691/390; the
+// player cases passing `&text[0]`, volatile/plain 390/691 (all the same code as their bases).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

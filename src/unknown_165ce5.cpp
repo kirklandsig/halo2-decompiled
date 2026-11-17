@@ -1823,6 +1823,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // calls 512 (2194 B); the look angles copied once into a local point 465 (2214 B); the orientation block index written
 // user-major 220 (same code); the unit index in a named local for the test and the lookup 220 (same code). Still BLOCKED by
 // the stand-in (round 98) for the ESI/EDI save after the unit test.
+// M3 lane 9 r131 (fast; base 220): a redundant `if (0 < MAXIMUM_FIRST_PERSON_WEAPONS)` guard around the weapon loop 220
+// (same code); the two look rates as `real &` references to the user fields, used for the clamps and the smoothed stores
+// 225; each look value divided in one statement and clamped in the next 223; the look values declared and clamped in a
+// scoped block around their two smoothing calls 220 (same code: they still share the spring slots); guard and block
+// together 220. Retail's g_510c54 reload after each look store still says those stores go through something that may
+// alias the global; the ESI/EDI save region stays BLOCKED-BY the build's stand-in caller (round 98).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

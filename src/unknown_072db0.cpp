@@ -2052,6 +2052,12 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // top); `team` computed before `valid = true` 703 (same code); the two flags declared before the value-group pointer 703;
 // the slot/identity test split into nested ifs 703; the failure delay as `delay = 2000; if (g_50c460 > 3) delay = 300000;`
 // 757.
+// M3 lane 7 r173 (fast, control 703, aligned 500): retail's write poll tests the pending range first (`cmp eax, ebx; jl
+// cleanup; cmp eax, 1; jle exit; cmp eax, 2`) and shares one cleanup block entered by a jmp after 0x80d70; as `if (state < 0
+// || state > 1) { if (state == 2 && succeeded) ...; cleanup }` 720 (aligned 491), as an early `if (state >= 0 && state <=
+// 1) return;` ahead of the state-2 test 720 (same code); the first with the delay as `> 3 ? 300000 : 2000` 717 (aligned
+// 489); the existing online_logon_connected() for the opening test with online_tasks.h included 823 (2926 B: the header
+// changes more than the test); the write timestamp in a named local used for both reads 727 (aligned 501).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -2,6 +2,26 @@
 
 The newest entry comes first.
 
+## 2026-11-17: 10652 functions match
+
+```
+matched 10652 of 11326 game functions (2053822 of 2786206 bytes, 73.71%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+2 new matches, 0x41640 lost, the layout-only /GL match the maintainer accepted losing on 11-04:
+- @coldspear's #1271: `0x1f070` and `0x4d830` match.
+
+## 2026-11-17: 10651 functions match
+
+```
+matched 10651 of 11326 game functions (2053692 of 2786206 bytes, 73.71%)
+matched 1393 of 1436 Havok functions (235288 of 290362 bytes, 81.03%)
+```
+
+2 new matches, none lost:
+- Machine 3's batch 290 (#1270): `0x41640` and `0x152660` match.
+
 ## 2026-11-17: 10649 functions match
 
 ```

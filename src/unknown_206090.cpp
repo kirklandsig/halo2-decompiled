@@ -640,6 +640,25 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P583: Advance-before-admission signed point/contact/query-initialization ordinals,
 // seven subsets, then both collected-prefix searches: 1375/1375/1375/1375/1375/1375/1375/1375. NOT kept: no exact
 // native frame/indexed-contact recovery; original loops, helpers and complete body restored.
+// M3 lane 7 r172 (fast prints the reduced-image CAVEAT: fast control 1392 at 6211 B, aligned 1379; plain control 1375,
+// aligned 1402): nothing kept. Plain: the result returned directly as `return !local_34 && ... && ...;` (no flag) 1376
+// (6243 B, aligned 1384: retail's tail exactly, `mov eax, 1` / `xor eax, eax` exits with the pops before the tests, but one
+// over the control; fast 1384); the last loop as a counted `for` testing the impact count in its condition (no `for (;;)` and
+// break) 1397 (6264 B; fast 1378); the contact velocity formed in place (the cross straight into field_4c, local_4 added
+// there, no copy local) re-measured 1421 (6217 B). Fast: the steering sign folded into local_11's initialiser 1433; the
+// impact offset scale written into the vector3f_add_scaled call (no named local_71) 1392 (same as the fast control).
+// Retail's impact record sits at 0xd4 below ours (0x11c against 0x160 on the listing), so the whole 0x44 frame excess
+// lies below it; retail lays the found-search loop out after the impact loop.
+// M3 lane 13 r104 (fast = plain here, 0x2056e0 matched; control 1375, difflib exact/masked aligned 981/585): three
+// retail-shape leads, each raising the count through the phase regime. The impact-list loop as a plain `for` testing
+// `h == NONE ? 0 : arrays[h & 0xffff].count` through a typed 0x40-byte impact array, the element read as
+// `arrays[h & 0xffff].impact_indices[i]` and the inner search the same way, 1398 (982/556: the loop head is then retail's
+// exactly, the count read in the `jne` arm from a fresh pool load and the element at `[eax + (h * 16 + i) * 4 + 4]`); that
+// with a typed array pointer for the inner search 1428 (6289 B); `return a && b && c && d;` for the flag-set result alone
+// 1376 (6243 B, retail's `mov eax, 1` / `xor eax, eax` tail; one over the control), with the plain loop 1397; the friction
+// arm's `sqrt(x * 0.9f)` before the direction copy and its normalize 1405 (6240 B, 945/568: retail computes and stores that
+// root first, then multiplies in SSE where ours keeps it on the x87 stack); root first with the direct return 1420, with
+// both other leads 1468. One to five unused locals on the plain-loop form 1397 each (unused locals do not move the phase).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
