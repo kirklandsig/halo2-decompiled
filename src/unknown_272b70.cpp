@@ -1629,6 +1629,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // branch target. With the unit in a local before or after the type store it is 41/44 and the append order returns.
 // Not kept: no match, and Kirk undoes a written-out helper. Also 32 each: 0x1d + (load ? 1 : 0), (load != 0) + 0x1d,
 // 0x1d + !!load, a forced-inline leave wrapper (same bytes as the plain call).
+// Published handle for busy query, indexed/row reference/row pointer 32/150/150;
+// explicit busy outcomes 32/150/150; nested admission indexed/reference 32/150.
+// NOT kept: ties or regressions. Iterator-handle acquisition, leave selector
+// and request/slot publication still differ.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2985,6 +2989,10 @@ struct s_scenario_scripting_view
 // P590: Original packed incoming parameter lexical priorities against native
 // local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
 // or guarded-data recovery; original input name and complete body restored.
+// Round 611: guarded short-to-long selector with nested admission, negative exit,
+// original packed high word or narrow-selector commit 96/96/77/96; with the typed
+// candidate record 95/95/90/95. NOT kept: keeping the original high word broke
+// the wrapper, and the 77 form grew to 372 bytes. Actor and counter homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

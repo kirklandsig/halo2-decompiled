@@ -770,6 +770,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // &delta) with the output rows reading delta 32 (same code); the squared length declared with the other locals at the top and
 // assigned later 32 (same code); the limit through the rate local (`rate * 0.5f`) 90 (first +0x25: the rate stays live in
 // XMM3 and the tick conversion moves). Body unchanged.
+// Still differing: i/j velocity stores and the delta/correction SSE register homes.
+// Prediction-input scope 32, typed predicted point 32, point setter 57, velocity-write scope 32,
+// delta/limit scope 32, named correction denominator 46, point setter at the scale call 57,
+// separate producer and selection scopes 32. NOT kept: no qualifying gain or native store recovery.
 // M3 lane 17 r45. A compile-only screen (build/r45/h1fc.py: the parameters declared state, output, tracked so plain fastcall
 // gives retail's ECX/EDX, the 0x1fc660 call left out) reproduces this body's floating-point stream exactly, so about 3000
 // forms were classified by the order of the rate chains, the tick products and the deltas (retail: j,i,k / j,i,k / i,j,k).
