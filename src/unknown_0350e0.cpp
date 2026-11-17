@@ -2039,6 +2039,12 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // result as `(real)atan2(y, x) * scale * ...` 193 (same code). On round 73's case-3-offsets-first lead (re-measured 177
 // at 812 bytes, 0x2e9e0 573 at 2232 bytes, frame 0x90 against 0x94): 0x2e9e0's far distance read at each use 177/573
 // (same code); with 0x2e9e0's `!(visibility > 0.0f)` (retail's `comiss xmm0, xmm6; jbe`) 177/572. Body unchanged.
+// MiniMax S (11-17): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18 (retail
+// holds six dwords where this build holds five, the two fpatan operands, the result and the three components
+// of the reference vector) and the result still lives in a register where retail keeps it in the stack slot at
+// +8; the lead that reaches 177 (case 3's offsets ahead of the perpendicular) needs the shared helper 0x2e9e0
+// reworked against a callee that clobbers XMM7, and that helper is not in this lane's queue, so the pair stays
+// as it is.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3648,6 +3654,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `if (!found)`) 394; the clamp as a value-returning helper at both loops 383 (1287 bytes); pass 1's `++first; found =
 // true;` ahead of the swap 360; pass 3's two tests as nested ifs 317 (same code); pass 3's tail as `swap(entry,
 // &entries[last]); --i; --last;` 316 (only the tail's instruction order moves). Body unchanged.
+// MiniMax S (11-17): no new form, no lower score (317): the body is retail's 1324 bytes and the whole
+// difference is the register allocation (retail keeps the state pointer in ebp and the swap counter in edx with
+// their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state
+// with the homes swapped); the natural spellings of the two homes (the declaration orders, the names and the
+// index and the found flag first) are listed above and measure the same, so the body stands.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4923,6 +4934,13 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // Original helper, all input captures, full geometry, scalar alpha and body restored.
 // P349: Complete scale classification before alias-safe inputs, bool/byte/short/long and complementary truth:
 // 446/446/446/446/462/462/458/458. NOT kept: no byte equality; original executable source restored.
+// MiniMax S (11-17): no new form, no lower score (231): the corner helper is private to this file and its four
+// call sites are all here, so its shape is ours to pick, but the spill homes (x 4 / z 8 / radius 0xc /
+// -radius 0x10 against retail's x 4 / radius 8 / -radius 0xc / z 0x10) do not move with the declarations:
+// the helper's own locals reordered with z first gives 396, a named negative radius used at the three corner
+// sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
+// before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
+// the keep bar, so the body stands.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
