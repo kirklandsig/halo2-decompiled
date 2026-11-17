@@ -201,6 +201,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // the first sprite record through a two-use force-inline accessor in both passes 12 (retail's `lea esi, [eax + 8]` copy
 // source, as the bounds-record pointer; only the XMM3/XMM4 pair left; not kept, 2 lower without a match); that accessor
 // with the y read-backs 28. All restored.
+// Round 93 (m3 lane 2, fast; on that two-use first-sprite accessor, re-measured 12 with only the XMM3/XMM4 pair left):
+// the half factor applied to each span before the sprite size 12 and the sprite size first in each half extent 12
+// (both reassociated to the same code); the four edges named after the x step (left, top, right, bottom) 12 (same
+// code); the lower and right edges named first 91 (852 bytes). All restored to the body without the accessor.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

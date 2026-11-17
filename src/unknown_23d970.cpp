@@ -564,7 +564,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
-// score 45 (was 45; earlier 45 (was 45)): the second product through the existing staged helper of src/unknown_1f03e0.cpp
+// score 45 (was 45): earlier 45 (was 45); the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
 // product. Left: the first product's right.i/right.j colours (ours xmm1/xmm2, retail xmm2/xmm1), the
@@ -1015,6 +1015,13 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // P571: Terminal timer ready/pending classification, bool/byte/short/long: 45/45/45/45/45/45/45/45. NOT
 // kept: unmatched classification storage; right i/j registers, forward.k reuse and angle-store bases
 // remain. Original timer comparison, shared products and complete body restored.
+// M3 lane 10 r113 (`--fast 0x23de50 0x1f0870`, control 45): on the else arm through a forced-inline helper reading yaw and
+// pitch through the observer at each use (the else arm then retail's, 47 at 1264 B as lane 8 r168): the first product in
+// place on a copy of previous_up (`right = previous_up;`) through function_1f087b, second function_1f087b 292 (1261 B, the
+// entry and frame change); in place through cross3f_staged with function_1f087b second 290 (1261 B); in place staged with
+// cross3f_staged second 248 (1267 B); in place through function_1f087b with cross3f_staged second 247 (1265 B); the three
+// camera locals declared together ahead of the arm in the orders p/d/r, d/r/p, d/p/r, r/d/p, p/r/d 47 each (same code).
+// Body unchanged.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

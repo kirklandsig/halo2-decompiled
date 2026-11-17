@@ -1072,6 +1072,11 @@ extern "C" void _ReadWriteBarrier(void);
 // build) 21 (all the same code); the 0x12aff0 call between the two direct volumes 71 (672 bytes); between the rolloff
 // and obstruction zero stores 120. Reading: g_47005c from +4 has this aggregate's nine-field layout and 0x220fd0 fills
 // the same five fields there from the same three gains, so the shared stretch is one idiom in both.
+// Round 102 (m3 lane 13, fast with 0x220e00, which stays matched): the two direct volumes through a forced-inline setter
+// taking the field's address and the gain (barriers kept) 21 (same code); both barriers removed with the memset, every
+// parameter store and the call through one multi-use pointer to the parameters 28 (the no-barrier control); the memset
+// ahead of the globals and voice pointers, barriers kept, 25; the voice pointer by byte arithmetic from the voice array
+// 21 (same code); the room HF level from the clamp expression in place of the room level read back 112 (691 bytes).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

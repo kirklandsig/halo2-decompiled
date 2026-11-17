@@ -1378,6 +1378,30 @@ long impact_new(
 	return impact_index;
 }
 
+struct s_material_index_2285d0
+{
+	short index;
+	s_material_index_2285d0() : index(NONE) {}
+};
+
+static __forceinline s_impact_object *component_object_get_2285d0(long component_index)
+{
+	s_havok_component *component = havok_component_get(component_index);
+	s_havok_component *&barrier = component;
+	return impact_object_header_get(barrier->object_index)->object;
+}
+
+static __forceinline long component_tag_index_get_2285d0(long component_index)
+{
+	s_havok_component *component = havok_component_get(component_index);
+	s_havok_component *&barrier = component;
+	s_impact_object *object = impact_object_header_get(barrier->object_index)->object;
+	s_impact_object *&object_barrier = object;
+	byte *bytes = impact_tag_get(object_barrier->definition_index);
+	byte *&bytes_barrier = bytes;
+	return *(long *)(bytes_barrier + 0x58);
+}
+
 // @retail 0x2285d0
 void impact_material_effects_get_for_component(
 	vector3f const *normal,
@@ -1398,7 +1422,7 @@ void impact_material_effects_get_for_component(
 {
 	point3f point = *position;
 	long tag_index = NONE;
-	short material = NONE;
+	s_material_index_2285d0 material;
 	s_location location;
 	long index;
 
@@ -1411,15 +1435,15 @@ void impact_material_effects_get_for_component(
 	function_11bed0(&location, &point);
 	if (location.cluster_index == NONE)
 	{
-		location = impact_object_header_get(havok_component_get(component_index)->object_index)->object->location;
+		location = component_object_get_2285d0(component_index)->location;
 	}
-	if (function_11c120(&location, &point, &material))
+	if (function_11c120(&location, &point, &material.index))
 	{
-		material_b.m_index = material;
+		material_b.m_index = material.index;
 	}
 	if (component_index != NONE && unknownd == NONE)
 	{
-		tag_index = *(long *)(impact_component_definition_get(component_index) + 0x58);
+		tag_index = component_tag_index_get_2285d0(component_index);
 	}
 	switch (type)
 	{

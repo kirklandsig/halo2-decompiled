@@ -2603,6 +2603,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 376 (the not-found exit threads past the index test); with a long copy of the short index for its NONE test and
 // subscript (`long table_index = player_table_index;`) 375 (masked 30: the search is retail's but for where `xor edi,
 // edi` sits); with the player as one ternary 184; the facing dot's products written forward-first 168 (same code).
+// b8E (11-17) walk against retail, fast build on r836 (168, 2880 B, as before): no logic, offset, field, callee or
+// constant error found. Walked: the prop walk 0x2666b0-0x2668c8 (`!prop` skips the strongest test at 0x266743, a failed
+// unknown5e test does not, 0x266755; 0x2672e0 returns its view in EAX, 0x26679f `mov edi, eax` feeds 0x267700, ours
+// passes `view`); the flags 0x2667c7-0x266899; the tail 0x2668cd-0x26690a; the 0xa8/0xa9 events 0x26690f-0x266a5b; the
+// gates 0x266a5b-0x266b5d; the players loop 0x266b70-0x267147 (every constant read; every jcc sense equals ours, NaN
+// included, except one). That one: the decrease test `else if (distance <= 3.5f)` compiles `comiss 3.5, d; jb` (NaN
+// skips) where retail 0x266fcc is `comiss d, 3.5; ja` (NaN enters); NaN cannot reach it (0x266db3 `jbe 0x26713c` drops
+// it), so no behaviour differs. `!(distance > 3.5f)` there gives retail's sense and measures 239 (fast, r836), 701
+// instructions against 695: not kept. Facing lives only in xmm1 (0x266f39); the stack zero at 0x266c51 is what the
+// not-visible arms reload (0x266f9f, 0x26705f), as ours `facing = 0.0f`. The far-and-slow exit 0x266f8e skips the score
+// test; ours reads `score > 0` on the same paths. Body unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

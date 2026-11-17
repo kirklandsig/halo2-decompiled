@@ -1232,6 +1232,11 @@ void function_2118c0(void)
 // rows and p1/out from `b * 8 + k` 123 (790 B), with every row from that row 162 (767 B). Harness only: a short, word,
 // long, dword, char or byte row stepped by 8 beside b with p1/out from `b * 8 + k` or from the row, both sum orders (24
 // forms): short/word leave the knot rows unreduced but sign-extend the row each band; long/dword reduce every row.
+// M3 lane 8 r177 (fast with 0x212100; references that keep two steps apart): the band row through a reference
+// (`long &row = band_row; row = b * 8;`) 150; the same assigned `row = b; row *= 8;` 150; a reference row started at
+// zero above the band loop and stepped by 8 at its foot beside b 150 (all rows reduced to pointers, hoisted to the
+// knot level); the three knot rows through references into a `long [3]` (`r3 = row; r3 += w3;` from `b * 8`) 157 (790
+// B: one row from a row IV, one reduced); the band counter itself through a `short &` 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
