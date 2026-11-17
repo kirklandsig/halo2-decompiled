@@ -205,6 +205,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // the half factor applied to each span before the sprite size 12 and the sprite size first in each half extent 12
 // (both reassociated to the same code); the four edges named after the x step (left, top, right, bottom) 12 (same
 // code); the lower and right edges named first 91 (852 bytes). All restored to the body without the accessor.
+// Round 106 (m3 lane 14, fast with 0x2008fc 0x200891, control 14): the corners stored through a trivial force-inline
+// point setter 14; the first x step through a reference bound to the running x 14; the half height and the corners in
+// their own block scope 14; the last corner's y read back from the corner before it 14 (forwarded); descriptive names
+// for the pulse and the half extents 14 (all five the same code: the advance product keeps XMM4, the half-height copy
+// XMM3, so the pick is not a name tie).
 // @retail 0x200462
 void function_200462(long arg_0)
 {
