@@ -161,6 +161,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // level) 4 (same code); the floor inside the PIN macro 202 (489 B: the macro evaluates the floor three times); the entry as
 // `state + 0x1320` then `+= index * 0x40` 4; a `long const slot` copy of the scanned index for the entry, the call and the
 // clear 4 (all the same code); the bias zero as an else arm of the flag test 90 (384 B).
+// Round 97 (m3 lane 2, fast with 0x143c0, which matched in each): the level store after the call through a trivial
+// forceinline setter 4; the call's result held in a bool and discarded after the store 4; the clear through a
+// forceinline helper taking the mask by reference 4; the clear through a reference bound to the mask 4 (all the same
+// code, the clear still EDX).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
