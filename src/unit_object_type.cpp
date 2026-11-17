@@ -7296,6 +7296,14 @@ done:
 // retail's dead bit-9 and bit-1 byte stores, the first weapon index in a frame slot with the unit looked up again, the
 // side-bit `sete` and `or byte [mem]` updates, the state pointer's home (+0x14 retail, +0x1c ours), unit_index in ESI for
 // the tail, the face switch (no range check, case 3 laid out first) and the ticks' second store (held type).
+// Round 178 (m3 lane 8, fast with 0xc42e0, 0xd6bc0, 0xd6800 and 0xc6b30, matched throughout; the convention now agrees, both
+// `ret 0xc`): the toward normalizer written out with `v->i = scale * v->i;` 199 (same code: the x load still goes ahead of
+// the divide); both weapon indices in a two-element array 199 (same code, scalar-replaced). Diagnostics, not keepable
+// without a match (a new one-member aggregate and helper): both definition-flag tests through a forced-inline helper
+// returning a one-byte aggregate holding the bool 151 (retail's `and cl,1; mov [esp+x],cl` dead stores and the hoisted
+// `mov ecx, 2` appear), bit 9 alone 204, with the weapon array 151. Left on the 151 form: the x multiply, retail's first
+// weapon index in a frame slot (its store kills the unit lookup, which retail repeats for the second index; ours keeps
+// it in EBP) and the state pointer's home (+0x14 retail, +0x1c ours).
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {

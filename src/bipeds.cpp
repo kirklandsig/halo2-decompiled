@@ -4925,6 +4925,11 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P582: Rounded distance/clearance/collision-fraction promoted receiver storage, seven
 // subsets, then immutable original-site distance/clearance: 344/345/379/342/379/371/376/376. NOT kept: no exact native
 // matrix/origin/property/pivot-home recovery; original real receivers and complete body restored.
+// Round 178 (m3 lane 8, fast with 0xe1b60/0xe23e0, both stay matched), on lane 4 r196's lead (end placed's memory life or
+// start the rotated pivot's earlier): the placed point computed in matrix.position (no placed local; the parent arm always
+// overwrites it) and tested there 368 (1906 bytes, the frame moves); the rotated pivot declared with the other parent-arm
+// locals 336 (same code), with the placed change 368; the second collision arm's pulled-back fraction as its own local 336
+// (same code); collision.t read at the first arm's uses with the second arm's fraction a new local 336 (same code).
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
