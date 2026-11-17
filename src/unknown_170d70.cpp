@@ -772,7 +772,7 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 	}
 }
 
-// score 142 (was 156): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
+// score 129 (was 142): the logic walk found no behaviour difference (cluster map lookup/creation, the 512 volume
 // limit, the 163db0 call, the volume/entry/cluster stores and the list walk all equal retail 0x172ee0-0x17308f).
 // What still differs is layout and registers: retail keeps the new-cluster block out of line after the loop
 // (je 0x172fad ... jmp 0x172f08) with cluster_slot in ebx and volume_index in ebp (pushed only before the loop);
@@ -782,6 +782,18 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 // difference to recover the slot), a helper returning the slot (159), volume_index declared before the slot
 // (156), goto create/found (203). Permuter (25 min on r622): best 100, only with volatile locals and list_next's
 // two index arguments swapped (a behaviour change); not kept.
+// b15B (11-17) walk against retail, fast build on r848: all statements and jcc senses re-walked, no behaviour change.
+// Forms kept, each retail's own order: the creation block is `if (count < 128) { ... } else return false;` (retail
+// xor ecx,ecx 0x172fb1, jge 0x17300d, block out of line at 0x172fad-0x173008, jmp 0x172f08); the new cluster pointer
+// is formed once and the stores go through it (0x172fdf, 0x172fe6, 0x172feb, 0x172ffd); plane_index is an if/else
+// (retail's stores 0x172fa8 and 0x173016, NONE held in edx from 0x172f8a for the cmp at 0x172f8d); volume_count is
+// stored (0x172f4d) before the volume pointer is formed (0x172f56), which puts collection in edi as in retail.
+// Left: cluster_slot takes ebp and volume_index ebx (retail ebx and ebp, so retail pushes ebp only at 0x172f08 and ours
+// pushes ebx there), and the cameras load comes after the count store where retail loads it at 0x172f3d.
+// Tried: written-out clusters[slot] stores 124 (creation block then differs from retail's), swapped if/else 160, no
+// `cluster` local 159/162, for(;;) 149, count as long 160, unsigned short or `cluster_count++` 142, volume_index/entry
+// declared outside the loop, head pointer, next-index local (no change). A probe store using cluster_slot in the loop
+// flips ebx/ebp (131), so the pick is a use-count tie; probe not kept.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -793,16 +805,19 @@ bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool,
 	else
 	{
 		short count = collection->cluster_count;
-		if (count >= 128)
+		if (count < 128)
+		{
+			cluster_slot = count;
+			collection->cluster_count = count + 1;
+			collection->order[cluster_slot] = cluster_slot;
+			cluster_map[cluster_index] = cluster_slot;
+			cluster = &collection->clusters[cluster_slot];
+			cluster->index = (short)cluster_index;
+			memset(cluster->counts, 0, sizeof(cluster->counts));
+			memset(cluster->heads, 0xff, sizeof(cluster->heads));
+		}
+		else
 			return false;
-		cluster_slot = count;
-		collection->cluster_count = count + 1;
-		collection->order[cluster_slot] = cluster_slot;
-		cluster_map[cluster_index] = cluster_slot;
-		collection->clusters[cluster_slot].index = (short)cluster_index;
-		memset(collection->clusters[cluster_slot].counts, 0, sizeof(collection->clusters[cluster_slot].counts));
-		memset(collection->clusters[cluster_slot].heads, 0xff, sizeof(collection->clusters[cluster_slot].heads));
-		cluster = &collection->clusters[cluster_slot];
 	}
 	do
 	{
@@ -812,16 +827,18 @@ bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool,
 		s_pool_entry *entry = &pool->entries[entry_index];
 		if (entry->unknown28 == NONE)
 		{
-			s_view_volume_1733e0 *volume = &collection->volumes[volume_index];
 			collection->volume_count = volume_index + 1;
+			s_view_volume_1733e0 *volume = &collection->volumes[volume_index];
 			if (function_163db0((s_camera_163db0 const *)(cameras + entry->key * 0x1bc), (box2f const *)&entry->rect, entry->key, (s_frustum_1648d0 *)volume))
 			{
 				volume->cluster_index = cluster_slot;
 				volume->distance = entry->unknown24;
 				entry->unknown0a = volume_index;
 				short portal_index = entry->unknown06;
-				volume->plane_index = portal_index != NONE
-					? *(long *)(*(byte **)((byte *)g_4e0348 + 0x60) + portal_index * 0x24 + 4) : NONE;
+				if (portal_index != NONE)
+					volume->plane_index = *(long *)(*(byte **)((byte *)g_4e0348 + 0x60) + portal_index * 0x24 + 4);
+				else
+					volume->plane_index = NONE;
 				if (cluster->heads[group] == NONE)
 					cluster->heads[group] = volume_index;
 				++cluster->counts[group];
@@ -1136,6 +1153,14 @@ bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 c
 // last. Tried: all 48 operand/sum orders of the dot product (all 23), plane_distance_to_point (23), no goto (23),
 // `if (state > 0) ... else return 0` (23), result variable (80), early returns split by branch (28, 34).
 // Permuter (25 min on r621): best 21, with the plane's d read into a local before the origin pointer; not kept.
+// b13N (11-17) walk against retail, fast build on r846: logic equals retail (no sort_4byte call here; the maintainer's
+// lane 6 sort_4byte change does not touch this function). Both jbe senses (0x1738d0 fabs <= 1/64 goes inside, 0x1738e9
+// distance < 0 gives 1) and the 3 / 0 / 1 / 2 results match. Remaining: the x term's fld [ecx] / fmul [edx] at
+// 0x1738b6, and retail's single `xor eax, eax` block at 0x1738d9 sits right after the jg at 0x1738d7 and is reused by
+// the jle at 0x173907; ours keeps it last. Also 23: `if (*inside || state > 0) return 3; return 0;` for the inside
+// arm, nested ifs, assignment in the condition, the x term as its own statement, the sum right-associated (first 11 of
+// 48 orders), plane->d in a local. Worse: both arms returning 1/0/3 in full (38), inside arm first (27), one shared
+// state test (75), origin declared first (52), origin->position.x spelled out (47).
 // @retail 0x173890
 long function_173890(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon, long state, bool *inside)
 {

@@ -273,6 +273,11 @@ static inline void font_copy_wait(bool volatile *done)
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
+// b14F (11-17) walk against retail, fast build on r847: the instructions match; the 4 differing lines are only the
+// three arrays' frame offsets (retail 0x121c5e, 0x121ca3, 0x121e4d: old 0xf70, source 0x1b20, destination 0x26d0).
+// Declaration order and scope of the arrays, the delete loop's spelling and the parse order change nothing. Only an
+// extra use of the old array in the pointer loop `old_file < old_files + old_count` (score 227) moves it first, with
+// different loop code.
 // @retail 0x121b00
 bool function_121b00(void)
 {

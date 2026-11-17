@@ -408,6 +408,7 @@ const long g_43e8e8[4] = { 32, 64, 128, 256 };
 // copy exit (retail jumps to 0x1d46e). Caller spellings with no effect there: nested ifs, a size local, *4, Unlock
 // after the test, an early return. Retail needs the callee fixed first (0x15b10 is in src/unknown_0158f0.cpp, not
 // touched): BLOCKED-BY 0x15b10.
+// b13A (11-17): with 0x15b10's CreatePalette2 written out (out in ebx, as retail), not kept, this is 64 (fast, was 76).
 // @retail 0x1d3f0
 bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 {
@@ -6064,6 +6065,15 @@ void function_1bbf0(long tag, long first, long second, long third, long fourth, 
 // score 73 (was 73): retail keeps the second tag lookup in ecx where ours uses edx, retail materialises the pass
 // entry's address with its own lea before loading its tag (ours folds the +4 into the load, two bytes shorter,
 // which shifts every later jump) and retail copies the record's tag through ebp where ours loads it into eax.
+// b15E (11-17) walk against retail, fast build on r848: no logic difference (h2.py disasm): the entry clamp
+// (0x1664d-0x16658), stage mask test (0x16670), pass count shr 9 (0x16693), wanted-pass test (0x166a6-0x166ad), pass
+// entry stride 10, record stride 0x132 (0x166d3), the 0x100 test (0x166e6), g_4670bc store (0x166f8), the 0x1bbf0
+// arguments (0x16704-0x16713), the 0x3f53d0 cull call with its store (0x16737-0x16743), copy test (0x16748) and result
+// byte (0x16778) all agree; the program tag is re-read after 0x1bbf0 (0x16718) as in ours. Tried, all 73 unless noted:
+// `long shader_tag` local, the nested lookup without `definition`, a `pass_tag` local, `pass_entry +=` in two steps, a
+// `long program` local at the call, packed 10-byte entry and 0x132-byte record structs with field access (identical
+// code, so no struct is kept), `(word)` on the shader tag (102, movzx); `long program` read before the 0x100 test
+// scores 67 but loses the record's `add ebp,[ecx+4]` shape and the re-read at 0x16718, so it is not kept.
 // @retail 0x16610
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy)
@@ -10013,6 +10023,17 @@ dword __cdecl pack_color3f(color3f const *color);
 void function_25a10(byte const *state, point3f const *position, vector3f const *direction);
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 
+// score 95 (was 95): the 0x14b60 flags register (BLOCKED-BY 0x14b60) and register choices, see below.
+// b15E (11-17) walk against retail, fast build on r848: no logic difference (h2.py disasm, align.py): the 0xa6-dword
+// copy to 0x485600, the mode switch (0 and default store 0, 1 stores 0x12; 0x132e5-0x13305), 0x15370 with ebx = 0, the
+// 0x901/0x900 stores, the 0x12fa0 arguments, the 0x61 flags and packed 0x48560c colour unless [0x4670cd]
+// (0x13345-0x13367), the word-sized 0x14bc0 index, the push-buffer vertex write and the 0x25a10 copy all agree. What
+// differs: (1) ours hoists a zero (`xor ecx,ecx; sub eax,ecx`, `mov [g],ecx`) where retail has `sub eax, 0` (0x132e9)
+// and `mov [g], 0` (0x132fb); (2) retail loads the scaled byte into edx (0x13311) and forms `lea ecx` before the two
+// stores (0x1331d), ours uses ecx and forms it after; (3) the word index for 0x14bc0 goes through eax (0x13369) and ecx
+// (0x1338c) in retail, edx and eax here; (4) retail passes the 0x14b60 flags in eax (0x13383), the @stub pushes them.
+// Tried, all 95 unless noted: case 1 first, `case 0: default:` merged, if/else chain (103), the stores above 0x15370, a
+// `view` local, braces on the else arm, an index local shared by both calls (99).
 // @retail 0x132d0
 void __stdcall function_132d0(s_frame_view_2c560 const *frame)
 {
