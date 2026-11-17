@@ -502,7 +502,8 @@ struct s_text_line_measurement
 	long index;
 };
 
-// score 77 (was 77): MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
+// score 77 (was 77): frame 0x1c and 415-byte extent agree; first +0x3a spans branches; native independent advance copy and early width load still differ.
+// Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the remaining differences are still the
 // XMM0 and XMM3 colouring (retail moves the width into xmm4 early and copies xmm0 into xmm3, ours accumulates the
 // advance in xmm0 and moves the width late) and the one-use width local the rules drop. Body unchanged.
 // MiniMax S (11-16): no new form, no lower score (77): the remaining differences are still the XMM0/XMM3 colouring (this build gives XMM0 to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps inside the update arm while ours run ahead of the test; the summed-width spelling that reached 65 is not kept, a one-use local being kept only with a byte match.
@@ -514,7 +515,7 @@ struct s_text_line_measurement
 // named inside the update arm never produces the copy (77). Still open: the XMM0/XMM3 colouring (ours gives XMM0
 // to the scale and XMM3 to the advance, retail the other way round) and the update's adds, which retail keeps in
 // the update arm while ours run ahead of the test. The new width is read once, in the update arm.
-// score 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
+// Earlier header detail: 77 (was 77): M3 lane 8 r170 (fast with 0x13f0e0): the update accumulated in the advance (`advance += offset;
 // advance += kerning; advance += width; width = advance;`) 77; `advance += offset + kerning; width += advance; count++;`
 // 77; with the test reading the advance product written out again (diagnostic) 77, still no copy; 1-7 dead long locals at
 // the top 77 each (no phase effect); 0x13f700's `real x = position->x + advance + offset + kerning;` named before the
@@ -639,6 +640,9 @@ struct s_text_line_measurement
 // four isolated, token-kerning/cache-pair/token-cache-entry/all:
 // 42/77/77/77/42/77/42/42. NOT kept: token forms grow 415 to 418 bytes,
 // add a width reload and still lack native advance copy/early width. All declarations restored.
+// P580: Scalar memcpy at advance pixels/offset pixels/both/token/break byte/right bound/
+// start coordinate/reused running width: 77/77/77/77/77/79/79/79. NOT kept: native independent advance
+// copy and early width load remain; original observations, arithmetic and full body restored.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

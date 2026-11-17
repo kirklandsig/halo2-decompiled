@@ -188,6 +188,12 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // first 11; that address as an array subscript of the cluster table 11; the palette lookup helper `__forceinline` 11;
 // the weight as `real const` 11; the inner byte step as `sizeof(real)` 11 (all same code). Our three tied homes have
 // five references each in the final code, as in retail.
+// Round 100 (m3 lane 13, fast; both builds end `ret 8`): the destination record named after the previous-index store
+// and used by the copy and the blend 11 (same code); the result as `int` (re-measured on the current body) 11; the
+// source entry looked up straight from the element's index (no index local) 11 (same code); the first pass reading its
+// element through the entry's array at each use (no element pointer) 215; the lookup helper as one conditional
+// expression 73. Re-measured, not counted: the clusters parameter walked in the for step 305 (1174 bytes); `1.0f -
+// local_7` named after the copy 98 (1208 bytes).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

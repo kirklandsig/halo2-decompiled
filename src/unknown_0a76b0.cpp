@@ -1443,6 +1443,12 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // second operand) makes the notice a join block that is deferred to just before the exit, whatever its source position
 // (after the success code, after the return, in an else, behind a positive test). Dropping the success path's tests
 // does not change it, so it is not a frequency estimate. Retail's notice sits after the exit, which no form here gives.
+// Round 100 (m3 lane 13, fast; round 78's entry pool copy re-measured 16 as the base): the result assigned from the two
+// throw-animation starts (`result = (animate && ...) || ...;`) with the setup under `if (result)` 118 (977 bytes), on the
+// pool copy 115 (the constant store moves ahead of the setup); on the pool copy: the notice's player value read at each use
+// in one combined test (no player_value local) 57 (984 bytes), `result = true` as the success block's first store 58, the
+// notice in the then-arm without its goto and the rest in the else-arm 16. Diagnostic (reverted): an address-taken result
+// with the notice ending in its own `return result;` 257 (969 bytes, the pointer store adds code).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2093,6 +2099,18 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // first and a unit local after it, the test on UNIT_ACTIONS_GET(unit) 95 (233 B, the unit is reused after the branch).
 // Retail's register choice says the type is loaded after the pool data (both in ECX), so its pre-schedule order has the
 // unit lookup ahead of the compare, with the add after it; every root that holds the unit is reused after the branch.
+// Round 100 (m3 lane 13, fast): LEAD, a byte match held back by its callee. The unit looked up in its own statement ahead
+// of `primary` (the test on UNIT_ACTIONS_GET(unit)) together with 0xe8510's hand weapon read through a pool copy given to
+// the pool helper (`s_record_pool *objects = g_4e0300;` then unit_action_pool_hand_weapon_get(objects, unit_index,
+// !primary), the per-lookup idiom of 0xe8de0) MATCHES 0xe8c10: the copy is used twice, so the inlined lookup is not
+// merged with this function's unit and reloads the pool as retail does. But 0xe8510 itself then scores 60 and 0xe8d10
+// 48 (the pool data in ECX and the hand in EDX, retail the other way round, and the 0xee7f0 argument computed in EAX),
+// so it is not kept. Same 60/48 with a named hand first, `primary ? 0 : 1`, `primary == false`, the name ternary at both
+// uses, the result initialised in its own statement; `bool result` declared first 101 (0xe8980/0xe8b20 change length).
+// 0xe8510 alone with that form leaves 0xe8c10 at 11. Without the pool helper the inlined lookup merges again: the unit
+// statement alone 90 (233 bytes, a repeat), with a pool copy in this function 90, with 0xe8510 reading through a pool
+// copy once (hand getter on the copy's lookup, 0xe8510 matched) 90, with the pool helper given g_4e0300 itself 90. The
+// unit's header entry named ahead of `primary` 77 (240 bytes); a pool copy read twice through the actions macro 11.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -2639,6 +2657,9 @@ __forceinline char unit_action_round(real value)
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
 // score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax E (11-16): no new form, no lower score (234); the prologue still loads the pool into EDI where retail uses
+// EBP and the getter's NONE compare is 8-bit against retail's 16-bit `cmp ax, bx`; the short-slot getter alone measures
+// 297 and the reordered statements 314, so both bodies were reverted.
 // MiniMax I (11-14): no new form, no lower score (234): the melee name's selection declared before the weapon getter
 // 315 and a function-top pool local for both unit lookups 311, while the selection as an if/else instead of a ternary
 // is the same code; the permuter over this function found nothing (2 tries, best 227 against a baseline of 227), so the

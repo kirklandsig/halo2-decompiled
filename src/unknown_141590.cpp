@@ -1343,6 +1343,10 @@ void function_143250(
 // long for/while, then third/both short for: 1671/1671/1592/1592/1751/1751/1748/1771.
 // NOT kept: grouped root-pipeline storage is unmatched and regresses; native paired
 // scalar homes and missing frame word remain. Original polynomial and full body restored.
+// P580: Current-polynomial reused rotation scalar memcpy, seven complete-row subsets,
+// then all scalar memmove: 1559/1754/1148/1770/1768/1582/1790/1865. NOT kept: no exact paired-home/frame recovery;
+// the 1148 transfer moves the frame farther from native 0x300 to 0x2f8; unmatched self-address storage restored.
+// original nine captures, polynomial, publications, helper calls and full body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
