@@ -2039,6 +2039,16 @@ void function_27dd10(void)
 // 13, 0x28aaa0 10); the same guard around the inner loop 2 (same code); the bit flags bound to a `long &`
 // for the inner loop 2 (0x288570 120); the count bound to a `long const &` at the group clamp 2 (0x281b60
 // 39, 0x288570 120); the pass counters as a switch on the component 2 (0x288570 3, 0x289580 78). All restored.
+// Round 132 (m3 lane 9, fast with 0x281b60 and the five matched walk users): this function and 0x281b60 through each
+// of the file's other existing wrappers: compute_orientations_inheritance_mapping 417 (1749 bytes; 0x281b60 397),
+// compute_orientations_component_count 4 (0x281b60 41), compute_orientations_split 22 (0x281b60 72),
+// compute_orientations_split_index_last 29 (0x281b60 62); compute_orientations re-measured 4 (0x281b60 4).
+// Diagnostic: the scale pass given the node count from the settings global 154 (1738 bytes, every walk user
+// regresses), but the rotation pass's pair then reloads the flags first as retail does: the order follows the
+// count's weight against the flags'. Reference-bound locals: the wrapper's count as `long node_count = ...; long
+// &count = node_count;` 2 (0x281b60 39, 0x288570 3, 0x289580 78); the group end bound to a `long &` 2 (0x288570
+// 120); the destination index bound to a `long &` 2 (0x288570 120); the walk's count parameter as `long &` 2
+// (0x281b60 2, the five matched users keep). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2176,6 +2186,11 @@ void function_2818e0(void)
 // Round 253 (m3 lane 3, the shared-walk trials listed above 0x27dff0): redundant group-loop guard 97;
 // inner-loop guard 2; bit flags by `long &` 2; count by `long const &` at the clamp 39; pass counters as a
 // switch 2. All restored.
+// Round 132 (m3 lane 9, the wrapper trials listed above 0x27dff0): compute_orientations_inheritance_mapping 397
+// (1682 bytes); compute_orientations_component_count 41; compute_orientations_split 72;
+// compute_orientations_split_index_last 62; compute_orientations 4; the scale pass's count from the settings
+// global (diagnostic) 152 (1680 bytes); the wrapper's count through a reference-bound local 39; the group end or
+// the destination index bound to a `long &` 2/2; the walk's count parameter as `long &` 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
