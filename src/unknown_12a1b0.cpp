@@ -2378,6 +2378,12 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P583: Actual paired created/replacement handle presence outcomes, positive/
 // complementary bool/byte/short/long: 479/479/479/479/479/479/479/479 (reduced control 479; full 305). NOT kept: no exact native
 // NONE/playback/frame recovery; original handle tests, request and complete body restored.
+// M3 lane 1 r114 (plain): on the 246 form (memset, split sum with bounds pointer, count per for-init, mask bit at each
+// use, long gain copy) the second loop's creation call given 0 for the datum and track indices (diagnostic) 360 (1907 B):
+// that loop then keeps track_definition in EBX and 0xc2800000 in EBP but never NONE, so NONE is no register candidate
+// there in this build (retail: `or ebx, -1` before the loop). On the 246 form: `dword sounds[9]` 246; the whole 0x2000
+// block as a forceinline helper 246 (same code); gain copy and sum before the entry lookup 246; the 0xa0 request with
+// the range read through an s_short_bounds member at +2 246 (frame 0x12c, retail's `lea ebx, [..+2]`).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -3330,6 +3336,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // P591: Complete reused start/resume classification after request-state adjustment,
 // bool/byte/short/long in both polarities: 755/755/746/727/755/755/746/727. NOT kept: all regress
 // against calibrated 597; original repeated tests and full body restored. Entry true/flags and record homes remain.
+// M3 lane 1 r114 (plain): retail stores the start arm's field_c_4 = 0 and reloads it for next_state (a store written
+// in each arm and merged); only `field_c_4 = 0` written at the end of each arm, next_state after the arms, 681 (2475 B:
+// the constant is threaded into both arms, no reload). `track_alternate` as one `alternate && (... != NONE || ...)`
+// expression 614 (2519 B); the impulse bits through the existing flag_set_12a1b0 597 (same code); `total` declared
+// before `scale` 598; `previous` read before `next` and used for the first table index 597. Diagnostics (reverted):
+// `(void)&index;` and a read through `long const *index_reference = &index;` give identical code (the index stays in
+// ESI; the address does not keep it in memory).
 // @retail 0x21a250
 // MiniMax C (11-17): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the creation compare order, the source copied from edx to esi, the energy loop's padding and the start arm's shared tail also differ, and the earlier rounds' forms of these score 590 or more.
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
