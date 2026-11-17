@@ -811,6 +811,10 @@ struct s_player_axes_153d10
 // a `(real)` cast on this product's up.k or forward.i operand alone 2/2 (same code); the axis pointers, the axes view, or
 // cross/relative/delta renamed 2/2/2 (names do not key the order); in the real build the forward and up dots ahead of the
 // cross 115 (1300 B), the forward dot only 47, the up dot only 46.
+// M3 lane 3 r256 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70, control 2; without 0x154df0 listed every form reads
+// 345 at 1335 B): the second unit index as one ternary 2 (same code); as `unit_index = NONE;` then the lookup under the
+// player test 63 (1296 B); the cross as three named scalars feeding relative.i (real build) 47; delta declared after
+// the cross 121 (1303 B); all three dots written delta-first 2 (same code).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
