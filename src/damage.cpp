@@ -2921,6 +2921,12 @@ struct s_unit_event
 // existing region-argument reference renamed as well: 513/513/513/513/513/513/513/513. NOT kept: no exact native
 // region/permutation register recovery; original complete body and all observations restored.
 // MiniMax D (11-16): no new form, no lower score (513).
+// m3 lane 8 r176 (fast with 0xdaaa0, 0xdae60, 0xdb760, 0xd5de0, 0xd9d60; control 513): retail gives the permutation pointer EBX
+// throughout, reloads object_index into EBP block by block and gives ESI to the datum offset (later the constant 1); ours holds
+// object_index in ESI and the permutation pointer in EBP. `(void)&region_index;` for the reference pointer 533 (the convention
+// changes: 0xdae60 48, 0xdb760 9, 0xdaaa0 67); object_index read once through its address 513 (same code); a named
+// `object_index & 0xffff` for all six lookups 571 (1896 B); all six vehicle bits as word ORs 513 (same code); region and
+// permutation declared ahead of the object 513.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -5410,6 +5416,10 @@ struct s_damage_object_creation
 // P579: Scalar transfers at object tag/model tag/original component/section bound/node state,
 // paired metadata zero-byte memset, then creation-tag/created-component transfers: 144/149/146/146/146/144/161/146.
 // NOT kept: no exact native entry/bitmap/search recovery; original complete body and observations restored.
+// m3 lane 8 r176 (fast with 0xdb810 and 0xdbb40, control 146): the section loop's register choice (retail keeps the count in
+// EAX and mask_a in EDI and spills the datum offset; ours keeps the offset in EDI and spills the count into the mask's slot):
+// the count declared in the for-init 146 (same code); both mask parameters `word` 146 (same code); the bound read as
+// `info->unknowne0` 172 (793 B); `info` declared first, assigned after the definition 146; `word` masks without the casts 146.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

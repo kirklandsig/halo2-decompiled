@@ -1456,6 +1456,14 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // (3070 B). Seen in the listing: retail's general delta shares the flying arm's forward slot (0x2c) and limited shares desired's
 // (0x20), ours the reverse; the history block's change/relative/offset slots agree; the direct arm's `speed * rotated.x` keeps speed
 // as the destination in retail (`movaps xmm2, xmm3; mulss xmm2, xmm0`) where ours multiplies into the dying rotated.x.
+// M3 lane 8 r175 (fast with 0x1f0450/0x24590/0x2b400/0x30bf0/0xa75d0, all MATCH; control 234, difflib-aligned 158, register-
+// masked 59): the direct arm's output as three statements, i, j, then k (retail computes and stores them in that order, ours
+// evaluates vector3f_assign's arguments k first) 543 (aligned 191, masked 81: that arm and the first arm's shared out.k store
+// become retail's, but the flying arm's second cross block moves); with the general arm's output through the existing
+// vector3f_add(current, &limited, out) 469 (aligned 153, masked 55; only its k row still commutes into limited's register,
+// `addss xmm2, [eax + 8]`, so the first arm keeps its own out.k store); vector3f_add(&limited, current, out) there 469 (same
+// code); on the body, the first arm clearing gravity as its first statement 233 (a one-point gain); all three together 468
+// (aligned 153, masked 55). Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

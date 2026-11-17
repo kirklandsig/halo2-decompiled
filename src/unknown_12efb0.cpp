@@ -655,6 +655,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // palette radius/both best identities/both best weights/all source-weight publications:
 // 607/607/607/747/668/607/821/831. NOT kept: no exact provider/NONE or palette/SIMD recovery; original
 // source observations, alias-safe helpers, arithmetic and complete body restored.
+// M3 lane 8 r175 (fast with 0x12e5e0/0x130f60/0x131030/0x1317a0, all MATCH; control 607): the char slot re-measured
+// on this body 700 (3828 B; retail's `cmp cl, al`, but the 0x130f60 result stays in EAX with NONE in ECX, slot in BL);
+// on it the palette record's NULL declared at the loop top 700 (same code), the handled flag declared before the 0x130f60 call
+// 702, a `long palette_index = palette_slot;` for the table test and lookup 751 (3842 B, first difference +0x2e); on the
+// short slot, the tag arm's radius read from the field at each use (as the palette arm reads its own) 610 (3835 B).
+// Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

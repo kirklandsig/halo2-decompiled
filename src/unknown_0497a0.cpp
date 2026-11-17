@@ -422,6 +422,12 @@
 // selected depth extent, reciprocal depth bounds, displacement depth bounds and output depth inputs:
 // 578/578/579/579/638/624/605/605. NOT kept: no exact native rounded-wave/frame recovery; original
 // complete body, scalar observations, helpers and includes restored.
+// m3 lane 8 r176 (fast with 0x4a1e0; control 536): `inv` declared after the shape pointers 536 (the entry stores in retail's
+// order); the three repeated wave factors as named double locals 646 (2595 B); s0 before s1 536; `w` initialised at its
+// declaration without the else 678; s1 through the float sin overload 538. Compile-only lead: when the first scaled add
+// stores through a pointer the compiler cannot separate from the camera global, s1 is computed first and stored to a float
+// home exactly as retail; so retail's wave values are materialised because something between their definitions and their
+// uses may alias that global (s0 still folds in that form).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

@@ -965,6 +965,7 @@ bool function_1934f0(s_surface_description *variant);
 long function_1931a0(long count, s_surface_description *variant);
 long function_193250(s_surface_description *variant);
 long function_1932c0(s_surface_description *variant);
+long function_193300(s_surface_description *variant);
 long network_session_get_maximum_players(c_class_58d20 *session);
 bool balance_teams_by_count(long player_count, const long *parties, long team_count, long maximum_team_size,
 	bool flag_parties, long minimum, long maximum, bool use_parties, long *imbalance);
@@ -996,18 +997,6 @@ struct s_matchmaking_ratings
 	dword add_mask, group_mask;
 };
 
-static inline long ratings_variant_capacity(s_surface_description *variant)
-{
-	switch (variant->type)
-	{
-	case 1: return variant->height;
-	case 2: return variant->height;
-	case 3: return variant->depth * variant->width;
-	case 4: return variant->depth * variant->width;
-	case 5: return variant->depth * variant->width;
-	default: __assume(0);
-	}
-}
 static inline long ratings_variant_teams(s_surface_description *variant)
 {
 	switch (variant->type)
@@ -1059,7 +1048,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
-// score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
+// score 964 (was 964): frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
+// inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
 // coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
 // it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
 // in EAX); 2684 bytes against retail's 2828, the top 0x192e60 still inlined and 0x631f0 still a call (retail the reverse).
@@ -1472,6 +1462,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // a rise here; diff saved as build/r188/lead-0x73530-631f0-call.patch; applied by the coordinator 11-16, see the 964 line); that with `long histogram[16]` 984 (2640 bytes,
 // frame 0xb4, 0x73530 MATCH); that with the loop's variant through 0x192e60 1011 (2620 bytes, 0x73530 MATCH, the top call
 // still inlined); the player's group named before the written-out scan 766 (same code). Body unchanged.
+// m3 lane 8 r176 (fast with 0x73530, 0x192e60, 0x631f0, 0x193300, 0x1932c0; control 964): the capacity copy forceinline 866
+// (2800 B) but 0x73530 8 (the session on the stack, `ret 8`: the inlined top 0x192e60 takes EDI, so the session is reloaded
+// from its slot); with `long histogram[16]` 894; the single exit 984 (2948 B); forceinline with `result` first 866; with
+// the loop's variant through 0x192e60 957; all with 0x73530 at 8. Kept: the capacity test through the matched 0x193300 in
+// place of this file's copy of its body, 964 (same code). Lead: the top 0x192e60 out of line with the capacity switch inline.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1482,7 +1477,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 	bool result = true;
 	memset(out, 0, sizeof(*out));
 	if (!summary || summary->player_count > capacity || !variant ||
-		capacity > ratings_variant_capacity(variant) || capacity < function_1932c0(variant))
+		capacity > function_193300(variant) || capacity < function_1932c0(variant))
 		return false;
 	if (variant->type == 5)
 	{
