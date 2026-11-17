@@ -404,6 +404,8 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // no walk exit with `initialize = result != NONE;` closing the else arm 116 (495 B); the walk's exit as `return NONE;` 77
 // (same code); the tail nested as `if (initialize) { record; if (result != NONE) ... }` 166 (497 B); no flag (the found
 // path returning the cached index, the record setup unconditional after the allocation and walk) 186 (474 B).
+// Round 401 tested cache-hit index unchanged, stale cache index reset, or result initialized then invalidated, with index/initial-age/negative-age exhaustion as applicable: 103/81/77/103/81/148/134/148.
+// The frame agrees but the cache-hit bypass and trailing register return remain. Original body restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

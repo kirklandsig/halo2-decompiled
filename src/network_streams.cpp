@@ -1067,6 +1067,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the window pointer declared at the top (before the send call) for the bound local and the index, the count through
 // the member, 60; the bound compare written `newest > next` 60; a guarded do-while (`if (next < newest) do {...} while
 // (++next < newest);`) on the window-pointer form 60. All the same code: the offset is still strength-reduced.
+// Round 401 tested previous-sequence for loop, successor-before-step for loop, previous-sequence while, successor at both uses, then offset/head-accumulation forms on each scan: 77/113/77/70/60/60/77/77.
+// The per-pass offset and newest reload remain. Original body and index helper restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

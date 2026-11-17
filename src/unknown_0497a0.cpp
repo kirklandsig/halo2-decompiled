@@ -441,6 +441,8 @@
 // sum without the double cast 538; s1 computed after the first scaled add, just ahead of its use, 536 (VC sinks it there
 // anyway); the first cross after the first scaled add, ahead of its use, 643 (2603 B). Reading: retail rounds s0 to a float
 // home (fstp, movss) and multiplies by 0.03 in SSE, where ours multiplies by 0.03 on the x87 stack before the one store.
+// Round 401 tested complete perspective side/up and ordinary side output values, subsets 1/2/4/3/5/6/7, then both full projection cases: 618/617/620/652/657/657/682/721.
+// All retain the 0x54 frame and grow. Original vector stores restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
