@@ -1863,6 +1863,9 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax R (11-17): no new form, no lower score (378): the normalize's k product with the inverse first measures 372, the same as
+// the squared length summed as (k, i, j), both under the keep bar; the frame is still 0x4c against retail's 0x40 and retail still
+// clears the mobile flag byte in the entry block where this build clears it after the first branch, so the body is as it was.
 // MiniMax I (11-17): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears the mobile flag byte in the entry block where this build clears it after the first branch, the four query components still reach the x87 stack in the other order and the three colour scales still multiply in the other order; the normalize's squared length summed as (k, i, j) measures 372, six points and under the keep bar, and the flag as a test-set measures 362 but is kept only with a byte match, so the body is as it was.
 // MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
 // MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
@@ -2707,6 +2710,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
 // status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
 // still expands here where retail calls it.
+// MiniMax R (11-17): no new form tried, no lower score (542): the result long still sits at +0x30 where retail keeps it at
+// +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30 lookup still expands here where retail calls
+// it; that body lives in another file this lane may not edit.
 // MiniMax I (11-17): no new form, no lower score (542): re-measured in the batch; the result long still sits at
 // +0x30 where retail keeps it at +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30
 // lookup still expands here where retail calls it (that body lives in another file).

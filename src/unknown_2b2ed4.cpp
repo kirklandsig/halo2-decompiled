@@ -74,6 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax R (11-17): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's (display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258), the state switch's shift arm stays out of line and the join order differs.
 // MiniMax I (11-17): no new form, no lower score (316): the frame 0xfd4 still agrees and the first difference is still
 // the null-datum test's jump target (retail's `je` goes to the function's end, ours to a near block), the five string
 // buffers' homes are still one 512-byte buffer out from retail's (the display name at ebp-0x6cc where retail has
