@@ -1408,6 +1408,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // boundaries (each/both), then named/result fill: 989/976/992/989/976/992/922/928.
 // NOT kept: native extent returns but candidate/output homes and EBP zero remain;
 // original complete body, constructors and header set restored.
+// MiniMax I (11-17): no new form, no lower score.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -477,6 +477,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // the body has the alias forward (the same storage, returned by 0x1d3fc1). That re-read through another name is a
 // match-only form; without it the same body measures 153, so the score shape is the re-read alone. dot3f in
 // 0x1d3fc1 did not help. Body back to main.
+// m3 lane 8 r176 (fast with 0x1c4a80): the 2-form rebuilt 2; on it the rows k, j, i 2; the i row written through the matrix
+// field (`local_1[0].up.i = up->i - forward->i * local_10;`) 126 (929 B); the dot given up's normalization call 2; the third
+// normalization given `&local_1[0].up` 2. Compile-only (exact for the 2-form): a 768-form factorial (scale order, scale
+// operand orders, row operand orders, dot argument order) none below 2; ten dot groupings and operand orders (canonicalised,
+// same code); declarations hoisted to the top; the n[] and rotation spellings of every axis access; a project-out helper; up's
+// address taken first. Finding: one field access of up.i anywhere in the function (even a store after the block) gives
+// retail's i product (copies forward.i), but every such access also stops up.i's XMM3 preload, which retail keeps.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

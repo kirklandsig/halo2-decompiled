@@ -135,35 +135,34 @@ __forceinline bool sphere_box_contact_2f1ea0(void const *a_, void const *b_, voi
 		float const dx = magnitude.m128_f32[0] - box->half_extents.m128_f32[0];
 		float const dy = magnitude.m128_f32[1] - box->half_extents.m128_f32[1];
 		float const dz = magnitude.m128_f32[2] - box->half_extents.m128_f32[2];
-		motion_2f23c0 const *motion = b->motion;
 		int axis;
 		float depth;
 		if (dx > dy)
 		{
 			if (dx > dz)
 			{
-				contact.normal = motion->transform.axes[0];
 				depth = dx;
 				axis = 0;
+				contact.normal = b->motion->transform.axes[0];
 			}
 			else
 			{
-				contact.normal = motion->transform.axes[2];
 				depth = dz;
 				axis = 2;
+				contact.normal = b->motion->transform.axes[2];
 			}
 		}
 		else if (dy > dz)
 		{
-			contact.normal = motion->transform.axes[1];
 			depth = dy;
 			axis = 1;
+			contact.normal = b->motion->transform.axes[1];
 		}
 		else
 		{
-			contact.normal = motion->transform.axes[2];
 			depth = dz;
 			axis = 2;
+			contact.normal = b->motion->transform.axes[2];
 		}
 		if (local.value.m128_f32[axis] < 0.0f)
 		{

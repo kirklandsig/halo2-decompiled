@@ -1990,6 +1990,9 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // vertex pointer 595 (frame changes at +0x1); `inside = true` set before the distance 521. Left on 521: retail reads the axis
 // before the early `inc`/`idiv` and keeps the remainder as an index in EDX (the pointer form takes EDI), loads plane.j
 // early for projected.y (load-first product), and the sum homes (face, nearest, edge) still differ.
+// P583: Consumed first-vertex postincrement/second-vertex preincrement with
+// long/int/short/word edge ordinals: 607/607/616/616/598/598/609/609. NOT kept: no exact native early
+// remainder, accumulator or query-zero recovery; original full body and increments restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

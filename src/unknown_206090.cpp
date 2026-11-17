@@ -637,6 +637,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 42.0f`, 1421: LEAD, that block is then retail's exact x87 sequence with dword constants, but the first loop's allocation shifts
 // (local_13's sign/field_88 product reassociates); that with field_88 read once for local_12 and local_13 1450 (6275 B); the
 // float wave term with the contact pointer and in-place cross 1439 (6166 B).
+// P583: Advance-before-admission signed point/contact/query-initialization ordinals,
+// seven subsets, then both collected-prefix searches: 1375/1375/1375/1375/1375/1375/1375/1375. NOT kept: no exact
+// native frame/indexed-contact recovery; original loops, helpers and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

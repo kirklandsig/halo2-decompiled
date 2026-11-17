@@ -524,6 +524,10 @@ struct c_aggregate : c_child
 // element count 31 (same code); the call's status named, the total added, then the status published 32; the child
 // pointer `c_child *const` 31; the dispatch gate as `!error && ...` 31; the cleanup's item count read once into a
 // const local 74. Frame 0x8024 in each; still BLOCKED by the build flag.
+// MiniMax S (11-16): no new form, no lower score (31): the frame is 0x8024 here against retail's 0x8020 and the
+// count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes
+// off; adding /GL- to this file's own flags line builds the body byte-exact (it matches exactly) but costs
+// 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56), so the flags line stays as it is.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
