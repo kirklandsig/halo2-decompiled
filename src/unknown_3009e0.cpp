@@ -224,6 +224,15 @@ struct class_2df670
 #define READ_3_3009E0(p) (((((p)[0] << 8) + (p)[1]) << 8) + (p)[2])
 #define READ_4_3009E0(p) (((((((p)[0] << 8) + (p)[1]) << 8) + (p)[2]) << 8) + (p)[3])
 
+// a big-endian number of three bytes, each byte named
+__forceinline long read_3_3009e0(unsigned char const *p)
+{
+	long const high = p[0];
+	long const middle = p[1];
+	long const low = p[2];
+	return (high << 16) + (middle << 8) + low;
+}
+
 // the position as a copy that may be changed: the caller's at first
 __forceinline pending_301800 *writable_3009e0(pending_301800 *&position, pending_301800 &copy)
 {
@@ -247,7 +256,19 @@ __forceinline __m128 lerp_3009e0(__m128 from, __m128 to, float fraction)
 // first (recursively, with the ray cut at the split) and then the far one
 // with what is left of the ray; bounds cut the ray to a node's range; each
 // leaf reached is cast against.
-// score 892 (was 892): the command widens through ecx; retail uses eax
+// Matched (was 180): the command byte is kept as a byte and the switch value and
+// the corner case's shift count are made from it (retail's `mov ecx, eax`); the
+// filter test reads the ray, the shape and the filter straight from the object (no
+// pointer to the ray); case 0x29 subtracts the offset from its first bound in its own
+// statement and reads its second bound through a helper that names each byte.
+// Before, 180 (was 188): the four-byte key (case 0x53) is built in two statements
+// through a reference to `key` (high word shifted, then the low word added), which
+// keeps the two shifts apart as retail has them. Left: the `reached:` tail (retail is
+// 8 bytes longer there) and the second three-byte read of case 0x29.
+// Before, 188 (was 892): the command is held as a long (narrowed only for the
+// shift), and the key and filter test go through a pointer to the ray inside
+// their own block.
+// Before, 892 (was 892): the command widens through ecx; retail uses eax
 // and a different saved-object home. The frame is 0x194 in both.
 // Copy pointer 892; copy reference 892; vector initializer 1018; scale cases
 // first 958; value cases first 955; leaf cases first 892; hit block 892;
@@ -278,7 +299,8 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 	float high;
 	for (;;)
 	{
-		unsigned char const op = *commands;
+		unsigned char const code = *commands;
+		long const op = code;
 		axis = 999;
 		switch (op)
 		{
@@ -453,8 +475,9 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 		case 0x2a:
 		case 0x2b:
 			axis = op - 0x29;
-			low = ((float)READ_3_3009E0(commands + 1) * inverse_scale) * position->scale - position->offset(axis);
-			high = ((float)READ_3_3009E0(commands + 4) * inverse_scale) * position->scale - position->offset(axis);
+			low = ((float)READ_3_3009E0(commands + 1) * inverse_scale) * position->scale;
+			low -= position->offset(axis);
+			high = ((float)read_3_3009e0(commands + 4) * inverse_scale) * position->scale - position->offset(axis);
 			commands += 7;
 			goto bounds;
 		case 0x26:
@@ -531,7 +554,7 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 			corner(3) = 0.0f;
 			segment->from.subtract(corner);
 			segment->to.subtract(corner);
-			float const factor = (float)(1 << op);
+			float const factor = (float)(1 << code);
 			segment->from.scale(factor);
 			segment->to.scale(factor);
 			copy.offset.value = _mm_mul_ps(splat_3009e0(factor), _mm_add_ps(position->offset.value, corner.value));
@@ -603,8 +626,12 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 			key = READ_3_3009E0(commands + 1);
 			goto reached;
 		case 0x53:
-			key = (READ_2_3009E0(commands + 1) << 16) + READ_2_3009E0(commands + 3);
+		{
+			long &sum = key;
+			sum = READ_2_3009E0(commands + 1) << 16;
+			sum += READ_2_3009E0(commands + 3);
 			goto reached;
+		}
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: case 0x35: case 0x36: case 0x37:
 		case 0x38: case 0x39: case 0x3a: case 0x3b: case 0x3c: case 0x3d: case 0x3e: case 0x3f:
 		case 0x40: case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:

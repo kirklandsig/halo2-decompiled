@@ -69,6 +69,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax E (11-17): no new form, no lower score (49): the busy call's two returns are still if-converted into a mask select (neg al; sbb eax, eax; not eax; and eax, esi) where retail tests the flag and branches to its own priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits before the fallback block; the inverted test measures 49 and a single result exit 163 in the full build.
 // MiniMax H (11-14): no new form, no lower score (49): retail's shared zero exit sits at +0x1de,
 // between the evaluation region and the fallback block, and the priority path ends in an epilogue of
 // its own at +0x26a, so retail branches where this build turns the two returns into a mask select; the
@@ -86,6 +87,7 @@ bool function_25d9b0(long prop_index);
 // mask select (neg al; sbb eax, eax; not eax; and eax, esi) where retail tests the flag and branches to its own
 // priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits
 // before the fallback block; the branch-shaped spellings swap the actor and node registers.
+// MiniMax S (11-16): no new form, no lower score (49); the busy test's two returns are still if-converted into a mask select where retail branches to its own priority epilogue, and splitting the two exits with a goto reaches retail's exit shape but moves the actor into ebp and the node into ebx, which measures 65.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.

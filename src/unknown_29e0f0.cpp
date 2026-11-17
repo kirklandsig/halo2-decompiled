@@ -461,6 +461,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // natural form left beyond these: the remaining levers (retail's 32-bit group with a separate test and set, short terminal and
 // candidate) are listed above and change the length or need the field read beside a local copy. A scan of include/ for helpers this
 // body writes out found none unlisted (bit_vector, dot3f/length_sq3f, vector3d_from_points3d and distance3d are all above).
+// M3 lane 8 r175 (fast with 0x29e730, MATCH each time; control 382): the point bitmap cleared by memset 382; the group skip test
+// split into the bit test and the range test 382; the distance helper as vector3d_from_points3d plus the existing magnitude3d
+// (0x24590, inlined) 382 (same code: every site still sums z, y, x, where retail sums z,y,x / y,x,z / x,z,y); both bitmaps by
+// memset 379 (three lower, not kept); that with `else local_4 = false;` on the no-selection exit (retail stores the false byte
+// there again) 418. Body unchanged.
 // M3 lane 10 r97 (fast with 0x29e730 MATCH; base 382): nothing kept. Descriptive names for every local (best_group, best_point,
 // best_end_point, found, ... count) 382 (same code: the three defaults stay at +0x40/+0xc/+0x20, retail +0x44/+0x28/+0x24, so
 // names do not order these homes); the improvement flag declared before the pass loop 382; the pass's anchor pointer declared
@@ -548,6 +553,17 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 1/2/4/3/5/6/7, then all plus nearest result: 483/505/473/526/454/495/523/561.
 // NOT kept: native narrow selection homes remain unrecovered; wider storage
 // changes frame/extent and regresses. Original signed producers and full body restored.
+// P580: Independent scalar coordinate memcpy in existing squared-first/second/both,
+// length-first/second/both, both first-inputs and all metric inputs:
+// 428/425/470/553/553/777/594/865. NOT kept: no exact selected-home/x87 recovery; original private
+// metrics, all observations, bitmaps, traversals and complete body restored.
+// M3 lane 1 r113 (fast with 0x29e730/0x29de20, both MATCH; base 382, aligned with offsets masked 394, registers too 169): the
+// group entry as a pointer (`&local_10->field_84[local_14]`, group and first point read through it) 382 (same code); the output
+// loop indexed (`&arg_4->field_30[local_37]`, no walking pointer) with the group record named once ahead of it 388 (masked 397/155:
+// the loop then reads field_4 per pass and forms the record and the output as retail does); that with the group bitmap cleared by
+// memset 385 (393/153); with `short local_2` too 388 (330/145, retail's word compare of the endpoint); with `long local_15` too 487
+// (1559 B). Left on the 388 form: the outer loop's entry jump and the continue path's reload of local_10 (retail reloads it at the
+// latch and keeps the group in EBX), the selected-default homes, the per-site x87 orders.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

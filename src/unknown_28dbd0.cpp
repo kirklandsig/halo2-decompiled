@@ -503,6 +503,30 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // complementary bool/byte/short/long: 274/274/274/173/276/276/276/276. NOT kept:
 // all tie or regress; seven forms lose the matched caller and emitter. Original
 // full request, ordinary pooled reads, helpers, random draws and complete body restored.
+// b7D (11-17) walk against retail, fast build on r829: statement by statement, no logic or structure difference found,
+// nothing changed (173, 1209 bytes, with 0x256bd0 and 0x28dab0 MATCH). Same nine calls in retail's order; register
+// arguments agree (eax = arg_2 and ecx = arg_3 at 0x28dbe4, edi/eax at 0x28dbfd, eax = the transform at 0x28dc31, eax =
+// arg_1 at 0x28dfe3, ebx = arg_0 and edi = handle at 0x28e052, edi = ai data and eax = handle at 0x28e05f), and the
+// stack arguments are arg_0, arg_1, arg_4 at +0x128/+0x12c/+0x130. Fields and offsets agree (point lookup word at +0xc
+// with the 0xffff test at 0x28dbf2, flags at +0x1c tested for 4 at 0x28dc1a and 2 at 0x28dcb2, +0x14/+0x18 pushed as
+// the two angles at 0x28dc20, +0x30 owner at 0x28dfd5, creation words +0xb4/+0xb6 at 0x28dff7/0x28e001,
+// flags134/ai_offset at 0x28e02c/0x28e037). Draw order and the constants read from retail agree: heading -pi..pi
+// (0x28dcb8 2*pi, 0x28dcc4 pi), cosine then sine stored at +0x14/+0x18 with the zero k at +0x1c (0x28dcbe); in the
+// flag-2 arm the speed is 2..3 first (0x28dd13 adds 2.0, no scale, 3-2 = 1) and the tilt 0.2618..1.5708 second
+// (0x28dd46 scale 1.309, 0x28dd56 adds 0.2618); the jitter arm's two draws -0.5..0.5 (0x28df72, 0x28df9f subtract 0.5,
+// scale 1) added to x then y only, under `if (!arg_4)` (0x28df35 jne), z copied onto itself (0x28df93/0x28df99, not
+// reproduced: ours drops it); 0.1 position scale (0x28de8c) first for the rotated vector then for the up vector, x, y,
+// z each; velocity = rotated * speed (0x28df05..0x28df23) into +0x40; heading stored into the forward slot before the
+// rotation in the flag-2 arm (0x28dd5c..0x28dd6d) and after the arm in the other (0x28dfbd..0x28dfd1), up written only
+// in the flag-4 arm. The rotation reads as ours: outer cross = heading x up (0x28dd84..0x28ddad), dot with the heading
+// (0x28ddb1..0x28ddd2), projection * (1 - cosine) (0x28dde7), row = axis * projection + heading * cosine - (heading x
+// axis) * sine, the same value as ours with the cross taken axis x heading (exact negation); the order of the additions
+// agrees. Tail agrees: init, reset, return the handle, else b8540 then NONE (0x28e074). Helpers: the point lookup
+// (function_28dbd4) and the ai-data getter (function_28dbd5) are file-local copies like those in 1b7920.cpp/swarm.cpp,
+// no header helper to call without a new include; the rotation (function_28dbd2) written out is not a shared helper's
+// body measured here: the real cross-file rotate_direction was 236 (round 164). Remaining difference is only
+// schedule/colouring: frame 0x11c vs 0x118, jitter arm sinks the first -0.5 (fxch, ours) where retail subtracts it
+// before the second draw's scale.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

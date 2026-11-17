@@ -796,6 +796,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // original success merges afterward; byte/char/signed-char/bool/word/short/long/dword:
 // 643/643/643/643/643/643/643/643. NOT kept: matching lookup prefix and request graph/base
 // homes regress; original success stores, shared request call and complete body restored.
+// P587: Eight independent original graph-pointer identities on the recovered twelve-byte
+// query frame: eight 348 at 1782 bytes. NOT kept: no native destructive graph-base,
+// lazy graph reload or byte-return repair; original complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -1042,6 +1045,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax E (11-17): no new form, no lower score (210): the two id slots are still swapped (retail keeps the animation id at frame+0x18/0x1a with its -1 stores at the entry and the transition id at frame+0x14/0x16 with its stores in the block); four declaration and scope orderings measured at 210 or 211, and moving the transition id to function scope gives retail's slots but leaves its constructor at the entry (353).
 // MiniMax E (11-15): no form kept. The permuter's best variant (195, same in both images) swaps the first and
 // fourth arguments of the transition channel's set() call, which would put the animation set name into the
 // channel's graph tag index instead of the state's graph tag index that retail loads from [edi+0x68] at
@@ -1051,6 +1055,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // at the entry), the blend-query byte's residency, and the set() call's fourth argument (retail keeps the set
 // name in ebp, ours reloads it from a stack slot).
 // MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
+// MiniMax S (11-16): no new form, no lower score (210); the permuter's only lower form swaps the first and fourth arguments of the channels[2].set call, which retail does not do (retail passes the state's graph tag in ecx and the set name in ebp), so it is not kept; passing the set parameter instead of names.set measures 223, the third parameter 221, and naming the third and fourth parameters the other way round 214.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives

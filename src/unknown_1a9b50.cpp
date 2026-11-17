@@ -413,6 +413,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
 // score 375 (was 375; earlier 375 (was 375)): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // MiniMax H (11-13): no new form, no lower score (375): the frame agrees (0x40) but retail loads the actor's table
 // entry before the settings call and keeps the slot in ebp where ours keeps the entry in ebx after the call, and the
@@ -745,6 +746,9 @@ extern point2f *g_468778;
 // declarations in that order, measures 413 (1555 bytes) again - the actor pointer then takes edi and is spilled at
 // [esp + 0x20] and the frame grows to 0x44, where retail holds the actor in ebp, the slot in esi and the prop pointer
 // in ebx, and keeps the settings only in its home. The frame, the length and the carriers are the whole difference.
+// P575: Near-distance/prediction admission, positive/complementary bool/byte/short/long:
+// 377/377/377/377/377/377/377/377. NOT kept: no exact actor/prop/prediction-home repair;
+// original comparisons, receivers, lookups, vector operations and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -927,6 +931,11 @@ static __forceinline long real_to_long(real value);
 // retail's 1904) and the early false exit's place is right, but the helper retail keeps out of line (0x25d740,
 // in another file) is expanded here, so the object and magnitude homes and the query scalar homes still
 // differ; an early exit for the three flags folds the result byte away and reads 508 at a 0x54 frame.
+// MiniMax D (11-16): no new form, no lower score (382): the frame and the 1904-byte length agree and the early false
+// exit's place is right, but retail keeps the view pointer in EAX and forms the facing pointer late with
+// `lea esi, [eax + 0x2c]` where this build forms it in ESI from the view call, and the helper retail keeps out of line
+// (0x25d740) is expanded here: BLOCKED-BY src/ai.cpp; the two early-exit forms fold the result byte away and read 508
+// and 495, so the shared exit with the result byte in its stack slot stays as it is.
 // score 382 (was 382): MiniMax R (11-15): no new form, no lower score; the 79 differing hunks still come from the
 // velocity block (retail keeps the view in EAX and forms the facing pointer late with `lea esi, [eax + 0x2c]`) and from
 // 0x25d740 being expanded here where retail keeps it out of line, and that body is in src/ai.cpp: BLOCKED-BY that file.

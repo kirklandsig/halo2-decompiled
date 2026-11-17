@@ -298,6 +298,10 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // the post-call add left. On that: the collision sentinel stored after `result = 2` 121, at the top of the sky branch 156, before
 // the collision call 177. Diagnostics: a store through `record` at entry or at the top of the sky branch gives the in-place add;
 // a second store into the collision buffer and dead reads of `point` or `record` do not.
+// M3 lane 12 r131 (fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI pair differ): on
+// colour first, declarations direction/strength/colour 124, strength/direction/colour 124, colour/strength/direction 128,
+// strength/colour/direction 128 (the add stays load-first in every order); a const light pointer and entry read 121; the light
+// index declared ahead of the light-count test 121 (both the same code).
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1387,13 +1391,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
-// MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// MiniMax C (11-16): 529, was 529: no new form, no lower score; the call boundaries agree with retail's
 // (0x117c80 and 0x13b390 four times), but the frame is still 0x2c against retail's 0x28, the selection
 // result still spills where retail keeps it in a register, and the selection root's three components are
 // still stored in the other order (retail stores the x and the y before the z).
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
+// Earlier status line (529, was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain (ours ends `ret 0xc` as retail).
 // MiniMax I (11-15): no new form, no lower score (529): retail hands this function its block in eax and its query in edx
 // while this build swaps them, so the frame stays 0x2c against retail's 0x28 and the selection result still spills where
 // retail keeps it in a register; the parameter order is retail's and the callers are in files this lane may not edit.
@@ -1739,6 +1744,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // bool/byte/short/long: 529/529/529/529/529/529/529/529. NOT kept: no native
 // frame/result or block/query-home recovery. Original mapper, four curve calls,
 // observation boundaries and complete body restored.
+// M3 lane 1 r112 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; the kept form also plain with the file's
+// 30 other functions): kept the length through the existing magnitude3d at the same place (identical instructions, 529).
+// Tried: on lane 5 r182's lead patch (re-measured 452, 0xd4080 449) the length as `real length = record->length =
+// magnitude3d(input_normal);` after the two copies 547 (2216 B), ahead of them 490 (2214 B); the lead's body and helpers
+// with main's 0xd4080 body (only its call reordered, scales through the lead's helper) 452 with 0xd4080 479; on main the
+// chained length 562.
+// MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1759,7 +1771,7 @@ bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color
 	{
 		vector3f const *input_normal = (vector3f const *)query;
 		vector3f normal = { input_normal->i, input_normal->j, input_normal->k };
-		real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
+		real length = magnitude3d(input_normal);
 		record->length = length;
 		lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.j * normal.j) + normal.i * normal.i);
 		color3f adjusted;
@@ -1815,6 +1827,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
 // MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
 // MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.
 // MiniMax I (11-15): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40 and the 0xd37f0 call
@@ -2341,6 +2354,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax S (11-16): no new form, no lower score (542): the frame is 0x90 as in retail and the call boundaries agree with retail's; what is left is the status, mesh, colour and sample homes and the 0x30bf0 call, which is expanded here where retail calls it out of line - that definition is in another file this lane may not edit: BLOCKED-BY 0x30bf0.
 // MiniMax E (11-16): no new form, no lower score (542): the frame is 0x90 as in retail and the call boundaries agree with retail's; what is left is the status, mesh, colour and sample homes and the expansion of the 0x30bf0 call, whose definition is in another file.
 // MiniMax E (11-15): no new form, no lower score (542): the call boundaries agree with retail's except that 0x30bf0 is expanded here where retail calls it out of line, and its definition is in another file. What is left in this file is the status, mesh, colour and sample homes.
 // MiniMax I (11-15): no new form, no lower score (542): the frame is retail's 0x90, but the status, mesh, colour and sample

@@ -701,6 +701,7 @@ static inline bool teams_enabled_19e1c0()
 // scan 693 (1169 B); the scoring mode read at each use (no `mode` local) 691 (same code); the local-team value as `long` 693
 // (1169 B). On the volatile result: the cause-team local ahead of the scan 415 (1436 B); the local-team value as `long` 393
 // (1436 B). Body unchanged.
+// MiniMax I (11-16): no new form, no lower score (390): the plain result still merges the four name and team copy tails where retail keeps them apart - its first name case stores the buffer's zero word before taking its address and its second case takes the address first - and retail keeps `remaining` in EBP and reloads the token for every compare where ours keeps the token in a register; the clamps and the copy helper of the earlier rounds come to 385 at best, a gain of 5 that is below the keep bar.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

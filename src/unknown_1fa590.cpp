@@ -360,6 +360,10 @@ short function_120850(vector3f const *v);
 real *function_120810(real const *point, short axis, byte side, real *out);
 short function_296230(long object_index);
 
+// score 63 (was 79): the plane lookup is the argument of the axis call, so the plane and the
+// projected point no longer share a stack slot and the frame is retail's 0x18. Left: retail has
+// the result in edi and the structure index in ebx (here reversed), and passes the projected
+// point's address with a fresh lea where ours forwards function_120810's return value.
 // @retail 0x1fa3a0
 long function_1fa3a0(long structure_index, long surface_index, long object_index,
     long node_index, point3f const *point)
@@ -431,8 +435,8 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
                     {
                         byte *surfaces = *(byte **)((byte *)bsp + 0x2c);
                         plane3f plane;
-                        bsp3d_get_plane((s_bsp3d *)bsp, *(short *)(surfaces + surface_index * 8), &plane);
-                        short axis = function_120850((vector3f *)&plane);
+                        short axis = function_120850((vector3f *)bsp3d_get_plane((s_bsp3d *)bsp,
+                            *(short *)(surfaces + surface_index * 8), &plane));
                         byte side = ((real *)&plane)[axis] > 0.0f;
                         point2f projected;
                         function_120810((real const *)point, axis, side, (real *)&projected);
