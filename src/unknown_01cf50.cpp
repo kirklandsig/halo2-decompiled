@@ -4299,6 +4299,15 @@ void function_1eb00()
 // into its own locals in a different order.
 // MiniMax A (11-12): no new form, no lower score (79): retail body builds four shader programs from tables and caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference rather than a local form and the body stands.
 
+// MiniMax D (11-17): score 64 (was 79): the shader program is now bound with the XDK's
+// D3DDevice_SetPixelShaderProgram(&g_484f68) instead of the call to this file's function_1ccf0; the XDK's
+// inline expands into retail's three stores at the device's +0x924 and its call to 0x3fa3d0, and the memset
+// of g_484f68 is gone because retail does not clear the descriptor before writing its eight fields, so the
+// body is retail's 763 bytes. What still differs: the two ratios are still divided into xmm3 and
+// multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, because the XDK's
+// D3DDevice_SetVertexShaderConstant inline hoists its flag byte into al before the divisions here while
+// retail tests that byte in memory, and the width and height differences are still converted in a
+// different order.
 // MiniMax R (11-16): no new form, no lower score (100 in this round's nine-address set, 79 in the single-function set): the body is 736 bytes against retail's 763; the first real difference is at +0xa2 and the rest are the vertex loops' register choices (the half-word count shifts in EAX where retail shifts ECX, and the word and dword reads move between AX, EDX and ECX), with retail's four shader programs still coming from tables this project does not have.
 // MiniMax E (11-14): no new form, no lower score (79): retail's body still builds four shader programs from tables and
 // caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
@@ -4384,7 +4393,6 @@ void function_36580()
     D3DDevice_SetVertexShaderConstant(81, constants, 5);
 
     D3DDevice_SetVertexShaderConstant(86, extra, 6);
-    memset(&g_484f68, 0, sizeof(g_484f68));
     g_484f68.PSRGBOutputs[0] = 0xc0;
     g_484f68.PSAlphaOutputs[0] = 0xc0;
     g_484f68.PSTextureModes = 0;
@@ -4393,7 +4401,7 @@ void function_36580()
     g_484f68.PSAlphaInputs[0] = 0x20140000;
     g_484f68.PSFinalCombinerInputsABCD = 0xc;
     g_484f68.PSFinalCombinerInputsEFG = 0x1c00;
-    function_1ccf0(&g_484f68);
+    D3DDevice_SetPixelShaderProgram(&g_484f68);
     function_1cc60(0);
 }
 
@@ -7259,6 +7267,11 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax D (11-17): no new form, no lower score (184): the table handle is still tested once against the zero
+// register where retail tests NONE and then the sign, the zero constant lives in EBX where retail makes it in EDI,
+// the outer counter is in EDI where retail keeps it in ESI, and the section itself is in ESI where retail uses EBX;
+// repeating the NONE comparison inside the available branch reproduces retail's doubled test, but that comparison is
+// always true where it stands, and the other forms tried this round reach 177 and 179, under the keep-bar.
 // MiniMax R (11-16): no new form, no lower score (184): the doubled table-handle test inside the block (`handle != NONE && handle >= 0` with the outer test kept) measures 204 here, because the compiler then pushes EBX in the prologue and the frame changes with it, and the transform index read as an unsigned word gives 185, so the body stands; what is left is retail's register permutation (the zero constant in EDI, the outer counter in ESI and the section pointer in EBX where ours has EBX, EDI and ESI), the frame's homes (retail's table pointer at +0x10 and section pointer at +0x14 against our +0xc and +0x20) and retail's doubled handle test.
 // MiniMax C (11-16): no new form, no lower score (184): the table handle tested as `available && handle != NONE && (handle & 0x80000000) == 0` reaches 177 and the same test with `>= 0` 179, both under the keep-bar, so the body stands; what is left is retail's register permutation (the zero constant in edi, the outer counter in esi, the section pointer in ebx) and retail's doubled handle test.
 // MiniMax D (11-16): no lower score (184): typing the transform as int gives 179, five points under the keep-bar, so
