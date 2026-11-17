@@ -655,6 +655,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 194 (same code); the two inverse sums through a force-inline (1-t)*a + b*t helper 238 (1943 B); remaining_blend assigned
 // at the top of each aspect arm 338 (1972 B). Retail's sequence arm jumps over a join block that reloads the blend into
 // XMM5 for the other paths; ours falls through and the aspect block reads the blend from memory (about 19 bytes longer).
+// The fixed arm still leaves the tint above the second UV record, and the blend is spilled in the aspect block.
+// Definition bounds to first UV 451, second UV used as source for first 211, second UV encoded in place 203,
+// definition bounds to second UV 451. Sequence-local blend published after pivots 273, selected local published
+// after/before pivots 217/217, both pivot weights named with deferred blend 214.
+// NOT kept: the 1942-byte form approaches retail length but leaves the tint stack slot and raises the score.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
