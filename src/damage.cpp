@@ -4599,6 +4599,7 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
+// MiniMax E (11-17): no new form, no lower score (194): the first block still masks the index in eax where retail copies it into esi and masks the copy, and the blocks after that then sit at other offsets, so the calls and the jumps below compare one instruction out.
 // MiniMax I (11-16): no new form, no lower score (357): the body is two bytes longer than retail's and the first difference is
 // the schedule of the mask and the word store (retail moves the mask into ESI and stores the word first, this
 // build masks in EAX and stores the word after the move).
