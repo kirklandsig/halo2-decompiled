@@ -2867,6 +2867,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // as `c ? 1 : 0` 610; cases 9 and 11 as `local_0->unknown018 == arg_1` 610; case 6 with g_5023fc read at each use 610
 // (same code); case 1's point at function scope 610 (same code); case 4's facing read from the state's fields 639 (as
 // listed). Every one still gives the actor EDI and the state EBX.
+// MiniMax R (11-17): no new form, no lower score (479): the switch's jump table still lays the case blocks out in the source's order rather than retail's (1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20), so the actor takes edi where retail keeps the state in ebx, and the rounds above record that no case order or arm spelling moves them.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -2330,6 +2330,7 @@ struct s_unit_motion
 // value in xmm5, and the body is 265 bytes against retail's 227; the accumulator form that gives retail's 227
 // bytes at 28 still makes LTCG inline this body into 0xc7840 and flips the matched 0x1faf80: BLOCKED-BY
 // 0xc7840's call sites.
+// MiniMax R (11-17): no new form, no lower score (104): this body still keeps the position and the velocity on the stack (ret 0xc) and is 265 bytes against retail's 227, where retail takes them in xmm5/xmm4 with the time in xmm3; the accumulator spelling that gives retail's convention and length reaches 28 but LTCG then inlines the callee into 0xc7840 and loses the matched 0x1e5af0 and 0x1faf80.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -5134,6 +5135,7 @@ void __stdcall function_cc810(long vehicle_index)
 // radicand 173; conditional double radicand 169; rounded double root carrier 173.
 // NOT kept: conditional root gains only two at 708 bytes and retains frame 8;
 // the shared float radicand removes the frame but grows to 716 bytes.
+// MiniMax R (11-17): no new form, no lower score (162): this build still allocates eight frame bytes and spills the two floats retail keeps in the dead argument homes (the inverse acceleration in the speed limit's home, the stop time in the velocity's), so every later slot sits eight bytes off and the motion pointer is read from a different home.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {
@@ -6701,6 +6703,7 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
 // NOT kept: all regress; tables add a frame and transfers lose the native extent;
 // original header addressing, scratch plan and three return blocks remain.
 // MiniMax D (11-15): no new form, no lower score (59): the first header read still takes the scaled offset as the address base where retail takes the data pointer, and the success arm's five camera copies keep the source in ecx and the destination in edx where retail has them the other way round.
+// MiniMax R (11-17): no new form, no lower score (59): the first difference is still the unit header's lookup operand order ([index + base] here, [base + index] in retail) with the success arm's scratch registers one step off; no spelling of the header read moves the operand order.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -6955,6 +6958,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // then inlines 0xcbd50 at the mode 3/4 site, which retail (and this body) call out of line: that inline is the 12 extra
 // bytes. On it: assigned after a bare declaration 290; TEST_FIELD_BIT on +0x12c too 290; mode 4's inner readiness exit
 // dropped 301; mode 6's dropped 296; both 307. Lead: the admission form with the mode 3/4 0xcbd50 call kept out of line.
+// MiniMax R (11-17): no new form, no lower score (298): the prologue differs - this build takes the first index in ebx before the frame is set up where retail takes it in edi from the stack - and the state pointer's index is taken through ebx where retail keeps it in ebp.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -8460,6 +8464,7 @@ struct s_unit_turn_state_view
 // helper `static inline` 268 (same code); its step taken by const reference 268 (same code: the reciprocal stays). Retail
 // saves EBX only after the two admission tests and EDI only around the state pointer's use, and its early exit leaves through
 // a shorter epilogue with AL still 0; every form here saves all four at entry with the unused bottom slot (frame 0x80).
+// MiniMax R (11-17): no new form, no lower score (268): this build saves EBX and EDI at the entry where retail saves EBX only after the two admission tests and EDI only around the state pointer's use, and its early exit leaves through a longer epilogue, with the unused bottom slot in the frame (0x80).
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -8771,6 +8776,7 @@ real function_50650(real cosine);
 // stack where retail passes them in xmm5 and xmm4: BLOCKED-BY 0xc7750's inlining.
 // MiniMax D (11-15), NOT kept: 608 (was 614), a 6-point gain, under the 8-point bar for a function above 30.
 // MiniMax D (11-15): no new form, no lower score (563): the frame is 0x8c against retail's 0x80, retail tests its second pointer at the entry and leaves the body when it is null while this build stores two zeroed speeds first and branches afterwards, and the two 0xc7750 calls still pass their arguments on the stack where retail passes them in xmm registers.
+// MiniMax R (11-17): no new form, no lower score (563): the frame is 0x8c against retail's 0x80 and this build zeroes two xmm registers into stack slots where retail keeps the first vector in xmm0, xmm1 and xmm2; the inlining of 0xc7750's callee is what the rest of the body rides on: BLOCKED-BY 0xc7750.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

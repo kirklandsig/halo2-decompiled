@@ -338,6 +338,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // moves inverse last, j*i first); matrix3x3 locals with the complement in each cross product 371 (1810 B); i and j
 // copied, k read again, with the complement 435 (1673 B); the row copied as an aggregate before the rotation 455
 // (1655 B, integer moves where retail loads floats). Body unchanged.
+// MiniMax R (11-17): no new form, no lower score (334): the first difference is the xmm choice for the two constants (this build keeps them in xmm4 and xmm5 where retail uses xmm0 and xmm7), and the body is two bytes longer than retail's 1779.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2394,6 +2395,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 0x2ec40-0x2ec58, 0x2ed71-0x2ed97, 0x2ed99-0x2edb9); every term order written in the forward dot compiles to the same
 // code, and explicit grouping `(j + i) + k` in all four gives retail's order too (493). With k, i, j all four round as
 // retail's: 492 plain (register-masked aligned 242 -> 237).
+// MiniMax R (11-17): no new form, no lower score (492): the frame is 0x90 against retail's 0x94, so the stack slots sit four bytes off from the start.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3063,6 +3065,7 @@ real magnitude3d(vector3f const *v);
 // the sine 178 (1028 B; without 0x1ecf50 in the fast image the helper stays a call, 388 at 820 B). Retail's rotation
 // writes each component's partial sums to +8 and the result into first's slot, sine at +0x10 and the cosine over the
 // angle at +0xc.
+// MiniMax R (11-17): no new form, no lower score (170): the reduced image is not faithful here (it leaves the callee unresolved, so the body reads 315), and with the callee in the image the first difference is the float comparison this build keeps in esi.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3379,6 +3382,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
 // MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
 // MiniMax C (11-16): rounds used; nothing of this file's own moved it.
+// MiniMax R (11-17): no new form, no lower score (147): the frame is 0x9c against retail's 0xa0 and the body is 16 bytes shorter than retail's 548.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -4584,6 +4588,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
 // NOT kept: no native frame word or final scratch recovery; original common
 // byte outputs, final direct fade path and complete executable body restored.
+// MiniMax R (11-17): no new form, no lower score (51): only the frame differs, 0x18 against retail's 0x1c, because retail's final fade keeps two dead stores (a byte 0 in the object index argument home and a float 0.0f in an extra frame slot) that this build eliminates; the fade block itself reproduces retail's sequence exactly when the fade value is named and clamped by hand, and the getter route that would keep them (function_c6b90 with zeroed outputs) is BLOCKED-BY 0xff5f0 in src/weapons.cpp.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
