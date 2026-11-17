@@ -660,6 +660,19 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // reads 9 [7/5], left the first cross's j-row first product, average.i and the tail's j product. Also on 31: the entry copy of
 // the up vector ahead of the loop 347 (1042 B, 0x1f2250 419); dot_average computed before dot_a 31 and both dots inside the
 // compare 31 (both the same code).
+// b12B (11-17) walk against retail, fast build on r846: no logic or behaviour difference found. Fields, offsets, the
+// guard (jle 0x1f2b30 at 0x1f2abe), `lowest > z` and `z > -0.999f` (jbe 0x1f2ad9, 0x1f2ae7: both skip NaN), the
+// stepping bit (0x1f2af5), case 2's je 0x1f2cdd / jne 0x1f2c89 (0x1f2be9, 0x1f2c46), `dot_a < dot_average` (jbe
+// 0x1f2d67), the epsilon test (ja 0x1f2df6 lets NaN normalize) and constants 0x45e1b0 (-0.999f), 0x45dbdc (0.0001f),
+// 0x45dbc0 (1.0f) agree; velocity is the register argument (EAX, copied to ESI at 0x1f2a91). Left at 31: case 3's none
+// arm is laid out first (retail 0x1f2b66 `je 0x1f2bbe` keeps the selected arm inline, none arm `mov edx, ecx; jmp
+// 0x1f2db4` after it), a.k * b.i (0x1f2c05 loads b.i first), average.i (0x1f2cdd loads b.i first) and the inlined
+// 0x1201a0 j product (0x1f2e13 copies inv, as standalone 0x1201ef does; ours loads j; retail's k row 0x1f2e20 is
+// load-first, so the inline is not a plain paste). Match-only recipe, 9 on r846 (fast, 8 lines: those three sites, the
+// ja displacement and the pop order): case 3 selected-first with `vector3f const *up = g_4687b0;` read at its two uses;
+// not kept (the local is only for the score). On it 384 one-use-local combinations (case 2 index locals, entries base,
+// selected-index local in either case, case 1 element forms, function-level up): floor 9, bands 9/13/28/201+, nothing
+// lower; velocity declared first 9 (same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
