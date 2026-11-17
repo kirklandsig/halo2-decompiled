@@ -1754,6 +1754,10 @@ PRIVATE __forceinline real const &component_time_step()
 // xmm2/xmm3 swap, zero register against the stop temp) and is kept, with `velocity * delta_time` (0x1d235d). New forms,
 // all 43 or worse: the stop temp split into a named tick count 43, the stop test inline 43, magnitude after `target -=
 // position` 53 (with the stop-first test).
+// Per-tick travel first 43; early correction floor 113; shared accelerated
+// candidate 124; both reverse bounds before the branch 142; ratio stored in
+// each arm 143; named power, named power base, nested mass threshold 43 each.
+// The acceleration result and timestep memory operand still differ.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)

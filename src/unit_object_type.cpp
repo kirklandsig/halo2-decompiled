@@ -7600,11 +7600,10 @@ public:
 // MiniMax D (11-17): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the slot loop's two induction registers and the frame slot layout follow that plan; the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line, and that file is not this lane's. BLOCKED-BY 0x106030.
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
-// score 508 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
-// score 492 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
-// spills, magazine flags, later register/slot choices and the expanded
-// 0x106030 call remain. The indexed magazine pass gives native pointer steps
-// and a countdown, confirmed by the ordinary whole-file check.
+// score 508 (was 492): Frame 0x3c agrees, with 1799 bytes against 1785.
+// Early object/tag spills, magazine flags, later register/slot choices and the
+// expanded 0x106030 call remain. The ordinary whole-file check confirmed the
+// indexed pass and native countdown at 492 (530 before), then at retail length.
 // Earlier 530 from 1032: Round 2 of #1049. The draft's logic agreed; the drop came from
 // shape. Retail expands the round counts in place (the draft called a static helper): the slot loop's magazine loop
 // reloads the unit and the definition count each pass and calls 0x106030 per magazine, the held-weapon loop reads
@@ -7671,6 +7670,12 @@ public:
 // unit after weapon 498. The rest is 0x106030: retail calls it at 0xcd96e (its four other callers too) and expands it
 // with 0x159dd0 at 0xcdcaf-0xcdd24; ours inlines the first site (cached definition index, extra state slot, shifted
 // frame).
+// Y616: One indexed scan entry test 574, count at scan boundary 506, shared
+// header ordinals 510, capacity continue 508, nonzero rounds first 508,
+// scan outcome names and loaded-first declaration 508.
+// NOT kept: shared per-pass slot index 496 moves length to 1802/1785.
+// Signed short rounds 467 tests AX where retail tests EAX. Frame 0x3c
+// agrees, but early pointer homes and the refill query call remain.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -8792,6 +8797,11 @@ real function_50650(real cosine);
 // stack where retail passes them in xmm5 and xmm4: BLOCKED-BY 0xc7750's inlining.
 // MiniMax D (11-15), NOT kept: 608 (was 614), a 6-point gain, under the 8-point bar for a function above 30.
 // MiniMax D (11-15): no new form, no lower score (563): the frame is 0x8c against retail's 0x80, retail tests its second pointer at the entry and leaves the body when it is null while this build stores two zeroed speeds first and branches afterwards, and the two 0xc7750 calls still pass their arguments on the stack where retail passes them in xmm registers.
+// Y616: Paired speed zeros after transforms or after initial angles 570/575,
+// selected converted direction pointers 662, azimuth/elevation storage names
+// 563, velocity sampled directly into the axis 591, named horizontal lengths
+// 563, shared i-k-j dot in both phases 563 (2480 bytes), untransformed arm
+// first 572. The frame immediate and motion argument delivery still differ.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

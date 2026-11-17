@@ -1543,6 +1543,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // retail's convention (type EAX, message ECX, address stacked); with the address stacked any other way the type and the
 // message trade registers. The one switch with the range test and the parameters declared (type, message, address), the
 // declaration and 0x7afd0's call changed with it, 217 (420 B, same code as the declared order: 0x7afd0 3). Restored.
+// ESI is saved before the range check. Retail calls case 18 out of line.
+// case 0 before terminal case 18 194; case 0 after terminal case 18 194; case 2 before terminal case 18 196;
+// case 2 after terminal case 18 196;
+// case 3 before terminal case 18 191; case 3 after terminal case 18 191; case 4 before terminal case 18 199;
+// case 4 after terminal case 18 199.
+// NOT kept: best reduced score 191 against reduced control 196, a five-point gain. It still saves ESI before
+// admission. Full baseline is 143.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -404,6 +404,12 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // no walk exit with `initialize = result != NONE;` closing the else arm 116 (495 B); the walk's exit as `return NONE;` 77
 // (same code); the tail nested as `if (initialize) { record; if (result != NONE) ... }` 166 (497 B); no flag (the found
 // path returning the cached index, the record setup unconditional after the allocation and walk) 186 (474 B).
+// The cache-hit jump still enters the merge test and the failed walk still returns through an early constant exit.
+// Separate immutable cached/allocated indices 77, branch-owned allocation and eviction result 130, resolved
+// replacement published after the walk 111, separate eviction winner 139, publication before failure test 110,
+// oldest-age sentinel failure 128, conditional initialization on the replacement 94, hit bypass on the separate
+// replacement form 110. NOT kept: the branch-owned result reaches 518 bytes but raises the score. The conditional
+// initialization form shortens to 504 bytes and diverges earlier.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

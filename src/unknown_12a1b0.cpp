@@ -3364,6 +3364,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // before `scale` 598; `previous` read before `next` and used for the first table index 597. Diagnostics (reverted):
 // `(void)&index;` and a read through `long const *index_reference = &index;` give identical code (the index stays in
 // ESI; the address does not keep it in memory).
+// Invalid definition first 782; state-derived result on unavailable path 779;
+// shifted start request bit 705; conditional alternate store 595 (NOT kept:
+// two points and seven bytes short); conditional request stores 611; all
+// conditional stores 609; joined request stores 661; three-bit write 675.
+// Entry flags still occupy BL, and the record and track homes differ.
 // score 597 (was 597): MiniMax D (11-17): no new form, no lower score (597 plain, 694 on the reduced image): the track
 // loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp with the index and the
 // track definition in memory, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the

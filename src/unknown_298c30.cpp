@@ -114,8 +114,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // then `fld` of the threshold and `fcompi st(1)`) while this build pops it (`fstp` of the magnitude) and compares a reloaded
 // float, and the body is still 40 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (382): the first sum still lands in xmm3 where retail keeps it in xmm0, retail keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4, and the inner cursor, the wrapped angle and the candidate width still take other homes.
-// score 382 (was 382; 393, 408, and 395 before the two retail-evidenced fixes of b3C below): first +0x57 uses a different SIMD carrier; inner cursor/wrapped-angle homes and candidate width differ,
-// frame 0x64 as retail's, 1692 bytes against retail's 1732.
+// score 305 (was 382): 1732 bytes and frame 0x64 as retail. First +0x57
+// loads unity into XMM1 instead of XMM2. Near cosine precision, inner cursor,
+// wrapped-angle homes and candidate width differ.
+// Earlier 382 (1692 bytes), after 393, 408, and 395 before the two fixes below.
 // Earlier 393 (was 393; 408, and 395 before the two retail-evidenced fixes of b3C below): entry schedule and normalized XY/magnitude homes differ,
 // frame 0x60 against retail's 0x64.
 // MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
@@ -474,6 +476,21 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // sine through a forceinline helper with two output pointers 382 (same code: the outputs are scalar-replaced and stay on
 // x87, no float slots); field_8 stored right after field_4 in both entries 382; side/facing flags stored before the
 // direction 381; the x rows written point first (`x * c - y * s`) 382; the second entry with its own cosine/sine locals 382.
+// Endpoint-side sine test and unit-turn coefficients 382/382. Shared planar
+// products 350, NOT kept: both rows stay on x87 and add sine negation.
+// Reused cosine 406; one signed sine 390; captured direction 393. Staged y
+// 305; widened x 305; staged y with cosf/sinf/both 305/360/360; y scaled
+// in place 305. Staged y keeps the angle store and first product before the
+// sine and rounds the sine contribution into SSE. Cosine still stays on x87.
+// Round 615: unity still lands in XMM1, and retail spills the cosine before its y product.
+// Signed candidate count with staged y 469 (caller 684); scored calls postincrement 305;
+// separate fixed-turn scopes 305; captured x inputs 379; selected entry pointer 342;
+// upper angle published after wrap 309; two-arm endpoint side 355; role names 305.
+// Endpoint root compared wide with an immediate real distance 352; explicit wide numerator 305; wide
+// radius quotient through the upper bound 348; wide tangent dot through both bounds 350; float outer
+// bounds 398; wide near comparison with distant-arm rounding 384, with wide numerator 384; wide
+// quotient and dot with bounded real results 353. Near cosine still stays on x87 and the candidate
+// ordinal is still a byte.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -504,20 +521,24 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 		if (local_9 < arg_2->field_24)
 		{
 			real local_11 = (real)cos(1.5707963705062866);
-			real local_12 = (real)sin(local_7 == 0 ? -1.5707963705062866 : 1.5707963705062866);
 			g_5047f8[local_6].field_4 = 1.5707963705062866f;
+			real rotated_y = arg_3->y * local_11;
+			real local_12 = (real)sin(local_7 == 0 ? -1.5707963705062866 : 1.5707963705062866);
+			rotated_y += arg_3->x * local_12;
 			g_5047f8[local_6].field_c.x = local_11 * arg_3->x - local_12 * arg_3->y;
-			g_5047f8[local_6].field_c.y = arg_3->y * local_11 + arg_3->x * local_12;
+			g_5047f8[local_6].field_c.y = rotated_y;
 			g_5047f8[local_6].field_0 = local_10;
 			g_5047f8[local_6].field_1 = false;
 			g_5047f8[local_6].field_8 = 1.0f;
 			g_5047f8[local_6].field_18 = local_6;
 			local_6++;
 			local_11 = (real)cos(-1.5707963705062866);
-			local_12 = (real)sin(local_7 == 0 ? 1.5707963705062866 : -1.5707963705062866);
 			g_5047f8[local_6].field_4 = -1.5707963705062866f;
+			rotated_y = arg_3->y * local_11;
+			local_12 = (real)sin(local_7 == 0 ? 1.5707963705062866 : -1.5707963705062866);
+			rotated_y += arg_3->x * local_12;
 			g_5047f8[local_6].field_c.x = local_11 * arg_3->x - local_12 * arg_3->y;
-			g_5047f8[local_6].field_c.y = arg_3->y * local_11 + arg_3->x * local_12;
+			g_5047f8[local_6].field_c.y = rotated_y;
 			g_5047f8[local_6].field_0 = local_10;
 			g_5047f8[local_6].field_1 = false;
 			g_5047f8[local_6].field_8 = 1.0f;
@@ -1067,12 +1088,24 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // result test `local_51 > local_36 || local_35 == NONE` 574; the final bound as `1.0f` 608 (3326 B; retail compares
 // against a double, `fld qword`). The three-term sums here (the obstacle bounds, both distance helpers, the sweep
 // rotation rows) already round as retail's.
+// Typed actor location fields 569; shared location receiver 766; explicit
+// zero-minus sweep scales, with or without the reverse endpoint, 569 each;
+// separate setup and sweep traces 571; one sweep receiver 651; typed sector
+// results 569; shared sector variable across both reads 569.
+// Radius still loads at entry, and the side trace and pivot homes differ.
 // MiniMax D (11-17): no new form, no lower score (569): this build still allocates the radius to XMM5 at the entry and
 // keeps it for the whole body, where retail loads it from its home in each block; the earlier rounds' forms (a named
 // radius copy, the negated radius, the helper as plain inline, the sweep scales named before their products, the swapped
 // trace names, the radius read through its own address) all rebuild the same code, and the reload follows from retail's
 // link-time compile treating 0x2108a0/0x210770 as clobbering the XMM registers, which no source form here reproduces.
 // The frame is still 0xa0 against retail's 0x94, so the three trace results' homes (+0xd0 and +0xf4) sit 12 bytes off.
+// Round 615: radius remains in XMM5 from entry; the pivot and side trace homes still differ.
+// Radius local at initial offsets 569, pivot offsets 569, trace scales 569, obstacle range 569;
+// wide obstacle displacement 574; upper range before root 642; explicit clearance arms 569;
+// scoped transform output with pivot height copy 562 (NOT kept: seven-point gain above 30).
+// Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
+// sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
+// bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

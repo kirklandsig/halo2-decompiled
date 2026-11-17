@@ -1661,6 +1661,10 @@ long function_10f5f0(long object_index);
 // P510: Native dispatch case orders 013465/013645/016345/061345/134560/134506/134056/130456:
 // 562/564/564/564/561/560/559/561, all 2264 bytes, frame 0x1990 versus native 0x1984.
 // NOT kept: one/two-point leads fail the margin; original full body and case order restored.
+// Round 611: three axis bounds and three-by-two endpoints at the bounds call,
+// steering block and entry, plus axis bounds with separate velocity outputs and
+// call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
+// 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
 // m3 lane 4 r208 (fast, all restored; still 561). The count here is positional and mostly misalignment: retail's first
 // block is four instructions longer (the bit-12 test extracted and stored), so every later row pairs with the wrong
 // one; a sequence-aligned diff of the two listings (build/r208/aligned.py, addresses and stack slots masked) gives 327
@@ -3373,6 +3377,13 @@ real g_47ff30 = 2.5f;
 // but 710 (the rest reshuffles); the same two calls with the mass local 672 (same code). Retail keeps the 0x22c rates
 // pointer in EDX across both 0x2053c0 calls and the state pointer in EBX for the force block (ours the other way round),
 // and its SSE values sit one register higher (the constant 1 in xmm7, ours xmm6).
+// Native frame 0xfc, acceleration and velocity homes still differ.
+// mass field reference 724; mass field pointer 724; direction-weighted mass aggregate 679; direction-weighted
+// mass setter 697;
+// scaled direction-square vector 712; force result setter with field reference 724; torque result setter with
+// field reference 724; direction-square scale and both result setters 712.
+// NOT kept: the mass reference and pointer recover frame 0xfc and first difference +0x66, but grow to 3264 bytes
+// and regress. The weighted-vector forms also regress.
 // Complete directional squares, immediate/phased/immutable/weighted, 672 each;
 // the same with a mass-field binding 724 each. NOT kept: the field binding
 // recovers frame 0xfc but adds 20 bytes and raises the count. Acceleration,
@@ -4915,6 +4926,10 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // scoped short secondary result 46, scoped secondary with primary accumulation 46,
 // array-derived short remaining capacity 46, scoped facing before parameters 46,
 // parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
+// Y616: Span-derived capacity 144, span-derived total 166, marker cursor
+// with short ordinal 113, pointer bounds and split 147, count-role names 46,
+// missing-tag guard 46, in-place facing 126, second colour from first 46.
+// The marker sum and scratch registers still differ at retail length.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -5649,6 +5664,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // sites are retail's; left: 22 f78b0 call tails against retail's 14 (retail keeps the later copy, 0x900000e jumps into
 // 0xa00000f's tail where ours keeps the earlier), the re-zero after the magnitude3d paths, three x87 dot operand orders,
 // 0xe000583's `setne cl` bool and zero/result in XMM3/XMM2). A case reorder, so kept only on a match.
+// Round 611: paired speed, turn, steering and all limit records 756/773/751/757;
+// with the entry kind/spin/engine definition 1037/1032/1023/1046.
+// NOT kept: the entry forms collapse separate lookups and shorten the body.
+// Entry definition in EBP, zero/result registers and per-site unity still differ.
 // m3 lane 4 r208 (fast, all restored; still 749; a sequence-aligned diff of the listings, build/r208/aligned.py with
 // addresses and stack slots masked, gives 237 for this body): the three products whose x87 load order differs from
 // retail's with their operands swapped in the source (0xb000587's i term velocity first; the lateral cross's first
@@ -6397,6 +6416,13 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // guard around the tail's point loop (diagnostic) 981. Retail reads: index ESI only up to 0xf44a0 (then stack reloads,
 // ESI becomes the forward pointer), offset EDI spilled to +0x28; the reversal loop stores every pass with the
 // acceleration sign as a byte and the target sign as a dword.
+// Native frame 0xd8, object-header displacement and vector/matrix homes still differ.
+// shared masked dword index 1168; shared word index 1172; typed header accessor 978; conditional-initializer
+// flip mode 978;
+// conditional flip mode 978; default-and-assignment flip mode 978; early timer and shared index 1154; shared
+// index and default-and-assignment flip mode 1168.
+// NOT kept: the typed header accessor and three flip-mode result forms tie 978. Masked-index forms regress.
+// Every variant retains frame 0xfc against retail 0xd8.
 // Returned tensor input/result/both and scoped transform 1019/1063/1063/1063;
 // with a separate relative-rotation product 1027/1056/1056/1056. NOT kept:
 // every form shortens and raises the score. Frame 0xfc versus 0xd8, index
