@@ -543,6 +543,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // `enabled` declared after the four per-object defaults (retail sets `dl = 1` ahead of the settings test) 920 (aligned
 // 171). Retail reads the actor's team once per arm (`xor esi, esi; mov si, [actor + 0x24]`, compared `cmp cx, si`)
 // where the volatile actor makes ours read the pointer and the field twice.
+// M3 lane 13 r103 (plain, the file's other matched functions stay matched; [exact, register/stack-masked] aligned counts by
+// opcode, base 920 [480, 172]): a redundant `if (object_count > 0)` guard around the object loop 920 [480, 173] (match-only
+// steering form, no change); skip_classification as `byte` 920 (same code); the skip flag declared after the two sphere flags
+// 920 [479, 170]; re-measured on this base: no unit_index volatile 936 (3708 bytes) [473, 166], both volatiles dropped 972 (3671
+// bytes, frame 0x2cb0) [423, 152] (diagnostic), `else straight = true;` 929 (3722 bytes) [480, 172]. The last tested whether
+// retail's second straight store (an else block on the actor NONE path) is what stops ours hoisting the object-table global
+// load to the entry (ours `mov edx, [g_4e0300]` before the actor test; retail loads it in the actor block and again in the
+// location block): it is not, the hoist stays. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

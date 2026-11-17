@@ -950,6 +950,20 @@ bool function_e4050(long object_index);
 // score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
+// MiniMax I (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where
+// retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp,
+// which this lane may not edit.
+// b12C (11-17) walk against retail, fast build on r846: every statement checked against the listing - iterator
+// 0x14df50-0x14dfb1, unit 0x14dfb3, root walk 0x14dfc4-0x14e00c, unit-object tests 0x14e012-0x14e061, vehicle arm
+// 0x14e07c-0x14e0c5, exits 0x14e03c/0x14e067/0x14e0c5/0x14e0da. Fields, offsets, jcc senses (jbe at 0x14e061/0x14e0bf
+// is the unsigned byte > 0), callee arguments (eax at 0x14e024, 2 pushed before 0xbaf40) and the player->unit_index
+// re-read at each exit agree: no behaviour difference found. Retail's walk is the inlined 0xbaf80 from the unit (root
+// NONE at 0x14dfd5, entry test 0x14dfd8, step object in EAX at 0x14dfeb) and the parent is re-read at 0x14e012; ours
+// reads it once, same result. Fast score 44 (full 43). New: NONE-root walk with a long unit as do-while / for / next-
+// temp 109; with `dword current` 171 (405 bytes: entry test back and datum in EDI as retail, but the unit takes EAX
+// and the iterator index EBX, because the step object reuses ECX where retail's takes EAX). Grid of three walk shapes x
+// long/dword unit x inline/named parent x unit object before/after the walk: long unit 171/162/113, dword unit
+// 109/102/107/98; none under 43. Best match-only recipe: none reached a match.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -2745,6 +2759,8 @@ static __forceinline long player_round_ticks(real value)
 // 0xccd20 and the first 0x151b80 call where retail calls them.
 // score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
+// MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
+// build still expands 0xccd20 and the first 0x151b80 call where retail calls them; both callees live in other files.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -3373,6 +3389,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // score 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
 // where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
 // out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
+// MiniMax I (11-17): no new form, no lower score (plain 103, fast 193 - the fast build of this function is not
+// faithful): our build still keeps the players-globals pointer in EDI across both loops where retail keeps it in
+// ESI and reloads it late, and retail still inlines the status test this build calls out of line.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

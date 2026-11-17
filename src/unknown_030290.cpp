@@ -227,6 +227,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 }
 
 // MiniMax D (run 46): no new form, no lower score.
+// MiniMax C (11-17): score 195 (was 195): no lower score; the frame is still 0x30 against retail's 0x2c
+// because the second point transform spills both its scaled x and scaled z into two local slots, where
+// retail keeps them in xmm7 and xmm4 and spills only the scaled z into the scale parameter's home, so our
+// inverse defaults land in one local and in that dead parameter slot instead of the two fresh locals at
+// [esp+4] and [esp+8]. Tried: the three orders of the scaled components inside transform_point, a hoisted
+// scale local and the swapped multiply operands, all 195 with identical code.
 // score 195 (was 195): Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
@@ -526,6 +532,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // not kept. transform_point (outside this edit) sums right, up, forward; retail sums x*[camera+4] + z*[camera+0x1c] first,
 // then y*[camera+0x10] (0x308cc-0x308f2); an earlier round measured that order as 195 with the same code. Frame is still
 // 0x30 vs retail 0x2c (retail packs inv_a, inv_b, b, ta, tb into 11 slots; its a - d point reuses b's y/z slots 0x30a49/0x30a4f).
+// m3 lane 11 r110 (fast): the helper's scale bound by const reference 195 (same code); the displaced point bound
+// by reference for its sums and the second transform 268 (1001 B); the two inverses bound by reference in the
+// perspective block 195 (same code); the helper's rows through a camera reference 267 (998 B); the displacement
+// bound as `vector3f const &displacement = *d;` for the sums 193 (the z row then loads d first as retail, like the
+// (d, a, ...) parameter order without touching the callers; x still loads a first), with retail's operand text
+// 193 (same code), with the rows z, y, x 211 (979 B). Restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

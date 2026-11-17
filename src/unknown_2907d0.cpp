@@ -146,6 +146,12 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // the node pointer declared at function scope 19; the record filled through a reference 19; the else arm through
 // pointers to the position and forward 81. Diagnostic: plain parameters with `__stdcall` and the function's address
 // taken by a probe global (no address local) 137 (479 bytes: every argument on the stack, the transform in EDI). All restored.
+// Round 178 (m3 lane 8, fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, matched throughout): the point bound by reference
+// (`point3f &local_0 = point;`) 113 (453 bytes); the vector bound by reference 19 (same code); the parameter bound by a
+// non-const reference with the address local taken of it 113 (453); a const reference to the parameter in place of the
+// address local 19 (same code); the record fill and `return true` in a forced-inline tail helper 23 (the constant 1 still
+// shared, the root's two products swap); no address local re-measured 33 (464 bytes). Same reading as 0x1414d0: retail
+// gives the stack-passed pointer EBP (the one register no register argument uses) and the other cross-call value EBX.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

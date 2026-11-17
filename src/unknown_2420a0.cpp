@@ -1611,6 +1611,10 @@ void function_2422d0(long slot)
 // in retail's store order (`others[count] = index; result = false; count++;`) 7; a `byte` result 18 (289 bytes); a
 // `register` object pointer 7; the object looked up from the team entry first and the index read from the entry after
 // the slot read 7 (all the 7s the same code).
+// Round 94 (m3 lane 2, fast): a redundant `if (0 < team_count)` around the first loop 9 (the guard's jle moves ahead
+// of the i store, the pair stays); `if (0 < count)` around the second loop 71 (the NONE fill takes ECX), around both
+// 71; the slot passed to 0x243a80 through an inline `object_slot(*object)` with no slot local 79; the getter called
+// through an inline wrapper taking the index by const reference 7 (same code).
 // @retail 0x2423f0
 bool function_2423f0()
 {

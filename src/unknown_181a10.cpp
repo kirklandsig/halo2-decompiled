@@ -532,6 +532,19 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// score 238 (was 238; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// MiniMax E (11-17): no form kept; the score is unchanged at 238. New readings: the 1..16 classifier keeps retail's
+// `mov ecx, 1; cmp ecx, edx; jg` form out of reach (an unsigned word, a signed long, the constant written first, two
+// separate ifs and an if/else chain all compile to a compare with an immediate, 238 each, as in the earlier rounds);
+// the plane-normal sum is evaluated right to left rather than in the written order, so writing the three products
+// forward, left, up instead of up, left, forward flips the compiled tree to retail's (up + left) + forward and matches
+// retail's rounding, but the score stays 238 since the load schedule and the register allocation still differ, so
+// that edit was reverted; the origin and hit snapshot forms re-measured are 308 for three scalar origin coordinates
+// with the aggregate hit, 309 for the descending z, y, x member assignment, and 362 when both are copied member by
+// member, all above the aggregate form. The permuter's 35 tries in 240 s found nothing below the 235 differing
+// instructions of the full image. Still differs: the frame is 0x40 against retail's 0x44, the second node's home is
+// +0x14 against retail's +0x20, and retail reads the shape's data word three times in the classifier where ours
+// reads it once.
 // MiniMax E (11-15): no form kept; the permuter's 68 tries on the reduced image found no variant below the 235
 // differing instructions of the full image (the reduced image agrees with the full one here). Still differs: the
 // frame is 0x40 against retail's 0x44 (retail keeps the origin's y and z in reused slots and has two unused
@@ -540,7 +553,6 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // MiniMax R (11-14): no lower score (238): retail reads the origin and the contact position with float moves into separate
 // slots, ours copies the two aggregates with dword moves; the origin as three real coordinate snapshots scores 308 in either
 // read order, member-wise origin copies 309, a member-wise hit copy 325 and both 362.
-// score 238 (was 238; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax A (11-13): no new form, no lower score (239); the frame is still 0x40 against retail's 0x44, the second
 // node's home is still +0x14 against retail's +0x20, retail still reads the shape's data word three times where
 // ours reads it once, and the plane index still leaves the frame as a short.
@@ -939,6 +951,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 271 (1243 B). Reading: in the key adjustment retail clamps with the constants in ECX and still compares ECX with EDX after
 // `mov ecx, edx` on the unclamped path (the self-compare is not folded), so the compare's second operand was a separate read
 // of the data word when the clamp was folded. Original body restored.
+// Round 189 (m3 lane 6, fast with the file and 0x183da0/0x1cf280/0x182b90; control 238, masked 109): the root entity
+// through `switch (root->type)` with case 1 and a NULL default 301 (a register load, but `dec ecx` for retail's `cmp
+// ecx, 1`); the entity as a ternary with the type tested again (`root->type != 1 || !entity`) 346 (1255 B); one
+// function-scope local for second's shape at all ten uses 350 (1251 B); the data test ahead of the kind call in the
+// exclusion test 257 (1249 B); the first node's kind-4 test ahead of the root walk 342 (1243 B). Reading: retail's `mov
+// ecx, [eax+0x18]; cmp ecx, 1` is the code matched 0x1388e0 shows for a field compared twice (one CSE'd load).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -359,6 +359,13 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // v.j*a.j) 43 (the same k, j, i code: the flat order is reassociated); grouped `(k + i) + j` 55 (1409 bytes; k the
 // accumulator, a.k loaded first); `(1.0f - cos) * dot3f(...)` 30 (same code); the rows built in a local vector then copied
 // to the output 184 (1431 bytes, frame 0xe0).
+// M3 lane 2 r95 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the projection accumulated i, k, j through a bound
+// `real &sum`, then `*= 1 - cos`, 65 (1409 B, the unbound accumulated form's count); only the vector's i named (j and k
+// read in place) 60 (1409 B); a redundant `0 < count` guard around the weighted selection loop 68 (1409 B); the
+// parameter read once through its address for 0x2936b0 (`long const *ref = &arg_0;`) 30 (identical listing: the +0x18
+// store and the reload still move up); the axis pointer named after the vector copy 44 (1409 B). Re-measured (listed):
+// the two accumulators declared in the other order 32. Retail's tail looks like the reload cannot pass the member stores
+// (an aliased home), which no plain parameter form gives.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

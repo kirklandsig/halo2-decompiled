@@ -987,6 +987,26 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // P586: Actual final interpolation argument table, long/dword/short/word/byte/char for,
 // then long/short while: 369/369/408/408/408/408/369/408. NOT kept: argument grouping and
 // traversal miss native entry/frame/extent; original scalar outputs and complete body restored.
+// M3 lane 3 r254 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, register-masked aligned 23): the entry
+// parameter declared mutable as `start_out` (definition and path.cpp's declaration; the const_cast copy dropped) 220; the
+// origin dot computed ahead of the projection 218 (same code); corners a, b, c, d re-measured on the plain check 287 (1284 B,
+// the plain check agrees with the fast one: the actor loads at entry and case 1/6's origin dot then sums k, j, i as retail,
+// register-masked 21, but pathfinding arrives in EDX); on that, the mutable `start_out` parameter 295; on that form, the
+// surface pointer set ahead of the start_out copy 287 (same code). Retail also forms `inverse * radius` in the inverse's
+// register (`mulss xmm2, [radius]`) where ours loads the radius first.
+// b12L (11-17) walk against retail, fast build on r846: every statement, jcc sense and callee argument checked against
+// 0x26f3f0-0x26f8d2; no behaviour difference found. Case 1/6: the four vertex-word tests in order (0x26f42e-0x26f45c),
+// first = b - a and second = d - c (0x26f472-0x26f4bb, 0x26f4e1-0x26f50d), length > 0 as comiss/jbe (0x26f4d3,
+// 0x26f525: NaN takes the fallback), radius * 2 test (0x26f5b6), margin = reciprocal * radius (0x26f5b8), clamps
+// (0x26f5bf, 0x26f5cd), stores and word output indices in retail's order (0x26f5fb-0x26f679; fallback
+// 0x26f686-0x26f6db). Case 5: vertex 3 scaled by -1.0f, cmp eax, -1 / je (0x26f6e8, 0x26f74e), 0x270400 with edx = 0
+// and ecx = &direction (0x26f750-0x26f769), whole 16-byte parent_point copy in the fallback (0x26f7ac-0x26f7c9). Case
+// 2: node-index store ahead of the call (0x26f85e), 0x26c590 stack order and 0.2f (0x26f885-0x26f895), trace point +4
+// and sector +0x10 (0x26f89a-0x26f8c0). Constants 0.0, 1.0, 0.5, 2.0, -1.0 (0x45dbd8, 0x45dbc0, 0x45dbbc, 0x45dc0c,
+// 0x45dbcc) agree. Only the entry allocation (above) differs. New forms, no gain: `inverse *= radius` for the margin
+// local 218 (same code); the vertex-word tests as a negated early return 218; `case 6:` before `case 1:` 218 (same
+// code); the projection and origin sums written out as y*j + z*k + x*i, vector- or point-major, grouped or not, 366
+// (1288 B).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -131,6 +131,13 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // 16 (same code); the cosine products written yaw first 16 (same code); the entries block named at the inner loop's top for
 // the tag and the entry 30 (353 B). Re-measured by mistake: the mask bits as named bools 40 (round 120). Still BLOCKED-BY
 // 0x17e670 (the call's register pair); held patch unchanged.
+// Round 103 (m3 lane 13, fast; 0x17e670 builds differently in the reduced image but the control reads the full 16): the
+// palette record as a const reference with the entry declared between it and the tag read 16; the palette types pointer
+// named first in the inner loop with the entry declared before the tag 17 (first +0xb2); the existing direction_from_angles
+// (vector_angles.h) for the three direction rows 16 (identical code; not kept, since the held patch's hunk has the written-out
+// rows as context and that pairing can only be measured with the avoided 0x17e670 files edited: a lead for when the patch
+// lands); the palette types pointer named first with the tag read in the original expression 16; the cluster's first entry
+// index in a long local for both index expressions 95 (364 bytes). Still BLOCKED-BY 0x17e670; held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {
