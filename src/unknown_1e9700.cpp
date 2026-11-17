@@ -225,6 +225,11 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // NOT kept (coordinator review, MiniMax D 11-15): 106 -> 64 rested on match-only forms: a one-use current_maximum
 // local copied into old_maximum, a one-use counter pointer for the store, and the typed groups[index][12] written
 // as flattened all[index * 0x1b5 + 12] indexing.
+// M3 lane 15 r95 (fast with 0x1968b0, 0x196960, 0x196e60, 0x196ef0, 0x1e9ce0, all MATCH; control 106): the clamp's
+// limits and value as `short` locals 104 (426 bytes); the limits as `word` locals (the table's own type) 103 (426 bytes,
+// under the keep gate); the clamp applied to `consecutive` itself with no value local 106; the limits read from the
+// table at each use 116 (415 bytes); the maximum tested before the minimum 106. Still BLOCKED-BY 0x196960/0x1968b0
+// (src/unknown_1967d0.cpp, held) and the enable byte's aggregate in include/globals.h.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
