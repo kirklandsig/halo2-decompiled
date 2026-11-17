@@ -762,6 +762,11 @@ extern point2f *g_468778;
 // AC564: Explicit false result from split admission, settings-first 440/440/440/427
 // and actor-first 413/413/413/400 (last in each group gives each test its own arm).
 // NOT kept: all shorten and regress. Early actor, settings, slot and prop homes still differ.
+// MiniMax I (11-17): no new form, no lower score (375): retail computes the actor pointer before the call to
+// 0x1e4f90 and keeps it in ebp, this build computes it after the call and keeps it in ebx; the actor-first
+// declaration order measures 413 again (the actor pointer then takes edi, is spilled at esp+0x20 and the frame grows
+// to 0x44), the slot between the two lookups measures 413 as well, and the same order with the result declared last
+// measures 426.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

@@ -612,6 +612,11 @@ union s_185be7
 // single exit guard, in mutable/const short and promoted long: 590/590/590/590/989/989/989/989.
 // NOT kept: nested admission ties. The exit guard grows to 3781 bytes.
 // The second control-root load and its EBX conflict remain.
+// MiniMax I (11-17): no new form, no lower score (590): the head still differs in register assignment - retail loads
+// the root global into ecx for one lea and gives ebx to the -1 sentinel, this build keeps the root global in ebx and
+// gives ecx to the sentinel - and the first local's home sits at esp+0x3c against retail's esp+0x38; retail reloads
+// the root global after the magnitude call because it treats 0x24590 as an opaque callee, and that helper's
+// declaration lives in src/unknown_023540.cpp, which this lane may not edit.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
