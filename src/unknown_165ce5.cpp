@@ -1812,6 +1812,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // complete chance decision bool/byte/short/long 220/220/220/220.
 // NOT kept: no equality or frame/home recovery; original call/test/body restored.
 // Frame 0x28 versus native 0x2c, unit/mode and independent look homes remain.
+// M3 lane 1 r113 (fast with 0x165dc1, MATCH; control 220, aligned with offsets masked 86, registers too 88): the two look values
+// as one `real look_angles[2]` 216 (frame 0x30: they take retail's -0x2c/-0x28 homes, but 1/rate is still shared and a dword at
+// -0x30 is left unused; a grouping array, under the bar), the same array in its own block around the look springs 216, at function
+// scope 216, with the callback written `index == 0 ? right : left` (retail's arm order) 216 (masked 82/75); `active` cleared, then
+// set from the animation test under the three-term guard 416 (2188 B). On the array forms retail's unit, mode and weapon-active
+// homes are -0x1c/-0x18/-0x14 where ours are -0x14/-0x1c/-0x18. Still BLOCKED by the stand-in (round 98) for ESI/EDI.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

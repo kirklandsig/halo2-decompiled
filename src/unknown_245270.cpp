@@ -697,6 +697,14 @@ void function_245400(s_source_245400 const *source, long index,
 // 228/228/228/228/228/228/228/228. NOT kept: all regress and shorten to 763/783 bytes without native
 // frame/table/side-home recovery. Original scale comparison, row arithmetic, point transform and complete
 // body restored.
+// M3 lane 1 r113 (fast with 0x245aa0 and 0x245400, both MATCH; base 214, offsets-masked aligned 222, registers too 112): the
+// edge vector computed after the side bits 228 (763 B, masked 104: the matrix leaves EBP and the material table is spilled,
+// but EBX/EBP are then saved mid-body); the plane pointer and side bit from a forceinline decoder with a `bool *` out-parameter
+// 214 (same code: the out-parameter is promoted); the side bits from the word codes (`(word)code >> 15`) 213; the transformed
+// point declared at the top 214 (same code); the side bits declared ahead of the plane pointers 214 (masked 108). Diagnostic,
+// reverted at once: a volatile first side bit 208 (frame 0x28; the side bits are then materialised before the plane-index
+// compare as in retail, with a local EBX save around the plane code and the matrix read at its test). Retail computes both
+// side bits eagerly (byte spill, `cmp byte`); ours folds them into one xor inside the plane test, which is what frees EBX/EBP.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
