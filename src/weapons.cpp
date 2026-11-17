@@ -1007,13 +1007,19 @@ void __stdcall function_105dd0(long object_index, long unused, s_weapon_sound_ev
 long function_101f20(long object_index);
 bool function_1061c0(long object_index, long *out_index, byte *out_entry);
 
+/* the weapon's control flags from its holder: a word, passed by value */
+struct s_weapon_control_flags
+{
+	word bits;
+};
+
 // @retail 0x100430
-void function_100430(long weapon_index, long value, real amount)
+void function_100430(long weapon_index, s_weapon_control_flags value, real amount)
 {
 	s_weapon *weapon = WEAPON_GET(weapon_index);
 	s_weapon_definition *definition = WEAPON_DEFINITION(weapon);
 
-	weapon->value_16e = (short)value;
+	weapon->value_16e = (short)value.bits;
 	weapon->value_170 = (byte)(long)(amount * 255.0f);
 	if (definition->trigger_count > 0 && definition->triggers[0].behavior == 5 && weapon->triggers[0].state != 6)
 	{
@@ -1032,7 +1038,7 @@ void function_100430(long weapon_index, long value, real amount)
 			}
 		}
 	}
-	if (value & 0x1df)
+	if (value.bits & 0x1df)
 		function_b7360(weapon_index);
 }
 

@@ -601,7 +601,12 @@ void function_152340(void);
 void function_1e2a90(long actor_index);
 void function_d0e00(long unit_index, real rate);
 void function_114e80(long unit_index);
-void function_100430(long weapon_index, long value, real amount);
+/* the weapon's control flags from its holder: a word, passed by value */
+struct s_weapon_control_flags
+{
+	word bits;
+};
+void function_100430(long weapon_index, s_weapon_control_flags value, real amount);
 bool function_106030(long weapon_index);
 bool function_101d20(long weapon_index);
 void function_1509e0(long player_index, long weapon_index, bool *modes);
@@ -3574,6 +3579,20 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // MiniMax C (11-16): lookup are scheduled differently; a permutation run this round reached 85 in its own reduced image with forms the
 // MiniMax C (11-16): rules reject, so nothing was kept.
 // MiniMax R (11-17): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat lookup are scheduled differently.
+// m3 lane 4 r208 (fast, all restored; still 91): the record assignment in both arms 132 (408 bytes; re-measured for its
+// listing: it gives retail's seat schedule, the seats in ESI and retail's registers in the no-seat arm's forward/up
+// copies, and only the camera is wrong: it is loaded into EBP at entry and the seat spills, frame 0x7c; retail loads
+// the camera into EAX after each 0xb9dd0 call and forms the source with `add ebp, 0x24` / `add ebp, 0xf0`); the record
+// assignment in the seat arm only 143 (421 bytes; the camera still takes EBP and the matrix then loses EDI); the
+// marker failure as an early `return result` or `return false` with the field copies 109 each at retail's 396 bytes
+// (the result folds to `xor al, al`, frame 0x74) and with the record assignment 170 each (338 bytes); one copy after the
+// if/else from a function-scope source pointer, as a record assignment or as five fields, 152 each (345 bytes, no
+// second copy of the tail); the record typed as a vector and two reals (the tag header's layout) with a vector
+// assignment and two scalar copies per arm 111 (402 bytes: the unit takes EBP and the seat spills). The camera is
+// enregistered whenever an arm names it once (the record assignment) and stays in its argument slot when an arm
+// names it five times (a per-arm copy in EAX); no natural form found that has both the record assignment and the
+// per-arm load. The copies through a file-local inline record-copy helper holding the five field assignments, `inline`
+// or forced, with or without the source locals, 91 each (same code as the body: the offsets still fold).
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4901,88 +4920,10 @@ void function_c50a0(long unit_index)
 	}
 }
 
-// MiniMax G (11-13): no new form, no lower score (166): the diff re-read this round confirms the first difference is still the register plan around the object pool pointer, which none of the source spellings listed above moves, so the body stands.
-// MiniMax A (11-12): no new form, no lower score (166): the register plan still differs - retail keeps the vehicle pointer in esi, the -1 and the child index in ebp and the object pool pointer in edx, ours keeps the pool in esi and the vehicle in ebp - and the load of the old driver index sits before the definition lookup in ours and after it in retail; none of the source spellings tried earlier moves that plan, so the body stands.
 /* finds the vehicle's driver (+0x248) and gunner (+0x24c) among its
    riders, in two passes (plain seats, then seat groups whose rider is in
    place), recursing into ridden units; tells 0x1bbdf0 when the driver
    changed */
-// MiniMax E (11-16): no new form, no lower score (166): retail keeps the pool global in edx and the vehicle in esi and reloads the global after the recursive call, this build keeps the global in esi and the vehicle in ebp; reading the old driver index before the definition lookup scores 168, the permuter tried three rewrites without lowering its 163, so the body stands.
-// MiniMax I (11-15): no new form, no lower score (166): retail keeps the pool global in edx and the vehicle in esi, with the
-// global loads shrink-wrapped above the pushes; this build keeps the global in esi and the vehicle in ebp, with the loads
-// after the pushes.
-// MiniMax B (11-13): no new form, no lower score (166): re-measured with the plain build (665 bytes against retail 661, first difference at +0x7); what is left is the register allocation of the vehicle and the object pool pointer, which the recursive call register plan decides.
-// MiniMax H (11-12): no new form, no lower score (166); the register plan still differs - retail keeps the vehicle
-// pointer in ESI, the -1 and the child index in EBP and the object pool pointer in EDX (reloaded after the recursive
-// call), ours keeps the pool in ESI and the vehicle in EBP - and the load of the old driver index sits before the
-// definition lookup in ours and after it in retail; the sibling read from the held child pointer and the child as a
-// block local, both recorded below, move that plan no closer.
-// MiniMax G (11-11): no new form, no lower score (166); what still differs is the register plan - retail keeps the
-// vehicle pointer in ESI, the -1 and the child index in EBP and the object pool pointer in EDX (reloaded after the
-// recursive call), ours keeps the pool in ESI and the vehicle in EBP - and the load of the old driver index sits
-// before the definition lookup in ours and after it in retail; none of the source spellings tried earlier moves
-// that plan, so the body stands.
-// MiniMax C (11-15): no new form, no lower score (166): what still differs is the register plan - retail keeps the
-// -1 and the child index in EBP, the vehicle in ESI and the object pool pointer in EDX (reloaded after the recursive
-// call), this build keeps the pool in ESI and the vehicle in EBP, and the load of the old driver index sits before the
-// definition lookup here and after it in retail; the forms recorded below (a named seat pointer, a named definition
-// local, the role predicates as complete assignments) all tie or regress, so the body stands.
-// MiniMax S (11-11): no lower score (166): the vehicle's definition index in a named local with the definition
-// read through it gives the same code (166, 665 bytes); retail loads the object pool into EDX before the
-// callee-saved pushes and keeps the vehicle in ESI where ours loads the pool into ESI after the push and keeps
-// the vehicle in EBP, and that register plan does not follow from the source spelling.
-// MiniMax I (11-11): no new form, no lower score (166); retail keeps the vehicle pointer in ESI and the
-// NONE constant in EBP where ours keeps the vehicle in EBP, and the load of the old driver index sits
-// before the definition lookup in ours and after it in retail.
-// MiniMax E (11-11): no new form tried, no lower score (166): what still differs is the register
-// allocation - retail keeps the -1 and the child index in EBP, the vehicle in ESI and the object pool
-// pointer in EDX, ours keeps the pool in ESI and the vehicle in EBP - and the load of the old driver
-// index sits before the definition lookup in ours and after it in retail; the forms listed below (the
-// bool local for bit 13, the next sibling read from the held child pointer, a `none` local, the short
-// pass, the driver preset false) all score the same or worse, so the body stands.
-// score 166 (was 166; earlier 188): block layout now retail's (the rider that has a seat is the fall-through side, as an
-// `if (seat_index != NONE)` with the no-seat gunner flag in its else: 179), the driver, extra gunner and
-// partner flag tests read as field bits (172, 661 bytes), and so does the grouped-seat assignment bit (166,
-// 665 bytes). What remains is register allocation: retail keeps -1/the child index in ebp, the vehicle in
-// esi and the object pool pointer in edx (reloaded after the recursive call), ours keeps the pool in esi
-// and the vehicle in ebp; bit 13 of the seat stays `test ah, 0x20` (field-bit forms of it grow the code to
-// 688-700 bytes, 196-213). Tried and dropped: a bool local for bit 13 (206); next sibling read from the
-// held child pointer (222); a `none` local (166); short pass (177); driver preset false (166); field bit
-// on the no-seat gunner flag (166).
-// Round 4 of #1049: logic walk against retail found no behaviour difference (type mask, seat group flags 11/13/2/3/18,
-// pass-0 and pass-1 assign tests, other-seat merge at +0x3e, driver/gunner stores, final driver-changed call all agree).
-// Retail reads the next sibling through the child pointer it saved across the recursive call; retried as a
-// function-scope `child` read in the loop increment: 222 (694 bytes, whole register plan changes), dropped again.
-// Round 232 (m3 lane 3): the two action-bit tests through the existing unit_action_active(child_index, 0x20 / 0x1f)
-// (retail inlines 0xe6fe0 here) and pass 0's test as `assign = !grouped && !unit_action_active(...)` without the
-// check_driver goto: 166 (same code, kept). No gotos at all (seat arm nested under `!grouped || bit 13`, if/else-if
-// driver/gunner choice, gunner test in both arms) 259 at 728 bytes; a named seat pointer for the flags and the +0x3e
-// read 177 (671 bytes, masked aligned 29 -> 26); that with `child` declared before the inner loop and the next sibling
-// read from it 173 (653 bytes); `child` before the inner loop alone, re-measured, 222.
-// P435: readonly tag/child, immutable previous driver, seated-only driver scope, immutable
-// seat flags, conditional pass assignment, outer pass workspace and traversal role names all 166;
-// typed unit flag fields 166, plain 166. Entry pool/vehicle allocation still differs.
-// MiniMax B (11-13): no new form, no lower score (166): retail keeps the vehicle pointer in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
-// T101: Complete extra-gunner/partner-driver/partner-gunner predicate updates,
-// sets 1..7: 247/195/262/177/241/196/268; compound Boolean accumulation 201.
-// NOT kept: all regress and miss equality; native pool/vehicle/child ownership
-// remains different. Original complete body, accessors and activity calls restored.
-// MiniMax A (11-14): no new form, no lower score (166): the prologue still keeps the global in esi
-// and the vehicle in ebp with the loads after the pushes, where retail keeps the global in edx and
-// the vehicle in esi and shrink-wraps the two global loads above push ebx; the register choice
-// follows the frame's shape, which the recursion and the loop's children fix.
-// P493: chained role clears 166; positive child admission 166; ordinary
-// two-pass while 166; grouping-owned assignment 253; dword driver/gunner
-// 245/172; driver bit after activity 251; pass-scope driver 166.
-// NOT kept: all tie or regress; native pool/vehicle/child ownership remains.
-// P528: Native byte grouping/assignment/driver/gunner, paired signed roles, complete byte
-// decisions, consumed driver-role join and unchanged-driver return: eight at 166.
-// NOT kept: no exact ownership repair; original body, accessors and recursion restored.
-// MiniMax D (11-15): no new form, no lower score (166): retail keeps the vehicle in esi and the header table pointer in edx and pushes its registers after the index arithmetic, ours keeps the vehicle in ebp and pushes first; the body is four bytes longer than retail's.
-// MiniMax C (11-16): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer
-// MiniMax C (11-16): from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp,
-// MiniMax C (11-16): so the tag's triple, the index's masking and the seat's fields land in the other registers.
-// MiniMax R (11-17): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp, so the tag's triple, the index's masking and the seat's fields land in the other registers.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -4999,13 +4940,11 @@ void __stdcall function_cc810(long vehicle_index)
 	}
 	for (long pass = 0; pass < 2; pass++)
 	{
-		for (long child_index = vehicle->first_child_index; child_index != NONE;
-			child_index = UNIT_GET(child_index)->next_sibling_index)
-		{
-			s_unit *child = UNIT_GET(child_index);
-			bool driver;
-			bool gunner;
+		s_unit *child;
 
+		for (long child_index = vehicle->first_child_index; child_index != NONE; child_index = child->next_sibling_index)
+		{
+			child = UNIT_GET(child_index);
 			if (!((1 << child->type) & 3))
 			{
 				continue;
@@ -5014,69 +4953,68 @@ void __stdcall function_cc810(long vehicle_index)
 			if (seat_index != NONE)
 			{
 				s_unit_seat_definition *seats = UNIT_SEATS((byte *)definition);
-				dword flags = *(dword *)&seats[seat_index].flags;
+				s_unit_seat_definition *seat = &seats[seat_index];
+				dword flags = *(dword *)&seat->flags;
 				bool grouped = (flags >> 11) & 1;
-				bool assign;
 
-				if (grouped && !((flags >> 13) & 1))
+				if (!grouped || TEST_FIELD_BIT((flags >> 13) & 1))
 				{
-					goto recurse;
-				}
-				driver = (flags >> 2) & 1;
-				gunner = (flags >> 3) & 1;
-				if (TEST_FIELD_BIT((flags >> 18) & 1) && child->unknown13c != NONE)
-				{
-					gunner = true;
-				}
-				if (pass == 0)
-				{
-					assign = !grouped && !unit_action_active(child_index, 0x20);
-				}
-				else
-				{
-					assign = grouped && unit_action_active(child_index, 0x1f);
-				}
-				if (grouped)
-				{
-					short other_seat_index = *(short *)((byte *)&seats[seat_index] + 0x3e);
+					bool driver = (flags >> 2) & 1;
+					bool gunner = (flags >> 3) & 1;
+					bool assign;
 
-					if (other_seat_index != NONE)
+					if (TEST_FIELD_BIT((flags >> 18) & 1) && child->unknown13c != NONE)
 					{
-						dword other_flags = *(dword *)&seats[other_seat_index].flags;
+						gunner = true;
+					}
+					if (pass == 0)
+					{
+						assign = !grouped && !unit_action_active(child_index, 0x20);
+					}
+					else
+					{
+						assign = grouped && unit_action_active(child_index, 0x1f);
+					}
+					if (grouped)
+					{
+						short other_seat_index = *(short *)((byte *)seat + 0x3e);
 
-						if (TEST_FIELD_BIT((other_flags >> 2) & 1))
+						if (other_seat_index != NONE)
 						{
-							driver = true;
+							s_unit_seat_definition *other_seat = &seats[other_seat_index];
+
+							if (TEST_FIELD_BIT(other_seat->flags.bit2))
+							{
+								driver = true;
+							}
+							if (TEST_FIELD_BIT(other_seat->flags.bit3))
+							{
+								gunner = true;
+							}
 						}
-						if (TEST_FIELD_BIT((other_flags >> 3) & 1))
+					}
+					if (assign)
+					{
+						if (driver && !TEST_FIELD_BIT((vehicle->flags_134 >> 1) & 1) && vehicle->unknown248 == NONE)
 						{
-							gunner = true;
+							vehicle->unknown248 = child_index;
+							if (gunner && vehicle->unknown24c == NONE)
+							{
+								vehicle->unknown24c = child_index;
+							}
+						}
+						else if (gunner && (vehicle->unknown24c == NONE || vehicle->unknown24c == vehicle->unknown248))
+						{
+							vehicle->unknown24c = child_index;
 						}
 					}
 				}
-				if (!assign)
-				{
-					goto recurse;
-				}
-				if (driver && !TEST_FIELD_BIT((vehicle->flags_134 >> 1) & 1) && vehicle->unknown248 == NONE)
-				{
-					vehicle->unknown248 = child_index;
-					if (gunner && vehicle->unknown24c == NONE)
-					{
-						vehicle->unknown24c = child_index;
-					}
-					goto recurse;
-				}
 			}
-			else
-			{
-				gunner = (((s_unit_definition *)UNIT_DEFINITION_GET(child))->unit.flags >> 25) & 1;
-			}
-			if (gunner && (vehicle->unknown24c == NONE || vehicle->unknown24c == vehicle->unknown248))
+			else if (TEST_FIELD_BIT((((s_unit_definition *)UNIT_DEFINITION_GET(child))->unit.flags >> 25) & 1) &&
+				(vehicle->unknown24c == NONE || vehicle->unknown24c == vehicle->unknown248))
 			{
 				vehicle->unknown24c = child_index;
 			}
-		recurse:
 			function_cc810(child_index);
 		}
 	}
@@ -7478,7 +7416,24 @@ static __forceinline void unit_perform_request(long unit_index, long type)
 /* the unit dies: the biped's death (0xe4a20), its player and actor let
    go, its weapons and grenades dropped, it leaves its seat, its requests
    end (unless a ragdoll timer runs, when forced) and its actions stop */
-// score 212 (was 224, fast build): Round 4 of #1049, walked against retail statement by statement (0xcaa60-0xcaef4):
+// score 58 (was 212): HELD lead to a byte match (needs the owner's OK for contributor 0xce470's parameter order; diff in
+// build/r208/held-0xcaa60.patch). m3 lane 4 r208 (plain): three places where retail expands an existing function.
+// (1) KEPT: 0x100430's flags argument is a two-byte aggregate passed by value (lane 10 r109's form: retail stores the
+// word, `mov word ptr [esp + 0x44], 0`, and pushes the slot as a dword), definition in src/weapons.cpp, both callers
+// here: alone 236 (1177 bytes; `push ebx` moves below the first call), 0xc58f0 244 -> 224. (2) KEPT: the hand loop's
+// weapon through the existing function_cbd50 (retail's NONE-first `or edx, -1; cmp cx, -1`): alone 215, with (1) 58 at retail's
+// 1175 bytes; all that differs from there (+0x25a) is one scratch-register step: the held object (+0x238) loads into
+// EAX where retail uses ECX (retail sets `xor eax, eax` for 0xce470's mode before `mov esi, ecx`), and the two
+// requests' zero/pool registers follow from it. (3) NOT kept alone: the two death requests as `memset; request.type =
+// N; function_e6900(unit_index, &request);` in place of unit_perform_request (LTCG expands 0xe6900 and 0x1e77c0 at
+// both sites, as retail) 91 (1179 bytes: retail's two block shapes, one rotation step late). With (3) and 0xce470
+// declared (unit_index, object_index, mode) at its definition and both calls (0xcea70, here): MATCH in the plain
+// check, 0xce470 and 0xcea70 still MATCH; without (3) that order gives 48. Other 0xce470 orders (diagnostic):
+// (object, mode, unit) 164, (mode, object, unit) 168, (object, unit, mode) 163, each with 0xcea70 at 2; (unit, mode,
+// object) 58. Also tried on 58: the held object in a named local used at the test and the call 58 (same code); the
+// held object through the existing 0xccb80 at the test 156, at the test and the call 170 (1183 bytes), at every use
+// with no holder local 177 (1190 bytes).
+// Earlier at 212 (was 224, fast build): Round 4 of #1049, walked against retail statement by statement (0xcaa60-0xcaef4):
 // no logic, field, offset, condition or callee difference; the 312 retail instructions are the same sequence as ours.
 // Retail does not fold the base into the address of three 16-bit loads: the weapon state (0xcabc8 `add eax, ecx`,
 // 0xcabca `mov ax, [eax+0xc]`) and the controller in each inlined request (0xcad7d/0xcad7f, 0xcae22/0xcae24). A
@@ -7550,10 +7505,10 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 	{
 		if ((&unit->current_weapon_index)[hand] != NONE)
 		{
-			s_unit *holder = UNIT_GET(unit_index);
-			short index = (&holder->current_weapon_index)[hand];
+			s_weapon_control_flags flags;
 
-			function_100430(index != NONE ? holder->weapon_object_indices[index] : NONE, 0, 0.0f);
+			flags.bits = 0;
+			function_100430(function_cbd50(unit_index, (&UNIT_GET(unit_index)->current_weapon_index)[hand]), flags, 0.0f);
 		}
 	}
 	bit_vector_set(&UNIT_GET(unit_index)->flags_134, 21, false);
@@ -7989,7 +7944,9 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 	return result;
 }
 
-// score 244 (was 244): HELD (needs the owner's OK: one call line in contributor 0xcaa60). m3 lane 10 r109: 0x100430's
+// score 224 (was 244): m3 lane 4 r208 applied lane 10 r109's held form below as written (0xcaa60 is machine 3's now and
+// was in that round's queue; plain 244 -> 224 at retail's 1470 bytes, 0x100430 MATCH, build/r109/held-0xc58f0.patch).
+// Earlier at 244 (was 244), HELD then (one call line in 0xcaa60, a contributor's at the time). m3 lane 10 r109: 0x100430's
 // flags argument is a two-byte aggregate passed by value: both retail callers write the word into a stack slot and push
 // the dword (here `mov word ptr [esp + 0x20], cx` ... `mov eax, dword ptr [esp + 0x20]; push eax`; 0xcaa60 does the same
 // with a stored word 0), so `s_weapon_control_flags { word bits; }` as 0x100430's second parameter (definition, both
@@ -8335,29 +8292,31 @@ bool __stdcall function_c58f0(long unit_index)
 				held = true;
 			}
 			dword control = unit->unknown148;
-			word flags;
+			s_weapon_control_flags flags;
 
 			if (first)
 			{
-				flags = (word)((TEST_FIELD_BIT((control >> 16) & 1)) << 1);
-				flags = TEST_FIELD_BIT((control >> 17) & 1) ? flags | 4 : flags & ~4;
-				flags = TEST_FIELD_BIT((control >> 18) & 1) ? flags | 8 : flags & ~8;
-				flags = TEST_FIELD_BIT((control >> 19) & 1) ? flags | 0x10 : flags & ~0x10;
-				flags = TEST_FIELD_BIT((control >> 20) & 1) ? flags | 1 : flags & ~1;
-				flags = TEST_FIELD_BIT((control >> 30) & 1) ? flags | 0x80 : flags & ~0x80;
+				flags.bits = 0;
+				flags.bits = TEST_FIELD_BIT((control >> 16) & 1) ? flags.bits | 2 : flags.bits & ~2;
+				flags.bits = TEST_FIELD_BIT((control >> 17) & 1) ? flags.bits | 4 : flags.bits & ~4;
+				flags.bits = TEST_FIELD_BIT((control >> 18) & 1) ? flags.bits | 8 : flags.bits & ~8;
+				flags.bits = TEST_FIELD_BIT((control >> 19) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
+				flags.bits = TEST_FIELD_BIT((control >> 20) & 1) ? flags.bits | 1 : flags.bits & ~1;
+				flags.bits = TEST_FIELD_BIT((control >> 30) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
 			}
 			else
 			{
-				flags = (word)((TEST_FIELD_BIT((control >> 21) & 1)) << 1);
-				flags = TEST_FIELD_BIT((control >> 22) & 1) ? flags | 4 : flags & ~4;
-				flags = TEST_FIELD_BIT((control >> 23) & 1) ? flags | 8 : flags & ~8;
-				flags = TEST_FIELD_BIT((control >> 24) & 1) ? flags | 0x10 : flags & ~0x10;
-				flags = TEST_FIELD_BIT((control >> 25) & 1) ? flags | 1 : flags & ~1;
-				flags = TEST_FIELD_BIT((control >> 31) & 1) ? flags | 0x80 : flags & ~0x80;
+				flags.bits = 0;
+				flags.bits = TEST_FIELD_BIT((control >> 21) & 1) ? flags.bits | 2 : flags.bits & ~2;
+				flags.bits = TEST_FIELD_BIT((control >> 22) & 1) ? flags.bits | 4 : flags.bits & ~4;
+				flags.bits = TEST_FIELD_BIT((control >> 23) & 1) ? flags.bits | 8 : flags.bits & ~8;
+				flags.bits = TEST_FIELD_BIT((control >> 24) & 1) ? flags.bits | 0x10 : flags.bits & ~0x10;
+				flags.bits = TEST_FIELD_BIT((control >> 25) & 1) ? flags.bits | 1 : flags.bits & ~1;
+				flags.bits = TEST_FIELD_BIT((control >> 31) & 1) ? flags.bits | 0x80 : flags.bits & ~0x80;
 			}
-			flags = TEST_FIELD_BIT((control >> 29) & 1) ? flags | 0x100 : flags & ~0x100;
-			flags = held ? flags | 0x20 : flags & ~0x20;
-			flags = unit->unknown240 != NONE ? flags | 0x40 : flags & ~0x40;
+			flags.bits = TEST_FIELD_BIT((control >> 29) & 1) ? flags.bits | 0x100 : flags.bits & ~0x100;
+			flags.bits = held ? flags.bits | 0x20 : flags.bits & ~0x20;
+			flags.bits = unit->unknown240 != NONE ? flags.bits | 0x40 : flags.bits & ~0x40;
 			real rate = first ? *(real *)&unit->unknown1c0 : *(real *)&unit->unknown1c4;
 			function_100430(weapon_index, flags, rate);
 		}
