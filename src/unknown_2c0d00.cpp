@@ -532,6 +532,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // first 920; the sphere counter `long` 919 (3723 bytes; retail's counter is a short, `movsx eax, ax`); both of the 919 forms
 // together 919 (3721 bytes); the block-priority test with `aligned` first 920; the range test with `type != 0` first 920.
 // Both 919s are under the keep bar. Retail tail-merges the two 0x2c0d00 calls as ours does. Body unchanged.
+// M3 lane 13 r103 (plain, the file's other matched functions stay matched; [exact, register/stack-masked] aligned counts by
+// opcode, base 920 [480, 172]): a redundant `if (object_count > 0)` guard around the object loop 920 [480, 173] (match-only
+// steering form, no change); skip_classification as `byte` 920 (same code); the skip flag declared after the two sphere flags
+// 920 [479, 170]; re-measured on this base: no unit_index volatile 936 (3708 bytes) [473, 166], both volatiles dropped 972 (3671
+// bytes, frame 0x2cb0) [423, 152] (diagnostic), `else straight = true;` 929 (3722 bytes) [480, 172]. The last tested whether
+// retail's second straight store (an else block on the actor NONE path) is what stops ours hoisting the object-table global
+// load to the entry (ours `mov edx, [g_4e0300]` before the actor test; retail loads it in the actor block and again in the
+// location block): it is not, the hoist stays. Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

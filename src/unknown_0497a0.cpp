@@ -433,6 +433,11 @@
 // read through a `point3f const &` bound to the camera point 537; the first `w8e` switch as `if (w8e == 1) ... else`
 // 574; the component maximum as one expression (no named partial maxima) 673 (2690 B). Retail's case-1 arm selects the
 // up vector by pointer again (`mov ecx, 0x4b9dac`), as the `up` local does.
+// M3 lane 13 r104 (fast with 0x4a1e0; control 536, both `ret 0x20`): the second cross computed right after the first, ahead
+// of the waves and the adds, 665 (2581 B); both wave values ahead of the first cross 654 (2590 B); s1's argument as a float
+// sum without the double cast 538; s1 computed after the first scaled add, just ahead of its use, 536 (VC sinks it there
+// anyway); the first cross after the first scaled add, ahead of its use, 643 (2603 B). Reading: retail rounds s0 to a float
+// home (fstp, movss) and multiplies by 0.03 in SSE, where ours multiplies by 0.03 on the x87 stack before the one store.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

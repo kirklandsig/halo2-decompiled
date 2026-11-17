@@ -399,6 +399,11 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // block (our found path enters the test, so the join reloads the result into EAX; retail tests ESI and reloads after
 // it), the walk's NONE return (inline and folded to `or eax, esi`; retail a trailing epilogue with `mov eax, esi`) and
 // one loop pad.
+// M3 lane 13 r104 (fast with 0x3db00 and 0x3dd10, both matched; control 77): the walk's NONE exit returning the walk
+// iterator 119 (506 B: the exit jumps to the end as retail's, but into the main epilogue, and the walk's registers change);
+// no walk exit with `initialize = result != NONE;` closing the else arm 116 (495 B); the walk's exit as `return NONE;` 77
+// (same code); the tail nested as `if (initialize) { record; if (result != NONE) ... }` 166 (497 B); no flag (the found
+// path returning the cached index, the record setup unconditional after the allocation and walk) 186 (474 B).
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
