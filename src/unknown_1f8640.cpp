@@ -852,6 +852,11 @@ struct s_1f8a70_actor
 // node (0x1f8df6) before radius (0x1f8dfc) where ours stores radius first (no aliasing, so not a behaviour
 // difference), the node test's `setne al` (0x1f8e26), the route dispatch after case 5, and the result read back
 // from [esp+0x12] (0x1f8e42).
+// M3 lane 8 r180 (fast, control 182; all restored): case 6 breaking right after its `route_mode = 1` (no else-if) 182 (same
+// code); the mode switch's `default: goto failed;` written first 182 (same code); the final if/else with one
+// `result = route_found;` after it 326 (1680 B, re-measured); route_found written through a pointer to it at every
+// assignment 182 (same code: folded, so no reload after 0x1f8750); one actor pointer from a single actor_get ahead of the
+// first test 207. Retail's case 6 `route_mode = 1` cross-jumps into case 5's tail (0x1f8c9d); ours keeps its own store.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

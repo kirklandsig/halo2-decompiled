@@ -148,6 +148,13 @@ static __forceinline void function_94bf7(s_sequence_window *arg_0)
 
 // score 2 (was 2): retail reloads the address-taken loop counter before it
 // stores fragment->data = 0, ours stores the zero first.
+// b14C (11-17) walk against retail, fast build on r847: every other statement agrees (both window loops, the
+// get_info calls at 0x94c7b/0x94d55, release via [edx] at 0x94c9a/0x94d72, final window clears); the first loop's
+// info slot and the second loop's counter share [esp + 0xc] in retail, as ours do. Only the order at 0x94d7b/0x94d7f
+// differs (mov edi, [esp + 0xc] before mov [ebp + 4], 0). Tried, all 2 unless noted: ++work; while loop; the
+// file's free_block helper (second loop only; both loops 8: frame 0xc not 8); store through a local void **;
+// unreliable_stream_get_fragment for the element pointer; non-address-taken counter (8, extra stack slot);
+// increment placed before the store in both branches (34).
 // @retail 0x94bf0
 void function_094bf0(s_network_stream_header *header)
 {

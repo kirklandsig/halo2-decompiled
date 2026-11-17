@@ -254,6 +254,16 @@ PRIVATE __forceinline real function_112e21(real arg_0)
 // normalisation written i = inverse * i, j = j * inverse, k = k * inverse (no change). Tried at
 // 133 (lane): shared normalization scale 133, relative scale 136, both scales 136, reciprocal-root
 // intrinsic 168, two-angle helper precision probe 119 (rejected).
+// b15H (11-17) walk against retail, fast build on r848: every statement, offset and branch sense matches (static
+// limits, frame, offset arithmetic, both sums, the atan2 pair, both clamps, the rotation call, the scale restore). Only
+// two spots differ. (1) The zero branch: retail 0x112f77-0x112f7d clears into xmm3, xmm1, xmm2 and stores i, j, k at
+// 0x112fa4-0x112fb0 (the out->x, y, z order of function_142700, whose body retail inlines here); ours stores j, k, i.
+// The register a component gets follows the first-assigned order (j, k, i gives retail's registers); every other
+// clearing order (i, j, k 91; i, k, j 83; j, i, k 83; k, i, j 88; k, j, i 82) or a point3f direction scores the same,
+// and the zero branch first as `== 0.0f` 110-116. (2) The scale: retail multiplies i into a copy of the factor
+// (0x112fd1) but j and k in place (0x112fd5, 0x112fd9); ours copies for j. No spelling of the three products moves it
+// (i = inverse * i, j * inverse, *=, every order), nor `real const inverse`, an initialised inverse or an inline
+// pointer helper (all 64). Calling function_142700 instead of the body: 329 (not inlined in the fast build).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -4248,6 +4258,23 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // MiniMax I (11-17): no new form, no lower score (12): the control and definition homes stay the other way round
 // (retail +0x1c and +0x20) - declaring the definition first or the control after the state leaves them as they are
 // (20) - and the two flag bytes are still cleared after the lookup branch where retail clears them before it.
+// MiniMax C (11-17): no new form, no lower score (12): the definition and control homes stay swapped (ours +0x1c
+// and +0x20, retail +0x20 and +0x1c) and the two flag clears stay after the lookup's branch; the definition
+// declared before the control 20 (the load order rotates, the homes do not move), the two flags ahead of that
+// branch 205 and the same with the two declarations swapped 203, and the lookup written as a ternary with the
+// flags before it 208 (all 681 or 682 bytes, the animation to memory); the retail-like declaration order (unit,
+// state, definition, *flag = false, set, mode, lookup, animation = NONE, control, force_overlay = false,
+// result = false, the lookup's branch) 200 and the same with the control declared before the animation 200
+// (682 bytes both: the definition reaches retail's home +0x20 and the two clears reach the entry block in retail's
+// order +0x11 then +0x10, but the control takes EBX, the animation spills to a slot and the tag table moves from
+// ESI to EDX, which rotates the prologue); the definition retyped void * with casts at both uses 12 (the homes do
+// not move); the two flags declared at the top and assigned early 205 (682 bytes, the clears in the entry block in
+// retail's order, the prologue still breaks); the state declared second 23 (the control's offset load and the tag
+// table swap homes). Every spelling that puts the clears in the entry block perturbs the register allocation, and
+// every spelling that moves the definition past the control leaves the pair of homes where they are, so the flag
+// placement and the register allocation cannot be had together in one form. The reduced image's score depends on
+// the address set: the nine-address set gives 12 at 668 bytes, 0x10ff40 on its own gives 217 at 687 bytes, so
+// every measure here used the nine-address set.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

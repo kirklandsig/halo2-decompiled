@@ -169,6 +169,18 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 	}
 }
 
+// score 67 (was 67): Retail spills the entry-array base and recomputes the indexed
+// terminator after the string calls.
+// independent read cursor and indexed terminator 84; cursor search condition with
+// indexed result after loop 59 (NOT kept: extra count test and no retail base spill);
+// cursor search saves the found index 72; plain-name result assigned before the
+// suffix guard 66 (NOT kept: gain below eight); opaque entry base with typed indexing
+// at each use 84; found entry reference with indexed terminator 90; appended result
+// from the last concatenation 60 (NOT kept: form requires a byte match); read-only
+// cursor for all source fields 79; writable cursor with separate indexed terminator
+// 84; writable while-loop cursor with indexed terminator 83; cursor with plain-name
+// guard before the suffix 84; opaque base and writable cursor with indexed terminator
+// 84.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
@@ -451,7 +463,7 @@ void c_screen_24a7bf::v25(s_screen_focus *arg_0)
 	function_249fcc((c_unknown_249fa3 *)&field_614);
 }
 
-void function_2b10a3(dword const *arg_0, c_class_2b0b5e *arg_1, long arg_2);
+void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type);
 
 // @retail 0x24a7ec
 void function_24a7ec(dword const *arg_0, c_class_2b0b5e *arg_1, long arg_2, bool arg_3)
@@ -461,7 +473,7 @@ void function_24a7ec(dword const *arg_0, c_class_2b0b5e *arg_1, long arg_2, bool
 		if (arg_3)
 			arg_1->value6e = false;
 		else
-			function_2b10a3(arg_0, arg_1, arg_2);
+			function_2b10a3(arg_1, arg_0, arg_2);
 	}
 }
 

@@ -4471,6 +4471,10 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// score 122 (was 130): the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
+// and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
+// widened (see r136 at the end of this note).
+// Earlier at 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
 // score 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
 // permutation-gain byte and the gain bits trade EAX/EDX, the field_c store sits one slot late); the synchronisation byte is
 // widened (`xor edx, edx` ... `and edx, 0x7f`, retail byte ops), and the tail's flag tests, next-chunk test and stream store differ
@@ -4480,6 +4484,7 @@ struct s_128ca0
 // (retail's lea +8), the pitch and argument hold swap and the two clamp joins remain. The single-exit
 // decibels_pin (168) and a long pin copy (171) regress; the permuter (30 tries, annealed) found no
 // better form.
+// Earlier at 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
 // score 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
 // pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
@@ -4689,6 +4694,25 @@ struct s_128ca0
 // 64 against 54 differing instructions); `(short)(chunk_index + 1) != NONE` 126 (a width-only cast, aligned 69); the stream
 // store ahead of the flag6 store 117 (stores out of retail's order): it shows retail's second flag3 test reads a byte and the
 // flag6 store is a byte RMW because nothing reuses the flags word there, so retail's test must not share the word load.
+// M3 lane 12 r136 (fast with 0x1293f0; the plain check agrees on the kept form): kept, 130 -> 122: the next-chunk test through the
+// existing 0x219290 (`short next_chunk = (short)function_219290(...)`; retail has that function's body in line: the chunk word
+// loaded ahead of the null test, `movsx eax, ax`, `inc eax`, `cmp ax, 0xffff`, and the sum pushed) in place of its body written
+// out here. Tried: the stream bit through the existing 0x12a420 (retail's else block is that function in line) 131 alone, 123 with
+// the kept form (its copy comes out as one `or byte ptr [eax + 3], 8`, two instructions short; the same code with 0x12a420 in a
+// file of its own, or written as a bit-field store on the stream type, which still matches 0x12a420); the stream bit through a
+// named stream pointer 131 (that block is then retail's load / lea +0xc / or / store); the sibling 0x21c400's if/else short next
+// chunk 126, with a short chunk local 126; each pin sum as a named sum then `+=` 162 (both arms, 1048 B), first arm only 125,
+// second arm only 112 (1056 B: the pin's copy of its argument is gone, so that count is a length coincidence, aligned 54 -> 59);
+// a char synchronisation value 201. On the kept form with the 0x12a420 call: the else arm first 125, an early return after the
+// chunk start 123, a long next chunk 123, a named real or decibel value for the permutation gain 123 (same code), the pin result
+// in a named long 123, the sum passed without a local 123, the voice read from the table at the first channel call 121 (a mix),
+// the second flag3 test as an early return or the whole tail unnested 123 (same code), the else block in an inline helper 123
+// (same code); 0x12a420 called ahead of the flag6 store 122 (1054 B, aligned 54: the two stores out of retail's order).
+// Still differs: (1) the shared flag-word load (`mov ax, word ptr`, `or eax, 0x40`, word store); every difference from the second
+// flag3 test to the end follows from it (diagnostic, not a valid form: without that test the code from there to the end is
+// retail's, 0x12a420's copy included, aligned 34). (2) Both pin sums: the permutation-gain byte and the gain bits trade EAX/EDX,
+// and the field_c store sits behind the next statement's loads, which leaves the tail's scratch registers one step off.
+// (3) The synchronisation byte is widened.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4768,9 +4792,10 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 		}
 		if (!TEST_FIELD_BIT(local_1->flag3))
 		{
-			if (local_8 && local_1->chunk_index < local_8->chunk_count - 1 && local_1->chunk_index + 1 != NONE)
+			short next_chunk = (short)function_219290((s_permutation_group *)local_8, local_1->chunk_index);
+			if (next_chunk != NONE)
 			{
-				sound_playback_set_chunk(local_0->sound_index, local_1->definition_index, local_1->pitch_range_index, local_1->permutation_index, local_1->chunk_index + 1);
+				sound_playback_set_chunk(local_0->sound_index, local_1->definition_index, local_1->pitch_range_index, local_1->permutation_index, next_chunk);
 				function_125e60((s_looping_track_sound *)local_1);
 				local_1->flag3 = true;
 			}
