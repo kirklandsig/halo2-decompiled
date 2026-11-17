@@ -1595,6 +1595,7 @@ done:
 // offset into esi and finishes with an add, so this build also ends with an extra int3; twenty-five
 // spellings of the lookup and a 51-try permuter run all build the same prologue, so the register choice is
 // not steerable from this function.
+// MiniMax C (11-17): no new form, no lower score (9, was 9): the full build scores 9 as well, so the reduced image does not distort this one; only the prologue differs - retail builds the actor offset in EAX and forms the actor with `lea esi, [eax + edx]`, while this build computes the offset in ESI and adds the base - and the lookup's spelling does not change the code.
 // score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
 // so the reduced image does not distort this one; the lookup's spelling does not change the code
 // (see below), and the prologue's register choice is not steerable from the source.
@@ -2134,6 +2135,7 @@ struct s_actor_looking_turn_request
 // MiniMax E (11-16): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
 // blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines it, and only
 // /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
+// MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

@@ -116,6 +116,7 @@ void __stdcall function_1c710(void *state);
 // MiniMax R (11-16): no new form, no lower score (188): the body is 35 bytes longer than retail's 1422 and the first
 // difference is at +0x335, where retail inlines only the first of the four vertex writes and calls the other three
 // out of line.
+// MiniMax C (11-17): no new form, no lower score (188, was 188): the body is still 35 bytes longer than retail's 1422 and the first difference is still at +0x335, where retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for that is an inline_depth pair, which may not be added.
 // score 188 (was 188): the body is 35 bytes longer than retail's 1422 and the first difference is at +0x335, where
 // retail inlines only the first of the four SetVertexData2s and calls the other three out of line; the only lever for
 // that is an inline_depth pair, which may not be added.
@@ -5271,6 +5272,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // MiniMax R (11-16): no new form, no lower score (125): the body is still five bytes longer than retail's 1027, so
 // the two early skips branch to a near block here and to the end of the body in retail, and the four screen values
 // are loaded in another register and another slot order.
+// MiniMax C (11-17): no new form, no lower score (125, was 125): our body is still five bytes longer than retail's 1027 (one extra screen[] load and a spill reload in the third vertex), the four products and the corner values still take other registers and other spill slots than retail's, and the two early skips still branch to a near block here and to the end of the body in retail.
 // score 125 (was 125): our body is five bytes longer than retail's 1027, so the two early skips branch to a near block
 // here and to the end of the body in retail, and the four screen values are loaded in another register order (ours
 // xmm1/xmm3/xmm2/xmm5 against retail's xmm6/xmm3/xmm2/xmm7) and in another slot order; retail multiplies
@@ -5413,6 +5415,7 @@ void function_48010(real const *color);
 // prologue where this build loads it later, and retail still keeps six of its function_0222d0 calls out of line
 // where this build inlines all six; that helper's inline-ness is set in another file.
 // MiniMax R (11-15): no new form, no lower score (244): retail still copies the mode parameter into ebp in the prologue and calls the setter out of line, where this build keeps the mode in esi and inlines the call.
+// MiniMax C (11-17): no new form, no lower score (244, was 244): retail still copies the mode parameter into ebp in the prologue and keeps the flag scratch in esi, where we keep the flag scratch in ebp and load the mode into esi later; retail is still 17 instructions longer and the two drift apart in the mode branch.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
 // retail is also 17 instructions longer than ours, and the two drift apart in the mode branch.
@@ -6547,6 +6550,12 @@ dword g_4b8430;
 // bound to a const reference, the part index's sign test ahead of the geometry load) reaches 2 again, and a
 // 300 s permuter run on it did not move the two float reloads after the second grow call; a one-use reference
 // is kept only on a byte match, so the body is main's.
+// MiniMax C (11-17): 2 (was 127): the model entry's address is bound to a reference to a const pointer and the
+// part index's sign test comes ahead of the geometry load, as retail has it; the reference is a one-use pointer
+// binding, which the rules keep only on a byte-for-byte match. Still differs: two independent float reloads
+// after the second grow call (retail loads [esp+0xd8] into xmm2 and then [esp+0x54] into xmm3, ours the other
+// way round); the row 12 products in named locals (11), the up component in a local (238) and the permuter
+// (19 tries, 250 s) do not move it.
 // score 127 (was 127): main's body. On the reference form (the model entry's address bound to a const
 // reference, the index < 0 test ahead of the geometry load: 2 in the plain check, kept only on a match) the
 // only difference left is two independent float reloads after the second SetVertexData4f grow call (retail
@@ -6644,6 +6653,13 @@ dword g_4b8430;
 // MiniMax S (11-16): no new form, no lower score (127): retail reads the model through the entry's address (a
 // lea plus a separate load) where this build fuses the address into one load, and the two float reloads after
 // the second grow call come out in the other order.
+/* one entry of the model reference table: eight bytes, the model index at +4 */
+struct s_4e260_model_entry
+{
+	long unknown00;
+	long model;
+};
+
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -6662,7 +6678,8 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
+    s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[(signed char)record[0]];
+    long model = entry->model;
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
@@ -6687,8 +6704,11 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
         for (long part = 0; part < *(short *)(record + 0xa); ++part)
         {
             long index = *(short *)(record + 8) + part;
+            if (index < 0)
+                continue;
             byte *geometry = *(byte **)(block + 0x28);
-            if (index < 0 || index >= *(long *)geometry) continue;
+            if (index >= *(long *)geometry)
+                continue;
             byte *vertex = *(byte **)(geometry + 4) + index * 24;
             dword packed = *(dword *)vertex;
             byte *group = *(byte **)(definition + 0x14) + (packed & 7) * 20;
@@ -8751,6 +8771,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // still widened from sixteen bits (movzx esi, ax) where retail moves the thirty-two bit index, and the
 // index slot sits at [esp+0x3c] against retail's [esp+0x58]; a thirty-two bit counter strength-reduces the
 // 0x98 stride into a second counter (506) and the for-loop form keeps the counter in a slot (300).
+// MiniMax C (11-17): no new form, no lower score (299, was 299): our group index is still sign-extended (movsx esi, ax) where retail moves the 32-bit index, the index slot still sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi still stands in the loop head, and the body is still 3 bytes longer than retail's.
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
