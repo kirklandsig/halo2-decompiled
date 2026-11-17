@@ -805,6 +805,7 @@ struct s_item_collision_bsp
 // P591: Actual matrix receiver before the query/section derivation, ordinary/fixed
 // pointer and readonly/mutable reference: 239/239/239/239/239/239/239/239. NOT kept: all regress to
 // 1367 bytes; original receiver and full body restored. Instance/plane/spin homes remain.
+// MiniMax S (11-17): no new form, no lower score (198): the marker's coordinates still come from different slots than retail's and the position's three components keep their own homes, while the two marker lookups and the event helper stay in retail's order.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1499,6 +1500,7 @@ struct s_item_flags_view_10b850
 // defaults, positive/complementary exhaustive bool, then false-default char/byte/short/long:
 // 860/868/874/874/860/860/881/875. NOT kept: all grow beyond native extent; frame 0x150/0x154
 // misses 0x12c and entry/carrier/contact/rotation homes remain. Original complete body restored.
+// MiniMax S (11-17): no new form, no lower score (824): the frame still misses retail's size (0x150/0x154 against 0x12c) and the entry, carrier, contact and rotation homes stay in other registers; the seven forms tried earlier all grow past the native extent or land below the eight-point gate.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

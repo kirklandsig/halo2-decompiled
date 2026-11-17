@@ -2537,6 +2537,7 @@ void function_cfec0(long unit_index)
 // P455: Explicit rejected else-return arms at unit/parent/seat levels, seven
 // subsets 2/2/2/2/2/2/2; signed-range non-sentinel admission 92.
 // NOT kept: no exact separate NONE exit; original body and lazy saves restored.
+// MiniMax S (11-17): no new form, no lower score (1): the one difference left is still the branch at the NONE test, where this build's greater-than test gives jle and retail has je; the equality test with the body as the then arm gives retail's branch but folds the NONE exit's value into the constant (2), the same with the parameter copied into a local of its own (2), the equality test as an early return (92) and the one's complement form (96, which builds not/test instead of cmp); a local copy of the parameter that the body reassigns measures 46 and 47 and shortens the body to 247 bytes, so the copy goes to memory and the branch and the exit cannot both be had from one source shape.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3102,6 +3103,7 @@ void function_c5740(long unit_index, bool start)
 // build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this
 // file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
 // MiniMax R (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file.
+// MiniMax S (11-17): no new form, no lower score (97): retail keeps the definition index in EBP and the object globals pointer in EDI and re-reads the unit index and the material from the stack, while this build keeps the unit index in EBX and the material in BP; the callers' setup fixes the convention outside this file: BLOCKED-BY 0x188180 (src/unknown_187ec0.cpp).
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3574,6 +3576,7 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // MiniMax C (11-16): lookup are scheduled differently; a permutation run this round reached 85 in its own reduced image with forms the
 // MiniMax C (11-16): rules reject, so nothing was kept.
 // MiniMax R (11-17): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat lookup are scheduled differently.
+// MiniMax S (11-17): no new form, no lower score (91): retail takes the seat index's sign extension and its stride multiply after the tag's triple and keeps the seat list in esi where this build keeps it in ecx, so the definition lookup and the seat lookup are scheduled differently; the seat camera copy still folds +0x24 into each of the five member reads where retail advances the seat pointer once.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -4746,6 +4749,7 @@ bool __stdcall function_c6b90(long unit_index, long name, real *value, bool *act
 // the random_vector_in_cone call are in the other order - retail spills the sampled speed first and then forms
 // the forward, result and seed pointers, this build forms the pointers first - and the callee's parameter list
 // is in src/unknown_146240.cpp: BLOCKED-BY 0x146320.
+// MiniMax S (11-17): no new form, no lower score (2): the only difference left is that retail spills the sampled speed before it forms the forward, result and seed operands, where this build forms them first; that order comes from the cone helper's own convention in another file: BLOCKED-BY 0x146320 (src/projectiles.cpp).
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
@@ -4983,6 +4987,7 @@ void function_c50a0(long unit_index)
 // MiniMax C (11-16): from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp,
 // MiniMax C (11-16): so the tag's triple, the index's masking and the seat's fields land in the other registers.
 // MiniMax R (11-17): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp, so the tag's triple, the index's masking and the seat's fields land in the other registers.
+// MiniMax S (11-17): no new form, no lower score (166): retail loads the definition table's pointer into edx and takes the row pointer from it before its prologue pushes, while this build pushes ebx, ebp and esi first and keeps the row pointer in ebp, so the tag's triple, the index's masking and the seat's fields land in the other registers; the body stays four bytes longer than retail's.
 // @retail 0xcc810
 void __stdcall function_cc810(long vehicle_index)
 {
@@ -5502,6 +5507,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 // MiniMax C (11-16): (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the
 // MiniMax C (11-16): other order.
 // MiniMax R (11-17): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the other order.
+// MiniMax S (11-17): no new form, no lower score (169): the expression's x87 evaluation order still leaves the stack one level deeper here (fld st(3) and fmul st(4) where retail has fld st(2) and a multiply by memory), so the products accumulate in the other order.
 // @retail 0xcba50
 bool __stdcall function_cba50(long unit_index, vector3f *direction, bool looking)
 {
@@ -8148,6 +8154,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // 391; full-hand rate storage 244. NOT kept: no native flag-home/frame repair;
 // original complete body restored. Positive-only bit construction repeats an earlier form and is excluded.
 // MiniMax R (11-17): no new form, no lower score (244): retail's native flag home and frame slots still differ from this build's, and the forms the earlier rounds recorded all measure 244 or worse.
+// MiniMax S (11-17): no new form, no lower score (244): every form tried this round regresses and shortens away from the native extent, so the per-hand expressions and the native frame and flag transport stay as they are.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -9639,6 +9646,7 @@ struct s_unit_melee_collision
 // existing ray/paired point producers 484/567; complete fan/trace names 484. NOT kept: ties or regressions;
 // frame 0x180/native 0x17c and native tag/pool/counter carriers remain. Original entire body restored.
 // MiniMax R (11-17): no new form, no lower score (484): the range at each use on the material and provider graph, the whole-fan collision and the outer hit, damage and basis scopes all measure 484 or worse, and this build's frame stays 0x180 against retail's 0x17c.
+// MiniMax S (11-17): no new form, no lower score (484): the frame is still 0x180 against native 0x17c and the native tag, pool and counter carriers remain; the forms that moved them were reverted and the original body stands.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
