@@ -922,6 +922,9 @@ struct s_tail_transfer_traits
 	s_tail_unit_state weapons[3];
 	byte grenades[2];
 };
+// MiniMax C (11-16): no new form, no lower score (144): after the two copies only the register assignment differs, the
+// record pointer and the selection index trading ebx, ebp and edi; the score 3 form below rested on a second lookup of
+// the same object and on locals holding NONE until set, both of which are match-only forms and so cannot be kept.
 // MiniMax I (11-15): score 3 (was 144): the players are walked with the existing 16-byte s_player_iterator (player_queries.h),
 // the two slot fields are read as shorts and the third weapon keeps its NONE preset; left: the three object lookups address
 // [data + offset + 8] where retail has [offset + data + 8].
