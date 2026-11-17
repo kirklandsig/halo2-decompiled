@@ -21,22 +21,9 @@ struct s_cache_file
 	byte unknown04[0x800];
 };
 
-extern s_cache_file g_557c90[3];
+#include "cache_file_table.h"
 
-#define MAXIMUM_CACHE_FILES 6
-#define cache_file_map_name(index) ((char const *)&g_557c90[index] + 0x24)
-
-/* the maps copied to the utility drive (0x108 bytes each) */
-struct s_cache_copy
-{
-	char path[256];
-	long last_used;
-	long state;
-};
-
-#define MAXIMUM_CACHE_COPIES 8
-
-s_cache_copy g_55acac[MAXIMUM_CACHE_COPIES];
+#define cache_file_map_name(index) ((char const *)&g_557c90.files[index] + 0x24)
 
 /* the map being copied and the two maps waiting to be */
 
@@ -142,7 +129,7 @@ s_cache_copy *cache_copy_find(char const *map_name)
 	((s_map_name const *)map_name)->map_file_path_get(path);
 	for (index = 0; index < MAXIMUM_CACHE_COPIES; index++)
 	{
-		s_cache_copy *copy = &g_55acac[index];
+		s_cache_copy *copy = &g_557c90.copies[index];
 
 		if (!strcmp(path, copy->path))
 		{
@@ -178,7 +165,7 @@ void __stdcall cache_copy_record_use(char const *map_name)
 
 		for (index = 0; index < MAXIMUM_CACHE_COPIES; index++)
 		{
-			s_cache_copy *candidate = &g_55acac[index];
+			s_cache_copy *candidate = &g_557c90.copies[index];
 
 			if (!candidate->path[0])
 			{
