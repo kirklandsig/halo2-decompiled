@@ -1409,6 +1409,12 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // NOT kept: native extent returns but candidate/output homes and EBP zero remain;
 // original complete body, constructors and header set restored.
 // MiniMax I (11-17): no new form, no lower score.
+// M3 lane 16 r129 (fast with the twin 0x1dbc80; control 828): the first request's graph read from `iterator.graph` 1030
+// (2791 B); `result = named ? named->animation_id : animation_id;` with the per-pass candidate kept 951 (first
+// difference +0x2). Same code as the control: a `graph` pointer local for `this` at every use; the entry pointer
+// declared at the iterate call inside the loop. Re-measured: the early `return c_type_709360();` with the result in
+// the block 988 (2825 B, as listed). Retail returns through separate epilogues (early NONE class, no result, loop end)
+// and loads the second request's mode into EBP once where ours reads iterator_mode's home at each kind.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -1164,6 +1164,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // through memcpy 114 (same code); `dot3f(&old_cross, &state->up) * dot3f(&new_cross, &state->up)` 111 (1393 B, under
 // the bar); the alignment as `dot3f(&state->forward, facing_goal)` 116; the moved-away dot as `dot3f(&rotated,
 // facing_goal)` 114.
+// M3 lane 1 r114 (fast with 0xdc5c0/0x118700 at their baseline): the flags update written before the goal copy at the
+// early exit 107 (1384 B: the exits share one tail and the flag becomes a memory `or`, not retail's EBX read-modify-write;
+// a statement order by score, under the keep bar); the turn test as nested ifs 114, the crosses declared new first 114,
+// `rotated` declared at the movement block's top 114, the moved-away dot's arguments swapped 114 (all same code). The
+// first difference is still inside the shared forceinline rotation helper, whose file is held by another lane this round.
 // M3 lane 2 r95 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114; rotate_direction's file is an Avoid file
 // again): the forward copy made ahead of the angle guard 137 (1389 B); the angle as `rotation = angle; rotation *= rate;`
 // 114 (same code); the state's scale bound as `real const &` for the velocity rows 201 (1373 B); the crosses declared

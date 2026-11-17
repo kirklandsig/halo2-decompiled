@@ -502,6 +502,11 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// score 299 (was 299; earlier 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
+// after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
+// F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
+// range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
+// {magnitude, both sines}, F+0x30 {random integer, both cosines}, F+0x38 pitch range, F+0x3c yaw range.
 // MiniMax E (11-15): no new form, no lower score (303): the frame agrees at 0xa8 and the diff is still the temp's
 // home (retail keeps the length, the random integer and the sine in one frame-bottom slot, ours keeps the length
 // above the result byte) and the candidate, which retail holds in registers across the two rotations while ours
@@ -517,11 +522,6 @@ struct s_collision_result_buffer_1697c0
 // MiniMax C (11-16): no kept form: an early return in the file-local normaliser moves its magnitude into retail's
 // frame-bottom slot (296) but leaves the pitch axis four bytes low, the sine and the random draw in their own homes
 // and the rotation block 28 bytes longer than retail's, so the original body stands.
-// score 299 (was 303): frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
-// after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
-// F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
-// range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
-// {magnitude, both sines}, F+0x30 {random integer, both cosines}, F+0x38 pitch range, F+0x3c yaw range.
 // Round 176 (m3 lane 5, fast = full; 0x297660 stays matched): the wrapper's sine named `angle_sine` (the
 // homes sorted the other way by name) 303; sine and cosine in one declaration 303; the counter
 // post-incremented 303; yaw and pitch declared before the loop 303; the collision buffer declared before the
@@ -896,6 +896,14 @@ struct s_collision_result_buffer_1697c0
 // P592: Single in-place normalizer reference, direct/single/early exits, reciprocal and
 // immutable-magnitude variants: 299/305/296/301/299/307/298/301. NOT kept: native scratch/axis homes
 // unresolved; three-point best lengthens to 1451/1423. Original helper and full body restored.
+// Round 192 (m3 lane 5, fast with 0x297660 (stays matched) and 0x297d30 (stays 23); masked = aligned rows with registers and
+// esp offsets masked; control 299, masked 154): lane 14 r84's match-only lead rebuilt on today's body (one sine/cosine pair
+// reused for both rotations through actor_looking_rotate_in_place, the best vector before best_fraction) 214 (1426 B,
+// masked 67). On it: the rotate helper's dot named 214 (same code); the candidate copied at the top of the pass, before the
+// draws, 251 (masked 129); the up axis through a `vector3f const *` local in the pass 214 (masked 68). On the body: that up
+// pointer 308 (1446 B); each rotation's sine/cosine pair as named locals in its own block 217 at 1423 B (masked 86), with
+// the best vector before best_fraction 214 (1423 B, masked 84). All match-only (the wrapper's body written out or a one-use
+// pointer); body unchanged.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1595,6 +1603,7 @@ done:
 // offset into esi and finishes with an add, so this build also ends with an extra int3; twenty-five
 // spellings of the lookup and a 51-try permuter run all build the same prologue, so the register choice is
 // not steerable from this function.
+// MiniMax C (11-17): no new form, no lower score (9, was 9): the full build scores 9 as well, so the reduced image does not distort this one; only the prologue differs - retail builds the actor offset in EAX and forms the actor with `lea esi, [eax + edx]`, while this build computes the offset in ESI and adds the base - and the lookup's spelling does not change the code.
 // score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
 // so the reduced image does not distort this one; the lookup's spelling does not change the code
 // (see below), and the prologue's register choice is not steerable from the source.
@@ -2140,6 +2149,7 @@ struct s_actor_looking_turn_request
 // MiniMax E (11-16): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
 // blocker is unchanged - retail calls 0x1fdd90 from its only call site while this build inlines it, and only
 // /Ob1 on that helper's own file keeps it out of line, which is a build-flag change this lane may not make.
+// MiniMax C (11-17): no new form, no lower score (442, was 442): the frame is still 0xcc against retail's 0xc8, and 0x1fdd90 is still inlined here where retail calls it from its only call site (only /Ob1 on its own file keeps it out of line, a build-flag lead): BLOCKED-BY 0x1fdd90.
 // score 442 (was 442): frame 0xcc versus retail's 0xc8. BLOCKED-BY 0x1fdd90: retail calls it from its only
 // call site and ours inlines it (only /Ob1 on its file keeps it out of line: a build-flag lead).
 // Round 176 (m3 lane 5, plain): the action state through 0xe70b0 held in a named by-value local 544; the turn

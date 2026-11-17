@@ -197,6 +197,11 @@ void function_22fba9(c_class_1473c9 *screen)
 // screen 23; all five animation starts through a forceinline (widget, screen) helper 23 (all the same code); `long i = 0;`
 // above the pane call with `if (!pane) return;` 25 (the zero moves above the call). Permuter (seed 101, 600 s, fast,
 // anneal): 76 tries, none below its reduced-image baseline 21 (full image 23).
+// M3 lane 5 r193 (fast): a guard `if (pane->model_count > 0)` around the model loop 43 (422 bytes) and `if
+// (pane->text_count > 0)` around the text loop 58 (418 bytes) (both emit their own test, nothing folds); the screen bound
+// to a `c_class_1a2c81 &` before the model loop and used for its call and animation read 23; the model result as a
+// `*const &` bound to the call 23; one widget local at function scope shared by the text and model loops 23 (all the
+// same code). Retail's model loop alone reads `[esi + 0x34]` from the call's ESI; matched 0x22facd copies there too.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

@@ -825,6 +825,11 @@ real function_30bf0(vector3f *vector);
 // P592: Original incoming origin/actor/point/endpoint/posture/mode/facing/output fixed
 // bindings: eight 84 at 1310/1308. NOT kept: no native result/range/projection-home
 // or cross-product operand recovery; original complete body restored.
+// M3 lane 1 r114 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH): retail's 4-byte homes are result, facing primary,
+// facing secondary, the clip amount, scale and range (frame 0, 4, 8, c, 10, 20); declaring facing primary, facing secondary
+// and scale ahead of range at the settings block's top 84 (same code), `range` given a longer name 84 and `result` another
+// name 84 (same code: neither names nor declaration order move these homes); the facing pair as one
+// two-element array (primary [0], secondary [1]) 103; the seat loop counter as long 173 (1308 B).
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

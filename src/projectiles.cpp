@@ -485,6 +485,10 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // around the angle duplicate; the axis is copied through the shared normalizer's pointer, which pins its memory home, and the flag
 // store follows that copy instead of the source order of the statements.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (3): retail still holds the rotating flag's or and store together before the
+// angle's duplicate and loads the axis's first component after them, where this build loads that component between the flag's
+// read and its store; the copy's position in the source does not decide it (before the flag store measures 32, between the sine
+// and the cosine is the same three) and a permuter run over the body found nothing below the three.
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
 {
@@ -1147,6 +1151,10 @@ real function_30bf0(vector3f *v);
 // after the gravity comparison the way retail orders it, measures 255, and a permuter run of 300 s over the body found nothing
 // below the baseline.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (232): the frame is still 0x28 against retail's 0x30 and the SSE registers
+// still differ from the first instruction, so the whole body follows the frame's shift; the forced-speed and time-scale
+// parameters are still read through pointers to themselves (a form the rules allow only with a match, and reading them
+// directly measures 255 and loses 0xfa6a0).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1451,6 +1459,8 @@ extern vector3f *g_4687ac;
 // MiniMax C (11-16): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, so every later offset is
 // shifted, and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, so every later offset is
+// shifted, and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1924,6 +1934,9 @@ PRIVATE inline long projectile_object_root(long object_index)
 // call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66 missing bytes and the pool, tag and
 // seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (296): retail still expands the matched speed setter 0xfbfd0 inline after the
+// 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66 missing bytes and the pool,
+// tag and seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
 // @retail 0xf8200
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
@@ -2229,6 +2242,9 @@ real function_17c900(short function_type, real input);
 // index in eax where retail keeps it on the stack, and the normalization and the rotation are still scheduled in another order;
 // the shared normalizer's own callers pin that helper, so it cannot be spelled differently here.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (348): the frame is retail's 0x30 but the body is still four bytes long, with
+// the index in eax where retail keeps it on the stack, and the normalization and the rotation are still scheduled in another
+// order; the shared normalizer's own callers pin that helper, so it cannot be spelled differently here.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -3219,6 +3235,9 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // arrives on the stack where retail takes it in eax, and retail's own parameter order for the callee 0xfd7d0 differs from this one;
 // changing a parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity still
+// arrives on the stack where retail takes it in eax, and retail's own parameter order for the callee 0xfd7d0 differs from this
+// one; a parameter order may not change, so retail's order is reported instead.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)

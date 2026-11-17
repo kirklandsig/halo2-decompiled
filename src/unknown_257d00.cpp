@@ -2852,6 +2852,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // retail's 2396 B: the copy is retail's missing 8 instructions, but the full build then gives the actor EDI and the
 // state EBX from +0x9); the facing through a const pointer 627; that with `displacement` declared first 627; case 4 as
 // `dot3f(&local_2->field_c, &displacement)` 627 (retail's k, j, i product order); dot3f with the operands swapped 627.
+// M3 lane 16 r129 (fast with 0x110ab0, confirmed plain with the file; control 479, aligned 199, register-masked 146).
+// Kept (behaviour, count unchanged): case 4's dot and case 20's two squared distances written i, j, k. VC emits these
+// three-term float sums in the reverse of their written order, so the k, j, i spellings compiled to (i + j) + k
+// where retail computes (k + j) + i (0x259771-0x2597ad, 0x259ae5-0x259b2b, 0x259b93-0x259bde); written i, j, k all
+// three now round as retail's, and case 20's two blocks are retail's instructions and registers: 479 (aligned 172,
+// register-masked 131; the case 20 change alone 168/133). The walk above that called these sums retail's order read
+// the source, not the compiled code. On the case 2 aggregate copy (610, re-measured, actor EDI and state EBX): case 18's
+// targets in nested two-use locals 612 (2400 B); case 21's target in a nested local 610 (same code); the +0x465 flag
+// as `c ? 1 : 0` 610; cases 9 and 11 as `local_0->unknown018 == arg_1` 610; case 6 with g_5023fc read at each use 610
+// (same code); case 1's point at function scope 610 (same code); case 4's facing read from the state's fields 639 (as
+// listed). Every one still gives the actor EDI and the state EBX.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2922,9 +2933,9 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			vector3f displacement;
 			vector3d_from_points3d(&local_2->field_18, &local_7, &displacement);
 			vector3f facing = local_2->field_c;
-			local_3 = facing.k * displacement.k +
+			local_3 = displacement.i * facing.i +
 				facing.j * displacement.j +
-				displacement.i * facing.i > local_1->unknown08;
+				facing.k * displacement.k > local_1->unknown08;
 		}
 		break;
 	case 7: case 8:
@@ -3045,7 +3056,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 						function_b9dd0(local_14, &local_15);
 						vector3f local_16;
 						vector3d_from_points3d((point3f *)((byte *)local_0 + 0x238), &local_15, &local_16);
-						real local_17 = local_16.k * local_16.k + local_16.j * local_16.j + local_16.i * local_16.i;
+						real local_17 = local_16.i * local_16.i + local_16.j * local_16.j + local_16.k * local_16.k;
 						if (local_12 > local_17)
 						{
 							local_1->unknownac = false;
@@ -3070,7 +3081,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				vector3f local_19;
 				function_b9dd0(local_1->unknownb0, &local_18);
 				vector3d_from_points3d((point3f *)((byte *)local_0 + 0x238), &local_18, &local_19);
-				if (*(real *)((byte *)local_1 + 0xb8) > local_19.k * local_19.k + local_19.j * local_19.j + local_19.i * local_19.i)
+				if (*(real *)((byte *)local_1 + 0xb8) > local_19.i * local_19.i + local_19.j * local_19.j + local_19.k * local_19.k)
 					local_1->unknownac = false;
 			}
 			local_3 = !local_1->unknownac && !*((byte *)local_1 + 0xd0);
