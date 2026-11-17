@@ -1615,6 +1615,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // capacity admission, long/dword/const-long/const-dword: 32/32/32/32/32/32/32/32.
 // NOT kept: no handle-before-scaling, departure-selector or request/slot-home recovery;
 // original observations, publication, requests and complete body restored.
+// P587: Eight independent original iterator-workspace identities with all original
+// receiver names and publication scopes: eight 32 at native 846-byte extent.
+// NOT kept: no handle-before-scaling or leave/request/slot-home repair; full body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

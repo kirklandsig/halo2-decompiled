@@ -2035,6 +2035,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // reset as `state == 2 ? 1 : 4` 737 [515]; the completion's variant type read once into a local ahead of the record
 // loop (retail keeps it in a stack slot at +0x30) 702 [502]. Retail sets `failed` (the +0x13 byte) in both incomplete
 // arms and counts `received` per property pass. All restored; the slot test's cmovne still needs the SSE flag.
+// P587: Existing slot-converter direct result, empty/occupied early exits, complete
+// occupied/empty branches, occupied/empty conditionals and named pointer presence:
+// 782/748/748/748/748/782/782/782. NOT kept: all regress; original converter and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -1034,6 +1034,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // window->oldest), the loop bound re-read as m_message_window.newest instead of the newest local, and an oldest
 // local in the shared sequence_window_index helper. Expanding an existing accessor is never kept; the helper's
 // local alone gives 90 (fast).
+// P587: Existing shared head-selector empty/nonempty early exits, complete result branches,
+// named empty/occupied predicates and head-first override/conditional: 60/60/60/60/60/60/74/60.
+// NOT kept: no native induction repair; nonempty/override forms also regress shared users.
+// Original head/index helpers and complete executable body restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

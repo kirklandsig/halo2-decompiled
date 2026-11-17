@@ -3167,6 +3167,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // [esp+8] and a byte store into +0x3aa) where this build's is the long of 0x1d5120's declaration, and retail
 // passes the settling count in EAX with six stack arguments, so the call setup follows 0x1d5120's count-first
 // order, whose definition lives in another file.
+// P587: Fixed original biped/tag/component pointer bindings in seven subsets,
+// then all with the native body producer immutable: eight 63 at 245 bytes.
+// NOT kept: no EBP/count/body or byte-mask repair; original full body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
