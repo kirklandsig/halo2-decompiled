@@ -12427,8 +12427,8 @@ va,size,owner,style,evidence,name,object,calls,source,status
 003062e0,283,third:havok,speed,a16 pad ebp,,,00305d40 00305f60,src/unknown_305f60.cpp,matched
 00306400,383,third:havok,speed,a16 pad,,,,src/unknown_306400.cpp,todo
 00306580,1551,third:havok,speed,a16 pad ebp,,,00305900 00305940 00305990 00305b30,src/unknown_306400.cpp,todo
-00306b90,353,third:havok,speed,a16 pad ebp,,,,src/unknown_306b90.cpp,todo
-00306d00,363,third:havok,speed,a16 pad ebp,,,,src/unknown_306b90.cpp,todo
+00306b90,353,third:havok,speed,a16 pad ebp,,,,src/unknown_306b90.cpp,matched
+00306d00,363,third:havok,speed,a16 pad ebp,,,,src/unknown_306b90.cpp,matched
 00306e70,268,third:havok,speed,a16 pad ebp,,,,src/unknown_306e70.cpp,matched
 00306f80,873,third:havok,speed,a16 pad ebp,,,,src/unknown_306f80.cpp,todo
 003072f0,573,third:havok,speed,a16 pad ebp,,,002d91d0 00305bf0 00305ca0 00305d40 00305e10 00305eb0 00306f80 00308180,src/unknown_3072f0.cpp,todo
@@ -12823,7 +12823,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 003171a0,194,third:havok,unknown,a16,,,,src/unknown_3171a0.cpp,matched
 00317270,16,third:havok,speed,a16 pad,,,,src/unknown_317280.cpp,matched
 00317280,356,third:havok,speed,a16 pad,,,,src/unknown_317280.cpp,matched
-003173f0,487,third:havok,speed,a16 pad,,,0030d9a0 0030da30 003728c0 00372b50,src/unknown_3173f0.cpp,todo
+003173f0,487,third:havok,speed,a16 pad,,,0030d9a0 0030da30 003728c0 00372b50,src/unknown_3173f0.cpp,matched
 003175e0,875,third:havok,speed,a16 pad,,,002d9160 0030d870 0030d900 003173f0,src/unknown_3173f0.cpp,matched
 00317950,679,third:havok,speed,a16 pad,,,003163c0 00316460 00317060 00317100,src/unknown_3163c0.cpp,matched
 00317c00,303,third:havok,speed,a16 pad ebp,,,00317060 00317100,src/unknown_317c00.cpp,matched
