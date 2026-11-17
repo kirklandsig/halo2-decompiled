@@ -432,6 +432,10 @@ static inline void quaternion_transform_vector(
 // with the construction 205 (identical listing); plain halves in that block 267 (1297 B, the plain-halves count).
 // Quaternion construction/member transform/matrix basis subobjects, individually and together:
 // 205/205/205/205/205/205/205. All three with the shared dot clamp scored 299.
+// P598: Half-angle initializer 205, with cosine assigned on all clamp paths 299.
+// Selected identity quaternion pointer with assigned/initialized halves 337/337.
+// Identity pointer before shared quadratic term 289/289, also sharing doubled w 274/274,
+// with assigned/initialized halves. The frame still needs separate quaternion and cross spills.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

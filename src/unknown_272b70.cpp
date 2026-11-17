@@ -1629,6 +1629,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // branch target. With the unit in a local before or after the type store it is 41/44 and the append order returns.
 // Not kept: no match, and Kirk undoes a written-out helper. Also 32 each: 0x1d + (load ? 1 : 0), (load != 0) + 0x1d,
 // 0x1d + !!load, a forced-inline leave wrapper (same bytes as the plain call).
+// Read the stored row identity for the busy query, as indexed fields or a row reference.
+// Original/branch-local walking slot/branch-local load request/both scopes:
+// 32/199/190/190 and 150/213/207/207. NOT kept: the indexed form ties with the original
+// scopes, and every other form regresses. Handle-before-scaling and request register placement remain.
 // Published handle for busy query, indexed/row reference/row pointer 32/150/150;
 // explicit busy outcomes 32/150/150; nested admission indexed/reference 32/150.
 // NOT kept: ties or regressions. Iterator-handle acquisition, leave selector
@@ -2994,6 +2998,10 @@ struct s_scenario_scripting_view
 // P590: Original packed incoming parameter lexical priorities against native
 // local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
 // or guarded-data recovery; original input name and complete body restored.
+// Gate the scripting-data read on the packed sign, as nested admission or early exit.
+// Short/long selector with the original or search-owned counter: 96/98/98/101 in
+// each form. NOT kept: delayed data and the actor in EBP do not recover retail's
+// short comparison or counter and decoded-selector homes. All eight remain 367 bytes.
 // Round 611: guarded short-to-long selector with nested admission, negative exit,
 // original packed high word or narrow-selector commit 96/96/77/96; with the typed
 // candidate record 95/95/90/95. NOT kept: keeping the original high word broke

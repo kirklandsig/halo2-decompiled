@@ -707,6 +707,10 @@ void __stdcall function_1160c0(real dt)
 // in its own `{}` block; the segment through a forceinline accessor. Diagnostic dead volatile loads (reverted at
 // once) before the node, after the node, after the segment and before the velocity rows: none moves the segments
 // base out of EDI, so that base is not a scratch-rotation step.
+// P595: The selected segment still needs EDX and the scalar/axis and previous/offset homes. for with
+// refreshed count, original selector/branch index/terminal decrement/index plus base 171/171/175/171,
+// while with refreshed count, same four selectors 171/171/175/171. NOT kept: the refresh and selection
+// forms leave the segment register and stack allocation unresolved.
 // m3 lane 10 r115 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 171; body unchanged). Reading
 // from retail's operand orders: VC 7.1 puts the younger of two fields first in each float product, and here retail has
 // every axis component ahead of every offset component, the reciprocal ahead of axis i but behind axis j and k, the

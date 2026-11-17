@@ -1830,6 +1830,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Requested tuple from the iterator and resolved keys rebound for output and request 1016.
 // NOT kept: late assignments preserve the same homes; the iterator-tuple form shrinks the frame
 // to 0x28 and lengthens the body.
+// Function-scope mode/class/mode-class/type/mode-type/class-type with guarded defaults:
+// 828/828/828/828/828/828. Mode alone or all three defaulted after iterator setup: 828/826.
+// NOT kept: two points fall below the keep threshold. The early class/NONE registers and
+// the result and candidate homes still differ at the original frame and length.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

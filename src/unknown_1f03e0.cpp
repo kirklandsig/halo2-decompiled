@@ -1522,6 +1522,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // all-arm vertical store with earlier disabled vertical value 547;
 // direct-first shared store with vector sum 622;
 // Original body restored.
+// P599: Damping ECX/EDX, gravity-spill order and the reversed raw/bounded homes remain.
+// planar selected pointer by branch 321.
+// planar selected pointer by conditional 572.
+// planar selected whole value 536.
+// planar component selection 586.
+// spatial selected pointer by branch 586.
+// spatial selected pointer by conditional 576.
+// spatial selected whole value 610.
+// spatial component selection 491.
+// NOT kept: All eight selection forms raised the score. Both original workspaces and fallback copies are restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

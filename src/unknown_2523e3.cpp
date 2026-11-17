@@ -59,6 +59,11 @@ void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 // initialization moves the first difference to the controller stack slot at +0x2a (236). Placement with
 // appearance memcpy 243, or 237 with the controller initialized after the array. The latter emits a
 // memcpy call where retail uses four movsd instructions.
+// Direct placement construction with the sign-in bit from the global slot 226,
+// live from the global slot 226, separate live slot view 230, connected state
+// updated to sign-in 247, shared admission test 245, false arm first 204,
+// live assigned first on admission 203, and live under its final sign-in guard 230.
+// NOT kept: the iterator prefix returns, but the flag-read block and score regress.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {

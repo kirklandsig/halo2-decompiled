@@ -344,6 +344,20 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // scoped cross pairs 362, shared sine-axis scaler 357, scaler with scoped pairs 357,
 // column dot products 461, and named signed pairs 362.
 // NOT kept: the diagonal form ties, and the other forms regress or change the frame or length.
+// P598: Axis scalars captured at each square/before all squares 369/376. By-value axis
+// with original/named sine products 380/383. Scalar captures with named sine products
+// 400/400, with named diagonal complements 369/376. The 0x90 frame and the square
+// and sine-product register lifetimes still need to agree in one form.
+// Round 601: each axis scalar becomes its sine product immediately after its square 363; capture and square
+// each axis, then reuse all three axis scalars for their sine products 377; capture all axes before their
+// squares, then reuse the three scalar owners for the sine products 391; read each axis into its square's
+// scalar and square that value in place 334; read each independent sine coefficient into its own scalar and
+// multiply it in place 388; build each cross coefficient as two successive multiplies of its own complement
+// accumulator 344; give the three diagonal complements their own multiply stage before summing 334; reuse the
+// three axis scalars for the sine products and compute the cross coefficients with independent accumulators
+// 375. NOT kept: the destructively scaled axis captures either enlarge the frame or leave the opening register
+// assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
+// caller held.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -6337,6 +6351,16 @@ bool function_13630();
 // object register: 20 -> 18 aligned differences); `if (g_4c19ac > 0) f(false, true); else f(true, true);` (421,
 // tail duplicated); `bool last = function_3ba90(...) != 0` (352). BLOCKED-BY 0x44370 (pass flags, dead loads),
 // 0x14b60 (a stub), 0x3ba90 (returns long).
+// P599: Frame 0xc agrees. Cleanup displacement, clear-call transport and selected pass gates still differ.
+// sole cleanup label 269.
+// nested interruption guards 269.
+// admission assigned by branch 414.
+// selected mode arm first 269.
+// inclusive mode range 381.
+// non-2 result at entry 435.
+// non-2 result before pass selection 432.
+// non-2 result at first world phase 292.
+// NOT kept: The cleanup label, nested guards and selected arm first tied. Other forms raised the score. Original admission and pass structure restored.
 // @retail 0x2bcd0
 void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects, bool finish,
     long context_mode, long filter_mode, real transition)
@@ -6628,7 +6652,8 @@ PRIVATE __forceinline real absolute_32350(real value)
 //   exits at entry and reads it back from memory, so it has five epilogue copies where this build folds the exits
 //   together; retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm (a ja/jbe
 //   diamond) where this build selects with a move; 0x4a1e0 takes its three arguments in eax/ecx/edx in retail.
-// score 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
+// score 437 (was 445): frame 0xb34 versus 0xb40, and the false result and second query still use different homes.
+// Earlier 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
 // late enable); the notes below were written at 491.
 // Earlier 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
 // non-success exit; the flag 3d7f0 writes is the byte at [esp+0x13]), so a special object returns false; the draft
@@ -6660,6 +6685,18 @@ PRIVATE __forceinline real absolute_32350(real value)
 // both come from 0x44370 inlined there with its mode table folded (retail's table at 0x43fa1c is in .rdata;
 // ours, g_render_modes_storage, is a non-const global; making it const changes nothing here and 0x44370 still stays out of
 // line, 842 for 0x423c0 with every pass calling it), BLOCKED-BY 0x44370.
+// P599: The shape initializer clears 0x7c bytes. The local still reserves 0x74.
+// 0x7c shape extent 445.
+// eligibility query scope 445.
+// object-flag query scope 445.
+// depth calculation scope 445.
+// eligibility and object-flag scopes 445.
+// eligibility and depth scopes 445.
+// object-flag and depth scopes 445.
+// single return with completion stores 514.
+// shared box center displacement 437.
+// NOT kept: the 0x7c shape reaches frame 0xb3c and ties 445. The scopes tie and one return regresses.
+// Kept: one displacement used for all three box center products, 437 in the ordinary check.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {
@@ -6717,9 +6754,10 @@ bool __stdcall function_32350(long index, real input_alpha)
             box.radius.k = *(real *)(shape + 0x5c) * 0.5f;
             point3f center;
             point3f const &second_point = *(point3f *)(g_47fd18 + 0xc);
-            center.x = second_point.x + box.matrix.forward.i * (0.0f - box.radius.i);
-            center.y = second_point.y + box.matrix.forward.j * (0.0f - box.radius.i);
-            center.z = second_point.z + box.matrix.forward.k * (0.0f - box.radius.i);
+            real displacement = 0.0f - box.radius.i;
+            center.x = second_point.x + box.matrix.forward.i * displacement;
+            center.y = second_point.y + box.matrix.forward.j * displacement;
+            center.z = second_point.z + box.matrix.forward.k * displacement;
             box.matrix.position.x = *(real *)(g_47fd18) - center.x + second_point.x;
             box.matrix.position.y = *(real *)(g_47fd18 + 4) - center.y + second_point.y;
             box.matrix.position.z = *(real *)(g_47fd18 + 8) - center.z + second_point.z;

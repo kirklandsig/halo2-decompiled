@@ -2399,6 +2399,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the range read through an s_short_bounds member at +2 246 (frame 0x12c, retail's `lea ebx, [..+2]`).
 // MiniMax I (11-17): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 and the
 // native request, range and pitch homes still sit at other offsets.
+// P595: The 0x11c frame, playback/NONE allocation and range/ring homes remain. shared long/dword/word
+// datum ordinal 479/479/470, same three with one latch pool read 380/380/459, branched latch start 480,
+// branched start with separate next-slot conversion 480. Reduced control 479, full baseline 305. NOT
+// kept: the strongest preview regresses to 418 in the plain check and the native frame remains
+// unresolved.
 // score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305 plain, 479 on the reduced image): the frame is
 // still 0x11c against retail's 0x128 and the native request, range and pitch homes still sit at other offsets; the second
 // pitch-range loop still hoists the datum index and the track index into EBX/EBP (one use each) and keeps &sounds[i] in EDI

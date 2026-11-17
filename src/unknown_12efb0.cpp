@@ -140,6 +140,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // MiniMax S (11-16): no new form, no lower score (607): the palette slot is still sign-extended and read as a word where retail reads the byte unsigned at each use, and the 0x130f60 result still stays in EAX where retail moves it to EDX and keeps NONE in EAX; the native byte palette measures 611 and the signed short 616 in this build, and that register home is set by the clamp in the three-scalar helper in this file, whose other callers keep their own match.
 // Earlier at 607: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// Earlier score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
 // sign extension and the helper differences in the notes below are unchanged. Body unchanged.
 // MiniMax H (11-12): no new form, no lower score (607); the palette slot is still sign-extended and compared 16-bit where retail compares the byte with -1.
@@ -678,6 +679,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // (register-masked differing lines 662 against the control's 552, so the length is a coincidence). Body unchanged.
 // Typed cluster-table stride with the encoded byte in short, char, long or at each use scored
 // 607/700/706/666. The same forms reading the palette-owner member scored 607/700/706/667.
+// Typed palette stride, direct typed result arms, table receiver, previous-ordinal snapshot,
+// conditional result with snapshot, missing-first arm, early signed byte with snapshot,
+// and early byte with promoted index: 607/607/607/606/606/607/699/749.
+// NOT kept: the best gain is one point. The provider result and NONE still occupy different
+// registers, and lookup failures still bypass the record test.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

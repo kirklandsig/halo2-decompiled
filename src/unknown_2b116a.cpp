@@ -4492,6 +4492,11 @@ bool __stdcall function_2b278e(long controller_index)
 // address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
 // bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
 // index rather than re-reading it for the dialogs.
+// Double-pointer selection view 199; reference to the current controller pointer
+// 199; per-dialog short mask 195 (Boolean membership 197); membership tested
+// before identity type 201, in the condition 201, or held as nonmember 191;
+// per-dialog controller index 199. NOT kept: the original controller reference
+// and post-call index reloads are still missing.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
