@@ -5134,6 +5134,10 @@ void __stdcall function_cc810(long vehicle_index)
 // radicand 173; conditional double radicand 169; rounded double root carrier 173.
 // NOT kept: conditional root gains only two at 708 bytes and retains frame 8;
 // the shared float radicand removes the frame but grows to 716 bytes.
+// F408: Discriminant subtraction update 162; acceleration product update 162; both updates 162;
+// paired numerator/divisor phase 175; pre-root first numerator 175; quadratic arm first 170;
+// stopping-position addition update 162; quadratic first with discriminant update 170.
+// NOT kept: ties or regressions. The x87 discriminant and extra eight-byte frame remain.
 // @retail 0xc7300
 void __stdcall function_c7300(real distance, real velocity, real speed_limit, real acceleration, s_unit_motion *motion)
 {

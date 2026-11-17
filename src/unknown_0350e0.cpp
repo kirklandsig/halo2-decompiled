@@ -3068,6 +3068,10 @@ real magnitude3d(vector3f const *v);
 // the sine 178 (1028 B; without 0x1ecf50 in the fast image the helper stays a call, 388 at 820 B). Retail's rotation
 // writes each component's partial sums to +8 and the result into first's slot, sine at +0x10 and the cosine over the
 // angle at +0xc.
+// F408: Two-direction magnitude loop 294; magnitude and reciprocal loop 292;
+// original magnitude with scale/point-setting loops 190/190; separate magnitude and
+// normalization loops 297/296; fused magnitude and normalization with the scale helper
+// or component products 349/353. NOT kept: all regress. Raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4065,6 +4069,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
 // copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
 // view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
+// F408: Velocity setter 513; moved-point setter 561; both 561. Signed screen displacement with
+// the existing point-difference helper 498; in place 500; in place with typed offset 500;
+// signed projection result 530; signed result in place with typed offset 530.
+// NOT kept: all regress or move length away from retail. The velocity and projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5022,6 +5030,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
 // before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
 // the keep bar, so the body stands.
+// F408: In-place offset in destination, shared scratch, initialized array, and scoped points:
+// 385/698/388/698. With the four-channel color: 375/700/383/696.
+// NOT kept: all regress, including native-length forms. Frame and corner scalar homes remain.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
