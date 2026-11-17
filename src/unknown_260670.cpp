@@ -16,7 +16,7 @@ bool function_260160(long actor_index, s_prop_search *search, s_261d20_entry *en
 #include "props.h"
 #include <string.h>
 typedef bool (__stdcall *t_reference_compare)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_reference_compare compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_reference_compare compare, const void *context);
 bool __stdcall function_2600e0(long a, long b, void *unused);
 void __stdcall function_25f7b0(long actor_index, s_type_967e20 *context, s_type_b36ac5 *position);
 void function_270590(s_path_source *source, s_type_c3b527 const *point, long node_index);
@@ -349,7 +349,7 @@ s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *
 			sorted_indices[i] = i;
 		g_51ec9c = count;
 		g_51eca0 = positions;
-		sort_4byte(sorted_indices, count, &sort_scratch, (t_reference_compare)function_2600e0, NULL);
+		sort_4byte(&sort_scratch, sorted_indices, count, (t_reference_compare)function_2600e0, NULL);
 		context->unknown680 = 0.0f;
 		bool possible = true;
 		for (long evaluator = 0; g_44adf0[evaluator].proc && possible; evaluator++)
