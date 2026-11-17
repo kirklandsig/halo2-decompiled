@@ -789,6 +789,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // arms swapped or nested; the scale through a named root. Worse: explicit correction statements in every form and order (648
 // combinations, the parking then changes too), the limit ahead of the deltas, the correction straight into the output (x87).
 // Body unchanged.
+// The i-first velocity spills and correction products still differ. Residuals paired with squares after the tick-scale
+// helper, indexed field 86, indexed local 77, named squares 32, named residuals and squares 32. Tick scaling fused
+// with those four forms 84, 77, 58, 58. The two 32 forms still spill j first. Body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

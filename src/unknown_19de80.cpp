@@ -715,6 +715,9 @@ static inline bool teams_enabled_19e1c0()
 // result with the teams at each use and a named player pointer in the spawn-time and lives cases 667 (1196 B), with `best_score
 // <= function_1587f0(team)` too 667; the volatile result with those three together 387 (1443 B, retail's length; 3 points and a
 // one-use pointer, not kept).
+// The entry token preload and separate length/clamp blocks still differ. Shared final copy only, with branch-local
+// length and clamp, for player names, team names, all names, or names plus fallback: existing result 422, 478, 527,
+// 539. Ordinary result 605, 569, 550, 568. Ordinary results reach frame 0x204 and shorten the body. Body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

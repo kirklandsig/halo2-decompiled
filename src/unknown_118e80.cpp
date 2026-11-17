@@ -1348,6 +1348,9 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // and the byte store (0x1189d4) and takes the object into EAX; ours loads the object first, and the rest rotates.
 // Tried there: the copy through a named pointer / memcpy / source pointer 40/40/40, per-member real stores 47/101,
 // refetch before the 0x119bc0 call 40, before the squares 59. A match needs 0x1c4b00's bool formal (14 declarations).
+// The velocity preload and force byte home still differ. Shared signed slot index 43, low-word slot 283,
+// signed header byte offset 43, unsigned header byte offset 283. The same four with a separate Boolean force
+// result: 90, 287, 90, 287. Narrowed slots move the first difference into the opening lookup. Body restored.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

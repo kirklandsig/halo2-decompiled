@@ -1358,7 +1358,7 @@ struct s_133f70;
 // MiniMax S (11-16): no new form, no lower score (93): the frame 0x33f8 agrees with retail, but the distance staging, the
 // nullable-entry and cache adds and the result homes still differ, and the tail that 0x23690 owns is in another file:
 // BLOCKED-BY 0x23690; the permuter (full-image builds, 900 s, 14 tries) found no variant below 93.
-// score 93 (was 93; 175 before round 82): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// score 93 (was 93): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // MiniMax E (11-10, run 73): no new form, no lower score (93 on the full image, 355 on the reduced one); every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, success stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end, and the tail stays blocked by 0x23690 in another file.
@@ -1572,8 +1572,13 @@ struct s_133f70;
 // the 0x4ed284 test through a one-caller inline entry getter 93 (it folds: no dead lea); that getter with `success` first 91.
 // Retail's 0x3e380-like allocate-and-fill sequence (count, bytes, render_memory_allocate, 0x137800) is one inlined helper in
 // retail; the existing 0x3e380 differs (NONE object, extra bytes), so no existing helper fits.
-// @retail 0x4b5d0
+// Earlier context (175 before round 82).
 // MiniMax C (11-17): no new form, no lower score (93 plain; the reduced image's fast score is 344 and is only a screen): every difference sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the signed-char and inline-getter forms of the earlier rounds all raise the positional count, so the body stands.
+// The distance load and view-entry address still differ. Separate admitted count through a cached user 351,
+// an optional view index 358, explicit selected outcomes 353, or a conditional count within the valid view 365.
+// Those forms with a signed-byte previous level: 356, 150, 358, 365. The 150 form keeps the original first
+// difference and takes more differences through the view and cache blocks. Body restored.
+// @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
 {
