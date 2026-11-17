@@ -501,6 +501,12 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // count++`) helpers with the room flag tested for the copy and again for the break 51; a bool append over a count reference and
 // the entry array with memcpy into `entries[count++]` 32 (setne CL, count EAX copied to ECX for the shift), the same with `long
 // index = count++` 51, with an aggregate assignment 57 (656 bytes). Every bool form keeps list EDX / count EAX / bool CL.
+// Round 189 (m3 lane 5, fast with 0x216400/0x216d70/0x216e50): a bool add helper in the shape of the header's location
+// iterator get (false preset, `count < 4096`, aggregate copy into `entries[count++]`) 62 (651 bytes); a helper returning
+// the reserved index or NONE, the caller breaking on NONE then copying, 47 (662 bytes: retail's `lea edx, [eax + 1]`
+// store, but the NONE test stays, count EAX, no setne), the copy in the found arm and the break in the else 47 (same
+// code); a bool reserve helper with a count local, `result = count != 4096` and the index handed out through a pointer
+// 51 (setne CL, list EDX, count EAX); the same reading the field twice with `*index = count++` 51. Pointer helper restored.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

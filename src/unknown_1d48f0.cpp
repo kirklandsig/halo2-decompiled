@@ -85,6 +85,7 @@ const dword g_455978[81] = {
 // MiniMax A (11-04): no new form, no lower score; the optional-state homes sit four bytes low (retail +0x30/+0x40, ours
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.
 // MiniMax E (11-11): no new form, no lower score (298): the aligned frame agrees; the optional bounds/exclusion homes and the selective helper expansion remain, and the helper 0x11bed0 is defined in its own file: BLOCKED-BY 0x11bed0.
+// MiniMax S (11-16): no new form, no lower score (298); retail still inlines 0x279740 at the first release and calls 0x11bed0 out of line, and both are set in files this lane may not edit.
 // score 298 (was 298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
 // Lane 18 r37 (fast): result flag declared at function entry 400; sample count declared before the FPU
 // setup 529; contact presence declared inside the sample loop 353 (2121 B); result flag declared after the

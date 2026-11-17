@@ -925,6 +925,20 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // of `origin` 235 (all the same code), `second` declared before `first` 237; on main `second` before `first` 245 (1247 B).
 // Retail's homes from its listing: hit +0x1c..+0x24 (set by movss, published by dword copy), origin.x +0x28 with +0x2c/+0x30
 // untouched, origin.y/z in +4/+8, and 0x182b90's outputs in +8 (friction) and second's +0x14. Original body restored.
+// M3 lane 1 r113 (fast with 0x1829b0/0x1821d0/0x182800/0x183670, all MATCH; control 238, aligned with offsets masked 148, registers
+// too 94): first->next and its shape named before the kind-9 test (`next`, `next_shape`) 307 (1245 B); the second shape named for the
+// material guard inside a `component != NONE && kind != 24` block 318 (1245 B); the plane declared at the top of the kind-24 block 238
+// (same code); the distance written `radius + distance` 238 (same code); `short material` declared with valid/index at the top 230
+// (frame 0x44 as retail, first difference +0x1a: first/second homes +8/+0xc against retail's +4/+0x14; a declaration moved by score,
+// match-only). A scan of retail finds the `mov ecx, 1; cmp ecx, edx; jg; mov ecx, 0x10` clamp only here (both sites); matched
+// 0x182b90 compiles the same PIN guard as ours (`cmp eax, 1; jge`, one load), so retail's three data loads come from another shape.
+// M3 lane 12 r132 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH; control 238): the root's type in a named
+// local before the test 238 (same code: still compared in memory, where retail loads it into ECX); the next node and its shape
+// in locals declared ahead of nested tests 307 (1245 B); the origin as a const reference to the transform's position 381 (1208
+// B); the hit as a const reference to the contact position 335 (1243 B); the contact normal published by aggregate assignment
+// 271 (1243 B). Reading: in the key adjustment retail clamps with the constants in ECX and still compares ECX with EDX after
+// `mov ecx, edx` on the unclamped path (the self-compare is not folded), so the compare's second operand was a separate read
+// of the data word when the clamp was folded. Original body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -132,13 +132,16 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 {
 	if (flags == 0x77 && (element->owner & 1) == 0)
 	{
-		for (int r = 0; r < rays->count; r++)
+		if (0 < rays->count)
 		{
-			float &slot = ((float *)left.data)[r];
-			float const distance = collector->add_box(element->owner, r);
-			float const kept = slot;
-			((float *)left.data)[r] = kept < distance ? kept : distance;
-			collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
+			for (int r = 0; r < rays->count; r++)
+			{
+				float &slot = ((float *)left.data)[r];
+				float const distance = collector->add_box(element->owner, r);
+				float const kept = slot;
+				((float *)left.data)[r] = kept < distance ? kept : distance;
+				collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
+			}
 		}
 	}
 }
@@ -147,7 +150,12 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
-// score 539 (was 539): frame 0xe8 agrees; the first array home and later
+// score 436 (was 530): the ray loop is guarded by its own entry test
+// (`if (0 < rays->count)`, no code of its own; it gives retail's register roles
+// from the start). Extent now agrees; stack homes remain.
+// Before, 530 (was 539): the start positions read the ray's axes (or the sweep's)
+// through one constant pointer, each axis's size before its data.
+// Before, 539 (was 539): frame 0xe8 agrees; the first array home and later
 // pointer/array homes differ. Vector-word start values 539; signed words
 // 539; axis steps in body 541; const endpoints 539; pointer-copy loop 539;
 // time loop 538 (NOT kept: gain 1); widening loop 664; scalar arrays 539.
@@ -174,13 +182,13 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 	clear_blocks_2e1090(flags.data, count);
 	endpoint_2e0f80 *start_position[3];
 	{
-		endpoints_2e0f80 const *axis = rays->axes ? rays->axes : axes;
+		endpoints_2e0f80 const *const from = rays->axes ? rays->axes : axes;
 		char *const bits = flags.data;
 		int bit = 0x11;
-		for (int i = 0; i < 3; i++, axis++, bit <<= 1)
+		for (int i = 0; i < 3; i++, bit <<= 1)
 		{
-			endpoint_2e0f80 *data = axis->data;
-			long const size = axis->size;
+			long const size = from[i].size;
+			endpoint_2e0f80 *data = from[i].data;
 			endpoint_2e0f80 const *const middle = data + (size >> 1);
 			unsigned long const point = start_words[i];
 			endpoint_2e0f80 *p;
@@ -364,10 +372,25 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 		}
 	}
 }
+// exchanges two values
+template <class T>
+__forceinline void exchange_2e4660(T &a, T &b)
+{
+	T const kept = a;
+	a = b;
+	b = kept;
+}
+
 // each box the moving box overlaps at the start, then each box whose three
 // intervals it enters on the way, is passed to the collector, until the
 // collector's distance left is passed
-// score 511 (was 511): frame 0x118 agrees; saved receiver and vector
+// score 463 (was 511): the three swaps of the negative-direction branch go
+// through a by-reference exchange helper, which makes the arrays address-taken as
+// retail's are (the low position is decremented in memory, the scan keeps the
+// lower word in ebx), and the word arrays are no longer aligned. Left: the word
+// arrays sit 4 and 8 bytes off retail's slots, the axes pointer goes through
+// memory, and the high/low axis homes are swapped.
+// Before, 511 (was 511): frame 0x118 agrees; saved receiver and vector
 // homes differ, followed by scalar homes and axis registers. Four-entry
 // scan loop 682; outer axis cursor 511; shared input vectors 513; minimum
 // expression 511; displacement vector type 511; reached-element pointer
@@ -375,8 +398,8 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 // @retail 0x2e4660
 void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *collector)
 {
-	__declspec(align(16)) unsigned long lower_words[4];
-	__declspec(align(16)) unsigned long upper_words[4];
+	unsigned long lower_words[4];
+	unsigned long upper_words[4];
 	__m128 lower = _mm_sub_ps(ray->from, ray->extent);
 	__m128 upper = _mm_add_ps(ray->from, ray->extent);
 	{
@@ -498,15 +521,9 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 			else
 			{
 				step[i] = -(long)sizeof(endpoint_2e0f80);
-				endpoint_2e0f80 *const position = low_position[i];
-				low_position[i] = high_position[i];
-				high_position[i] = position;
-				float const corner = lower.m128_f32[i];
-				lower.m128_f32[i] = upper.m128_f32[i];
-				upper.m128_f32[i] = corner;
-				unsigned long const words = lower_words[i];
-				lower_words[i] = upper_words[i];
-				upper_words[i] = words;
+				exchange_2e4660(low_position[i], high_position[i]);
+				exchange_2e4660(lower.m128_f32[i], upper.m128_f32[i]);
+				exchange_2e4660(lower_words[i], upper_words[i]);
 				low_position[i]--;
 				high_position[i]--;
 				low_toggle[i] = 1;

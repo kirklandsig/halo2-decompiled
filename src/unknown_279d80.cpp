@@ -2028,6 +2028,12 @@ void function_27dd10(void)
 // at the walk helper's top 2. Diagnostics: the apply as a member of a type derived from the output, 2
 // (same code); a probe global store at the wrapper's end 2. The pair is in pass 0 only (flags in EBX
 // after the blend asm, count in ECX after the decompressor calls). All restored.
+// Round 174 (m3 lane 8, fast with 0x281b60 and the five matched walk users): the multiply's sign mask as a
+// const local 2; the apply helper as plain inline 2 (still inlined); the pass walk as plain inline 1995 (out
+// of line, every walk user regresses); the node flag test returning its expression 2; the inheritance map
+// test through the existing node flag test 2 (0x289580 78). Diagnostic: the kind-2 count clamp removed 2,
+// so the clamp's second definition of the count is not the tie. Retail has no float literal here (only
+// the blend's sign constant); matched 0x285750 references its 1.0f twice. All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2159,6 +2165,9 @@ void function_2818e0(void)
 // Round 89 (m3 lane 2, fast, the shared-helper trials listed above 0x27dff0): templates 2048; real-typed
 // sign constant 2; cursor declared ahead of the in-place flag 2; short inheritance map entry 367; the
 // existing compute_orientations 4; frame-state saves at the walk helper's top 2. All restored.
+// Round 174 (m3 lane 8, the shared-helper trials listed above 0x27dff0): const sign mask local 2; plain
+// inline apply 2; plain inline walk 1929 (out of line); flag test returning its expression 2; map test
+// through the node flag test 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

@@ -955,6 +955,12 @@ void function_1d1540(s_havok_component *component);
 // ECX, component in EBX) and this build takes the transform in EAX and pushes the index and the component, so the
 // frame is 0x84 against retail's 0x88 and the entry copy is a rep movsd where retail uses four movaps; the copy
 // through hkTransform::set is 90 at 231 bytes, so both differences have to be fixed together.
+// MiniMax D (11-16): no new form, no lower score (65): with the copy through hkTransform::set (four movaps, as retail
+// has it) the index does travel in ECX as retail has it - the block copy's clobbered ECX was what kept it on the stack -
+// but the component still arrives on the stack where retail keeps it in EBX, the frame stays 0x84 against retail's 0x88
+// and the length grows to 231 bytes (90); the component's EBX home is still decided by LTCG over the 0x1d0cf0 ->
+// 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other files: BLOCKED-BY 0x278f00 and the 0xb8540/0xb7430
+// drafts.
 // score 65 (was 65): MiniMax R (11-15): no new form, no lower score; retail takes the transform in EAX, the index
 // in ECX and the component in EBX (frame 0x5c) where this build pushes the index and the component (frame 0x50), and
 // LTCG picks that split across the whole 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 cycle, whose bodies are in other
@@ -1185,6 +1191,11 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // MiniMax D (11-16): no new form, no lower score (38): the body is retail's twelve movss stores and one movaps;
 // what differs is the frame (0x50 against retail's 0x5c) and the component, which this build pushes where retail
 // hands it over in EBX - the same convention 0x1d0cf0 does not take here.
+// MiniMax D (11-16): no new form, no lower score (38): retail's own arguments here are (the matrix in EAX, the index
+// in ECX and the component on the stack, taken into EBX after `push ebx`), so this function's body is retail's
+// instruction for instruction and its frame (0x5c against this build's 0x50) and its store offsets follow from the
+// one thing it does not match - the component, which this build pushes where retail hands it over in EBX:
+// BLOCKED-BY 0x1d0cf0's convention.
 // score 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
 // instruction, and the frame (0x50 against retail's 0x5c) and the component's travel (on the stack where retail keeps
 // it in EBX) follow 0x1d0cf0's convention, which is set across the call cycle in other files: BLOCKED-BY 0x1d0cf0.
@@ -2429,6 +2440,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // 137, the components in a separate vector 136, the shared scaler with the components read before the branch 91.
 // MiniMax C (11-01): no lower score; the hoisted speed products and the velocity scaled with the mixed order give the same code.
 // MiniMax E (11-11): no new form, no lower score (91): the aligned frame agrees and the contact loop and the normal block are retail's; what is left is the normal's hoisting around the x87 length computation, inside the inlined header helper component_surface_length, whose header is not mine.
+// MiniMax S (11-16): score 91 (was 91): no new form; the aligned frame 0x34 agrees and the contact loop and the
+// normal block are retail's, but the velocity normalisation still scales the j and k components from memory
+// where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them in place, and the i component
+// still ends up in xmm1 where retail keeps it in xmm4; reading the three components into locals ahead of the
+// branch moves the material loop's accumulation order instead (159), so the body stands.
 // score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
@@ -2619,6 +2635,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // original full body, normalizer, property helpers and headers restored.
 // P563: Shared then private magnitude reductions; real/default, real/explicit, double/default, double/explicit at each boundary:
 // 142/169/142/169/400/442/400/442. NOT kept: native early velocity j/k loads and property-zero residence remain; original helper, header and full body restored.
+// P578: Scalar memcpy at contact bound/first and second signed body indices/contact flags/
+// surface ordinal/material word/separate speed-property flags/each array receiver:
+// 91/91/91/91/91/113/91/304. NOT kept: no native early velocity j/k or property-zero equality; original
+// complete body, shared helpers, inputs and all observations restored.
+// P592: Original body/component/output fixed pointer bindings, seven subsets,
+// then complete bindings with fixed speed: eight 91 at 1459/1454. NOT kept: no native
+// early velocity j/k or property-zero recovery; original full body and helpers restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

@@ -961,6 +961,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax E (11-16, second round): no new form tried this round, no lower score (143 plain, 196 on the reduced image):
+// retail's dispatcher takes the message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while
+// the declaration here is a thiscall member with the address, the type and the message, and the only caller
+// (src/unknown_07b330.cpp) passes them in this file's order, so neither the entry registers nor the argument order can be
+// reached from this file.
 // MiniMax I (11-15): no new form, no lower score (143); retail's parameter order is (message type, message, address) and the declaration here is frozen, so the address cannot take the stacked home that retail's convention needs while the case-18 body stays out of line.
 // MiniMax C (11-16): no new form, no lower score (143 plain, 196 on the reduced image): retail's dispatcher takes the
 // message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while the declaration here
@@ -971,7 +976,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // member with the address, the type and the message, and a declaration never changes, so the entry registers
 // cannot be reached from this file - and the only caller (src/unknown_07b330.cpp) passes them in this file's
 // order, so the order cannot be changed here either; case 11 sits in the first switch after case 24.
-// score 143 (was 143; 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
+// score 143 (was 143): native input roles agree; delayed ESI save and terminal-handler expansion remain.
+// Earlier header detail: 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
 // Earlier 143 (was 153).
 // Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
@@ -1502,6 +1508,21 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P564: All three lookup outcomes set by their original tests, bool/byte/short/long
 // then complementary defaults: 196/196/196/196/196/196/196/196 fast (control 196; full 143). NOT kept:
 // no delayed ESI save or outlined terminal case; original complete dispatch and call tuples restored.
+// P578: Per-case connection-link scalar memcpy at cases 5/6/7, seven subsets,
+// then the actual case-4 receiver transfer: 193/193/195/235/236/236/253/196 fast. NOT kept: no exact delayed ESI
+// save or terminal expansion repair; original classifiers, receivers and full body restored.
+// b8I (11-17) walk against retail, fast build on r836: no logic or structure error found; fast 196 (444 B, retail 444),
+// the full-build 143 above is unchanged and no code was edited. Every case body was compared instruction by instruction
+// with 0x938f9..0x93a33: the same callee and the same argument loads in each case; only esi (ours) against edi (retail)
+// as the home of the address differs, which is the convention difference listed above. Case 4 loads this->unknown10
+// (0x93922, [edx+0x10]) and pushes message, address, handler for 0x785d0 (0x93928). Cases 5/6/7 read the link from
+// [edx+4], pass the address in EAX and 0 in ECX to 0x92ef0, and compare with -1 (0x939eb, 0x93a09, 0x93a25). Case 5
+// loads the message into EDX (0x939f0) because 0x94ae0 reads [edx] (0x94b01); case 6 loads nothing before 0x93a0e
+// because 0x94b40 reads the message from EBX (0x94b5f); case 7 pushes it (0x93a2a), 0x94bb0 reading [esp+4] (0x94bc7);
+// case 2 passes only the handler (0x93908) because 0x93fa0 reads [ebx] (0x93fac). Ours matches each of these. The range
+// check is unsigned in both (retail `ja` at 0x938eb), the in-band types 1/15/16/17/19/20/21 and every type above 24
+// do nothing in both, and the late 18 test with the inlined 0x94420 body (retail calls it at 0x939c4) has the same
+// effect, so there is no behaviour difference to report; the remaining difference is the register assignment.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

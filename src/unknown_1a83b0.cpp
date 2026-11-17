@@ -608,6 +608,10 @@ s_1a8a10 g_4453c0[] =
 // j (the copy's j register dies in the forward product), but the point's x then takes XMM3, the forward j load
 // follows the y store and the forward sum is scheduled first; retail has x in XMM4, both facing loads ahead of
 // the y store and the left sum first. All restored.
+// Round 174 (m3 lane 8, fast with 0x1a8c30; control 17): the rotation's negations as unary minus 17 (same code); the
+// two negated values as unary minus 17; the facing copy as a const vector with an initializer 17; the four values
+// stored in index order [0], [1], [2], [3] 18; the negated values read back from the stored [0] and [2] 17. All
+// restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
