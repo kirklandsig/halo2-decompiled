@@ -157,6 +157,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // skeleton or the call, is what pushes the clear's temporary into EDX on this full LTCG build. The floor helper written
 // with the compiler's SSE intrinsics (truncate, convert back, compare not-equal and less-than, mask, subtract) 141
 // (423 B: a `movaps` before the conversion, the constant in a register), so retail's floor is this asm too.
+// M3 lane 10 r114 (fast with 0x143c0, which matched each time): the level steps in three variables (floored, clamped,
+// level) 4 (same code); the floor inside the PIN macro 202 (489 B: the macro evaluates the floor three times); the entry as
+// `state + 0x1320` then `+= index * 0x40` 4; a `long const slot` copy of the scanned index for the entry, the call and the
+// clear 4 (all the same code); the bias zero as an else arm of the flag test 90 (384 B).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

@@ -903,9 +903,11 @@ struct s_sound_driver_streams_view
 /* a permutation of a pitch range (16 bytes) */
 struct s_sound_permutation
 {
-	byte unknown00[0xc];
+	byte unknown00[4];
+	char gain;	/* decibels added to the playing sound's gain */
+	byte unknown05[7];
 	short first_chunk;
-	byte unknown0e[2];
+	short chunk_count;
 };
 
 /* the tables of the sound globals, as the chunk lookups read them */
@@ -2080,12 +2082,15 @@ real function_12aff0(real a, real b, real c, bool flag);
 /* a gain in decibels (real bits) pinned to [-64, 0] */
 static inline long decibels_pin(long decibels)
 {
+	long result;
+
 	if (*(real *)&decibels < -64.0f)
-		return 0xc2800000;
+		result = 0xc2800000;
 	else if (*(real *)&decibels > 0.0f)
-		return 0;
+		result = 0;
 	else
-		return decibels;
+		result = decibels;
+	return result;
 }
 
 /* the ends of a fade in decibels: full, and silence */
@@ -4466,8 +4471,11 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
-// pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
+// score 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
+// permutation-gain byte and the gain bits trade EAX/EDX, the field_c store sits one slot late); the synchronisation byte is
+// widened (`xor edx, edx` ... `and edx, 0x7f`, retail byte ops), and the tail's flag tests, next-chunk test and stream store differ
+// (see r114 below). Earlier: the pitch result and the argument held swapped stack homes and the pitch bounds pair address was
+// formed differently (both fixed in r114). See the b6U walk below.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
 // Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
@@ -4658,6 +4666,23 @@ struct s_128ca0
 // Tried: the in-body inline_depth(0) pair removed 270 (promotion lookup then inlines); a named local for chunk + 1 166.
 // Not kept (score-only, no behaviour change): reading the pitch bounds through &pitch_lower 164 (retail 0x128d2e forms
 // that pair pointer with lea +8); flag6 stored as a byte (retail 0x12908f is `or byte [esi+4], 0x40`, ours stores the word; not tried, a narrowing cast).
+// M3 lane 10 r114 (fast with the file's 76 functions; plain check: all 68 matched still match, the other seven unchanged):
+// kept, 158 -> 130: decibels_pin as a single exit, the form of unknown_2197f0.cpp's copy (the result joined in EAX before one
+// field_c store, as retail; 0x12a810 still matches; reading the bits through an `s_decibels` built from them in the pin gives
+// the same code); each permutation-gain sum as `s_decibels((real)gain) + s_decibels((dword)local_6)` (retail's addss memory
+// operand is the gain bits copied into operator+'s by-value operand); the synchronisation value as a long holding NONE
+// (retail stores DL from the EDX that holds NONE for the compares); the pitch bounds through `short const *pitch_bounds =
+// &local_4->pitch_lower` with a named `lower`, matched 0x126000's form (the head and both stack homes then agree);
+// the permutation's gain (+4) and chunk count (+0xe) named in its type (same code). Steps: the single exit alone 168
+// (1041 B); with s_decibels sums local_6 first 235 (1119 B), gain first 158 (1076 B); NONE in a long 133; the pitch pair 130.
+// Tried on the way: a char synchronisation value 204, on the pitch-pair base 201 (retail's byte ops and DL from NONE, but
+// the scratch registers upstream rotate); the field stored in each arm 218; a byte value with `(byte)NONE` 158 (folded to
+// 0xff); `short next_chunk_index` before the test 141; `flags |= 0x40` for flag6 133 (same code: the word read by the second
+// flag3 test is reused for a word RMW); the gain bits as `*(s_decibels *)&local_6` 130 (same code). Diagnostics, not kept:
+// the second flag3 test as `!local_1->flag3` or `!(flags & 8)` 117 (1052 B, `test al, 8`, further from retail: difflib-aligned
+// 64 against 54 differing instructions); `(short)(chunk_index + 1) != NONE` 126 (a width-only cast, aligned 69); the stream
+// store ahead of the flag6 store 117 (stores out of retail's order): it shows retail's second flag3 test reads a byte and the
+// flag6 store is a byte RMW because nothing reuses the flags word there, so retail's test must not share the word load.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4671,7 +4696,9 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	memset((byte *)&local_3 + 0x34, 0, 0x444);
 	s_sound_playback_parameters *local_4 = &SOUND_GLOBALS_DEFINITIONS->playback_parameters[local_2->playback_index];
 	real local_17 = local_1->location.scale;
-	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_17 + local_1->pitch + (real)local_4->pitch_lower;
+	short const *pitch_bounds = &local_4->pitch_lower;
+	real lower = (real)pitch_bounds[0];
+	real local_5 = ((real)pitch_bounds[1] - lower) * local_17 + local_1->pitch + lower;
 	s_decibels gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + *(s_decibels *)&arg_1);
 	long local_6 = *(long *)&gain_sum;
 	local_6 = function_1251e0(local_2, local_6, local_17);
@@ -4699,7 +4726,7 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	}
 	if (!(bool)((local_1->flags >> 9) & 1))
 	{
-		real local_12 = *(real *)&local_6 + (real)*(signed char *)((byte const *)local_8 + 4);
+		s_decibels local_12 = s_decibels((real)local_8->gain) + s_decibels((dword)local_6);
 		local_3.field_c = decibels_pin(*(long *)&local_12);
 		function_21f8a0(local_0->channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48);
 		function_21f720((s_looping_impulse_parameters *)local_3.field_468);
@@ -4707,7 +4734,7 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 		if (local_1->effect_index != NONE)
 		{
 			s_sound_controller_view *local_13 = (s_sound_controller_view *)((s_record_pool *)g_51ebd8)->data + (local_1->effect_index & 0xffff);
-			byte local_14;
+			long local_14;
 			if (local_13->unknown04 != NONE)
 			{
 				local_14 = local_13->synch_count;
@@ -4715,14 +4742,14 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 				local_13->synch_playback = false;
 			}
 			else
-				local_14 = 0xff;
-			local_1->unknown03 = local_14;
+				local_14 = NONE;
+			local_1->unknown03 = (char)local_14;
 		}
 		local_1->flags |= 0x200;
 	}
 	else if (local_0->permutation)
 	{
-		real local_15 = *(real *)&local_6 + (real)*(signed char *)((byte const *)local_0->permutation + 4);
+		s_decibels local_15 = s_decibels((real)local_0->permutation->gain) + s_decibels((dword)local_6);
 		local_3.field_c = decibels_pin(*(long *)&local_15);
 		function_21fa80(local_0->channel_index, (s_looping_channel_properties *)&local_3, (s_looping_effect_playback *)local_3.field_48, true);
 	}
@@ -4735,7 +4762,7 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 		}
 		if (!TEST_FIELD_BIT(local_1->flag3))
 		{
-			if (local_8 && local_1->chunk_index < *(short *)((byte const *)local_8 + 0xe) - 1 && local_1->chunk_index + 1 != NONE)
+			if (local_8 && local_1->chunk_index < local_8->chunk_count - 1 && local_1->chunk_index + 1 != NONE)
 			{
 				sound_playback_set_chunk(local_0->sound_index, local_1->definition_index, local_1->pitch_range_index, local_1->permutation_index, local_1->chunk_index + 1);
 				function_125e60((s_looping_track_sound *)local_1);
