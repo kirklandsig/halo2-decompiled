@@ -4922,6 +4922,13 @@ long function_184000(long index, long bit);
 // (271 -> 239): retail loads the caller's `part` slot as a whole dword (0x45d88, again at 0x45e2e) and pushes it
 // unextended at 0x45f24 for both calls, where a `long` parameter needs a movsx, and 0x1e280 only uses the low
 // word (0x1e291-0x1e29d); 0x1e280 still matches and has no other caller.
+// MiniMax C (11-17): score 239 (was 239): no lower score; our definition pointer is still allocated in eax where
+// retail uses ecx, so al is live at the null test and retail's `xor al, al` there and its dead `mov cl, 1` /
+// `mov byte [esp+0xf], cl` are missing, which shifts every later instruction; retail also keeps the visibility
+// byte raw in cl where we store a setne result, and keeps the tag record in edx across the table_entry_data call
+// where we keep it in ebx and compute the section after the call. Tried: bool and raw-call forms of
+// function_184000 (316), the visibility byte assigned in both branches (241), the early-return null path (275),
+// the call before the section load (239) and five spellings of the definition load (239).
 // score 239 (was 303): our body is 15 bytes shorter than retail's (982 against 997); retail keeps `visible` in
 // cl and the stack slot (0x45da9, 0x45e32-0x45e36) where we store a setne result, returns cl for a failed
 // visibility test (0x460be) where we return a constant, and keeps the tag record in edx across the
