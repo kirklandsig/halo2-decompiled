@@ -1176,6 +1176,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// score 38 (was 38): The transform setter receives stack arguments where retail uses registers, including EBX for the component.
 // MiniMax A (11-12): no new form, no lower score (38); every difference is still the frame (0x50
 // against retail's 0x5c) and the callee's convention, which hands the component over in ebx where
 // this build pushes it; retail's own arguments here are the matrix in EAX, the index in ECX and the
@@ -1212,10 +1213,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // movaps; every difference is the frame (0x50 against retail's 0x5c) and the callee's convention, which hands the
 // component over in ebx where this build pushes it, and that choice belongs to 0x1d0cf0's own body: BLOCKED-BY
 // 0x1d0cf0.
-// score 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
+// Earlier 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
 // instruction, and the frame (0x50 against retail's 0x5c) and the component's travel (on the stack where retail keeps
 // it in EBX) follow 0x1d0cf0's convention, which is set across the call cycle in other files: BLOCKED-BY 0x1d0cf0.
-// score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
+// Earlier 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
 // 64/61/84; rotation workspace/initialized workspace/initialized transform with workspace 78/106/107;
@@ -1235,6 +1236,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
 // Permuter (25 min on #1044 round 2, about 650 variants): only a volatile transform pointer with a
 // (short) index argument gave 34; not kept (volatile without a match, and the cast narrows the index).
+// Scalar then intrinsic transform aggregates, direct/separate rotation/separate translation/both separate: 51/65/70/114/70/113/112/162.
+// NOT kept: all eight regress. Direct construction omits the retail translation scratch, separate aggregate values move the frame away, and the component call transport remains.
+// Original executable body restored.
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
