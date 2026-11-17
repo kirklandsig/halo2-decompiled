@@ -78,6 +78,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// score 382 (was 382): frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
+// and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
+// separate byte rather than the dead argument slot.
+// point bitmap, endpoint homes and x87 scheduling differ.
 // MiniMax R (11-15): no new form, no lower score (382). The frame agrees (0x64) and so do the marker position, both visited
 // bitmaps, the group record pointer, the candidate point home, the nearest point, the matched record, the pass counter, the
 // direction step, the group loop index, the best distance and the result byte; six homes are permuted. Retail's selected group,
@@ -89,10 +93,6 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // candidate point as a short (456), the three selected indexes declared with the group loop (425), the group and node pointers
 // declared the other way round (401). A permuter run over this body (20 tries in 302 s) found only a one-point variant
 // (381) that adds a volatile cast and one-use temporaries, so it was dropped.
-// score 382 (was 382): frame 0x64 agrees and so do the marker position, the bitmaps and the group record pointer; six selected-index
-// and table homes are permuted, the selected point and endpoint are compared at different widths, and the found flag sits in a
-// separate byte rather than the dead argument slot.
-// point bitmap, endpoint homes and x87 scheduling differ.
 // Earlier 382 (was 382): earlier 382, 391, 390; frame 0x64 and the node-pointer/group-table roles (EBX/EBP) agree; the
 // selected defaults' homes, point bitmap, endpoint homes and x87 scheduling differ.
 // M3 lane 8 r170: 1-7 dead long locals at the top 382 each (fast; no phase effect on the per-call x87 square orders).
@@ -564,6 +564,15 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // memset 385 (393/153); with `short local_2` too 388 (330/145, retail's word compare of the endpoint); with `long local_15` too 487
 // (1559 B). Left on the 388 form: the outer loop's entry jump and the continue path's reload of local_10 (retail reloads it at the
 // latch and keeps the group in EBX), the selected-default homes, the per-site x87 orders.
+// Round 189 (m3 lane 6, fast with 0x29e730, 0x29de20, 0x262b40 and 0x210850; control 382, masked 174): `if (0 <
+// local_10->field_80)` around the group loop 382 (other code: one spill store moves); `if (0 < arg_3->field_b4)` around
+// the record search 420 (1576 B); the pass loop's own test repeated as an `if` around it 410; the point bitmap alone
+// through bit_vector_test/bit_vector_set 385 (1599 B); the success block with `local_32 = true` first 380 (the found
+// flag then takes the dead argument slot and is stored from AL, as retail; a statement order, match-only), the orders
+// flag/local_0/best/local_1/local_2 380, flag/local_2/local_1/local_0/best 380, flag/best/local_2/local_1/local_0 380,
+// flag/local_0/local_1/local_2/best 380 (five different codes) and local_0/flag/local_1/local_2/best 381. Same code: the group
+// bitmap and loop in their own `{}` block. Round 64's recipe rebuilt on this body re-measures 155 (aligned 22); on it
+// the redundant guard around the pass while 482 (1569 B), around the group loop 157, around the record search 158.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
