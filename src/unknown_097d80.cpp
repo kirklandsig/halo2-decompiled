@@ -562,6 +562,10 @@ struct c_aggregate : c_child
 // Callback count reused as dispatch bound and cleanup item progress 142.
 // Callback count reused as dispatch progress and cleanup item progress 88.
 // NOT kept: reuse for cleanup item progress recovered frame 0x8020, but the extra loads and stores grew the body and raised the score. The other reuse forms also regressed.
+// NOT kept: carried dispatch start 120; carried start and end cursor 122; three ends with carried
+// start 118 or indexed predecessor 130; three starts with carried start 122 or indexed successor
+// 105; carried start with block pointer ranges 129, with three ends 122. Three-boundary forms
+// recover frame 0x8020 but the virtual count still has its own slot and the dispatch changes.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

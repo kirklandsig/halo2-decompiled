@@ -793,6 +793,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // arms swapped or nested; the scale through a named root. Worse: explicit correction statements in every form and order (648
 // combinations, the parking then changes too), the limit ahead of the deltas, the correction straight into the output (x87).
 // Body unchanged.
+// NOT kept: point difference in the predicted vector then local/shared scale into velocity 89/89;
+// separate position displacement then local/shared scale 69/69; complete corrected vector in
+// the correction or delta 37/37; common final velocity 37; selected velocity pointer 84.
+// The first store and delta order remain coupled. The corrected-result forms grow the body.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
