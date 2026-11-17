@@ -4385,6 +4385,13 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // recovery; original nested calls, tests and complete body restored.
 // MiniMax C (11-16): no new form, no lower score (548): our frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx, spills it to its frame slot and reloads it after the flight call where this build keeps it in ebp for the whole body, so the biped, state and definition homes sit four bytes apart and the flight call's arguments are still one register out.
 // MiniMax S (11-17): no new form, no lower score (548): this build's frame is still 0x7c against retail's 0x78, because retail keeps the definition pointer in ecx with a home at +0x18 that the rate then reuses where this build keeps it in ebp with a home at +0x1c, so every later home sits four bytes high, and the flight call's arguments are still one register out.
+// Round 562: header getter at entry 612; header getter for initial hand reads 612; header getter at entry
+// and initial hand reads 612; header getter for final hand read 612; header getter at entry and final hand
+// read 612; header getter for both hand reads 612; header getter for entry and all hand reads 612; object
+// getter for all lookups 612; shared hand owner with short slot 571; short weapon slot alone 614; shared
+// hand owner with short slot after aim query 573.
+// NOT kept: The two shared-hand forms lower the reduced score but grow to 2748 and 2749 bytes against 2712
+// in retail. Both retain the reduced 0x7c frame. The short slot alone regresses.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
