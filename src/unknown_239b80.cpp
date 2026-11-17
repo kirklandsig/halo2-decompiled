@@ -707,6 +707,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // loop), retail's is fld eps; fcompi; jbe 0x239f10 at 0x23a0d4 (a NaN dy continues). The written-out positive closure
 // gives retail's form but scores 159 (lane r239), so it is not applied. Still different: frame 0x18 against 0x14,
 // the dword departure flag against retail's byte in the indices home, and the hull count's home.
+// m3 lane 11 r110 (fast with 0x239d50 and 0x239b80, both matched each time; control 144): the count bound as
+// `short const &limit = count;` for the hull and candidate-scan bounds 144 (same code: the binding folds, count keeps
+// EBX); a redundant `if (0 < count)` guard around the candidate scan 149, around the hull loop 247; the first hull
+// index bound as `short const &first = indices[0];` for its six reads 144 (same code); the departure as
+// `if (!left_start) left_start = points2d_differ(...)` 162.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

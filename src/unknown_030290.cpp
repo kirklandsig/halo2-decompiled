@@ -526,6 +526,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // not kept. transform_point (outside this edit) sums right, up, forward; retail sums x*[camera+4] + z*[camera+0x1c] first,
 // then y*[camera+0x10] (0x308cc-0x308f2); an earlier round measured that order as 195 with the same code. Frame is still
 // 0x30 vs retail 0x2c (retail packs inv_a, inv_b, b, ta, tb into 11 slots; its a - d point reuses b's y/z slots 0x30a49/0x30a4f).
+// m3 lane 11 r110 (fast): the helper's scale bound by const reference 195 (same code); the displaced point bound
+// by reference for its sums and the second transform 268 (1001 B); the two inverses bound by reference in the
+// perspective block 195 (same code); the helper's rows through a camera reference 267 (998 B); the displacement
+// bound as `vector3f const &displacement = *d;` for the sums 193 (the z row then loads d first as retail, like the
+// (d, a, ...) parameter order without touching the callers; x still loads a first), with retail's operand text
+// 193 (same code), with the rows z, y, x 211 (979 B). Restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
