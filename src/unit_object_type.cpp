@@ -9590,6 +9590,10 @@ struct s_unit_melee_collision
 // frame 0x180/native 0x17c and native tag/pool/counter carriers remain. Original entire body restored.
 // MiniMax R (11-17): no new form, no lower score (484): the range at each use on the material and provider graph, the whole-fan collision and the outer hit, damage and basis scopes all measure 484 or worse, and this build's frame stays 0x180 against retail's 0x17c.
 // MiniMax S (11-17): no new form, no lower score (484): the frame is still 0x180 against native 0x17c and the native tag, pool and counter carriers remain; the forms that moved them were reverted and the original body stands.
+// N404: Current-slot query and its resolved-unit helper 544/484, range once per row/ray 491/481,
+// ordinary cross 528, exclusive fan counters 485, separate scaled basis 572, selected object type
+// read once 485, long surface type 487. NOT kept: ray-local range restores the 0x17c frame but
+// gains only three and shortens the body to 2201 bytes. Native unit, tag and loop counter homes remain.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {

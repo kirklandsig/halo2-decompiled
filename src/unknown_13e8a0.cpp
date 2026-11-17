@@ -666,6 +666,11 @@ struct s_text_line_measurement
 // accumulated in the advance through the reference (`step += offset; step += kerning; width += step;`) 77 (all four identical
 // code: the reference is folded here); the bound read through `real const &right = bounds->x1;` 77, and the caller 0x13f0e0
 // then falls from MATCH to 144 (936 B). Body unchanged.
+// N404: Signed pixel loads before the break snapshot with later scaling of kerning/offset/advance
+// 80/38/38, paired metrics 53/56/76, and all three 76. In-place late scaling of all metrics 78,
+// kerning/offset/advance 73/72/71. NOT kept: the two 38 forms use one-use pixel locals and
+// leave a product after the break branch, where retail completes all three first. The advance
+// copy still differs. In-place forms miss the gain threshold.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
