@@ -3083,6 +3083,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[0] = ((x * cosine - y * sine) * scale + 1.0f) * 0.5f;
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
+// MiniMax I (11-17): no new form, no lower score (54): what is left is the scheduler's order of the x87 and SSE chains of the four corners and the XMM registers they take (retail's four scale multiplies use XMM3, XMM7, XMM1, XMM6 and ours XMM1, XMM3, XMM7, XMM6); the first set's store order is 0,3,4,7,1,6,2,5 in retail and 0,3,4,6,7,1,2,5 in ours, and no spelling of the corner helper moves either.
 // MiniMax E (11-17): no new form, no lower score (54): the x87 chain's store still comes before the SSE subtract where retail takes the subtract first and stores after it, and the scheduler still places the x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527).
 
 // MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
