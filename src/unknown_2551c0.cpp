@@ -7,6 +7,7 @@
 #include "unknown_0259a0.h"
 #include "unknown_1dacb0.h"
 #include "object_tag_definitions.h"
+#include "axis_rotation.h"
 
 /* the slot state of handler 0xc */
 struct s_slot_0c_state
@@ -24,20 +25,6 @@ struct s_unit_0c_view
 	byte unknown000[0x346];
 	short unknown346;
 };
-
-/* turns a vector about a unit axis by the angle whose sine and cosine are
-   given */
-static inline void function_x84d9e8(vector3f *vector, vector3f const *axis, real sine, real cosine)
-{
-	real vector_k = vector->k;
-	real projection = (vector->i * axis->i + vector->j * axis->j + vector_k * axis->k) * (1.f - cosine);
-	real cross_i = vector->j * axis->k - vector_k * axis->j;
-	real cross_j = vector_k * axis->i - vector->i * axis->k;
-	real cross_k = vector->i * axis->j - vector->j * axis->i;
-	vector->i = vector->i * cosine + projection * axis->i - cross_i * sine;
-	vector->j = vector->j * cosine + projection * axis->j - cross_j * sine;
-	vector->k = vector_k * cosine + projection * axis->k - cross_k * sine;
-}
 
 real function_30bf0(vector3f *v);
 bool function_26bf10(long object_index);
