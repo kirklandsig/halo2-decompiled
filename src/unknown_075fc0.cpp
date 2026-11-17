@@ -305,6 +305,7 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // gate); the window size as `(flags & 8) ? 128 : 0` 397 (1369 bytes); the tick interval read before the elapsed count
 // 404; the nesting with the ternary window 419; the nesting with the chained assignment 391. All restored.
 // @retail 0x75fc0
+// MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
 	long *arg_7, long *arg_8, long arg_9, byte *arg_10)

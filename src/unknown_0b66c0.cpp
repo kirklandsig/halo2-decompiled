@@ -472,6 +472,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 21 [match] (same code); the source as a `char const *const &` to `(char const *)string + start` after the compare 32 [6]
 // (start arrives in EDX); the count used through a `long &` 27 [39] (237-byte caller); the start used through a `long const &`
 // 26 [25]; the early source as `&string[start]` with the compare as `count + start` 21 [match].
+// Round 170 (m3 lane 7, fast with 0xb5f10/0xb61d0; [0xb5f10]): the length helper's walk renamed to sort before its
+// counter 21, its counter renamed to sort after the walk 21 (both the same code: names do not break the walk/counter tie);
+// the function `static` 21 (same code). With the count tested first and no early source 39 [35] (walk EDX, counter ECX as
+// retail, but start arrives in EDI unsaved); the same with `start += (long)string` after the clamp 40 [match] (start arrives
+// in ECX and stays there, walk EDI, counter EDX); with the early source 27 [match] (re-measure). In retail the counter is
+// coloured ahead of start (start is moved out of its arrival ECX); here start keeps ECX whenever nothing else claims it.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

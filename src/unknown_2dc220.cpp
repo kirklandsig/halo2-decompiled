@@ -68,6 +68,15 @@ __forceinline pending_2ddbd0 *writable_2dce60(pending_2ddbd0 *&position, pending
 #define READ_3_2DCE60(p) (((((p)[0] << 8) + (p)[1]) << 8) + (p)[2])
 #define READ_4_2DCE60(p) (((((((p)[0] << 8) + (p)[1]) << 8) + (p)[2]) << 8) + (p)[3])
 
+// a big-endian number of three bytes, each byte named
+__forceinline long read_3_2dce60(unsigned char const *p)
+{
+	long const high = p[0];
+	long const middle = p[1];
+	long const low = p[2];
+	return (high << 16) + (middle << 8) + low;
+}
+
 static __declspec(align(16)) const unsigned long g_455940[4] = {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 
 // the sum of a vector's first three terms, in the first
@@ -160,7 +169,11 @@ public:
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
 };
 
-// score 71 (was 406): the plane test's group loop is a guarded for with the
+// score 3 (was 71): the split section sits inside the switch after case 0x23, and case 0x20
+// ends `first_offset = 0; second_offset = commands[2]; commands += 3;`, which folds both corner
+// adds and gives retail's length. Left: in the first bound loop's three-byte arm the box pointer
+// and the bound are loaded in the other order.
+// Before, 71 (was 406): the plane test's group loop is a guarded for with the
 // miss returning from inside it (no goto), its centre and extent are declared
 // after the masks, the first side's commands go through their own pointer with
 // `commands` assigned in the branches that continue, and the bound loop tests
@@ -240,11 +253,14 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 			other[0] = box[0];
 			other[1] = box[1];
 			long const low = commands[1];
-			box[1].m128_f32[op - 0x20] = (float)(((low + 1) << position->shift) + position->corner[op - 0x20]) * scale;
+			long high = low + 1;
+			long &kept = high;
+			kept = (kept << position->shift) + position->corner[op - 0x20];
 			other[0].m128_f32[op - 0x20] = (float)((low << position->shift) + position->corner[op - 0x20]) * scale;
+			box[1].m128_f32[op - 0x20] = (float)kept * scale;
 			first_offset = 0;
+			second_offset = commands[2];
 			commands += 3;
-			second_offset = commands[-1];
 			goto split;
 		}
 		case 0x23:
@@ -259,8 +275,71 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 			first_offset = READ_2_2DCE60(commands + 3);
 			second_offset = READ_2_2DCE60(commands + 5);
 			commands += 7;
-			goto split;
 		}
+		split:
+		// the bounds that follow each side narrow its box
+		for (long bound = commands[first_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[first_offset])
+		{
+			unsigned char const *q = commands + first_offset;
+			if (bound >= 0x29)
+			{
+				long high = q[1];
+				long &kept = high;
+				kept <<= 8;
+				long const sum = ((q[2] + kept) << 8) + q[3];
+				box[0].m128_f32[bound - 0x29] = (float)sum * scale;
+				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				first_offset += 7;
+			}
+			else
+			{
+				box[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
+				box[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
+				first_offset += 3;
+			}
+		}
+		for (long bound = commands[second_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[second_offset])
+		{
+			unsigned char const *q = commands + second_offset;
+			if (bound >= 0x29)
+			{
+				other[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
+				other[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				second_offset += 7;
+			}
+			else
+			{
+				other[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
+				other[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
+				second_offset += 3;
+			}
+		}
+		{
+			unsigned char const *second = commands + second_offset;
+			int const second_state = test.test_box(other, position, second);
+			unsigned char const *first = commands + first_offset;
+			int const first_state = test.test_box(box, position, first);
+			if (second_state != 2)
+			{
+				if (first_state != 2)
+				{
+					return;
+				}
+				commands = first;
+			}
+			else if (first_state != 2)
+			{
+				box[0] = other[0];
+				box[1] = other[1];
+				commands = second;
+			}
+			else
+			{
+				function_2dc220(position, second, (fixed_point_2dc220 const *)other);
+				commands = first;
+			}
+		}
+		continue;
 		case 0x29:
 		case 0x2a:
 		case 0x2b:
@@ -386,65 +465,6 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 			goto reached;
 		}
 
-	split:
-		// the bounds that follow each side narrow its box
-		for (long bound = commands[first_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[first_offset])
-		{
-			unsigned char const *q = commands + first_offset;
-			if (bound < 0x29)
-			{
-				box[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
-				box[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
-				first_offset += 3;
-			}
-			else
-			{
-				box[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
-				first_offset += 7;
-			}
-		}
-		for (long bound = commands[second_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[second_offset])
-		{
-			unsigned char const *q = commands + second_offset;
-			if (bound >= 0x29)
-			{
-				other[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				other[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
-				second_offset += 7;
-			}
-			else
-			{
-				other[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
-				other[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
-				second_offset += 3;
-			}
-		}
-		{
-			unsigned char const *second = commands + second_offset;
-			int const second_state = test.test_box(other, position, second);
-			unsigned char const *first = commands + first_offset;
-			int const first_state = test.test_box(box, position, first);
-			if (second_state != 2)
-			{
-				if (first_state != 2)
-				{
-					return;
-				}
-				commands = first;
-			}
-			else if (first_state != 2)
-			{
-				box[0] = other[0];
-				box[1] = other[1];
-				commands = second;
-			}
-			else
-			{
-				function_2dc220(position, second, (fixed_point_2dc220 const *)other);
-				commands = first;
-			}
-		}
 	}
 
 reached:
@@ -464,9 +484,9 @@ struct sphere_test_2dce60
 	// (its nodes then collected), 2 when it holds part of it
 	__forceinline int test_box(__m128 const *box, pending_2ddbd0 const *position, unsigned char const *commands)
 	{
+		__m128 const extent = _mm_sub_ps(box[1], box[0]);
 		float const diameter = sphere.m128_f32[3];
 		float const diameter_squared = diameter * diameter;
-		__m128 const extent = _mm_sub_ps(box[1], box[0]);
 		__m128 const distance = _mm_and_ps(_mm_sub_ps(_mm_add_ps(box[0], box[1]), sphere), *(__m128 const *)g_455940);
 		__m128 const outside = _mm_sub_ps(_mm_min_ps(distance, extent), distance);
 		float nearest_squared;
@@ -502,7 +522,12 @@ public:
 	void function_2dce60(pending_2ddbd0 *pending, void const *root, __m128 const *offset);
 };
 
-// score 86 (was 172): from the plane test's guarded group loop shared with
+// score 4 (was 86): the split section sits inside the switch; the sphere test declares the
+// extent before the diameter; case 0x20's low and high values are built through references;
+// and one such value carries both three-byte reads of the first bound loop, which puts the
+// spill cells where retail has them. Left: `add ebx, 7` and `fild` are exchanged in both bound
+// loops' three-byte arm.
+// Before, 86 (was 172): from the plane test's guarded group loop shared with
 // 0x2dc220 (this function's own text is unchanged).
 // Before, 86 (was 122): the same length as retail. The walk's position is
 // the parameter itself, so it is loaded after the first command's range check
@@ -593,9 +618,14 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, _
 		{
 			other[0] = box[0];
 			other[1] = box[1];
-			long const low = commands[1];
-			box[1].m128_f32[op - 0x20] = (float)(((low + 1) << position->shift) + position->corner[op - 0x20]) * scale;
-			other[0].m128_f32[op - 0x20] = (float)((low << position->shift) + position->corner[op - 0x20]) * scale;
+			long low = commands[1];
+			long &below = low;
+			long high = below + 1;
+			long &kept = high;
+			kept = (kept << position->shift) + position->corner[op - 0x20];
+			below = (below << position->shift) + position->corner[op - 0x20];
+			other[0].m128_f32[op - 0x20] = (float)below * scale;
+			box[1].m128_f32[op - 0x20] = (float)kept * scale;
 			first_offset = 0;
 			commands += 3;
 			second_offset = commands[-1];
@@ -613,15 +643,83 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, _
 			first_offset = READ_2_2DCE60(commands + 3);
 			second_offset = READ_2_2DCE60(commands + 5);
 			commands += 7;
-			goto split;
 		}
+		split:
+		// the bounds that follow each side narrow its box
+		for (long bound = commands[first_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[first_offset])
+		{
+			unsigned char const *q = commands + first_offset;
+			if (bound >= 0x29)
+			{
+				long high = q[1];
+				long &kept = high;
+				kept <<= 8;
+				kept = ((q[2] + kept) << 8) + q[3];
+				box[0].m128_f32[bound - 0x29] = (float)kept * scale;
+				kept = READ_3_2DCE60(q + 4);
+				box[1].m128_f32[bound - 0x29] = (float)kept * scale;
+				first_offset += 7;
+			}
+			else
+			{
+				box[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
+				box[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
+				first_offset += 3;
+			}
+		}
+		for (long bound = commands[second_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[second_offset])
+		{
+			unsigned char const *q = commands + second_offset;
+			if (bound >= 0x29)
+			{
+				other[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
+				other[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				second_offset += 7;
+			}
+			else
+			{
+				other[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
+				other[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
+				second_offset += 3;
+			}
+		}
+		{
+			unsigned char const *second = commands + second_offset;
+			int const second_state = test.test_box(other, position, second);
+			commands += first_offset;
+			int const first_state = test.test_box(box, position, commands);
+			if (second_state != 2)
+			{
+				if (first_state != 2)
+				{
+					return;
+				}
+			}
+			else if (first_state != 2)
+			{
+				box[0] = other[0];
+				box[1] = other[1];
+				commands = second;
+			}
+			else
+			{
+				function_2dce60(position, second, other);
+			}
+		}
+		continue;
 		case 0x29:
 		case 0x2a:
 		case 0x2b:
-			box[0].m128_f32[op - 0x29] = (float)READ_3_2DCE60(commands + 1) * scale;
-			box[1].m128_f32[op - 0x29] = (float)READ_3_2DCE60(commands + 4) * scale;
+		{
+			long high = commands[1];
+			long &kept = high;
+			kept <<= 8;
+			long const sum = ((commands[2] + kept) << 8) + commands[3];
+			box[0].m128_f32[op - 0x29] = (float)sum * scale;
+			box[1].m128_f32[op - 0x29] = (float)read_3_2dce60(commands + 4) * scale;
 			commands += 7;
 			goto bounds;
+		}
 		case 0x26:
 		case 0x27:
 		case 0x28:
@@ -740,63 +838,6 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, _
 			goto reached;
 		}
 
-	split:
-		// the bounds that follow each side narrow its box
-		for (long bound = commands[first_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[first_offset])
-		{
-			unsigned char const *q = commands + first_offset;
-			if (bound < 0x29)
-			{
-				box[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
-				box[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
-				first_offset += 3;
-			}
-			else
-			{
-				box[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
-				first_offset += 7;
-			}
-		}
-		for (long bound = commands[second_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[second_offset])
-		{
-			unsigned char const *q = commands + second_offset;
-			if (bound >= 0x29)
-			{
-				other[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				other[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
-				second_offset += 7;
-			}
-			else
-			{
-				other[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
-				other[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
-				second_offset += 3;
-			}
-		}
-		{
-			unsigned char const *second = commands + second_offset;
-			int const second_state = test.test_box(other, position, second);
-			commands += first_offset;
-			int const first_state = test.test_box(box, position, commands);
-			if (second_state != 2)
-			{
-				if (first_state != 2)
-				{
-					return;
-				}
-			}
-			else if (first_state != 2)
-			{
-				box[0] = other[0];
-				box[1] = other[1];
-				commands = second;
-			}
-			else
-			{
-				function_2dce60(position, second, other);
-			}
-		}
 	}
 
 reached:

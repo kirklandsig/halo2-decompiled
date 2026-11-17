@@ -998,6 +998,23 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // and rest pointers replaced by indexed reads 402 (1328 B), the body under `if (function_117100(index))` 315 (same code).
 // 0x4b2d0, 0x1ccb0 and 0x1cd90 are this machine's; retail's 0x4b2d0 takes `first` in ECX (ours on the stack: its body puts
 // it in EBP), which also decides which dead parameter homes the four scans reuse here.
+// b7B (11-17) walk against retail, fast build on r829: statement by statement, no behaviour difference found, source
+// unchanged (322). Checked against retail: the record and definition lookups (0x116b17-0x116b4b: record = pool + (index
+// & 0xffff) * 0x1258, definition from record+4, object index from record+8 into 0x3ddd0 at 0x116b55, lighting = cache +
+// 0x44 at 0x116b70); 0x4b2d0's roles (0x116b9c-0x116ba4: edx tag, ecx group, eax variant, stack the byte at context+4
+// then pass; the second parameter is never read); the material, group, variant and shader chain with their 0x1ff masks
+// and 10-byte stride (0x116bc4-0x116c4d); the vtable call at slot 10 (0x116bf6); the four scans in retail's order,
+// normal 4, tangent 5, binormal 6, uv 3 (0x116c76, 0x116ca0, 0x116cc5, 0x116ce8); the cull restore and mode per side,
+// 0x901 for side 0 and 0x900 for side 1 (0x116d61-0x116d75, 0x117042); the sign as +1/-1 (0x116d67-0x116d6b)
+// multiplying tangent (0x116d8a) and normal (0x116e86-0x116e8e) but not binormal (0x116dc7-0x116ddb); the 1.0f w
+// component (0x45dbc0 = 0x3f800000); the 2f uv from rest +0xc/+0x10 (0x116efd-0x116f5e), position from vertex +0/+4/+8
+// with header 0x101a00 (0x116fc7); the strip count re-read each pass (0x116fd7); Begin 6 / End with the 0x1000 test
+// (0x116e04, 0x117003-0x11702a). Every float is a dword movss store (no x87 rounding point), and each product is
+// independent (no sum order). Not kept, all fast on r829 and without a behaviour fix: the object index in a local
+// (retail keeps it in ESI, 0x116b4b-0x116b4e) 316, the lighting pointer NULL-first 315, both 303 (also 303 as a static
+// inline helper taking the object index and returning the pointer, 316 with an early-return helper); left are the same
+// retail inlines of 0x1ccb0/0x1cd90 (0x116d0b-0x116d3a), 0x4b2d0's register convention, and the stack homes of the
+// scans.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

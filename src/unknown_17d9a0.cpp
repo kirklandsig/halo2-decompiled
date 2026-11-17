@@ -494,6 +494,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 }
 
 // score 535 (was 535): earlier 539; frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag at +0xb4 against retail's +0x94.
+// MiniMax I (11-16): no new form, no lower score (535): the frame 0x21dc and the 3647-byte length agree and the first
+// difference is still the tag spill at +0x41; the later homes of the tag, the count and the plane still sit in other slots
+// than retail's, and the entry register roles are still the other way round (retail takes the object pointer in edx and
+// the table global in ecx), so every later home is one slot off.
 // MiniMax S (11-16): no new form, no lower score (535 plain, 834 on the reduced image): the frame 0x21dc and the
 // 3647-byte length agree and the first difference is still the tag spill at +0x41; the group pass as a flagged block
 // with its own remaining count is 534 and the first loop's face read into a one-use local is 524, but both rest on forms

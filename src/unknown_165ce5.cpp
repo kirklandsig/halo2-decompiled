@@ -1818,6 +1818,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // scope 216, with the callback written `index == 0 ? right : left` (retail's arm order) 216 (masked 82/75); `active` cleared, then
 // set from the animation test under the three-term guard 416 (2188 B). On the array forms retail's unit, mode and weapon-active
 // homes are -0x1c/-0x18/-0x14 where ours are -0x14/-0x1c/-0x18. Still BLOCKED by the stand-in (round 98) for ESI/EDI.
+// M3 lane 12 r132 (fast with 0x165dc1, 0x166561 and 0x11eed0, MATCH; control 220; 0x16760c 142 in the reduced image as noted):
+// the four spring overrides as ternaries 220 (same code); the aiming velocity copied into a local vector for the two spring
+// calls 512 (2194 B); the look angles copied once into a local point 465 (2214 B); the orientation block index written
+// user-major 220 (same code); the unit index in a named local for the test and the lookup 220 (same code). Still BLOCKED by
+// the stand-in (round 98) for the ESI/EDI save after the unit test.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
