@@ -52,16 +52,16 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
+// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
+// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
+// ours shares one register for index and successor.
 // MiniMax R (11-15): no new form, no lower score (43): a separate 16-bit successor local does split the
 // successor from the index, but the compiler still keeps the index in a scratch register and copies it into
 // the entry pointer, so the successor's own register is a general one and the & 3 mask stays an immediate:
 // the successor local with the index stepped at the loop's end 51, the same with the successor declared ahead
 // of the loop 51 and the same with the index stepped before the eligibility test 49, all worse than the kept
 // 43, so the original body stands.
-// score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
-// retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
-// successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
-// ours shares one register for index and successor.
 // MiniMax H (11-14): no new form, no lower score (43): retail's entry pointer is the index scaled in place in
 // ESI, the successor is kept apart in EBX and the & 3 mask is hoisted into AL before the loop, while ours copies
 // the index into a second register for the entry pointer and keeps the successor in a general register; the forms
@@ -465,6 +465,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // P574: Independent final name-occupancy admission, positive/complementary
 // bool/byte/short/long: 43/43/43/43/43/43/43/43. NOT kept: no exact early ESI,
 // EBX successor or AL mask recovery; original eligibility and full body restored.
+// M3 lane 1 r112 (fast with 0x1a303b/0x2b393c): the zero-identity test as `(xuid != 0 || excluded)` after the offline test,
+// ahead of the real exclusion test, 65 (136 B: both guest tests stay, the mask stays an immediate, the player moves to the
+// stack, callers 2/2); `if (index == NONE) return false;` then `while (true)` with a successor local, `return true` in the
+// found block and `if (next == NONE) return false;` before `index = next` 55 (133 B: the successor takes EAX, no hoist);
+// `while (!result && index != NONE)` with a long index, a long successor and `else index = next` 57 (127 B: the mask is
+// hoisted into AL and both exits are retail's, but the loop stays head-tested, EBX is pushed first and the index/entry
+// share ECX with a copy into ESI); the same flag loop with `index = entry->next` 57; a guarded `do { ... } while (!result
+// && index != NONE);` 43 (same code). Lead: only a rotated loop testing the successor at the bottom can match, and the
+// flag forms keep the head test.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

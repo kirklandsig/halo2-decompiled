@@ -2102,11 +2102,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // [43]); two beside the iterator also do; one gives EDX: the iterator's register is a rotation step, not its statements.
 // MiniMax S (11-10): no new form, no lower score (168); the players iterator's table pointer still loads into ECX where retail
 // uses EAX, and the entry loop's index compare and the iterator's setup still differ.
-// Earlier first line: score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
+// Earlier first line: 194, was 194: frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
-// Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
-// Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
+// Earlier first line: 502, was 502: Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// Earlier status 502, was 502: frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
 // the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
 // frame is 0x84 against 0x80 since the visible flag became a stack byte, and the result/level slots,
@@ -2589,6 +2589,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // index on the table (diagnostic) 168 (same code); the start through the `actor` local 559 (retail reloads the table); the
 // relative and facing dots through dot3f (`dot3f(&relative, &direction)`, `dot3f(&direction, &forward)`) 168 (same code:
 // the direction stays in memory); `direction` declared at the players-loop top 168 (same code).
+// M3 lane 1 r112 (fast with 0x25d810 listed, equal to plain): the slot search with a long counter 169 (2880 B: the loop
+// is then retail's exactly, masked 35 -> 32; plain 169 too); with `player = NULL` declared ahead of the first search
+// 376 (the not-found exit threads past the index test); with a long copy of the short index for its NONE test and
+// subscript (`long table_index = player_table_index;`) 375 (masked 30: the search is retail's but for where `xor edi,
+// edi` sits); with the player as one ternary 184; the facing dot's products written forward-first 168 (same code).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
