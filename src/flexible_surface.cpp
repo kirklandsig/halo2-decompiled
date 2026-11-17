@@ -366,7 +366,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
-// score 130 (was 171): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
+// score 130 (was 130): 889 bytes against 880 and frame 0x1c against 0x20; the rotation is now the shared in-place helper
 // 0x2551f0 inlines (include/axis_rotation.h), which loads the global's i, j and k up front and reloads j, where retail loads
 // j and k early, i late, and spills two cross terms; retail also loads the random-state pointer before the time product.
 // MiniMax E (11-15): no new form, no lower score (117, was 117): the rotation written out with scalar cross and dot
@@ -800,6 +800,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // its cross terms j, k, i, or its rows scalar-first 130 each (same code); the axis passed as a table pointer (no copy) 183
 // (852 B); sine and cosine as two statements before the axis 152 (880 B); a `dword *seed` local at entry for the three
 // draws 174 (880 B).
+// M3 lane 6 r190 (fast with 0x118140, 0x117c80, 0x30bf0, 0x1462e0; plain `ret` on both sides): both table draws through
+// the existing random_unit_vector (0x1462e0, matched; the axis as its own statement or as the helper's argument, the
+// first draw as its own statement or inside the length test) 125 (888 B; under the bar, not kept: retail still holds
+// the global's j/k in xmm5/xmm4 and the axis i in memory); the axis draw alone through it 152 (880 B), the first draw
+// alone 154 (880 B). On 125: sine and cosine as named locals around the axis draw 152; one `dword *seed` local for
+// the three draws 149 (889 B); the shared helper capturing the vector's j as well as k 155 (893 B; 0x2551f0 63, lost).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -916,6 +922,7 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax I (11-17): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments, so the scans' stack homes, the side loop and the outer vertex calls still differ; the first difference is at +0x13, where the jump into the first call's failure path lands at a different offset.
 // MiniMax I (11-16): no new form, no lower score (322): the first difference is the first call's argument setup - retail loads
 // the field into ESI, pushes it and keeps the header pointer in a stack slot, this build loads it into ECX and
 // pushes that.

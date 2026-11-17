@@ -65,7 +65,7 @@ struct s_132d60
 
 #include "cluster_marks_storage.h"
 short __stdcall function_14a5b0(short cluster_index, point3f const *point, real radius, short maximum_count, short *clusters);
-void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdcall *compare)(long, long, const void *), const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, bool (__stdcall *compare)(long, long, const void *), const void *context);
 
 // @retail 0x132d60
 void function_132d60(s_132d60 *data)
@@ -102,7 +102,7 @@ void function_132d60(s_132d60 *data)
 		*(short *)&entry->unknown02[0] = 0;
 		data->context->order[i] = i;
 	}
-	sort_4byte(data->context->order, data->context->count, &radius, function_134950, data->context);
+	sort_4byte(&radius, data->context->order, data->context->count, function_134950, data->context);
 }
 
 /* ---- bit vector pools ---- */
@@ -738,6 +738,24 @@ short function_2cbf0(long arg_1, short arg_2, dword arg_3,
     bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
     real arg_21, word arg_22, point3f const *arg_23, real arg_24);
 
+// score 2 (was 86, fast build on r848): only the order of two register-argument loads before the call differs.
+// b15F (11-17) walk against retail, fast build on r848: fields, offsets (cluster stride 0xb0, bounds +0x54..+0x68,
+// indices byte at arg_1 + 0x1c), the 0x1332f0 and 0x2cbf0 arguments, flag bit 0x40, jae 0x13349c / ja 0x1334ac and
+// the loop agree; no behaviour difference. Forms kept, each on retail evidence: (a) the cluster index is a plain
+// long in esi (0x1333b8) and its (short) cast is a register movsx at 0x1333d7, before the bounds loads (the byte
+// load stays at 0x13344b); the old `long const &` re-read a word. (b) The extent follows the file's 0x134390 idiom
+// (centre and corner point3f through real_point3d_set, vector3f through vector3d_from_points3d); retail reads
+// +0x60/+0x68 a second time for the corner (0x1333f8, 0x1333fd). Its sum is retail's tree (x*x + y*y) + z*z (fld
+// 0x13341d, 0x13342f, 0x133451), which compiles only when written k, j, i; length_sq3f compiles (z*z + x*x) + y*y
+// (34), i, j, k gives 33. (c) The plane sum is retail's tree ((z*g38 + x*g20) + y*g2c) + g44 (0x133455-0x13347b)
+// only when written y, x, z; z, x, y compiles ((y + x) + z), a last-bit rounding difference (12). The three
+// volatile locals are gone (slots match retail's). Remaining 2: retail loads ecx (or ecx, -1 at 0x1334fd) before
+// edx (xor edx, edx at 0x133500) for 0x2cbf0, ours edx first; 0x2cbf0 is todo and two constants are no evidence of
+// its parameter order, so no swap. sort_4byte is not called here.
+// Tried (fast, r848; entries before the last four were measured on earlier bases, before the cast move or the k,
+// j, i sum): volatile locals as before (86; 96 with a plain long), real locals (114), volatile vector3f (96),
+// double sums (82-93), no corner point (38+), centre orders (16-20), corner orders (19, 35), plane test before the
+// extent (85), corner before centre (49), sqrt inlined (84).
 // @retail 0x133390
 void function_133390(s_bit_vector_pool const *arg_1)
 {
@@ -745,23 +763,26 @@ void function_133390(s_bit_vector_pool const *arg_1)
 	for (long local_2 = 0; local_2 < local_1->count; local_2++)
 	{
 		dword local_3 = function_1332f0(arg_1, local_1->shorts_b[(short)local_2]);
-		long const &local_4 = local_1->longs_a[(short)local_2];
+		long local_4 = local_1->longs_a[(short)local_2];
+		short local_13 = ((signed char const *)arg_1->indices)[(short)local_4];
 		s_visible_cluster const *local_5 = &((s_visibility_bsp *)g_4e0348)->clusters[local_4];
 		point3f local_6;
-		local_6.x = (local_5->bounds[0][0] + local_5->bounds[0][1]) * 0.5f;
-		local_6.y = (local_5->bounds[1][0] + local_5->bounds[1][1]) * 0.5f;
-		local_6.z = (local_5->bounds[2][0] + local_5->bounds[2][1]) * 0.5f;
-		volatile real local_7 = local_5->bounds[0][1] - local_6.x;
-		volatile real local_8 = local_5->bounds[1][1] - local_6.y;
-		volatile real local_9 = local_5->bounds[2][1] - local_6.z;
-		real local_10 = (real)sqrt((double)local_7 * local_7 + (double)local_8 * local_8 + (double)local_9 * local_9);
-		real local_11 = local_6.z * g_4b9e38 + local_6.x * g_4b9e20 + local_6.y * g_4b9e2c + g_4b9e44;
+		real_point3d_set(&local_6, (local_5->bounds[0][0] + local_5->bounds[0][1]) * 0.5f,
+			(local_5->bounds[1][0] + local_5->bounds[1][1]) * 0.5f,
+			(local_5->bounds[2][0] + local_5->bounds[2][1]) * 0.5f);
+		point3f local_15;
+		local_15.x = local_5->bounds[0][1];
+		local_15.y = local_5->bounds[1][1];
+		local_15.z = local_5->bounds[2][1];
+		vector3f local_7;
+		vector3d_from_points3d(&local_6, &local_15, &local_7);
+		real local_10 = sqrt(local_7.k * local_7.k + local_7.j * local_7.j + local_7.i * local_7.i);
+		real local_11 = local_6.y * g_4b9e2c + local_6.x * g_4b9e20 + local_6.z * g_4b9e38 + g_4b9e44;
 		if (!(local_11 >= 0.0f))
 			local_11 = 0.0f - local_11;
 		if (!(local_11 > 0.1f))
 			local_11 = 0.1f;
 		real local_12 = (g_4b9ed0 / local_11) * local_10 * 2.0f;
-		short local_13 = ((signed char const *)arg_1->indices)[(short)local_4];
 		function_2cbf0(local_4, NONE, local_3 | 0x40, NONE, NONE, 0, 0, NULL,
 			local_13, 0xff, NULL, NONE, local_12, NONE, NONE, false, false,
 			false, 0.0f, 0.0f, 0.0f, 0, g_468788, 0.0f);

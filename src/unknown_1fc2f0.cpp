@@ -758,12 +758,41 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P588: Repeated state-velocity/output-velocity/state-location field lvalues,
 // seven subsets, then immutable squared length: 57/74/43/79/94/91/91/91.
 // NOT kept: native chain/store/delta scheduling remains; original body and helpers restored.
+// M3 lane 15 r95 (fast with 0x1fc660 and the file's four other functions, all MATCH; control 32): on round 112's
+// in-place form (the prediction straight into `velocity`, scaled_difference3f in place, 53 with deltas i, j, k as
+// listed), the four delta orders not listed there: k, i, j 58 (369 B), k, j, i 72, i, k, j 57 (369 B), j, k, i 52;
+// the prediction into a point, then the existing vector3d_from_points3d into `velocity` and the existing
+// vector3f_scale by the ticks in place (normalize3d.h), deltas i, j, k 73 and j, i, k 73 (369 bytes each: the scale
+// takes the ticks as its left operand, so the products copy). Body unchanged.
 // M3 lane 13 r103 (fast with the file's five matched functions, all kept; [exact, register/stack-masked] aligned control [25, 9]):
 // the tick count read before the rate 32 (same code); the rate local dropped with the global passed to vector3f_add_scaled on
 // this body's j, i, k deltas 32 (same code); the correction scaled in place in `delta` through local_scale3d(&delta, scale,
 // &delta) with the output rows reading delta 32 (same code); the squared length declared with the other locals at the top and
 // assigned later 32 (same code); the limit through the rate local (`rate * 0.5f`) 90 (first +0x25: the rate stays live in
 // XMM3 and the tick conversion moves). Body unchanged.
+// Still differing: i/j velocity stores and the delta/correction SSE register homes.
+// Prediction-input scope 32, typed predicted point 32, point setter 57, velocity-write scope 32,
+// delta/limit scope 32, named correction denominator 46, point setter at the scale call 57,
+// separate producer and selection scopes 32. NOT kept: no qualifying gain or native store recovery.
+// M3 lane 17 r45. A compile-only screen (build/r45/h1fc.py: the parameters declared state, output, tracked so plain fastcall
+// gives retail's ECX/EDX, the 0x1fc660 call left out) reproduces this body's floating-point stream exactly, so about 3000
+// forms were classified by the order of the rate chains, the tick products and the deltas (retail: j,i,k / j,i,k / i,j,k).
+// Every form that keeps the prediction in its own vector ties the three orders together (all i,j,k or all j,i,k, whichever
+// component the squared length asks for first: `j*j + (i*i + k*k)` or deltas j,i,k give j first). LEAD, not kept (54 in the
+// real build against 32; fast with 0x1fc660 and the file's four other functions, all MATCH): the prediction written into
+// `velocity` (vector3f_add_scaled(&unknown38, &state->velocity, rate, &velocity)), the difference in place
+// (vector3d_from_points3d(&state->unknown2c, &velocity, &velocity)), the ticks in place (local_scale3d(&velocity, (real)ticks,
+// &velocity)), the deltas through vector3d_from_points3d(&state->velocity, &velocity, &delta) and length_sq3f: every
+// instruction of retail's order is then there (chains j,i,k, tick products j,i, store i, delta i, store j, delta j, tick
+// product k, three parking copies, j squared in place, store k, delta k, the (k + j) + i sum). Left on it: the tick scale
+// converts into XMM4 (retail XMM3), the deltas park i, j, k in XMM2, XMM3, XMM4 (retail XMM4, XMM2, XMM3), and the
+// correction scales all three in place with the scale in XMM0, where retail loads the scale into XMM1 and multiplies a copy
+// of it by delta i into XMM0 (one instruction more, so the 14 lines after it shift). On the lead, the same code: the ticks
+// through `*=` statements, a component loop or vector3f_scale; the deltas as a loop; dot3f for the length; the correction
+// through vector3f_scale and vector3f_add (normalize3d.h), in place, or with the three sums written out; the limit test's
+// arms swapped or nested; the scale through a named root. Worse: explicit correction statements in every form and order (648
+// combinations, the parking then changes too), the limit ahead of the deltas, the correction straight into the output (x87).
+// Body unchanged.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -623,6 +623,13 @@ s_1a8a10 g_4453c0[] =
 // Reading: an aggregate copy's fields load at the copy, a one-use scalar's load moves to its use, and an in-place read
 // in the left sum merges with the copy while one in the forward sum does not; retail needs the copy's j used once (j*y)
 // and the left sum's negated j a separate folded load.
+// Round 106 (m3 lane 14, fast with 0x1f5390 0x1f57a0 0x1f57f0 0x1a8c30; control 17): both sums accumulated through
+// reference-bound locals (`real &left = ...; left = i * y; left += ...`) 91 (the xmm numbering moves, j still folded);
+// y carried through the switch in a scalar and stored to the point after the facing copy, with the point read through
+// a pointer in the final switch, 24 (j still folded: the point does not escape); the negated j through a fresh
+// actor_get lookup 140 (556 bytes: the lookup is not merged); the negated j named between the copy's i and j, sums in
+// retail's term order 17 (same code); the copy and the sums in their own block scope 17 (same code). Re-measured: the
+// round-115 frame-transform lead (perpendicular local, identifier/index/score order, [2], [3], [0], [1] stores) 31 here.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

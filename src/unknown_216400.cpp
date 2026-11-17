@@ -513,6 +513,12 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // accessors with `long index = count++` 54 (654: the bool folds, the tail after it is retail's, list ECX, `lea edx, [eax + 1]`).
 // Diagnostics: a room bool under an always-true test of the find handle 32 (the guard folds late and setne/test appear,
 // but bool CL, count EAX, list EDX), the same on the accessor form 51: a materialized bool is coloured after the count and the list.
+// Round 116 (m3 lane 1, fast with 0x216400/0x216d70/0x216e50), the trivial-accessor rotation lead on the bool append
+// (`bool result = count != 4096; if (result) memcpy(&entries[count++], ...)`, control 32: list EDX, count EAX, setne CL, the
+// outside pairs one step off): the room test through a count getter 32; the list passed through an identity accessor 32
+// (both same code); `index = count`, a count setter with `index + 1`, memcpy into `entries[index]` 51; the slot through an
+// entry accessor `entry(list, count++)` 51; the count bound as `long &` with `index = count; count = index + 1;` 51 (the
+// store before the slot as retail, registers still rotated). No accessor moves the rotation here. Pointer helper restored.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

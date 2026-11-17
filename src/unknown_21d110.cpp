@@ -563,6 +563,16 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 0x221810 lookup is expanded) and stays in EDX; retail's call at 0x18a082 keeps it live in EBX (see lane 9's
 // noinline diagnostic above for why that alone is not enough). The 94 form still threads the rate-limited path
 // (retail 0x21d1f7 `or esi, -1; jmp 0x21d20f`) straight to the delete.
+// Round 454: Boolean starter with pointer to sound index, admission return, existing fallback 184, Boolean
+// starter with reference to sound index, admission return, existing fallback 184, Boolean starter with
+// pointer to sound index, result return, existing fallback 172, Boolean starter with reference to sound
+// index, result return, existing fallback 172, Boolean starter with pointer to sound index, admission
+// return, shared by fallback 207, Boolean starter with reference to sound index, admission return, shared
+// by fallback 207, Boolean starter with pointer to sound index, result return, shared by fallback 193,
+// Boolean starter with reference to sound index, result return, shared by fallback 193. NOT kept: the two
+// 172 forms add five bytes (459 versus the opening 454 and retail 427) and leave the eight-byte frame and
+// reversed input convention. Sharing the fallback also increases the score. The original starter, fallback,
+// deletion and body are restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
