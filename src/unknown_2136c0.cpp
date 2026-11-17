@@ -211,6 +211,18 @@ void function_213970(void);
 // M3 lane 1 r99: block B (0x55b4f0..0x55c02c) as one object, the held change of build/r99/held-2141f0.patch (it needs the owner's OK
 // for src/unknown_12be90.cpp), with member-wise clears 131 (same code); with one clear of the whole object 48 fast, 44 plain at 155
 // bytes, retail's length. Block A is then what is left.
+// b11H (11-17) walk against retail, fast build on r843: logic equals retail statement by statement (clears of 0x385c
+// bytes at 0x557c90 and 0xb40 at 0x55b4f0; NONE at 0x55aca8, 0x55bd00, 0x55bd10; done = 1 at 0x55bd0c; language cache
+// 0x47ff38 read after the clears with 0x33039a + 0x11ca80 inline; the 0x510838 and 0x510a08 tests; tail jmp 0x213970),
+// no behaviour difference. Retail is speed code (16-aligned, padded), so the size pragma is not retail's; it only holds
+// the score (no pragma, body as is: 53 fast, 166 bytes). Only block A's separate globals stop a match. Diagnostic, not
+// kept (needs block A as one 0x385c object: edits in unknown_213760, 213d20, 122870, 2141f0, 214c30): that object, no
+// size pragma, a file-local getter returning the re-read global (`if (g_47ff38 == NONE) g_47ff38 =
+// function_11ca80(XGetLanguage()); return g_47ff38;`) and a file-local `set(long *field, long value)` doing the test,
+// function_2138f0(0, 6), store and dirty flag, called set(&unknown18, getter()) then set(&unknown1e8, 0x2651): MATCH,
+// 155 bytes. On that object: size pragma kept with the re-read getter 40; no pragma with a local holding the re-read
+// value, plain updates or the helper 3 (retail's cmp comes before `push esi`); the existing get_current_language() with
+// the helper 39 (its local copy is not retail's re-read). On the separate globals the no-pragma helper form is 49.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
