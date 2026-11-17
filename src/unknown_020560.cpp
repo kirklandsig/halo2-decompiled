@@ -938,6 +938,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
+// offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
+// pointer in scan 2, and retail's EBX/EAX pair against our ECX/EDX stays. The permuter (30 tries,
+// annealed) found no better form.
 // MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
 // pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
 // 0x18 against retail's 0x2c.
