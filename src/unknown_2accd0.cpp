@@ -1110,6 +1110,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // bound as `dword const &total` to the sum 34; both seek positions bound as `dword const &position` to their sums 34. The
 // remaining flagged constant lines (`fadd [2^32]`, `movss [1.0]`) are only the one-byte shift of the signature sum (ours
 // `add esi, ecx`, retail `lea esi, [ecx + edx]`).
+// M3 lane 12 r133 (fast with 0x2adb10 and 0x2ada70, both MATCH; control 34): the body case's size typed `long` 34 (same
+// code); the signature case's file handle in a two-use local (seek and read) on this body 124; the state read
+// into a `long` local for the switch 34 (same code); that with the total folded into its conversion 88 (the listed 88);
+// the scratch clamp through `g_4fa0c8.size` (its compile-only 20 above) re-measured 159 (689 bytes), with the long state
+// local 159. Reading: both sums retail forms into a fresh register (entry total EDX, signature `lea esi, [ecx + edx]`)
+// and the body case's remaining count stays in the hoisted ECX until the shared `mov edi, ecx`; ours targets each sum
+// and the remaining count at its variable's register. Body unchanged.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

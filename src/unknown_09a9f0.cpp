@@ -831,6 +831,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // window), the object read through the word cast instead 71, the word-cast test with the object read through the entity's stored
 // index 72; on the long result: the word-cast test 54 (182 B), the field store and attach through `entity->object_index` 52.
 // Retail needs both a recomputed index and a reloaded data pointer before the object read; with only the first, EBP stays free for f.
+// M3 lane 12 r132 (fast with 0xa5b10, 0x108e10 and 0xbb780, matched throughout; control 49), all on retail's shape (bool
+// false first, true after the attach, NONE stored in the flagged else; 77 alone): the flag test in an inline predicate
+// that fills its bool in an if/else 77, the same predicate forced inline 77 (its join is threaded and its loads merged
+// before CSE either way); the store and attach through the existing 0xbb780 alone 77 (it inlines and its lookup is
+// merged); the flagged arm first 75; both lookups as array-element reads (`table[index & 0xffff].flags` and its object field)
+// with no address-of 77. The header address stays shared and EBP caches f in every form.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
