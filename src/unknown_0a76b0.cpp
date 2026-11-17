@@ -2031,7 +2031,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
-// score 11 (was 11; 29 before): only the entry block's order differs (retail loads the global and the
+// Matched: the object pool is read into a local with a reference bound to it, and the unit is looked up in its own
+// statement through that reference ahead of `primary`. A local with a reference bound to it is not folded away, so the
+// inlined 0xe8510 lookup no longer merges with this one and reloads the pool as retail does; 0xe8510 and 0xe8d10 are
+// untouched and still match.
+// Before, 11 (was 11; 29 before): only the entry block's order differs (retail loads the global and the
 // actions pointer before `cmp ecx, 8; sete bl`). Tried: unit_action_active() 95; primary
 // declared first 11; primary inside the block 82; a unit local 90; an early-return guard 11;
 // actions read inside the test with primary first 11; the bit test as its expression 11; the test
@@ -2134,10 +2138,12 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
-	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
+	s_record_pool *objects = g_4e0300;
+	s_record_pool *&pool = objects;
+	s_unit_action_unit *unit = ((s_unit_action_header *)pool->data)[unit_index & 0xffff].unit;
 	bool primary = type == 8;
 
-	if (bit_vector_test(actions->active, type))
+	if (bit_vector_test(UNIT_ACTIONS_GET(unit)->active, type))
 	{
 		function_e8510(unit_index, true, false, primary);
 		function_e8720(unit_index, 0x7000101, false, false, primary);
