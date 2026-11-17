@@ -3379,6 +3379,7 @@ s_cached_input_list g_5234e8[4];
 // MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
 // MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
 // MiniMax C (11-16): rounds used; nothing of this file's own moved it.
+// MiniMax C (11-17): no new form, no lower score (147 in this reduced image, 113 in the twenty-address one): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and keeps the native list and total on the stack.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3716,6 +3717,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state
 // with the homes swapped); the natural spellings of the two homes (the declaration orders, the names and the
 // index and the found flag first) are listed above and measure the same, so the body stands.
+// MiniMax C (11-17): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped; the declaration orders of the two homes measure the same, so the body stands.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
