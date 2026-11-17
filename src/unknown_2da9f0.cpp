@@ -194,12 +194,41 @@ struct s_1d8e40 : hkRigidBody
 	void function_1d8e40(hkVector4 const &arg_0);
 };
 
+// the squared length of a vector's first three components
+static __forceinline float length_squared_2daae0(hkVector4 const &vector)
+{
+	__m128 const squares = _mm_mul_ps(vector.m_quad, vector.m_quad);
+	float result;
+	_mm_store_ss(&result, _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares)));
+	return result;
+}
+
 // on a contact the filter lets through, a body whose shape is of kind 0x17
 // gets its speed set to its shape's two values' difference, when the game
 // asks for it
-// score 112 (was 112): retail keeps the first body in edi and the second in
+// score 0 (was 112): matched with the squared speed taken by a helper that
+// receives the velocity by reference (retail forms its address), the other
+// body read after it, and one over the speed named before it is scaled.
+// Before: retail keeps the first body in edi and the second in
 // ebx and takes 1.0f over the distance before the shape's difference; ours
-// swaps the two bodies and divides the difference by the distance
+// swaps the two bodies and divides the difference by the distance.
+// Root names 112; earlier second declaration 112; double reciprocal 112;
+// named inverse 125; scalar extraction unavailable; second shape first 112;
+// for parent walks 112; one positive filter guard 112; sum lane extraction 143.
+// Direct rigid-body view 112; velocity reference 106; float sqrt 112;
+// scale updated in two steps 125; four-lane broadcast 135; output vector
+// initialization 112; direct contact observations 112; named speed 112;
+// velocity reference with staged reciprocal 31; motion pointer 120;
+// velocity value 112; threshold captured 177; subtraction captured 125;
+// both callback scalars captured 152; sum vector extraction 117.
+// NOT kept: the velocity reference gains six, below threshold; the 31-point
+// combination requires an exact match. Its input loads and scalar scratch
+// still differ. All executable text restored; serial search found no match.
+// P428: existing shared sum and dot operations 112/112. On the prior
+// 31-point form: squared-speed name 31; distinct side names 31; earlier
+// output declarations 31; native-vector reference 31; shape reference 31;
+// scalar-load intrinsic 104. NOT kept: the combined form requires an exact
+// match; call-input scheduling and the second scalar home still differ.
 // @retail 0x2daae0
 void class_2da9f0::contact_2daae0(void *contact_)
 {
@@ -226,13 +255,13 @@ void class_2da9f0::contact_2daae0(void *contact_)
 	{
 		hkEntity *entity = first->entity;
 		shape_2daae0 *shape = contact->first->shape;
-		__m128 const squares = _mm_mul_ps(((hkRigidBody *)entity)->m_motion->m_linear_velocity.m_quad, ((hkRigidBody *)entity)->m_motion->m_linear_velocity.m_quad);
-		float speed_squared;
-		_mm_store_ss(&speed_squared, _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares)));
-		if (function_279410((s_component_contact_pair const *)contact, entity, second->entity,
+		float speed_squared = length_squared_2daae0(((hkRigidBody *)entity)->m_motion->m_linear_velocity);
+		hkEntity *other = second->entity;
+		if (function_279410((s_component_contact_pair const *)contact, entity, other,
 			shape->field_24, shape->field_24 - shape->field_28, contact->field_1c))
 		{
-			float const scale = 1.0f / (float)sqrt(speed_squared) * (shape->field_24 - shape->field_28);
+			float const inverse = 1.0f / (float)sqrt(speed_squared);
+			float const scale = inverse * (shape->field_24 - shape->field_28);
 			__m128 const single = _mm_set_ss(scale);
 			hkVector4 velocity;
 			velocity.m_quad = _mm_mul_ps(_mm_shuffle_ps(single, single, 0), ((hkRigidBody *)entity)->m_motion->m_linear_velocity.m_quad);
@@ -244,13 +273,13 @@ void class_2da9f0::contact_2daae0(void *contact_)
 	{
 		hkEntity *entity = second->entity;
 		shape_2daae0 *shape = contact->second->shape;
-		__m128 const squares = _mm_mul_ps(((hkRigidBody *)entity)->m_motion->m_linear_velocity.m_quad, ((hkRigidBody *)entity)->m_motion->m_linear_velocity.m_quad);
-		float speed_squared;
-		_mm_store_ss(&speed_squared, _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares)));
-		if (function_279410((s_component_contact_pair const *)contact, entity, first->entity,
+		float speed_squared = length_squared_2daae0(((hkRigidBody *)entity)->m_motion->m_linear_velocity);
+		hkEntity *other = first->entity;
+		if (function_279410((s_component_contact_pair const *)contact, entity, other,
 			shape->field_24, shape->field_24 - shape->field_28, contact->field_1c))
 		{
-			float const scale = 1.0f / (float)sqrt(speed_squared) * (shape->field_24 - shape->field_28);
+			float const inverse = 1.0f / (float)sqrt(speed_squared);
+			float const scale = inverse * (shape->field_24 - shape->field_28);
 			__m128 const single = _mm_set_ss(scale);
 			hkVector4 velocity;
 			velocity.m_quad = _mm_mul_ps(_mm_shuffle_ps(single, single, 0), ((hkRigidBody *)entity)->m_motion->m_linear_velocity.m_quad);

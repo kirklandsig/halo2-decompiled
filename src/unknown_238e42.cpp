@@ -888,8 +888,47 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// MiniMax D (run 46): no new form, no lower score.
-// score 90 (was 90): the difference is purely the register colouring of the two
+// MiniMax R (11-17): no new form, no lower score (90): an annealed permutation search over this body (1500 s,
+// one job, seed 11) lowered the baseline of 88 only to 86, and the have_member block written the other way
+// round measures 114, so the body stands.
+// MiniMax R (11-14, run 65): no new form, no lower score (90): the whole difference is still the colouring of the
+// two values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the
+// requested rank into ecx, so the removal call needs no copy, while this build keeps the pointer in ecx and the
+// rank in eax and copies the pointer into eax before the call, two bytes that shift every later jump. The
+// callee reads its member from eax (`mov ebx, eax`), so the colouring follows from that callee's own declaration,
+// which lives in src/online_teams.cpp, a file this lane may not edit; the body stands.
+// MiniMax H (11-14): no new form, no lower score (90): retail reloads the selected identity pointer into eax and keeps
+// the requested rank in ecx, so the removal call into the matched callee 0xac050 needs no copy, while this build keeps
+// the pointer in ecx and the rank in eax and copies the pointer into eax before the call; the two extra bytes are the
+// whole length difference and they move every later jump. Storing the rank before the removal test, negating the
+// identity test and an identity flag of its own measure 90 each, so the colouring is fixed by the callee's convention.
+// The permuter (32 tries, 312 s over the reduced and the full image) found one lower form, 17 against the baseline 88
+// in the plain image, and it is the removal call with its two XUID arguments the other way round
+// (`online_team_member_remove(controller_index, xuid, &team.xuid)`), which reorders the callee's parameters, so it was
+// dropped. Retail's order is the one the declaration already has: the matched caller 0x23955e loads the member xuid
+// into eax and pushes the team xuid, and the matched callee 0xac050 reads eax as the member (`mov ebx, eax`) and the
+// pushed xuid as the team, so the swap would ask the callee to remove the team's xuid from the member.
+// The getter written with the identity handed back through an out-parameter instead of returned (so that the
+// caller's variable is not the getter's own temporary) measures 90 as well, and the matched caller 0x239a3d still
+// matches: the reload of the identity still takes ecx and the loaded id still takes eax.
+// A second permuter pass (seed 12, 39 tries, 397 s over the reduced and the full image) lowers the baseline of 88 by
+// one point only, to 87, and its form is the banned one: every constant of the body is hoisted into a local of its
+// own (tmp0 = false, tmp1 = 3, tmp2 = 0x5c, tmp4 = 0x5d, tmp5 = 4, tmp6 = 1, tmp7 = NONE), so it was dropped.
+// MiniMax E (11-14): no new form, no lower score (90): the difference is still only the register colouring of the two
+// values the matched callee 0xac050 takes - retail reloads the selected identity pointer into eax and the requested rank
+// into ecx, so the callee needs no copy, while this build keeps the pointer in ecx and copies it into eax before the
+// call; the callee's own declaration fixes the order its parameters are read in.
+// MiniMax D (11-16): score 90 (was 90), nothing kept: retail reloads the selected identity pointer into eax
+// and the requested rank into ecx, this build reloads the identity into ecx and the rank into eax and copies
+// the identity into eax before the call to 0xac050, the one extra instruction whose two bytes shift every later
+// jump; the frame, the call arguments and every other instruction still agree with retail row for row. A
+// permutation search over this body (300 s, annealed, one job, with the callees in the reduced image) tried 34
+// variants and none scored below the baseline.
+// score 90 (was 90): the difference is purely the register colouring of the two values the
+// matched callee 0xac050 takes: retail reloads the selected identity pointer into eax and the
+// requested rank into ecx, so the callee needs no copy, ours keeps the pointer in ecx and the
+// rank in eax and copies the pointer into eax before the call, two bytes that shift every later
+// jump; the frame, the call arguments and every other instruction agree with retail.
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
 // eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
 // ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
@@ -897,6 +936,42 @@ bool __stdcall function_2399da(long controller_index)
 // test, copying the requested rank into a local before that test, a has-identity flag and
 // four local declaration orders all score 90, so the colouring is fixed by the callee's
 // convention and the body stands.
+// MiniMax D (11-10): no new form, no lower score (90); the identity pointer and the requested rank keep
+// the other way round (ours identity ECX / rank EAX, retail identity EAX / rank ECX), and the identity's
+// two halves follow the pointer into the other register (ours `mov eax, [ecx]`, `or eax, [ecx + 4]`,
+// retail `mov ecx, [eax]`, `or ecx, [eax + 4]`), so ours copies the pointer into EAX before the call to
+// 0xac050, which is the one extra instruction and the two extra bytes; everything else in the function
+// agrees with retail row for row, and the callee's argument order already agrees (0xac050 reads the member
+// pointer from EAX and the controller index and the team pointer from the stack), so only the colouring of
+// the two values differs.
+// MiniMax C (11-09): no new form, no lower score (90): the whole difference is still the colouring of the two
+// values the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
+// into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call;
+// that needs 0xac050's parameter order changed in src/online_teams.cpp, a file this lane may not edit.
+// MiniMax I (11-09): no new form, no lower score (90); the aligned listing shows that the listing marks the
+// call to 0xac050 and every jump after it only because our build inserts a two-byte `mov eax, ecx` where
+// retail loads the identity pointer into EAX and the requested rank into ECX; that extra pair of bytes
+// shifts every later instruction by two, so the jump displacements are reported as different although the
+// jump targets agree; the colouring itself is decided by the callee's parameter order, which lives in
+// src/online_teams.cpp: BLOCKED-BY 0xac050.
+// MiniMax I (11-09): no new form, no lower score; the whole difference is still the colouring of the two values the callee 0xac050 takes, which needs that callee's parameter order changed in src/online_teams.cpp, a file this lane may not edit.
+// MiniMax S (11-08): no new form, no lower score (90); the difference is still the colouring of the two values the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call, which costs two bytes and shifts every later jump.
+// MiniMax A (11-06): no new form, no lower score; the whole difference is the colouring of the two values
+// the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
+// into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the
+// call, which also costs two bytes and shifts every later jump; the trial of a local copy of the rank
+// (`long requested = rank;` used in the four places of the block) compiles to exactly the same bytes, so
+// the copy is propagated and the parameter stays promoted.
+// MiniMax A (11-06): no new form, no lower score; retail loads the selected identity pointer into EAX and the
+// requested rank into ECX, ours keeps the pointer in ECX and the rank in EAX and inserts a copy before the
+// removal call; the rank's store is what gives the rank EAX, and dropping that store or storing a constant
+// instead changes the behaviour.
+// MiniMax H (11-06): no new form, no lower score; the whole difference is still the register colouring of the
+// two values the matched callee 0xac050 takes: retail loads the selected identity pointer into eax and the
+// requested rank into ecx so the callee needs no copy, ours keeps the pointer in ecx and the rank in eax and
+// inserts a move before the call, which shifts every later jump; removing the rank's store and storing a
+// constant instead gain one point each, below the eight-point gate.
+// MiniMax D (run 46): no new form, no lower score.
 // Earlier (90, was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.
@@ -1119,6 +1194,8 @@ bool __stdcall function_2399da(long controller_index)
 // at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
 // test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
 // identity in EAX.
+// Round 217 (m3 lane 3, fast with 0xac050/0xac360/0x2399da, base 90 at 434 B, masked aligned 5): a `team_xuid` pointer used by both the removal and the set-rank call 90; `have_member` as one direct comparison 90 (same code);
+// the copy arm nested as `if (!have_member) { if (!may_change) deny; copy }` 114 (433 B); the rank-3 test inverted with the set-rank call in its then arm 92; `if (task_index == NONE) return;` ahead of the progress call 90. Identity ECX/rank EAX and the removal move remain.
 // Round 152 (m3 lane 6, fast with 0xac050/0xac360/0x2399da): the rank stored before the rank-3 test (the test reading the
 // stored field) combined with `own_rank >= rank` 89, with the permission test as a named bool 89, with the task index preset
 // to NONE 89, with a removal-arm identity local 89, with own rank read ahead of the identity test 89: the identity stays in
@@ -1132,6 +1209,46 @@ bool __stdcall function_2399da(long controller_index)
 // N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
 // 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
 // original body restored, selected identity/rank registers and extra removal move remain.
+// Round 170 (m3 lane 6, fast with 0xac050/0xac360/0x2399da, all matched; register-masked aligned count 3: the `mov eax, ecx` and
+// the rank store's place): `have_member` started false and set when the member id is non-zero 93 (three lines differ);
+// `have_member` computed after the friends call, beside may_change, 159 (420 B); the membership output typed as 0x18ffc3's own
+// 0x92-byte block with the own rank read at +0x1c as its other callers do 90 (same code). Re-measured: the copy arm nested as
+// `if (!have_member) { if (may_change) copy; else { deny; return; } }` 92 (430 B, round 10's folded arm). No other untried natural
+// form found: the rank keeps EAX over the identity while both its store and the removal call stay (round 150, r211 diagnostics).
+// MiniMax R (11-10): no new form, no lower score (90): ours is 434 bytes against retail's 432 and the
+// first difference is at +0x1d; what is left is a turnover of the xuid pointer between eax and ecx
+// with one extra mov, and behind it the shape of the tails — retail calls the shared helpers and
+// pushes its own string addresses where we call the local copies, so the blocks that follow land at
+// other offsets and every jump into them counts. The forms the earlier rounds record (the identity
+// and rank registers, the eight-byte residency subsets, the late requested producer, the removed
+// extra mov) all measure 90 or worse.
+// MiniMax H (11-12): no new form, no lower score (90); the identity pointer is reloaded from the
+// selection slot into ecx where retail reloads it into eax and the requested rank takes eax where
+// retail's takes ecx, so a copy of the pointer is needed before the removal call; twenty further
+// source forms (the identity copied into a local of its own, the own rank read before the identity
+// test, the requested rank copied into a local, a has-identity flag, the identity and the rank
+// declared at fourteen other positions, the identity test spelled five ways, the pointer held in
+// an integer) all compile to the same bytes.
+// MiniMax G (11-13): no new form, no lower score (90): the permuter's only lower form (85) swaps the
+// arguments of `dialog_choice_show` and `dialog_ok_show`, which contradicts their declarations in
+// include/unknown_19b510.h, so it was dropped; splitting the identity test into a flag scores the
+// same 90. An annealed permuter run (60 tries, 606 s) found nothing below the baseline, and the
+// forms the earlier rounds record still hold: retail reloads the identity into eax and keeps the
+// requested rank in ecx, we reload the identity into ecx and keep the rank in eax, so we copy the
+// identity into eax before the removal call (retail has no copy). The identity in a local of its
+// own (plain, const, or set from the getter), the null test and the id test nested, the own rank
+// read ahead of the identity test and the requested rank in a local all compile to the same bytes;
+// the identity as a const local set from the getter is 426 bytes and scores 116, and so do the
+// identity declared inside the block and set from the getter, the identity preset to zero before
+// the getter, and the identity read into a local before the null test; the id test before the null
+// test scores 95.
+// MiniMax A (11-14): no new form, no lower score (90); the identity pointer and the requested rank still take the
+// two registers the other way round, so ours copies the identity into eax before the removal call, and that copy
+// costs the two bytes that move every later jump.
+// M3 lane 10 r106 (fast with 0xac050/0xac360/0x2399da): the requested rank copied into a local at function entry 90; the
+// may-change flag as `(flags & 0x800) != 0` 90; the permission compare as `(long)member.dwPrivileges < own_rank` 91; the
+// rank read once through its own address at the dispatch 90, and through its address at each of the four uses 90 (all
+// but the third the same code): taking the parameter's address does not move it off the colouring tie.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

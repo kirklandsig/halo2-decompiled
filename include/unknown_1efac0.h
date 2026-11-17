@@ -24,6 +24,8 @@ struct c_b
 
 struct c_a : c_b
 {
+	c_a() {}
+	c_a(unsigned short references) { unknown06 = references; }
 
 	virtual ~c_a()
 	{

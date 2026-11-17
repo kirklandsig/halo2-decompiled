@@ -52,12 +52,51 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
-// MiniMax D (run 46): early returns with a successor local and the index stepped at the loop end 49,
-// the successor read through the table 53; no lower score.
+// MiniMax I (11-17): no new form, no lower score (43): retail keeps the index and the entry pointer in one
+// register - esi holds the index, is scaled in place into the pointer and the successor goes to ebx - where this
+// build scales the index in ecx and copies it into a second register for the pointer; the forms measured this round
+// - the successor in its own local with the index stepped at the loop's end 51 (the copy stays), the same with the
+// result returned from inside the loop 49, and the exclusion mask as a byte local in place of the literal 3 43 (the
+// mask stays an immediate) - are all worse than the kept 43, so the original body stands.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
 // ours shares one register for index and successor.
+// MiniMax R (11-15): no new form, no lower score (43): a separate 16-bit successor local does split the
+// successor from the index, but the compiler still keeps the index in a scratch register and copies it into
+// the entry pointer, so the successor's own register is a general one and the & 3 mask stays an immediate:
+// the successor local with the index stepped at the loop's end 51, the same with the successor declared ahead
+// of the loop 51 and the same with the index stepped before the eligibility test 49, all worse than the kept
+// 43, so the original body stands.
+// MiniMax H (11-14): no new form, no lower score (43): retail's entry pointer is the index scaled in place in
+// ESI, the successor is kept apart in EBX and the & 3 mask is hoisted into AL before the loop, while ours copies
+// the index into a second register for the entry pointer and keeps the successor in a general register; the forms
+// measured this round - the successor in its own local 51, the same with the successor stored at the loop's end
+// 52, the early-return shape 49 and the mask carried through the exclusion helper 49 - all score worse than the
+// kept 43, so the original body stands.
+// MiniMax B (11-12): no new form, no lower score (43); retail reads the index straight into esi and scales it
+// in place (imul esi, esi, 0x68), keeps the successor in ebx, hoists the & 3 mask into al before the loop and
+// tests the successor at the loop's end (cmp ebx, -1), while ours copies the index into a second register for
+// the entry, keeps the successor in a volatile register and leaves the mask as an immediate. The forms
+// measured: the successor in its own local stepped at the loop's end 49, the same with early returns 52, the
+// guarded do-while with the successor 49, the loop condition on the result with the successor 57, the index
+// stepped before the tests 57 and 58, the chain's end taken with an explicit break 50 (as an if/else 50 too),
+// and the result-terminated loop that leaves the index unchanged when the chain ends 34, which spins in the
+// source and was not kept.
+// MiniMax S (11-11): no new form, no lower score (43); retail's shape read off the disassembly - the index
+// scaled in place in ESI, the successor in EBX and the & 3 mask hoisted into AL before the loop - is not reached
+// by giving the successor its own local (51 as a while loop and as a guarded do/while, because the successor then
+// lands in ECX) nor by returning from the loop directly (52, which also drops the top zeroing of the result).
+// MiniMax S (11-10): no new form, no lower score (43); the successor still rides in EDX where retail
+// keeps it in EBX (and retail reads the index straight into ESI where ours copies it), the mask is still
+// the immediate 3 where retail hoists it into AL before the loop, and the pushes keep our order.
+// The permuter (48 tries) found nothing better than the baseline; giving the successor its own local
+// moves it to ECX instead and measures 51, so the original body stands.
+// MiniMax D (run 46): early returns with a successor local and the index stepped at the loop end 49,
+// the successor read through the table 53; no lower score.
+// MiniMax C (11-08): forms tried, none lower: early returns 52, early returns with the successor in
+// a local 49, the successor in a local with the result flag 51, the loop turned into a do/while 51
+// (base 43).
 // native successor 51; persistent entry while/for 57; complete admission 43; identity predicate 53;
 // native player assignment 43; native successor with identity 57; admission result 59.
 // Native identity OR/logical OR 83/78; each with native name 83/78; native name alone 43;
@@ -272,6 +311,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // keep; `cmp ecx, -1` stays in the code). `index = *iterator` on the back edge 49-57h (forwarded before allocation, one web). An index
 // predicate helper, the found copy through `&g_4cf98c[index].player` or a getter, every test through a second lookup 49-53h. Left: index
 // and successor share a web in every form without a live re-use of the index, and only the forms with a live result hoist the mask.
+// P350: Existing exclusion helper result in bool/byte/short/long, false/true defaults:
+// 43 each. NOT kept: no early-save, independent successor, mask-hoist or exit repair;
+// original predicate and complete body restored.
 // M3 lane 4 r168 (one-file harness exact at 43, also at 37/42 for the forms that move the convention): names in three sort
 // positions for index/entry/successor/result on the current, separate-successor and early-return loops 43/51/49 in all 97
 // forms; a priming lookup before the loop and a second at its end with the tests as the loop condition 54 (retail's early
@@ -285,6 +327,168 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // (`long index = next;` at the top) with value tests 59 (135), with early returns 52, the twice-used mask 67/51;
 // XOnlineIsUserGuest on the xuid flags compiles as the byte test. Among these, the twice-used mask in the current loop 67
 // and `result = tests; ... break` 59 re-measure listed forms (scores agree). All restored.
+// Round 76 (m3 lane 10, fast, with 0x1a303b/0x2b393c): retail keeps index and entry in one register (`imul esi, esi`)
+// and the successor apart in EBX; every successor form here coalesces the successor with the index instead. A successor
+// declared at function scope with early returns 49; a guarded do-while ending on `next != NONE` with early returns 55
+// (133 bytes); `index = next` right after the successor read, before the iterator store, with early returns 52;
+// `while (index != NONE && !result)` with the successor and `else index = next` 54 (both callers lose); the entry as
+// `g_4cf98c + index` with a successor and early returns 49. Re-measured: successor with early returns 49.
+// P382: Complementary terminal no-player result in bool/char/signed-char/byte/short/word/
+// long/dword: 51/51/51/51/60/60/58/58. NOT kept: 133-137 bytes move away from native 127,
+// the result occupies EBX and AL mask/index/successor ownership still differs; wide forms lose both
+// callers. Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x1a303b/0x2b393c): the successor read through the table before the entry, early
+// returns, `index = next` at the loop end 53 (134 bytes); that with `continue` filters (index stepped before them) 51
+// (top-tested, no hoist); `continue` filters on the current body with the result and `break` 57 (the mask is hoisted into
+// AL and false remade at the exit as retail, but the loop stays top-tested, `mov al, 3` in the prologue, index and
+// successor share EDX); the table-first successor with the result, `break` and `index = next` at the end 60 (137 bytes);
+// `continue` filters with the table-first successor 54 (hoisted; successor copied to ECX); diagnostic: the `continue`
+// body as a guarded do-while 43 (main's code exactly, no hoist: the hoist with `continue` needs the top-tested loop).
+// P390: Nullable-copy admission in positive/complementary bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
+// original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
+// body restored.
+// M3 lane 4 r176 (fast with 0x1a303b/0x2b393c, both stay matched in every form; base 43 at 127): a guarded do-while
+// with a successor local, the found arm returning true and `result = false` after the loop 49 (127 bytes); an early
+// `return false` on an empty iterator, then an endless loop with a successor that returns true when found and false
+// when the successor is NONE 55 (133); a guarded do-while with the successor declared outside it, result and break,
+// and the step in the loop test 51 (127); a for loop stepping from a successor that is read into a short first 51
+// (127); the current loop with four `continue` filters (the identity pair and the exclusion pair joined by `||`) and
+// `return true` 52 (127). All restored.
+// Round 70 (m3 lane 15, fast with 0x1a303b/0x2b393c, both kept their matches): match-only lead 39 (129 B, masked aligned 9
+// against this body's 19): a priming lookup, then under `if (index != NONE)` `do { next = entry->next; *iterator = next;
+// if (tests) { copy; result = true; break; } if (next != NONE) entry = &g_4cf98c[next]; } while (next != NONE);` gives
+// retail's early ESI save and in-place `imul esi, esi`; left: the mask is not hoisted into AL, next takes EDX (retail EBX)
+// and the back-edge lookup is not cross-jumped into the head. Not kept: the inner test repeats the loop's. On it: early
+// returns 52 (133 B), a short next 63 (136 B, both callers 2), the flag tests as an outer if 39, the index reused for next
+// 39, a per-pass result 39, `else if (next != NONE)` with a `!result` loop condition 39 (no hoist in any).
+// Round 163 (m3 lane 6, fast with 0x1a303b/0x2b393c, both stay matched; aligned/masked control 30/33): the
+// guest test spelled on the xuid_flags dword, through a byte cast of it, as two one-bit byte tests, the name
+// test through the record's `name[0]`, and the dword guest test with `name[0]`: 43 each (same code; the mask
+// stays an immediate). All restored.
+// M3 lane 16 r108: register-masked aligned 33 against retail; every candidate form checked against this note was
+// already listed (loop shapes, successor locals, result/early-return exits, the iterate helper, predicate helpers,
+// test spellings, the `(xuid != 0 || guest)` validity that hoists the mask but keeps the first guest test); no untried
+// natural form found, no trial run.
+// Round 91 (m3 lane 1, fast with 0x1a303b/0x2b393c): an entry-pointer loop with `index != NONE ? &g_4cf98c[index] : NULL`
+// lookups before the loop and at its end 58 (137 bytes, the NULL test stays); a guarded `while (!result)` with the per-pass
+// result and `else if (next == NONE) break; else index = next;` 59 (135: mask hoisted into AL and false remade at the exit
+// as retail, but index and successor share ECX behind a padded head); the priming lookup under the guard with that loop
+// 39 (129: early ESI save and in-place `imul esi, esi` as retail; no hoist, successor in EDX, the back-edge lookup computed
+// in EDX and copied, not cross-jumped into the priming one, the head padded); on it `index = next` before the back-edge
+// lookup 39, the result set only in the found arm 39, the iterator read in the guard with a do-while on `!result` 39 (all
+// the same code), `return true` in the found arm 52 (133: AL free but no hoist, flags in EAX), a `short` successor 63
+// (136, both callers lose). Original body restored.
+// m3 lane 7 r150 (fast with 0x1a303b and 0x2b393c, both stay MATCH; a one-link LTCG harness reproduces this body's code, 5 bytes
+// of end padding short): retail sets AL false before the guard, hoists the mask into AL and makes false again at the loop exit;
+// the early-return forms give retail's early ESI save but neither the hoist nor the EBX successor. New: a found-entry pointer
+// with `index != NONE && !found` and the copy after the loop 56 (131 bytes); that with `!found && index != NONE` 55 (129 bytes);
+// the iterator stored on both paths after the tests, with result and break 50, with an early return 55; the guest test ahead of
+// the machine-local test with a successor local and early returns 44. Re-measured: `*iterator = index = entry->next` with an
+// early return 52, a successor local with early returns 49, an early `return false` then a do-while 55, a found pointer with
+// break 51 (133 bytes).
+// MiniMax A (11-11): no new form, no lower score (43); this round's new forms measured 43 or 71: the exclusion mask as a variable of its own, declared before or inside the loop (43), and the three loop forms that read the iterator in the loop (71).
+// MiniMax G (11-11): no new form, no lower score (43); retail reads the index straight into esi and scales it in
+// place, keeps the successor in ebx and hoists the & 3 mask into al before the loop, while ours copies the index
+// into esi, keeps the successor in edx and leaves the mask as an immediate; giving the successor its own local
+// moves it to ecx instead of ebx (51, and 52 with the loop left on a none successor), and passing the mask in at
+// the call site does not hoist it either.
+// Round 173 (m3 lane 6, fast with 0x1a303b/0x2b393c): the listed early-return form re-measured 52 (no EBX; next ECX,
+// flags EAX, mask immediate) and the listed `!result` loop with a successor 37 (player on the stack, ret 8, callers 15/27;
+// mask still an immediate there); that loop with the player copied into a local at entry 37 (same, callers lose); the
+// `!result` loop with no successor local 57; a guarded do-while with early returns and a `result` returned at the end 52;
+// `result` declared after the index 43 (same code); the XUID read once into a local for its two tests 50 (callers 2/2).
+// Also: the result as a byte 47 (129 bytes); the index as a short read from the iterator 54 (129 bytes, callers 2/2).
+// Round 113 (m3 lane 16, fast with 0x1a303b/0x2b393c): a successor local stepped at the loop's end with `result = tests`
+// and `return result` inside the found block 49; the same with the tests in a named bool and `return true`/`return false`
+// 49; `result = tests` each pass with the index stepped at the top and `break` 59 (135 bytes); a for loop on
+// `index != NONE && !result` assigning the result each pass and copying under `if (result && player)` 52 (callers 75/2);
+// `*iterator = entry->next` with `index = *iterator` at the loop's end and early returns 49; early returns with the successor
+// read through the table ahead of the entry pointer 53 (134 bytes); early returns with a successor local and the copy as an
+// aggregate assignment 49; the same with the guest test as `XOnlineIsUserGuest` on the flags dword 49. Original body restored.
+// m3 lane 3 r239: no trial run. Checked against this note and listed: early returns, a successor local stepped at the
+// end, per-pass result, `continue` filters, priming lookups, the iterate helper, typed XUID tests, the null-identity
+// validity, two-use flags/XUID locals, split eligibility scopes, result/index/successor widths and every loop shape.
+// P451: Whole-loop long result 59; final name-word pointer / lazy offline result /
+// lazy identity-presence result / nullable early completion / sole-return goto 43/43/43/43/43;
+// memmove payload 53; explicit final Boolean return arms 52. NOT kept: no gain or equality;
+// original body/helpers restored. Native ESI entry, EBX successor and AL mask remain.
+// m3 lane 3 r241 (one-file LTCG harness = fast for every form; fast with 0x1a303b/0x2b393c, both stay matched unless noted):
+// match-only lead 33 (127 B): a `short` index in `while (!result && index != NONE)` with a long successor local and `else
+// index = next` (not kept: the index type picked by score). From the imul to the guest test it is retail's code exactly
+// (index scaled in place in ESI, successor EBX, mask hoisted into AL): the short index makes the back-edge `index = next` a
+// conversion, not a copy, so the index no longer coalesces with the successor. Left: the iterator read and compared as a
+// word with a `movsx esi, cx` at the head (retail: 32-bit load and compare, so a short index can never match), the loop
+// top-tested and EBX pushed first. On it: `index != NONE && !result` 56 (129 B, both callers lose), a guarded do-while 64
+// (138), `return true` in the found arm 52, the iterator stored in both arms 54 (128), a guarded `while (true)` with
+// `if (next == NONE) break;` 56 (132); the long index with the iterator stored in both arms 48. Harness only (long index,
+// all with `else index = next`): a guarded do-while 51, the iterator store after the tests with `if (!result) index =
+// next` 52, the locals declared before the loop 57, a short successor with the store from the field 57, `index =
+// *iterator` in the else 57, a found pointer 71, the field read again for the step 73 (108 B), the loop on `*iterator`
+// 79 (102). Index/successor types on the r213 shapes: dword or word index and dword/short/word successors 36-71; only the
+// short index separates the two. Entry-carried loops (a priming lookup, the next entry looked up at the loop's end) in
+// 108 guard/loop/exit/step/test combinations all 39 (the listed lead: the back-edge lookup is not cross-jumped).
+// MiniMax G (11-14): no new form, no lower score (43): the index and the successor still share one register, so the
+// & 3 mask stays an immediate where retail hoists it into AL; stepping the index from the entry's successor at the
+// loop's end (the successor read for the store and again for the back edge) measures 56, the same loop with the
+// success path returning true 52, and the store moved after the eligibility tests 57.
+// MiniMax G (11-14, later): no new form, no lower score (43): retail keeps the index in ESI (the register it scales
+// in place) and the successor in EBX, ours keeps the index in EDX and copies it into ESI each turn, so the two
+// listings stay one instruction apart; a short local for the successor measures 51, the same local with the mask test
+// written in the body, with a byte mask local and with the helper taking the mask all measure 51, and the mask test
+// written in the body on its own keeps the immediate and 43.
+// m3 lane 1 r103: reviewed, no trial run. Retail's shape is main's single `index` (`index = entry->next` gives the EBX successor
+// and the `mov esi, ebx` back-edge copy) once the guest mask is hoisted into AL; every loop, successor, result, test and helper
+// form for the hoist is listed above, and none outside the note was found.
+// m3 lane 9 r123 (fast, with 0x1a303b/0x2b393c, both kept): the record tests as an inline predicate with early returns 40
+// (re-measured); that predicate inside an entry predicate with the flag tests as early returns 40 (same code); the entry
+// predicate as the per-pass result 69 (139 bytes, each early return materialises false); the two flag tests as one
+// `continue` filter 43; a primed lookup in `for (;;)` with result/break, `if (next == NONE) break;` and the end lookup 39
+// (129 bytes: retail's early ESI save, but the end lookup runs through EDX and the live result keeps the mask an immediate).
+// P504: Existing offline predicate scalar-reference/scalar-pointer/player-pointer/player-reference and exclusion
+// byte-value/byte-reference/byte-pointer/player-reference contracts: 43/43/43/43/43/43/43/43. NOT kept: All eight
+// tie 43 at 127 bytes; no native early-save, independent successor, mask or failure-exit recovery. Both matched
+// callers and all calibrated file controls retain their measurements. Existing helper contracts restored. Original
+// complete executable body restored.
+// M3 lane 15 r87 (fast with 0x1a303b/0x2b393c; base 43): a successor local with the found arm ending the walk by
+// `next = NONE;` (result set, no break) and `index = next` at the end 58 (the iterator moves to EBX, both callers lose);
+// the found arm clearing `index = NONE` with `else index = next;` 51 (callers keep; index and successor still one web);
+// the first form with the successor read through the table before the entry 55 (callers lose); the first form as a
+// guarded do-while 58 (callers lose); the `index = NONE` / `else index = next` form with the table-first successor 60
+// (137 bytes). Original body restored.
+// M3 lane 2 r87 (fast with 0x1a303b/0x2b393c): the test chain as three nested ifs (flags; a two-use XUID local for the
+// zero and machine-local tests; exclusion and name) with result and break 43 (callers kept), with early returns 52, with
+// early returns and a successor local 49, in a guarded do-while with result and break 43; the nested ifs in `while
+// (!result && index != NONE)` with a successor local stepped at the end 37 (player on the stack, ret 8, `mov al, 1; test
+// al, al` not threaded; callers 27/15). Original body restored.
+// MiniMax R (11-16): no new form, no lower score (43): retail keeps the index in esi scaled in place with the
+// successor in ebx and the entry's flags in ecx, while this build keeps the index and the successor in ecx and reads
+// the flags into eax.
+// P529: Existing offline-identity predicate returns its original comparison as
+// char/signed-char/byte/short/word/int/long/dword: eight 43 at 127 bytes.
+// NOT kept: no early ESI save, independent EBX successor, AL mask or failure-exit
+// repair; original private predicate and complete executable source restored.
+// P574: Independent final name-occupancy admission, positive/complementary
+// bool/byte/short/long: 43/43/43/43/43/43/43/43. NOT kept: no exact early ESI,
+// EBX successor or AL mask recovery; original eligibility and full body restored.
+// M3 lane 1 r112 (fast with 0x1a303b/0x2b393c): the zero-identity test as `(xuid != 0 || excluded)` after the offline test,
+// ahead of the real exclusion test, 65 (136 B: both guest tests stay, the mask stays an immediate, the player moves to the
+// stack, callers 2/2); `if (index == NONE) return false;` then `while (true)` with a successor local, `return true` in the
+// found block and `if (next == NONE) return false;` before `index = next` 55 (133 B: the successor takes EAX, no hoist);
+// `while (!result && index != NONE)` with a long index, a long successor and `else index = next` 57 (127 B: the mask is
+// hoisted into AL and both exits are retail's, but the loop stays head-tested, EBX is pushed first and the index/entry
+// share ECX with a copy into ESI); the same flag loop with `index = entry->next` 57; a guarded `do { ... } while (!result
+// && index != NONE);` 43 (same code). Lead: only a rotated loop testing the successor at the bottom can match, and the
+// flag forms keep the head test.
+// M3 lane 15 r94 (fast with 0x1a303b/0x2b393c, both MATCH in every trial): on the listed inline record predicate with early
+// returns (re-measured 40): with `if (index == NONE) return false;`, `while (true)`, a successor local, `return true` in the
+// found arm and `if (next == NONE) return false;` before `index = next` 63 (138 B); in main's result/break loop with a
+// successor local stepped at the end 48; in a successor loop with `return true` / `return false` 51; in `while (!result &&
+// index != NONE)` 56; that with a successor local and `else index = next` 56 (masked 17: the mask hoisted into AL and the
+// index scaled in place, but in ECX, the loop head-tested). Same code: a redundant `if (index != NONE)` guard around main's
+// loop 43; the predicate in a guarded do-while 40; the predicate as one `&&` expression 43. The predicate with the name
+// test as an early return as well: in the `!result` successor loop 57, in the `while (true)` latch loop 55 (133 B), in main's
+// loop 43 (same code).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -477,6 +681,11 @@ struct s_cached_player_view
 	byte field56;
 	byte unknown57;
 };
+struct s_cached_player_record
+{
+	s_cached_player_identity identity;
+	byte source_bytes[0x90];
+};
 
 // @retail 0x7f8b0
 void function_7f8b0(s_cached_player_view *result, const s_cached_player_identity *identity,
@@ -653,9 +862,15 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
+// score 18 (was 18): the loop's entry pointer is based at the entry's link run (EDX = entry + 0x5c) where
+// retail bases it at the view's field 0x4c (entry + 0x4c), so every entry store's displacement differs, and the
+// view's byte stores and the link stores come out in another order (ours makes the 0x52 byte and the NONE first).
 // MiniMax D (11-04): no new form, no lower score; the identity as three named dwords instead of an array
 // 53 (same code), it still folds into registers and the frame stays 0x98.
-// score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
+// dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
+// MiniMax C (11-08): no new form, no lower score.
+// Earlier (score 53, was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
 // packed source-byte carriers and initialization homes differ.
@@ -883,6 +1098,111 @@ void function_1537f0(s_profile_record *record);
 // Round 133 (m3 lane 7, fast): index loop with every field through `g_4cf98c[i]` and the 8-byte tail kept 77 (238 bytes:
 // retail's `cmp edx, end; jl` exit, identity still folded); on it identity `= { 0 }` 77, the record initialized before the
 // identity 77, an entry pointer after the record initializer 78 (238); a short index 53 (the countdown returns).
+// P380: Identity retained across the loop edge and reset on each visit, before/after metadata,
+// library/aggregate entry zero and per-visit/outer source; four later traversal-entry initializations.
+// Scores 87/87/87/87/87/87/87/87/87/87/87/87. NOT kept: all twelve score 87 at 273/258; native frame
+// 0xa0 recovers, but identity/source slots, countdown and initial zero placement still differ.
+// Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x7f8b0): an index loop with an XDK XUID identity zeroed by memset 78 (238 bytes);
+// the record initialized before a plain dword[3] identity on the pointer walk 53 (same code); an index loop through
+// `g_4cf98c[i]` with the link stores in retail's order 77 (238); an index loop with an entry pointer, both locals
+// declared before their initializers, the links in retail's order and flags/time as two stores 80 (236); the pointer
+// walk stepped beside a count-up index 53 (same code). Retail's frame (0xa0, 8-aligned, identity +0x10, a 4-aligned
+// record at +0x1c, 4 bytes free at the top) is exactly one 0x9c-byte object {qword, dword, 0x90-byte record}; no
+// existing type has that layout, so the identity still folds.
+// P387: Whole identity-record standard fill/fill_n/uninitialized-fill/uninitialized-fill_n,
+// per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
+// still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
+// per-visit fills, pointer walk and complete body restored.
+// MiniMax C (11-09), 45 -> 18: the four link shorts are now written through a pointer to
+// the entry's run of links, so their common base frees the register that holds the -1 and lets it
+// be made afresh in EAX before the four stores as retail does, and the flags word and the word
+// after it are set with two plain stores, which gives retail's two direct dword stores; the code
+// is now 258 bytes, retail's length. Left: our tail stores sit 0x10 above retail's (our run of
+// links begins further into the entry), the entry's byte stores come out in another order and
+// with the two shifts in the other registers, and the walk's end compare carries the address of
+// our own array.
+// MiniMax C (11-09), 53 -> 45: the identity and the source now sit in one per-visit
+// record, so the identity's address reaches 0x1537f0 and 0x7f8b0 and its three zero words and
+// the three loads that copy them into the entry survive as in retail; the walk is an index loop
+// over the entries, which keeps retail's compare of the entry pointer with the array end (our
+// own array stands elsewhere, so the immediate still differs) and drops the frame countdown, so
+// the frame is 0xa0 with the identity at +0x10 and the source at +0x1c as in retail. Left: the
+// NONE constant stays in EBP across the walk where retail re-materialises it in EAX, the
+// entry's byte stores come out in another order, and our code is 259 bytes against retail's 258.
+// MiniMax C (11-09), 53 -> 53: the identity's three words still fold away, so the frame
+// is 0x98 against retail's 0xa0, and our walk ends on a countdown kept in a frame slot where
+// retail compares the entry pointer with the array end (signed). Untouched this round.
+// Round 149 (m3 lane 8, fast): the base follows the link pointer: it lands on one of the four link slots, which one
+// depending on the store order (index order 0,1,2,3 and 3,2,1,0 give +0x5c, 2,0,3,1 and 1,3,0,2 +0x5e, 0,2,1,3 +0x5a),
+// all 18; with every entry field written through `entry` (one address) the base is retail's +0x4c but NONE is again
+// kept in EBP from the global stores (the 49 form, re-measured 49). Tried: the link stores through the pointer in the
+// field chain's order (next, next_other, unknown58, previous_other: retail's store order) 18; four separate link
+// statements 18; the link pointer declared before the record 18; a view pointer local passed to 0x7f8b0 18; the flags
+// and the word after them by one memset 31 (260 bytes); the flags stores before the links 27; a pointer walk with the
+// link pointer 80 (275 bytes); every field through `g_4cf98c[index]` with the link pointer taken from it 44 (base
+// +0x4c, NONE in EBP); a dword pointer to the flags with the field chain 49.
+// Round 110 (m3 lane 16, fast with 0x7f8b0, 0x1537f0 and the caller 0x8d9f0): the link chain through `entry` with no link
+// pointer re-measured 49. NONE stays out of EBP only while the NONE stores go through a pointer derived from `entry`, and
+// the cursor base then lands on a link slot. A view pointer local for the 0x7f8b0 call with no link pointer 49; the link
+// pointer taken from `&g_4cf98c[index].unknown58` with the rest through `entry` 45 (base +0x4c, NONE in EBP, the record's
+// two zero words merged in EBX). Mixes of the `entry` local with the array element, not kept without a match: the 0x7f8b0
+// view through `&g_4cf98c[index].player` 14, the flags and the word after them through `g_4cf98c[index]` 14 (same code),
+// both 14: retail's byte-store order with only the base (+0x5c) left, so every remaining difference is a displacement;
+// with the link chain in retail's store order 14 (base +0x5e); the links as four `entry->` statements in retail's store
+// order with the tail through the array element 48, with the view through it 46 (NONE in EBP). Re-measures (same code):
+// the view and the tail both through the array element 14; the link pointer declared at the top of the loop body on the
+// tail-through-array form 14; on main's body the four link stores as separate statements in retail's order 18 (base +0x5e);
+// the entry pointer as `g_4cf98c + index` 18. No further untried natural form was found.
+// Round 237 (m3 lane 3, fast with 0x7f8b0 and 0x1537f0, both matched each time unless noted): the hoist is a weight contest
+// for EBP between the -1 constant (four head stores and four link stores share one value) and the record's first forwarded
+// word. Diagnostics: one more read of that word (`entry->flags = source->field40`) ends the hoist with retail's base +0x4c
+// and the halves in EBP/EBX; one head store dropped still hoists (74); the record initializer's dead NONE stores zeroed
+// still hoist (46, 0x1537f0 2-16). Links as two prev/next pair statements through `entry` 49, with the view through the
+// array element 46, through the array element everywhere 44, view through `entry` 45 (all base +0x4c, NONE in EBP); the
+// same pairs or four statements through the link pointer, a second pointer per pair, a four-short view pointer 14-18 (no
+// hoist, base +0x5e or +0x5c: the base is the second non-zero-offset expression of the offset pointer); two links through
+// a pointer and two through `entry` 47 and the flags through a dword pointer 47-49 (base +0xc, hoist). The link value
+// from a short local 46, read back from the first link 46, from the record's own NONE shorts 46, from the list ends 60
+// (reloaded in the loop); the heads as two chains 46, read back from each other 46, as dword 0xffffffff 46; the entry
+// links written `0xffff` 46. Unsigned 16-bit link stores (word lvalues, any spelling of the constant) 5: no hoist, base
+// +0x4c and every instruction retail's but `mov eax, 0xffff` for `or eax, -1` (two bytes longer); three signed links and
+// one unsigned 6-9 (the unsigned one is an immediate store). A 64-bit read of the record's 0x40 field in 0x7f8b0 45-46
+// (0x7f8b0 61-68, 0x80490 85-106); a four-byte aggregate for that field 46-49 (same code); the timestamp through its
+// dword cast, a memset or a pointer 46. Diagnostic, the record initializer's NONE byte (the 0xff the view takes) zeroed
+// 48 (still hoists, so that byte is not in the contest); the record member typed as the view's source under 4-byte
+// packing, or as 36 dwords, 46-49 (same code). Left: what gives the forwarded word one more use, or the -1 constant
+// fewer, in retail's loop.
+// M3 lane 12 r121 (one-file LTCG harness with 0x1537f0's object, exact on the control 18): the links as four `entry->`
+// statements in retail's store order 48 (NONE in EBP); the per-visit record at function scope 18 (same code); 0x1537f0
+// called before the identity is cleared 60 (271 bytes); a `short` loop index 63 (275 bytes); the flags and the word after
+// them in one chained assignment 18 (same code); the links as two chained pairs through `entry` with the flags chained 48.
+// M3 lane 11 r104 (fast with 0x7f8b0 and 0x1537f0, both matched): the four links as one chain through `entry` in field order
+// 49 (the listed hoist); the view argument as `(s_cached_player_view *)entry` 18 (same code); the links as per-list statements
+// through `entry` (previous_other, next_other, unknown58, next) with the heads as two chained pairs 49; one link chain through
+// `entry` ahead of the 0x7f8b0 call 83 (268 bytes); the record, its initializers and the 0x7f8b0 call in their own block with
+// the link chain through `entry` after it 49. Every form with the link stores through `entry` hoists NONE into EBP.
+// M3 lane 10 r110 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the entry pointer declared after the record's
+// initializer 18, an identity pointer local for the clear and the call 18, the link pointer declared first with a view pointer
+// for the call 18 (all same code); the heads as one four-way chain with the links as four `entry->` statements in retail's
+// order 49 (hoist). Diagnostics: the flags and the word after them through a dword pointer (`tail[0]`, `tail[1]`) on this body
+// 14 (retail's store schedule, only the +0x5c base left); that pointer with the links through `entry` 49 (NONE hoists again:
+// only NONE stores through a pointer end the hoist).
+// M3 lane 16 r124 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the link chain through an unnamed
+// `(&entry->unknown58)[n]` expression 49 (NONE hoists into EBP: only a named pointer ends it); the link pointer declared
+// before the record 18 (same code); the flags and the word after them stored before the links 27; the links as two chained
+// pairs through the pointer, (2,3) then (0,1) 18, (0,2) then (1,3) 18.
+// M3 lane 12 r131 (fast with 0x7f8b0 and 0x1537f0, both matched; control 18): the entry as a reference with the links pointer
+// 18 (same code); a view pointer for the 0x7f8b0 call with the links taken as `(short *)(view + 1)` 18 (same code); the links as
+// one chain through an entry reference 49 (NONE hoisted into EBP); `short *const links` 18. Diagnostic: the links set by a plain
+// counted loop through the pointer 38 (250 bytes): the loop becomes two dword -1 fills, and the base is then retail's +0x4c with
+// NONE not hoisted (EBP/EBX hold the record's two forwarded words as retail), so base and hoist follow the four word stores.
+// Round 171 (m3 lane 7, fast with 0x7f8b0 and 0x1537f0, both matched each time): the links cleared per list through an inline
+// helper taking the previous/next field pointers 49 (base +0x4c, NONE hoisted into EBP, the record's two forwarded zero words
+// merged into EBX), taking them by reference 49; one inline helper clearing the four through a pointer parameter 18 (same code);
+// the per-entry body (record, view, `entry->` links, flags) as a force-inline helper 49 (plain inline stays out of line, 67
+// bytes). Diagnostic: the head stores moved after the loop with the links through `entry` 72: NONE is still hoisted into EBP,
+// so the hoist is the loop's own four link stores, not their constant shared with the heads.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -893,15 +1213,18 @@ void function_7f930(void)
 	g_4cf97c = NONE;
 	g_4cf984 = NONE;
 	g_4cf988 = NONE;
-	for (s_player_configuration_cache_entry *entry = g_4cf98c; entry < g_4cf98c + 350; entry++)
+	for (long index = 0; index < 350; index++)
 	{
-		s_cached_player_identity identity;
-		memset(&identity, 0, sizeof(identity));
-		s_cached_player_source source;
-		function_1537f0((s_profile_record *)&source);
-		function_7f8b0((s_cached_player_view *)&entry->player, &identity, &source, NULL);
-		entry->next = entry->next_other = entry->unknown58 = entry->previous_other = NONE;
-		memset(&entry->flags, 0, sizeof(entry->flags) + sizeof(entry->unknown64));
+		s_player_configuration_cache_entry *entry = &g_4cf98c[index];
+		s_cached_player_record record;
+		memset(&record.identity, 0, sizeof(record.identity));
+		function_1537f0((s_profile_record *)record.source_bytes);
+		function_7f8b0((s_cached_player_view *)&entry->player, &record.identity,
+			(const s_cached_player_source *)record.source_bytes, NULL);
+		short *links = &entry->unknown58;
+		links[0] = links[1] = links[2] = links[3] = NONE;
+		entry->flags = 0;
+		entry->field_64 = 0;
 	}
 }
 
@@ -1169,309 +1492,15 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 }
 #pragma inline_depth(8)
 
-// MiniMax A (11-05): no new form, no lower score; an else arm that assigns the downward flag false again
-// (retail's second `xor bl, bl` at the merge point) grows the body to 1178 bytes and scores 382.
-// score 49 (was 49): frame 0xc and the whole tail agree; the admission prefix (a `cache_full` bool, retail
-// tests the count directly and loads the removed index into EDX) and the upper bound's register (retail ECX,
-// so the forward copy index takes EAX) remain.
-// Paired range arms 373;
-// native FILETIME 314; short adjustment 300; unsigned repair counter 364;
-// range/time/short combination 375; native time and short adjustment 357.
-// Three relative-position cases 243; early bounds 377; explicit upper bound 361;
-// forward destination index 366; reverse destination index 360; widened
-// global-index adjustment 358.
-// First removal-call acquisition 243; real repair-table cursor 819; short repair counter 819;
-// long direction flag 244; equality-first cases 243; forward CRT memmove 385.
-// Existing complete view initializer 240 (three-point gain rejected); reverse memmove 380; native-entry memcpy 243; signed repair while 243; isolated signed-min lower bound 306 (fast).
-// Paired signed min/max 302; independent bound overrides 362; forward entry cursor 369; reverse entry cursor 394; both entry cursors 406.
-// Branch-produced removed index 390; neutral lower/both bounds 309/243; shared signed direction 343;
-// identity memcpy 243; chained sentinel stores 243; new-entry predicate 381; branch/native bounds 390;
-// signed link values 815 (repair unrolling lost); original body restored.
-// Full-width adjustment with three-case bounds 256; adjustment with shared initializer 253; pre-copy short adjustment 378; adjusted insertion local 390; less-first cases 243.
-// Frame 0xc agrees; removed-index EDX/ESI and upper ECX/EAX remain. Direction value 342; signed-byte direction
-// 243; range role names 243; direct indexed repair 243; signed min/max with long adjustment 370.
-// Upper-first repair tests 375; nested tests 243; four head values 238 kept; branch-produced bounds
-// 243; signed-byte adjustment 445; upper-first/head values 377; bounds/byte 445; nested/head values
-// 238.
-// Insertion destination before shifts 384; earlier view 243; both addresses 384;
-// insertion/time role names 243; early destination with names 384; both with names 384;
-// early destination/time workspace 393; all lifetimes/names 393. Original body restored.
-// Round 124: No-removal-first range 371; uninitialized time output 385; packed metadata memcpy 257;
-// real-array repair bound 375; consistent table base 394; first/second/both removal inline declarations 243/243/243.
-// All five body forms and all three declaration trials restored.
-// Round 232: native link-block loop 812; unsigned link-block cursor 812.
-// native link array 238; memory-order native links 238.
-// native links/shared initializer 240; native links/signed snapshots 834.
-// native loop/full adjustment 826; native links/live heads 243.
-// Constant removal result/shared full predicate with retained cases 385/381; with signed bounds 391/181 kept.
-// Existing initializer on those four forms 383/380/393/184; bounds alone 304; removal-first lower 181;
-// nonfull polarity 190; full-width admission result 402. Kept form is 1185/1171 bytes, plain 181.
-// Current admission/bounds with long adjustment 66; byte admission 181; native time 194;
-// long/byte 66, long/time 137, byte/time 194, all three 137; mutable removed/long 66.
-// Round 10: existing initializer 98; direct/branch-shared removal 370/370;
-// separate admission 394; removal-first lower forms 66/66/64; forward source entry 66;
-// forward memmove 380; sentinel-first links 157; early view/bound declaration swap/
-// const admission with the 64-point lower 64/64/64; default insertion range 388;
-// three current-graph cases 386. The two-point lower gain was not kept; original body restored.
-// Round 149: plain entry (removed = NONE, set inside the full test) 370; with lower/upper as
-// `removed > position ? ...` and an explicit `>` arm 355; plus the flag cleared in the count path
-// (retail tail-merges that arm with it) 74 at 1171 bytes, with the flag set before the decrements and
-// upper assigned first there 71: entry, min/max and three-way test then match, but upper takes EAX
-// (retail ECX, copied from the count) and the forward index EBP (retail EAX). On 71: one shared shift
-// index 74; range locals in three orders 74; named count 71; entry-pointer forward copy 71, copy from
-// lower 364; upper before lower 75; bounds zeroed in an else arm 71. Original body restored.
-// Round 215: native timestamp dword member 66; closed bounds workspace 66;
-// entry time workspace 66; pre-copy long adjustment 382; indexed destination 168;
-// mutable removal with upper-first declarations 66; shared range-direction relation 381;
-// indexed destination with native timestamp member 168. Original body restored.
-// Round 7 (lane 15): link stores next_other/unknown58 first 65, with chained NONE stores 65, NONE stores
-// first 157; round 149's entry rebuilt 71 (entry matches but for the g_4cf980 load target and upper in EAX
-// coalesced with the count); on it: those link stores 70, count path lower first 72, named count 71,
-// flag declared first 71, flag set after the decrements 73, flag declared after the removal 71.
-// Round 183: actual endpoint 389; plain endpoint 396; one count 89 (frame 0x10); endpoint/count 380; plain endpoint/count 394; endpoint relation 387; plain relation 394; combined count/relation 384. Original body restored.
-// Round 12 (lane 14), all on round 149's 71 form (its entry and three-way test match; upper stays in EAX,
-// coalesced with the count, where retail copies the count into ECX): rebuilt 71; count path lower first 72;
-// `g_4cf978 > position` 73; upper declared before lower 71; the flag declared first 71. Original body restored.
-// Round 119 (lane 4), on round 149's entry (71, aligned 39 against the current 55): retail's entry
-// (load into EDX, copy to ESI, spill, call) comes only from `removed = g_4cf980;
-// function_7fd10(g_4cf980); function_7fd80(removed);` 69 (aligned 37; a mixed read, kept only with a
-// match); the calls through an inline unlink helper 71, the helper returning the index 74 (spill after
-// the calls), the global passed to the helper 73, a separate `last` local 76; on the 69 form: lower
-// first in the count path 70, upper declared first 69, `g_4cf978 > position` 71, upper as `<` 70,
-// upper initialized from lower 69 (upper stays in EAX with the count); link stores next_other,
-// unknown58, previous_other, next 68 (next_other then stored first as retail, but the g_4cf988 load
-// moves ahead of the NONE stores into DX), previous_other first 161, unknown58 third 69, next first 161.
-// Round 80: plain entry (removed = NONE, set in the full test), `removed <= position ? removed : position`,
-// an explicit `>` arm clearing the flag, the flag set before the decrements and the count path upper
-// first with its flag cleared 73 (aligned 41 against 58: the entry and the three-way test match; upper
-// still takes EAX, so the forward copy index takes EBP and a jump over the loop padding shifts the
-// rest); on it: lower first in the count path 74, upper declared first 73, upper before lower 75, the
-// lower ternary on `position < removed` 73, bounds left unset and zeroed in a final else 73.
-// Round 47: on the current body, `lower = removed > position ? position : removed` 64 (retail's
-// cmovle; upper still EAX because the `cache_full` sete puts the count in ECX); the three-way test
-// with the flag cleared in the `>` arm and the count path 380, upper first there 380; plain entry
-// with that lower 368 (entry as retail but the EDX load, upper coalesced with the count in EAX);
-// plain entry with the three-way test 74, with round 119's mixed read 72.
-// Round 45 (lane 16), `--fast`: round 149's 71 form rebuilt (71); on it: one shift index for both
-// loops 71, bounds without zero initializers and the count arm as a plain else 398 (1155 bytes,
-// EBP pushed late), the insertion bounds as defaults replaced for a removal 395 (1155); the existing
-// 0x7f8b0 call for the new entry's fill (inlined; the aulldiv, identity and copy registers then match
-// retail) on the current body 98 (1174 bytes), on the 71 form 104 (the four head repairs swap EAX/ECX
-// and next_other is stored from AX), with the heads adjusted in place 104.
-// Round 106: round 149's plain entry rebuilt 71 (aligned 39); it without the flag initialization (each arm sets
-// the direction) 390; time stored through the dword member 66; time read through a zeroed FILETIME 66; the NONE
-// link stores as `(short)NONE` 66; g_4cf97c named once for the next_other store 66.
-// Round 6 (lane 17): round 149's plain-entry form rebuilt 71 (upper coalesced with the count in EAX);
-// on it the `<` arm first with `>` as its else-if 336, bounds initialized to position 71; the hour
-// stamp through an inline helper 66 (71 on the plain-entry form); the shift block as a forceinline
-// helper taking (lower, upper, downward) 66 (71); flags cleared before the link stores 157 (1167
-// bytes); the zeroed time local declared before the entry pointer 70 (75). Original body restored.
-// Round 111: the four head repairs on the globals directly (no named copies) 49 kept: the link stores, the
-// g_4cf988 load and the time and identity-copy registers then match. On it: round 149's plain entry with
-// `removed > position` bounds, an explicit `>` arm and the count path upper first clearing the flag 54 (only
-// upper in EAX, the EDX load and the forward-copy addressing differ), the flag set after the decrements 56, the
-// count path lower first 55; the count path upper first without the flag 50; the 0x7f8b0 call for the fill 98.
-// Harness screens on the 54 form, all with upper still in EAX: every min/max spelling and three-way order, the
-// declaration orders, a named count, one copy index for both loops, the copy and repair loops as force-inline
-// helpers, a plain else for the count path (1155 bytes). Permuter on the 49 form: nothing better in 60 tries.
-// Round 98 (lane 7), `--fast`: round 149's plain entry with the explicit flag arms, the count path upper first and
-// `downward = true` first in the `<` arm 54 (aligned 23: retail's `mov bl, 1` before the spills); that with the 0x7f8b0
-// call for the fill 104 (1174 bytes); the current body with `downward = true` first 50; the plain entry form with
-// `lower < upper` 54, with the count path's flag store first 54. Harness, all with upper in EAX: four copy-loop index
-// spellings, a function-scope copy index, the eight declaration orders above the removal block (373), the count path
-// first, an unconditional count path (1155 bytes), short bounds, bounds without initializers, removed set in an else.
-// Round 28 (lane 14), `--fast`: round 149's plain entry with `removed > position` bounds, the explicit `>` arm and
-// the count path upper first clearing the flag 56 (aligned 25: entry load into ESI then EDX where retail loads EDX
-// and copies to ESI, upper in EAX where retail copies the count into ECX); on it the bounds renamed
-// last/first, high/low or upper_bound/lower_bound, `removed` renamed, the flag renamed 56 each (same code: the
-// names do not move registers); the count path without its flag store 355 (1162 bytes); the `>` arm without its
-// flag store 370 (1162); bounds and flag declared above the removal 378; the count path as a nested if with the
-// flag cleared in the outer else 391 (1178).
-// Round 99 (lane 8): the tail (head repairs, links, time, fill) already matches; on round 111's plain-entry form
-// (rebuilt 54): bounds zeroed in a final else 54, `g_4cf978 > position` 56, upper before lower in the removal arm 58,
-// the count path's flag store first 54; harness: count path lower first 55, the mixed `function_7fd10(g_4cf980)` read
-// 52, lower and upper initialized to position 369 (1162 bytes); the existing 0x7f8b0 call for the fill 100 (1174 bytes:
-// the head repairs reorder and carry g_4cf97c in EAX, field56 through AL).
-// Round 44 (lane 1, fast): round 149's plain-entry form rebuilt with `downward = true` first 54. A compile-only
-// /Gd build reproduces this prefix exactly (upper in EAX, forward copy index EBP); deleting the backward copy
-// (diagnostic) frees EAX: its index `i = upper - 1` coalesces with upper (`dec eax`, retail `lea eax, [ecx - 1]`).
-// On the current body: backward copy as `for (i = upper; i > lower; i--) g[i] = g[i - 1]` 373 (upper ECX, but the
-// copy's strength reduction changes); backward/forward copies through a per-iteration element pointer 107/66;
-// forward copy as `for (i = lower; i < upper; i++) g[i] = g[i + 1]` 371; the copy arms swapped 70. Screened only
-// (upper stays EAX): count-path orders, declaration orders, ternary spellings, a shared index, `--i` loops.
-// Round 101 (lane 7), `--fast`: round 111's plain-entry form rebuilt 54 (upper coalesced with the count in EAX; retail
-// copies the count into ECX for upper); copy loops indexed by the destination (`i = lower; i < upper`, `i = upper;
-// i > lower`, both) on the current body 371/373/373, on the plain-entry form 364/361/361; on the plain-entry form the
-// direction step computed before the copy loops 358, the flag set from `removed < position` 390 (1162 bytes).
-// Round 44 (lane 10, fast): round 111's plain-entry form rebuilt 56 (upper coalesced with the count in EAX; on the
-// current body the `cache_full` sete puts the count in ECX and upper in EAX, retail has count EAX, upper ECX); on it
-// the count path reading the count into a block-local `count` for the test and the bound 56, with lower assigned
-// first and no flag store 355 (1162 bytes); the current body with that block-local count 49 (identical); the current
-// body's three-way test as `position > removed` 50; the plain entry with the bounds and flag declared above the
-// removal block 378.
-// Round 140 (lane 4): on the current body, lower as `removed <= position ? removed : position` 49 (same code);
-// upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
-// `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
-// cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
-// Round 28 (m3 lane 2, fast with 0x80330/0x80490): on the current body, the count path assigning upper before
-// lower 50; the zero-initialized bounds declared above the full-cache test 49 (same code: their zero values are
-// threaded away, so they never interfere with the count and upper still shares its register); `cache_full`
-// kept with `removed` set to NONE and assigned inside the test 370 (1162 bytes); the flag declared before the
-// bounds 49; the shift test written `lower < upper` 49. Retail's upper takes ECX because the backward copy's
-// index `i = upper - 1` gets EAX (`lea eax, [ecx - 1]`); ours puts upper in EAX and decrements it in place.
-// Round 59 (fast): 1-8 unused locals at the top (diagnostic) 49 each. Round 149's plain entry rebuilt (cmovle lower,
-// explicit `>` arm, count path upper first with the flag cleared, flag set before the decrements) 54: only the
-// EDX/ESI load of the removed index and upper in EAX (coalesced with the count and the backward index) differ.
-// On it: backward copy as `for (i = upper; i > lower; i--) g[i] = g[i - 1]` 361 (1165 bytes, upper still EAX);
-// the copy arms tested as `!downward` 54; the two calls passed g_4cf980 with `removed` assigned after them 373
-// (1177 bytes); the count test as `g_4cf978 > position` 56; lower as `removed <= position ? removed : position` 56.
-// Round 17 (lane 17, fast): round 149's plain entry with the explicit `>` arm and the count path upper first
-// rebuilt 56; with round 119's mixed read 54 (first difference +0x4c: the entry and EDX load are retail's);
-// plus `downward = true` first in the `<` arm 52 (only upper in EAX, against retail's ECX, and the forward
-// copy index in EBP, retail EAX, remain: retail's forward-copy index outranks upper for EAX); on 52: one
-// function-scope index for the copy and repair loops 52 (identical), upper as `position < removed ? removed
-// : position` 54, the no-removal arm reading the count into a local for its test and upper 52 (identical).
-// Round 37 (lane 15, fast; current body): the backward copy as `long i = upper; while (--i >= lower)` 49, the
-// forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
-// canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
-// entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
-// Round 127 (lane 6, fast with 0x80490/0x80330): a compile-only /Gd harness scored against retail (a normalized diff,
-// 47 for the build's 49) reproduces upper taking EAX; there six declaration orders of lower/upper/downward, upper as
-// `position < removed ? ...`, lower as `position >= removed ? ...`, upper assigned before lower, the count path
-// lower first, `lower < upper`, upper declared first in the function and one block-scope copy index all leave it
-// in EAX (34-35 on the plain-entry form). Real: round 149's plain entry with the explicit flag arms and the count
-// path upper first 56, with `lower = removed > position ? position : removed` 54 (only the EDX/ESI entry load and
-// upper in EAX left); the plain entry alone 370 (1162 bytes), with the explicit flag arms only 358, with the count
-// path's flag store only 372.
-// Round 37 (lane 15, fast; current body): the backward copy as `long i = upper; while (--i >= lower)` 49, the
-// forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
-// canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
-// entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
-// Round 75 (lane 12, fast): `position--` before `upper--` 49 (same code); on the plain entry (56, aligned 21 against
-// the current 30): lower spelled `position < removed ? position : removed` 56, no flag store in the count
-// path 358 (1162 bytes), the `<` arm tested first 341, both 341. Retail keeps the count in EAX and upper in
-// ECX (the repair loop is unrolled on a constant bound, so the count dies in the head).
-// Round 36 (fast, with 0x80330/0x80490/0x7fd10/0x7fd80): compile-only, upper takes EAX in all 50 random combinations
-// of the entry (cache_full / plain / mixed read), bound initializers, declaration order, both min/max spellings,
-// the three-way arm forms, the count path's order, flag and test (search7f.py). Real: upper declared first with
-// `lower = removed > position ? position : removed` 47 (not kept: 2); on it the flag set first in the `<` arm 48,
-// the count path upper first 48, `g_4cf978 > position` 47, the mixed read 366 (1162 bytes), the mixed read with the
-// explicit `>` arm and the count path's flag store 55; the mixed read with the `>` arm and the count path's flag
-// store on the current declarations 57 (the entry then matches to +0x43), with only the count path's flag 370,
-// with `removed <= position` / `removed < position ? position : removed` bounds and `g_4cf978 > position` 369, with
-// the declarations reversed, upper assigned first and the count path upper first 370.
-// DL233: Direct count observations at each capacity use, conditional/branch removal values,
-// original/retail-order minimum and original/complete direction cases: 395/395/395/395/61/61/61/61.
-// Original complete body restored; direct count/removal and independent upper ECX/source EAX
-// still differ within the matching frame and tail.
-// Round 343: Direct-head/long-adjustment admission char/word/long/dword 49/392/384/384;
-// complementary room state bool/byte/word/long 58/58/391/383. All control
-// matches survive; original entry, range, repairs and complete tail restored.
-// M296: Range-relative copy ordinals forward/reverse/both, then each with the real
-// range count, then both unsigned/short [376, 369, 373, 380, 367, 373, 369, 418]. Original absolute copy indices restored.
-// M303: Paired source/destination cursors forward/reverse/both with ordinal bounds, pointer bounds, then mixed bounds: [414, 396, 412, 421, 402, 418, 418, 421]; original native copies restored.
-// N301: Standard directional copy forward/backward/both 393/387/386;
-// direct capacity entry on those three 376/371/392; both with room admission/native minimum 388/392.
-// All restored; initial admission/removal and upper-bound register ownership remain.
-// Round 60 (m3 lane 1): the one-link harness matches the listing; 40 random combinations of the removed read
-// (mixed/plain/as the call argument), both min/max spellings, explicit or plain three-way arms, count-path order, flag
-// and test, bound declaration order, decrement order, a function-scope copy index and the shift test all leave upper
-// in EAX. Fast: mixed read, cmovle lower, `position < removed` upper, explicit arms, count path lower first with its
-// flag, function-scope copy index 55; with `removed < position` upper, upper first, `g_4cf978 > position` 55; mixed
-// read, upper declared first, position decremented first 58; plain read, explicit arms, count flag 62; plain read,
-// `removed <= position` lower, count path lower first 62.
-// M310: Exact native copy endpoints: source-forward/reverse/both, destination-forward/reverse/both, mixed source/destination and destination/source [368, 377, 368, 371, 373, 370, 373, 371]. Original body restored.
-// M312: Paired absolute source/destination ordinals forward/reverse/both, each with native repair
-// cursor, then both signed-int with/without cursor: 384/107/391/789/803/789/391/789. Original
-// body restored.
-// M328: Complete inverse direction in bool/byte/short/long, original/direct
-// capacity entry: 53/53/386/376/373/373/365/373. Original direction, admission and full
-// body restored; count/upper allocation and forward ordinal still differ.
-// Round 76 (m3 lane 16, fast with the file's queue functions, 0x7f8b0, 0x1537f0 and the 0x805e0 callers): `removed`
-// not const 49 (same code); upper as `position > removed ? position : removed` 50; lower as `removed < position ?
-// removed : position` 49; the count path assigning upper first 50; the entry's player built by the existing
-// 0x7f8b0 call (NULL previous) 98 (1174 bytes).
-// Round 61 (m3 lane 10, fast): retail's prefix shape, `long removed = NONE; if (g_4cf978 == 350) { removed = g_4cf980;
-// ... }`, `lower = removed > position ? position : removed`, an explicit `>` arm storing `downward = false`, the count
-// path upper first with its own `downward = false` 56: the count now lives in EAX as retail, the `>` arm and the
-// count path share retail's flag store, but upper coalesces with the count in EAX (retail copies it to ECX) and the
-// removed index loads into ESI before EDX; on it upper declared first 56, `g_4cf978 > position` 58, `lower = removed
-// <= position ? removed : position` 58, the bounds declared before `removed` 378.
-// Round 57 (m3 lane 13, fast with 0x80330/0x80490): the count arm first (`if (removed == NONE) { if (position <
-// g_4cf978) ... } else ...`) 55; the bounds as an if/else on `removed > position` with the `<` test nested in the else
-// 375; short bounds 373 (1179 bytes); the repair loop as a pointer walk 807 (744 bytes, not unrolled); the `<` arm as
-// `position--; upper = position;` 48 (retail decrements upper then position, `dec ecx; dec edi`), with the cmovle
-// lower 48, with upper declared first 48, with upper first and `lower = removed > position ? position : removed` 46
-// (3 counts, not kept; left: the cache_full entry and upper in EAX), that with the count path upper first 47, with
-// `downward = true` first 47, with `long removed = NONE; if (g_4cf978 == 350) {...}` 368 (1162 bytes), that plus
-// explicit `>` and count-path `downward = false` 361.
-// Round 141 (m3 lane 5, fast with 0x80490; al = aligned count): retail's count reload sits only in the full arm. Plain entry
-// `removed = NONE`, `removed > position ? position : removed` lower, the flag set first in the `<` arm, the count path lower
-// first, a forward cursor `from = &g[lower + 1]` stepped in the loop (`from[-1] = *from`) and explicit `downward = false`
-// stores in the `>` arm and the count path 8 (1171 bytes, al 8); that with `function_7fd10(g_4cf980)` 6 (al 6: left only
-// `from` set before the loop guard from lower, retail after it from the index). Not kept: the two flag stores are redundant
-// and the read is mixed, so match-only. Permuter on the 6 form: best 6 (69 tries). Without the stores 369/367 (1162), `>`
-// store only 335, count store only 367; current head with the cursor 368, with the lower spelling 366; flag not
-// initialized 390/389 (1178), declared first 380. On the 6 base: plain copy loop or `from[-1]`, `*(from - 1)`, `to[1]`,
-// memcpy in the body 53 (al 21: upper EAX, index EBP), shared copy index 53, also with the repair loop 53, at the top 53;
-// a named reloaded count 58 (al 27), lower first 59; lower+flag spellings 54/56/55; upper by if 362, no zero init 53, `lower <
-// upper` 52; cursor from a named index 54 (1174, tail registers flip), after a repeated guard 5/54, a guarded do-while
-// 385-386 (1190), pointer bound 370 (1181), to-cursor 56, `to = from - 1` 361 (1174), copy with a separate count 350 (1162),
-// memmove/memcpy 362/368 (1181); bound copies for the repair 70/70/69/72.
-// Round 68 (m3 lane 1; "h" = the one-link harness of this file, listing equal to the full build's, reads 44 where plain reads 47): lower
-// `removed > position ? position : removed` 47 plain (re-measured, 2 points, not kept). New on the current body: the direction after both
-// arms (`bool downward = removed != NONE && removed < position;`) 402h (1187 bytes); `if (removed != position) { downward = removed <
-// position; ... }` 378h (1178 bytes); plain entry with `downward = removed > position ? false : removed < position` 36h (1171 bytes, an
-// implied test and not retail's branches: setl stays). Round 141's 8/6 forms rebuild exactly (8h, 6h). On the 6 form: forward copy
-// with a per-pass pointer assigned to a function-scope local 53h; a `from`/`to` pair per pass 361h; a table pointer local 82h, stepped as
-// `entries[0] = entries[1]` 361h; backward cursor as `to` / `from` 383h/380h; the cursor from a named index behind a repeated guard 40h
-// (1174 bytes), in four placements (same code); `if (lower + 1 <= upper)` around round 141's cursor 5h (round 141's 5; left only retail's
-// `mov ecx, eax; imul ecx; lea esi, [ecx + base]` ahead of the count reload, where ours folds the +1 into the displacement from EDX); that as
-// a do-while 385h, a counted loop 342h, memcpy/memmove 351h/365h, `to` beside `from` 277h, `to` alone 41h. All need the redundant flag
-// stores, so none is kept. Upper in ECX still comes only from the stepped cursor.
-// The scaled index in its own local before a cast cursor 40h (same three-placement result), `from` and `to` from the index 404h (1203 bytes),
-// `to` as `&g[i] - 1` per pass 349h (1178 bytes). In the 40h forms the tail's head repairs rotate EAX/ECX as well.
-// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
-// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
-// mutable input/result and full body restored; count/upper/copy allocation remains.
-// M379: Per-iteration forward/reverse/both memcpy, then forward/reverse/both memmove,
-// then memcpy/memmove and memmove/memcpy: 49/49/49/386/371/333/371/386. NOT kept: ties/regressions;
-// original copies, direct head repairs and entire body restored; admission/upper homes remain.
-// DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
-// eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
-// original predicate, removed-index producer, bounds, copy loops and full tail restored.
-// M393: Phase-owned reloaded long/int count, shared/direct admission, original then complete direction arms:
-// 383/383/395/395/385/385/59/59. NOT kept: nonexact count/direction completion forms; native count/removal and upper-bound register ownership remain.
-// Original complete body restored.
-// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
-// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
-// mutable input/result and full body restored; count/upper/copy allocation remains.
-// Round 213 (m3 lane 3; "h" = a one-file LTCG harness with the two callers, base 49, confirmed with fast where given): round 141's forms rebuilt
-// (redundant flag stores, match-only): stepped cursor 8, guarded 7, with the mixed read 6 and 5 (fast). What is left of the 5: retail's `mov ecx,
-// eax; imul ecx, ecx, 0x68; lea esi, [ecx + base]` ahead of the upper reload, where ours merges the product into the cursor (`mov esi, edx; imul
-// esi; add esi`). Matched 0x65cb0 and 0x241c0 have that exact shape with an unnamed source (intrinsic or struct copy), so a named stepped cursor may
-// be what is wrong; per-pass forms keep `lea` off a temp but lose upper in ECX (53) and use two leas. On the 5 form: cursor from a named index 54 (fast,
-// 1174 bytes, head repairs rotate EAX/ECX), with the index named but the cursor from `lower + 1` 5 (fast, so `&g[i]` alone rotates the tail); that
-// cursor as `i + g`, `&i[g]`, byte or dword arithmetic in both operand orders, a `.player` member, a copy of a first pointer, an offset local, a
-// null or table first value 56-71h; inline entry getter in four spellings across nine shapes 5-349h; forward copy through an inline helper 5-56h, a
-// pointer-param copy helper 5-361h; `do {} while (false)` around, before or after the loop 5 or 56h (no change); memcpy/memmove with a count 351-367h;
-// paired indices 349-365h; per-pass `from`, `from[-1]`, `&g[i] - 1`, memcpy, reference 53h; per-pass `to = from - 1` 361h (rep stays per element).
-// DL273: Standard min/max endpoint contracts, independent then paired operand roles:
-// 388/271/388/388/271/388/388/388. NOT kept: reference-producing selections grow
-// the native extent; original prefix, endpoints, copy loops and full tail restored.
-// Round 133 (m3 lane 7, fast with 0x80490/0x80330): plain `long removed = NONE; if (g_4cf978 == 350)` admission with
-// ternary bounds and the `>`-arm/count-path flag stores 57; with the flag first in the `<` arm and round 141's stepped
-// cursor 8 (round 141's form; the stores stay match-only); per-pass `from = &g[i]` on it 55; the flag left uninitialized
-// and set in every arm, the equal case included 382; no initializer, the flag cleared at the top of the removed block and
-// set only in the `<` arm 391 (1162 bytes). Original body restored.
+/* inserts a player at the given position of the recent-players cache, evicting the oldest when it is full */
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
-	bool cache_full = g_4cf978 == 350;
-	long const removed = cache_full ? g_4cf980 : NONE;
-	if (cache_full)
+	long removed = NONE;
+	if (g_4cf978 == 350)
 	{
-		function_7fd10(removed);
+		removed = g_4cf980;
+		function_7fd10(g_4cf980);
 		function_7fd80(removed);
 	}
 	long lower = 0;
@@ -1479,19 +1508,22 @@ long function_7fe90(const s_cached_player_identity *identity, long position, con
 	bool downward = false;
 	if (removed != NONE)
 	{
-		lower = position < removed ? position : removed;
+		lower = removed > position ? position : removed;
 		upper = removed > position ? removed : position;
-		if (removed < position)
+		if (removed > position)
+			downward = false;
+		else if (removed < position)
 		{
+			downward = true;
 			upper--;
 			position--;
-			downward = true;
 		}
 	}
 	else if (position < g_4cf978)
 	{
 		lower = position;
 		upper = g_4cf978;
+		downward = false;
 	}
 	if (upper > lower)
 	{
@@ -1612,3 +1644,4 @@ void function_80390(void)
 }
 
 s_4cf790 g_4cf790_storage;
+s_4cf970 g_4cf970_storage;

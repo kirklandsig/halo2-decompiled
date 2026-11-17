@@ -188,6 +188,10 @@ static void __cdecl function_30d0c0(pointers_30c650 *out, owner_30d480 const *ow
 
 // appends everything the owner lists to `out`: the +0x3c lists, the owner's
 // own +0x120 list, the parts, the +0x4c lists, then its +0xd0 pointer
+// The temporary-view setup and cleanup still differ in instruction scheduling
+// and register allocation; the ordinary checker reports score 56.
+// appends everything the owner lists to `out`: the +0x3c lists, the owner's
+// own +0x120 list, the parts, the +0x4c lists, then its +0xd0 pointer
 // score 152 (was 183): retail keeps the zero in eax and the gathered array's
 // data in ebx and computes the freed size with lea, ours keeps the zero in
 // ebx, reloads the data pointer and computes the size with shl.
@@ -210,6 +214,8 @@ static void __cdecl function_30d0c0(pointers_30c650 *out, owner_30d480 const *ow
 // release function defined separately, input/output object references, unsigned
 // complete flags and distinct gathered types 72; cleanup resets 122;
 // signed release multiplication and a full-flags snapshot 72.
+// Review cleanup score 72: removed unsupported volatile/one-use tuning;
+// the prior scored trials above remain available for future matching work.
 // @retail 0x30d480
 void __cdecl function_30d480(owner_30d480 const *owner, pointers_30c650 *out)
 {

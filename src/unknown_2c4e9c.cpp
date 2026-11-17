@@ -1581,6 +1581,15 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 {
 }
 
+// score 15 (195 bytes against retail's 194): retail tests
+// `definition->string_list_index` through a register it loaded once
+// (`mov eax, [ebx + 0xc]; cmp eax, -1`) and reuses it for the first 0x1a0180
+// call, while ours folds the test into a memory compare and reloads for the
+// call. Nested ifs, a named index local, const locals and a `false` zero all
+// kept the same form. The permuter found 9 only with
+// `*(volatile long *)&buffer[0] = 0;`, a four-byte store into a two-byte
+// buffer element: a type-widening store, so it was not kept; a volatile word
+// store changes nothing.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -3040,10 +3049,21 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
+// score 30 (was 29): ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
+// loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
+// eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
+// the iterator stack slots (ebp-0x10..-4) and the calls to 0x6b380, 0x19c5f0 and 0x24c515 are retail's. The old
+// `volatile long map_id` (29, 84 bytes) spilled map_id to [ebp-4] where retail keeps it in ebx, so it was dropped.
+// b13L (11-17) walk against retail, fast build on r846: logic matches (test, iterator init from [this + 0x70], datum
+// match on definition->map_id, select_datum on the hit); only the prologue register choice differs. Tried, all 30 or
+// worse: early return on NONE; test of g_51098c then a second read into the local (CSE'd to the same ebx load);
+// assignment inside the test; iterator initialised before the load (29, same ebx load); dword local; copy of the
+// local; reversed ==; a found flag (40); a parameter helper (no change); an inline accessor for the global (29, spills
+// the local like the volatile form).
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
-	volatile long map_id = g_51098c;
+	long map_id = g_51098c;
 
 	if (map_id != NONE)
 	{
@@ -3639,6 +3659,9 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
+// score 9: only the EAX/EDX roles in the `1 << controller_index` mask and the
+// zero store differ. A named controller_mask local keeps the same code.
+// Permuter: 295 tries in 600 s, no lower form.
 // @retail 0x2c5897
 void c_game_engine_variant_category_list::handle_item(s_controller_reference **controller, long *item)
 {

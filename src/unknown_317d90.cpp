@@ -25,10 +25,9 @@ ELEMENTS_2D91D0(id_pairs_317d90, id_pair_317d90);
 // room for one more pair at the end
 inline id_pair_317d90 *added_pair_317d90(id_pairs_317d90 *pairs)
 {
-	long size = pairs->size + 1;
-	pairs->ensure_capacity(size);
-	pairs->size = size;
-	return &pairs->data[size - 1];
+	long const size = pairs->size;
+	pairs->resize(size + 1);
+	return &pairs->data[pairs->size - 1];
 }
 
 // a list of bodies that starts out in the room for ten held inside it
@@ -39,6 +38,7 @@ struct bodies_317d90
 	long capacity_and_flags;
 	body_317d90 *embedded[10];
 
+	body_317d90 *at(long index) const { return data[index]; }
 	bodies_317d90()
 	{
 		data = embedded;
@@ -100,6 +100,7 @@ public:
 	link_317d90 *links;
 	long link_count;
 
+	long joints_used() const { return joint_count; }
 	void function_317d90(id_pairs_317d90 *pairs) const;
 };
 
@@ -125,7 +126,9 @@ public:
 // List before reset 69; index before list 64; both 81; reset and scan order 70; reset/full-width sentinel 202;
 // reset/ordered wide 203; early-index/ordered wide 198; all initialization boundaries 203. Narrow-assignment
 // width diagnostics were exact-only.
-// score 59 (was 59): initial count load and full-width scan allocation remain.
+// score 0 (was 59): matched with `first` a long, the joint count and the body list read through
+// accessors, and the pair appended by resizing from the old size.
+// Before, 59 (was 59): initial count load and full-width scan allocation remain.
 // Short while/consuming scan/counter-first declarations 59/62/60; list member initialization 59;
 // old-index append 243; full-width old-index append 248; initialized full-width append 248; counter-first append 243.
 // @retail 0x317d90
@@ -135,15 +138,15 @@ void class_317d90::function_317d90(id_pairs_317d90 *pairs) const
 	long i;
 	{
 		bodies_317d90 bodies;
-		for (i = 0; i < joint_count; i++)
+		for (i = 0; i < joints_used(); i++)
 		{
 			bodies.size = 0;
 			joints[i]->list_bodies(&bodies);
-			short first = -1;
 			long j = 0;
+			long first = -1;
 			for (; first == -1 && j < bodies.size; j++)
 			{
-				if (!bodies.data[j]->fixed)
+				if (!bodies.at(j)->fixed)
 				{
 					first = j;
 				}
@@ -154,7 +157,7 @@ void class_317d90::function_317d90(id_pairs_317d90 *pairs) const
 				{
 					id_pair_317d90 *pair = added_pair_317d90(pairs);
 					pair->first = bodies.data[first]->id;
-					pair->second = bodies.data[j]->id;
+					pair->second = bodies.at(j)->id;
 				}
 			}
 		}

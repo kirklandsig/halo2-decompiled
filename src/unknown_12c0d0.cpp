@@ -879,6 +879,29 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // the same union stored through its volatile member 2; `type` as the second, third, fourth or last parameter at the definition, the
 // declarations and the calls 2 each (last also 0x1dc40 2); a forwarding helper for the reader, inline or forced inline, or storing through a pointer
 // 2 each. Retail keeps every reader's two stores against the rdtsc at all 18 sites.
+// Round 219 (lane 3, fast over all 183 functions of the reader header's includers): the barrier intrinsic inside the shared reader after
+// its zero store 2 (nothing anywhere moves), before it 2 (0x80e10 13, 0x862e0 19, but 0x6a8a0 3 and 0x199740 4); the pump loop as
+// `while (result == 0)` 2; an explicit `default: break;` 2; the pump counter initialised at its declaration 28.
+// Round 156 (lane 5, fast): the two cases in source order 2, 1 2; the size/page guard as an early return with
+// the loop unnested 94 (300 bytes, four callers lose); each case storing the pump bound first 2, the attempts
+// first 4; the attempts declaration ahead of the reader 12. BLOCKED-BY the shared reader's form
+// (include/unknown_080e10.h): only the reader's zero stores move, and no body statement reaches them.
+// Round 174 (m3 lane 4, fast; an LTCG harness of this file with xbox_texture_cache_update.cpp, not exact elsewhere, shows the
+// same prologue): the attempts declared right after start 5; the pump counter declared right after start 2. Reader forms in
+// a harness copy only (the header untouched): a plain local with `__noop(&local)` 144 (the stores vanish, as plain does),
+// a volatile local declared then assigned 2-equivalent, a volatile long pair initialised `{ 0, 0 }` 2-equivalent.
+// Round 162 (m3 lane 5, fast; reader forms in a file-local copy, not kept): the rdtsc as two inline opcode bytes 2; two separate
+// volatile longs 12 (they share one slot, frame 0x10, both stores still above `push edi`); the volatile local initialised from
+// a defaulted parameter 2, from a `long` zero local 2; a local object with a volatile member zeroed by its constructor 93 (stores
+// vanish); the result stored from eax/edx inside the asm block 129 (322 bytes). At 0x199740, 0x6a8a0 and 0x80e10 ours lifts only
+// the low store, by one or two instructions; retail keeps the source order at each.
+// Round 152 (m3 lane 7, fast): a 600 s permuter run (43 tries) best 2; start held in a LARGE_INTEGER 2; elapsed declared at
+// function scope 2; the first read named `now` and copied into start 2; every declaration direct-initialised 2. Diagnostic:
+// attempts non-volatile 90 (270 bytes): then only the low zero store rises above `push edi`, so the volatile attempts store
+// after the rdtsc is what lifts the high store as well.
+// Round 117 (m3 lane 12, fast): the pump counter and attempts as one volatile local (5 or 2, then 0 before the loop and
+// counted in it, as retail's one slot holds) 57 (290 bytes: the zero stores stay above `push edi`, the merged local takes
+// the lower slot and the loop's accesses grow), the same local named `pumps` 57 (the same code: the name does not move it).
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -986,63 +1009,6 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
-// MiniMax S (11-05): no new form, no lower score: the frame, the reduction branch, the format bits and the two
-// stores all agree with retail; only the last three instructions differ, where the masked level address is loaded
-// into EDX and retail reuses the base register that dies with that load.
-// MiniMax R (11-01, third round): no new form, no lower score. The masked level address is still
-// loaded into EDX where retail reuses the base register, which is dead after that load. This
-// round: a permuter run over the function (17 tries, annealed, full image and reduced image)
-// found nothing below the baseline of 3; every variant it kept scores 3 or worse. The register
-// choice is therefore not steerable from the source.
-// MiniMax R (11-01, second round): no new form, no lower score. The masked level address is still
-// loaded into EDX where retail reuses the base register, which is dead after that load. This
-// round: the six orders of the three header stores (data, lock and common) and the texture
-// reached through a local pointer all give the same three instructions (3), as do the ten ways
-// of spelling the masked store (a cast on the address, a cast on the whole expression, an
-// unsigned mask, a field pointer, the address in a local, the array through a pointer local, the
-// mask first, the element read through a cast, a cast on the mask and a double cast).
-// MiniMax R (11-01): no new form, no lower score. The masked level address is still loaded into
-// EDX where retail reuses the base register, which is dead after that load. This round: the
-// masked value computed before the branches and stored at the end changes the frame (166/170);
-// the masked value in a local, the store through a field pointer, the store through a dword cast
-// of the field, the array reached through a cast, a cast index, a cast around the masked value
-// and a second store of the size all leave the three instructions unchanged (3).
-// MiniMax R (11-01): no new form, no lower score. The masked level address is still loaded into
-// EDX where retail reuses the base register, which is dead after that load: the raw address in a
-// named local, the cast around the whole expression, the masked value in a named local and the
-// zero-padded mask literal all give the same three instructions.
-// score 3 (was 3): this round found no gain - the masked level address is still loaded into EDX where
-// retail reuses the dead base register; copying the bitmap into a named local and storing through a
-// dword cast of the field both compile byte-identically to the baseline.
-// score 3 (was 3): the plain (full) check agrees with the fast one; the whole difference is the
-// masked level address loaded into EDX where retail reuses the base register, which is dead after
-// that load.
-// This round: the mask literal with eight digits, the whole expression cast, the address cast, the
-// index as an unsigned long and as an unsigned int, the address in an unsigned int local, the array
-// through a pointer local, the mask in a named constant and the level in a local at the top of the
-// function all give 3, byte-identical to the baseline.
-// score 3 (was 3): this round: the level address read through a byte pointer to the array, the
-// masked value carried through a pointer-typed local, and the array typed as pointers all give
-// byte-identical code to the baseline (3). Still the masked level address is loaded into EDX where
-// retail reuses the base register, which is dead after that load.
-// This round (score 3, was 3): the mask spelled as a complement, a dword cast, a zero-padded literal,
-// the array through a pointer local, a store-then-mask pair, a named local for the unmasked address
-// and a local copy of the level all compile identically; the masked level address is still loaded
-// into EDX where retail reuses the dead base register. Also this round: the mask as an unsigned
-// literal, a long cast around the whole expression, a dword local masked and then stored, the mask
-// operands the other way round, an unsigned long local and the element reached by pointer
-// arithmetic all give the same three instructions.
-// score 3 (was 3): the masked level address is loaded into EDX, retail reuses the base register,
-// which is dead after that load.
-// Entry data declaration 3; level-index local 3; reversed subscript 3; 28-bit field view 3;
-// shift mask 3; modulus mask 3; signed addresses 3; destination OR 3; initialized entry data 3;
-// bitmap-view alias 3.
-// parameter role names 3; format level role names 3; native reduction width 3; immutable reduction table 3;
-// dimension bit declarations 3; named packed dimensions 3; full width dimension bits 57; shared zero header
-// fields 5. This round: the masked value in a named local 3; the array through a pointer local 3;
-// the mask with its operands the other way round 3; the store through a byte cast of the texture
-// pointer 3 (all four byte-identical to the baseline).
-// fields 5.
 // @retail 0x12d6d0
 void __stdcall function_12d6d0(s_bitmap_texture_view const *bitmap, long level, D3DTexture *texture)
 {
@@ -1077,7 +1043,7 @@ void __stdcall function_12d6d0(s_bitmap_texture_view const *bitmap, long level, 
 			(bitmap->type == 1 ? 3 : 2)) << 4) | (bitmap->type == 2 ? 4 : 0) | ((levels + 1) << 16) | 9;
 		texture->Size = 0;
 	}
-	texture->Data = bitmap->level_addresses[level] & 0xfffffff;
+	D3DTexture_Register(texture, (void *)bitmap->level_addresses[level]);
 }
 
 // @retail 0x12d5a0

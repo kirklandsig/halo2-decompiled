@@ -51,7 +51,7 @@ s_223240 g_47f0f8[6];
 
 void function_2f800(s_2f800_view *, s_2f800_source const *, s_2f800_size const *, s_2f800_size const *);
 void __stdcall function_2c8a0(byte const *);
-void function_2b5d0(long, long, long, long, s_223240 const *);
+void function_2b5d0(long mode, long count, long players, long layout, s_223240 const *source);
 void function_223080(long, long, long, s_223080 *, long, long, s_223081 const *);
 bool function_68290(void);
 void main_time_wait_for_vblank(void);
@@ -75,11 +75,55 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax C (11-15): no new form, no lower score (79, was 79): retail's outer loop carries a pretest our do-while lacks, the slot scan holds its pointer in EDX and its predicate in CL where ours holds them in ECX and AL, the terminal stores fold the record base into the displacement where ours adds it to the index register, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// MiniMax G (11-14), NOT kept at review (the 47 needs local_5 zeroed twice, at its declaration and again in the found
+// arm, a doubled store kept only with a match; the pretested while alone 168, local_5 zeroed once 110; code back to
+// main at 79): score 47 (was 79): the outer traversal is now a pretested while whose source pointer is cleared at the loop head and whose found arm assigns the pointer only when the global is set, so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// MiniMax E (11-14): no new form, no lower score (90 in this lane's measurement set; the earlier note records 79 under
+// its own set): retail's call to 0x2b5d0 takes its two long parameters in another order than the stub's declaration in
+// src/stubs/lane_k.cpp allows, and the terminal stores still fold the record base into the displacement where this build
+// adds the base to the index register; the declaration's order may not change here, so the call stays as it is.
+// MiniMax C (11-14): no new form, no lower score (90): the outer pretest is still missing from our do-while (a pretested while measures 150) and the slot scan still holds its pointer and predicate in ECX and AL; the tail call still needs 0x2b5d0's own body, which is stubbed in another file.
+// MiniMax C (11-11): NOT kept (coordinator, 11-11): 0x2b5d0 called as (3, view_count, ...) 79 (was 90); both
+// parameters are long, so the swap passes different values: a possible fix to 0x2b5d0's parameter order, kept only
+// with a match. On that swapped form: no lower score (79): the terminal stores still fold the record base into the
+// displacement in retail where our build adds the base to the index register, and giving the shared
+// helper the record index instead of the record pointer gives 106 (578 bytes) with that fold still
+// missing, so the pointer form stays. The outer pretest and the slot scan's registers are unchanged.
+// MiniMax C (11-10): the tail call now passes the mode first (3, the view count, ...), which is how
+// retail calls 0x2b5d0; the fast check gives 79 (575 bytes against retail's 575, was 90). Still differs:
+// retail's outer loop carries a pretest our do-while lacks, the slot scan keeps the pointer in EDX and
+// the predicate in CL, and the terminal stores fold the base into the displacement where ours adds it.
+// MiniMax I (11-09): no new form, no lower score; the fast check gives 90 (575 bytes against retail's 575)
+// and the listing confirms what the earlier rounds recorded: retail's outer loop carries a pretest
+// (`cmp ebp, edi; jle` at the loop's head, with the bottom test `cmp edi, ebp; jl` jumping back into the
+// body), our do-while has no pretest; retail holds the slot pointer in EDX (`lea edx, [ecx + esi*4 + 0xc]`)
+// and the predicate result in CL (`setne cl`), ours holds both in ECX and AL; and the whole tail after the
+// loop still differs because it needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// MiniMax I (11-09): no new form, no lower score; the plain and the fast check both give 90, retail's outer pretest (cmp ebp, edi; jle) is still missing from our do-while and the tail call still needs 0x2b5d0's own body, so the function stays blocked by that stub.
+// MiniMax I (11-06): no new form, no lower score; retail's outer loop still has a pretest (cmp ebp, edi; jle) that our do-while lacks, the player-scan base pointer is still EDX in retail against ECX in ours, and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
+// src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
-// score 90 (was 109): one shared view count now feeds terminal indexing and the tail; the outer
+// NOT kept (coordinator review, MiniMax H 11-13): 90 -> 79 came from declaring 0x2b5d0 __fastcall in this file only
+// and calling it as (3, view_count, ...), the reverse of its definition's (count, mode) order in
+// src/unknown_023540.cpp: a local prototype that disagrees with the definition (and swaps the values passed). Lead:
+// retail passes 3 in ECX and the view count in EDX, so 0x2b5d0's real parameter order/convention is the question
+// (BLOCKED-BY 0x2b5d0).
+// MiniMax C (11-17): score 47 (was 79): the outer traversal is now a pretested while (retail tests the view count at the loop head and the bottom test jumps back into the body), the source pointer is cleared at the loop head and again in the found arm as retail does (its loop head and its found-arm getter each zero the pointer, the getter's default surviving the inline), so the prologue and the whole slot scan now match retail byte for byte. Still differs: the terminal record adds the record base to the index register where retail folds the base into the displacement, retail reloads the view count into EAX before fstp st(0), and the tail call still needs 0x2b5d0's own body: BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp).
+// score 79 (was 90; 109 before the shared view count): M3 lane 8 r165: 0x2b5d0's formals are now (mode, count, players,
+// layout, source) at its disabled definition and this call passes (3, view_count, ...): the same values as before, in the
+// order retail's own 0x2b5d0 body needs (with these formals it takes the count in EAX and the mode in ECX, lane 11 r50 and
+// lane 2 r55 below) and retail's setup implies (count set up first, mode last); plain 79, 0x223240 and 0x2232a0 match.
+// What is left: the outer pretest, the loop-entry source zero and the terminal record's folded addressing, and the tail
+// call needs 0x2b5d0's own body (the /Gr stub takes the count in EDX where retail passes EAX): BLOCKED-BY 0x2b5d0.
+// On 79 (fast): a pretested `for` 168; that with the view count formed after the loop 117 (retail's pretest and loop
+// registers); plus the source NULL at the loop top with no else arms 108; the loop-top NULL on the do-while 125; the found
+// arm as `g_4686c4 == NONE ? 0 : ...` 77 (two points, not kept).
+// Earlier (90, was 90; 109 before the shared view count): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
 // own body (it takes the mode in EAX and the count on the stack), which is disabled here and stubbed in
-// src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
+// src/stubs/lane_k.cpp: BLOCKED-BY 0x2b5d0.
 // Earlier (109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
@@ -274,6 +318,45 @@ void function_2232a0(void)
 // its first fields as [index + displacement] and then forms `lea eax, [eax + g]` for the rest. The reset helper taking an index 57 (576,
 // masked 4: every line right but those three, the pointer folds); a separate finishing helper, `g + index`, the first stores in the caller
 // and `__assume(pointer != NULL)` at three places 57 each; a const reference to the pointer 57 (masked 15).
+// MiniMax D (11-06): no new form, no lower score; the tail call still needs 0x2b5d0's own body:
+// BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp). Giving that stub a real body here drops this function to 60 but
+// breaks 0x13b90, 0x1dc40 and 0x223240, so it stays stubbed. Retail's outer loop still has the pretest our
+// do-while lacks and the player-scan base pointer is still EDX in retail against ECX in ours.
+// Round 159 (m3 lane 6, fast; 0x223240 and 0x2232a0 match each time; aligned counts from an instruction diff, 67 for
+// this body): the source zeroed at the loop top with the found arm through a default-first inline getter (the
+// `index != NONE && g_4686c4 != NONE` test that 0x1a58b0's file writes in place for the same table) 122 (aligned 60:
+// retail's loop body with both zeros, no pretest); that as a for loop 185 (585 bytes, the view count spilled before
+// the loop); the for loop with the view count declared after it 83 (575 bytes, aligned 78: retail's pretest, but the
+// zero/count/record registers rotate; seven points with a one-caller helper, not kept); as a while loop 83 (same
+// code); the counter declared in the for 164, declared early and assigned in the for 164; the for loop with
+// `local_2 + 1` at both uses 120 (aligned 63); the do-while with the view count declared after it 135; the getter
+// without the loop-top zero 122 (aligned 66). Of the eight functions that block 0x2b5d0, 0x131030 now matches.
+// Round 62 (m3 lane 2, fast; 0x223240 and 0x2232a0 match each time): a pretested `for` with the view count computed after
+// the loop and the source initialised NULL at the loop top (no else arms) 123 (retail's pretest and loop-top zero, but
+// the counter/count/record registers rotate to EBP/EBX/EDI against retail's and the do-while's EDI/EBP/EBX); that with
+// the found arm as a default-last conditional 118; with the counter declared first 160; with the source declared before
+// the loop and cleared at its top 123; the source looked up after the scan with the in-place `index != NONE &&
+// g_4686c4 != NONE` test 179. g_4e9c8c[i] is the same memory as `&g_4e9bd4[i].state` (globals.h). Still BLOCKED-BY 0x2b5d0.
+// Round 86 (m3 lane 11, fast; 0x223240 and 0x2232a0 match each time; aligned / register-masked counts 64 / 32 for this
+// body): retail's found arm (`xor eax, eax; cmp g_4686c4, -1; je; imul 0x358; add 0x4e9c8c`) is the existing 0x16f3a0
+// (`result = 0; if (index != NONE && g_4686c4 != NONE) result = &g_4e9bd4[index].state;`, the same memory) inlined, and
+// main declares 0x16f3a0 noinline. New forms: the source cleared at the loop top with the found arm as a default-first
+// conditional 119 (masked 31); the found arm calling 0x16f3a0 144 (550 bytes, masked 28: it stays a call), with a
+// forceinline declaration here 144 (still a call: the defining file's noinline wins); the scan as `while (++index < 4)`
+// with the break inside 264 (428 bytes); the end-of-scan test as `== 4` 125. Re-measures: a pretested for with the view
+// count after the loop 170 (aligned 108, as round 106's while); the loop-top clear plus default-first conditional in
+// that for 118 (masked 30, round 62's default-last form: retail's pretest, counter/count/record in EBP/EBX/EDI and the
+// source in ECX). BLOCKED-BY 0x2b5d0 and 0x16f3a0's noinline declaration.
+// MiniMax A (11-12, run 62): no new form, no lower score (90); a pretested `for` over the view count grows the
+// body to 589 bytes (150), and the tail is the 0x2b5d0 stub's inline body where retail calls the real function
+// (BLOCKED-BY src/stubs/lane_k.cpp).
+// m3 lane 11 r102 (fast, 0x223240 and 0x2232a0 MATCH each time): re-measured lane 8 r165's pretested `for` 168, with the view
+// count after the loop 117, plus the loop-top NULL 108 (the loop is then retail's but for the source in EDX against EAX and the
+// found arm's second `xor eax, eax`, the inlined 0x16f3a0 getter's own default, whose two missing bytes shift the tail). New:
+// the pretested loop as `while` with the increment at its end 117; the pretested `for` with the loop-top NULL and the found
+// arm first (`if (local_1 < 4) { if (g_4686c4 != NONE) ... } else local_1 = NONE;`) 109; the found arm through
+// `&g_4e9bd4[local_1].state` (the getter's own spelling) 79; the do-while with the loop-top NULL and the found arm as
+// `g_4686c4 == NONE ? 0 : ...` 122; the pretested `for` with the loop-top NULL and that conditional 108.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
@@ -303,9 +386,10 @@ void function_2234e0(void)
 	else
 		local_3 = 0;
 	long view_count = local_2 + 1;
-	do
+	byte const *local_5 = 0;
+	while (local_0 < local_2)
 	{
-		byte const *local_5;
+		local_5 = 0;
 		for (++local_1; local_1 < 4; ++local_1)
 		{
 			if (local_player_exists(local_1))
@@ -313,19 +397,20 @@ void function_2234e0(void)
 		}
 		if (local_1 >= 4)
 		{
-			local_5 = 0;
 			local_1 = NONE;
 		}
-		else if (g_4686c4 != NONE)
-			local_5 = g_4e9c8c[local_1].field_0;
 		else
+		{
 			local_5 = 0;
+			if (g_4686c4 != NONE)
+				local_5 = g_4e9c8c[local_1].field_0;
+		}
 		function_223080(0, local_0, local_1, (s_223080 *)&g_47f0f8[local_0 + 1],
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
-	} while (local_0 < local_2);
+	}
 	function_2232a1(&g_47f0f8[view_count]);
-	function_2b5d0(view_count, 3, local_2, local_3, &g_47f0f8[1]);
+	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }
 
 // @retail 0x223240
