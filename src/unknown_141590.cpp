@@ -125,7 +125,8 @@ static inline void quaternion_transform_vector(
 // quaternion's own bytes; the three rows' term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up
 // rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and retail's second store of the
 // doubled scalar to a slot nothing reads are still not reproduced by any source form tried. The body stands.
-// score 205 (was 205; before that 205 was 200: fast build, dot3f for the initial dot, 200 written out): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 205 (was 205): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Earlier fast scores were 205 with the shared initial dot and 200 with the dot written out.
 // MiniMax E (11-16): no new form, no lower score (205): the frame is still 0x1c against retail's 0x24, the quaternion and cross spills still overlap, and retail's term orders (cross*2w first in the i rows, cross + q*dot then v*s in the up j/k rows, the dot summed as i,k,j in the forward row and k,j,i in the left row) and its second store of 2w to a slot nothing reads are still not reproduced by any source form tried.
 // MiniMax E (11-15): no form kept; the permuter found no variant below the 198 differing instructions of the
 // full image (the reduced image agrees with the full one here). Still differs: the compiler's term
@@ -428,6 +429,9 @@ static inline void quaternion_transform_vector(
 // fixed grouping is not retail's); the dot's grouping alone 241 (1320 B), the rows' alone 215 (1327 B); with the
 // cross j, k, i 250 (1324 B); with s first and the cross j, k, i 254 (1310 B). The half-angle pair scoped in a block
 // with the construction 205 (identical listing); plain halves in that block 267 (1297 B, the plain-halves count).
+// Indexed weighted sums written to the output, direct/staged cross/running sum/both 270/261/285/285.
+// Complete rotated vector with the same four forms 344/321/340/340. Quaternion and
+// cross spills still need distinct homes in frame 0x24.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

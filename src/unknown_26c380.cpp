@@ -632,6 +632,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // floating-point stream is 130 lines from the fast build of the same source. Retail's exit block is laid out as: the two
 // two-level exits enter at 0x26caff (reload distance, success = 0), the four entry guards at 0x26cb0d (reload direction), the
 // failed magnitude test and the loop's own exit at 0x26cb14, so only the two-level exits run the success store. Body unchanged.
+// Dedicated carried endpoint/distance/both 522/390/537. Iterator first-edge
+// identity alone/with endpoint/with distance/with both 336/279/398/392.
+// Nullable carried endpoint with dedicated distance 348. Success and first-edge
+// stack homes and the common progress/limit finalization still differ.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

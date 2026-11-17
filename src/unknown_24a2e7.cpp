@@ -181,6 +181,13 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // 84; writable while-loop cursor with indexed terminator 83; cursor with plain-name
 // guard before the suffix 84; opaque base and writable cursor with indexed terminator
 // 84.
+// Indexed search with selected pointer/index after loop 80/72. Remaining-count
+// pointer scan 114. Nested suffix guard 66. Optional suffix pointer 84.
+// Writable result with fallback at return 76. Append-parts loop 70.
+// Append return as next destination 83. Named suffix with plain-name arm 90.
+// Nested guard with plain-name copy input 66, also with last append result 66.
+// Early append result with named suffix 90. NOT kept: nested guards reserve
+// 0x28 and gain one. The slot holds the result. The entry base stays in a register.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
