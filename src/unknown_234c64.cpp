@@ -376,6 +376,11 @@ void c_window_channel::v9()
 // given the request through the builder's message type 3; the load and set_next in their own block after the builder 3;
 // every channel access through a named copy of `this` 3; the load procedure argument read as the field's raw dword 3. The
 // member-builder lead still needs 43 of the 110 builder calls changed in the held 0x2b10a3 files, so it stays HELD.
+// Round 93 (m3 lane 15, fast with v9, 0x2354aa and 0x2358c3, which stay matched): a non-const reference to the pending
+// request for the test, the clear, the builder's arguments and the load 3; that with an early return 3; a const pointer to
+// the new request for the load and set_next 3; that pointer bound before the type clear and used for the builder too, with
+// the load result passed straight to set_next 25 (76 bytes); the load procedure read into a local at the function's top,
+// used for the builder's argument and the call, 28 (79 bytes). Still HELD on round 100's member-builder lead.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

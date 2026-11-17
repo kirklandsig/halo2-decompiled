@@ -695,6 +695,18 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P586: Independent native real-home identities for the minimum pair, previous heading,
 // selected distance/heading/turn and candidate distance/heading/turn: eight at 144.
 // NOT kept: no frame/count/departure-home recovery; original complete body restored.
+// b8H (11-17) walk against retail, fast build on r836: no logic or structure difference found, 144 unchanged.
+// Walked 0x239e50-0x23a15d block by block against ours (same work on the same side of every jcc, NaN included):
+// hull count 0 at 0x239e65 and the == 2 gate at 0x239e72/0x239e76; lowest scan 0x239eb0-0x239ef9 (branches at 0x239eba,
+// 0x239ebf, 0x239ecc, 0x239ed8, 0x239ee5; FLT_MAX 0x44aed4, eps 0x45dbdc, -eps 0x45ddfc, -FLT_MAX 0x4409d4 read);
+// candidate scan 0x239f55-0x23a016 (distance > 0.000244140625 from 0x45de54 at 0x239f7d-0x239f81, atan2(pj - cur) at
+// 0x239f87-0x239f91, wrap by g_55e470 at 0x239fb0, accept/skip at 0x239fc4-0x23a009); departure 0x23a040-0x23a084 and
+// closure 0x23a089-0x23a0d4 (both next - first, first index loaded before next's at 0x23a048); compaction
+// 0x23a0e7-0x23a14f (2*(i - j) bytes from &indices[j] to indices, hull count = i - j as a dword at 0x23a13e).
+// One codegen-only NaN difference, not a source one: our closure's y test compiles with fxch + jb (a NaN dy leaves the
+// loop), retail's is fld eps; fcompi; jbe 0x239f10 at 0x23a0d4 (a NaN dy continues). The written-out positive closure
+// gives retail's form but scores 159 (lane r239), so it is not applied. Still different: frame 0x18 against 0x14,
+// the dword departure flag against retail's byte in the indices home, and the hull count's home.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1206,6 +1218,17 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // the argument as a dword home (`mov ecx, dword ptr [ebp + 8]; movsx edi, cx`) where this declaration's `short count`
 // is read as a word home - and that width is declared by the caller in src/unknown_17d9a0.cpp, so it cannot be changed
 // from this lane; the permuter gain recorded in the lines above needed `volatile` reads, so it stays discarded.
+// b8H (11-17) walk against retail, fast build on r836: no logic or structure difference found, 129 unchanged.
+// Walked 0x23a6f0-0x23aa65 block by block (ours does the same work on the same side of every jcc, NaN included):
+// *clipped cleared 0x23a716-0x23a718; alias copy of count * 8 bytes into the 0x1014 frame 0x23a71d-0x23a741; previous
+// point &points[count - 1] and its side (distance >= 0, jae 0x23a784) 0x23a743-0x23a786; loop guard 0x23a78b-0x23a796;
+// current side (jae 0x23a7e0), positive (jbe 0x23a7ea) and negative (0 - eps > d, jbe 0x23a7fd) tests; crossing
+// 0x23a812-0x23a91a (capacity test on the result word, deltas previous - current, denominator ni*dx + dy*nj, divide
+// skipped only for == 0 by ucomiss/test ah,0x44/jnp 0x23a85a, fraction 0 - d/den with the lower then the upper clamp
+// against 1.0 at 0x45dbc0, outputs fraction*d + current, mask |= 1 << result, then the dedupe against the first point
+// and result - 2); inside arm 0x23a91b-0x23a9d9 (mask bit from *point_mask when non-null, else cleared); tail
+// 0x23a9f9-0x23aa65 (NONE -> raw copy, < 3 -> 0, no positive -> 0, no negative -> count and raw copy, *point_mask =
+// mask). The difference left is allocation only: previous side in CL against [esp+0xd], zero in XMM4 against XMM2.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

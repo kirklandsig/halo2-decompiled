@@ -1824,6 +1824,19 @@ long function_cbd50(long unit_index, short weapon_index);
 // second clears, `bool` local returned) 334 (1293 B: retail's setle / `jle; xor bl, bl` depletion code, but frame 4 with
 // the overlay in EBP; 0x1103a0 445 -> 434), with the header-array local too 334 (same code), with a bool result 364
 // (1240 B), with interruptible declared before depleted 335.
+// b8F (11-17) walk against retail, fast build on r836: no behaviour difference found, score stays 164. Retail's tree
+// for the state switch (0x110bb6-0x110e5a) and the overlay switch (0x110e67-0x110f9f) was emulated over every case
+// constant and its neighbours: the state switch picks interruptible (0x110c06) for 39 values and depleted (0x110e5c)
+// for 17, the overlay switch 3 (0x110f47) and 16 (0x110fa1), all equal to the lists here. Also equal: the entry
+// reads (control word +0x33e, overlay +0xa4, state +0x12a, name +0x7c, controlling +0x13c; 0x110ab3-0x110af0), the
+// three zero stores (0x110b00-0x110b05), the first query setting depleted from `count <= 0` (setle, 0x110b48) and
+// keeping the initial false when the slot is NONE (0x110b4d), the second query clearing it on `count > 0`
+// (0x110b8a-0x110b8c), the state flag 0x10 at +0x14 (0x110b8e), c70b0 on the unmasked stack argument
+// (0x110b9f-0x110ba3) with its true result skipping the state switch (0x110bac), and the overlay switch running
+// after either path. The raw +0x14 test now reads `state->channels[0].unknown14` as 0x1103a0 does (same code, 164).
+// New: a `byte` return type drops the final setne but loses the epilogue shape, 194 (1262 B). Retail's reloads (the
+// unit at 0x110b10 after the flag stores, the pool data at 0x110b51 before the second query) look like memory kills
+// by stores to memory-resident flags.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1844,7 +1857,7 @@ bool __stdcall function_110ab0(long unit_index)
 		depleted = first != NONE && *(short *)((byte *)UNIT_ANIMATION_OBJECT(first) + 0x17c) <= 0;
 		long second = function_cbd50(unit_index, *(char *)((byte *)UNIT_ANIMATION_OBJECT(unit_index) + 0x213));
 		depleted = depleted && (second == NONE || *(short *)((byte *)UNIT_ANIMATION_OBJECT(second) + 0x17c) <= 0);
-		if (*(byte *)((byte *)state + 0x14) & 0x10)
+		if (state->channels[0].unknown14 & 0x10)
 			interruptible = true;
 	}
 	if (function_c70b0(*(long const volatile *)unit_reference))
