@@ -1052,7 +1052,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
-// score 942 (was 964): frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
+// score 871 (was 942): frame 0xd0 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
 // coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
 // it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
@@ -1502,6 +1502,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `if (!balance_teams_by_count(...)) result = false;` 902 (2764 B: retail's exact `test al, al; jne; mov byte ptr [esp +
 // 0x13], al` after 0x91e30, but its direct form is main's `result &=`, so match-only); both 890 (2768 B). The same
 // conditional clear with the excess exit left as `return false` 917 (2736 B).
+// Both histogram passes with a group-size pointer and signed remaining count 871 kept (plain). Identity
+// remaining count/end pointer 942/941; all-group/eligible-party word passes 947/937; all-group/eligible-
+// party/both dword passes 969/997/936. NOT kept: 941, 937 and 936 each gain fewer than eight.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1596,7 +1599,14 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 		else out->averages[i] /= out->rated_counts[i];
 	}
 	word histogram[16] = {0};
-	for (long i = 0; i < out->group_count; i++) histogram[out->total_counts[i] - 1]++;
+	{
+		const long *group_size = out->total_counts;
+		for (long remaining = out->group_count; remaining > 0; --remaining)
+		{
+			++histogram[*group_size - 1];
+			++group_size;
+		}
+	}
 	long last = NONE;
 	long first = NONE;
 	memset(histogram, 0, sizeof(histogram));
@@ -1604,9 +1614,10 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 	long parties = 0;
 	if (ratings_party_limited(variant))
 	{
-		for (long i = 0; i < out->group_count; i++)
+		const long *group_size = out->total_counts;
+		for (long remaining = out->group_count; remaining > 0; --remaining)
 		{
-			long count = out->total_counts[i];
+			long count = *group_size;
 			if (count >= ratings_party_minimum(variant) && count <= ratings_party_maximum(variant))
 			{
 				histogram[count - 1]++;
@@ -1615,6 +1626,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				last = count;
 				spread = last - first;
 			}
+			++group_size;
 		}
 		if (spread > ratings_party_spread(variant)) result = false;
 		if (parties > ratings_variant_teams(variant)) result = false;
