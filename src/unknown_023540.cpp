@@ -2965,6 +2965,13 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
 // MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax D (11-17): no new form, no lower score (330): the full image counts the same as the reduced one, and both
+// copies of 0x235a0 are still inlined here (the body is 1591 bytes against retail's 1543) where retail inlines the first
+// and calls the second, so the shared exit sits 48 bytes further out and the first difference is the jump to it at
+// +0x52; the forms measured this round (the level's limit through a named local before the level 349, the same local
+// after it 350, the matrix through a pointer local 369) all score worse, and a permuter run (27 tries) finds its only
+// lower form (four instructions under the baseline) by making a local volatile and reordering the sum terms, which is
+// not kept.
 // MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
