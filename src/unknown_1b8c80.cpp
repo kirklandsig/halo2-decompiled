@@ -812,6 +812,11 @@ extern "C" void _ReadWriteBarrier(void);
 // (208); the busy actor as an early `actor->unknown450 = ...; return;` with the rest unnested, without/with the barrier
 // 46/14 (212/209). Matched callbacks with retail's exact entry (the slot loaded between the data-base load and the mask:
 // 0x1b4490, 0x1b7860, 0x1c10f0) all use the slot on every path; here it is used only under the 0x26c test.
+// Round 253 (m3 lane 3, fast; each without the barrier): the state as `slot ? (s_slot_4c *)slot : NULL` 44
+// (208 bytes); the flags test as a bool and a point pointer, both formed at the top, 44; the state
+// through a const reference to the slot, declared after the actor, 44; the flags through a const
+// reference in the NONE block 44; the actor pointer bound to a const reference 46 (212). Diagnostic
+// (reverted): probe stores of 1 and 0 at the top leave the slot load after the branch (48).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1917,6 +1922,19 @@ void function_1f86a0(long actor_index);
 // entry then takes EBX with its F+4 home and the reload after the roots as retail, but the flags byte is re-read for
 // both tests and nothing lands at F+3), against 244 for no mask local with the real roots.
 // MiniMax D (11-14): no new form, no lower score (134): the frame is still 0x10 against retail's 0x14 - retail spills the masked flags byte to a stack slot and keeps the loop entry in EBX, ours keeps the mask in BL and spills the entry - and ours still takes the incoming actor index in ECX and loads the tag table base late.
+// b8K (11-17) walk against retail, fast build on r836: no logic, offset, constant, callee or argument difference found
+// (score 134 unchanged). Walked: early return on the unit's +0x14 (0x1ba0d9/0x1ba0df); the loop's mask at 0x1ba133 and
+// both root calls, element's first (0x1ba13b/0x1ba145); decline iff unknown86 ? !(flags & 0x40) || !same : specified
+// && !same (0x1ba15e/0x1ba162/0x1ba193/0x1ba18b); accept result then entry->unknown4 against NONE (0x1ba1ad); fallback
+// 0x26e940 with the actor in EBX (0x1ba1b9), its two stores at 0x1ba1c7; the default arm 11.0f (0x45e568, near) and
+// 14.0f (0x45e564, far) at 0x1ba260/0x1ba273; the 0x20/NONE/NONE gate (0x1ba28b-0x1ba2a3); 0x1ba990 with the actor in
+// ECX, near radius in XMM5 and the far radius pushed (0x1ba2cb); 0x2676d0 && 0x1e2030 (0x1ba2da/0x1ba2e5); 0x1b9e70
+// (0x1ba307); the seat flag tests and codes 0x65/0x67/0x68 (0x1ba36e on); failed tail (0x1ba3d2/0x1ba3d7). No float
+// compare, so no NaN direction. The reference reaches 0x26ed40/0x26ecc0 as one dword (0x1ba168, 0x1ba19f) and ours
+// compiles to the same load. Changed: the early unit test is now `unit->parent_index` (this file's field, used at 1096
+// and 1406), same code 134. Open, scheduling only: retail re-reads the flags at 0x1ba26b after the object-index store
+// where ours reuses the earlier load (the slot-view store forms are listed above); the allocation and frame difference
+// stay as listed.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
@@ -1924,7 +1942,7 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
     s_slot_object_view *unit = object_get(actor->unknown018);
     s_slot_4c *state = (s_slot_4c *)slot;
     s_seat_selection *selection = (s_seat_selection *)&state->unknown1c;
-    if (*(long *)((byte *)unit + 0x14) != NONE)
+    if (unit->parent_index != NONE)
         return NONE;
     s_slot_entry_iterator iterator;
     iterator.actor_index = actor_index;

@@ -1912,12 +1912,17 @@ long __stdcall function_1a54a0(s_sort_weight_view const *arg_0, short arg_1,
 			}
 		}
 		g_4de2f8 = false;
-		for (long local_14 = 0; local_14 < local_8; local_14++)
+		long local_14 = 0;
+		if (local_8 > 0)
 		{
-			local_0 = function_1a56c0(arg_0, local_2[local_14], arg_2, arg_3,
-				local_3, local_5, local_6, arg_4, arg_5, local_0, arg_6);
-			if (local_0 >= 0x40)
-				break;
+			do
+			{
+				local_0 = function_1a56c0(arg_0, local_2[local_14], arg_2, arg_3,
+					local_3, local_5, local_6, arg_4, arg_5, local_0, arg_6);
+				if (local_0 >= 0x40)
+					break;
+			}
+			while (++local_14 < local_8);
 		}
 	}
 	done:

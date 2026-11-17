@@ -4598,6 +4598,7 @@ bool function_138880();
 // (same code); the team passed as `(word)object->team` 194 (no `xor ecx, ecx`); a one-use `word team` local at both 0x1e9720
 // calls 159 (retail's `xor ecx, ecx; mov cx` at both; not kept, one-use locals): retail's team argument is a zero-extended
 // 16-bit variable, where 0xd5d20 and 0xd5d80 sign-extend a short one.
+// MiniMax R (11-17): no new form, no lower score (194): the flag pairs still merge into one word test at three sites, retail takes the 0xda110 permutation in a register where this build uses another, and the second 0x138880 is still inlined where retail calls it.
 // @retail 0xd5de0
 bool function_d5de0(long object_index)
 {

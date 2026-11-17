@@ -688,6 +688,17 @@ void __stdcall function_1160c0(real dt)
 // P567: Standard bounded-segment minimum, long/int, both argument boundaries,
 // implicit/explicit ordering provider: 280/280/309/309/280/280/309/309. NOT kept: no
 // native EDX/segment/axis/previous homes or exact match; original complete body restored.
+// b9A (11-17) walk against retail, fast build on r839: statement by statement, no behaviour difference found. Checked:
+// the 0x116750 call (record EDI, forward EAX, three pushed: 0x11621b); the fixed/dt guard (0x116225
+// jne, 0x11623a jbe: NaN dt skips, as `dt > 0.f`); bound count + 1 (0x116248, 0x11671e); 1/dt and the {0,0,1} vertical
+// hoisted (0x116263, 0x116280); node stride 0x20 from +0x1c, segment stride 0x80, stiffness = definition +0x64 times
+// segment +0 (0x1162b6-0x1162c2); last-node pick (0x1162a5-0x1162ad); the 0x211060 arguments (0x116350-0x11638b); delta
+// sum k, j, i and length / sqrt rounded to float (0x1163c8-0x1163f9); blend rows (0x116434-0x116479); axis (k*0 - j,
+// i - k*0, j*0 - i*0: 0x1164bc-0x1164eb) with the 1e-4 / ==0 fallback to g_4687ac (0, 1, 0) (0x11651b ja, 0x11652f
+// ucomiss, 0x11655d jp: NaN keeps the scaled axis); rest-offset copy (segment +0x74, 0x116578); sine before cosine
+// (0x1165af, 0x116600); dot k, j, i, each rotation row's grouping and trailing + position (0x1165c9-0x1166ca); velocity
+// rows times 1/dt, node and previous stores (0x1166ce-0x116731). Callers 0x116010, 0x1160c0 and callee 0x116750 stay
+// MATCH. Only allocation differs: segment base and pointer in EDX (0x1162b0-0x1162c0) and the low slot order.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

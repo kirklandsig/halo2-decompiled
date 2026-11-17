@@ -1091,6 +1091,14 @@ struct s_string_buffer
 // 52; each value loaded under its own identical six-mode chain (a repeated test for LTCG to thread) 104 (517 bytes, not
 // threaded); the six-mode chain through a plain file-private function 75 (460 bytes: this /O1 file keeps it out of line).
 // All restored; the 9 test still sits in line.
+// Round 93 (m3 lane 2, fast as a layout screen; this body screens 34 at 475 bytes, plain 13 at 476): the membership as
+// `mode >= 7 ? mode <= 9 : (1 || 3 || 4)` 76 (489 bytes, a materialised setle bool); a const row-record pointer set
+// under the six-way chain and the loads under `if (pointer)` 71 (486 bytes: the null test is not threaded into the
+// chain, 9 still in line); the 1/3/4/7/8 chain and an `else if (== 9)` arm reading the row through `(g_55caf0 + row)->`
+// 65, with a `__noop()` ahead of its loads 65 (both merged into the six-way chain); with a repeated `score2[0] = 0;`
+// ahead of its loads 70 (487 bytes: the arm stays apart and the chain's loads cross-jump into it, but the 9 test and
+// its arm stay in line ahead of the format call, where retail keeps the chain's loads in line and the 9 test past the
+// return). All restored.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {
