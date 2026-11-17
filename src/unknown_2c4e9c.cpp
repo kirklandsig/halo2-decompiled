@@ -3091,6 +3091,10 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // read between guard and sentinel writes 30, map definition through a read-only reference 30, selection
 // through named inherited list pointer 30, loop skips mismatched definitions and publishes current datum
 // 27 (NOT kept: gain of three with prologue still differing), selected datum named only at the hit 30.
+// Round 462 void selection return 30, common exit 30, selected definition/entry after the scan
+// 30/30, sentinels before the guard 31, empty invalid arm 30, signed int snapshot 30, unsigned
+// one-based sentinel test 9 (NOT kept: 82 bytes and LEA/TEST in place of the native EAX compare
+// and EBX copy). Complemented sentinel test 32. The opening 0x10 frame and body were restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

@@ -1633,6 +1633,11 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // explicit busy outcomes 32/150/150; nested admission indexed/reference 32/150.
 // NOT kept: ties or regressions. Iterator-handle acquisition, leave selector
 // and request/slot publication still differ.
+// Round 462 full busy byte backed by short/word/long/dword bitfields 29/29/29/29,
+// with named query level 32/32/32/32. NOT kept: three-point gain. The unsigned
+// variants also regress the comparator. Short-backed byte with seat/vehicle first 38,
+// clear and set around seat/vehicle 48, default departure type 59, branch-assigned type 44.
+// The original busy field, requests and slot stores are retained.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2993,6 +2998,11 @@ struct s_scenario_scripting_view
 // original packed high word or narrow-selector commit 96/96/77/96; with the typed
 // candidate record 95/95/90/95. NOT kept: keeping the original high word broke
 // the wrapper, and the 77 form grew to 372 bytes. Actor and counter homes remain.
+// Round 462 admitted set pointer from nested or conditional bounds with success/failure
+// admission, early counter 77/77/77/77, search-owned counter 74/74/74/74. Loop-owned
+// counter with raw/typed point access 74/74. Availability in the loop bound 94/94.
+// NOT kept: best gain six with score above 30. The guarded data read and selector spill
+// improve in the 74-point forms, with the actor and counter still in the wrong registers.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

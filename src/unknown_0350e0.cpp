@@ -3071,6 +3071,10 @@ real magnitude3d(vector3f const *v);
 // the sine 178 (1028 B; without 0x1ecf50 in the fast image the helper stays a call, 388 at 820 B). Retail's rotation
 // writes each component's partial sums to +8 and the result into first's slot, sine at +0x10 and the cosine over the
 // angle at +0xc.
+// Round 462 scoped angle producer 170, with named sine/cosine 170, immutable cosine complement
+// and projection 170, separate immutable trig results 170, direction/axis/projection names 170,
+// with scoped angle 170, bounded lengths ahead of scoped reciprocals 170, with scoped angle 170.
+// The raw current magnitude still shares the bounded length's slot and the dot promotion persists.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
