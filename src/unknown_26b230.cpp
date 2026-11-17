@@ -2190,6 +2190,12 @@ void function_269250(long clump_index, long actor_index);
 // P572: Existing-selection transfer admission, positive/complementary bool/byte/short/long:
 // 87/87/87/87/87/87/87/87. NOT kept: no exact admission/selected-handle lifetime repair;
 // pool EBX, memory-only selection and native x87 score homes remain. Original full body restored.
+// M3 lane 6 r190 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510/0x1e46c0, all matched
+// each time): the actor's best-clump search moved whole into a forceinline helper returning the selection 87 (same code); the
+// same helper with the in-arm compare 126 (480 B); on it a private step that reads the walk's pool ahead of the activity test
+// (to let the pool be hoisted as retail's EBX) 126 (same code: the pool is still reloaded, the selection still in EDI); an
+// `if (active)` guard around the walk loop 163 (453 B); the team mismatch as `continue` re-measured 126, with an activity guard
+// around that loop 136 (488 B). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

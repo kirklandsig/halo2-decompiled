@@ -538,6 +538,11 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // bound as `vector3f const &displacement = *d;` for the sums 193 (the z row then loads d first as retail, like the
 // (d, a, ...) parameter order without touching the callers; x still loads a first), with retail's operand text
 // 193 (same code), with the rows z, y, x 211 (979 B). Restored.
+// M3 lane 6 r190 (fast with 0x30bf0; callers 0x4f7e0/0x4ff50 unmatched at 325/43 throughout), each 195 with the same
+// code: transform_point's rows summed forward*z + up*y + right*x + position (the order the file-local point transforms of
+// 0x1ee340/0x1689b0/0xa76b0 use); that helper returning its output pointer; the displaced sums written in retail's operand
+// order (d.i + a.x, a.y + d.j, d.k + a.z: the compiler picks the load order, ours stays a-first for x and z); the three
+// defaults as `a = a ? a : g_468788;` and likewise; the helper scaling with `x *= camera->scale`. Body unchanged.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
