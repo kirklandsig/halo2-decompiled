@@ -1379,9 +1379,9 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// score 220 (was 220; earlier noted 218 (was 218), the full check gives 220; m3 lane 16 r130 at the end): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
-// score 220 (was 220; earlier noted 218 (was 218), the full check gives 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
@@ -1823,6 +1823,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // calls 512 (2194 B); the look angles copied once into a local point 465 (2214 B); the orientation block index written
 // user-major 220 (same code); the unit index in a named local for the test and the lookup 220 (same code). Still BLOCKED by
 // the stand-in (round 98) for the ESI/EDI save after the unit test.
+// m3 lane 16 r130 (fast with 0x165dc1 and 0x166561, both MATCH; control 220): the weapon loop under a redundant
+// `if (0 < MAXIMUM_FIRST_PERSON_WEAPONS)` 220; the two look inputs as `real &` references 220; `active` declared at the
+// unit-block scope 220; the animation-finished test as a nested if 220 (all same code). A game-time pointer copy taken
+// after the yaw clamp and used for the pitch's rate and the third spring call's rate 208 (2197 B: the reciprocal is
+// no longer shared, the pitch reloads the global as retail), but the other rate reads stay direct, a mixed
+// local/global read, so not kept; the same pointer local for all eight rate reads 555 (2183 B).
 // M3 lane 9 r131 (fast; base 220): a redundant `if (0 < MAXIMUM_FIRST_PERSON_WEAPONS)` guard around the weapon loop 220
 // (same code); the two look rates as `real &` references to the user fields, used for the clamps and the smoothed stores
 // 225; each look value divided in one statement and clamped in the next 223; the look values declared and clamped in a

@@ -307,6 +307,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // components 213 (841, the seed becomes SSE moves); the contribution declared once at the top of the lights branch 121 (same
 // code); a power local named inside the blend arm for the divide and the add (the test still reads the field) 188 (835: the
 // add goes in place, `addss xmm7, [esp + 0x28]`, but the power spills across the call); `strength = strength + power` 121.
+// M3 lane 16 r131 (fast; base 30): colour first re-measured 121 (828 B; only the load-first post-call strength add and the
+// ECX/EDI pair differ). On colour first: a typed light entry {flags, colour, power} 121; the colour seed copied as a point
+// (`*(point3f *)&color.red = *g_468718`, the idiom of that global's other users) 121; the entry colour copied by the same
+// point idiom 121; the scenario's sky block read through the shared tag-array and tag-reference types in the sky helper 131
+// (the sky lookup's registers swap; the add stays load-first). Diagnostic: the blend through a forceinline (result, a, b, t)
+// wrapper over 0x131c20 253 (878 B: LTCG then inlines 0x131c20's body). Body unchanged.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
