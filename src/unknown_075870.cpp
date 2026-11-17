@@ -2102,7 +2102,7 @@ void function_7a4a0(s_network_observer *observer)
 
 
 typedef bool (__stdcall *t_sort_4byte_compare_function)(long, long, const void *);
-void sort_4byte(long *elements, unsigned long count, void *unused, t_sort_4byte_compare_function compare, const void *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, t_sort_4byte_compare_function compare, const void *context);
 
 // @retail 0x78a90
 bool __stdcall function_78a90(long first, long second, const void *context)
@@ -2248,7 +2248,7 @@ void function_78ac0(s_network_observer *observer)
 		*(long *)((byte *)observer + 0x4f44) = limit;
 		{
 			long maximum;
-			sort_4byte(indices, count, &maximum, function_78a90, values);
+			sort_4byte(&maximum, indices, count, function_78a90, values);
 		}
 		for (long i = 0; i < count; i++) function_7a330(observer, indices[i]);
 		function_79260(observer);

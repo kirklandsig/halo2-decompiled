@@ -726,6 +726,10 @@ void function_245400(s_source_245400 const *source, long index,
 // table after the edge vector 225 (762 B, 0x245aa0 3), with unsigned-shift side bits 229 (763 B). Retail still computes
 // both side bits ahead of the plane-index compare (byte slot plus BL) where ours folds them into one xor in the branch.
 // Also the side bits shifted from the short material codes (`(first_material >> 15) & 1`) 213 (positional noise only).
+// MiniMax C (11-17): score 206 (was 214): the two material codes are now read in retail's order (the surface's second
+// code at field_0a first, then the one at field_08) and the two side bits are sign tests of the sign-extended codes.
+// Left: retail's 0x2c frame with the source copied to ESI, its matrix read from its stack slot at the test instead of
+// kept in EBP, its shr/and side bytes and the cross-product register order.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -734,8 +738,8 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 	s_surface_245400 const *local_0 = &arg_1->field_34[arg_0];
 	long local_1 = local_0->field_08;
 	s_material_245400 const *materials = arg_1->field_2c;
-	short first_material = materials[local_1].field_00;
 	short second_material = materials[local_0->field_0a].field_00;
+	short first_material = materials[local_1].field_00;
 	if (first_material != second_material)
 	{
 		plane3f const *local_7 = arg_1->field_0c;
@@ -747,8 +751,8 @@ void function_245540(s_source_245400 const *arg_1, long arg_0,
 		long local_3 = second_material;
 		plane3f const *local_8 = &local_7[local_2 & 0x7fff];
 		plane3f const *local_9 = &local_7[local_3 & 0x7fff];
-		bool local_10 = (bool)((local_2 >> 15) & 1);
-		bool local_11 = (bool)((local_3 >> 15) & 1);
+		bool local_10 = local_2 < 0;
+		bool local_11 = local_3 < 0;
 		if ((local_2 & 0x7fff) != (local_3 & 0x7fff))
 		{
 			vector3f local_12;
