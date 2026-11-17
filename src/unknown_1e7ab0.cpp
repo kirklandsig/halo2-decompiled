@@ -493,6 +493,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // exactly, but the body grows to 2312 bytes against retail's 2308, so every later jump target moves (164), and
 // case 4's parent still sits in ECX where retail holds it in ESI (a hoisted parent read and the inlined
 // parent-unit expression do not move it).
+// M405: Typed seat array; iterator exhaustion via while/for, each with direct/sampled seat; single exit with typed/raw seats; copied child flags.
+// Scores 117/484/484/484/484/117/117/117. Typed seat-array field confirmed in a plain check at the same score. Other forms restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

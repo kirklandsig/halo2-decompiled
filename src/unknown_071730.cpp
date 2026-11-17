@@ -65,6 +65,7 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// score 387 (was 426): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
 // MiniMax I (11-17): no new form, no lower score (387): retail calls 0x5b080 out of line where this build inlines it (that body lives in another file), keeps the second session state in EAX against our ESI, and writes the two dead state stores to +0x20 and +0x18 where this build shares one slot, so the second dispatch block's value store lands before the pops here and after them in retail and every later branch target differs; the frame is retail's 0x3e4 but the body is 8 bytes longer.
 // MiniMax B (11-03): no new form, no lower score. The frame stays 0x3e8 against retail's 0x3e4 and the
 // state and result bytes keep their homes; retail still calls 0x5b080 out of line at this site, so the
@@ -291,7 +292,7 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // MiniMax D (11-17): no new form, no lower score (387, was 387); retail's out-of-line 0x5b080 data
 // getter, its second session state in EAX against our ESI, the two dead state stores at +0x20 and
 // +0x18 and the call at 0x71ac2 remain.
-// score 402 (was 426, fast build; 1589 bytes, retail length; first difference +0x6c). b6P walk of the
+// Earlier 402 (was 426, fast build; 1589 bytes, retail length; first difference +0x6c). b6P walk of the
 // whole body against retail, block by block, found one behaviour difference and four structure points:
 // - BEHAVIOUR (fixed, score 426 unchanged): the call to 0x71ff0 passed the ratings record plus 4. Retail
 //   passes the record itself (0x71cb6 lea ecx,[esp+0x94] after one push is the record base, the same base
@@ -326,6 +327,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // each start field is then read ahead of the clock as in retail), with the redeclaration too 427 (1602 B); 0x5b080 stays
 // inlined in every form, so its call in retail is not explained by the size of the other expansions. BLOCKED-BY 0x75890
 // for the two elapsed reads: its file is /Ob1, which LTCG never expands from.
+// Captured growth count/roster bound/growth timestamp join, seven nonempty subsets, then all with signed count: 387/402/432/402/432/433/433/433.
+// NOT kept: count capture ties. The shared roster bound reaches 1589 bytes at 402, and the timestamp join grows to 1605 bytes.
+// Original executable body restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

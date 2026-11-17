@@ -727,7 +727,7 @@ struct s_16e150_bits;
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result);
 void function_16de20(short index, s_16e150_bits const *table, dword *output);
 bool __stdcall function_134950(long a, long b, void const *context);
-void sort_4byte(long *elements, unsigned long count, void *unused, bool (__stdcall *compare)(long, long, void const *), void const *context);
+void sort_4byte(void *unused, long *elements, unsigned long count, bool (__stdcall *compare)(long, long, void const *), void const *context);
 
 // score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
 // retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
@@ -768,7 +768,7 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 				}
 			}
 		}
-		sort_4byte(collection->order, collection->cluster_count, &camera, function_134950, collection);
+		sort_4byte(&camera, collection->order, collection->cluster_count, function_134950, collection);
 	}
 }
 
@@ -1536,7 +1536,7 @@ void __stdcall function_173130(long camera_count, byte *cameras, long cluster_in
 	}
 	{
 		long scratch;
-		sort_4byte(collection->order, collection->cluster_count, &scratch, function_134950, collection);
+		sort_4byte(&scratch, collection->order, collection->cluster_count, function_134950, collection);
 	}
 }
 

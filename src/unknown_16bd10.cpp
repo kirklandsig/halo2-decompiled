@@ -728,6 +728,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 
 /* the camera director of scripted cameras: fills the observer's command */
 // score 126 (was 126; m3 lane 16 r130 at the end): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// MiniMax C (11-17): score 126 (was 126): no new form, no lower score. The case-2 plane length still preloads the
+// left vector's k component into XMM1 where retail preloads its j, and the length's accumulator stays in XMM0 where
+// retail keeps it in XMM1, so the zero that follows stays in XMM1 against retail's XMM0; the swapped dot arguments
+// (394), the swapped dots (399) and the moved distance store (127-133) were measured and dropped.
 // MiniMax I (11-16): score 126 (was 126): no new form, no lower score; the length still preloads the
 // camera point's left.k into xmm1 where retail preloads left.j, and the zero register stays xmm1 for
 // the timer, the animation case and the field-of-view tail; `t = 0.0f;` before the test (375), the

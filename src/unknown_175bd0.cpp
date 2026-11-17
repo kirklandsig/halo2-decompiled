@@ -2236,6 +2236,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Existing placement helper for the two conditional arms with the actual placement 367.
 // Existing placement helper on the outside arm 263.
 // NOT kept: the single-arm inline changes raised the score and the helper calls shortened the expanded zone region; the original body was restored.
+// P594: Scalar memcpy at spawn scale/unknown/location subsets 1..7, then the input
+// location cursor alone: 126/129/169/128/126/129/169/128. NOT kept: no exact native frame/color/query recovery;
+// original spawn publication, parameters, helpers and complete body restored.
+// Best preview 126 gains only 2; below the keep threshold.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3742,6 +3746,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Typed low-word array subscript at the effect and system and particle location pool 100.
 // Typed array subscripts fed by named low-word pool slots 100.
 // NOT kept: the 80-point system-pool form changed the stack/register arguments and lost 0x176f60. Forms preserving the caller gained at most three and shortened the body further from retail.
+// P594: Scalar memcpy at first/second/both colors, successor, effect cursor, particle
+// cursor, mode and all original acquisition boundaries: 93/93/93/93/93/93/93/93. NOT kept: no exact
+// native frame/system/successor/color recovery; original complete body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
