@@ -187,7 +187,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // argument) in EBX and reads d from its stack slot at each use, this build keeps d in EBX, and the first clamp
 // still computes t before the 12/8 factor is selected; a named local copy of q at the function entry (732) and
 // one just before the output copy (665) both score worse and both leave d in EBX, so the body is unchanged.
-// score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// score 603 (was 622; 636 before the settle factor): m3 lane 14 r105 put the settling align through the existing dot3f
+// (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
 // selected before t in each clamp, xmm homes and coefficient schedules.
@@ -614,6 +615,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // ends the same way and gets retail's early pops, so the cause is not that tail's spelling); the settle arm's test as
 // `nlen != 0.f && align > ...` 635 (2888 B, first difference +0x2); the output stage's distance vector computed in full
 // before the three rate scalings 622 (same score). Body unchanged.
+// M3 lane 14 r105 (fast reads 614 for the 622 body; plain where stated): KEPT the settling align as the existing
+// `dot3f(d, &nq)` (round 60 measured it at 640 on its 642 base) fast 597, plain 603 (2885 B; 0x1eb6f0 and 0x1ed4a0 MATCH);
+// d still takes EBX at entry. On 603 (fast): the activation alignment as dot3f(d, a) 597, the 0.866 test as
+// dot3f(&s->direction, d) 598 (both the same code or one worse), the output stage's w as dot3f(&s->direction, q) 682 (the
+// prologue changes), the settle length and the output distance through sqrt(length_sq3f(...)) 597/597; the 12/8 factor
+// selected before t in the second clamp 723 (2854 B), in the output clamp 597, in both 722; the void return 597, with
+// `s->counter++` and the closing test reading the field 596 (2880 B). Also kept (identical code, 603): the activation
+// alignment as dot3f(d, a), the settle length and the output distance as sqrt(length_sq3f(...)).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -658,7 +667,7 @@ long function_1eb8a0(
 				if (e > 0.001f)
 					n = rem / e + 6.f;
 
-				s->alignment = d->k * a->k + d->j * a->j + a->i * d->i;
+				s->alignment = dot3f(d, a);
 				real v = s->alignment * 1.5f;
 				vector3f delta;
 				delta.i = b->x - pos->x;
@@ -792,7 +801,7 @@ long function_1eb8a0(
 		qr.j = qr.j * globals->rate;
 		dl.k = s->target.z - pos->z;
 		qr.k = qr.k * globals->rate;
-		real dist = (real)sqrt(dl.k * dl.k + dl.j * dl.j + dl.i * dl.i);
+		real dist = (real)sqrt(length_sq3f(&dl));
 
 		if (e3 > 0.001f)
 		{
@@ -825,7 +834,7 @@ long function_1eb8a0(
 				double v = PIN((double)s->alignment * 1.5, 0.75, 3.5);
 				real step = (real)(globals->rate * v);
 				vector3f nq = qr;
-				real len = (real)sqrt(qr.k * qr.k + qr.j * qr.j + qr.i * qr.i);
+				real len = (real)sqrt(length_sq3f(&qr));
 				real nlen = function_30bf0(&nq);
 				if (!s->settled)
 				{
@@ -833,7 +842,7 @@ long function_1eb8a0(
 					s->settle_distance = MAX(step, len - step);
 					s->settle_minimum = MAX(0.001f, dist);
 				}
-				real align = d->j * nq.j + d->k * nq.k + d->i * nq.i;
+				real align = dot3f(d, &nq);
 				if (align > len * 0.087155744f && nlen != 0.f)
 				{
 					real m = s->settle_distance * 0.25f;

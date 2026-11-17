@@ -577,6 +577,11 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // reading field_64 at each use with the complement product first 663 (3499 B); the velocity-frame cross through the
 // existing cross3f_staged 489 (same code). Re-measured: the side ternary written in each coordinate 573 (3500 B: two
 // separate ternaries, not retail's per-arm y with the x part after the join); the flip as `== local_22` 658. Body unchanged.
+// M3 lane 14 r105 (fast = full 489 here): the normaliser's input copied component by component 765 (3486 B); that copy
+// made before the 0xb9dd0 call 500; local_13 declared before local_11 489, local_8 or local_9 declared first in the
+// function 489/489, local_10 declared then assigned 489 (all the same code: local_8 stays at +0x8c, the squares k, j, i);
+// the 0.99 test's dot through the existing dot_product2d 661 (3499 B). Kept: the output scale as the existing
+// vector3f_scale(&local_6, local_27, &local_6) 489 (identical code).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -753,9 +758,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					*arg_6 = false;
 				}
 				if (local_27 > local_20) local_27 = local_20;
-				local_6.i *= local_27;
-				local_6.j *= local_27;
-				local_6.k *= local_27;
+				vector3f_scale(&local_6, local_27, &local_6);
 				if (local_2->field_68 > 0.0f)
 				{
 					vector3f const *local_28 = (vector3f const *)((byte *)local_1 + 0x7c);

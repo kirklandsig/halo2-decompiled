@@ -611,6 +611,10 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // +0x7e store ahead of the three 1.0f stores 7; the +0x7e store right after the owner's team 3 (same code: still stored
 // last). Diagnostic (reverted): g_4686c4 read through a pointer to it (address taken) 9: its load then waits for every
 // store ahead of +0x22, so retail does not treat it as aliased; its load sits right after the +0x7c store, held only by CX.
+// M3 lane 14 r104 (fast with 0xd8cb0 in the set, which reproduces the full build here; a single-address fast image hoists the
+// g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
+// owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
+// moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -2473,6 +2477,10 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // does not keep info in its stack home as retail has it). Lead: retail's source reads the entry in a block that ends before the
 // info test, yet its load is emitted in the join between the info test and its je; a form that keeps a block boundary there until
 // register allocation, with the inline guard, should match.
+// M3 lane 14 r104 (fast): the region flag through the header's inline dword bit test 185 (873 bytes: a dword load, `shr eax, 7`,
+// `test al, 1`); the definition flag through it 188 (874); the area-damage flag through it 3 (same code); that with the entry read
+// into a local after the inverse 228 (the flip); the vitality test as `function_d5d20(object_index, false)` times the fresh body
+// vitality 165 (821 bytes: called out of line, not inlined here).
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

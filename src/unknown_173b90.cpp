@@ -867,6 +867,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // code); the two particle copies made after the field_50 refresh 181; the scale product as `multiplier * value` 42
 // (same code); the emitter definition as a const pointer 42 (same code); the translation as three `+=` rows 42 (same
 // code).
+// M3 lane 14 r105 (fast, base 42): in the transform block, `matrix3x3 const &rotation_matrix = *rotation_result;` for
+// both rotations 45 (1130 B), `point3f const &frame_origin = *origin_result;` for the translation 122 (1136 B), both 122
+// (1134 B); on indexed definitions with scale first (re-measured 113, 1136 B: row i of the position rotation sums
+// (up*z + x*forward) + left*y, retail (left*y + forward*x) + up*z) the same three 112/115/115 (1134/1138/1138 B).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
