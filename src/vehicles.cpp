@@ -4270,7 +4270,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // retail's up.i*cosine term computed in each arm before the join where ours computes it in the shared
 // block.
 
-// score 118 (was 118; 136 before): projection/cross input ranks and angle/trig homes remain;
+// score 118 (was 118): the projection i-product loads the other input at +0x99, followed by cross-product register order and the sine/cosine stack homes.
+// projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
 // MiniMax E (11-08): no new form, no lower score (136); the dot's i term still multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy still moves one word and two floats where retail moves three words, and the trig block still spills the sine and cosine through the stack where retail keeps the angle on the x87 stack.
 // MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
@@ -4554,6 +4555,15 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // three in-place member statements store i, j, k as retail does (0xf4721-0xf474d) and reload as its final cross does,
 // but score 118 at 800 bytes: not kept. Retail's shared tail starts at the sine load 0xf4713 after a per-arm
 // `cosine * up.i` (0xf468d default arm, 0xf470b case arms); cases 1 and 2 join at 0xf46ae: cross-jumped copies.
+// Mutable up snapshot publishes up before the projection 206.
+// Const up snapshot publishes up before the projection 206.
+// Mutable up snapshot publishes up after the projection 216.
+// Const up snapshot publishes up after the projection 216.
+// Both source basis snapshots feed the dot 241.
+// Both source basis snapshots feed the dot and forward scale 241.
+// Up snapshot published with the vector setter 205.
+// Normalize the projected source up vector before publishing it 236.
+// NOT kept: separate basis snapshots enlarged the native one-word frame and moved the first difference to entry. Original basis reads and body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

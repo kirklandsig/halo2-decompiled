@@ -226,7 +226,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
-// score 49 (was 49): MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
+// score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
+// MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
 // table's data pointer and recomputes the scaled index between the flag test and the object read; the earlier legal
 // forms stop at 42, a seven-point gain under the bar, and the lower ones need a redundant store or a volatile read.
@@ -237,7 +238,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // attachment, ours keeps it in ebp; retail reloads the object table's data pointer and recomputes the scaled index
 // between the header flag test and the object read, ours shares one address between the two reads.
 // MiniMax S (11-14): no new form, no lower score (49): retail keeps the false result in BL from before the creation call and sets it only after the attachment, branches on the creation call's result instead of materialising it as a 0/1 value, borrows EBP around the header flag test and loads the object table's data pointer again for the object read, where ours keeps the result in EBP and shares one header address between the two reads; the result byte at the entry and the data reload are not reachable from this file.
-// score 49 (was 49; m3 lane 2 r79 at the end): unchanged this round: retail keeps the false result in BL from before the creation
+// Earlier score 49 (was 49; m3 lane 2 r79 at the end): unchanged this round: retail keeps the false result in BL from before the creation
 // call and sets it only after the attachment, and it branches on the creation call's result instead of
 // materialising that comparison as a 0/1 value; retail also borrows EBP around the header flag test and
 // loads the object table's data pointer again for the object read, where ours shares one address between
@@ -860,6 +861,15 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // where the table pointer stays in a register and its data pointer is loaded twice with no store between; the matched ones
 // are parent-chain loops, joins after a branch that skips the first lookup, or the per-lookup pointer copies tried above.
 // Body unchanged.
+// Creation payload via memcpy with validity result 49.
+// Creation payload via memmove with validity result 89.
+// Creation and notification payload via memcpy with validity result 49.
+// Creation and notification payload via memmove with validity result 116.
+// Creation payload via memcpy with attach-owned result 77.
+// Creation payload via memmove with attach-owned result 70.
+// Creation and notification payload via memcpy with attach-owned result 77.
+// Creation and notification payload via memmove with attach-owned result 95.
+// NOT kept: payload memcpy kept the original allocation on the validity graph, and memmove or the attach-owned result regressed. Original payload and result restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
