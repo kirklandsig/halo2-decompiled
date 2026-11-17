@@ -332,6 +332,14 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // (409 bytes; the reload stays ECX). Reading: 0x1b8d80 takes the seat in BX, so EBX holds the seat from the
 // 0xc8f60 call on; retail's reload into EAX with the seat load scheduled before the dereference looks like
 // the unit's ECX being reserved before the object is set up, with the unit load later sunk below it. Restored.
+// Round 94 (m3 lane 2, fast with 0x1b8eb0/0x11b0c0/0x11ade0, all matched throughout): trivial inline accessors at
+// the 0xc8200 call (no code of their own): the object through `seat_object(&seats[i])` 3 (same code), through
+// `seat_object_at(seats, i)` 3, through a const-reference accessor 3; the seat through an accessor returning `short`
+// 33 (the seat is zero-extended, branches move); object and seat accessors 33; the unit through an accessor (pointer,
+// reference or force-inline) 3: the reload then takes EAX as retail, but the unit load moves first (round 176's
+// block-local unit, same code); the unit accessor returning `long const &` 3 (same code as the body); unit and object
+// accessors together 4; the seat through an accessor returning `short const &` 3 (same code), with the unit accessor
+// 3, with the object accessor 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {

@@ -822,6 +822,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // 276 (1072 B), at the function top after the session 221 (1088 B), both giving the key its own induction variable; the key
 // as `(byte *)collection->players + offset` with a named `offset = i * size` 32, as `(byte *)collection + (i * size + 4)`
 // 32 (both the same code: every spelling is canonicalised with the scaled index first). Restored to main's order.
+// M3 lane 10 r114 (fast with 0x69260/0x84e90/0x84c90/0x83c90/0x83570/0x83c20, all matched each time): the occupied key as
+// `(collection->players + i)->key` 28 (same code); `collection` declared once before the second loop and assigned at the
+// loop top 28 (same code); on the swap order (collection, player, update, other) at definition, declaration and call,
+// re-measured 32: that key spelling 32, the key as `(byte *)collection + 4 + i * sizeof(player)` 32 (both the same code);
+// on main's order, separate `removal`/`addition` record pointers for the occupied and last records (the first arm's
+// pointer block-scoped) 103 (the last record's loads reorder).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

@@ -126,6 +126,13 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // false after force 21 (same code each); the initialized flag named for the force test and the tail's test 212 (829 B);
 // the masked object index named 21 (same code); the update-time test moved to just after the force arm 240. Probe stores
 // of 0, 1, -1, 2 on the update-first form (diagnostic, reverted) leave the timestamps in EDI/ESI (194, 834 B).
+// Round 192 (m3 lane 5, fast with 0x3d2c0/0x3db00/0xd1850/0x3e4e0, control 21, aligned 12, masked 8, all in the entry block): the
+// hidden-object return as its own `if (!force && flag) return;` after `if (force) update = true;` 21 and the rest of the body under
+// `if (force || !flag)` 21 (both the base's code); update elapsed computed before the zero-elapsed return 235; the sample decision as
+// an inline helper returning each threshold test 312 (753 bytes: the shared setg goes); a stale-cache helper for force 21 (same code);
+// the hidden bit read as the word flags' 0x100 bit 21 (same code). On update-first (218, masked 15): inline accessors for the update
+// time at its NONE test or for the sample time at its subtraction 218 each (same code), update elapsed before the zero return 192,
+// the sample helper 303 (768 bytes), the word-flags bit 218 (same code), the hidden return ahead of the clamp and the force arm 214.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -467,6 +467,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // word bitfield `flag2` at +0x10a through a local copy of s_object_view (unknown_0a58d0.h, not included) gives
 // retail's `shr al, 2` at 0x1d6a7c where ours has `shr eax, 2`, but needs a duplicate struct. Left: header data loaded first (EDX), the owner chain in EBP and
 // `mov esi, ecx` before the object index (0x1d69d0-0x1d69f2), and the single type read (0x1d69ff) before the kind test.
+// m3 lane 11 r110 (fast, caller 0x1d5bf0 in brackets): round 118's form rebuilt (object_index, absolute_index, rigid body,
+// headers, byte type; case 0 through `headers[component->object_index & 0xffff]`) 28 at 256 B [0]; on it (#1225
+// reference bindings, match-only): the rigid body as `s_physics_rigid_body &` to the element 28 (same code); the headers
+// as `s_physics_object_header *const &` 28 (same code); the object index as `long const &` to the component's field 96
+// [208]; the body array as `s_physics_rigid_body *const &bodies` 93 at 260 B [0]. On main: case 0's flag read as the
+// existing object view's `flag2` bitfield (its header included) 96 (same score; still `shr eax, 2`). Restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

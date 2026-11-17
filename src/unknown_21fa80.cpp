@@ -412,6 +412,14 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // P564: Separate per-query playing/stopped results in both original playback arms,
 // bool/byte/short/long: 534/534/534/534/536/536/536/536. NOT kept: native frame/stream/gain homes and
 // unrounded math expansion remain; original queries, guards, calls and complete body restored.
+// M3 lane 4 r207 (fast with 0x21f8a0): the linear gain through the float pin, `exp(channel_pin_gain(value) * 0.05f *
+// 2.3025851f)`, 557 (1875 B); the two mode sends as `if (mode == 1) add; add;` inside the mode test 544; the gain as a
+// value copy of the bits in place of the const reference 534 (same code); the direct bit read at each use (no local)
+// 548; the level assigned to the send state by an if/else 534 (same code). Flag lead, measured with a compile-only build
+// of this file: under /Op even `#pragma intrinsic(exp, log10, sqrt)` gives calls (exp, __CIsqrt, __CIlog10), and every
+// fabs difference goes through a float store and reload, where retail expands all of them inline on the x87 stack with
+// no rounding stores (0x21fc9f-0x21fd20, 0x21fdb9-0x21fe37): retail's body was built without /Op. BLOCKED by the file's
+// @flags (the user's decision).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

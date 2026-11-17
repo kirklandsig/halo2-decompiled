@@ -894,6 +894,14 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // EBP and the mask EBX there) 14, with the mask as a named local under two names sorting either side of the font's
 // 14/14 (register ties do not follow names); a found flag with `break` and the allocation under `if (!found)` 14;
 // the prediction's two fields read into named locals before the compare 14. All the same code as the body.
+// Round 178 (m3 lane 8, fast with 0x13eeb0, which matched in each), the scan written out in a private forced-inline step
+// (diagnostics, not keepable without a match): a guard `index >= 0 && index < high_water` around it 14 (same code); a
+// second `0 < high_water` guard 61 (187 bytes); the count in a local 14; a while loop 14; the mask in two steps 14. The
+// mask bound by reference (`long &bit = mask; bit = 1; bit <<= index & 0x1f;`) 9: the font then takes EBP as in retail,
+// but the mask jumps to ESI ahead of the bitmap (EDI) and count (EBX), and the character is loaded into ESI for its
+// compare; the same initialised then bound 9, at helper scope 9, under a guard 9, as a guarded do/while 9, named so it
+// sorts first or last 9/9; with the count and bitmap also bound by reference 10, either alone 9/10; the bitmap word
+// bound 75 (199 bytes); the index bound 14. Retail's own 0x16bc00 gives count EDI, bitmap ESI, mask EBX.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

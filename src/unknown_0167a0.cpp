@@ -295,6 +295,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // into the existing entry local 210 (974 B); the entry stored directly from the `tables` local and read back from its
 // field 210; the four restore fields through a `byte **` view of the state 289 (977 B); the parameters store chained
 // with the lookup 5; the tables store chained with its read 5 (same code).
+// Round 192 (m3 lane 5, fast with 0x16f60-0x1b0a0, control 5 at +0x19e): the direct entry store re-measured 5 (+0x1a7, `second`
+// into ESI right after the entry lea); the direct store with the packed word read back through a `byte *const &` bound after it 292
+// (979 B) or through `**(word *const *)(state + 0x14)` on the reference form 293 (980 B); `state` read through its address
+// (`byte *const *state_reference = &state;`) for the restore block's publications on the direct or the reference form 296/296 (983 B);
+// `third` read through its address on the direct form 5 (same code); the chain lookup folded into the pass expression on the
+// reference form 5 (same code); a named chain index 5 (same code); `different_tag || changed` re-measured 7; `first` read through
+// its address on the direct form 5 (same code); round 64's tables reference re-measured with a non-const binding 5 (same code).
+// Body unchanged.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

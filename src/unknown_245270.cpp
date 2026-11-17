@@ -711,6 +711,12 @@ void function_245400(s_source_245400 const *source, long index,
 // of the long codes (`local_2 < 0`) 207, of the short codes 207 (same code: `setl` pairs, a seven-point gain from layout, not
 // retail's `shr; and bl, 1`, under the keep bar), with named plane indices used for the pointers and the compare 207; the
 // side bits from an unsigned shift `((dword)local_2 >> 15) & 1` 214 (`shr`, still fused into `xor al, dl`). Body unchanged.
+// M3 lane 9 r131 (fast with 0x245aa0; base 214): the plane table read after the edge vector, re-measured, 220 (768 B, and
+// 0x245aa0 then 3); the side bits as `byte` 214 (same code); the matrix read once through its own address at its test
+// (`transform4x3f const *const *ref = &arg_2;`) 229 (763 B: the matrix leaves EBP but the body shortens), with the plane
+// table after the edge vector 225 (762 B, 0x245aa0 3), with unsigned-shift side bits 229 (763 B). Retail still computes
+// both side bits ahead of the plane-index compare (byte slot plus BL) where ours folds them into one xor in the branch.
+// Also the side bits shifted from the short material codes (`(first_material >> 15) & 1`) 213 (positional noise only).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

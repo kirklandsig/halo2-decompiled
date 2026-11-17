@@ -1396,6 +1396,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax I (11-17): no new form, no lower score (529): the reduced build of this function is not faithful on its
+// own - a single-address reduced image reads 602 and 2139 bytes where the wider reduced image and the full image
+// read 529 and 2189 - so this round's forms were judged on the full check. The one that lowers the reduced score,
+// returning the result from the found block instead of from a stored byte, gives retail's frame (0x28) and retail's
+// length (2189) and reads 566 on the full image, which is worse than the 529 the kept body reads there, so it was
+// dropped and the body restored. What still differs is the entry: retail keeps the block in EAX and the query in
+// EDX where this build has the block in EDX, and the count is tested twice around the scan.
 // score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.
@@ -1756,6 +1763,18 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // with main's 0xd4080 body (only its call reordered, scales through the lead's helper) 452 with 0xd4080 479; on main the
 // chained length 562.
 // MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// M3 lane 15 r94 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/442): the
+// scan's guard written `if (0 < count)` 568 (520/441): the guard merges with the loop's own test (one count test as
+// retail), the block moves to EBX and the query to EDI and the flags reuse EBX, all as retail, but the block still arrives
+// in EDX and the query in EAX; that plus (type, query, block) at the definition and 0xd4080's call 570 (523/445): retail's
+// incoming EAX block / EDX query and homes, 0xd4080 380 (the order alone is the listed 529 with 0xd4080 455). On that:
+// `if (parameters) { ... return true; } return false;` 574 (2174 B, frame 0x28; 503/397); `bool result = false;` first with
+// `return true;` closing the found block and `return result;` 571 (2189 B, first difference +0x9; 508/402); `bool result =
+// false;` first with `result = true;` closing / opening the found block 570 / 563 (both lose 0x3db00, 0xd4080 504); the
+// result declared after the scan with `result = true;` closing / opening the block, or `return parameters != NULL;`, 588
+// (0x3db00 lost) / 580 / 579; the 571 and 574 forms with lane 5 r182's statement order (length, lightmap copy, normal copy,
+// bias local added in place, square after the direction1 negate, lightmap pin first) 586 / 587 (2206 B, 0x3db00 lost).
+// Lead: `0 < count` with (type, query, block) is the first form giving retail's whole entry convention on main's order.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2009,6 +2028,12 @@ real function_30bf0(vector3f *vector);
 // sine/dot interleave, the normalize's j/k operand order and direction0 written through a pointer register.
 // MiniMax G (11-14): no new form, no lower score (378): re-measured in the batch; the frame is 0x4c against retail's
 // 0x40, and the normal copy and the limited, rotation and colour homes still sit at other offsets.
+// MiniMax I (11-17) measured the mobile flag cleared in its own store ahead of the length (362)
+// and the squared length summed as (k, i, j) (356), neither kept (see below); left are the frame (0x4c against retail's 0x40), the zero and
+// the one constant in other registers and the normalize's j and k operand order.
+// NOT kept (review 11-17): the mobile flag as a test-set (bool mobile = false; if (...) mobile = true;) took 378
+// -> 362, but a test-set flag is kept only with a byte match; the squared length summed as (k, i, j) took 362 ->
+// 356, under the 8-point keep bar on a function still over 30. Both measured, code back to main.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2669,6 +2694,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
 // status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
 // still expands here where retail calls it.
+// MiniMax I (11-17): no new form, no lower score (542): re-measured in the batch; the result long still sits at
+// +0x30 where retail keeps it at +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30
+// lookup still expands here where retail calls it (that body lives in another file).
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
