@@ -1584,6 +1584,17 @@ void function_1e3b60(long actor_index);
 // EDI); a __forceinline declaration of 0x2641c0 beside 0x262ba0 (its noinline kept in its own file) 412 (same code); the
 // saved state as an unsigned word 413; the named condition with `update` long 449 (1600 bytes); the named condition with
 // `!sampled_one` tested last 454 (1600 bytes). BLOCKED-BY 0x262ba0 (stacked actor).
+// b13M (11-17) walk against retail, fast build on r846: every statement matches 0x1e34e0 (269 bytes): the actor lookup,
+// the `g_46fc80` store before the `actor[6]` test (retail 0x1e3503, ebx), the call order, the 0x90-byte clear (retail
+// 0x1e355b `rep stosd` of 0x24 dwords) with the two NONE stores through the second lookup (0x1e3561, 0x1e3567), the
+// `actor[7]` and `[actor + 0x1c]` swarm tests (0x1e358e, 0x1e3596), and the esi-held NONE reused for the last
+// `g_46fc80` store on both swarm/non-swarm exits (0x1e35a3, 0x1e35d5). Register arguments load as retail: EAX for
+// 0x1a6f70, 0x1e3790, 0x1e36d0, 0x1e3860, 0x1f3190, 0x1f38c0, 0x298370 and 0x1e4390; EDX for the two
+// actor_behavior_current_update calls (0x1e3579, 0x1e3587); 0x204ca0 reads EBX itself, as ours compiles it. The only
+// real difference is 0x262ba0's argument (retail 0x1e3520 `mov eax, ebx`, ours `push ebx`): retail's 0x262ba0 takes
+// the index in EAX (0x262ba7 `mov ebx, eax`), ours keeps a stack parameter, so nothing in this caller can change it;
+// the other `!!` lines are call targets of the reduced image. No new form tried here; the fix is in 0x262ba0's body
+// (BLOCKED-BY above).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

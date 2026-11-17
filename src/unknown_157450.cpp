@@ -1865,6 +1865,15 @@ short function_15cca0(long player_index, byte code)
 // the whole lookup. Receiver and other pointer 37; const other pointer 37; target noinline 24;
 // absolute lookup forceinline 24; mark code 24; mark identifier 24; late absolute index 67;
 // counter declared first 24; existing team helper 50; team helper forceinline 50.
+// b13G (11-17) walk against retail, fast build on r846: every branch sense, field offset, compare and callee argument
+// matches retail; all 24 differing lines are one register rotation. Retail receives other_player_index in EAX (the
+// `and eax, 0xffff` at 0x15ce09; the caller 0xd7b80 does `mov eax, edx` at 0xd7d52), so its lookup temporaries take
+// ECX/EDX (0x15cda5, 0x15cda8) and its team pair is DX/AX pushed 0x15ce1f/0x15ce20; ours receives it in EDX (a LTCG
+// custom convention follows from the body), so the lookup takes EAX/ECX and the pair is AX/DX. New on r846 (all 24
+// unless noted): parameters reordered to other, player, identifier 24 (same bytes); a local engine pointer 51;
+// the p27 arguments written inline 25; team and other_team swapped 24; `!= 0` tests 24; early-return guards 24;
+// pointer-increment countdown loop 24; other player pointer as a named local before or after `team` 24; the
+// other player pointer hoisted above the lookup 74 (the parameter does move to EAX there, but so does the lookup).
 // @retail 0x15cd90
 void function_15cd90(long player_index, short identifier, long other_player_index)
 {
@@ -2048,6 +2057,14 @@ void function_15e460(long object_index, long value)
 // exact against ours): result types bool/byte/char/long/int/short/dword, bool or
 // byte return, options local first/second/in the guard, all reads through
 // engine_options(), a split result: none holds the one apart from the result.
+// b13G (11-17) walk against retail, fast build on r846: no logic difference (jcc senses, 0x180/0x22c/0x1c4 fields,
+// the juggernaut_is bit test inlined as in retail, no unconditional false anywhere in retail). The 26 is the register
+// plan only: retail loads the one into EDX at 0x15eb37 and copies it to AL at 0x15eb3c and 0x15eb6e, before the first
+// `je`, and keeps the engine in EDI; ours emits `mov al, 1` or `xor bl, bl` there. Re-measured on r846 with the same
+// scores as above: single || chain assigned to a true-first result 31; true-first with the special arm negated 32;
+// nested ternary return 31; three early returns 30; a local engine pointer with true-first 30; a `long one = 1`
+// local compared against 30, and a long result reused as the comparand (103 bytes) 39: no form makes the early
+// `mov edx, 1` appear ahead of the first branch.
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {
