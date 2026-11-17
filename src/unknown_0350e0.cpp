@@ -2394,6 +2394,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 0x2ec40-0x2ec58, 0x2ed71-0x2ed97, 0x2ed99-0x2edb9); every term order written in the forward dot compiles to the same
 // code, and explicit grouping `(j + i) + k` in all four gives retail's order too (493). With k, i, j all four round as
 // retail's: 492 plain (register-masked aligned 242 -> 237).
+// B458: Final width and height as in-place scales before/after texture bind, after depth state, and after
+// vertex setup 586/523/517/514; separate width and height values at those sites 586/532/526/523.
+// Frame 0x90 versus 0x94 and shared direction/draw-point home remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

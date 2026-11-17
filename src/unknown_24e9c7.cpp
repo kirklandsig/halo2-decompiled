@@ -529,6 +529,10 @@ struct s_24e9c7_points
 // `0.0f -` 138; the in-place side point declared at the function's top ahead of the result, `(0.0f - forward_j)` 139 (742 B:
 // its home stays below the scalars); across j bound as `real &across_j = size; across_j *= forward_i;` with `(0.0f -
 // forward_j)` 139 (742 B); both across terms as a copy of size scaled in place with across j a reference to size 144 (746 B).
+// B458: Both scaled pixel extents before conversion, height-first/width-first 125/125; both truncations
+// before returned height, or a direct height conversion with separate integer width 125/125; paired signed
+// dimension reads/conversions 125/125; paired unscaled pixel products with direct/in-place scaling 125/125.
+// Across spill and the result, kind and bitmap homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
