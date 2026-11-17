@@ -1862,6 +1862,7 @@ void function_195e90(void);
 void function_68c00(s_simulation_world_owner *owner, void *definitions,
  s_simulation_distribution *distribution, c_class_6a600 *world);
 
+// MiniMax S (11-17): no new form, no lower score (34, was 34); about 95 spellings of the mode expression (switches on the state and on state - 2 with two to five cases, dead and live results, ternary and arithmetic forms, inlined helpers and assume arms) left no dead `sub ecx, 2` beside the setne, the lead form `state != 2 ? 4 : state` is retail's code instruction for instruction apart from that five-byte dead subtract (59 at 172 bytes), and the one open origin (an extra argument on the stdcall callee 0x68e20) would change a declaration this lane may not change, so the body stays as it is.
 // score 34 (was 34): earlier 35. Retail computes the mode as `xor ebx, ebx; cmp eax, 2; setne bl;
 // lea ebx, [ebx + ebx + 2]` after a dead `mov ecx, eax; sub ecx, 2` (5 bytes, perhaps
 // left by a lowered switch; no switch tried here gives it), and loads its fields in the
