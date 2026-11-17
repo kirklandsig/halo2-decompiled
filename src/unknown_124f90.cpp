@@ -4466,6 +4466,10 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// MiniMax D (11-17): no new form, no lower score (158, was 158); the pitch bounds pair address
+// (retail's lea +8), the pitch and argument hold swap and the two clamp joins remain. The single-exit
+// decibels_pin (168) and a long pin copy (171) regress; the permuter (30 tries, annealed) found no
+// better form.
 // score 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
 // pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
