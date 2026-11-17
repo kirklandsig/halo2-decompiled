@@ -4292,6 +4292,7 @@ void function_1eb00()
 // into its own locals in a different order.
 // MiniMax A (11-12): no new form, no lower score (79): retail body builds four shader programs from tables and caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference rather than a local form and the body stands.
 
+// MiniMax R (11-16): no new form, no lower score (100 in this round's nine-address set, 79 in the single-function set): the body is 736 bytes against retail's 763; the first real difference is at +0xa2 and the rest are the vertex loops' register choices (the half-word count shifts in EAX where retail shifts ECX, and the word and dword reads move between AX, EDX and ECX), with retail's four shader programs still coming from tables this project does not have.
 // MiniMax E (11-14): no new form, no lower score (79): retail's body still builds four shader programs from tables and
 // caches that this project does not have, and the ratio of the two counters is still divided into xmm3 and multiplied
 // into xmm4 where retail divides into xmm2 and multiplies into xmm0, so what is left is a knowledge difference.
@@ -7225,6 +7226,7 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax R (11-16): no new form, no lower score (184): the doubled table-handle test inside the block (`handle != NONE && handle >= 0` with the outer test kept) measures 204 here, because the compiler then pushes EBX in the prologue and the frame changes with it, and the transform index read as an unsigned word gives 185, so the body stands; what is left is retail's register permutation (the zero constant in EDI, the outer counter in ESI and the section pointer in EBX where ours has EBX, EDI and ESI), the frame's homes (retail's table pointer at +0x10 and section pointer at +0x14 against our +0xc and +0x20) and retail's doubled handle test.
 // MiniMax C (11-16): no new form, no lower score (184): the table handle tested as `available && handle != NONE && (handle & 0x80000000) == 0` reaches 177 and the same test with `>= 0` 179, both under the keep-bar, so the body stands; what is left is retail's register permutation (the zero constant in edi, the outer counter in esi, the section pointer in ebx) and retail's doubled handle test.
 // MiniMax D (11-16): no lower score (184): typing the transform as int gives 179, five points under the keep-bar, so
 // the body stays as it is; what is left is retail's register permutation (the zero constant in edi, the outer counter

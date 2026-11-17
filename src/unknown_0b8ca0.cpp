@@ -684,6 +684,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax R (11-16): no new form, no lower score (165): re-measured in this round's nine-address set, the body is retail's 895 bytes; the first difference is the cleared byte at +0xf where retail clears +0x13, then the pool step's link read comes out as a load and a branch where retail branches first and reads EDX, the options global is loaded into EDI where retail keeps EBX for the call's workspace, and the bit test's shift count and its mask ride in EDX where retail uses EAX and EDX.
 // MiniMax I (11-16), on its not-kept 38 form (below; main stays 165): the 38-point form of 11-15 without the `goto done;` it rested on: the
 // body lives in the cluster loop's found branch and the loop leaves it with a break, so the function has no goto
 // that the body on main does not have; the frame and the slots are retail's (0xb4, the result byte at [esp+0x13],
@@ -2025,6 +2026,7 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax R (11-16): no new form, no lower score (285): re-measured in this round's nine-address set, the body is still four bytes longer than retail's 1236 and the head is retail's to +0x76; the ancestry walk's record read comes out in EDX where retail keeps EBX and adds the header's field at EBP+4, the object word's bit-7 test comes out as a shift and a mask on ECX where retail shifts the word in EDX by seven and masks it, and the object's byte lands in CL at +0x13 where retail keeps it in AL.
 // MiniMax C (11-16): no new form, no lower score (285): the head is retail's to +0x76, where the ancestry loop jumps to this build's own epilogue and retail jumps to its shared one; the body is still four bytes longer than retail's 1236.
 // MiniMax I (11-16): no new form, no lower score (285); the bit-7 test of the object word written in retail's
 // shift form (">> 7" and "& 1") compiles to the same sign test as the mask, so the body is unchanged: the first

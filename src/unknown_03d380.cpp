@@ -314,6 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax R (11-16): no new form, no lower score (36): re-measured in this round's nine-address set, the body is retail's 415 bytes and the frame and the length are right; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into ESI where retail multiplies into EAX and forms the address with a lea; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp, which this lane may not edit. BLOCKED-BY 0x221810.
 // MiniMax C (11-16): no new form, no lower score (36): the body is retail's 415 bytes; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into esi where retail multiplies into eax and forms the address with a lea; the layout that puts retail's special arm first needs 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
 // MiniMax E (11-14): no new form, no lower score (36): the record's address is still built with an imul into ESI and an
 // add where retail multiplies into EAX and forms the address with a lea, so the type byte is tested in another value;
