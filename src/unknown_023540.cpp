@@ -906,7 +906,7 @@ void *function_24490(long key, s_24490_definition *definition, long entry_key)
 }
 
 // @retail 0x1d6b0
-__inline real *table_entry_data(
+real *table_entry_data(
 	long handle)
 {
 	byte *base = NULL;
