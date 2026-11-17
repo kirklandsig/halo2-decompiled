@@ -3927,6 +3927,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // both): `long input = small + 4;` 961 (the input then lives in ESI and small is reloaded); the definition cleared before
 // `fixed` 954 (4844 bytes); a named attenuation before each gain 9 (same code); the alpha input word as the stored RGB word
 // `| 0x8000` with no shifted local 948; `small` initialised from its condition 1182 (4840 bytes). All restored.
+// Round 93 (m3 lane 2, fast, base 9): the offset clamp as one nested ternary 1072 (the listed pin form); `allow_small`
+// typed bool 9 (same code); each mode's gain as one expression 85 (the span/power quotient is evaluated first and
+// every gain register moves; the pairs stay constant first); both selectors defaulted then set under one `if (small)`
+// 948. Diagnostic: mode zero's blending and depth-bias writes without the skip test 894 (4816 bytes): the reloads
+// right after the call are still 1.0f first, so the join is not what orders them.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
