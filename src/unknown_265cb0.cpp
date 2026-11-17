@@ -363,6 +363,7 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
 // score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax H (11-12): no new form, no lower score (84): the result long still lands at [esp+0xc] where retail
 // keeps it at [esp+8], the clip's amount out-parameter sits at [esp+0x10] against retail's [esp+0x1c] and
