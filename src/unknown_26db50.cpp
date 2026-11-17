@@ -967,6 +967,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P581: Rounded angle/sine/cosine promoted receiver storage, seven subsets and immutable
 // complete graph: 46/80/209/59/216/100/209/209. NOT kept: no exact native j/k SIMD and marker-publication recovery;
 // original rounded producers, shared rotation and complete body restored.
+// P589: Plain direction/fallback coordinate copies, ascending/while/descending/range
+// traversals: 98/98/238/244/98/98/87/178. NOT kept: no native rotation or publication
+// recovery; original complete body and shared rotation retained.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
