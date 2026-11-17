@@ -442,6 +442,14 @@ struct s_visibility_bound_record
 // (232/103). Left on that: the zero constant in EBX (retail keeps the entry there), the list-start stores, the two-step frustum source
 // pointer, the plane cursor at .k and the j/k register naming, the tag table reloaded in the bottom arm, the bound centre copied with
 // integer moves (retail loads it into xmm0-2 and scales in place: 0x142570's body, /Ob1 file).
+// score 443 (was 443): MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// against retail's 1742): the first difference is still at +0x10, where retail forms the entry address as a scaled index
+// added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and this build forms it
+// as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`), and retail then loads the tag table into esi and
+// spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the
+// allocator's choice of live ranges, not a source shape, and the forms the earlier rounds list (the tag table local, the
+// entry and the two views in five declaration orders, the release masks, the chained counts and capacities, the query data
+// read in the arms, the plane loop as a plain `for`) all measure 443 or worse.
 // @retail 0x44e90
 // MiniMax C (11-17): no new form, no lower score (443): this build is 1760 bytes against retail's 1742 and the first difference is at +0x10, where retail forms the entry address as a scaled index added to the entry table (movsx, shl, lea) where this build forms it as a shifted copy added to the same table (shl, add), and retail then loads the tag table into esi and spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the allocator's choice of live ranges, not a source shape - this round's named entry-offset local (the entry taken from the table with an index held separately) gives 443, unchanged, and the earlier rounds' forms measure 443 or worse.
 void __stdcall function_44e90(short entry_index, short section_index)
