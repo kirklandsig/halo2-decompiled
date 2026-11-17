@@ -93,7 +93,11 @@ public:
 	bool_3058b0 function_306f80(feature_305f60 *feature);
 };
 
-// score 95 (was 159): the dot products stay in a vector register and are
+// score 80 (was 95): `between` is stored before `along` reads the edge copy and
+// the determinant is formed just before `t`, so `between` keeps its own slot and
+// the frame is retail's 0x58. Vector register roles and one fmul operand order
+// remain.
+// Before, 95 (was 159): the dot products stay in a vector register and are
 // stored through a reference only where a float is needed (the distance is
 // stored twice: for the comparison and for the feature), the unit normal is
 // formed before the length test, and the operand orders follow retail. Still
@@ -112,16 +116,16 @@ bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 	__m128 first_corner = _mm_mul_ps(first_signs, first_half_extents);
 	__m128 const second_local = _mm_mul_ps(second_signs, second_half_extents);
 	__m128 second_edge = _mm_mul_ps(splat_306f80(second_half_extents.m128_f32[second_axis] + second_half_extents.m128_f32[second_axis]), axes[second_axis]);
-	float const first_edge = first_half_extents.m128_f32[first_axis] * -2.0f;
-	float const along = first_edge * second_edge.m128_f32[first_axis];
 	__m128 const second_corner = _mm_add_ps(_mm_add_ps(
 		_mm_mul_ps(axes[0], _mm_shuffle_ps(second_local, second_local, 0x00)),
 		_mm_mul_ps(axes[1], _mm_shuffle_ps(second_local, second_local, 0x55))),
 		_mm_add_ps(_mm_mul_ps(axes[2], _mm_shuffle_ps(second_local, second_local, 0xaa)), position));
-	float const second_squared = second_half_extents.m128_f32[second_axis] * second_half_extents.m128_f32[second_axis] * 4.0f;
-	float const determinant = (float)fabs(second_squared * (first_edge * first_edge) - along * along);
 	__m128 between = _mm_sub_ps(second_corner, first_corner);
+	float const first_edge = first_half_extents.m128_f32[first_axis] * -2.0f;
+	float const along = first_edge * second_edge.m128_f32[first_axis];
+	float const second_squared = second_half_extents.m128_f32[second_axis] * second_half_extents.m128_f32[second_axis] * 4.0f;
 	float const second_along = first_306f80(dot3_simd_306f80(second_edge, between));
+	float const determinant = (float)fabs(second_squared * (first_edge * first_edge) - along * along);
 	float t = second_squared * (first_edge * between.m128_f32[first_axis]) - second_along * along;
 	if (!(g_461f10 * determinant >= t))
 	{

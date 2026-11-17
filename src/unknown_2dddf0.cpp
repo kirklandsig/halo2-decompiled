@@ -157,7 +157,10 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 194 (was 257): the single-value inverse square root is its own
+// score 150 (was 194): the axis is normalized by the single-value inverse square
+// root helper, the normal is formed before the length is stored, and the start
+// fraction divides the named along value directly.
+// Before, 194 (was 257): the single-value inverse square root is its own
 // helper, the blend's two products are named in retail's order, the pulled-back
 // distance is named before it is subtracted, and the sphere is scoped to the call.
 // Before, 257 (was 340): Earlier callee placement reduces the frame from 0xd8
@@ -216,12 +219,12 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 	if (axis_length_squared > 1.1920929e-07f)
 	{
 		__m128 const sum = length_squared_2de1b0(axis);
-		__m128 scale = inverse_sqrt_2de1b0(sum);
+		__m128 scale = inverse_sqrt_single_2de1b0(sum);
 		scale = _mm_shuffle_ps(scale, scale, 0);
+		normal = _mm_mul_ps(scale, axis);
 		float length;
 		_mm_store_ss(&length, _mm_mul_ss(sum, scale));
 		axis_length = length;
-		normal = _mm_mul_ps(scale, axis);
 	}
 	else
 	{
@@ -262,8 +265,8 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 
 	// an end cap: none when the start is outside the capsule's radius and
 	// the line entered behind it
-	float const start_fraction = (dot3_2de1b0(start, normal) - a_along) / axis_length;
-	__m128 const start_on_axis = interpolate_2de1b0(a, b, start_fraction);
+	float const start_along = dot3_2de1b0(start, normal) - a_along;
+	__m128 const start_on_axis = interpolate_2de1b0(a, b, start_along / axis_length);
 	float start_distance;
 	_mm_store_ss(&start_distance, _mm_sqrt_ss(length_squared_2de1b0(_mm_sub_ps(start, start_on_axis))));
 	if (start_distance > radius && ray_fraction < 0.0f)
