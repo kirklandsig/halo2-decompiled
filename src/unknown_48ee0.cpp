@@ -324,6 +324,9 @@ extern real g_4c9798[36];
 // ours a short; both hold only 128 or 512, so it changes no behaviour, and the long form scores 250, so it stays a
 // short (a type change that only raises the score). No include, helper or double added; the parameter conventions of
 // 0x48ee0 and its callees are unchanged.
+// MiniMax D (11-17): no new form, no lower score (174 in both images); retail's frame homes (size, mode, maximum and
+// extent one slot further down than ours), the mode flag's register (EAX there, EDX here) and the near plane's dot
+// product (retail reads the published normal back) still differ, and the permuter found nothing in 300 s.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

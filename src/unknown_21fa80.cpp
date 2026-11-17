@@ -412,6 +412,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // P564: Separate per-query playing/stopped results in both original playback arms,
 // bool/byte/short/long: 534/534/534/534/536/536/536/536. NOT kept: native frame/stream/gain homes and
 // unrounded math expansion remain; original queries, guards, calls and complete body restored.
+// M3 lane 11 r111 (fast with 0x21f8a0 matched): `#pragma optimize("p", off)` around the body 534 (identical code, a
+// repeat of round 54's diagnostic); the cached gain stored as `*(long const *)&gain` 534, the mixbin gain passed as
+// `*(s_decibels const *)&gain` 534, both 534 (same code: the reference folds back to gain_bits, so the stream/gain
+// register swap stays); `stream` declared before `input` 534 (same code); `direct` declared before `mode` 533.
 // M3 lane 4 r207 (fast with 0x21f8a0): the linear gain through the float pin, `exp(channel_pin_gain(value) * 0.05f *
 // 2.3025851f)`, 557 (1875 B); the two mode sends as `if (mode == 1) add; add;` inside the mode test 544; the gain as a
 // value copy of the bits in place of the const reference 534 (same code); the direct bit read at each use (no local)
