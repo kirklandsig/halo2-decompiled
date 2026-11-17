@@ -109,11 +109,11 @@ struct plane_test_2dc220
 	// inside all of them (its nodes then collected), 2 otherwise
 	__forceinline int test_box(__m128 const *box, pending_2ddbd0 const *position, unsigned char const *commands)
 	{
-		__m128 const centre = _mm_add_ps(box[0], box[1]);
-		__m128 const extent = _mm_sub_ps(box[1], box[0]);
 		int inside = 0xf;
 		planes4_2dc220 const *group = groups;
 		planes4_2dc220 const *magnitude = magnitudes;
+		__m128 const centre = _mm_add_ps(box[0], box[1]);
+		__m128 const extent = _mm_sub_ps(box[1], box[0]);
 		long remaining = group_count - 1;
 		if (remaining >= 0)
 		{
@@ -123,18 +123,18 @@ struct plane_test_2dc220
 			__m128 const centre_z = _mm_shuffle_ps(centre, centre, 0xaa);
 			__m128 const centre_y = _mm_shuffle_ps(centre, centre, 0x55);
 			__m128 const centre_x = _mm_shuffle_ps(centre, centre, 0x00);
-			do
+			for (; remaining >= 0; remaining--)
 			{
 				__m128 const reach = _mm_add_ps(_mm_add_ps(_mm_mul_ps(magnitude->x, extent_x), _mm_mul_ps(magnitude->y, extent_y)), _mm_add_ps(_mm_mul_ps(magnitude->z, extent_z), magnitude->d));
 				__m128 const distance = _mm_add_ps(_mm_add_ps(_mm_mul_ps(group->x, centre_x), _mm_mul_ps(group->y, centre_y)), _mm_add_ps(_mm_mul_ps(group->z, centre_z), group->d));
 				if (_mm_movemask_ps(_mm_sub_ps(distance, reach)) != 0xf)
 				{
-					goto outside;
+					return 0;
 				}
 				inside &= _mm_movemask_ps(_mm_add_ps(distance, reach));
 				group++;
 				magnitude++;
-			} while (--remaining >= 0);
+			}
 		}
 		if (inside == 0xf)
 		{
@@ -143,8 +143,6 @@ struct plane_test_2dc220
 			return 1;
 		}
 		return 2;
-	outside:
-		return 0;
 	}
 };
 
@@ -162,7 +160,13 @@ public:
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
 };
 
-// score 327 (was 330): the same length as retail. The walk's position is
+// score 71 (was 406): the plane test's group loop is a guarded for with the
+// miss returning from inside it (no goto), its centre and extent are declared
+// after the masks, the first side's commands go through their own pointer with
+// `commands` assigned in the branches that continue, and the bound loop tests
+// the short form first. Left: the bound loop's arm order and registers, case
+// 0x20's two integer reads and store order, and four spill slots.
+// Before, 327 (was 330): the same length as retail. The walk's position is
 // the parameter itself, so it is loaded after the first command's range check
 // as in retail. A split at the next
 // unit stores the high bound first, so the node's corner is read again for
@@ -387,17 +391,17 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 		for (long bound = commands[first_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[first_offset])
 		{
 			unsigned char const *q = commands + first_offset;
-			if (bound >= 0x29)
-			{
-				box[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
-				first_offset += 7;
-			}
-			else
+			if (bound < 0x29)
 			{
 				box[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
 				box[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
 				first_offset += 3;
+			}
+			else
+			{
+				box[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
+				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				first_offset += 7;
 			}
 		}
 		for (long bound = commands[second_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[second_offset])
@@ -419,14 +423,15 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 		{
 			unsigned char const *second = commands + second_offset;
 			int const second_state = test.test_box(other, position, second);
-			commands += first_offset;
-			int const first_state = test.test_box(box, position, commands);
+			unsigned char const *first = commands + first_offset;
+			int const first_state = test.test_box(box, position, first);
 			if (second_state != 2)
 			{
 				if (first_state != 2)
 				{
 					return;
 				}
+				commands = first;
 			}
 			else if (first_state != 2)
 			{
@@ -437,6 +442,7 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 			else
 			{
 				function_2dc220(position, second, (fixed_point_2dc220 const *)other);
+				commands = first;
 			}
 		}
 	}
@@ -496,7 +502,9 @@ public:
 	void function_2dce60(pending_2ddbd0 *pending, void const *root, __m128 const *offset);
 };
 
-// score 86 (was 122): the same length as retail. The walk's position is
+// score 86 (was 172): from the plane test's guarded group loop shared with
+// 0x2dc220 (this function's own text is unchanged).
+// Before, 86 (was 122): the same length as retail. The walk's position is
 // the parameter itself, so it is loaded after the first command's range check
 // as in retail. A split at the next unit stores its high bound first; retail
 // stores the low bound first, but every low-first form tried here (named or
