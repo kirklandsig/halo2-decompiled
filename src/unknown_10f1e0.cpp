@@ -1818,6 +1818,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // 334/320/164/164/164; first/second/both signed counts 314/327/327.
 // NOT kept: no native pool/index, SETLE/default-home or return equality; original
 // queries, argument handling, observations and complete executable body restored.
+// M3 lane 14 r103 (fast with 0x1103a0/0xcbd50/0x10ff40/0x111650; none kept): a header-array local for the entry unit and
+// both weapon-object reads 339 (1296 B: four pushes, EBP data and a materialised index*12 as in retail, but the first
+// query reuses the entry's unit); the depletion pair as a forceinline helper shared with 0x1103a0 (first seat sets,
+// second clears, `bool` local returned) 334 (1293 B: retail's setle / `jle; xor bl, bl` depletion code, but frame 4 with
+// the overlay in EBP; 0x1103a0 445 -> 434), with the header-array local too 334 (same code), with a bool result 364
+// (1240 B), with interruptible declared before depleted 335.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -2222,6 +2228,12 @@ bool __stdcall function_110ab0(long unit_index)
 // displacements 445/446/446/485; first/second/both signed counts 445/445/445;
 // base-channel flag word 448. NOT kept: no native frame/default/result-home
 // equality; original queries, observations and complete executable body restored.
+// M3 lane 14 r103 (fast with 0x110ab0/0xcbd50/0x10ff40/0x111650; none kept): the depletion pair as a forceinline helper
+// shared with 0x110ab0 (first seat sets, second clears, `bool` local returned) 434 (1793 B; 0x110ab0 164 -> 334, so not
+// kept; the same as a one-caller helper is match-only), with the header-array local at entry too 434 (same code), with
+// the interruptible test as `if (... & 0x10) interruptible = true;` 463 (1805 B), with `bool result = true;` and no
+// state-switch default 491 (1837 B), with depleted typed bool 472 (1777 B); the helper in the && form for both
+// functions 484 (1817 B; 0x110ab0 164, same code).
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2761,6 +2773,12 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // complete subsets, 776 each; named complete pitch/yaw magnitudes 776.
 // NOT kept: no native ID-home, frame or selective-expansion equality; original
 // captures, helpers, constructors, observations and whole body restored.
+// M3 lane 14 r103 (fast; none kept): the final seat test's arms swapped (`!= NONE && != NONE` first) 776 (same code: the
+// else arm stays first in our layout, retail's then arm falls through); the overlay ratio clamp as one ternary 776 and the
+// ratio as `0.5f + x * 0.5f` 776 (same code: the compiler factors `x * 0.5f + 0.5f` to `(x + 1.0f) * 0.5f` in every
+// spelling, retail multiplies then adds on one 0.5 register); the overlay id read in place (no `id` local) 837 (3403 B, the
+// loop's channel_play still inlined two levels); the blend products after the aiming channel_play calls re-measured 769
+// (3403 B; seven points, below the gate), with the id in place too 853 (3386 B).
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

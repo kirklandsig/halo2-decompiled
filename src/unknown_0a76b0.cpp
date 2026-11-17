@@ -1142,6 +1142,26 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // outcomes: 142/142/142/142/142/142/142/142 (1700/1699 bytes). NOT kept:
 // one-use guard captures do not match; saved projectile/type and vector homes remain.
 // Original guard, full body and every existing helper restored.
+// M3 lane 14 r103 (fast; 0xe8420/0xa91c0 MATCH; none kept, no match): the blend through the existing vector3f_assign 92
+// (same schedule); vector3f_scale(&velocity, ratio, &scaled_velocity) + vector3f_scale(&aim, 1 - ratio, &aim) +
+// vector3f_add 147 (1703 B, retail's load/product/add schedule but aim in xmm5/0/1), the add operands swapped 147 (same
+// code); vector3f_scale(&velocity, ratio, &velocity) + vector3f_add_scaled(&velocity, &aim, 1 - ratio) 150 (1706 B); a
+// one-use `vector3f scaled_velocity` (vector3f_scale(&velocity, ratio, &scaled_velocity)) with the rows
+// `aim.c * aim_weight + scaled_velocity.c` 75 (weight named before the scaled velocity), 64 (1700 B, weight named after
+// the velocity scale: the whole blend block is retail's code). MATCH-ONLY LEAD, 22 (1700 B, first difference +0x1b5):
+// that blend (aim and scaled_velocity declared together, the velocity scale, then the weight) with main's two origins,
+// `bool placed = true;` set from function_bc1d0 on a release point of its own, and the parent velocity and the release
+// point in bare blocks; every frame slot (origin/direction, type/index/shared vector) is then retail's, and the only
+// difference is the throw velocity scale's first product: retail `movaps xmm5, xmm0; mulss xmm5, [dir.i]`, ours
+// `movss xmm5, [dir.i]; mulss xmm5, xmm0` (one byte; the other 21 points are the calls and jumps it shifts). With one
+// function-scope origin instead 34 (origin/direction swapped again); main's per-row blend on that structure 109. On 22
+// (all 22, same code): direction renamed, direction beside the throw origin, a `direction_reference` pointer for the
+// scale, `real speed` named at the scale or declared before direction, the random scale named too, scaled_velocity at
+// function scope, velocity declared in the not-attached block; the velocity scale written out as v*s or with s*v for
+// i only 36 (1699 B: the scale stays unfolded and the blend's velocity*ratio products fold instead: the fold choices
+// move together); the velocity copied from direction and scaled in place 322; the else arm's direction copied
+// component by component 301 (1736 B); the velocity scale written out with the speed read in each product 135 (1701 B:
+// three speed loads); permuter (619 s, 19 tries) best 22.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2854,6 +2874,11 @@ __forceinline char unit_action_round(real value)
 // first_person_name first 315; type declared ahead of first_person_name on the 101 form 101. Left on 101: pool EDI for EBP,
 // offset EBX for EDI, the NONE carrier EBP for EBX (retail's first_person_name, also the getter's compare register),
 // type EBX for EBP, `current` EAX for ESI.
+// M3 lane 14 r103 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0; none kept): the whole body as a forceinline helper called
+// from a one-line wrapper (its returns become one exit after inlining) 234 (same code: the result is still folded, retail
+// reads it from its stack byte at the exit); is_biped typed byte 234 (same code); the channel declared with the top locals
+// 300 (re-measured); the weapon through the existing unit_get_current_weapon (short slot, own unit lookup) 297 (1196 B),
+// with first_person_name = NONE declared first 314 (1195 B).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
