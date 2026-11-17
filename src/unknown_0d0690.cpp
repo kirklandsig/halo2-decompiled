@@ -1756,6 +1756,18 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // with main's 0xd4080 body (only its call reordered, scales through the lead's helper) 452 with 0xd4080 479; on main the
 // chained length 562.
 // MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// M3 lane 15 r94 (fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542; control 529, aligned/masked 527/442): the
+// scan's guard written `if (0 < count)` 568 (520/441): the guard merges with the loop's own test (one count test as
+// retail), the block moves to EBX and the query to EDI and the flags reuse EBX, all as retail, but the block still arrives
+// in EDX and the query in EAX; that plus (type, query, block) at the definition and 0xd4080's call 570 (523/445): retail's
+// incoming EAX block / EDX query and homes, 0xd4080 380 (the order alone is the listed 529 with 0xd4080 455). On that:
+// `if (parameters) { ... return true; } return false;` 574 (2174 B, frame 0x28; 503/397); `bool result = false;` first with
+// `return true;` closing the found block and `return result;` 571 (2189 B, first difference +0x9; 508/402); `bool result =
+// false;` first with `result = true;` closing / opening the found block 570 / 563 (both lose 0x3db00, 0xd4080 504); the
+// result declared after the scan with `result = true;` closing / opening the block, or `return parameters != NULL;`, 588
+// (0x3db00 lost) / 580 / 579; the 571 and 574 forms with lane 5 r182's statement order (length, lightmap copy, normal copy,
+// bias local added in place, square after the direction1 negate, lightmap pin first) 586 / 587 (2206 B, 0x3db00 lost).
+// Lead: `0 < count` with (type, query, block) is the first form giving retail's whole entry convention on main's order.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
