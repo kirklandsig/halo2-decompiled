@@ -39,6 +39,10 @@ inline members_372300 &append_group_372390(groups_372300 *groups)
 grouping_3720a0::grouping_3720a0(array_2d91d0 *parents_, array_2d91d0 *scratch_)
 	: parents(parents_), scratch(scratch_) {}
 
+grouping_3720a0::~grouping_3720a0()
+{
+}
+
 // Walks `top` up to its group's root, then points every entry on the path
 // at that root; the second walk, from the starting entry, ends there too.
 __forceinline long grouping_3720a0::root(long top)
