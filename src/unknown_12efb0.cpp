@@ -666,6 +666,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // P591: Incoming binding masks 1/2/4/8/3/5/9/15: eight 607s; seven pointer forms
 // excluded for unresolved caller 24. Original-site count/radius/contribution/fraction/
 // reciprocal/coefficient bindings: seven 607s. NOT kept: native homes unchanged; all restored.
+// Round 179 (m3 lane 8, fast; control 607, register-masked difflib count 275): the direct field_4c publication
+// already matches; the three publications through function_12efb4 differ only in order (ours hoists the intensity
+// product and its store above red/green/blue; retail keeps source order), and in the field_70 block retail stores
+// field_6c before the last two products' stores. The char slot re-measured 700 (masked 275); field_6c stored first
+// after the reciprocal 604 (masked 273); field_6c stored just before field_70[7] 604 (masked 273); the helper's
+// intensity product written factor first 607 (same code); the char slot with field_6c first 700. Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

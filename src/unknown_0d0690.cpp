@@ -1756,6 +1756,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // with main's 0xd4080 body (only its call reordered, scales through the lead's helper) 452 with 0xd4080 479; on main the
 // chained length 562.
 // MiniMax C (11-16): score 529 (was 529): no new form, no lower score; the call boundaries agree with retail's
+// Round 179 (m3 lane 8, fast with 0xd4080 378, 0x3db00 MATCH, 0x3dfe0 21, 0xd1e10 542, all unchanged): retail's exits
+// are a false hoisted into the entry block for the count test, a fresh false for the not-found test and a true at the
+// end. On main's count test, `if (!parameters) return false;` with `return true;` at the end 568 (2168 B, first +0xc);
+// the count guard and the loop reading `block->count` (no count local) 567 (2176 B); the query's normal pointer declared
+// at the top 529 (same code); the block and the found parameters `const` 529 (same code); the scan through an entry
+// pointer stepped with the index 568 (2175 B). Block EDX / query EAX against retail's EAX / EDX still.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

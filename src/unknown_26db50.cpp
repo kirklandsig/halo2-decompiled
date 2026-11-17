@@ -980,6 +980,15 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P591: Actual half-axis ordinal signed-byte/byte/short/word/int/uint/dword domains,
 // then long equality termination: 176/176/176/176/45/45/45/176. NOT kept: narrow domains and equality
 // regress; wide domains tie. Native rotation j/k roles and marker timing remain; original body restored.
+// Round 179 (m3 lane 8, fast; every rotate_direction user listed: 0x1ecf50 MATCH, 0x1e5bb0 114, 0xe3910 79,
+// 0x1ff360 77, 0xd0080 58, this 45): the shared helper's dot staged as the planar dot_product2d then `+= k * k`
+// (the held copy's form) 6 here (left: the marker and entry pointer before 0x2104b0) and 0xd0080 38, but 0x1ecf50
+// stops matching (112) and 0xe3910 99, 0x1e5bb0 134, 0x1ff360 121; the same planar dot in one expression 45
+// (same code as dot3f everywhere); dot3f(axis, vector) 45 (same code); the dot folded into the projection 71
+// (0xd0080 36, 0x1e5bb0 94 at its retail length, 0x1ecf50 lost 91, 0xe3910 144); the vector copied into an
+// aggregate before the rows 248 (all users worse). Retail 0x1ecf50 sums its two dots (k + j) + i and
+// (i + k) + j, this function (i + j) + k, so one shared spelling cannot serve both: the held private copy stays
+// the only form found.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

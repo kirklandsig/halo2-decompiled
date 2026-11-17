@@ -4834,6 +4834,10 @@ bool function_158eb0()
 // iterator call in the loop test 67 (120 bytes); re-measured a named player index after the flag 5 and
 // `g_4e6948->flag1128 ? 1 : 0` in the argument 38 (144 bytes). Still the
 // mode/index scratch pair (ours EDX/ECX, retail ECX/EDX): BLOCKED-BY 0x23f260 (its file is held this round).
+// Round 179 (m3 lane 8, fast with 0x23f260/0x19f240, both matched each time): `if (count == 1) return false;
+// return result;` 23; `return false;` in the loop with `return count != 1;` and no result 65 (126 bytes); a
+// short count 8 (147 bytes); the short count with the early return 22; the short count with the in-loop
+// return 64 (127 bytes). Still BLOCKED-BY 0x23f260.
 // @retail 0x158f50
 bool function_158f50()
 {

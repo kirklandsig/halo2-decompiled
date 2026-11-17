@@ -2063,7 +2063,7 @@ void function_195a40(void);
 // retail's whole prologue and its function_68c00 call setup; what is left is
 // the place of the world load, which comes before the mode comparison here
 // and after it in retail.
-// score 3: only the place of the mode read against the flag stores is left.
+// Earlier: only the place of the mode read against the flag stores is left.
 // The two flags are adjacent bytes; this body's bool stores come out as two
 // byte writes. A `*(volatile bool *)&g_4cf771` cast on each forces retail's
 // stores and reaches a byte match, but docs/DECOMPILING.md forbids volatile on
@@ -2089,6 +2089,13 @@ void function_195a40(void);
 // scan finds only direct loads and stores), which keeps the mode read behind the stores, as matched 0x196390's
 // flag store (its byte sits in an address-taken record) keeps its state read behind it. Taking a shared global's
 // address is not allowed, so the barrier stands in.
+// Round 179 (m3 lane 8, fast; control 3): a rescan of every retail code and data section finds no pointer
+// into 0x4cf760..0x4cf790, only direct operands, so the address-taken cause stays dropped code: BLOCKED.
+// Without the barrier: the two flags as one two-byte aggregate global (diagnostic) 5 (the pointer load
+// moves first as retail, the mode read still hoists); the distribution declared ahead of the stores 5;
+// the options pointer named ahead of the stores with mode read after them 5. With it: the watcher read
+// once into a local for the call and the stores 18. Diagnostic: a probe taking only g_4cf771's address 4
+// (the read stays behind that store, g_4cf772's sinks below it), so both flags must be address-taken.
 // @retail 0x67ee0
 void function_67ee0(void)
 {
