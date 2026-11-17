@@ -1185,6 +1185,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // and the offset rows 232; the distance dot ahead of the yaw 126 (same code); the sine and cosine declared at their
 // assignments 126 (same code); the length test as `0.0f != length_squared` 125 (only the ucomiss operands swap, the
 // zero still XMM1: a positional coincidence, not kept). The compile-only screen does not reproduce this function (263).
+// Unnegated quotient through the join, negated at use or before it 164/164;
+// squared length as the zero arm or factor default 378/378; conditional
+// factor at the scaled add 126; distance before the test or length 411/411;
+// complete plane aggregate 440. Direction-j preload and zero home remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
