@@ -4476,13 +4476,18 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): only case 3 differs. Retail keeps controller in esi, spills controller_index
+// score 54 (was 56):
+// only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
 // function_1a334a. Our build reuses the index loaded before player_slot_get_identity: LTCG here
 // treats function_1a334a as writing no memory (an impure call placed after it gives retail's
 // registers exactly), so the cause is outside this function. Tried: bool member (199: 8 bytes
 // shorter, though closer by align.py), no controller_index local (199), long volatile
 // controller_index (188). Case 2's count = 0 first: 56 -> 54.
+// With a boolean membership result, early identity failure, affirmative break, choice first, XUID member
+// address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
+// bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
+// index rather than re-reading it for the dialogs.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

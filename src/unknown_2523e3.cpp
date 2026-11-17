@@ -38,12 +38,19 @@ void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type)
 void function_2b0a14(s_widget_view_2b0a *widget, short index);
 void function_22f042(s_widget_item *items, c_class_1a2c81 *widget, long count);
 
-// score 55: the `s_widget_item items[4]` construction differs. Ours inlines the
+// score 49 (was 49):
+// the `s_widget_item items[4]` construction differs. Ours inlines the
 // `flags = 0` constructor into a zeroing loop; retail calls the array-constructor
 // helper 0x20670 with (constructor 0x2b0149, 4, 0x74, &items). Marking the
 // constructor `__declspec(noinline)` gives 53, but the compiler still emits a
 // per-element loop rather than the helper call. The helper choice is the front
-// end's, not reachable from the constructor or array spelling.
+// end's decision for the automatic array forms tested there.
+// Placement array construction and value initialization both emit the iterator but score 242. Empty
+// initializer and array typedef 49 each; four constructor initializers 228; one constructor initializer
+// 243; direct signed-in check for live 258; separate model names 49. Placement before controller
+// initialization moves the first difference to the controller stack slot at +0x2a (236). Placement with
+// appearance memcpy 243, or 237 with the controller initialized after the array. The latter emits a
+// memcpy call where retail uses four movsd instructions.
 // @retail 0x252554
 void c_4way_signin_screen::v3()
 {
