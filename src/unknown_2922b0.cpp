@@ -3,6 +3,8 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include <math.h>
+#include "normalize3d.h"
+#include "vector_products.h"
 
 struct s_2922b0
 {
@@ -74,7 +76,43 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
+// the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
+// MiniMax I (11-16): no new form, no lower score (558): retail materialises the zero in XMM0 after the minimum's store
+// at +0x18 and keeps the range in XMM1, ours materialises it in XMM1 before the minimum's load and keeps the range in
+// XMM0, so every later row is one off. Naming the ray length once (retail computes the half width plus the range once
+// into XMM0 and stores it to +0x6c..+0x78) scored 553 and was dropped, so the body stands; the arms swapped, which
+// moves the exit out of line, reach retail's 2886 bytes but score 632. The homes still differ: the success byte at
+// +0x13 against retail's +0x17, the hit flags at +0x20..+0x23 against +0x1c..+0x1f, the input copy at +0x3c..+0x44
+// against +0x40..+0x48.
+// MiniMax D (11-15): no new form, no lower score (558): the frame size and the five calls agree with retail, but the
+// success byte, the minimum float, the four hit flags and the copied input vector still sit at other frame homes, and
+// the inactive exit still comes before the ray loop instead of after it.
+// Earlier score 576 (was 592): earlier 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// Earlier score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// M3 lane 8 r150 (fast; aligned 406, register-masked 216 on this body): retail forms 1/range once and multiplies it by
+// the minimum twice with the minimum held in XMM2 (no reload, so not an aliasing effect). Tried: the third and fourth
+// offset points' scale as `0.0f - half_width` 592 (same code; re-measure of round 134's form); the point helper's products scale-first 592 (same code);
+// its sums product-first 592 (same code); both range products as `minimum / range` 697 (2822 bytes, real divisions);
+// the second product written `minimum * (1/range)` 592 (same code, still shared; re-measure of rounds 59/128/134); the
+// per-ray hit update (clamp, distance, hit flag, minimum) as a forceinline helper writing through pointers 605 (2817 bytes);
+// the arg_6 tail as `if (!arg_6) {...} else *arg_2 = local_3;` 586 (2839 bytes, aligned 439, masked 295: an arm swap
+// with the test negated, 6 under the bar, not kept); after it: the ray length read from the array at each use 689; the hit
+// distance from the ray-length local 682 (first difference +0x2); both 687 on the swapped tail; no `else` after the early
+// return 684 (2834 bytes, aligned 358, masked 183: the lowest aligned count here, a lead), with the swapped tail 675.
+// MiniMax E (11-10): no new form, no lower score (592); the frame size agrees but the homes do not: the success byte, the float, the four-flag array and the copied vector sit at other frame offsets here, and this build has thirteen instructions fewer than retail, so the exit blocks fall differently.
+// MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
+// retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
+// frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
+// comparison branches the other way round.
+// W14L: full statement walk against retail (0x2922b0-0x292df3; args 0x120..0x134 after the pushes): fields +0x14/+0x30/+0x48,
+// tests, callees (0x1e5450, 0x30bf0 x3, 0x1697c0 with its six stack args), both cross/fallback chains, the four points,
+// ray loop, per-ray clamps and signs, both rotations and the arg_6 tails agree; no behaviour difference found. Constants
+// checked from the XBE (0.1, 0.7, 0.3, pi/180, pi/2, FLT_MAX). Remaining: stack-slot order (success at +0x0b, minimum at
+// +0x10, hit bytes at +0x14), retail's (1/range)*minimum computed twice, field_14 re-read per point, dot-sum order in the
+// rotations, inactive exit placed last. Tried (fast): active-if with one `return local_0` 629 (success in BL again);
+// range local before the test 603; non-const tag record 592; PIN_126660 for the clamp 626 (with a local 618), cross3f_staged
+// 678, cross3f 690 (vector_products.h): the cross helpers are not kept; the PIN form is a separate commit.
 // Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
 // Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
@@ -376,6 +414,181 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
 // shorten away from retail; original root helper and complete body restored. Frame
 // 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
+// AC557: Native root quotient producer, optional remaining/clamped scalar stages,
+// mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
+// all regress and shorten farther from retail; original helper and body restored.
+// AC559: Whole active-range admission/rejection, bool/byte/short/long: eight at 687
+// (2830/2886). NOT kept: all regress; original live guard, complete helpers and
+// in-place snapshots restored. Success/input/minimum/hit homes and inactive exit remain.
+// J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
+// M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
+// 603/677/637/665/671/592/592/598. NOT kept: none improves; original
+// producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
+// Round 181 (m3 lane 4, fast): the active test written positively with `return local_0` at the end of its block and
+// `return true` after it (or as its else) 674/674 (2841 bytes: retail's jbe to a last inactive exit, but the range
+// field is read again after the output clears); with the range local read before that test 665 (2830: retail's reuse
+// of the compared register for the range home); the range local before the current negative test 594 (2828); the cross
+// helper's products in retail's load order 592 (same code), with the positive range form 665. Diagnostic: the success
+// and minimum locals renamed to sort the other way 592 (same code: names do not order these homes). Retail's low frame is
+// success byte +0xb, ray index +0xc, minimum +0x10, hit bytes +0x14, cross result +0x18; ours success +0x7, minimum +0x8,
+// ray index +0xc, cross result +0x10, hit bytes +0x1c.
+// M3 lane 9 r105 (fast; "masked" = aligned count with registers and stack offsets ignored, control 592 masked 216): a
+// grid of the inactive exit last (`if (field_48 > 0) { ... return local_0; } return true;`) x the range read first
+// inside the body x a named inverse range for both products: 8 forms 592-684 (the inverse range alone 604, re-measured); exit last with the range first 656
+// (2830 bytes, masked 204), the inverse range adds 11-12 masked everywhere. On the 656 form: the FLT_MAX minimum
+// declared inside the body 669 (masked 209); the hit flags declared inside the body 687 (216); the origin copy taken
+// first in the body 691 (289). The ray loop as `do { ... } while (++local_17 < 4);` without the countdown 751 (2772
+// bytes, masked 250), on the 656 form 731 (239).
+// M3 lane 10 r86 (fast, control 592, aligned 484, masked 216): retail forms 1/range once and multiplies it by the minimum twice
+// (second product in place on the inverse, the output store sunk below it) and negates the half-width separately for points 3 and 4.
+// Both fractions as `minimum / range` 697 (2822 bytes, one divide shared); only the clamp input or only the output as a divide
+// 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
+// negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
+// local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
+// Round 73 (m3 lane 15, fast with 0x29ab90): the four offset points written through a point cursor (`point3f *point =
+// local_13; ... point++`) 603 (2821 bytes); the final projection rows through the existing dot3f 597 (2828 bytes); the basis
+// product rows written forward term first 592 (identical code); the output clear as one chained assignment 639 (2835 bytes).
+// Diagnostic: the point helper as an out-of-line function in another file, inlined by LTCG, gives identical code (592), so
+// retail's per-point half-width reloads are not an inlining or alias effect.
+// Round 73, continued: the side-vector cross computed ahead of the basis product 594 (2831 bytes). Re-measured: the rotation
+// helper's dot through dot3f (round 128's i, j, k order) 604 (2819 bytes).
+// M3 lane 1 r89 (fast; control 592, aligned 273, masked 130): the view's +0x7c filler as a typed `vector3f up` member, both
+// `(vector3f const *)((byte *)local_1 + 0x7c)` casts as `&local_1->up`, 592 (same code; header restored); the single-exit form
+// (`if (local_2->field_48 > 0.0f) { ... } return local_0;`, no early `return true`) 629 (2842 B, first difference +0x1d); the
+// minimum update as `if (local_19 < local_4)` 592 (same code); the ray vector as a brace initializer 592 (same code); the ray
+// length read from `local_14[local_17]` at each product 689 (2834 B).
+// M3 lane 12 r110 (fast; aligned/masked control 337/130): `*arg_5` published before `*arg_4` 680 (2837 bytes); one named
+// `fraction = (1/range) * minimum` for both outputs 605 (2818); the arg_6 arm's side axis assigned before the forward 691;
+// the root helper's product as root * limit 592 (same code; re-measure of round 134's `sqrt * angle`); the non-arg_6 forward copied from the entry copy of the input
+// (`local_7 = local_3`) 673 (2828, first +0x1d); one named full ray length for the four array entries 604 (2820).
+// M3 lane 13 r82 (fast, kept form confirmed plain): kept 576: the tail's first transform through the existing
+// vector3f_scale/vector3f_add_scaled (forward*i, + left*j, + up*k; register-masked 130 -> 116, retail's i-first column
+// loads). Before it: the tail's input read into i/j/k locals first 612. On 576: the back-rotation dots through dot3f 582;
+// the three results in named locals, then stored 568; into a local vector copied to the output 547 (2879 bytes, but
+// aligned 444 -> 449 and masked 116 -> 123: positional, one-use values ahead of stores); cross3f at all four crosses 660
+// (masked 108), at the tail's cross only 570, at the arg_6 cross only 664; the tail's cross before the column transform
+// 562; the up pointer declared at the tail's top 576; the ray loop as a plain `for` 718; the offset points through
+// vector3f_add_scaled 576 (same code). Retail stores all three back-rotation outputs after their last loads.
+// MiniMax A (11-12): no new form, no lower score (576): our frame is 0xf8 against retail's 0x108, and the copied input, the
+// basis vectors, the origin and the collision result still share homes; the shared cross and scale helpers and the four-ray
+// countdown of the earlier rounds leave that difference alone.
+// T95: Existing setters for all input copies/fallback captures/final publications,
+// family subsets 1/2/4/3/5/6/7: 653/649/579/685/637/663/693; all plus output clear 693.
+// NOT kept: no exact transfer-form repair; original helpers, in-place captures and body restored.
+// T97: Ordered early-return/conditional clamp 573/594; upper-first in-place/early-return/conditional
+// 592/612/626; sequential caps/lower-default/upper-default results 668/649/655. NOT kept:
+// best gains only three; no exact producer-lifetime repair. Original helper/body and in-place snapshots restored.
+// T100: Actual success starts after basis/origin/initial scale, each of four origin
+// producers, or query-loop setup: 599/599/599/599/599/599/599/599. NOT kept: all
+// shorten away from native extent and lose the early native result store. Original
+// body, helpers and every in-place input/result snapshot restored.
+// P443: Double-factor rays, logical normalization-zero tests, complete basis library copies, named query,
+// clearance ratio/free fraction, vector-setter rays and library hit fill: 691/576/578/576/575/575/578/700.
+// NOT kept: no native success/workspace repair; original body, helpers and in-place copies restored.
+// P446: Clearance failure, nearest-hit admission, finite-minimum admission, angle positivity, branch root ownership, uniform normalization results, uniform response angles, shared ray sample;
+// 572/572/572/572/576/577/577/657. NOT kept: four-point nonmatch gains are below the eight-point bar; original complete body restored.
+// P448: Uniform clamp lower/upper admissions, uniform normalization-zero decisions, four individual hit admissions, relational fixed-count termination:
+// 543/543/578/576/576/576/576/576. NOT kept: clamp comparison locals lack byte equality and native value evidence; original body/helpers restored.
+// M3 lane 10 r101 (fast; control 576, aligned 496, register-masked 341, with stack offsets masked too 203): nothing kept.
+// Frame homes, relative to ESP after the `sub`: retail remaining 0x0, point cursor 0x4, success 0xb, ray index 0xc, minimum 0x10,
+// hit flags 0x14, cross 0x18, hit cursor 0x24, range 0x28, forward copy 0x2c, input 0x38, origin 0x44, up copy 0x50; ours
+// remaining 0x0, success 0x7, minimum 0x8, ray index 0xc, cross 0x10, hit flags 0x1c, point cursor 0x20, hit cursor 0x30,
+// range 0x34, input 0x44; from the ray lengths at 0x5c upward both agree. 138 of the masked differences are those homes alone.
+// The ray index declared at function scope 576 (same code); success, index, minimum, hit flags and cross declared at the top in
+// retail's frame order 576 (same code); the hit flags, cross, minimum and success renamed to sort either way 576/576 (same
+// code): neither declaration order, scope nor names place these homes. The four offset points through a second inline helper
+// taking the definition and the array 567 (2859 bytes; a new one-caller helper, and the negated width is still held in a
+// register for points three and four where retail forms `0 - width` from memory for each). The two range products: a named
+// product ahead of both stores 577; the first grouped `(1/range) * (minimum * 0.7f)` 659 (2871 bytes, aligned 449: the
+// product is then not shared, as in retail, but in the wrong order); `0.3f + 0.7f * (...)` with the second product turned 575.
+// Diagnostics (removed): cross and the four points as members of one local aggregate 649 (2878 bytes; hit flags and input then
+// land on retail's 0x14 and 0x38, so the sizes of the address-taken locals do move the homes); float consistency on for this
+// body, the one setting diagnostic, 842 (3058 bytes), so retail's repeated width loads and unshared product are not that.
+// P450: Separate forward/side/up normalization-zero producers in bool/long: 572/570/572/570/572/570;
+// final publication mode in bool/long 576/576. NOT kept: one-consumer decisions lack byte equality;
+// best six-point gain is below the eight-point bar. Original body, helpers and in-place captures restored.
+// P452: Separate real forward/side/up return values, exhaustive angle-limit production, real countdown for, retained-input/forward-input/final-publication memmoves:
+// 570/570/570/576/570/689/662/576. NOT kept: best six-point gain is below the bar; transfers regress. Original helpers, four queries and every in-place input/result copy restored.
+// P454: Isolated function storage for forward/up/side scratch, center, origins, ray-length scalar,
+// hit-distance scalar and collision output on the retained affine-tail graph: 576/576/576/576/648/576/576/576.
+// NOT kept: none improves; original producer points, helper inputs and in-place captures restored.
+// m3 lane 7 r159 (fast; plain 558 confirmed): kept, the four hit flags as an aggregate initializer `{ false, false,
+// false, false }` 558 (2868 B). Tried: the minimum declared at the top of the active branch 570 (on the original body),
+// 552 (on the initializer; a moved declaration, 6 under the bar); `{ false }` 689 (2819 B); the early exit as the else
+// arm of `range > 0` 669; the output vector zeroed by one chained assignment 611; the ray-length sum named once for the
+// four elements 553 (2880 B). Retail computes 1/range once but (1/range)*minimum twice (no shared product). A plain
+// `for (i = 0; i < 4; i++)` loses retail's spilled down-counter (frame 0x100, /GL harness of this file).
+// P477: Independent standard hit-fill/input-copy/output-fill/forward-copy/fallback-copies/center-copy/final-copy/length-fill boundaries:
+// 700/681/656/573/693/575/613/668. NOT kept: best gain is three, with no native low-frame repair; several forms move the frame or shrink away from retail. Original arrays, complete in-place captures, helpers and body restored.
+// M3 lane 6 r179 (fast; control 558): a symbol-count phase scan (1-7 unused long locals at the top, diagnostic, removed)
+// 559/580/589/617/598/574/574, so phase 0 is best; at 4 and 5 the success byte and the input copy take retail's homes
+// (+0x17, +0x40) but the minimum and hit flags move away, and the cross rows' operand order never moves with the phase.
+// The positive range test with the exit last and the range read first inside the body, on this body, 646 (2865 bytes:
+// retail's jbe and the range kept from the compare, but zero still in XMM1 and loaded early); the angle limit declared
+// ahead of the two angle sums 558 (same code); `*arg_5 = 0` ahead of the FLT_MAX minimum 559; the arg_6 cross called on
+// the forward and up fields before the two axis pointers are set 654 (2871 bytes); `local_4 < FLT_MAX` 558 (same code).
+// Retail also reloads the half-width after each offset point's stores (`0 - [ebp+0x14]` for points 3 and 4), as if the
+// point stores could alias the definition; ours keeps the width and its negation in registers across them.
+// m3 lane 9 r124 (fast): the range read first in the else block, ahead of the output clear, 558 (same code); the
+// output cleared through the existing vector3f_assign 558 (same code); the body nested under `if (field_48 > 0)` with
+// the range read first inside and `return true;` last, re-measured 646 (2865 B: retail's jbe to the exit placed last,
+// but our zero takes XMM1 and the range XMM0, retail the other way round, and the range home is +0x08 for +0x28); on
+// that, `*arg_5 = 0` ahead of the minimum 647, the minimum declared after the hit flags 647, the range local before the
+// test 651.
+// P520: Standard range/normalization/clearance/minimum/sentinel/angle/clamp/root providers:
+// 679/704/686/661/719/703/1055/738. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Real sine/cosine/paired/sine-root/cosine-root/all APIs, immutable angle/complete scalar formals:
+// 561/561/561/556/556/561/561/561. NOT kept: no exact native success/workspace recovery; original complete body and helpers restored.
+// M3 lane 11 r105 (fast; control 558): the angle limit as an if/else 558 (same code); the inactive test as
+// `field_48 <= 0.0f` 663; in the ray loop's hit block the minimum update ahead of the distance and flag stores 662 (first
+// difference +0x40), the hit flag stored before the distance 559; in the near-hit clamp `local_0 = false;` ahead of the
+// clamped distance 558 (same code). Lead, not measured: the ray points' address escapes only into 0x1697c0 (still
+// unmatched), and retail reloads the half-width after point stores as if they could alias the definition; that callee's
+// link-time summary may differ from retail's.
+// P524: Actual collision material 16-bit allocation short/word/long/dword/int/unsigned-int/signed-enum/unsigned-enum:
+// 558/558/557/557/557/557/557/557. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P526: Original-site ray travel product mutable/const, shared local-range clearance floor mutable/const, four paired ownership graphs:
+// 563/563/651/651/656/656/656/656. NOT kept: no byte-equal native success/workspace recovery; original ray expressions and all in-place snapshots restored.
+// Original complete executable source restored.
+// P539: Four-use unclamped angular product mutable/const after/before root publication 574/574/574/574;
+// limit-initialized angular result after/before sqrt and root publication 573/573/574/574.
+// NOT kept: all regress and shorten farther from retail; original helper/body and in-place captures restored.
+// M3 lane 11 r108 (fast; control 558): 0x2922b2 plain `inline` 558; the half-width bound once as `real const &` for the
+// four points and the ray lengths 558 (2876 bytes: a register reshuffle in the arg_6 cross and the rotation sums, the
+// points still share one negation); `bool local_0 = true;` declared at the top of the active block (with `return
+// local_0;` at that block's end) 552 (under the bar and a moved declaration, not kept: the success byte and the minimum
+// then sit at retail's +0x17/+0x18, but the hit flags, the input copy and the arg_6 cross output stay 4 bytes off, and
+// the true store follows the test); on that, the exit last (`if (field_48 > 0.0f) {...} return true;`) 664 (2865 bytes),
+// the hit flags declared in the active block too 562; on this body, the input copy declared after the hit flags 559, the
+// hit flags declared before the minimum 558, the two axis pointers initialised to the computed basis at their
+// declarations with only the arg_6 arm assigning them 564 (2870 bytes). Reading of the listing: retail reloads the
+// half-width for each of the four points (`0 - [ebp+0x14]` separately for points 3 and 4) while the width it loaded for
+// point 2 is still in XMM0, so in retail the point stores kill the definition's field; ours keeps one negation for
+// points 3 and 4 (its reload at point 2 is only a rematerialisation after point 1 clobbers XMM0).
+// M3 lane 16 r127 (fast): both rotations through the existing forced-inline rotate_direction with `(real)sin(angle)` and
+// `(real)cos(angle)` as direct arguments: --fast keeps that cross-file helper out of line (1121, 2400 B), and a same-file copy
+// of its body screens 576 (2855 B); the ray vector through the existing vector3f_scale 559 (same ray code: the k product still
+// reuses the dying length register where retail loads k first); the final projection into a local vector copied to arg_3 547
+// (2879 B, positional only: the copy goes through the stack where retail stores the three rows straight from XMM, and a one-use
+// local); the range read once before the inactive test (retail compares and later stores field_48 from one register) 661; the
+// three projection rows as named parts stored together at the end (retail's i, j, k stores) 555 (2890 B).
+// P582: Rounded persistent minimum/active range/complete angle-limit promoted receiver
+// storage, seven subsets, then immutable range/angle receivers: 658/691/675/722/740/725/784/784. NOT kept: no exact native
+// success/input/hit homes or inactive-exit recovery; original real receivers, helpers and full body restored.
+// M3 lane 7 r172 (fast; control 558, aligned 491, register- and slot-masked 326): nothing kept. Diagnostics (removed): 0x1697c0
+// storing its point pointer to a global leaves this body byte-identical, so the per-point half-width reloads are not
+// the callee's escape summary; the minimum updated through its own address keeps the shared (1/range)*minimum. Tried: the
+// two outputs under two separate `FLT_MAX > minimum` tests 558 (same code, product still shared); a named inverse with
+// `fraction *= minimum` for the clamp input 556 (still shared; a reused name, under the bar); `*arg_5 = 0` ahead of the
+// input copy 559 (the zero still in XMM1 before the input copy); the inactive test as `!(0.0f < field_48)` 558 (same
+// code); the ray lengths by one chained assignment 558 (2872 B, aligned 497); the hit flags declared ahead of `*arg_5 =
+// 0` 558 (same code); the input copy after `*arg_5 = 0` 559.
+// M3 lane 13 r104 (fast; control 558): the range local dropped and field_48 read from the definition at each use 631
+// (2892 B); `*arg_5 = 0.0f;` after the hit-flag initialisation 558 (same code: the zero still takes XMM1 ahead of the
+// minimum's store); the minimum update as a ternary 558 (same code); the root helper's product written root * angle
+// 558 (same code; retail multiplies angle * root for rays 1 and 2 but root * angle for rays 3 and 4, ours root * angle
+// for all four); `*arg_4 = 1.0f;` right after the output clear 664 (2912 B).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -386,11 +599,7 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f local_3 = *arg_2;
 	real local_4 = 3.402823466e38f;
 	*arg_5 = 0.0f;
-	bool local_5[4];
-	local_5[0] = false;
-	local_5[1] = false;
-	local_5[2] = false;
-	local_5[3] = false;
+	bool local_5[4] = { false, false, false, false };
 	if (!(local_2->field_48 > 0.0f))
 		return true;
 	else
@@ -495,9 +704,9 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 		else
 		{
 			vector3f local_17;
-			local_17.i = local_9.i * arg_3->j + local_10->i * arg_3->i + local_11->i * arg_3->k;
-			local_17.j = local_9.j * arg_3->j + local_10->j * arg_3->i + local_11->j * arg_3->k;
-			local_17.k = local_9.k * arg_3->j + local_10->k * arg_3->i + local_11->k * arg_3->k;
+			vector3f_scale(local_10, arg_3->i, &local_17);
+			vector3f_add_scaled(&local_17, &local_9, arg_3->j, &local_17);
+			vector3f_add_scaled(&local_17, local_11, arg_3->k, &local_17);
 			vector3f local_18;
 			vector3f const *local_19 = (vector3f const *)((byte *)local_1 + 0x7c);
 			function_2922b1(local_19, &local_1->forward, &local_18);

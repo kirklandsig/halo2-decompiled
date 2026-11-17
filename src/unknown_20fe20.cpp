@@ -1160,6 +1160,83 @@ void function_2118c0(void)
 // exactly 777 bytes and 0x212100 stays matched, but 150 (all rows reduce); plain declaration 437 (495), forceinline 150. On the
 // inlined call: all rows from `long row = b << 3` 162 (767), wrapped rows only 123 (790); `long row = b * 8` 150 either way;
 // wrapped rows from `short row = b * 8` 157; sums cast to short or word 179/179 (808).
+// Round 93 (m3 lane 16, fast): `b * 8` rows with the wrapped rows read inside the component loop 150; the wrapped
+// indices declared in the band loop with `b * 8` rows 180 (755 bytes, hoisted and fully reduced); `b * 8` for the
+// wrapped rows with `(b << 3) + k` for p1 and out 150; every row through a `vector3f (*band)[8]` pointer 248 (847
+// bytes); `word` per-row indices from `long row = b * 8` 161 (787 bytes: retail's `add esi, 8` row and unreduced rows,
+// plus three movzx). Diagnostics: `b * 8` alone 150 (five pointer IVs), a short row stepped by 8 beside b 130.
+// Round 58 (m3 lane 2, fast; compile-only screen agrees): the interpolation pass with its own loop variables 10 (same
+// code); the wrapped indices as `long` holding the word value 170 (761 bytes); a short row stepped by 8 beside b with
+// the row sums cast to word 148 (779); the wrapped indices in a word array filled by a four-step loop 174 (792); the
+// wrapped indices computed at the head of the m loop 155 (780). Diagnostics (screen only): a wrapped index read from
+// a global gives retail's `add esi, 8` row with that row unreduced, so the rows stay unreduced only when VC cannot
+// treat the index as invariant; taking the indices' addresses (`(void)&w`, a pointer array) or a second global
+// symbol for some rows still reduces every row.
+// Round 59 (m3 lane 2, fast; compile-only screen agrees): the five pointers declared p0..p3 33; p1 and out from the row
+// local 175 (745 bytes); the wrapped indices in the band loop 174 (756); in a word array 10 (same code); previous at
+// the k level 18. Screen only: the indices as a long/dword/word/short array with `b << 3` or `b * 8` rows (all
+// scalarized, none better); 120 combinations of row expression, index type, index level, p1/out index and pointer
+// order, none below the current form. Also: `short i` 262 (670 bytes, components no longer unrolled); `long k` 133
+// (753 bytes); `long m` 75; `word m` 10; b declared at each pass's loop head 10.
+// Round 83 (m3 lane 10, fast): a 600 s permuter run (seed 8384, 54 tries, 822 s full baseline) none below 10; the output
+// vector as `p1 + m` 194 (804 bytes); the second pass's band loop as a `for` 10 (same code); p1 from the row local
+// (`noise[row + k]`) 163 (786 bytes); a `dword` band row stepped by 8 beside b 150 (every row reduced to a pointer).
+// Round 75 (m3 lane 15, fast): t as `(real)k + (real)m * 0.125f` 10; the third as `0.333333343f` 10; the four
+// component values declared outside the component loop 10; the m loop as a `for` 10 (all the same code); the forward
+// differences as named d1/d2/d3 values 194 (830 bytes).
+// Round 96 (m3 lane 10, fast; the compile-only harness agrees on each): the wrapped indices from a forceinline
+// helper with three out-parameters 10 (same code); in a `word wrapped[3]` array with constant indices 10; the
+// out-parameter helper with `long row = b * 8` 150 (every row reduced); the wrapped rows from `b * 8` with p1 and out
+// from `(b << 3) + k` 150; p1 from `row + k` and out from `(b << 3) + k` 163 (786 bytes) (the last three re-measure
+// listed forms); the wrapped rows spelled `&noise[row + w][0]` 10; the indices from a named `short next = k + 1`
+// 187 (798 bytes); the component index declared in the `for` 10. Harness only: the array or
+// separately assigned indices with `b * 8` rows 150-type code; `b * 8` for two wrapped rows and `b << 3` for the
+// third reduces all. Address-taken indices stay invariant, so the rows still reduce.
+// Round 174 (m3 lane 6; a one-file LTCG harness, exact here, counts given as its positional differences; and a
+// compile-only lab of the band loop alone): the interpolation as an inline call of 0x212100 (b = 1.0f) with
+// `b * 8 + w` rows in the arguments 149 (every row reduced; the float code and the hoisting of the knot terms are
+// retail's), with `(b << 3) + w` in the arguments 149, with a named `long row = b << 3` 110 (the base folds into the
+// loads); the wrapped rows through a flat element index `(row + w) << 3` from `row = b * 8` (named index, in the
+// subscript, without the row local, as pointer arithmetic) 149 each; the call form with the three indices escaping
+// to an external function (diagnostic) 169, still reduced. Lab, about 90 forms: only an index read from the table's
+// own global, `row | w`, `row ^ w` or a wrap taken from the absolute row keep `add reg, 8` with unreduced rows, each
+// with other instructions; word/long/dword/short index parameters, dword rows, inline row helpers (pointer or long
+// index), `row - w`, a 64-bit sum, `*(table + row + w)`, a band pointer, `noise[b * 8][w * 8]`, a knot count from a
+// static, an extern const or a parameter, an output pointer stepped by 64 or passed in, and extra loop-carried
+// arrays (no register budget) all reduce every row; every short/word/byte row, product cast or sum cast keeps one
+// extension; a row carried from the previous pass (`row = b * 8` in the increment) gives a 0x300 byte offset.
+// M3 lane 7 r158 (fast): the knot rows from `b * 8` with p1/out from the shifted row 144; the knot indices as `dword` holding the
+// word value 170 (761 B), as `byte` 157; p1/out from the shifted row too 175 (745 B); the row declared at the sample loop's level
+// 10 (same code).
+// M3 lane 11 r103 (fast): the three wrapped rows through a band pointer `vector3f (*)[8]` taken at `noise[b << 3]` (p1
+// and out as now) 219 (828 B); the row sums written index-first (`noise[w3 + row]`) 10 (same code); the row carried from
+// the band loop's foot (`row = b << 3;` after `b++`, zero before the loop) 148 (784 B: rows unreduced, row re-shifted,
+// b kept); a `word` band counter 10 (same code); the wrapped rows relative to the current row pointer (`p1 + (w3 - k) * 8`)
+// 263 (858 B).
+// M3 lane 8 r171 (fast with 0x212100): the wrapped knot indices written in place in the three row subscripts (no
+// index locals) 174 (756 B); the band loop over a short row stepped by 8 to 24 with no band counter 150; a `word` band
+// counter with `long row = b * 8` 150; the seeding loop's row written `(b << 3) + k` with `long row = b * 8` 150, with
+// the band row as now 10 (same code).
+// M3 lane 4 r204 (fast): a `short` row carried from the band loop's foot as `row = b * 8` 156 (779 B); `long row = b * 8`
+// with `__assume(row >= 0)` 183 (803 B: the row is kept as `add reg, 8` but every row still reduces); the knot indices typed
+// `char` 157; p1 and out as pointers set before the band loop and stepped by 64 at its foot 176 (792 B); the knot indices
+// typed `short` on this form 13. Compile-only harness (exact here): extra live int or float values across the band loop
+// never stop the rows' reduction (not register pressure); a row loop `row < 24; row += 8` (long, short, dword) reduces
+// every row; long/dword `row = b * 8` carried from the foot leaves the rows unreduced but hoists the knot bases (125);
+// `noise[w] + row * 8`, `(noise + row)[w]`, `*(noise + row + w)`, `&noise[w][row * 8]`, `noise[row] + w * 8` all
+// canonicalise to the `row + w` code of the same row expression.
+// Round 102 (m3 lane 14, fast; a compile-only harness of the file reproduces the 10): the three knot row indices in a
+// `long rows[3]` array filled per band 23; the knot rows read in place at each component with `long row = b << 3` 124
+// (790 B); three per-knot `short` row counters started at the knot index and stepped by 8 at the band loop's foot 170
+// (797 B); the interpolation as an inline call of 0x212100 (`inline` forward declaration) with `long row = b << 3` knot
+// rows and p1/out from `b * 8 + k` 123 (790 B), with every row from that row 162 (767 B). Harness only: a short, word,
+// long, dword, char or byte row stepped by 8 beside b with p1/out from `b * 8 + k` or from the row, both sum orders (24
+// forms): short/word leave the knot rows unreduced but sign-extend the row each band; long/dword reduce every row.
+// M3 lane 8 r177 (fast with 0x212100; references that keep two steps apart): the band row through a reference
+// (`long &row = band_row; row = b * 8;`) 150; the same assigned `row = b; row *= 8;` 150; a reference row started at
+// zero above the band loop and stepped by 8 at its foot beside b 150 (all rows reduced to pointers, hoisted to the
+// knot level); the three knot rows through references into a `long [3]` (`r3 = row; r3 += w3;` from `b * 8`) 157 (790
+// B: one row from a row IV, one reduced); the band counter itself through a `short &` 10 (same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2582,6 +2659,78 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // bytes), the same z, x, y locals with the helper's differences in x, y, z order 432. Unused-local probes
 // (diagnostic): 3 or 8 extra symbols in the function move only case 7's fold (32) or nothing (3), others 333;
 // in the helper nothing.
+// Round 67 (m3 lane 14, fast): the helper `__forceinline` 3 (same code) or plain `static` 416 (1916
+// bytes, not inlined); its first two squares as one `dz * dz + dy * dy` 7 (dz scheduled first, the
+// square registers swapped); its differences in one declaration 3; the outer x, y, z written where the
+// cases use them 366.
+// Round 140 (lane 8, fast): cases 8 and 9 comparing the z difference written out 3; the selector read
+// before the two point lookups 3; the helper taking the points by const reference 3; the helper's
+// differences `real const` 3; the outer x, y, z `real const` 3 (all same code; the outer locals written
+// at each use, rechecked, 366). No XMM value is live across the point lookups, so nothing holds XMM1
+// back: in ours the z load is hoisted above the y load and subtract, in retail it follows them.
+// Round 95 (m3 lane 16): the existing out-of-line distance_sq3f (0x24550) in place of the helper, plain 25 (LTCG inlines it in
+// the full build: x scheduled first, XMM1-3 in x, y, z order; the fast image calls it, 443); the existing devices.cpp helper with
+// the outer z, x, y locals ahead of it, plain 432 (1940 bytes, copies before the squares); (fast) the helper defined below the
+// function 3 (same code); the sum started from the y square (`sum = dy * dy; sum = dz * dz + sum;`) 7 (z then fully first); the y
+// square added on the left 3 (same code as `+=`).
+// Round 158 (compile-only screens of the block; fast where given): the helper's differences as a local vector3f in every
+// definition and term order, one-expression and staged (108 forms: one-expression sums give retail's sequential pairs but
+// XMM1-3 in definition order, staged sums hoist the first square's load); two-term first or last statements and both
+// parenthesizations in every order (144, none); the outer locals ahead of the helper in every order (72, XMM0 joins); the
+// existing vector3d_from_points3d with the parenthesized sums of the matched 0x210970/0x210a30, outer locals before or after
+// (168, XMM1-3 always x, y, z); (fast) vector3d_from_points3d + length_sq3f 345 (the delta vector moves the layout).
+// Round 84 (m3 lane 11; fast): the helper's differences in x, y, z order (staged z, y, x sum) 27; the one-expression sum
+// through a square helper 11 (retail's colours, x scheduled first); no helper, x, y, z locals with a three-scalar
+// length helper (staged k, j, i) 45; no helper, x, y, z locals with an accumulated z, y, x sum 45; the same with a
+// one-expression sum 45; the same with the selector read after the locals 45. The 45 forms give retail's y-first
+// schedule and y in XMM3 but z XMM2, x XMM0, sum XMM1 (retail z XMM1, x XMM2, sum XMM0), and the selector load
+// follows the z subtract. A compile-only harness agrees with the real build for the helper form (definition order
+// sets both colours and schedule there; extra uses in the cases move neither) but not for the no-helper forms, so
+// screen those with --fast: about 1100 harness forms (outer-local placement, every definition/sum order and shape,
+// scalar and square helpers) gave nothing.
+// Round 120 (m3 lane 9, fast): the two point locals declared source first 3; the selector local as long 3; the helper's
+// locals renamed to sort y, z, x (diagnostic) 3; source_index used in place of the source copy 333; the outer x, y, z
+// declared ahead of the helper call and assigned after it 3.
+// Round 157 (m3 lane 8, fast): cases 6 and 7 through the existing dot3f with a local vector3f delta (cases 8/9 on its k)
+// 333 (case 7 loses its fold, the blocks move); the helper taking the points by value 557 (2044 bytes, copies); the existing
+// vector3d_from_points3d with dot3f for the square and the cases 59 (no hoist: x, y, z in definition order, colours x XMM0,
+// y XMM3, z XMM2, sum XMM1); the existing object_header_get/object_get getters for the unit test and the forward vector 333;
+// object_header_get for the unit test alone 3 (same code).
+// Round 174 (m3 lane 6, fast): the differences take XMM1-3 in the order they are created; with the staged z, y, x
+// sum the z load comes first exactly when z is created before y, and retail's y-first schedule when y is created
+// before z (helper differences x,y,z 27, y,z,x 26, y,x,z 19, z,y,x 14: retail's instruction order, other colours);
+// a one-expression sum is reordered by that creation order whatever its written terms. The sum through a
+// one-argument inline square with the differences written in the calls: staged z, y, x 14; one expression x+y+z
+// 27 (retail's schedule and square order, colours x, y, z), x+z+y 27, y+x+z 23, y+z+x 26, z+x+y 11, z+y+x 16;
+// named z, x, y differences with that square helper in the six term orders 11 each, as plain products in three
+// orders 11 each; a local vector assigned k, i, j with a one-expression sum in four term orders 11 each; named
+// squares over the z, x, y differences defined and summed in three orders (six forms) 11 each; the function's own
+// locals (z,x,y or x,y,z) ahead of an expression-only helper (eight forms) 418-432 (1940/1944 bytes); no helper,
+// the locals in the six definition orders with a staged sum declared before or after them 45 (y before z) or 47.
+// Round 108 (m3 lane 10, fast): the helper also filling a `vector3f *delta` out-parameter: filled k, i, j with outer
+// x, y, z copies 336 (retail's colours, z subtracted fully first, case 7 loses its fold); filled j, k, i with outer
+// copies 343 (y first, y XMM2, x XMM3), with the copies declared z, x, y 349; the cases reading delta's fields directly
+// 365 (y first and y XMM3, but z XMM2, x XMM0, sum XMM1; the fill order and a vector3d_from_points3d fill give the same
+// code); that with a one-expression sum 363.
+// M3 lane 10 r110 (fast with 0x20bbb0, 0x20c2f0 and 0xb9dd0, all matched; control 3): the helper returning the sum through a
+// `real *` out-parameter 3 (same code); `squared` declared at function scope with the other reals 3 (same code); the two
+// point locals declared ahead of the NONE test 3 (same code); the two positions as one two-point array (source [0], target
+// [1]) 333; the helper also filling `real *x, *y, *z` out-parameters for the cases 343 (z subtracted fully first).
+// Round 168 (m3 lane 7, fast): the outer y, z, x or y, x, z differences ahead of the helper call 430/430 (1940 bytes); the
+// helper reading `a->y` into a local before its differences 411 (1944 bytes); the helper's differences declared z, x, y
+// but assigned y, z, x 26 (retail's instruction order, registers y XMM1, z XMM2, x XMM3) or y, x, z 19: registers and
+// schedule both follow the assignment order, not the declaration order.
+// Round 252 (m3 lane 3, fast; control 3, only the z load hoisted above the y load and subtract): the helper as a
+// non-static `inline` 3 (same code); the helper returning the z, x, y difference vector by value with the staged sum and
+// the cases reading its fields 506 (2008 bytes, the vector goes through the stack); cases 8 and 9 as `1.0f < z` and
+// `-1.0f > z` 3; the selector local declared at function scope and assigned in place 3; the outer x, y, z in one
+// declaration statement 3 (all same code). No cross-file helper has retail's z, y, x sum (devices.cpp's is file-local).
+// M3 lane 12 r135 (fast; control 3): the helper's differences as a load then `-=` (`real dz = a->z; dz -= b->z;`, all
+// three) 435 (1960 B: the outer x, y, z stop CSE-ing with the helper); same code (3): the case 6/7 dot products written
+// i, j, k; the two positions in one declaration; the helper's last square added in its return; the selector local
+// declared after the outer x, y, z. The permuter (fast, annealed, 605 s, 61 tries) stays at 3. The outer y alone computed
+// ahead of the helper call 422 (y then takes XMM1 and is copied); the outer locals' order only moves the case 6/7 dot
+// products' term order (z, x, y: 15, re-measured).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2842,38 +2991,6 @@ void function_20cbd0(short group_index, s_audio_priority_table *table, long targ
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3);
 void function_20fda0(long arg_0);
 
-// score 19 (was 19): the short that comes back from the call is sign extended
-// here after the call and in retail before it, and the global is read into
-// EDX here and into EAX in retail.
-// Tried (r35): split side or node assignments, a const side or object, a byte owner,
-// an early guard and the object macro 19; an explicitly widened side 39;
-// (r169) the node before the queue 24 (pool loads first, node add moves up);
-// the node before the call 49; NODE() 19; a long side 39; the queue written
-// at both calls 62; a `byte *const &` node 19.
-// Round 141 (lane 4): retail loads the pool first and the queue into EAX after the MOVSX, then
-// builds the node as data + offset in EAX before the flag read (the 0x20d570 lookup shape); ours
-// loads the queue into EDX first and folds the node into the flag read. One queue call after the
-// if/else 19; the pool read into a local before the owner (0x20f960's form) 19; the node declared
-// first 19; the side cast inside the owner expression 19; the object through OBJECT_FROM_INDEX 19
-// (all the same code).
-// Round 57 (lane 10): retail's node takes its register from the data (mov eax, [edx + 0x44]; add
-// eax, ecx), ours from the scaled index, which is what folds the flag read and leaves the queue in
-// EDX. Node before owner 24; owner offset named 22; node from the data then `+=` the offset 19; data
-// local before the owner 19; masked index local before the owner 19; owner and node offsets both named
-// 22. A compile-only screen (its listing agrees with the real one) of ~680 owner, node, pool, inline
-// helper and typed element forms: none loads the data into EAX.
-// Round 122: full owner layout with array-element arithmetic 19; typed node element and fields 19;
-// owner declared first 19; raw call result with the pool read before sign extension 19; event callee
-// inline declaration 19; both/false-path/flag-path void-return cleanup expressions 19/19/19;
-// owner base then offset 19; owner base then offset with typed node element and fields 19.
-// Round 33 (lane 17): short team and side locals (0x20f1a0's form) 19; the flag test un-negated, release arm
-// first 31; the flag read into a named bool 19; node ahead of the owner with a short team and long side 24
-// (141 bytes: pool loaded first, node add explicit, but the side multiply moves up); the same with a short side 24.
-// Round 133 (fast): the node through unknown_20f8b0.cpp's existing audio_queue_node (declared here; LTCG
-// inlines it) 19 (same code), with the node ahead of the owner 24; the node computed at the top of the block
-// 49 (144 bytes) or between the team read and the call 48 (145 bytes; both keep the loads ahead of the call and
-// cost 0x114e80 13); permuter (600 s, 46 tries): nothing valid below 19 (its 16 reads the team as a dword).
-// The team field passed straight to the call without the long local 20.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {
@@ -2882,8 +2999,13 @@ void function_20fec0(long arg_0, long arg_1)
         byte *local_0 = *(byte **)(g_4e0300->data + (arg_0 & 0xffff) * 12 + 8);
         long local_9 = *(short *)(local_0 + 0x138);
         short local_1 = (short)function_20f040((short)local_9);
+        long absolute_index = arg_1 & 0xffff;
+        s_record_pool *pool = g_4f9398;
+        __assume(pool != NULL);
         s_node_owner *local_2 = (s_node_owner *)((byte *)g_4f939c + local_1 * 0x7dc);
-        byte *local_3 = g_4f9398->data + (arg_1 & 0xffff) * 0x54;
+        byte *local_3 = pool->data;
+        __assume(local_3 != NULL);
+        local_3 += absolute_index * 0x54;
         if (!local_3[0x41])
         {
             if (*(long *)(local_3 + 0x2c))

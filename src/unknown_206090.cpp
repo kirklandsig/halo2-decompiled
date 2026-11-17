@@ -24,7 +24,11 @@ extern vector3f *g_4687bc;
 
 void function_ba1d0(long arg_0, vector3f *arg_1, vector3f *arg_2);
 real function_17c900(short arg_0, real arg_1);
-bool function_182800(s_vehicle_ray *arg_0, long arg_1, void *arg_2);
+class c_bounded_query_world
+{
+public:
+	bool function_182800(s_vehicle_ray *arg_0, long arg_1);
+};
 void __stdcall function_1821d0(long arg_0, real arg_1, s_query_batch_result *arg_2, long arg_3);
 void function_207ab0(long arg_0, s_vehicle_physics_state *arg_1, s_vehicle_contact_result const *arg_2);
 void havok_component_rigid_body_linear_velocity_change(long arg_0, s_havok_component *arg_1, vector3f const *arg_2);
@@ -77,11 +81,6 @@ struct s_206091
     real field_18;
     vector3f field_1c;
 };
-
-PRIVATE __forceinline real function_206091(vector3f const *arg_0, vector3f const *arg_1)
-{
-    return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
-}
 
 PRIVATE __forceinline void function_206092(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
@@ -139,9 +138,13 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
         arg_2->n[component] = arg_0->n[component] * arg_1;
 }
 
-#pragma inline_depth(1)
 #include "vector_products.h"
-// score 1355 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1375 (was 1375): earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
+// fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
+// 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
+// search does not stop the outer list loop, 0x207862 -> 0x20786b), the three final counters and all 19 float literals
+// (read from retail's .rdata at 0x44ae90, 0x44541c, 0x45dbbc-0x45e5d0) agree. Only code shape differs.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;
@@ -422,6 +425,240 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
 // the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
 // one exit (zero in the if arm, the scaling in the else) 1355.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 1355 [969]): the first loop's offset and point-velocity
+// vectors written as element expressions at each use (no pointer locals) 1403 (6211 B) [997]; the duplicate-impact search
+// with the compare in the loop condition 1355 (same code); the k/j/i cross with the +0x88 factor named once for both
+// steering products 1425 (6211 B) [983]; the add helper written `a = b + a` (retail loads the added vector first) 1355
+// (same code), with the k/j/i cross 1426 (6238 B, round 79's code) [984]. Retail keeps the first loop's cross stores and
+// re-reads j and k for the add (only i is forwarded); ours drops the cross stores and sums in registers.
+// M3 lane 12 r93 (fast; 0x2056e0 matches): the first loop's element position through a named point pointer (also
+// for the ray origin) 1385 (6195 bytes); its offset through the existing vector3d_from_points3d 1407 (6259 bytes); the
+// magnitude summed i, j, k 1355 (same code); the magnitude from three named component locals 1608 (6022 bytes, as the
+// pointer-read form); the snapshot declared const 1355 (same code). The frame excess is the snapshot copy (ours stores
+// each component, copies it to the snapshot and loads x87 from there; retail loads x87 from the first store).
+// Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
+// the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
+// one exit (zero in the if arm, the scaling in the else) 1355.
+// Round 101 (m3 lane 9): 0x182800 became a member of the bounded world (it matched 0xf6670); here the world now
+// loads straight into ESI as in retail (0x2063e6), one instruction fewer (6243 bytes still, masked aligned 986 ->
+// 977), and the positional score moves 1355 -> 1379.
+// m3 lane 1 r85 (fast = full here): the magnitude helper's result in a named real 1424 (6195 B, frame still 0x5cc,
+// register-blind aligned 870 -> 743), as a double local cast on return 1448 (6275 B); re-measured: that with the sum
+// i, j, k 1424, the snapshot initialised member by member 1622 (6022 B), snapshot and named result const 1424.
+// Away from the helper: the contact flag bit as `(dword & 2) != 0` 1376 (colouring only); the query-record NONE loop
+// stepping by the record size 1427 (6259 B); `++local_32`, the counters one per line, `0.0001f < x` 1379 each (same
+// code); the first loop's arg_2 accumulation before arg_1's 1367 (not retail's order: retail adds arg_1 first); on it
+// the bit test as above 1364, the named magnitude result 1424, then the 0xb4 field read at each use 1440 (6211 B),
+// `1.0f + c * x` 1364, the products as `x * scale` 1364 (same code), `-a * b` 1388.
+// M3 lane 1 r88 (fast with 0x2056e0, which stays matched; aligned/register-masked difflib counts, control 891/585):
+// re-measured, the magnitude helper reading its input directly (no input copy) 1622 (6022 B, frame 0x590, 813/580: the
+// first magnitude then is retail's `movss [esp + 0x80], xmm; fld [esp + 0x80]; fmul [esp + 0x80]` at retail's offsets).
+// On it: the first loop's cross through the file's k/j/i helper 1634 (6006 B, 807/576); through cross3f_staged 1636 (6006 B,
+// 806/575); the k/j/i helper reading its second vector at each use instead of staging it 1618 (5990 B, 802/570); both 1691
+// (5958 B, 853/587). With the input copy kept: the k/j/i first-loop cross plus that unstaged helper 1429 (6211 B, 878/572).
+// The direct-input magnitude is closer by every aligned count; the 216 missing bytes are retail's store-then-reload rows
+// (results stored to their fields and read back) spread over the contact loop.
+// Round 228 (m3 lane 3, fast; aligned counts exact/stack-masked/register-masked in brackets, base 1379 [1384/1485/988]).
+// Re-measured on today's base: the direct `return a && b && c && d;` 1390 [1370/1457/977]; the final loop's count in
+// its head (`i < (list == NONE ? 0 : count)`, the list read in the body) 1397 (6216 B) [1389/1588/916]. New: both
+// 1389 (6238 B) [1371/1566/918]; on that, the found arm first 1401 [1374/1566/955], the magnitude read without its
+// input copy 1632 (5991 B) [1434/1333/860], the list entries re-derived from the pool at each use (round 84's
+// form, re-measured) 1426 (6287 B) [1372/1454/921], the steering sign as `if (field_74.i >= 0.0f) value = -value;` 1378 (6238 B) [1388/1560/914];
+// with that, the two steering magnitudes as `x >= 0.0f ? x : -x` 1427 (6273 B) [1379/1479/904], those and the two
+// threshold magnitudes in the same form 1376 (6238 B) [1381/1553/892] (three points, not kept), the threshold
+// pair alone on the sign form 1427 (6273 B) [1392/1492/905], alone on main 1403 (6211 B) [1390/1549/963]. On the
+// 1376 form: the first loop's cross through the file's k/j/i helper 1445 (6193 B) [1372/1536/876], the found arm
+// first 1393 [1388/1556/929], the list entries re-derived 1379 (6255 B) [1370/1543/895]. Retail's final loop is not
+// rotated (the latch jumps back to a head that re-reads the list handle) and its duplicate search sits after the
+// loop, entered by `jg` when the found list is not empty. All restored.
+// Round 184 (m3 lane 4, fast; stack- and register-masked difflib count 579 at 1379): kept the four magnitudes
+// (local_95/96 and local_97/98) as `x >= 0.0f ? x : -x`, 1379 -> 1367 (masked 568): retail tests each as `comiss x, 0;
+// jb` to the negating arm, so a NaN takes `0 - x`, which `x < 0.0f ? -x : x` did not; the steering pair alone 1391
+// (6211 bytes). On 1367: the contact ratio's three arms in retail's predicates (`local_24 >= local_26 ? 0.0f : 1.0f`,
+// `local_24 >= local_26 ? 0.0f : (local_26 >= local_23 ? 1.0f : ...)`, `local_23 >= local_26 ? 1.0f : (local_26 >=
+// local_24 ? 0.0f : ...)`, each read from retail's branches) 1392 (6211 bytes, masked 560: the block is then retail's
+// but for local_98, which retail computes only after the first threshold test); the clamp's mass bounds named before
+// PIN (retail computes both before its first branch) 1378; both 1386 at 6238/6238 bytes (masked 574); the ratio arms
+// with the final loop's count in its head 1402 (6264 bytes, masked 534), with the bounds too 1406 (masked 535).
+// M3 lane 13 r81 (fast = plain 1367; aligned exact/fully masked counts, base 1108/580): retail's first loop head (0x206154)
+// has no alignment pad because it would need 12 bytes; ours needs 9 (`jmp` + filler) only because local_2's home sits at
+// [esp+0x94] (a 4-byte longer store than retail's [esp+0x54]), so the pad follows the frame and is not a separate cause.
+// Diagnostics: a bounds test in local_8's read at the loop top 1451 (not threaded); the loop as `if (...) do ... while
+// (++i < count)` 1364 (still padded; a hand-inverted loop, not kept). Kept, same code: the inline_depth pragmas around the
+// function removed 1367; the file's own k/j/i dot helper replaced by the existing dot3f at all seven calls 1367. Also:
+// local_77 through dot3f 1373 (6238 bytes); the magnitude helper as `(real)sqrt(dot3f(&copy, &copy))` 1412 (6195 bytes);
+// the sign of local_13 as a named long 1367 (same code). Retail computes local_13 as (l * l) * sign * f88 in source order;
+// ours multiplies sign * f88 first (the listed `(real)(l * l)` grouping gives retail's order). One first-loop add through
+// the existing vector3f_add 1364 (the do-while's 3-point colour flip in local_28's products); the ray direction alone
+// through the existing vector3f_scale 1334 (6211 bytes; positional only: that site then differs from retail, the other
+// inlined scale loops flip to `s * v` where retail has `v * s`, exact aligned 1108 -> 1122; not kept); the first-loop
+// contact cross through cross3f 1390 (6211 bytes); local_68 through sqrtf 1430 (6259 bytes); the impact count test as
+// `(char)x == 1` 1407 (6195 bytes); local_18 computed before local_17 1367, the found flag stored after the ratio 1367, the
+// component test before the 0x81 flag 1367 (each different code, same score); local_93 written into the call 1367 (same code).
+// M3 lane 13 r83 (fast; fully masked aligned count in brackets, control 1367 [580]): retail tests the release time's NONE
+// first and converts the 0.2 s threshold only inside the second test, reading the game time before the conversion; ours
+// converts ahead of the whole condition. The conversion written into that test (local_93/local_94 dropped) 1374 (6249 B)
+// [558: that block then has retail's order but for the game-time load]; that with the game time through the existing
+// getter 0x146650 1405 (6201 B) [558: the game time is then read before the conversion as retail, and every product's
+// operand order flips, the first-loop add included, as other added inline calls do]. Retail also reloads the timing
+// global after 0x227990 inside the countdown loop where ours hoists it (0x227990 is unmatched, in a held file). The ray
+// origin copied after the direction scale 1361 (statement order, six points, not kept); both normalizers' scale step
+// through the existing vector3f_scale 1367 [581] (only the first component turns to retail's `s * v`); the second
+// projection reading a copy of the contact normal (retail copies the normal to [esp+0xd0] there) 1489 (6313 B) [619];
+// the existing magnitude3d (0x24590) at the three direct magnitude sites 1486 (6102 B, inlined) [569]; the impact
+// position written straight by vector3f_add_scaled (no point local) 1431 (6211 B) [588]; the contact offset through the
+// existing vector3d_from_points3d 1376 [569]. All restored.
+// T95: Existing scaled-add direction/velocity/residual families, masks 1/2/4/3/5/6/7:
+// 1397/1393/1388/1374/1380/1393/1365; all plus moving-surface correction 1394.
+// NOT kept: 1374/1380/1365 clear the margin only as combinations; the first two
+// improve only length with more differing instructions, and the last substitutes
+// negated-scale addition for retail positive-product subtraction without equality.
+// Frame remains 0x5d0 versus 0x58c; original captures, kernels and complete body restored.
+// T97: Existing magnitude/first-normalizer/second-normalizer real values transported by double returns,
+// seven subsets then all with explicit real consumers: 1411/1380/1432/1410/1381/1437/1461/1378.
+// NOT kept: all regress against reduced control 1367 (full 1391); original contracts, captures and body restored.
+// P444: first lever-arm array difference 1432f; contact lever-arm array difference 1410f; moving-surface array difference 1399f; residual-velocity array difference 1391f; direction-normalization result 1367f; tangent-normalization result 1367f; peak-update producer 1367f; release-due producer 1367f.
+// NOT kept: no byte match or supported native frame/result recovery; original complete body restored.
+// P446: Actual slip, force-transfer, movable-body, impact-record, append, collected-member, compatible-contact and created-impact producers;
+// 1388/1388/1388/1388/1388/1388/1414/1388. NOT kept: three-point nonmatch gains are below the eight-point bar; original complete body restored.
+// M3 lane 10 r101 (fast with 0x2056e0, which stays matched; fast = plain here, 1391; brackets = difflib counts exact / registers
+// masked / registers and stack offsets masked, control [1384/1148/966]). NOT kept (coordinator: 5 points, under the 8-point bar): the contact velocity formed in
+// place (the cross written straight into the contact's field_4c and local_4 added there, the `contact_velocity` local copy
+// dropped) 1391 -> 1386 (6249 bytes, frame 0x5c8) [1487/1216/980]: retail stores that cross into the field and re-adds in
+// memory (`movss [ebx], xmm3; addss xmm0, xmm3; movss [ebx], xmm0`). Before it: 0 to 7 unused longs ahead of the body
+// (symbol-count phase scan) 1391 each, same code (no phase effect here); the magnitude helper reading its input directly
+// re-measured 1623 (6022 bytes, frame 0x590) [1444/1080/915]; that with the in-place velocity 1639 (5964 bytes, frame 0x588)
+// [1541/1111/880]. On that form: a `contact` pointer local for the whole contact loop 1443 (6166 bytes, frame 0x5c0)
+// [1379/1464/905], the pointer without the in-place velocity 1430 (6195 bytes); the impact position written straight by
+// vector3f_add_scaled 1448 (6163 bytes); the wheel force through the existing vector3f_add_scaled (no scaled temporary) 1395;
+// the stored length read back from field_90 1437. Retail keeps the contact pointer in EDI, reads field_40 from memory at each
+// cross product use and reloads field_40.k right after storing it.
+// P449: Dominant-force/positive-force, moving-surface and friction-sign outcomes in bool/long:
+// eight 1364 fast (control 1367; full 1391). NOT kept: three-point context-relative gain; no exact frame/result repair.
+
+// P452: Independent magnitude/velocity-publication/query-origin/tangent/direction/velocity/friction-input/impact-normal memmove boundaries:
+// 1436/1376/1409/1397/1440/1407/1425/1376. NOT kept: 1376 leads retain nonnative record-transfer boundaries and excess frame; no byte equality. Original captures, all helpers, call tuples and full body restored; matched caller survives.
+// P454: Existing magnitude snapshot as aggregate/shared setter, five remaining native component-store
+// schedules ikj/jik/jki/kij/kji, plain component copy: 1623/1675/1623/1623/1623/1623/1623/1627.
+// NOT kept: no gain; construction shortens to 6022/5974 or grows to 6480 versus 6238, without native
+// frame recovery. Original snapshot, reduction, every helper and full body restored.
+// m3 lane 7 r159 (plain; fast prints a CAVEAT for this function, fast 1367 against full 1391): the two steering magnitudes
+// through fabs 1442 (6272 B); the scale helper as three component statements in place of its 3-pass loop 1446 (6195 B,
+// aligned 1384 -> 1358, frame 0x5cc); the cross helper reading its second operand directly 1396; the magnitude helper
+// reading its input directly 1623 (6022 B, frame 0x590: re-measured); both of the last two together 1673 (5974 B).
+// A /GL harness of this file alone gives frame 0x5cc for the body (full 0x5d0), so callee bodies add one spill here.
+// Without the snapshot copy retail's magnitude shape appears (components stored, then fld/fmul from those slots) but our
+// spill slots sit 4 bytes above retail's (one extra spill slot low in the frame, shared by a float and an int).
+// P477: Standard ordered first-loop/contact-normal/direction/tangent/friction/peak dots, retained-snapshot magnitude and mixed-precision normalizer reductions:
+// 1373/1487/1375/1404/1435/1372/1900/1449. NOT kept: 1373/1375/1372 add an arithmetic call absent from retail (15 versus 14); frame stays 0x5d0. Other forms regress; matched caller survives. Original helpers, captures, call tuples and complete body restored.
+// P490: Standard collected-prefix duplicate/membership find and count producers:
+// find/original, original/find, find/find, count/original, original/count, count/count,
+// find/count, count/find: 1410/1389/1452/1468/1372/1399/1452/1399.
+// NOT kept: 1372 adds a search call absent from retail (15 calls versus 14);
+// its frame is 0x5c8 and extent 6220 versus 0x58c/6238. Other forms regress or
+// gain only two. Original indexed searches, snapshots, helpers and complete body restored.
+// m3 lane 15 r84 (plain each, 0x2056e0 matched throughout; control 1391). Phase regime: one statement or local name added
+// or removed flips commutative operand orders and same-size stack homes across the whole body, swinging the count by
+// about +-40 with no local change, so single forms here cannot be judged by count. Examples: `__assume(count <= 16)` ahead of
+// the wheel loop or of the contact loop 1374/1374 (6238 B, different operand orders each); the two threshold fields
+// (+0x18/+0x1c of the wheel definition) read at each use 1355 (6238 B), the wheel +0x24 field at each use 1363 (6211 B),
+// both together 1474 (6291 B); none kept. Other forms: one counter shared by the wheel and contact loops 1388 (the contact
+// loop is still strength-reduced; retail recomputes `imul i, 0xd8/0x4c/0x3c` each pass, counter in one stack slot shared
+// with the wheel loop); the skipped-contact arm first with `continue` 1371 (6243 B, skip call moved to the loop top, not
+// retail's layout; arms swapped, not kept); the threshold ratio's nested ternaries as if/else 1423 (6275 B); the mass
+// factor `(k + 1) * 0.5f` named 1434 (retail multiplies by 0.5 before the divide; `0.5f * (k + 1)` and `/ 2.0f` same code);
+// the tangent dot reading the contact field instead of its copy 1375 (a copy/field mix, not kept); the rigid-body index
+// at each use 1423; the impact strength at each use 1456 (6281 B); the field_70 update as one ternary add 1391.
+// Same code: local_27 and local_15 as if/else. Re-measured: the 0.2 s conversion inside the test 1398 (6265 B); the direct
+// `return a && b && c && d;` 1413 (6275 B; retail's exit shape, pops ahead of the last tests).
+// M3 lane 1 r104 (plain; the fast check CAVEATs this function): the duplicate-impact search's not-found test as
+// `local_75 >= local_33` 1391 -> 1375 at 6238 B (kept: the loop's own exit compare now threads past the re-test, as
+// retail's not-found path goes straight to the capacity test; the found exit still re-tests where retail jumps out). On
+// it: the search compare in the loop condition 1375 (same code); the capacity as the array's element count 1375 (same
+// code); local_12's negation on its first factor 1420; the steering sign as a named long 1375 (same code); the
+// velocity-change bound's product named ahead of the mass clamp (retail computes it there) 1377. Before it: the magnitude
+// helper taking its vector by value 1391 (same code as the snapshot copy).
+// P501: Standard whole-record
+// magnitude/ray/contact-publication/direction/tangent/normalized-force/carried-force/impact-normal transfers:
+// 1410/1427/1375/1380/1436/1388/1397/1417. NOT kept: All retain frame 0x5d0 versus native 0x58c. t03/t04 gains
+// 16/11 add one absent library call (15 versus 14), and t06 gains only three. All transfer contracts rejected;
+// original helpers and body restored. Original complete executable body restored.
+// m3 lane 14 r96 (fast = full 1375, 0x2056e0 stays matched): the final loop's inactive-impact skip as a nested if block
+// in place of `continue` 1375 (same code); local_4/local_5 named linear_velocity/angular_velocity 1375 (same code: the
+// names do not swap their homes, retail has local_4 below local_5, ours the reverse); the final loop's member count read
+// through local_81 (`*(short *)(local_81 + 2)`) 1391 (6211 B); the havok component index read at each use after the
+// 0x81 flag test (no local_20) 1460 (6259 B); the steering product's first two factors swapped 1375 (same code). Retail's
+// final loop reads the pool's data pointer at each use (count, member, search), forms the list pointer only inside the
+// found-duplicate search, and reaches that search by `jg` with the countdown as the fall-through.
+// P511: Explicit actual steering-range/dominant-force/dead-zone/compression/mass-floor/mass-range/impulse-cap/friction-slope results:
+// 1394/1375/1375/1375/1366/1394/1409/1416. NOT kept: best 1366 grows to 6243 versus native 6238,
+// with excess frame unchanged; other results tie or regress. Original complete body and all helpers restored.
+// P520: Standard steering/dead-zone/mass/impulse/slope/speed/kind/complete range providers:
+// 1534/1519/1441/1506/1445/1421/1420/1809. NOT kept: no exact native storage/provider recovery; original complete body and helpers restored.
+// P522: Real second-coefficient root/first-normalizer absolute/second-normalizer absolute,
+// seven domains then complete real-root API graph: 1396/1394/1396/1449/1394/1449/1375/1394. NOT kept: no exact native frame/API recovery; original complete body and helpers restored.
+// P524: Actual contact decision-byte storage at 70/80/81/82/83/b3, then all signed/unsigned:
+// 1375/1430/1375/1375/1375/1375/1430/1430. NOT kept: no exact native storage recovery; original record declarations, helpers and full body restored.
+// P526: Native first/second/both material value assignments, complete descriptor aggregate, plain paired-publication loop, loop-owned collection, aggregate plus loop, materials plus loop:
+// 1375/1375/1375/1409/1368/1425/1449/1391. NOT kept: seven-point loop lead below margin; other forms tie or regress, frame still 0x5d0 versus 0x58c.
+// Original complete executable source restored.
+// P528: Individual shared scale sites at point impulse/normal force/body impulse/
+// driven slip/projection/dynamic friction/static friction/load projection:
+// 1394/1443/1394/1394/1394/1394/1394/1380. NOT kept: all regress or move extent away;
+// excess frame and indexed homes remain. Original body, kernels and includes restored.
+// Round 128 (m3 lane 12, fast; control 1375, frame 0x5d0; retail keeps local_4 below local_5 at 0xb4/0xc0 and the component
+// at 0xcc, ours local_5 0xe0, local_4 0xec, component 0x11c; both builds inline the fld/fistp rounding, so both use the
+// asm-mode slot order): the two 0xba1d0 outputs named linear_velocity/angular_velocity 1392 (6211 bytes, frame 0x5cc, the pair
+// keeps its order); the impact position built by vector3f_add_scaled straight into the impact record 1412 (6163 bytes, 0x5c0);
+// the first loop's force added to +0x90 by vector3f_add_scaled in place of the scaled temporary 1373 (6243 bytes, 0x5cc); both
+// 1419 (0x5c0); the first loop walking its element and definition pointers (`+= 0xa8`, `+= 0x4c` at the body's end) 1397.
+// P542: Independent computed point/contact spring-damping, slope quotient, wave response, kinetic/static force, impulse-bound and excess-speed parts: 1398/1413/1426/1377/1397/1397/1375/1394.
+// NOT kept: ties or regressions; native frame 0x58c and component/velocity homes remain unresolved. Original body and all kernels restored.
+// P545: Standard component transforms at point/contact lever arms, moving-surface correction,
+// residual subtraction, repeated add/scale and first/second normalization tails:
+// 1453/1419/1408/1393/1592/1712/1476/1398. NOT kept: no native frame/extent
+// recovery; full control 1375, reduced 1392. Original kernels and complete body restored.
+// P556: Actual escaped velocity/query/impact object references, then contact relative-velocity/
+// normal-force/accumulated-force/lever-arm/torque field lvalues: 1375/1391/1375/1379/1429/1379/1431/1398.
+// NOT kept: no native frame recovery or equality; complete body, input captures and existing kernels retained.
+// Round 112 (m3 lane 10; fast on the reduced image, whose control reads 1392 at frame 0x5cc): the magnitude helper with
+// double-promoted products through the pointer, no snapshot copy, 1596 (6006 bytes, frame 0x590: each component is loaded
+// once, `fld st(0); fmul st(1)`); with float products through the pointer 1637 plain (5974 bytes, frame 0x590): every
+// magnitude is then retail's own `movss [esp+X], xmm; fld [X]; fmul [X]` from the vector's home (the first at retail's
+// 0x80/0x7c/0x78), so retail has no snapshot copy; the stack disp32/disp8 use counts then agree (133/199 against
+// 133/192), so the 264 missing bytes are block layout and contact-record addressing, not the frame (lead for a
+// rewrite on that basis). The helper taking its vector by value 1392 (same code as the copy); the two contact arrays
+// declared at the top 1392 (same code); the impact direction through the float normalizer in place of the
+// double-accumulating one 1454 (6307 bytes, frame 0x5dc). All restored.
+// M3 lane 16 r127 (plain; fast prints a CAVEAT here): a contact pointer for the whole contact loop with the contact cross
+// written straight into its field_4c and summed in place 1409 (6182 B, frame 0x5c0; ours still walks a strength-reduced record
+// pointer where retail recomputes `imul index, 0xd8` each pass); the steering product as `field_8c * local_1[0x30]` 1375 (same
+// code); the wave term as a float tree, `((real)(quotient) * 0.10000002f + 0.9f) * game_time * rate * 0.3f + (real)index *
+// 42.0f`, 1421: LEAD, that block is then retail's exact x87 sequence with dword constants, but the first loop's allocation shifts
+// (local_13's sign/field_88 product reassociates); that with field_88 read once for local_12 and local_13 1450 (6275 B); the
+// float wave term with the contact pointer and in-place cross 1439 (6166 B).
+// P583: Advance-before-admission signed point/contact/query-initialization ordinals,
+// seven subsets, then both collected-prefix searches: 1375/1375/1375/1375/1375/1375/1375/1375. NOT kept: no exact
+// native frame/indexed-contact recovery; original loops, helpers and complete body restored.
+// M3 lane 7 r172 (fast prints the reduced-image CAVEAT: fast control 1392 at 6211 B, aligned 1379; plain control 1375,
+// aligned 1402): nothing kept. Plain: the result returned directly as `return !local_34 && ... && ...;` (no flag) 1376
+// (6243 B, aligned 1384: retail's tail exactly, `mov eax, 1` / `xor eax, eax` exits with the pops before the tests, but one
+// over the control; fast 1384); the last loop as a counted `for` testing the impact count in its condition (no `for (;;)` and
+// break) 1397 (6264 B; fast 1378); the contact velocity formed in place (the cross straight into field_4c, local_4 added
+// there, no copy local) re-measured 1421 (6217 B). Fast: the steering sign folded into local_11's initialiser 1433; the
+// impact offset scale written into the vector3f_add_scaled call (no named local_71) 1392 (same as the fast control).
+// Retail's impact record sits at 0xd4 below ours (0x11c against 0x160 on the listing), so the whole 0x44 frame excess
+// lies below it; retail lays the found-search loop out after the impact loop.
+// M3 lane 13 r104 (fast = plain here, 0x2056e0 matched; control 1375, difflib exact/masked aligned 981/585): three
+// retail-shape leads, each raising the count through the phase regime. The impact-list loop as a plain `for` testing
+// `h == NONE ? 0 : arrays[h & 0xffff].count` through a typed 0x40-byte impact array, the element read as
+// `arrays[h & 0xffff].impact_indices[i]` and the inner search the same way, 1398 (982/556: the loop head is then retail's
+// exactly, the count read in the `jne` arm from a fresh pool load and the element at `[eax + (h * 16 + i) * 4 + 4]`); that
+// with a typed array pointer for the inner search 1428 (6289 B); `return a && b && c && d;` for the flag-set result alone
+// 1376 (6243 B, retail's `mov eax, 1` / `xor eax, eax` tail; one over the control), with the plain loop 1397; the friction
+// arm's `sqrt(x * 0.9f)` before the direction copy and its normalize 1405 (6240 B, 945/568: retail computes and stores that
+// root first, then multiplies in SSE where ours keeps it on the x87 stack); root first with the direct return 1420, with
+// both other leads 1468. One to five unused locals on the plain-loop form 1397 each (unused locals do not move the phase).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -448,8 +685,8 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
         local_11 = (local_0->field_74.i >= 0.0f ? -1.0f : 1.0f) * local_11;
         real local_12 = -(local_0->field_74.j * *(real *)(local_7 + 0x88));
         real local_13 = local_11 * local_11 * (local_11 != 0.0f ? (local_11 < 0.0f ? -1 : 1) : 0) * *(real *)(local_7 + 0x88);
-        real local_95 = local_12 < 0.0f ? -local_12 : local_12;
-        real local_96 = local_13 < 0.0f ? -local_13 : local_13;
+        real local_95 = local_12 >= 0.0f ? local_12 : -local_12;
+        real local_96 = local_13 >= 0.0f ? local_13 : -local_13;
         real local_14 = local_95 > local_96 ? local_12 : local_13;
         real local_15 = local_14 > 0.0f ? PIN(local_14 - 0.1f, 0.0f, 1.0f) : PIN(local_14 + 0.1f, -1.0f, 0.0f);
         real local_16 = *(real *)(local_1 + 0x2c) * local_15 + 1.0f;
@@ -463,7 +700,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
         {
             s_havok_component *local_21 = havok_component_get(local_20);
             if (TEST_FIELD_BIT(local_21->flag5) && local_21->unknown9c &&
-                function_182800((s_vehicle_ray *)&local_19, NONE, (void *)local_21->unknown9c))
+                ((c_bounded_query_world *)local_21->unknown9c)->function_182800((s_vehicle_ray *)&local_19, NONE))
             {
                 real local_22 = (local_17 + local_18) * local_19.field_18 - local_17;
                 real local_23 = *(real *)(local_8 + 0x18);
@@ -472,15 +709,15 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                 real local_26 = *(real *)(local_7 + 0x24);
                 real local_97 = local_23 - local_24;
                 real local_98 = local_24 - local_23;
-                if ((local_97 < 0.0f ? -local_97 : local_97) < 0.001f ||
-                    (local_98 < 0.0f ? -local_98 : local_98) < 0.001f)
+                if ((local_97 >= 0.0f ? local_97 : -local_97) < 0.001f ||
+                    (local_98 >= 0.0f ? local_98 : -local_98) < 0.001f)
                     local_25 = local_24 < local_26 ? 1.0f : 0.0f;
                 else if (local_23 > local_24)
                     local_25 = local_24 < local_26 ? (local_26 < local_23 ? (local_26 - local_24) / local_97 : 1.0f) : 0.0f;
                 else
                     local_25 = local_23 < local_26 ? (local_26 < local_24 ? (local_24 - local_26) / local_98 : 0.0f) : 1.0f;
                 real local_27 = local_22 > 0.0f ? 1.0f - local_22 / local_18 : 1.0f;
-                real local_28 = (*(real *)g_51e9c4 * local_27 * local_27 - *(real *)(local_8 + 0x14) * function_206091(local_10, &local_19.field_1c)) *
+                real local_28 = (*(real *)g_51e9c4 * local_27 * local_27 - *(real *)(local_8 + 0x14) * dot3f(local_10, &local_19.field_1c)) *
                     *(real *)(local_7 + 0x9c) * *(real *)(local_8 + 8) * local_0->field_6c * local_25;
                 if (*(real *)(local_7 + 0xa0) > 0.0f)
                 {
@@ -535,7 +772,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
             if (local_0->field_b10[local_38].field_84 > 0.0001f)
             {
                 vector3f *local_46 = &local_0->field_b10[local_38].field_a0;
-                real local_47 = function_206091(&local_0->field_b10[local_38].field_4c, local_46);
+                real local_47 = dot3f(&local_0->field_b10[local_38].field_4c, local_46);
                 local_0->field_b10[local_38].field_88 = local_0->field_6c * (*(real *)g_51e9c4 / *(real *)(local_1 + 8) * local_0->field_b10[local_38].field_84 - *(real *)(local_1 + 0xc) * local_47);
                 function_206096(local_46, local_0->field_b10[local_38].field_88, &local_0->field_b10[local_38].field_94);
                 vector3f local_48 = *g_4687b0;
@@ -557,14 +794,14 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                     }
                 }
                 vector3f local_56 = local_0->field_b10[local_38].field_4;
-                real local_57 = function_206091(&local_56, local_46);
+                real local_57 = dot3f(&local_56, local_46);
                 local_56.i -= local_46->i * local_57;
                 local_56.j -= local_46->j * local_57;
                 local_56.k -= local_46->k * local_57;
                 if (function_206094(&local_56) != 0.0f)
                 {
                     vector3f local_58 = local_0->field_b10[local_38].field_4c;
-                    real local_59 = function_206091(&local_0->field_b10[local_38].field_4c, local_46);
+                    real local_59 = dot3f(&local_0->field_b10[local_38].field_4c, local_46);
                     local_58.i -= local_46->i * local_59;
                     local_58.j -= local_46->j * local_59;
                     local_58.k -= local_46->k * local_59;
@@ -577,11 +814,11 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                     else
                     {
                         vector3f local_61;
-                        function_206096(&local_56, function_206091(&local_58, &local_56), &local_61);
+                        function_206096(&local_56, dot3f(&local_58, &local_56), &local_61);
                         local_60.i = local_58.i - local_61.i;
                         local_60.j = local_58.j - local_61.j;
                         local_60.k = local_58.k - local_61.k;
-                        local_0->field_b10[local_38].field_8c = function_206093(&local_61) * (function_206091(&local_61, &local_56) > 0.0f ? 1.0f : -1.0f);
+                        local_0->field_b10[local_38].field_8c = function_206093(&local_61) * (dot3f(&local_61, &local_56) > 0.0f ? 1.0f : -1.0f);
                     }
                     real local_66 = function_206093(&local_60);
                     local_0->field_b10[local_38].field_90 = local_66;
@@ -643,7 +880,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                         for (local_75 = 0; local_75 < local_33; local_75++)
                             if (local_35[local_75] == local_74)
                                 break;
-                        if (local_75 == local_33 && (dword)local_33 < 32)
+                        if (local_75 >= local_33 && (dword)local_33 < 32)
                             local_35[local_33++] = local_74;
                     }
                 }
@@ -662,7 +899,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                 vector3f local_78;
                 function_206096(local_76, local_77, &local_78);
                 real local_95 = (real)sqrt((double)local_78.i * local_78.i + (double)local_78.k * local_78.k + (double)local_78.j * local_78.j);
-                if (function_206091(local_76, &local_42) > 0.0f)
+                if (dot3f(local_76, &local_42) > 0.0f)
                     local_0->field_70 -= local_95;
                 else
                     local_0->field_70 += local_95;
@@ -733,4 +970,3 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
         result = true;
     return result;
 }
-#pragma inline_depth(255)

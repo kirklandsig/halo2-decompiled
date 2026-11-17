@@ -91,119 +91,11 @@ struct s_character_db0_flags
 };
 
 bool function_1f86f0(long index);
-bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop);
+bool function_1f4f40(long actor_index, short unknown, s_type_c3b527 const *point, bool face_prop, vector3f const *facing);
 void function_262800(long actor_index, s_reference reference, bool unknown);
 
 /* slot type 0x23, update: once the actor stands at its prop's position, it
    turns to face it; then it lets the prop go */
-// score 7 (was 7): only argument temporaries differ: the 0x1f4f40 short argument is converted into DX
-// and pushed after `mov eax, ebp` (retail converts AL in place into AX and pushes it first), and the
-// 0x262800 reference is loaded into EAX (retail ECX).
-// Earlier (47): the actor index, actor, view and state registers differ (retail EBP/EDI/EBX/ESI,
-// ours EDI/EBX/EBP/ESI), and retail saves EBX late, giving the NONE path its own epilogue. The forms
-// with one actor lookup at the top give index EBP and view EBX as retail, but actor ESI and the state
-// EDI, loaded and pushed late. Tried: typed slot data block/current/entry 61/62; on that block actor
-// once/at use 66/85; long/word/byte readiness 76/78/77; the readiness stored in the field and tested
-// from it 47 (kept, retail's mov eax, 1); on it, one actor lookup at the top 52, plus the state
-// declared first 52, a prop index local 52, the typed slot data block 52, node/view declared at the
-// top 52, slot cast at each use 52, the last test as if/else-return 52; the NONE case as an early
-// store and return 91 (actor EDI as retail, index and state then in scratch registers); getter in
-// both NONE test and node lookup 47; actor before the view test 97; actual input/required/done byte
-// fields, all subsets, 61 each; completion byte field 61; role names in all index/actor/view subsets
-// 47; indexed data block with complete names 47; direct concrete callback input 47/52; native
-// success/else-return gates, all subsets 47; native node reference with/without the data block
-// 47/47; actor reference after the view 47; entry actor reference variants 52; the slot read once
-// through its address 47, with the top actor 52, with the top actor and the state first 52; the
-// getter at the 0x262800 call instead of the inner actor local 88 (276 bytes).
-// Round 76: retail keeps one actor pointer across the calls (EDI, read at +0x418 at the end); a second
-// lookup at the final call reloads the pool after the calls here 71, so the source looks the actor up
-// once at the top. That form (52) gives retail's index EBP and view EBX and the shared final store
-// (retail duplicates it for the NONE path); left are actor/state ESI/EDI swapped, EBX saved at entry and
-// the 0x1f4f40/0x262800 argument temporaries. On it: the slot parameter cast at each use 52; the view
-// computed first as NULL-or-view and tested once 52; the NONE case as an early store and return 91.
-// Round 198: typed slot data block/current/entry 61/62; on that block actor once/at use 66/85; long/word/byte readiness 76/78/77; stored readiness 47 (exact-match-only, restored). Opening body restored.
-// Round 238: actual input/required/done byte fields, all seven subsets, 61 each;
-// completion byte field 61. Original Boolean field types and body restored.
-// Round 89: the readiness stored in the field and tested from it, kept (retail's mov eax, 1) 47; on
-// it, one actor lookup at the top 52 (index EBP and view EBX as retail, actor/state ESI/EDI swapped),
-// plus the state declared first 52, a prop index local 52 or the typed slot data block 52; the
-// NONE case as an early store and return 91 (actor EDI as retail, more pushes sink).
-// Round 173: Role allocation names in all seven index/actor/view subsets 47 each; indexed data block with
-// complete names 47. Direct concrete callback input, alone/one actor lookup/role names/both, 47/52/47/52.
-// Original body, input declaration and table entry restored; late EBX save and register ownership remain.
-// Round 270: native success/else-return gates for active, facing and release phases,
-// all seven subsets 47; full gates with the slot data member 47. Original restored.
-// Round 252: native node reference with/without the data block 47/47; actor reference
-// after the view, alone/with node 47/47; entry actor reference alone/with node/with
-// node and data block/with data block 52/52/52/52. Original complete body restored.
-// Round 155: on the top actor lookup (index EBP, view EBX as retail; actor ESI/state EDI swapped): node/view
-// declared at the top 52, prop-index local 52, slot cast at each use 52, last test as if/else-return 52, NONE
-// as an early store and return 91; getter in both NONE test and node lookup 47; actor before the view test 97.
-// Round 7 (lane 13): --fast frees this handler's convention (the table is dropped from the reduced image), so
-// all trials ran plain. Retail's actor is a local (first load folded, then `add edi, edx`). On the top actor
-// form, the completion store written again for the NONE case (if/else) gives retail's late EBX push and own
-// NONE epilogue with state ESI and actor EDI, but the index then stays on the stack and the node takes EBX:
-// 69; the same with the slot parameter typed `s_slot_23 *` (table cast) 69, node/view declared first 69,
-// NONE arm first 91; that store on the current body 97.
-// Round 429: complete readiness arms/path-owned completion/both/separate release/
-// readiness-release/completion-release/all/all with one actor acquisition
-// 104/104/94/47/104/104/94/101 fast; all restored.
-// Round 106 (plain): top actor with the unknown0c test folded into the view test 52; the current body as
-// single-exit nesting 132 (304 bytes); the top-actor body nested the same way 102 (302 bytes); readiness as
-// `... ? true : false` 66; state declared first with both locals const 52.
-// Round 238: named initial-completion/facing/release decisions, seven subsets 47 each;
-// complete decisions with native slot data block 47. Original callback restored;
-// initial one-use completion snapshot rejected without an exact match.
-// Round 45 (lane 16): the actor looked up once at the top, the state typed as the slot's data block, a
-// guard clause storing the completion for a null view, the completion stored after the final call and
-// again in an else for the NONE prop index: 47 -> 7 (kept; retail's registers, both epilogues and the
-// late EBX push). Steps: top actor with the NONE store in an else 69, plus state declared first/prop-index
-// local/node and view at function scope 69 each; plus the data block 51 (head and NONE epilogue as retail,
-// node EBX and view spilled), view renamed 51, view declared first 51, two actor lookups 92, NONE as an
-// early store and return 79, view through the index getter after/before the node 74/88, one shared store
-// 52; the guard clause 7. On 7: the final call under a positive test 7, `(short)` cast 7, the type byte
-// declared signed char 7, a positive test around the 0x1f4f40 call 7.
-// Round 23 (lane 15, plain): the type byte in a named char local, tested and passed 11; the 0x262800
-// reference read into a local first 7 (its temporary moves EAX -> EDI, retail ECX); the state pointer
-// declared before the actor 9; the readiness in a named bool stored and tested 22 (byte setcc); the
-// completion store shared after an `if (view)` block 51 (276 bytes). At 0x1afb30's call to 0x1f4f40
-// our build converts the byte in place as retail does; here EAX holds the actor index too early.
-// Lane 16 r46 (plain): the 0x262800 reference copied into a named local first 7 (its temp moves to EDI).
-// Round 213: inline facing callee 7; inline release callee 7; inline node test 7; both call contracts
-// inline 7; short facing mode 44; short mode with inline facing callee 44; long facing mode 46; long mode
-// with inline facing callee 46; release result used for completion 7; release result with short mode 44;
-// release result with long mode 46; original executable source restored.
-// Round 59: the facing mode through a field reference/pointer 7 each; the release reference through a field
-// reference/pointer 7 each; one actor-index address read at the facing/release call 7 each; the data block
-// through its array's address 7; one actor-index reference shared by all three calls 7. All neutral.
-// Round 148 (fast): the release reference through a fresh actor getter 57 (286 bytes); the readiness as an
-// if/else of two stores 78 (254 bytes); the null-view and already-complete tests merged into one guard 8;
-// the facing call in an else of its guard 7; named facing/point pointers for the call 7 (same code); a 600 s
-// permuter run (fast, anneal, 80 tries), none below 7.
-// Round 56 (lane 11, fast): the seven differences are one register-rotation step. A diagnostic extra dword load
-// and global store placed after the guard, in the 0x1f4f40 call's block, gives exactly retail's point EDX, in-place
-// type EAX, `push eax` before `mov eax, ebp`, and reference ECX (the two later temporaries take the next registers in
-// ECX, EDX, EAX order); the same probe before the guard takes EAX and moves nothing. So retail has one more dword
-// temporary before these, one that leaves no code. Forms: type in a local read between the guards 7; short/long/char
-// mode local after the guard 7/7/7; named facing/point pointers 7; state copy 7; index copy 7; bool true local 7;
-// readiness as embedded assignment 7; long readiness 65 (283 bytes; registers as retail, setne added); byte readiness
-// 61 (276; same); dword readiness with a byte store 8; bool readiness with embedded store 22; inline/forceinline
-// readiness helper 7/7, on the flag 7, with a result local 22; dead char/long/getter locals in the block 7/7/7;
-// a repeated type/flag/done test around the call 7/7/7. Next: a form whose extra temporary coalesces away.
-// Round 125 (m3 lane 7, fast; positional/aligned/masked, base 7/6/1): mode assigned in the test 7; read before the guards
-// 11; three separate guards 7; short mode after the guards 7; nested first two tests 7; long ready with a bool store
-// 65/4/2 (registers retail's, setne added; that setne's temporary is the rotation step); ready through a byte view 7,
-// tested as (byte) 7; (byte)ready != 0 stored 64/3/2; byte ready 22; field typed byte with long ready 7, without 22;
-// readiness as !!, == true, (bool), !(!a || !b), a ? f() : false, ? 1 : 0, != 0 pair, != false, (long), (byte):
-// 7/66/22/7/64/7/7/7/7/22.
-// Round 136: node/view hoisted in either order 7/7; actor-first 7; state-first 9; node and view
-// hoisted separately 7/7; const actor/state 7; all four pointer locals const 7; read-only view and
-// read-only actor/view 7/7. Original declarations restored; NOT kept: no exact match from declaration/lifetime forms.
-// Round 133 (fast, which agrees with the full build here): the call and its two stores through a block-scoped
-// `s_slot_23 *` pointer, a block data-block pointer re-derived from the slot, or `((s_slot_23 *)slot)->` casts
-// 28 each (275 bytes: the type is re-read by a memory movsx and the rotation moves one step the other way,
-// reference EDX); the guard, call and stores all through a block data-block or `s_slot_23 *` pointer 7/7 (same
-// code); the block pointer declared ahead of the guard with the guard on `state` 28.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {
@@ -229,7 +121,7 @@ void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 			if (!state->unknown0f || !state->unknown11 || state->unknown10)
 				return;
 
-			function_1f4f40(actor_index, &state->facing, state->unknown11, &state->point, true);
+			function_1f4f40(actor_index, state->unknown11, &state->point, true, &state->facing);
 			state->unknown10 = true;
 			state->unknown00 = false;
 		}

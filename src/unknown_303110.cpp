@@ -60,10 +60,24 @@ inline __m128 cross_303540(__m128 const &a, __m128 const &b)
 	return _mm_sub_ps(_mm_mul_ps(a_yzx, b_zxy), second);
 }
 
-// The real local caller preserves the helper's register convention. This
-// larger routine remains a near reconstruction, not an additional solve.
+// Shared tetrahedron reduction used by the convex-search callers. Exporting
+// it gives those callers the same actual implementation; it remains unmatched.
+// score 111 (was 111): stack arguments and a 0x58 frame replace retail
+// register inputs and a 0x5c frame. Explicit distance branches 108
+// (NOT kept: gain 3 and longer); default first 141; direct vertex reads 111;
+// value cross inputs 111; set1 broadcast 181; aligned mask load 174;
+// one result 111; advancing normal pointer 111.
+// Shared cross helper 111; shared dot helper 111; standard float swaps 208;
+// arrays declared at entry 111; all product terms named 111; staged dot sum
+// 111; length scalar renamed 111; unsigned array index 111.
+// NOT kept: no gain; original code and helper restored.
+// P428: fourth vertex reused 111; normal-array initialization 111; all
+// vertex references 200; unweighted-vector name 111; zero-first ternary
+// 113; distance cursor 206; one exchange temporary 111; standard transpose
+// 111. NOT kept: no improvement; incoming registers and saved-register
+// count still differ, followed by the scalar fallback store.
 // @retail 0x303540
-static int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
+int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
 {
 	__m128 const a = vertices[0];
 	__m128 const b = vertices[1];

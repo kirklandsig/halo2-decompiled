@@ -3137,6 +3137,14 @@ void playlist_list_focus_playlist(c_playlist_saved_game_file_list *list)
         }
     }
 }
+// score 9: the body is retail's byte for byte with ECX and EDX exchanged —
+// retail keeps the loop counter in ECX and the entry cursor in EDX, ours the
+// reverse (the xor, lea, inc, add, cmp, jb, imul and both loads). Declaration
+// order, a scoped counter, a do/while loop, commutative conditions, a named
+// index local, an explicit cursor pointer, a reference to the entry and a
+// direct return all measured 9 to 30 (the pointer and reference forms 30, 49
+// bytes). Permuter: 178 tries (seed 999) and 173 (seed 7), 300 s each, no form
+// below 9.
 // @retail 0x2b221d
 long *c_playlist_saved_game_file_list::find_playlist(byte type, long index)
 {
@@ -5454,6 +5462,13 @@ long qos_service_lookup();
 bool qos_is_complete(long handle);
 void function_1486b8(long error, bool keep);
 
+// score 10 (155/155 bytes): retail keeps an entry `result = false` store
+// (`mov byte ptr [ebp - 1], 0`) before `*completion = false`, and stores 0
+// again on the else path; ours eliminates the entry store and starts with
+// `*completion = false`. Tried: `bool result = false;` at the declaration, an
+// explicit `result = false;` after the completion store, and the initializer
+// after that store: all tie at 10 (the later branch stores make it dead);
+// dropping the else assignment gives 150 bytes and 56. The rest matches.
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {
@@ -5651,7 +5666,7 @@ void c_class_2b0b5e::v1()
 #include "unknown_07f720.h"
 
 // @retail 0x2b10a3
-void function_2b10a3(dword const *appearance, c_class_2b0b5e *widget, long type)
+void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type)
 {
     bool visible = false;
     if (appearance)
@@ -6159,7 +6174,7 @@ void c_multiplayer_settings_screen::v3()
 	c_class_2b0b5e *model = (c_class_2b0b5e *)find_child(7, 0, false);
 	// Keep the child pointer addressable across both preview updates.
 	c_class_2b0b5e **model_reference = &model;
-	function_2b10a3((dword const *)g_54e5d0.settings.colors, *model_reference, 0);
+	function_2b10a3(*model_reference, (dword const *)g_54e5d0.settings.colors, 0);
 	model = (c_class_2b0b5e *)find_child(7, 1, false);
-	function_2b10a3((dword const *)g_54e5d0.settings.colors, *model_reference, 1);
+	function_2b10a3(*model_reference, (dword const *)g_54e5d0.settings.colors, 1);
 }

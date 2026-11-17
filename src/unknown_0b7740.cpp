@@ -1,4 +1,5 @@
 #include "unknown_0b68c0.h"
+#include "object_tag_definitions.h"
 #include "unknown_11c920.h"
 #include "bit_vector.h"
 #include "globals.h"
@@ -10,6 +11,7 @@
 
 // @flags /O2 /Ob1 /arch:SSE /Gr
 #include "object_masks_storage.h"
+#include "slot_handler.h"
 #include "sample_mask_storage.h"
 #include "matrices_storage.h"
 #include "orientations_storage.h"
@@ -906,23 +908,200 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
-// score 309 (was 342): enabled from the draft, 810 bytes against 856, first difference +0x4. Retail reads the object through the header at each early test, keeps
-// the matrices result and the matrices passed on as two values, and holds the sample flag in a stack byte. Forms: the draft with one result and a volatile sample flag
-// 303 (not kept: no new volatile), with a plain flag 342; two results and the object read after the early tests 309, with the loop's increment before the flag test
-// and no for-increment (not kept: a hand-placed increment) 295.
+// score 240 (was 240): earlier 240 (was 291); 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// M3 lane 6 r180 (fast): retail's frame lacks our `orientations` home (it keeps orientations in ESI) and loads
+// input_matrices into EDX at entry for the late final_matrices store, with a separate EDI copy for `result`, so the +0xb3
+// byte must take BL; ours holds the parameter in ESI for both. On the current body: final_matrices declared at the top
+// after `result` 240, before it 240; `result` declared ahead of the header 240; the header pointer declared `const` 240;
+// `result` and final_matrices both ahead of the header 240; the two early exits returning input_matrices 240 (each the
+// same code or a same-score reshuffle: the entry keeps object_index in EDX and the parameter in ESI).
+// 829 bytes against 856, first difference +0x2. Earlier at 291 (was 309): 830 bytes against 856, first
+// difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
+// difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
+// header at each early test and again at the bit-29 test (it does not reuse its object register there), keeps the matrices result and the matrices passed on
+// as two values, holds the sample flag in a stack byte, and has four separate epilogues; our frame is 4 bytes larger. Forms: the sample loop as
+// `node < count && !sample` (no break) 291; the draft's break form 303; both early returns in one `||` test 303 (from 309); the node-mask test through
+// bit_vector_test 291 (same as the written-out test, 291). Tried: sample flag volatile 264 (not kept: no new volatile); the early tests through an `object`
+// local 295; `result` declared after the early returns 289 (not kept: retail stores it before the first early return); the bit-30 flag read into a local before
+// the mask copy 291.
+// Round 76 (m3 lane 14, fast): kept: the sample loop as `!sample && node < count` (retail tests the count at the loop top
+// and the flag after the increment) with `object` read through the existing object_get() (retail reads the object again
+// after the early tests and again for the bit-29 test) 240; either alone 290/291. Still differs: retail holds the input
+// matrices in EDX and object_index in ESI at entry (ours the reverse), so it pushes EBX for the +0xb3 byte and has four
+// epilogues; it reads bit 30 before the mask copy and the object again after it, and reloads the flags for the clear.
+// Tried: final_matrices declared at the top 240; the bit-29/+0x34b tests through object_get() 240 (same code), through
+// header->object 276; both early tests through object_get() 270 (863 bytes); bit 30 cleared through the existing
+// 0xbfe20 262 (frame 0x4c and orientations in ESI as retail, but 813 bytes), on that a single exit (nested ifs) 282
+// (closest by aligned count, 63), with result or final declared first 281/290; early returns of input_matrices 240;
+// single exit without 0xbfe20 270; the mask as an aggregate copy and the bit-30 flag in a local before the copy
+// (same code: the load still sinks below the copy).
+// Round 78 (m3 lane 14, fast; masked aligned in brackets, kept body 240 [47]): the existing 0xbfe20 clear with the
+// bit-29/+0x34b tests read through `header->object` 194 [38] at 814 bytes (definition spilled as in retail; a fresh
+// read beside the `object` local, a mix, not kept), the same through a named `current = header->object` local 194
+// (same code), through a fresh table lookup 262 (merged with `object`); on 194: result declared ahead of the header 293
+// (829 bytes), early returns of input_matrices 194, final_matrices at the top 194, result and final at the top either
+// order 293. On the kept body: result declared ahead of the header 240; `current` from a fresh table lookup 240,
+// from header->object without 0xbfe20 276 (= round 76's header->object form). The existing object_get() at every use
+// with no `object` local 298 (818 bytes), with 0xbfe20 298; header->object at every use 315 (807), with 0xbfe20 317.
+// On 0xbfe20 alone: result first 262, early returns of input_matrices 262, both 262. Entry roles still swapped in all.
+// Round 91 (m3 lane 1, fast): the two early tests as two `if`s 294 (823 bytes); final_matrices set from result 240 (same
+// code); the first test inverted into a block around the rest (single exit for it only) 249 (820); with the existing 0xbfe20
+// clear (re-measured 262, 813 bytes): the bit-29/+0x34b tests through slot_handler.h's object_header_get 262 (merged with
+// `object`, no reload), final_matrices set after the mask copy 312 (804). Diagnostics: the matrices parameter renamed 240,
+// `(void)&result;` 240 (both the same code). In the 0xbfe20 + `header->object` form (194) our build keeps the first
+// `header->object` read alive in EAX to the bit-29 test, where retail reloads it from the header (a second and a third
+// read); retail also reads bit 30 into EDX ahead of the mask copy. Body restored.
+// Round 168 (m3 lane 5, fast; masked = difflib count with registers and stack offsets masked, kept body 240 [46]):
+// re-measured round 78's lead (bit-29/+0x34b through header->object, bit 30 cleared through 0xbfe20) 194 [39] at 814
+// bytes; on it, the early returns as separate ifs 298 (820 B: ours lays each return inline, retail jumps forward to
+// its four tail epilogues); a single exit (nested ifs, one `return result;`) 295 (825 B) [26], result then in EDI as
+// retail, three epilogues; that with the header as pointer addition 295 (same code); with final_matrices declared at
+// the top 287 [25] (g_4e0300 loaded first and object_index in ESI as retail; left: the scratch roles, ours data/object
+// EDX, header ECX, input EAX against retail's ECX/EAX/EDX, so the +0xb3 byte takes AL where retail pushes EBX for BL;
+// node_count loaded late; ours keeps the early tests' object in EDX across the mask copy where retail reloads it
+// through the saved header; the bit-30 clear's flags load; one epilogue short); with result/final declared before the
+// header 293 [29] (repeats round 78's 293). On the kept body: a single exit with final_matrices at the top 282 (839 B)
+// [41]; the render-node count read in the loop test at each pass, no local, 240 [45]. All but the last are
+// match-only (the mix, declaration moves); the 287 form (single exit + final at the top on the 194 lead) is the lead.
+// M3 lane 16 r108 (fast; m = register-masked aligned count, this body m 104): the two early tests are the bodies of
+// the existing 0xbf5d0 (orientations offset != NONE, its file /Ob1, so it is never inlined) and 0xbfc90 (index !=
+// NONE and awake count > 0, inlined at link time); retail calls neither here. The awake test through function_bfc90
+// 291; both early tests as separate `if ... return result;` 294 (823 B, m 111); a named pointer for the +0xc4 node
+// mask 277 (845 B, m 101; retail recomputes model + 0xc4 each pass); the node index read at each use, the scan as a
+// while loop, the header through object_header_get with `header->type` 240 each (same code); renamed result/header 240
+// (same code). Round 168's 287 lead rebuilt reproduces 287 (825 B, m 52: ours keeps the first test's header->object
+// load in EDX through to the bit-29 test, where retail reloads it through the saved header because its EDX holds
+// input_matrices until the final_matrices store); on it final_matrices declared before result 287 (m 53), the header
+// computed after result and final 293 (823 B, m 56). The matched 0xe3c90 has the same fresh object read for its
+// bit-29 test beside a header-derived object local.
+// m3 lane 7 r150 (fast with 0xbfe60, 0xbfe20, 0xbdb60, all MATCH; masked = aligned count with registers and stack offsets masked):
+// retail loads the input matrices into EDX at entry and keeps that copy live until final_matrices is set, with the result as a
+// separate EDI copy stored to its home at once, so object_index takes ESI and the +0xb3 byte takes BL (EBX pushed before that
+// test); every early exit then jumps to one of four end epilogues. Re-measured: round 78's lead (bit 30 cleared through 0xbfe20,
+// bit-29/+0x34b tests through header->object) 194 (814 bytes, masked 56). On it: final_matrices declared after result at the top,
+// before it, or result initialised from it (plain or chained) 194 (one code, masked 59); the early tests as two ifs 298 (820 bytes,
+// masked 66), with final at the top either order 299 (masked 70); only the model test nested (`if (model_index != NONE) { ... }
+// return result;`) 304 (813 bytes, masked 52). On the kept body: the model test nested that way 292 (masked 70); the header
+// through the existing object_header_get with `header->type` 240 (same code; also 194 on the lead); on the lead the render-node count
+// read in the sample loop's test 194 (masked 55).
+// (The two-if early tests on the lead repeat round 168's 298.) On the kept body: the sample arm's three assignments final-first 241; the
+// second block's two predicates swapped 240 (other code); the final call's two tests swapped 236 (operand order by score, not kept);
+// matrices/orientations declared after final_matrices 239 (a declaration move, not kept); result = matrices ahead of the node loop
+// 271; the two copies into the scratch buffers swapped 243; the second block's assignments orientations-first 242; the sample flag
+// declared after final_matrices 240; node_count read ahead of the animation state 240; the second block's two pointers as one
+// chained assignment 240 (each other code).
+// m3 lane 8 r158 (fast with 0xbfe20, 0x137800, 0xbdb60, 0xbfe60, all MATCH): the definition typed s_object_definition (its
+// model_tag_index and object_type) 240 (same code, kept); the early tests through object_get() with `object = header->object`
+// 270 (847 B); the +0xa4 mask as a named `model_mask` for its three uses 240; the node count as `(dword)*(short *)` as
+// 0xbd090 writes it 240 (same code each). Diagnostics: the mask copy through an inline memcpy wrapper (a one-caller helper)
+// 240, and 295/287 on the two leads below (same code each); on round 168's single-exit lead the bit-29/+0x34b object through
+// `((s_object_header_view *)header)->object` 295 (same code as the lead). Re-measured on round 168's single-exit lead
+// (rebuilt 295; 0xbfe20 clear, bit-29/+0x34b through header->object): the listed fresh-table-lookup form for the bit-29/+0x34b
+// object (a fresh s_object_header lookup, unknown_0a58d0.h) 280 (828 B, masked 22: that load merges with `object` in EBP,
+// and the flags word is then read again for bit 29 and for the clear, as retail), on the 287 lead 288, with the plain `&=`
+// clear 270 (841 B). Object-pointer loads merge by address expression (the header variable, or a fresh table lookup),
+// whatever the type read; retail reads [header+8] three separate times (the first test, `object`, the bit-29 test), and no
+// spelling here gives the third.
+// M3 lane 7 r156 (fast with the file, 0x137800, 0xbfe60, 0xbfe20; all matched stay matched): the work after the two early
+// tests in a one-caller inline helper given the parameters (diagnostic for retail's EDX input / EDI result pair) 1055 with
+// `inline` (not inlined; 0x137800 270 in the fast image), 286 with `__forceinline` (830 B, entry unchanged); the orientations
+// offset computed ahead of the animation state 240 (other code, not a gain); the mask copy ahead of final_matrices 282 (822 B);
+// the model index read from the definition at each use 240 (same code); in the sample arm `orientations` set before the
+// 0xbdb60 call and passed to it 280; in the second block the three pointers set first and used in the copies and calls 259.
+// Re-measured: the bit-30 clear through 0xbfe20 262 (813 B), with the orientations offset ahead of the state 262 (same code).
+// Body unchanged.
+// m3 lane 14 r88 (fast with 0xbfe20, 0xbfe60, 0xbdb60, 0xbfc90, all MATCH): re-measured the 0xbfe20 clear 262 (813 B; frame 0x4c,
+// orientations in ESI; left: the entry, where retail loads input_matrices into EDX before object_index and copies it to EDI,
+// the definition kept in EAX across the mask copy where retail stores it and reloads it, and the third object read). On that:
+// final_matrices declared at the top 262 (same code); `object` read as header->object 325 (798 B); both early tests through
+// object_get() 282 (834 B); the awake test through the existing 0xbfc90 259 (813 B); the early tests as two ifs 317 (804 B); the 0xbfc90 awake
+// test with `object` read as header->object 307 (814 B). Body unchanged.
+// M3 lane 5 r179 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90; all stay matched). Re-measured: the bit-30 clear
+// through the existing 0xbfe20 (the call 0xbd090 in this file uses for the same bit) 262 (813 bytes, frame 0x4c,
+// orientations in ESI), round 168's 287 lead 287. On the 0xbfe20 form: one `dword *` to the object flags for both tests
+// and the clear 240 (the same code as this body: the flags value is held in ESI across the sample loop again, so
+// orientations returns to a frame slot); 0xbd090's pairing (`object = header->object`, bit 29/+0x34b through a
+// fresh-lookup local) 305 (814 bytes); the early tests through the fresh table lookup, `object` from object_get() and bit
+// 29/+0x34b through header->object 287 (831 bytes: the bit-29 test reloads the header from the frame and reads +8 as
+// retail, the +0xb3 byte takes BL as retail); that with the early exits returning input_matrices 288; with the model test
+// nested and one `return result;` 181; with `return result;` both inside the nested block and after it 169 (843 bytes,
+// plain 169; the main and model-NONE epilogues split as retail) - the lead, match-only (mixed object spellings and a
+// repeated return). On 169: final_matrices declared at the top 169 (other code), result before the header 199, early
+// exits returning input_matrices 198; with the early-test object as one fresh-lookup local 288 (827 bytes, the closest
+// register-masked shape), and `object = header->object` there 297 (the object and bit-29 loads merge); the early-test
+// local with the single exit 301 (815 bytes), with the model early return 281; on 169 `result`, `final_matrices` or both
+// typed `transform4x3f *` (from a cast) 169 (same code); `object` through the early-test local's table-lookup spelling
+// 288 (the same code as object_get()). Left on the lead: retail holds
+// input_matrices in EDX (stored late as final_matrices) with a separate EDI copy for the early exits and object_index in
+// ESI, pushes EBX only before the +0xb3 test (two separate early-test epilogues), and builds the header with
+// `lea [ecx + eax*4]`. Body unchanged.
+// M3 lane 16 r116 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout): bit 29/+0x34b through a fresh
+// table-lookup local declared ahead of the sample test (0xbd090's `current`) 240 (same code: merges with `object`); that
+// with the bit-30 clear through 0xbfe20 262 (813 B), with the mask as an aggregate copy 262 (same code), with the lookup
+// written inside the two tests (no local) 262; re-measured round 78's header->object lead 194 and round 179's 169 lead 169.
+// On the nested model test with `return result;` inside and after it (0xbfe20 clear): early tests through header->object,
+// bit 29/+0x34b through the fresh lookup written in the tests 297 (823 B), through header->object 297. Reading: retail's
+// three [header + 8] loads look like rematerialized reloads of one value (its first-test value sits in ECX, scratch, while
+// `object` needs EBP), and the EDX/EDI pair at entry is the parameter load kept for the late final_matrices store beside a
+// separate result copy; ours always coalesces the result with that load. A parameter reassigned in place of final_matrices
+// is ruled out: retail's sample arm stores final_matrices to its own slot. Body unchanged.
+// m3 lane 14 r93 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240): in the sample loop
+// `if (index != 0xff) sample = function_0bfe60(...)` 253 (830 B); the parent index read without the render-node pointer 266
+// (806 B); the node byte read into a long 291; the two flag tests as `& (1 << 30)` / `& (1 << 29)` masks 292; the object-type
+// test as `definition->object_type != 0` 308 (813 B). Re-measured: the render-node count read in the loop test with no local 240
+// (the listed [45] form). Same code (not counted): the bit-30 clear as `&= ~(1 << 30)`, the model test read from the definition
+// ahead of the model-index local.
+// On round 179's 169 lead (re-measured 169, masked 37): what is left is the entry (retail loads input_matrices into EDX first
+// and copies it to EDI for the early exits, pushes EBX only before the +0xb3 test, forms the header with `lea [ecx + eax*4]`
+// and reuses the first test's object for +0xb3, where the lead re-derives the table lookup per test) and the fourth epilogue.
+// m3 lane 11 r102 (fast with 0xbfe60/0xbfe20/0xbdb60/0x137800, all matched throughout): the extra frame slot is `orientations`:
+// retail holds it in ESI from the `xor esi, esi` after the mask copy through the overlay test's two calls to the final loop,
+// where ours gives it a frame home because ESI holds the object's flags dword from the bit-30 test across the sample loop to
+// the clear (retail loads the flags into EDX ahead of the mask copy and loads them again for the clear, so nothing in its
+// loop keeps them). Forms: orientations declared before matrices 240 (other code: only the zero stores swap); `sample`
+// declared ahead of the mask copy 240 (other code); node_count computed after the mask copy 240 (other code); sample and
+// both zero pointers ahead of the mask copy 239 (a declaration move, one point); final_matrices set after the mask copy 282
+// (822 B). Same code: `sample` written through its own address.
+// M3 lane 8 r169 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout): retail reads [header + 8] three times
+// (first test, `object`, bit-29 test) with no CSE between them. The bit-30 test in a bool declared ahead of the mask copy with
+// bit 29/+0x34b through header->object 276 (845 B; the load still sinks below the copy and the bit-29 test reuses it); that with
+// the 0xbfe20 clear 194 (814 B, round 78's lead again: the bool changes nothing); the early tests through the existing 0xbf5d0
+// (made `inline` at its /Ob1 definition so LTCG expands it) and 0xbfc90 274 (847 B; the second expansion re-reads the data
+// pointer and the object, where retail's +0xb3 test reuses the first test's object; 0xe01d0 548 -> 612; 0xbf5d0 restored); the
+// 194 lead with the awake test through 0xbfc90 290 (829 B); the 0xbfe20 clear passing `!sample` 289. Body unchanged.
+// M3 lane 1 r107 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): on the listed 0xbfe20 clear
+// (262, 813 B): final_matrices initialised from `result` 262; the render-node count declared with the model locals 321 (802 B);
+// the sample scan as a `while` 262; the mask declared at the top 262; `matrices`/`orientations` declared at the top 229 (829 B;
+// on this body alone 233; a declaration move whose gain is positional: the two zero stores move to the entry, where retail makes
+// them after the mask copy). Lane 5 r179's 169 lead rebuilt: its entry still differs from the second instruction on.
+// M3 lane 13 r98 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): on round 78's 194 lead,
+// `object = header->object` with the bit-29/+0x34b tests through object_get() 305; `sample` set through a pointer to itself
+// 194 (diagnostic, the pointer folds). On the 0xbfe20 clear alone (262): early returns of input_matrices with `result`
+// declared after the model test 264 (814 B); the bit-30 test through object_get() 262 (same code); `sample` declared first
+// 262 (same code); the first and third together 266. Retail keeps input_matrices in EDX to the final_matrices store with
+// result as a separate EDI copy, so the +0xb3 byte takes BL; every form here coalesces result with the parameter.
+// M3 lane 10 r113 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): object_index typed
+// `dword` (definition and 0x137800's declaration) 240 (same code), on round 78's 194 lead 194 (same code); the early exits
+// returning input_matrices with final_matrices initialised from `result` 240; `sample` declared as the first local 239 (a
+// declaration move, one point); the node byte read twice (no `index` local) 240 (same code); the sample arm setting
+// `matrices` from final_matrices (no second final store) 281. Re-measured: the 0xbfe20 clear 262 (813 B), with bit 29/+0x34b
+// through header->object 194 (814 B). Body unchanged.
+// M3 lane 12 r135 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): re-measured the bit-30
+// clear through the existing 0xbfe20 262 (813 B: frame 0x4c, orientations in ESI and the flags reloaded for the clear, as
+// retail). On it: the bit-29/+0x34b tests through a fresh by-index object_get() (matched 0xe3c90 reads its bit-29 test
+// through a fresh lookup beside its object local) 262 (same code: merges with `object`); the mask copy ahead of final_matrices 312 (804 B); final_matrices
+// declared ahead of object_orientations 262; node_count computed after the mask copy 262 (same code each).
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
 {
 	s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[object_index & 0xffff];
 	transform4x3f const *result = input_matrices;
-	if (*(short *)((byte *)header->object + 0x112) == NONE)
+	if (*(short *)((byte *)header->object + 0x112) == NONE || (object_index != NONE && ((byte *)header->object)[0xb3] > 0))
 		return result;
-	if (object_index != NONE && ((byte *)header->object)[0xb3] > 0)
-		return result;
-	byte *object = (byte *)header->object;
-	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-	long model_index = *(long *)(definition + 0x38);
+	byte *object = (byte *)object_get(object_index);
+	s_object_definition *definition = (s_object_definition *)g_4e3b44[*(long *)object & 0xffff].bytes;
+	long model_index = definition->model_tag_index;
 	if (model_index == NONE)
 		return result;
 	s_animation_state *state = (s_animation_state *)(object + *(short *)(object + 0x12a));
@@ -937,17 +1116,15 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	transform4x3f *matrices = 0;
 	rigid_transform_scaled *orientations = 0;
 	if ((bool)((*(dword *)(object + 4) >> 30) & 1) &&
-		!((bool)((*(dword *)((byte *)header->object + 4) >> 29) & 1)) &&
-		(!((1 << definition[0]) & 1) || !((byte *)header->object)[0x34b]))
+		!((bool)((*(dword *)(object + 4) >> 29) & 1)) &&
+		(!((1 << definition->object_type) & 1) || !object[0x34b]))
 	{
 		long render_node_count = *(long *)(render_model + 0x1c);
-		for (long node = 0; node < render_node_count; ++node)
+		for (long node = 0; !sample && node < render_node_count; ++node)
 		{
 			byte index = nodes[node];
 			if (index != 0xff && function_0bfe60((dword const *)(model + 0xc4), index))
 				sample = true;
-			if (sample)
-				break;
 		}
 		if (sample)
 		{
@@ -976,7 +1153,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	{
 		for (long node = 1; node < node_count; ++node)
 		{
-			if (mask[node >> 5] & (1 << (node & 31)))
+			if (bit_vector_test(mask, node))
 			{
 				byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
 				function_1421f0(&matrices[node], &orientations[node]);
@@ -1104,9 +1281,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
-// score 97 (was 97): retail is 11 bytes longer. Left: retail tests the node count for > 0 before
+// score 20 (was 87; b10C): earlier 97; retail is 2 bytes longer. Left: retail tests the node count for > 0 before
+// score 87 (was 87; 97 before): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
-// in ecx and re-reads its data pointer (parent index in esi) where ours reuses edi. Round 19: the
+// in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
+// 81: the parent looked up through the existing object_get/object_node_matrix accessors, once for the
+// matrix and once for the mirrored flag, as the render branch does after 0xb8bd0; before that ours
+// reused edi, at 97 and 11 bytes short). Round 19: the
 // sample-mask helpers 0xbfe80/0xbfed0 written as members of s_bit_vector (as is_empty is) give
 // retail's ESI re-set after 0xbfed0, 234 -> 97 (kept).
 // Before round 19 (at 234): retail sets the sample-mask
@@ -1277,6 +1458,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
 // object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
 // 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
+// Round 87 (m3 lane 16, fast, on the count > 0 guard diagnostic, 44 at 1390): `__assume` in the no-model arm (index != NONE at the
+// top or the end, parent object != NULL, pool != NULL before or in the arm, data != NULL) 389 each (1399 bytes: any `__assume` unfolds
+// the entry's flag store, the no-model block stays the same); three parent lookups 20 (1399), two 20 (1399); a forceinline lookup taking
+// the index as `long const &`, one/two lookups 44/44, a plain inline one, two lookups 44. Original body restored.
 // Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
 // parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
 // (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
@@ -1303,6 +1488,72 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // M3 lane 9 r88 (fast, on the count > 0 guard diagnostic, 44 at 1390, aligned+stack 5, unless noted): `stored` cleared through an inline out-parameter helper 97 without the guard and 44 with it (promoted after inlining: no kill of the
 // data field); a repeated `if (parent_index != NONE)` with a lookup in each 44; ternaries 50 (1402); two/three lookups in one test 20 (1399: the index takes ECX, so the pool reloads into EDX); the no-model arm first in source
 // 315 (1372), with the guard 314, with the guard and two lookups 297. Retail's copy of the index means it stays live past the lookup; every spelling here lets it die in place.
+// M3 lane 14 r68 (fast, on the count > 0 guard diagnostic, 44 at 1390): parent node index named before the lookup 44;
+// parent/mirrored defaults in an else arm 45 (1391); the masked parent index named 44; declarations index, mirrored,
+// parent 46; without the guard, the no-model parent through slot_handler.h's object_get/object_node_matrix 97 (same
+// code). The guard byte pattern (`test; jle; mov reg, 1; cmp; jle`) occurs nowhere else in retail.
+// Round 57 (m3 lane 2, fast, on the 97 base): masked nodes skipped by `continue` 97 (same code); the no-model parent index
+// declared before the defaults 97, with the mirrored flag read first 97 (same code); the no-model 0xbdc40 call written in both
+// arms of the parent test 405 (1406 bytes); the render node count bound to a `long const &` for the default test and the
+// loop bound 97 (same code).
+// Round 81 (m3 lane 10, fast with this file and 0xbfe20/0xbfe80/0xbfed0/0xbff10/0xb8bd0/0xbdc40/0xbdb60, on 97
+// unless noted): the no-model parent matrix by array indexing 97 (same code); a named masked parent index 97
+// (same code); the render node count through a `long const *` to its field for the default test and the
+// loop 97 (same code); the no-model parent through 0xb8bd0 with a fresh flag lookup 100 (1378 bytes, stays a
+// call); the parent object local for the matrix with a fresh lookup for the flag 87 (1392 bytes; a mix, not
+// kept); the lookup written out at each of its three uses 87 (1392 bytes); object_node_matrix(object_get())
+// and object_get() for the flag 87 (1392 bytes, kept, plain-confirmed). On 87: the render branch's flag
+// through object_get 87 (same code, kept: drops a one-use local); the current object through object_get 87;
+// the no-model flag before the matrix 88; the parent index read at each use 87; the index declared before
+// the defaults 87.
+// Round 83 (m3 lane 10, fast, on 87): one function-scope parent index assigned in each branch 87 (same code); the no-model
+// matrix and mirrored flag under two separate index tests 97 (1383 bytes: data from EDI again); the no-model flag through
+// object_header_get 87 (same code); one parent header pointer read at both uses 95 (1385); the no-model defaults set in an
+// else arm 93 (1387). Lead from the last: with the defaults out of EAX/EDX at the index load, ours keeps g_4e0300 in ECX and
+// re-reads only its data field (`mov eax, [ecx + 0x44]`), as retail; retail's defaults sit before the test, so its index
+// takes ESI (copied to EAX for the mask) where ours takes ECX and reloads the pool. What gives the index ESI there is open.
+// Round 101 (m3 lane 9, fast, on the count > 0 guard diagnostic, re-measured 20 at 1399 with the current two-lookup
+// body): retail does ONE parent lookup there (the parent object in ECX serves the node matrix and the flag), with
+// the index in ESI copied to EAX and the pool still in ECX. One parent-object local from object_get(index) 44 at
+// 1390 (data reused from EDI); the same with the index field re-read in the lookup 44, with the field read at the
+// test and the lookup and no index local 44 (same code each); the two-lookup body with the field re-read in the
+// first lookup only 54 at 1406, in the second only 380 at 1402, in both with no index local 20 (same code as the
+// local). A re-read of the field does not give the `mov eax, esi` copy here.
+// M3 lane 1 r88 (fast with 0xbfe20/0xbfe80/0xbfed0/0xbff10/0xb8bd0/0xbdc40/0xbdb60, all matched): the count > 0 guard
+// diagnostic re-measured 20 at 1399 bytes (aligned 8, register-masked 4: only the no-model lookup differs). On the guard:
+// the parent index and node read through the object's typed view (`->parent_index`, `->parent_node`) 20 (same code); the
+// index `long const` 20 and `dword` 20 (same code); one parent-object local for the matrix with object_get again for the
+// flag 44 (1390 B, data reused from EDI; round 101's number, a re-measure); the model pointer by a ternary and the render
+// test as `model && model->render != NONE` 312 (1408 B). The no-model branch in every order of its two defaults and the
+// index read, matrix and flag in either order, with object_get at each use or one parent-object local (23 forms): matrix
+// first 20/22 (the parent default before the mirrored one 20, after it 22; the index read anywhere), flag first 25/27,
+// the local 43/44/45/46 (1390 B); the index never takes ESI. Retail's no-model block is 0xb8bd0's own instruction
+// sequence with its
+// `mov ecx, [g_4e0300]` gone (ECX still holds the pool from the current lookup) and the index copied into EAX, the
+// out-of-line function's parameter register: it reads as 0xb8bd0 inlined at this one site, which this file's /Ob1 and
+// the callee file's /Ob1 rule out here (round 90 and r122: `inline` on 0xb8bd0 inlines it at both sites).
+// Round 180 (m3 lane 4, fast; aligned = difflib count with addresses masked, 10 at 87): the render node count named
+// after the root block for the loop bound 146 (1391 bytes, frame slots shift); the bound written first in the loop
+// test 87 (aligned 12); one parent-object local from object_get for the no-model matrix and flag 97 (1383 bytes:
+// data reused from EDI); diagnostics re-measured on the current body: the count > 0 guard 20 (1399 bytes, aligned 8),
+// with the one-object local 44 (1390). The guard stays match-only. The no-model parent index and node read through
+// the existing object view's parent fields 87, in the render branch too 87 (same code).
+// Round 87 (m3 lane 11, fast): the no-model case first under `if (render_index == NONE) { ...; return; }` with the
+// render code un-nested after it 306 (1378 bytes). No existing node-matrix accessor other than 0xb8bd0 exists in a file
+// without /Ob1 that LTCG could inline here (headers: only slot_handler.h's object_node_matrix, already used; the
+// data_array.h datum helpers add checks retail lacks), so the no-model block is BLOCKED-BY 0xb8bd0 (inlined at this one
+// site in retail; both files /Ob1); the count > 0 guard stays match-only.
+// b10C (11-17) walk against retail, fast build on r841: statements, offsets, jcc senses, callee arguments (0x1d3920,
+// 0xbdb60, 0xbdc40, 0x142a60) and constants all compile to retail's bytes: no behaviour difference found. Kept,
+// retail's structure: the node loop sits inside `if (count > 0)`, as retail tests the count at 0xbd50f (`test eax, eax;
+// jle 0xbd5f5`) before the loop's own `mov esi, 1; cmp eax, esi`: 87 -> 20 (1399 bytes); 0xbc820, 0xbd020, 0xbee60,
+// 0xb8bd0 and 0xbfa40 stay MATCH. Left: the no-model lookup at 0xbd593-0xbd5c8, which is 0xb8bd0's own sequence
+// (0xb8bd0-0xb8bf8) without its `mov ecx, [0x4e0300]` (ecx still holds the pool from 0xbd1b2), with the index copied to
+// eax (`mov eax, esi`), `[ecx + 0x44]` re-read and the flag read from the same parent object; ours takes the index in
+// ecx and reloads the pool into edx. Re-measured on the guard, same code unless noted: the stored flag as a one-element
+// array 20, a `headers` local for the current and render-branch lookups 21, the no-model data field read through a
+// `byte *volatile const *` (as 0xb7740 does) 20, that with a pool local shared with the current lookup 292 (pool moves
+// to edi). Retail's `mov eax, esi` needs the index live past the lookup; no form here gives that.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
@@ -1350,8 +1601,7 @@ void __stdcall function_bd090(long object_index)
         if (parent_index != NONE)
         {
             parent = function_b8bd0(parent_index, *(signed char *)(object + 0x18));
-            byte *local_be682a_3 = (byte *)((s_object_transform_header *)g_4e0300->data)[parent_index & 0xffff].object;
-            parent_mirrored = (bool)((*(dword *)(local_be682a_3 + 4) >> 10) & 1);
+            parent_mirrored = (bool)((*(dword *)((byte *)object_get(parent_index) + 4) >> 10) & 1);
         }
         if (!((bool)((*(dword *)(current + 4) >> 29) & 1))
             && (!((1 << definition[0]) & 1) || !current[0x34b]))
@@ -1409,13 +1659,16 @@ void __stdcall function_bd090(long object_index)
             }
             object_dispatch_adjust_root_matrix(object_index, (long)matrices);
         }
-        for (long node = 1; node < *(long *)(render_model + 0x48); node++)
+        if (*(long *)(render_model + 0x48) > 0)
         {
-            byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
-            if (!bit_vector_test(mask, node))
+            for (long node = 1; node < *(long *)(render_model + 0x48); node++)
             {
-                function_1421f0(&matrices[node], &orientations[node]);
-                function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);
+                byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
+                if (!bit_vector_test(mask, node))
+                {
+                    function_1421f0(&matrices[node], &orientations[node]);
+                    function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);
+                }
             }
         }
     }
@@ -1426,9 +1679,8 @@ void __stdcall function_bd090(long object_index)
         long parent_index = *(long *)(object + 0x14);
         if (parent_index != NONE)
         {
-            byte *local_be682a_3 = (byte *)((s_object_transform_header *)g_4e0300->data)[parent_index & 0xffff].object;
-            parent = (transform4x3f *)(local_be682a_3 + *(short *)(local_be682a_3 + 0x116)) + *(signed char *)(object + 0x18);
-            parent_mirrored = (bool)((*(dword *)(local_be682a_3 + 4) >> 10) & 1);
+            parent = object_node_matrix(object_get(parent_index), *(signed char *)(object + 0x18));
+            parent_mirrored = (bool)((*(dword *)((byte *)object_get(parent_index) + 4) >> 10) & 1);
         }
         function_bdc40((point3f *)(object + 0x64), (vector3f *)(object + 0x70), (vector3f *)(object + 0x7c),
             *(real *)(object + 0xa0), (bool)((*(dword *)(object + 4) >> 10) & 1), parent, parent_mirrored, matrices);

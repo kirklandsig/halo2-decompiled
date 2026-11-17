@@ -12,9 +12,53 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax D (11-16): score 373 (was 373), nothing kept: retail's frame is 0x48 and it takes the third settings
+// pointer in esi from the entry, this build has a 0x4c frame and takes the random-state pointer in esi instead,
+// so the third input is reloaded from its stack slot and the state pointer is kept in a register across the
+// draws; retail also forwards the seed from the sign test through the three range draws in eax and stores it
+// once, this build stores and reloads it per draw, and retail's sign test is `test eax, 0x80000000` where this
+// build tests eax whole. The state pointer read through the global instead of through a named local scores 423
+// and was restored; a permutation search over this body (300 s, annealed, one job) found nothing below the
+// baseline.
+// MiniMax R (11-14, run 65): no new form, no lower score (373): the first difference is at +0x2, the frame, which
+// is 0x4c here against retail's 0x48, and the entry differs with it - this build pushes edi and keeps the random
+// state in esi from the first draw where retail pushes esi and holds the third settings pointer there - so every
+// later home follows from those two. The forms that reproduce retail's frame and its early bound reads need
+// one-use bound locals and the resolver written out in two copies, which review rejects, and the permutation
+// search over this body found nothing lower; the body stands.
+// MiniMax B (11-14): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, retail keeps the
+// third settings pointer in ESI from the entry where this build caches the random state in that slot, and the two flag
+// bytes are still stored before the random state is loaded; the forms that write the third input out at each use and
+// the ones that move the random state into a named local all compile to the same bytes.
+// MiniMax C (11-14): no new form, no lower score (373): retail keeps the pool pointer in the base register
+// and forms the actor with lea edi,[edx+esi] (actor EDI, object ESI), while ours loads the pool early
+// into EDX and ends with the actor in ESI and the object in EDI, so the frame is 0x4c against retail's
+// 0x48; a permutation search over this body (33 tries, 604 s, with the reduced image allowed to disagree
+// with the full one) found no variant below the baseline.
+// MiniMax A (11-13): no new form, no lower score (373): the timer result written straight into the
+// message field and the timer value folded into the conversion both compile to the same bytes; the frame
+// is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where
+// ours caches the random state there, and the two flag bytes are still stored before the random state is
+// loaded.
+// MiniMax G (11-12): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes are still stored before the random state is loaded.
+// MiniMax D (11-14): no new form, no lower score (373): retail keeps the third settings pointer in ESI from
+// the entry and the random-state pointer in ECX, ours keeps the random state in ESI and reloads the third
+// input from the stack; a local for the settings pointer scores 378 and was reverted, and the permuter's 21
+// tries over the reduced image (with --allow-mismatch, since the reduced score 464 differs from the full 373)
+// found nothing below the baseline.
+// MiniMax I (11-17): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this build
+// still keeps the random state pointer in ESI and reloads the third input from its stack slot where retail holds
+// that input in ESI from the entry, and the seed is still stored and reloaded per draw where retail forwards it in
+// EAX and stores it once.
+// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// MiniMax E (11-11): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps
+// the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes
+// are still stored before the random state is loaded where retail loads the state pointer first.
+// MiniMax R (11-10): no new form, no lower score (373); the two flag bytes are still stored before the random
+// state is loaded, where retail loads the state pointer first and then stores the bytes.
+// MiniMax R (11-10): no new form, no lower score.
 // MiniMax A (11-04): no new form, no lower score; the third input copied into a named local scores 415 and the +0x1c value
 // named 437 (both restored), and retail re-reads the third input from its stack slot after the 0x2104b0 call.
-// score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
 // Lane 18 r37 (fast): the +0x84 scale named for its test and product 430; unary negation for the side
 // flip 373 (same code); the +0x7c0 initial value as a ternary 430 (1844 B); the target-state pointer
 // declared before the prop test 373; the two limits read before +0xc 373. Ours caches the random-state
@@ -177,6 +221,33 @@ static __forceinline long real_to_long(real value);
 // [eax+8]) 376 at 1854 bytes; the sign test as `random_next(...) & 0x8000` 417, as `(short)random_next(...) < 0` 429.
 // 0x210850 sits in the /Ob1 src/unknown_20fe20.cpp, but 38 of its 52 retail callers are matched /O2 code that calls it
 // out of line, so its flags alone do not explain retail inlining it only here.
+// Walk b3D (11-06, base r721, fast 373 unchanged): every statement and block compared with retail 0x1fe620-0x1fed62
+// (disasm + align.py), no behaviour or precision difference found. Checked: actor index/0x888 stride, the 0x70e/0x70d/0x70c
+// flag flow and the 0x1fdce0 word argument (xor ecx/mov cx, same as ours); the timer draw (upper loaded first, product
+// rounded by fstp dword, fistp to a word); +0x7bc/+0x7c0 stores and both > 0 tests; local_0 = (+0x24 < 1 || +0x27 == 0)
+// (retail's mov [esp+0xf],0 before jne is the same value, nothing overridden); output_index == NONE (cmp ax,0xffff) and the
+// failed-0x2104b0 point copy; 0x1fe410 arguments (esi = point, stack = +0x1c); displacement subtract order, the {0,0,1} cross
+// terms (j - k*0, k*0 - i, i*0 - j*0), the k,j,i / i,k,j square-sum orders and the float rounding of both roots; the whole-seed
+// sign test and 0 - x negations (fchs only for the second output's k); the three draws, with draw 2 added to draw 1 unrounded
+// and stored once; both atan2/tan caps (the second limit doubled on the x87 stack); the timer adjustment (fst keeps the
+// tan product unrounded for the compare, as ours does); sin/cos stores, the shared sin*0 terms, 1/count scaling, the 16-byte
+// state copy and the final sums (stored vector + point; retail adds in the opposite operand order, same value).
+// Remaining differences are only register/frame allocation (0x4c vs 0x48, arg_2 reloaded from the stack instead of kept
+// in ESI, random-state pointer in ESI instead of ECX) and the per-draw seed reloads listed above.
+// Round 112 (m3 lane 9, fast, register-masked aligned counts after the slash): round 63's composite rebuilt
+// (re-measure) 266/76 at 1873 bytes; on it, the +0x3c limit read at each use 342/39 at retail's 1861; plus +0x38
+// named before the draws for its two uses 342/36; plus the `(local_11 & 0x80000000) > 0` sign test 341/31; plus
+// local_12 (+0xc) declared after the limits (retail loads +0x1c first) 342/32; plus the final sums read back through
+// a pointer to the stored offset vector 350/29 at 1852; all four 347/23 at 1855. Left on that: the failed-0x2104b0
+// copy (retail loads all three words before storing, a copy through 0x210850's `out` pointer: 0x210850 inlined, which
+// its /Ob1 file blocks; a pointer to the whole local would be reverted even with a match), a second copy's order,
+// the output rows' order and XMM numbering, and two x87 product orders. Nothing kept (match-only composite).
+// Round 244 (m3 lane 3, fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0): the timer draw's product with the
+// tick count first 373 (same code); the pi/4 cap as a conditional assignment 373 (same code); the +0x38 rate product
+// as `+0x38 * (rate * ticks)` 378; the prop state compared with `(short)1` 373 (same code); the 0x70e flag set from
+// the 0x1fdce0 result inside `if (flag)` 456 (1856 bytes). Retail forwards the seed from the sign test through all
+// three range draws in EAX and stores it once (so the bound loads are scheduled ahead of the draws, holding +0x14/+0x18
+// on the x87 stack); ours stores and reloads it per draw. All restored.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

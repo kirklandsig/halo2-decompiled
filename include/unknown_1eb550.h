@@ -18,4 +18,10 @@ struct s_unknown_1eb550
 
 extern s_unknown_1eb550 *g_51e9c4;
 
+/* the world's gravity (the first value of entry 25's globals) */
+inline real physics_gravity_get(void)
+{
+	return g_51e9c4->unknown0;
+}
+
 #endif

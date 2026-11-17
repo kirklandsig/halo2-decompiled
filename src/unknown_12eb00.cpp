@@ -134,6 +134,70 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // accumulator or all three addresses as `&((byte *)base)[offset]` 11/11; the blend products weight-first, entry term
 // first 11; the output record initialised `output + result` 11. Diagnostic: the previous-index store at the end of the
 // block beside the increment 109 (1178 bytes; the result moves to 0x2c).
+// Round 152 (m3 lane 6, fast): the previous-index store at the block top / after the memset / after the inverse 99/99/99
+// (homes unchanged); with the copy also at the block top 112 (1194 bytes); `continue` when the sum is not positive 11, with
+// `continue` for a missing or empty entry as well 11 (same code); the clusters parameter first (definition and the 0x12efb0
+// call) 11. Diagnostics: no final read of the result moves it to 0x2c and the cluster cursor to retail's 0x18 (306); no
+// previous-index store 110. A 600 s permuter run reached 10 only through a volatile weight read and casts (not applied).
+// Round 155 (m3 lane 6, fast): the palette index in a named `signed char` local for the test and the lookup 219; the output
+// record copied by memcpy (real build) 11; the blend's `1.0f - product` named before the copy 99 (1208 bytes); the palette
+// entry lookup as an if/else assignment 29; the lookup helper with two returns and no result local 73.
+// Round 80 (m3 lane 10, fast; ours ends `ret 8` like retail): a reference to the cluster element for the index read and the previous-index store
+// 11; `0.0f < sum` 11; a pointer to the palette source entry 11; the accumulation product weight-first 11; the entry test as nested ifs 11.
+// Round 101 (m3 lane 12, fast): the blend written entry term first 11 (same code); count as the last parameter (with the
+// 0x12efb0 call) 11 (same code); the accumulator as a byte array or a real array of the record's size 11/11 (same code); the
+// record copy ahead of the previous-index store 16; a walking cluster pointer declared before the result and stepped in the
+// for header 68, declared after the result 68, declared at the loop 15, with a walking output pointer as well 317 (1172
+// bytes). In all three pointer forms the result keeps 0x18 and the pointer takes 0x1c, so declaration order does not break
+// the tie between the two homes.
+// Round 85 (m3 lane 14, fast; ours ends `ret 8` like retail in both the fast and the full build): the increment moved
+// above the blend, which then writes `output[local_1 - 1]`, 93; the result declared and returned inside the table test
+// with `return 0` after it 293; the blend reading the copied entry back from the output record 297 (1197 bytes);
+// `1.0f - local_7` named right after the copy 98 (1208); the product update as `(1.0f - local_12) * local_7` 11 (same
+// code). Re-measured, not counted: the three blend addresses as `offset + base` in all eight combinations 11 (identical
+// code: the operand order in source never reaches the [eax + edx] address).
+// Round 111 (m3 lane 16, fast; control 11): a walking output pointer beside the result, declared ahead of the table test with
+// the pointer stepped after the result 51, stepped before it 64 (1193 bytes), declared inside the table test 15 (the result
+// keeps 0x18 and the cluster cursor 0x1c, so the output indexing does not weigh the result); the entry pointer declared at
+// function scope 11; the sum and the product declared at function scope ahead of the result 11; both sample indices declared
+// at function scope 11 (11 = same code). The low homes are ordered by reference count (8, 7, 5, 5, 5, 4, 4, 3, 3, 2): the
+// cluster cursor, the result and the output cursor tie at five, and retail orders that tie cursor, result, output cursor where
+// ours orders it result, cursor, output cursor. Diagnostics: the result first set inside the table test 75 (1181 bytes, homes
+// unchanged); an extra store through the cluster element at the loop top 249. The other two ties (sum before entry pointer,
+// product before the remaining count) sit as if ordered by name, so: a cluster element pointer for both accesses named
+// local_2, zcluster, cluster or a_cluster 11 each (same code); an explicit walking cluster pointer stepped at the loop end,
+// named zcluster, cluster or local_2 and declared at the loop 15 each, declared at function scope before or after the result
+// 15 each. In every one the result keeps 0x18 and the pointer 0x1c: neither its name nor its declaration place orders the tie.
+// Round 163 (m3 lane 8, fast; ours ends `ret 8` like retail, the `ret 0xc` in the listing is 0x12efb0's, the same in both):
+// 1-7 initialised dead locals at the top (diagnostic phase scan) 11 at every count, the `[eax + edx]` address included, so
+// it does not follow the symbol count; the result as `dword` 11; the output index taken by a post-increment before the
+// previous-index store and used for the copy and blend 178 (1198 bytes); the two pin tests as nested ifs 11 (same code);
+// the pins written bound-first (`lo > x ? lo : hi < x ? hi : x`) 15.
+// Also round 163: the result as `short` 306 (1177 bytes); its increment as `local_1 = local_1 + 1` 11 (same code).
+// Round 94 (m3 lane 13, fast; both builds end `ret 8`): no result counter, a walking output pointer with the previous
+// index and the result as its difference from the output 316 (1222 bytes); in the blend, only the accumulator's offset
+// written out (`local_0[k][0] + j`) 11 (same code), only the entry's 11 (same code), only the destination's 113 (1206
+// bytes); the sample count read into a named bound before the accumulation loop 13. Diagnostic: the result renamed
+// `Added`, `_added` or `zz_added` 11 each (same code: the tie with the cluster cursor, a compiler IV, does not follow
+// names).
+// Round 98 (m3 lane 14, fast; both builds end `ret 8`): the outer loop test as `i != count` 12, as `count > i` 11 (same
+// code); the destination record taken with the increment (`&output[local_1++]`) for the copy and the blend 188 (1183
+// bytes); the destination record named ahead of the previous-index store, the increment kept at the end 14; the
+// cluster's index read into a named local at the loop top 11 (same code).
+// Round 130 (m3 lane 12, fast; ours ends `ret 8` like retail): the cluster record's address with the index product
+// first 11; that address as an array subscript of the cluster table 11; the palette lookup helper `__forceinline` 11;
+// the weight as `real const` 11; the inner byte step as `sizeof(real)` 11 (all same code). Our three tied homes have
+// five references each in the final code, as in retail.
+// Round 100 (m3 lane 13, fast; both builds end `ret 8`): the destination record named after the previous-index store
+// and used by the copy and the blend 11 (same code); the result as `int` (re-measured on the current body) 11; the
+// source entry looked up straight from the element's index (no index local) 11 (same code); the first pass reading its
+// element through the entry's array at each use (no element pointer) 215; the lookup helper as one conditional
+// expression 73. Re-measured, not counted: the clusters parameter walked in the for step 305 (1174 bytes); `1.0f -
+// local_7` named after the copy 98 (1208 bytes).
+// Round 128 (m3 lane 16, fast; both builds end `ret 8`): a redundant `if (count > 0)` around the cluster loop (real
+// build) 11; a const cluster pointer `clusters + i` for the index read and the previous-index store 11; the result
+// declared `register` 11; the count test joined to the table guard 11; const parameters 11 (all the same code).
+// Diagnostic (repeat): the result declared after the offset table 72 (1181 bytes) keeps the result at 0x18.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

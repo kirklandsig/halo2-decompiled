@@ -314,14 +314,17 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
-// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
-// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
-// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
-// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
-// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
-// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
-// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
-// block order still needs 0x221810 kept out of line.
+// MiniMax D (11-17): no new form, no lower score (36): the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into ESI where retail multiplies into EAX and forms the address with a lea; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp, which this lane may not edit. BLOCKED-BY 0x221810.
+// MiniMax R (11-16): no new form, no lower score (36): re-measured in this round's nine-address set, the body is retail's 415 bytes and the frame and the length are right; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into ESI where retail multiplies into EAX and forms the address with a lea; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp, which this lane may not edit. BLOCKED-BY 0x221810.
+// MiniMax C (11-16): no new form, no lower score (36): the body is retail's 415 bytes; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into esi where retail multiplies into eax and forms the address with a lea; the layout that puts retail's special arm first needs 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
+// MiniMax E (11-14): no new form, no lower score (36): the record's address is still built with an imul into ESI and an
+// add where retail multiplies into EAX and forms the address with a lea, so the type byte is tested in another value;
+// the layouts that put retail's special arm first need 0x221810 kept out of line, and that file is outside this lane.
+// MiniMax D (11-14, run 90): no new form, no lower score (36): the record's address is still built with an imul
+// where retail builds it another way, and the callee at 0x221810 keeps its own frame, which this file cannot
+// change; re-measured at 36 (415 bytes, as retail's). BLOCKED-BY 0x221810.
+// MiniMax R (11-15): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the record's address is still built with an imul into esi where retail multiplies into eax and forms the address with a lea; the layout that puts retail's special arm first needs 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
+// MiniMax R (11-16): no new form, no lower score (36): the body is retail's 415 bytes; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still an imul into ESI against retail's multiply into EAX and a lea. BLOCKED-BY 0x221810.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.
@@ -465,6 +468,150 @@ void function_125a90(long value);
 // still falls through), that without the direct keep store 47 [23]; `remove = type == 0x26 && !a` under `||` 75 [15]; `type != 0x26 || a` 75;
 // inverted `&&` 75, inverted `!(||)` 29; each type test a named bool 29. Named special or ordinary, with two ifs or nested tests, and no
 // implied test: 151/142/162 (466-471 bytes, 0x221810 inlined). Not kept: 29 and 25 need the direct keep store, which is match-only.
+// Round 153 (m3 lane 5, fast; all 415 bytes): with the inner test on the long type and the kind arm as one
+// `remove = !(mask) || f(type) != 1` value: `remove = type == 0x26 && !a` 88; `if (type == 0x26) remove = !a; else remove =
+// false;` 46, with keep written first 51; `remove = false; if (type == 0x26) remove = !a;` 46; the if/else special arm with
+// the kind arm as `if (mask && f(type) == 1) remove = false;` 51. Compile-only screen with /d2inlT0 (reproduces LTCG's
+// choice: 0x221810 stays out of line for an inline `||` class-type test, inlined for a named class-type bool) over 80 forms: every
+// inline `||` form lays the kind arm out as the class-type test's fall-through; a named bool, an inline class-test helper or the
+// kind test as `kind == 1 || ... == 4` (no bit test then) all inline 0x221810.
+// J260: Immutable b/a/both policies 36/36/36; receiver initialized from the pool base then advanced by index, with no/b/a/both immutable policies, 36/36/36/36; receiver initialized from base then indexed 36. All eight complete target listings equal the unchanged preview.
+// NOT kept: no eligible native repair; opening executable source restored. EAX multiply/ESI LEA before policy loading and native type/removal block placement remain; original flags, loop, pool refresh, fields, calls and body restored.
+// Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
+// int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
+// Boolean removal result, policy captures, comparison widths and complete body restored.
+// MiniMax D (11-06): no new form, no lower score.
+// Round 73 (m3 lane 13, fast, control 36; aligned 22, register-masked 14): the `||` written in the `if` lays the kind
+// arm out first whatever is in the arms, and a class-type test held as a bool value lays the special arm first as retail
+// does, but 0x221810 is then inlined. `if (type == 0x26) remove = !a; else remove = false;` with the kind arm as
+// `if (x == 1) remove = false;` under the `||` 51 (re-measured; both arm bodies retail's, chains in the other order);
+// that with the class-type test named as a bool 144 (143 instructions, 0x221810 inlined); with the type read through the
+// existing sound_definition_get as well 144 (same code); with a shared next-datum inline helper for the loop as
+// well 152 (still inlined, so the caller's other expansions do not keep it out); a named short class-index value under the
+// `||` 51 (same code); an inline class-type predicate taking a short 144 (inlined); the sound-class-record pointer named before its
+// test 51 (same code). Diagnostics, reverted: the kind arm reading a table instead of calling 98, and a call added to
+// the special arm 98: the kind arm stays first in both, so the order does not follow which arm holds a call.
+// Still BLOCKED-BY 0x221810 (retail never inlines it; its file is another lane's this round).
+// Round 65 (m3 lane 15, fast; base 36, all 415 bytes unless noted): retail's kind arm is threaded (its exits jump
+// straight to the removal or the keep store) and only its special arm holds a value (`sete`), with the order special
+// arm, removal, kind arm, keep store. With the kind arm as `if (f(type)[0x4c] == 1) remove = false;` under the bit
+// test and the special arm on the long type as `remove = false; if (type == 0x26) remove = !a;` 51, as if/else 51, as
+// `type == 0x26 && !a` 88, as a ternary 51; those four special arms with the kind arm as a value 88 (417), 88 (417),
+// 46, 88 (417). The 51 forms hold retail's instructions (16-bit pair, 32-bit re-test, sete arm, threaded kind arm)
+// but lay them out kind arm, keep store, special arm, removal. To move that: the kind arm as the `then` of a negated
+// `&&` 51; `if (type != 0x26) remove = false; else remove = !a;` 51; `remove = !a; if (type != 0x26) remove = false;`
+// 51; `if (type != 0x26 || a) remove = false;` 88; both arms as if/else constants with the kind tests joined by `||`
+// 46; the kind bit test split out as `remove = true` 88 (417). A two-case switch on the short type (compares widen to
+// 32 bits, same layout) with those special arms 89, 89, 92, and with both arms as values 86. An else-if chain
+// (0x20 keeps, else 0x26 `remove = !a`, else the kind arm as a value or as the `if`) 87, 87: retail's order, special
+// arm first, but 0x20 jumps to the keep store where retail sends it to the re-test; the special arm written out under
+// each of the two tests 89 (417, the copies are not merged). `if (0x20 || 0x26) remove = !a;` as a probe 87: every
+// `||` form sends both tests to the special arm and lays the kind arm first, whatever the arm holds. Body unchanged.
+// MiniMax R (11-10): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the layout needs 0x221810 kept out of line, so it stays BLOCKED-BY 0x221810 in src/unknown_221490.cpp.
+// MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
+// order, and the record address still goes to esi where retail multiplies into eax and lea's it.
+// This round: the element as an array subscript 36, the type test inverted 36, the special arm nested with
+// an explicit else 89, the re-test without the short cast 46 (it gives retail's shared jump target and
+// `cmp eax, 0x26`), the kind arm written as a branch 87; the block order still decides the score.
+// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
+// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
+// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
+// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
+// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
+// block order still needs 0x221810 kept out of line.
+// MiniMax C (11-08): no new form, no lower score.
+// M3 lane 14 r83 (fast with the file, 0x221810, 0x127320, 0x125a90): 0x26 tested before 0x20 in the `||` 90; the special
+// arm as `(short)type != 0x20 && !a` 88 (`!((short)type == 0x20 || a)` the same code); the next index as
+// `datum != NONE ? index + 1 : 0` 40; the kind arm as `else if (kind && f(type)[0x4c] == 1) remove = false;` 87; the
+// outer `||` on the long type with the inner test on the short 49. Same code: an explicit `else remove = true;`, the
+// record pointer of 0x221810 named before its test, the special arm as an if/else, the definition flags through a named
+// pointer. src/unknown_221490.cpp is open this round, but 0x221810 is one getter call, so no spelling of it keeps its
+// bytes and moves the inliner: still BLOCKED-BY 0x221810.
+// MiniMax H (11-12): no new form, no lower score (36): the special arm still comes before the kind arm where retail puts the kind arm first, the element address is still a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
+// MiniMax I (11-11): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, our element address is a scaled index added to the base where retail multiplies into eax and adds the base, and 0x221810 still has to stay out of line, which needs a change in src/unknown_221490.cpp.
+// MiniMax D (11-11): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in src/unknown_221490.cpp that this lane may not edit and that LTCG inlines here.
+// MiniMax S (11-10): no new form, no lower score (36): the special arm still comes before the kind arm in the layout where retail puts the kind arm first, and our element address is a scaled index added to the base where retail keeps the scaled product in EAX and adds the base to it.
+// MiniMax A (11-10): no new form, no lower score (36): retail keeps the sound-class lookup 0x221810
+// out of line - it is a one-line wrapper in src/unknown_221490.cpp - and lays the blocks special
+// arm, removal, kind arm, keep store; LTCG inlines it here, so the kind arm's block order cannot be
+// reached from this file.
+// MiniMax R (11-10): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the layout needs 0x221810 kept out of line, so it stays BLOCKED-BY 0x221810 in src/unknown_221490.cpp.
+// MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
+// order, and the record address still goes to esi where retail multiplies into eax and lea's it.
+// This round: the element as an array subscript 36, the type test inverted 36, the special arm nested with
+// an explicit else 89, the re-test without the short cast 46 (it gives retail's shared jump target and
+// `cmp eax, 0x26`), the kind arm written as a branch 87; the block order still decides the score.
+// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
+// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
+// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
+// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
+// MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
+// block order still needs 0x221810 kept out of line.
+// MiniMax C (11-08): no new form, no lower score.
+// MiniMax H (11-13): no new form, no lower score (36): still BLOCKED-BY 0x221810, the getter in
+// src/unknown_221490.cpp that this lane may not edit - retail keeps it out of line and LTCG inlines it here, and every
+// spelling of the named-condition layout that gives retail's block order inlines it too.
+// MiniMax G (11-12): no new form tried this round, no lower score (36): the element address is still built with an
+// imul and an add where retail multiplies into eax and forms the address with a lea; a probe shows no pointer
+// arithmetic spelling of that form in this compiler.
+// M3 lane 12 r119 (fast with the file and 0x221810/0x127320/0x125a90): diagnostic only, one `#pragma inline_depth(0)`
+// around the 0x221810 call (reverted): the class-type condition named (`bool special = (short)type == 0x20 ||
+// (short)type == 0x26;`) with `remove = type == 0x26 && !a;` 47 (special arm first, its `!a` threaded); the special arm
+// as `if (type == 0x26) remove = !a; else remove = false;` and the kind arm as `if (f(type)[0x4c] == 1) remove = false;`
+// 25 (retail's whole block order and arm code; left: the element address, ours `imul esi` + `add`, retail `imul eax` +
+// `lea esi`); with the pool global at each use 25 (same code); with the element read at each use through the pool 22
+// (416 bytes: retail's `imul eax` + `lea esi`, sunk below the b test). So with 0x221810 out of line the named-condition
+// layout is all but retail's; every natural spelling of it inlines 0x221810 (listed above). Still BLOCKED-BY 0x221810.
+// Real (no pragma): that whole 22 form 133 (468 bytes, 0x221810 inlined); the same with the class-type test written
+// inline as `||` (no named bool) and every element field read through the pool at each use (no element local, so no
+// mixed keep store) 47 (416 bytes).
+// m3 lane 6 r178 (one-file LTCG harness: this file, src/unknown_221490.cpp, src/unknown_124f90.cpp,
+// src/unknown_16b570.cpp and the build's ballast object; it gives 35 for this body where --fast gives 36, and
+// lab counts below are its instruction differences): LTCG inlines 0x221810 when the call site is hot enough,
+// and every test that guards the call halves its weight; the inline `||` puts the call two tests deep, the
+// named class-type bool one, which is why that form inlines it. On the named-bool layout (round 119's 25 form,
+// without its pragma) one more guarding test that folds away keeps the call out of line: `element &&` on the
+// kind test 25 in --fast (lab 11; most of the 25 are relocation shifts from one byte); `b &&` before the
+// getter call, `!special &&` there, `(short)type != 0x20 &&` on the kind test lab 11 each. Left: retail
+// computes the element address before the `b` test as `imul eax` + `lea esi` with `b` loaded after it; ours
+// loads `b` first and builds the address in ESI, and the type lookup's registers rotate (ours EAX/ECX/EDX,
+// retail EDX/EAX/ECX). On the guarded form (lab): the element at each use through the pool 10 (retail's type
+// registers and `imul eax` + `lea`, but the address sinks below the `b` test), through g_4e637c 33; mixed
+// local and pool reads 23 each; byte-offset element, `&elements[index]`, `index * 0xbc`, `sizeof * index` 11
+// each; `(word)datum` index 35; the type through sound_definition_get 11, as a char 43; `remove` declared
+// before the element 11; index and element declared before the loop 11; `if (!b) remove = true; else` 11.
+// The guards are implied tests, so none is kept without a match. Body unchanged.
+// MiniMax B (11-14, run 75): no new form, no lower score (36): a permuter run (35 tries, best 36) and four hand-written
+// forms (88, 51, 51, 46) all score above the baseline, and the body is left as it was. What still differs: retail forms
+// the element address with `imul eax` + `lea esi` before it loads the policy byte, keeps the type lookup's registers in
+// edx/eax/ecx and lays the special, remove, ordinary and keep blocks out of line; that block order needs 0x221810 to
+// stay out of line, which is another file's getter: BLOCKED-BY 0x221810.
+// MiniMax C (11-15): no new form, no lower score (36): retail masks the index into edi, copies it into eax and
+// multiplies that copy into the byte offset (imul eax, eax, 0xbc) before it forms the address with a lea, where
+// this build multiplies the index in place into esi and adds the pool; the byte-offset and the array-subscript
+// spellings compile to the same bytes here.
+// MiniMax S (11-15): no new form, no lower score (36): the record's address is still built with an imul into esi
+// where retail multiplies into eax and forms the address with a lea, and the special arm still sits after the kind
+// arm; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that
+// getter lives in src/unknown_221490.cpp, which this lane may not edit.
+// M3 lane 7 r173 (fast with 0x221810; base 36; [aligned]): the named class-type bool with the long `type == 0x26 && !a`
+// special arm and the kind arm's call test nested (`else if (K) { if (f(type)[0x4c] == 1) remove = false; }`) 150 (466
+// bytes, 0x221810 inlined: nesting the call test inside the kind test adds no depth). An else-if chain on the short type
+// keeps the call out of line: 0x20 `remove = false`, 0x26 `remove = type == 0x26 && !a` (retail's `cmp eax, 0x26`
+// re-test appears), kind arm as a value 48 [25] (0x20 then jumps to the keep store, where retail sends it to the shared
+// re-test, and the `!a` is threaded where retail materialises it); that with the kind arm's call test nested 85 [28];
+// 0x26 tested first, kind arm as a value 53 [29], with the nested call test 90 [32]. Still BLOCKED-BY 0x221810 (retail's
+// is a stack-argument `ret 4` function called out of line at every site; ours is inlined here and in 0x129aa0, 0x21c400
+// and one of 0x189fe0's two calls; the non-LTCG lead for its file is a flags decision).
+// MiniMax S (11-17): no new form, no lower score (36): the record's address is still multiplied in place into
+// esi where retail multiplies a copy in eax and forms the address with a lea, and the special arm still sits
+// after the kind arm; retail's block order needs the getter 0x221810 kept out of line (the named class type
+// condition puts the call one test deep and the compiler inlines it), and that getter lives in
+// src/unknown_221490.cpp, which this lane may not edit: BLOCKED-BY 0x221810.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

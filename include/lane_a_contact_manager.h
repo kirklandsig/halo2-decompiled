@@ -52,10 +52,14 @@ public:
 	}
 	static void __cdecl operator delete(void *p) { function_318950((reference_base_318970 *)p); }
 	lane_a_simple_contact_manager(listener_world_318320 *owner, lane_a_contact_entity *first, lane_a_contact_entity *second)
-		: world(owner), a(first), b(second)
+		: reference_base_318970(count_untouched)
 	{
+		// the earlier of the two delays first, then the fields (retail's order)
 		unsigned short delay = lane_a_contact_delay(second);
 		if (lane_a_contact_delay(first) < delay) delay = lane_a_contact_delay(first);
+		world = owner;
+		a = first;
+		b = second;
 		remaining = delay + 1;
 	}
 	listener_world_318320 *world;

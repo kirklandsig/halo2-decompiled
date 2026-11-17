@@ -172,6 +172,22 @@ void c_widget::v15(c_widget *widget)
 // Round 114: direct base eligibility/focus calls 2/2; `!!widget` 2; eligibility `!= false` 2 and `== true` 4;
 // ternary null condition 2; guarded found loop with `!found && widget` 2; pre-tested `widget && !found` 62;
 // guarded `widget && !found` 63; pre-tested `!found && widget` 32 (84 bytes). Original body restored.
+// Round 65 (m3 lane 13, fast): `__assume((dword)widget != 1)` after the step 2, after the entry and the step 2; an empty do-while at the loop head or after
+// the step 2/2; guarded do-while with `break` 2; `self` and `candidate` locals 2; a forceinline presence helper as the condition 2; `found` flag with
+// `widget && !found` 56 (106 bytes).
+// Round 140 (lane 8, fast; the base helpers in screen_widgets.h changed, checked with v17, 0x2c8f56 and
+// 0x2c8fb4): first_sibling testing a `previous` local 41 (92 bytes; 0x2c8f56 41); next_wrapped as
+// `if (!next) result = first_sibling(); else result = next;` 2; as `if (!next) return first_sibling();
+// return next;` 2 (0x2c8f56 12); first_sibling as an empty-body for loop 2, as a guarded do-while 2.
+// Header restored. A compile-only build keeps `test eax, eax; mov esi, eax` in every helper form.
+// Round 98 (m3 lane 12, fast, all four walkers): the wrapped helpers walking one `result = this` in place 52 (98 bytes; the
+// button pair 54, 104); the walk started at `this`, stepped once before the loop 2; the helpers as `result = link`, walked in
+// place when NULL 42 (90; 44, 96); the walk helpers as const members 2; an entry guard with a search loop that returns when the
+// step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
+// the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
+// or load it straight into ESI, and a helper entry keeps its own test.
+// Round 158 (m3 lane 5, fast): a for loop with `widget != NULL` 2; the eligibility test negated with the step in
+// the then-arm 2; `while (widget != NULL)` 2; `this->` on the focus call 2; the widget declared, then assigned 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
@@ -268,6 +284,25 @@ void c_widget::v16()
 // 35 (92 bytes); results bound to const references at entry and step 2; widget initialised to NULL with a named first value and if/else
 // entry and step 12. One-file harness (exact here): a separate first value at the entry always takes the widget's register and its test
 // is threaded into the body; the long-typed result, a named long first value and a `this` widget change nothing.
+// Round 77 (m3 lane 1, fast): the wrapped helpers defined out of the header as forceinline members in this file
+// (the twins then inline them across files) 2, so the tail is not a cross-file inlining effect; the helper results
+// through a `(c_widget *)(dword)` round trip 2; helper entry, the step as an in-place if/else and a `for (;;)` head
+// return 35 (92 bytes); the c_widget wrappers returning a named result 2; the entry as `prev ? prev :
+// previous_wrapped()` 42 (90). Scan: retail has no `test eax, eax; mov esi, eax` anywhere; its only test-before-copy
+// head is 0x7f190's `for (long j = used; ...)` init, where the copied value stays live after the copy.
+// Round 58 (m3 lane 2, fast): a `start` local for this at the entry and the focus call 2; `NULL != widget` 2; a
+// `c_widget &found` in the found arm 2; the step taken before the eligibility test through a `current` local 38 (94
+// bytes); the loop also ending at `widget != this` (diagnostic, not retail's test) 34 (92). Scan: retail has no
+// out-of-line copy of the previous-or-last walk (its only instances are inside 0x22ec1b and 0x2c8fb4), so the
+// copy-then-test head does not come from an LTCG-inlined call; a plain compile of this file does not reproduce
+// the callees' register conventions, so screens need the one-file LTCG link.
+// Round 157 (m3 lane 6; one-file LTCG harness with 0x22e37f's file and a derived widget that emits the vtable, exact
+// here): retail keeps the widget phi in ESI at the test (each predecessor's copy cross-jumped into the block), ours tests
+// the helper result in EAX and copies to ESI only on the body edge. A done flag with the focus inside, `while (!done &&
+// widget)` 27 (aligned 8, head on top; fast 32 at 84 bytes), `while (widget && !done)` 45, with the step unconditional 44; a found flag with
+// the focus after the loop 27 (fast 32 at 84 bytes), `while (widget && !found)` 47, under `if (widget)` 28; a head-copied candidate 2; a
+// block-scoped copy at the body's top 2; `while ((widget = widget->previous_wrapped()) != NULL)` from this 39; a for
+// loop with break after the focus 2.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

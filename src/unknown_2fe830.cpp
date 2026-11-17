@@ -7,6 +7,7 @@
 // the tolerance, the moves run out, or the shapes separate.
 #include <xmmintrin.h>
 #include "pair_agents_2eab70.h"
+#include "closest_hit_301a00.h"
 
 // six vectors copied one at a time (0x2e7d80): where a body sits
 struct class_2e7d80
@@ -36,16 +37,16 @@ struct body_2fe830
 	class_2e7d80 const *placement;
 	body_2fe830 const *parent;
 
-	body_2fe830(body_2fe830 const *parent_, class_2e7d80 const *placement_) :
-		parent(parent_),
-		placement(placement_)
+	body_2fe830(body_2fe830 const *parent_, class_2e7d80 const *placement_)
 	{
+		parent = parent_;
+		placement = placement_;
 	}
 
-	void set_shape(shape_2fe830 const *shape_, long key_)
+	void set_key(long key_, shape_2fe830 const *shape_)
 	{
-		shape = shape_;
 		key = key_;
+		shape = shape_;
 	}
 };
 
@@ -73,7 +74,9 @@ public:
 
 	float distance() const { return position.value.m128_f32[3]; }
 	void take_point(vector_2fe830 const &value) { position = value; }
+	void take_point(__m128 const &value) { position.value = value; }
 	void set_normal(vector_2fe830 const &value) { normal = value; }
+	void set_normal(__m128 const &value) { normal.value = value; }
 	void set_distance(float value) { position.value.m128_f32[3] = value; }
 };
 
@@ -112,23 +115,16 @@ public:
 };
 
 // a collector that keeps the closest hit (0x301a00)
-class closest_collector_2fe830 : public hit_collector_2fe830
+class closest_collector_2fe830 : public class_301a00
 {
 public:
-	bool has_hit;
-	hit_2fe830 hit;
-
-	closest_collector_2fe830()
-	{
-		reset();
-	}
-
-	void reset()
-	{
-		has_hit = false;
-		hit.set_distance(3.402823466e+38f);
-		early_out = 3.402823466e+38f;
-	}
+ closest_collector_2fe830() { reset(); }
+ void reset()
+ {
+  has_hit = false;
+  hit.position.m128_f32[3] = 3.402823466e+38f;
+  early_out = 3.402823466e+38f;
+ }
 };
 
 struct query_header_2fe830;
@@ -178,7 +174,11 @@ inline float dot3_2fe830(__m128 const &a, __m128 const &b)
 	return result;
 }
 
-// score 8 (was 8): frame 0x128 and homes agree; placement-copy source and
+// Matched: the moved body's constructor only links parent and placement; the key
+// (through the stored parent) and the shape (through the parameter) are then set by
+// set_key, the copy's source is named as a reference, and the move count is read
+// from the config in the loop's start.
+// Before, 8 (was 8): frame 0x128 and homes agree; placement-copy source and
 // body stores/configuration schedule differ. Earlier result name and input-first
 // declarations tied. Vector record copy 379; direct vector stores 8; distance
 // getter inlining 8; reset limit first 17; reset inlining 8; vector assignment
@@ -188,10 +188,13 @@ inline float dot3_2fe830(__m128 const &a, __m128 const &b)
 // the reverse) and esi and edi holding the first body and the input the other
 // way round; renaming the result and declaring the input first do not change
 // either.
-// score 8 (was 8): Frame and homes agree; placement-source and child-body setup schedule differ.
+// Frame and homes agree; placement-source and child-body setup schedule differ.
 // Stored placement reference 20; complete body copy 186; source fields set at init 8; full member
 // initializers 10; collector after placement 21; final hit within workspace 123; parent-first body
 // copy 186; shape set at init 10.
+// Direct placement use 21; fieldwise/aggregate input copy 255/255; native
+// vector-assignment store 8; native move store 107; vector-value setter inputs 8;
+// virtual cleanup declaration 8; explicit local cleanup 8. NOT kept: no gain.
 // @retail 0x2fe830
 void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_, void *collector_, void *second_collector_)
 {
@@ -219,7 +222,7 @@ void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_,
 	{
 		second_collector->add_hit(&result);
 	}
-	float const approach = dot3_2fe830(closest.hit.normal.value, input->direction);
+	float const approach = dot3_2fe830(closest.hit.normal, input->direction);
 	float const end_distance = closest.hit.distance() + approach;
 	if (end_distance > 0.0f)
 	{
@@ -250,12 +253,11 @@ void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_,
 	result.hit.set_distance(closest.hit.distance() / (closest.hit.distance() - end_distance));
 	{
 		closest_collector_2fe830 moved_closest;
-		class_2e7d80 moved(*a->placement);
-		cast_config_2fe830 const *config = input->header.config;
+		class_2e7d80 const &source = *a->placement;
+		class_2e7d80 moved(source);
 		body_2fe830 moved_a(a, &moved);
-		moved_a.shape = a->shape;
-		moved_a.key = a->key;
-		for (int i = config->iterations - 1; i >= 0; i--)
+		moved_a.set_key(moved_a.parent->key, a->shape);
+		for (int i = input->header.config->iterations - 1; i >= 0; i--)
 		{
 			moved_closest.reset();
 			class_2e7d80 const *placement = a->placement;
@@ -266,7 +268,7 @@ void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_,
 			{
 				return;
 			}
-			float const moved_approach = dot3_2fe830(moved_closest.hit.normal.value, input->direction);
+			float const moved_approach = dot3_2fe830(moved_closest.hit.normal, input->direction);
 			if (moved_approach >= 0.0f)
 			{
 				return;
@@ -305,16 +307,20 @@ public:
 	virtual void get_closest(body_2fe830 const *a, body_2fe830 const *b, query_header_2fe830 const *header, closest_collector_2fe830 *collector) {}
 };
 
-// score 190 (was 190): stack layout: retail puts closest at esp+0x30 and
-// result at 0x60, ours the reverse (declaration order, scopes and names do
-// not move them); retail also resets moved_closest before it moves the body
-// in the loop, which here scores 197.
-// the same cast, the closest points found by the object itself; a move that
-// finds no closest points passes on the last hit
-// score 8 (was 8): the setup still exchanges shape and configuration registers.
+// Matched (was 5): same body setup as 0x2fe830 (plain constructor, then set_key with
+// the key read through the stored parent and the shape through the parameter; the
+// setter takes the key first, so the shape is read first) and the move count read
+// from the config in the loop's start.
+// Before, 8 (was 8): frame and homes agree; setup reads still exchange registers.
+// Earlier 190 form exchanged the first collector/result homes; declaration order,
+// scopes and names tied; reset before translation 197.
 // Native body copy with placement/parent or parent/placement stores 171/171;
 // copy before configuration 183/183; copy before collector or placement 174/171;
 // configuration before the placement copy on either body lifetime 229/229.
+// Immutable local/parent link/placement link/config link 8/8/8/8;
+// native count and settings name 8/8; source-body setter by reference/pointer
+// 24/24. NOT kept: no gain.
+// The same cast, with the object's third virtual query slot.
 // @retail 0x2fec10
 void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *input_, void *collector_, void *second_collector_)
 {
@@ -340,7 +346,7 @@ void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *i
 	{
 		second_collector->add_hit(&result);
 	}
-	float const approach = dot3_2fe830(closest.hit.normal.value, input->direction);
+	float const approach = dot3_2fe830(closest.hit.normal, input->direction);
 	float const end_distance = closest.hit.distance() + approach;
 	if (end_distance > 0.0f)
 	{
@@ -371,18 +377,18 @@ void class_2fec10::function_2fec10(void const *a_, void const *b_, void const *i
 	result.hit.set_distance(closest.hit.distance() / (closest.hit.distance() - end_distance));
 	{
 		closest_collector_2fe830 moved_closest;
-		class_2e7d80 moved(*a->placement);
-		cast_config_2fe830 const *config = input->header.config;
+		class_2e7d80 const &source = *a->placement;
+		class_2e7d80 moved(source);
 		body_2fe830 moved_a(a, &moved);
-		moved_a.set_shape(a->shape, a->key);
-		for (int i = config->iterations - 1; i >= 0; i--)
+		moved_a.set_key(moved_a.parent->key, a->shape);
+		for (int i = input->header.config->iterations - 1; i >= 0; i--)
 		{
 			moved_closest.reset();
 			__m128 const translation = a->placement->rows[5];
 			__m128 const single = _mm_set_ss(result.hit.distance());
 			moved.rows[5] = _mm_add_ps(translation, _mm_mul_ps(_mm_shuffle_ps(single, single, 0), input->direction));
 			query->get_closest(&moved_a, b, &header, &moved_closest);
-			float const moved_approach = dot3_2fe830(moved_closest.hit.normal.value, input->direction);
+			float const moved_approach = dot3_2fe830(moved_closest.hit.normal, input->direction);
 			if (moved_approach >= 0.0f)
 			{
 				return;

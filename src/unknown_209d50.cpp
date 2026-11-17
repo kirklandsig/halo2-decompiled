@@ -100,6 +100,82 @@ static inline void *function_xc5914d(long thread_index, short size)
 // 71/71 (277: the allocation takes EAX, the frame ESI), in one declaration 71; the result copy after the second allocation 71, no volatile 95; the volatile home after
 // the second allocation 71; the frame reference after the first allocation 25 (281); a done flag with a ternary return 102 (291, the pointer does spill unforced), an
 // if on the flag 90; `else return arguments` 90.
+// Round 89 (fast): no volatile with `long *const &arguments` bound to the allocation 95 (266: the temporary folds), from a void local 95, declared before the frame 95; an unused const pointer to
+// the local and a reference local to it (diagnostics) 95/95, still promoted; the allocation as dword 95, as byte * 95; result from the allocation with a const reference for the element 95, a const-reference
+// base beside plain arguments 95; no volatile with the result cleared right after the call 93 (268).
+// M3 lane 11 r76 (plain): the volatile kept without the frame-pointer local 112 (306 bytes); no volatile, no frame
+// local and the result cleared first in the evaluated block 74 (280); no volatile with the result set in an else
+// arm 90 (277); the allocator bumping the frame size directly 12 (same code), that with no volatile and the result
+// cleared first 83 (277).
+// Round 80 (m3 lane 10, fast): the only difference is `mov eax, [esp + 0x10]` (the volatile reload, 4 bytes) for retail's `mov eax, ebx` (2).
+// Without the volatile, sixteen statement orders (the frame reference before or after each allocation crossed with the result copy after each
+// allocation or after the initialisation block): the copy's place never matters (it coalesces with the pointer); the frame reference first or
+// after the first allocation 95 (266 bytes), after the second 98 (264), after the third 68 (280: the pressure spill moves to the argument-index
+// pointer); the result as a long integer 95; the frame reference after the allocations with `return NULL` in the arm and `return arguments` at
+// the end 90 (290).
+// Round 177 (m3 lane 4, fast): retail's reload in the evaluated arm goes into EAX while EAX still holds the same pointer (nothing
+// writes EAX between the copy and the reload), so retail's build treats the result (EAX from the copy on, kept clear of every
+// temporary up to the return) and the argument pointer (stack home, loaded again) as two values, and the early copy is the
+// home's load forwarded inside its block. Without the volatile our build merges the two into one register. New: one variable
+// for both (`arguments = NULL` in the arm, `return arguments`) 95 (266 bytes); the arm stepping the pointer (`arguments +=
+// argument_index`) and passing it 95; the allocation stored through `*(void **)&arguments` 95; the result read as
+// `*(long *const *)&arguments` 95; the arm's element taken through that cast 95 (all promoted, 266 bytes). Re-measured: the
+// result copy declared after the three allocations 95; result cleared first in the arm 83 (277: the pointer is computed
+// straight into EAX and the two still merge); the result set in an else arm 90 (277: the pointer in EDX, the frame reference
+// in EAX, no home).
+// Round 85 (m3 lane 14, fast): a thread-pointer local in place of the frame-field reference 12 (same code); with the
+// volatile, `result = NULL` first in the arm 105 (301 bytes), the element passed directly 105 (same code); the result
+// copy declared just before the test 90 (270); `result = NULL` between the call and the expression update 23 (280);
+// the frame reference declared after the three allocations 118 (308).
+// Re-measured, not counted: the type test nested inside the count test compiles the same as the `&&` test in every
+// form; without the volatile, `result = NULL` at the start of the arm or before the call gives 83 at retail's 277 bytes
+// (no frame slot: our build keeps the frame in ESI, the pointer in EAX, and loads the expression pool in each block
+// where retail holds it in EBX across the initialisation block and the test), at the end of the arm 95 (266).
+// Round 87 (m3 lane 14, fast; volatile-free forms only, since a match cannot keep the volatile): control 95 (266);
+// `result = NULL` first in the arm 83 (277 bytes, no stack home: the frame is read straight into ESI and the pointer
+// computed in EAX, where retail reads the frame through the frame reference into EAX and computes the pointer in EBX),
+// after the element pointer 83, with the element passed directly 83, with the result copy after the three allocations
+// 83, with a thread pointer local for the frame reference 83; null-first with no frame local 74 (280).
+// Round 157 (m3 lane 7, fast): the type test with its operands the other way round (`parameter_types[argument_index] ==
+// ...->type`) 96 (300 bytes); the count test as `parameter_count > argument_index` 14 (279 bytes). The volatile-free control
+// re-measured 95 holds the expression pool in EBX across the initialisation block and the test as retail does, so the pool's
+// loads are not the open cause; the pointer is computed straight into EAX (the returned result) and the frame goes to ESI,
+// where retail reads the frame through the frame reference into EAX and computes the pointer in EBX. Stopped after two: the
+// result/pointer spellings are enumerated in rounds 80, 87 and 177 above.
+// Round 105 (m3 lane 10, fast; volatile-free forms): the test inverted with an early `return arguments` and `return NULL`
+// at the end 90 (277 bytes, no spill); the same with the count and type tests as two early returns 95 (266); the first
+// allocation written through the frame reference (0x208310's count form) with the result copy after it 95 (266), with
+// 0x207cf0's size local 95 (266); the failing test assigning `result = arguments` in its arm and the evaluation in the
+// else arm 90 (277: two epilogues, the pointer kept in EDX and copied to EAX at the return, frame reference in EAX).
+// Reading: retail needs the result (EAX) and the pointer (spilled) as two interfering values; every copy form here
+// coalesces them or defers the copy to the return.
+// Round 125 (m3 lane 9, fast; volatile-free forms only): the expression pool read once into a local for the
+// initialisation block, with `result = NULL` first in the arm 83 (277 bytes); a const result copy with `return NULL`
+// in the arm 90; the element as `arguments + argument_index` with `result = NULL` first 83; the result copy declared
+// just before the initialisation test with `result = NULL` first in the arm 83; the element passed straight to the
+// call 95 (266 bytes). Every volatile-free form still gives the result and the pointer one register.
+// M3 lane 9 r127 (fast; volatile-free forms): the init block's lookups as named expression/name pointers 95 (266 bytes),
+// with `result = NULL` first in the arm 83 (277); the frame reference declared after the result copy, null first, 83; the
+// element taken from `result` 95; the frame reference from a thread pointer local 95. Diagnostic: `&arguments` passed to
+// an allocator defined in another file, so only LTCG inlines it, 95 (still promoted after the cross-module inline).
+// M3 lane 8 r173 (fast; volatile-free forms): the result copy after the second allocation with `result = NULL` first in
+// the arm 83 (277 bytes); the two index slots as plain pointers with `result = NULL` first 83; `long *result;` declared
+// first and assigned after the third allocation, null first 83; the element as `arguments + argument_index` with `result
+// = NULL` between it and the call 83; `long *result;` declared above the frame reference and assigned right after the
+// first allocation 95 (266). In each null-first form the frame goes to ESI and the pointer to EAX from the first block on.
+// M3 lane 12 r131 (fast; volatile-free forms, control 95 at 266 bytes): the first allocation read through `*frame` with a named
+// frame pointer (0x208310's form) 95, with a `short size` local (0x207cf0's form) 95, with the reference declared `*const *` 95;
+// the `*const *` reference alone 95; the frame field bound as a reference and the first allocation through it 95 (all the same
+// code). Our frame load stays folded into `[eax+ecx+0x10]` ahead of the reference's lea, so the frame takes ESI and the pointer
+// EAX; retail and the matched siblings 0x208310 and 0x207cf0 load the frame through `[edx]` after the lea, which leaves retail's
+// frame in EAX and the pointer in EBX (spilled). The `result = NULL` first form (83, 277 bytes) has the same folded frame load.
+// Round 171 (m3 lane 7, fast with 0x2099f0; volatile-free forms): the first allocation written out as the matched 0x208310 does
+// (`frame = *frame_reference;` with a const reference, the pointer from `frame->data + frame->size`, then `frame->size +=`) 95
+// (266 bytes: the frame load still folds into `[eax + ecx + 0x10]` and goes to ESI, the pointer to EAX), with `result = NULL`
+// first in the arm 83 (277); 0x207cf0's `short size` form with `result = NULL` first 83 (277, same frame fold); the allocation
+// named `result` and copied into `arguments` 95; the arm's evaluation through an inline helper taking the arguments pointer 95.
+// Reading: retail's frame takes EAX (loaded through EDX), which keeps the pointer out of EAX, so the pointer (EBX, spilled) and
+// the result (EAX) are two webs; in every volatile-free form here the pointer and the result share EAX and the frame folds.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

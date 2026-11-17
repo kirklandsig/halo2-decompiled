@@ -592,7 +592,69 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
-// score 281 (was 281): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
+// MiniMax E (11-14): no new form, no lower score (236): the first difference is still at +0x3, where the actor
+// pool goes into EAX and retail puts it in ECX; the slot loop is still rotated by a jump with an alignment pad
+// retail has not, retail's memory walk still indexes the record as actor base + 12*i in EDX and re-reads the slot
+// after the store, and the body still expands the callee at 0x26ed40 that lives in another file:
+// BLOCKED-BY 0x26ed40.
+// MiniMax B (11-11), NOT kept (coordinator): 236 to 216 (plain, 966 bytes) holds the definition bit in a byte flag set
+// by tests (`definition_counted`), a match-only form. The lead as written: the definition bit is now shifted and kept in
+// the dead parameter slot as retail does, and the counts loop and the tail follow it; still differs:
+// ours loads the actor pool into EAX and keeps the scaled index in EBX (retail: ECX and EAX) and
+// spills the actor pointer to a stack slot retail has not; the slot loop is rotated with an extra
+// jump and its slot displacement is in ECX (retail: EDX); the memory-entry walk keeps its countdown
+// in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte
+// offset in EDX and the countdown in a stack slot); the prop entry address is folded into the loads
+// instead of being materialised and re-derived after the callback; the iterator compare reloads the
+// actor pointer instead of comparing against the cached one; and the second parameter becomes a
+// Boolean before the 0x203ed0 call where retail pushes the raw value.
+// MiniMax D (11-15): 216 (was 236): the definition bit is now tested through a named flag after a separate
+// null check, so the tested bit is kept in a byte slot and the branch reads it from there, as retail does.
+// What still differs: the prologue loads the record pool into EAX and keeps the scaled index in EBX (retail
+// loads the pool into ECX and the index into EAX and leaves the actor pointer unspilled in EBP) and this
+// build spills the actor pointer to a stack slot retail has not; the memory-entry walk keeps its countdown
+// in EBX and folds the entry pointer into the offset (retail: an entry pointer in EBX, the byte offset in
+// EDX and the countdown in a stack slot); and the body is 22 bytes short of retail's 980 because retail
+// expands 0x26ed40 into it (src/unknown_26e370.cpp).
+// MiniMax I (11-17): no new form, no lower score (236): the head still loads the actor pool into EAX where retail
+// loads it into ECX and keeps the scaled index in EAX where this build keeps it in EBX, and this build still spills
+// the actor pointer to [esp+0x14] where retail holds it in EBP; the definition-bit test written as a nested if
+// compiles to the same bytes as the && form, and the permuter's best variant (300 s, two tries, 205 differing
+// instructions on the reduced image against a baseline of 219) only reaches it through a constant local and a bool
+// flag set by one test, both banned, so the body stands.
+// score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
+// keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
+// is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
+// MiniMax E (11-16): no new form, no lower score (236); the body is still 22 bytes short of retail's 980 because
+// retail expands 0x26ed40 into it (src/unknown_26e370.cpp, BLOCKED-BY), and the prologue still loads the actor pool
+// into EAX where retail loads it into ECX.
+// MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
+// setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
+// actor through the pool; a permuter run was stopped at its time limit without reporting a variant.
+// score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
+// at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
+// slot) and the iterator compare against the cached actor differ.
+// MiniMax I (11-09): no new form, no lower score; the body has retail's shape but the allocation differs from the first instruction: retail loads the actor table into EAX and keeps the scaled actor index in EBX with the actor pointer in EBP, ours loads the table into ECX and keeps the index in EAX; the memory walk's helper 0x26ed40 is another lane's file: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
+// this round: no new form and no lower score; the prologue still loads the actor
+// pool into EAX and keeps the byte offset in EBX where retail uses ECX and EAX, the memory-entry walk
+// still keeps its count in EBX and folds the entry pointer into the offset, and the body is 22 bytes
+// short of retail's 980.
+// MiniMax S (11-09): two more forms for the memory-entry walk: the type test through the cached actor
+// with every other field read through a fresh actor_get gives 344, and the whole walk through the
+// cached actor gives 308, against the unchanged 236. Both put the entry pointer in EBX as retail has
+// it, but they fold the byte offset into that pointer and lose retail's offset in EDX with the count
+// in a stack slot, so the body stays.
+// MiniMax S (11-09): the actor view is the cached local for the fields retail reads through EBP (0x7c,
+// the prop-list clear, 0x3f4, 7, 0x1c, 0x18 and 0x54) and the prop entry is reached through one pointer;
+// the frame is 0x20 and the score is 236 (was 281). Still differs: the prologue loads the actor pool into
+// EAX and keeps the byte offset in EBX (retail ECX and EAX), the memory-entry walk keeps its count in
+// EBX and folds the entry pointer into the offset (retail a pointer in EBX, the offset in EDX and the
+// count in a stack slot), and the prop entry address is folded into the load instead of being
+// materialised before it.
+// MiniMax H (11-07): no new form, no lower score; the prologue still differs (retail loads the actor pool into ecx and the byte offset into eax, ours into eax and ebx, with a frame of 0x1c against 0x20) and the memory walk with it: retail walks an entry pointer in ebx with the byte offset in edx, the count in a stack slot and the actor re-derived inside the body, and it reads the slot field twice, while ours keeps the count in ebx, the offset in esi and the slot in a local.
+// MiniMax I (11-06): the actor view inlined at every use (310) and a local copy of the actor
+// index (same code) were tried; the memory loop as a countdown, with the slot read twice and with
+// the fields read through the indexed form gave 268, 286 and 363; no lower score.
 // Earlier: Frame 0x20 agrees; early actor-pool allocation, cleanup and slot homes remain.
 // frame 0x1c versus 0x20, early actor/pool allocation,
 // cleanup countdown and slot homes remain.
@@ -765,12 +827,63 @@ void swarm_leader_detach(long actor_index);
 // 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
 // (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
 // original observations, ordinal, iterators and complete body restored.
+// MiniMax E (11-10): no new form, no lower score: the memory walk is still expanded at this site, so
+// the walk's index keeps the actor offset and the step's size apart where retail keeps them
+// together; that expansion's shape is set in another file, which this lane may not edit.
 // MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
 // body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
 // unchanged 266 (fast; 281 ordinary).
+// Y606: Actual participant element pointer/reference, promoted/native slot: four
+// at 288 fast; member-array mutable/immutable bases, captured/live slots:
+// 259/259/285/285 versus fast 266 (full 281). NOT kept: seven-point lead;
+// native frame remains 0x1c/0x20. Original type/body restored.
+// Y608: One twice-used low-byte input truth carrier, bool/byte/signed-char/word/short/
+// dword/long/64-bit, 307/266/266/282/282/282/282/343 fast against control 266 (full 281).
+// NOT kept: no exact graph; frame/displacement/countdown homes remain. Original body restored.
 // DH379: Condition-owned stop/prop-next/actor-next results, seven subsets and immutable
 // bindings: 266/266/266/266/266/266/266/266 fast, against its unchanged reduced control. NOT kept:
 // no byte match or native frame/receiver recovery; original complete body restored.
+// Round 82 (m3 lane 10, fast control 236, aligned 106 [LCS, frame offsets kept]): the prop walk through the
+// existing 0x26be00/0x26be30 with the node pointer for the view index 285 (974 bytes) [142]; the same with the
+// view index re-read through prop_node_get after the callback 287 (948) [141]; that plus the iterator compare
+// against the cached actor 298 (942) [76: the prop walk, slot loop head and compare then line up with retail;
+// the frame is 0x1c without retail's memory-walk counter slot]; the cached-actor compare alone 308 (942) [104];
+// that walk and compare with the memory type test through the cached actor 292 (990) [124], with a short
+// memory index 294 (990) [124]; walk and compare with a short memory index 298 (942) [76]. Still BLOCKED-BY
+// 0x26ed40: the memory walk is joint_decline inlined (its short index keeps the actor offset and i*12 apart).
+// Round 62 (m3 lane 2, fast; 0x26ed40 matched each time it was called): the counts record read through g_5047f4 at each
+// use 236 (same code); the stop argument as `slot_index >= 4 ? NULL : slot` 236 (same code); the joint entry address
+// written at each store 314 (1006 bytes); the memory walk as retail's source presumably was (short index, type tested
+// through the cached actor, a call to the existing 0x26ed40) 364 (894 bytes: the actor offset then goes to EAX and is
+// spilled as in retail, the index takes EBX); that with the prop walk through the existing 0x26be00/0x26be30 and
+// prop_node_get for the view index 361 (884 bytes); the actor-iterator test by index (`iterator.actor_index !=
+// actor_index`) 289; the slot loop with a slot pointer as the matched 0x1e23c0 writes it 236 (same code). Retail's tail
+// also keeps NONE in EDI for the definition walk and stores the definition bit into the dead index slot. Still
+// BLOCKED-BY 0x26ed40 (inlined in retail; its file's /Ob1 keeps it out of line here: a build-flag decision).
+// M3 lane 10 r94 (fast, 0x26ed40/0x1e2150/0x258600/0x1e4990 listed, all MATCH; base 236, aligned 106, masked 65): no new form.
+// The first difference (+0x3: retail loads the actor pool into ECX and the offset into EAX, and keeps the actor pointer in EBP
+// unspilled) follows the memory walk, which is joint_decline (0x26ed40, MATCH) inlined in retail: its file's /Ob1 keeps it out
+// of line (a build-flag decision; `inline` on it costs 0x1bead0 and 0x26ef70), and the bool `value` needs the declaration in
+// src/unknown_1e3920.cpp, another lane's file this round. Still BLOCKED-BY 0x26ed40. Tried in the body: the prop walk with a
+// `next_index` local in place of the `current` copy 237; the unit branch first (`if (!actor->unknown007)`) 271; the prop record
+// released before the view record 286; the counts loop index as short 236 and the stop callback read at each use 236 (both the
+// same code).
+// MiniMax A (11-13): no new form, no lower score (236): the first difference is at +0x3, where retail loads the record pool
+// pointer into ecx and this build loads it into eax, and the body is 22 bytes short because retail expands 0x26ed40 into it
+// (BLOCKED-BY 0x26ed40, whose file is not this lane's).
+// MiniMax B (11-14, run 75): no new form, no lower score (236); the body is left as it was. What still differs: the first difference is
+// at +0x3, where retail loads the record pool pointer into ECX and this build loads it into EAX, and the body is 22 bytes short of
+// retail's 980 because retail expands 0x26ed40 into it: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
+// M3 lane 10 r106 (fast, callers and callees matched throughout): `value` as bool at the definition and all eight
+// declarations 288 (retail pushes the raw dword to 0x203ed0 and later tests its low byte); the memory walk as a test
+// through the cached actor and a call to joint_decline with a file-local `__forceinline` declaration 364 (894 B: the
+// redeclaration is not honoured across files); the view index re-read from the pool after the 0x1e2150 callback 280
+// (974 B), with the iterator compare against the cached actor 274; the memory walk as a counted for 526 (1182 B, it
+// unrolls). Retail also stores the definition-bit test into the dead actor_index slot ([esp+0x34]) before branching on
+// it, the shape of an inlined helper's returned bool.
+// NOT kept (coordinator review, MiniMax D 11-15): 236 -> 216 rested on a bool flag set by one test and read by the
+// next (definition_bit = false; if (definition) definition_bit = ...; if (definition_bit)), a form kept only with
+// a byte match.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
@@ -800,21 +913,21 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		function_203fb0(actor_index);
 	else
 		function_203ed0(actor_index, (byte)value != 0);
-	if (actor_get(actor_index)->unknown07c != NONE)
-		function_2694d0(actor_get(actor_index)->unknown07c, actor_index);
+	if (actor->unknown07c != NONE)
+		function_2694d0(actor->unknown07c, actor_index);
 	long prop_index = actor_get(actor_index)->first_prop_index;
 	while (prop_index != NONE)
 	{
 		long current = prop_index;
-		long prop_offset = (current & 0xffff) * 0x3c;
-		prop_index = *(long *)((g_502418->data + prop_offset) + 0x2c);
+		byte *prop_entry = g_502418->data + (current & 0xffff) * 0x3c;
+		prop_index = *(long *)(prop_entry + 0x2c);
 		function_1e2150(actor_index, current);
-		long view_index = *(long *)((g_502418->data + prop_offset) + 0x14);
+		long view_index = *(long *)(prop_entry + 0x14);
 		if (view_index != NONE)
 			record_pool_release(g_502414, view_index);
 		record_pool_release(g_502418, current);
 	}
-	actor_get(actor_index)->first_prop_index = NONE;
+	actor->first_prop_index = NONE;
 	s_record_pool_iterator prop_iterator;
 	byte *prop;
 	prop_iterator.data = g_50241c;
@@ -833,20 +946,20 @@ void __stdcall function_1e1a00(long actor_index, long value)
 			function_1e1740(iterator.actor_index, actor_index);
 	}
 	function_2628f0(actor_index, g_470fa0);
-	if (*(long *)((byte *)actor_get(actor_index) + 0x3f4) != NONE)
+	if (*(long *)((byte *)actor + 0x3f4) != NONE)
 		function_26dc20(actor_index);
-	if (actor_get(actor_index)->unknown007)
+	if (actor->unknown007)
 	{
-		if (*(long *)((byte *)actor_get(actor_index) + 0x1c) != NONE)
+		if (*(long *)((byte *)actor + 0x1c) != NONE)
 			swarm_leader_detach(actor_index);
 	}
 	else
 	{
-		if (actor_get(actor_index)->unknown018 != NONE)
+		if (actor->unknown018 != NONE)
 		{
-			byte *unit = (byte *)ai_object_get(actor_get(actor_index)->unknown018);
+			byte *unit = (byte *)ai_object_get(actor->unknown018);
 			if (*(byte *)(unit + 0xaa) == 0)
-				*(long *)(unit + 0x3d8) = actor_get(actor_index)->unknown054;
+				*(long *)(unit + 0x3d8) = actor->unknown054;
 		}
 		function_1e1250(actor_index);
 	}

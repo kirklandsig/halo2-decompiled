@@ -41,6 +41,11 @@ struct face_306b90
 	unsigned short axis;
 };
 
+inline __m128 spread_306d00(__m128 const single)
+{
+	return _mm_shuffle_ps(single, single, 0);
+}
+
 class box_306b90
 {
 public:
@@ -56,13 +61,19 @@ public:
 	void function_306d00(face_306b90 *face, int axis) const;
 };
 
-// score 9 (was 35): retail keeps the zero splat's shuffle and the second
+// Matched: the zero and the tiny value are named singles (zero first) spread at
+// their uses, and the sign mask is applied through a reference to the sum, so the
+// sum is the destination as in retail.
+// Before, 9 (was 35): retail keeps the zero splat's shuffle and the second
 // centre in xmm2 where ours uses xmm1, and its sign `and` writes the sum's
 // register where ours writes the mask's (written sum first, our mask load
 // moves to the top of the block).
-// score 9 (was 9): zero/centre coloring and sign destination still differ.
+// Zero/centre coloring and sign destination still differ.
 // Native row loop 9; selected normal value 77; both 77; side result 31;
 // row/side 31; normal/side 95; all three 95; intrinsic row with both 79.
+// Scalar row array 36; scalar offset array 51; both 54; intrinsic row alone 95;
+// intrinsic offset 82; aligned comparison read 9; aligned normal writes 9;
+// aligned normal reads and writes 9. NOT kept: ties or larger differences.
 // @retail 0x306b90
 void box_306b90::function_306b90(face_306b90 *face, int axis) const
 {
@@ -84,24 +95,34 @@ void box_306b90::function_306b90(face_306b90 *face, int axis) const
 		normal = _mm_xor_ps(first_direction, *(__m128 const *)g_4124a0);
 	}
 	float const side_value = face->side;
-	__m128 const positive = _mm_cmpgt_ps(axis_values_c0, splat_306b90(0.0f));
+	__m128 const zero = _mm_set_ss(0.0f);
+	__m128 const tiny = _mm_set_ss(1e-5f);
+	__m128 const positive = _mm_cmpgt_ps(axis_values_c0, spread_306d00(zero));
 	__m128 const negative_tiny = {-1e-5f, -1e-5f, -1e-5f, 0.0f};
-	__m128 const nudge = _mm_or_ps(_mm_and_ps(positive, splat_306b90(1e-5f)), _mm_andnot_ps(positive, negative_tiny));
-	__m128 const signs = _mm_and_ps(*(__m128 const *)g_4124a0, _mm_add_ps(axis_direction, _mm_mul_ps(splat_306b90(side_value), nudge)));
+	__m128 const nudge = _mm_or_ps(_mm_and_ps(positive, spread_306d00(tiny)), _mm_andnot_ps(positive, negative_tiny));
+	__m128 signs = _mm_add_ps(axis_direction, _mm_mul_ps(splat_306b90(side_value), nudge));
+	__m128 &kept = signs;
+	kept = _mm_and_ps(kept, *(__m128 const *)g_4124a0);
 	normal = _mm_xor_ps(normal, signs);
 	face->first_frame_normal = transform_point_306b90(&transform, &face->second_frame_normal);
 }
 
-// score 13 (was 13): the zero comparison and sign extraction still use different vector registers.
+// Matched: as 0x306b90, with the side's single named after the comparison and the
+// product held through a reference before the sum.
+// Before, 13 (was 13): the zero comparison and sign extraction still use different vector registers.
 // Earlier: as 0x306b90, the zero splat's shuffle and the first
 // centre take xmm3 in retail (xmm2 here), and the sign `and` writes the sum's
 // register there, the mask's here.
-// score 13 (was 13): centre/zero coloring and nudge/sign destinations remain.
+// Centre/zero coloring and nudge/sign destinations remain.
 // Early comparison 34; native normal 82; both 94; side result 22;
 // comparison/side 36; normal/side 96; all 102; comparison first 102.
 // zero intrinsic 86; zero-left comparison 16; disjoint mask join 14; named mask terms 13;
 // named terms and disjoint join 14; aligned axis load 81; aligned normal store 13;
 // both vector memory boundaries 81.
+// Scalar offset array 60; aligned comparison read 13; aligned branch reads 13;
+// scalar axis array 134; axis reference 29; bit-difference selection 63;
+// aligned inverse inputs 13; aligned second-frame write 13.
+// NOT kept: ties or larger differences.
 // @retail 0x306d00
 void box_306b90::function_306d00(face_306b90 *face, int axis) const
 {
@@ -117,10 +138,15 @@ void box_306b90::function_306d00(face_306b90 *face, int axis) const
 		face->side = 1.0f;
 		face->first_frame_normal = second_direction;
 	}
-	__m128 const positive = _mm_cmpgt_ps(axis_values_b0, splat_306b90(0.0f));
+	__m128 const zero = _mm_set_ss(0.0f);
+	__m128 const tiny = _mm_set_ss(-1e-5f);
+	__m128 const positive = _mm_cmpgt_ps(axis_values_b0, spread_306d00(zero));
+	__m128 const scale = _mm_set_ss(-face->side);
 	__m128 const positive_tiny = {1e-5f, 1e-5f, 1e-5f, 0.0f};
-	__m128 const nudge = _mm_or_ps(_mm_and_ps(positive, splat_306b90(-1e-5f)), _mm_andnot_ps(positive, positive_tiny));
-	__m128 const signs = _mm_and_ps(*(__m128 const *)g_4124a0, _mm_add_ps(axis_direction, _mm_mul_ps(splat_306b90(-face->side), nudge)));
+	__m128 const nudge = _mm_or_ps(_mm_and_ps(positive, spread_306d00(tiny)), _mm_andnot_ps(positive, positive_tiny));
+	__m128 push = _mm_mul_ps(spread_306d00(scale), nudge);
+	__m128 &push_kept = push;
+	__m128 const signs = _mm_and_ps(_mm_add_ps(axis_direction, push_kept), *(__m128 const *)g_4124a0);
 	__m128 const normal = _mm_xor_ps(face->first_frame_normal, signs);
 	face->first_frame_normal = normal;
 	// the normal's point seen from the second frame

@@ -18,33 +18,17 @@ union s_6ec80
     __int64 field_2;
 };
 
-#pragma pack(push, 1)
-struct s_6ec81
-{
-    byte *field_8;
-    byte *field_c;
-    long field_10;
-    long field_14;
-    s_unknown_3648 *field_18;
-    long field_1c;
-    long field_20;
-    long field_24;
-    long field_28[2];
-};
-
-#pragma pack(pop)
-#pragma pack(push, 1)
-struct s_6ec83
-{
-    s_6ec81 field_0;
-    byte field_30[4];
-    s_session_machine field_34;
-    byte field_3a[2];
-    long field_3c;
-};
-#pragma pack(pop)
-
-// score 13 (was 53): the two stack slots are swapped: retail keeps the short at esp+0x14 and
+// score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
+// MiniMax G (11-06): no new form, no lower score; five more forms that put the mask's zero inside the
+// guard — the two tests split into nested ifs, the mask declared outside and zeroed inside, the mask as
+// a signed int, the mask as an unsigned long, and the mask declared at the top of the function and
+// zeroed in the guard — all score 225. Retail has two `xor esi,esi`: one at the entry, where esi holds
+// the zero constant and ecx holds NONE, and one at the guard, which re-zeroes esi for the mask after esi
+// has been scratch in the setup block. Our baseline has both as well, but the guard's zero sits on the
+// block's dominator. Every form that moves the zero into the block also moves the constant registers
+// (NONE to edi, the zero to ecx) and takes the machines pointer out of ebx, so the placement and the
+// allocation cannot be won together from this source; the baseline stands.
+// Before round 75 (13, first written at 53): the two stack slots were swapped: retail keeps the short at esp+0x14 and
 // the pointer at esp+0x10, ours the other way round; the mask is zeroed before the guard.
 // The mask scoped inside the guard gives both retail's slots and its zeroing, but then NONE
 // and zero take edi and ecx (retail ecx and esi) and the machines pointer is not kept in ebx:
@@ -76,66 +60,158 @@ struct s_6ec83
 // a long written through a short pointer or as a long/short union 25 (974 bytes, slots unchanged), scoped 222/222;
 // pointer and short as the settings' first fields 18 (974 bytes, slots right), scoped 222; a word short 175
 // (982 bytes; its NONE is not the shared register), scoped 182.
+// Round 75 (lane 1, fast): the settings as plain locals instead of a struct put every slot in retail's relative order
+// (59, all 4 too high); retail's hole at esp+0x40 is the 8-byte alignment of the 0x4da0 pair, so the existing pair getter
+// with an `__int64` local gave retail's frame: 5 (0x5b120 still matches). On that body: the mask scoped 225; the pair
+// zeroed the other way round, chained or declared at their zeroing 225 each; the players test first 225; a for loop 348
+// (1059 bytes); the counter zeroed before the guard 88; a ready flag 226; zeroed in both arms 225; mask tested after the
+// join 156 (978 bytes); mask default in the else or pre-guard, zero again inside, joined test 226/226, else flag 225;
+// cleared on no data 150; the two tests split 156; the mask initialised first in the function 272 (984), beside the
+// first zero 272, beside the data pointer's zero 264, before or after the pair 210/51, before or after the arg_1 block
+// 209/243, before the name test 246, before the data test 8 (the zero stays where it is written). A forced-inline
+// active-player mask helper named 223 on the struct body, in the test 213 (976, data test ahead of the loop), plain
+// inline 287 (940, not inlined). `__assume(local_2 != NULL)` at four places 13 each on the struct body (slots unmoved);
+// out-param helper for the pair, inline short getter, nested live/flag and range/flag 13 each on the struct body.
+// Diagnostics (struct body, scoped, reverted): up to three volatile reads of the pointer or NONE stores leave NONE in
+// EDI; `field_c = 0` written after `field_8 = 0` gives NONE ECX at 57. `local_1 = false` replaces the old goto, same code.
+// With the mask scoped on this body: the flags set after the opening stores 228, the name zeroed first or last 225/225,
+// the opening values initialised at declaration 228, in an inline with out parameters 225. A permuter run on this body
+// tried nothing: its baseline (1256 s) and an 818-source reduced image used the whole 2400 s.
+// Round 69 (m3 lane 14, fast): a `while (local_15 < 16)` loop with the mask zeroed before the guard 348 (1059 bytes),
+// the same with the mask scoped 348; with the mask scoped: the players walked through a `player++` pointer 228,
+// `(dword)1 << local_15` 225; the mask declared with the top declarations and zeroed where it is 5 (same code).
+// Round 43 (m3 lane 18, fast): on this body a forced-inline active-mask helper called inside the guard 225 (plain
+// inline 287, 940 bytes, not inlined, as listed); an inline out-pointer getter for the 0x4f24/0x4f90 blocks (live
+// and flag test inside, as 0x6e720's lead) 5 (same code), with the mask scoped 225; the guard as two nested ifs
+// with the mask scoped 225; a forced-inline populated-blocks predicate (null tests, mask loop, data test) 226.
+// The scoped forms all give NONE EDI for its whole range and drop the machines pointer's EBX range.
+// Round 173 (m3 lane 4, fast), all with the mask scoped in the guard: `while (++local_15 < 16)` 225; a word mask 224;
+// the bit or-ed through a ternary 240 (974 bytes); the bit named in the loop body 109; the data and mask tests as two
+// ifs 228 (977 bytes).
+// Round 59 (m3 lane 2, fast), all with the mask scoped in the guard (alone 225: NONE EDI and zero ECX from the entry,
+// local_2 in memory, players in EBX): players declared first 225, players declared last 225, local_2 declared last
+// 225, the counter declared at the top and zeroed in the guard 225, counter then mask at the guard top 227, the two
+// flags declared true flag first 227, a short counter 247 (981 bytes).
+// Round 83 (m3 lane 10, fast), all with the mask scoped in the guard (alone 225: NONE takes EDI for the whole
+// setup and the frame's second_id/name and short/data slots swap): the block pointer, mask and counter named
+// machines/player_mask/player_index 225; the block pointers set in an if/else (no zero ahead of the test) 227;
+// the guard tested players first 225, with the if/else pointers 227; a typed player-record pointer for the loop 225.
+// Round 75 (m3 lane 15, fast; masked = register-masked aligned count): the scoped mask re-measured 225 (masked 19). On it the
+// 0x4da8 value as a ternary 269 (981 bytes, masked 7: NONE goes back to ECX, but the ternary adds a jmp and the two block
+// pointers swap EBX/EDI); the data pointer as a ternary 256 (masked 26); the 0x4dac value as a ternary 242 (974 bytes, masked
+// 21); all three 254 (masked 13), the same unscoped 254; first/second id NONE chained 225, unscoped 7. Same code as the plain
+// reads: inline result-default getters for the 0x4da8/0x4dac/data/short values (225 scoped, 5 unscoped).
+// Round 96 (m3 lane 10, fast): the scoped mask's NONE-to-EDI shift comes from the 0x49c8 getter's result-default
+// body: with the mask scoped and that read written by hand (`if (live) value_49c8 = arg_0->value49c8;`) NONE and the
+// zero stay in ECX/ESI and the first difference moves from +0x17 to +0x101, 195 (left: the hand read compares against
+// the NONE register where retail's getter loads into ECX, compares with -1 and re-forms NONE, and the two block
+// pointers swap EBX/EDI); the same hand read unscoped 195, scoped with the 0x4d08 getter also by hand 195; scoped with
+// only the 0x4d08 getter by hand 225; scoped with the result-default 0x49c8 body as a file-local forceinline helper
+// 225. A compile-only harness (dummy first parameter so the session arrives in EDX, getters inline) does not show
+// the shift: there the scoped mask keeps NONE in ECX. The 0x49c8 read as `live ? value : NONE` 177 unscoped, 229
+// scoped (990 bytes each).
+// Round 97 (m3 lane 1, fast), all with the mask zeroed inside the guard (alone 225): the machines block's first
+// word read into a named local ahead of the loop 229 (980 bytes: NONE stays in ECX, but the word is then loaded
+// into EDI before the loop and the block pointers move to ESI/EBX); an out-pointer getter for the two blocks with
+// the null tests, mask loop and data test in an inline predicate taking both pointers 308 (928 bytes, not
+// inlined), both force-inlined 226; the mask zeroed between the two pointer tests with a populated flag 227
+// (diagnostic: the zero has to be live at the first pointer test for retail's allocation); a non-zero start value
+// (diagnostic) 227, so the shift does not come from sharing the zero register; the machines pointer renamed to
+// sort after the players pointer 225 (names move nothing).
+// A bool for "both blocks present" computed where the two blocks are fetched and tested at the guard, mask zeroed
+// inside 251 (985 bytes; it is materialised as a byte, not carried as the two pointer registers).
+// Round 115 (m3 lane 16, fast with 0x5b120; control 5), all with the mask scoped in the guard (alone 225: NONE in EDI,
+// the zero in ECX, the machines pointer spilled): 0-7 dead initialised locals at the top 225 each (no phase effect on
+// this allocation); the two block copies as aggregate assignments in place of memcpy 225; the members-equal bool
+// computed where the mode is chosen 219; the member count read at its test instead of a local 115 (the later code
+// recovers, the entry roles stay NONE EDI / zero ECX); the local machine read at its store instead of the copy 236.
+// Also: with the mask scoped, the member count at its test plus the members-equal bool at the mode choice 164, plus
+// the local machine read at its store 238 (960 bytes); unscoped, the member count read at its test 150.
+// Round 105 (m3 lane 1, fast with 0x6ec10 and 0x5b120; control 5): the mask typed long 5 (same code); the guard tested
+// players first (`if (players && local_2)`) 89; that with the mask scoped 225; the mask scoped after the counter with the
+// active test spelled `!= 0` 227; a 600 s permuter run, 17 tries, best 5.
+// M3 lane 4 r202 (fast with 0x6ec10/0x5b120): the players local typed as the player-record pointer (cast at its
+// assignment, plain indexing) 5 (same code), that with the mask scoped 225; with the mask scoped: the 0x49c8 read by
+// hand plus both block pointers cleared and set players first 192 (the two pointers' homes and EBX/EDI then both swap),
+// only the two assignments players first 225 (974 B), only the two NULL initialisations swapped 225.
+// M3 lane 14 r100 (fast with 0x6ec10/0x5b120; base 5): re-measured the scoped mask 225 (local_2 then has no register
+// at all, read from its home at each test; players takes EBX, NONE EDI, the zero ECX; the short/data and name/second_id
+// homes swap). On the scoped mask: the name and data pointer declarations swapped 225; `value_49c8` declared at its NONE
+// store 225; first_id, second_id and players declared at their first stores 225; an unsigned counter 226; a char counter
+// 247 (981 B). Declarations and initialisers do not move this allocation; only where the zero is written does.
+// M3 lane 14 r101 (fast with 0x6ec10/0x5b120; base 5): the mask scoped in the guard with the loop counter declared and zeroed
+// just before the guard 88 (every register is retail's: NONE ECX, the entry zero ESI, the mask's zero inside the guard, the
+// block pointers EBX/EDI; left: the counter's zero sits before the guard and the frame is 0x1154 with the slots reshuffled);
+// that with the counter declared among the top declarations 88 (same code). With the counter's zero inside the guard the
+// scoped mask goes back to 225: the counter in a nested block, an `int` counter, the counter declared before the guard and
+// zeroed inside it, 225 each. So the scoped form's register shift follows the counter's zero, not the mask's.
+// M3 lane 14 r104 (fast with 0x6ec10/0x5b120; base 5), all with the mask scoped in the guard: the mask accumulated through a
+// reference bound to it 225; the active test through a trivial inline accessor taking the player record 225; the mask and
+// counter zeroed by one chained assignment, mask first 227, counter first 225; the bit or-ed in branch-free from the active
+// byte 247 (286 instructions). Each keeps NONE in EDI and the entry zero in ECX.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
-    /* the session's settings, gathered in one block before the options are built */
     s_unknown_108 *local_2;
     short local_3;
-    s_6ec83 local_26;
+    byte *stored_data;
+    byte *name;
+    long session_kind;
+    long second_id;
+    s_unknown_3648 *players;
+    long first_id;
+    long value_49c8;
+    long value_4da8;
+    __int64 value_4da0;
+    s_session_machine machine;
+    long value_18;
     bool local_0 = false;
     bool local_1 = true;
-    local_26.field_0.field_1c = NONE;
-    local_26.field_0.field_14 = NONE;
-    local_26.field_0.field_c = 0;
-    local_26.field_0.field_24 = NONE;
+    first_id = NONE;
+    second_id = NONE;
+    name = 0;
+    value_4da8 = NONE;
     if (session_state_is_live(arg_0))
-        local_26.field_0.field_24 = arg_0->value4da8;
-    local_26.field_0.field_28[0] = NONE;
-    local_26.field_0.field_28[1] = NONE;
+        value_4da8 = arg_0->value4da8;
+    value_4da0 = arg_0->get_values_4da0();
+    stored_data = 0;
     if (session_state_is_live(arg_0))
-    {
-        local_26.field_0.field_28[0] = arg_0->value4da0;
-        local_26.field_0.field_28[1] = arg_0->value4da4;
-    }
-    local_26.field_0.field_8 = 0;
-    if (session_state_is_live(arg_0))
-        local_26.field_0.field_8 = arg_0->data4db0;
+        stored_data = arg_0->data4db0;
     local_3 = NONE;
     if (session_state_is_live(arg_0))
         local_3 = arg_0->value5dd0;
-    local_26.field_0.field_10 = NONE;
+    session_kind = NONE;
     if (session_state_is_live(arg_0))
-        local_26.field_0.field_10 = arg_0->value4dac;
-    local_26.field_0.field_20 = NONE;
-    local_26.field_3c = arg_0->value18;
-    arg_0->get_values_4d08(&local_26.field_0.field_1c, &local_26.field_0.field_14, &local_26.field_0.field_c);
+        session_kind = arg_0->value4dac;
+    value_49c8 = NONE;
+    value_18 = arg_0->value18;
+    arg_0->get_values_4d08(&first_id, &second_id, &name);
     local_2 = 0;
-    local_26.field_0.field_18 = 0;
+    players = 0;
     if (session_state_is_live(arg_0) && arg_0->flag4f20)
     {
         local_2 = &arg_0->data4f24;
-        local_26.field_0.field_18 = &arg_0->data4f90;
+        players = &arg_0->data4f90;
     }
     if (arg_1)
     {
-        local_26.field_0.field_20 = arg_0->get_value_49c8();
-        if (local_26.field_0.field_20 == NONE)
+        value_49c8 = arg_0->get_value_49c8();
+        if (value_49c8 == NONE)
             local_1 = false;
     }
-    if (local_26.field_0.field_14 == NONE)
+    if (second_id == NONE)
         local_1 = false;
-    if (!local_26.field_0.field_c || !*local_26.field_0.field_c)
+    if (!name || !*name)
         local_1 = false;
-    if (!local_26.field_0.field_8)
+    if (!stored_data)
         local_1 = false;
     dword local_14 = 0;
-    if (local_2 && local_26.field_0.field_18)
+    if (local_2 && players)
     {
         long local_15 = 0;
         do
         {
-            if (((s_session_player *)local_26.field_0.field_18)[local_15].active)
+            if (((s_session_player *)players)[local_15].active)
                 local_14 |= 1 << local_15;
             local_15++;
         } while (local_15 < 16);
@@ -144,24 +220,24 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
     }
     else
         local_1 = false;
-    if (local_26.field_0.field_10 >= 0 && local_26.field_0.field_10 < 3 && local_1)
+    if (session_kind >= 0 && session_kind < 3 && local_1)
     {
         bool local_16 = arg_0->current_member == arg_0->member_index;
         long local_17 = arg_0->player_count;
         const s_session_member *member = &arg_0->members[arg_0->current_member];
         long local_18 = arg_0->member_count;
-        local_26.field_34 = *(const s_session_machine *)((const byte *)member + 0xa);
+        machine = *(const s_session_machine *)((const byte *)member + 0xa);
         if (local_3 != NONE)
         {
             if (local_17 > 2)
                 local_1 = false;
             if (local_18 > 1)
-                goto local_23;
+                local_1 = false;
         }
         if (local_1)
         {
             long mode;
-            switch (local_26.field_0.field_10)
+            switch (session_kind)
             {
             case 0: mode = 1; break;
             case 1: mode = local_16 ? 3 : 2; break;
@@ -171,20 +247,19 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
             s_6ec80 local_21;
             function_138110((s_game_options *)&local_21);
             s_session_options *local_22 = &local_21.field_0;
-            *(long *)(local_21.field_1 + 0x14) = local_26.field_0.field_1c;
-            *(long *)(local_21.field_1 + 0x18) = local_26.field_0.field_14;
-            strncpy(local_22->name, (char *)local_26.field_0.field_c, sizeof(local_22->name));
+            *(long *)(local_21.field_1 + 0x14) = first_id;
+            *(long *)(local_21.field_1 + 0x18) = second_id;
+            strncpy(local_22->name, (char *)name, sizeof(local_22->name));
             local_22->name[sizeof(local_22->name) - 1] = 0;
             local_22->unknown4 = (char)mode;
-            switch (local_26.field_3c)
+            switch (value_18)
             {
             case 0: local_22->unknown5 = 1; break;
             case 1: local_22->unknown5 = 2; break;
             case 2: local_22->unknown5 = 3; break;
             }
-            *(long *)(local_21.field_1 + 8) = local_26.field_0.field_28[0];
-            *(long *)(local_21.field_1 + 0xc) = local_26.field_0.field_28[1];
-            *(long *)(local_21.field_1 + 0x10) = local_26.field_0.field_24;
+            *(__int64 *)(local_21.field_1 + 8) = value_4da0;
+            *(long *)(local_21.field_1 + 0x10) = value_4da8;
             if (local_3 != NONE)
             {
                 local_22->type = 1;
@@ -195,13 +270,13 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
             else
             {
                 local_22->type = 2;
-                memcpy(local_22->unknown134, local_26.field_0.field_8, sizeof(local_22->unknown134));
-                *(long *)(local_21.field_1 + 0x130) = local_26.field_0.field_20;
+                memcpy(local_22->unknown134, stored_data, sizeof(local_22->unknown134));
+                *(long *)(local_21.field_1 + 0x130) = value_49c8;
             }
             memcpy(&local_22->machine_mask, local_2, sizeof(*local_2));
-            memcpy(local_22->players, local_26.field_0.field_18, sizeof(*local_26.field_0.field_18));
+            memcpy(local_22->players, players, sizeof(*players));
             local_22->local_machine_valid = true;
-            local_22->local_machine = local_26.field_34;
+            local_22->local_machine = machine;
             g_510548 = false;
             g_51054c = GetTickCount();
             if (function_138180(local_22) && function_18e8b0(local_22))
@@ -210,7 +285,6 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
             g_51054c = GetTickCount();
         }
     }
-local_23:
     return local_0;
 }
 

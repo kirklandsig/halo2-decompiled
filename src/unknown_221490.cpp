@@ -342,6 +342,13 @@ void function_2218f0(void)
 	g_502118 = NULL;
 }
 
+// score 9: the body is retail's except the SSE registers. Retail keeps the
+// pre-fade time in xmm0, current in xmm2 and divides delta in xmm0; ours keeps
+// current in xmm0 and the fraction in xmm5, so the subtraction is scheduled
+// before the division. Swapping the target/current declarations, a named
+// fraction local, an inline fraction, a separate initial-time local, the
+// commutative add and a _ReadWriteBarrier after the division all measured 9 to
+// 11. Permuter: 125 tries in 300 s (seed 999), no form below 9.
 // @retail 0x221900
 void function_221900(
 	real delta)
@@ -488,11 +495,16 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
-// MiniMax A (11-05): the count stored as the block's first statement, ahead of the voice reference, and the play
-// bit spelled `(flags >> 1) & 1`, keeps retail's 618-byte length and the frame, and lowers the diff to 68 (not kept: under the keep bar).
-// Still differs: the play bool sits in BL and the 3D bool in a stack byte where retail keeps the 3D bool in BL
-// and the play bool in the stack byte; with that, the EAX/ECX roles for the voice offset, the descriptor zero
-// and the input mixbin are swapped.
+/* claims the next voice: a submix buffer reading input_mixbin, plus a 3D buffer when bit 0
+   of flags is set (playing at once when bit 1 is); the voice index, or NONE when none is left */
+// MiniMax S (11-10): no new form, no lower score (71); the 3D bool still sits in a stack byte and the
+// play bool in BL where retail keeps the 3D bool in BL and the play bool in the stack byte, and the
+// EAX and ECX roles for the voice offset are still swapped. The count stored as the block's first
+// statement measures 68 again, a gain of three that the keep rule drops on a function still above 30,
+// so the original body stands.
+// MiniMax R (11-08): no new form, no lower score (71); the two flag bytes still take the opposite roles of
+// retail's, and the EAX and ECX roles for the voice offset are still swapped.
+// MiniMax I (11-06): no new form, no lower score; the two flag bytes still take the opposite roles of retail's (retail copies the flags byte into BL and keeps the play bit in the stack byte, ours keeps the play bit in BL and the 3D bit in the stack byte), and the EAX and ECX roles for the voice offset are still swapped; this round the play bit written as (flags >> 1) & 1, the 3D bit through a byte cast and the two declarations in both orders score 71, 71, 71 and 182, and the 24 statement orders of the voice, count and flag block score 68 at best, a gain of three that the keep rule drops on a function still above 30, so the original body stands.
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
@@ -644,24 +656,6 @@ bool sound_driver_voice_create_buffer(
 // the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
 // `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
 // one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
-// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
-// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
-// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
-// Round 226: actual result acquired before capacity admission, short/word/long/dword with
-// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
-// caller; original result lifetime, modes, storage and complete body restored at 71.
-// Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
-// result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
-// spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not
-// the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
-// `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
-// one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
-// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
-// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
-// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
-// Round 226: actual result acquired before capacity admission, short/word/long/dword with
-// play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
-// caller; original result lifetime, modes, storage and complete body restored at 71.
 // Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
 // first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D
@@ -782,6 +776,59 @@ bool sound_driver_voice_create_buffer(
 // voice placement, declaration order): best 73 here, the early count above.
 // MiniMax A (11-05): the two flag bools in the other order 181 (the play bit is then computed eagerly from ECX as retail, but the count argument takes EBP, the frame drops to 0x7c and the flags byte copy goes to AL); the same with the count declared before the result 181, with the play bit as an unsigned char 181, with the bools ahead of the count store 180 and with a dword count 182; a byte copy of the flags 68 and the declarations reordered 68 (the same code); the 3D test inlined as `flags & 1` 180; no lower score.
 // MiniMax A (11-05): the 3D test spelled `flags & 1` on its own 180 (604 bytes, the flags word then reaches the callee as a stack argument and the voice index takes EAX) and the same with the play bit computed ahead of the count 180; the 3D flag local first 181, both bools at the top of the block 180; the bools between the count store and the voice reference 172 (the play bit then reaches the stack byte and the voice offset ECX as retail, but the 3D flag goes to AL and the voice index to EBP), the play bit spelled as a mask test 68 (the same code) and the 3D flag first with the play bit from the flags word 180; no lower score.
+// MiniMax A (11-05): the count stored as the block's first statement, ahead of the voice reference, and the play
+// bit spelled `(flags >> 1) & 1`, keeps retail's 618-byte length and the frame, and lowers the diff to 68 (not kept: under the keep bar).
+// Still differs: the play bool sits in BL and the 3D bool in a stack byte where retail keeps the 3D bool in BL
+// and the play bool in the stack byte; with that, the EAX/ECX roles for the voice offset, the descriptor zero
+// and the input mixbin are swapped.
+// M3 lane 15 r60 (fast with 0x191420): the voice index declared inside the range-test block (test on the count field),
+// 3D flag first 193 (589 bytes), play first 107 (608); the range test inverted with `result = NONE` in its own arm, 3D flag
+// first 177 (602, 0x191420 then 1); both flag bools at function scope after the voice index, 3D flag first 184 (600); 3D flag
+// first with the flag locals renamed (sorting first, then last), under LTCG, 182/182 (599, same code). Diagnostics, reverted:
+// 3D flag first with a constant result 197 (587: the input mix bin then takes EBP and the 3D flag still spills); 3D flag first
+// with a volatile voice index 157 (618: the voice index gets retail's spilled home, but the input mix bin takes EBP and the zero
+// EBX, so every dword candidate outranks the byte flag, where retail's 3D flag beats the input mix bin and the voice index).
+// P351: Raw playback-bit byte/word/long/dword with playback-first/spatial-first production:
+// 79/152/166/166/179/165/168/168. NOT kept: no byte match; spatial/play and descriptor zero/input homes remain.
+// Original complete body and existing helpers restored.
+// Round 135 (m3 lane 7, fast with 0x191420, which stays matched): the 3D flag first with a word (zero-extended) voice index
+// and a long result 155 (the voice index takes EBP, both bools spill); `__assume(voice_index >= 0)` after the range test 71
+// (same code), with the 3D flag first 182 (599 bytes); the 3D flag first with the voice reference indexed by the count field
+// 193 (589); the 3D flag first with the 3D failure decrement through the `globals` local 141 (618 bytes: globals then holds
+// ESI to the end and the voice index spills as retail, but the zero takes EBX and both bools still spill).
+// MiniMax D (11-06): no lower score; this round the two flag bools' declaration order swapped (182), the 3D flag
+// as a byte declared first (182) and second (71, the same code), the 3D test spelled `(byte)flags & 1` (71, the
+// same code), the play bit shifted instead of masked (71, the same code), a byte copy of the flags word with the
+// play bit shifted (71, the same code), and the 3D local dropped so the test reads `flags & 1` (that one breaks
+// the caller 0x191420, so it was reverted). Still differs: retail computes the 3D descriptor flags arithmetically
+// and copies the impulse parameter address through EAX where ours copies it through EDX.
+// Round 85 (m3 lane 10, fast with 0x191420): the 3D flag first with the count stored as the block's first statement 181 (598 bytes); that with the
+// result assigned right after the voice reference 182 (599); the 3D flag as a `long` defined first 125 (618 bytes, but the flags arrive in EAX, play keeps
+// BL and the 3D flag a dword slot; 0x191420 1); `register` on the 3D flag, play first 71 (same code), 3D flag first 182 (599); play defined inside the
+// 3D block with the count stored first 150 (620, 0x191420 1). Reading unchanged: retail's order is the 3D flag (byte copy in BL), then play (in place,
+// spilled), and here the voice index and the zero outrank the 3D flag's copy in that order.
+// M3 lane 8 r144 (fast with 0x191420; control 71): the play bit defined inside the 3D block 158 (0x191420 then 1); explicit
+// returns in place of the result local, play first 162 (626 bytes), 3D flag first 146 (619); the result assigned at the end of
+// each arm with no early assignment, 3D flag first 175 (608), play first 111 (628); the count published after the submix
+// block 167 (626). All but the last also lose the caller 0x191420 by one instruction. Body restored.
+// Round 86 (m3 lane 1, fast with 0x191420, which stays matched; aligned/masked in brackets, base 71 [52/14]): the matched
+// sibling 0x220a70's locals. The device read into a local before the first clear and used for both creations 120
+// [71/17]; with the 3D flag defined first 118 [67/15] (frame 0x84). LEAD: the device local inside the first creation
+// block only (one use), 3D flag first: 78 [60/9], retail's frame and `mov bl, cl; shr ecx, 1; and cl, 1` (the 3D flag
+// in BL, play in the stack byte), so a value live into the first creation is what lets the 3D flag win BL; with the
+// count stored as the block's first statement 70 at 619 B [57/6] (left: the count store is scheduled ahead of play's
+// mask and the voice offset takes EAX, the zero ECX, the input mix bin EAX, where retail has ECX/EAX/ECX); on 70: the
+// count as `voice_count++` 70 (same code), the voice as a pointer local 70 (same code), the mix-bin count stored
+// before the pointer 72 (619 B); the count stored after the voice reference 72 (a late `inc esi`), stored before the
+// first block 78. None kept: the one-use device local and the moved count store need a match.
+// Round 67 (m3 lane 15, fast with 0x191420; aligned/masked = difflib counts with targets / registers masked, base 71
+// aligned 54 masked 14): retail's 3D bool dies at its test and play is reloaded into BL there (`mov bl, [esp + 0x13]`),
+// so BL goes to the one-use 3D bool for the short first range and to play for the rest. The count stored before the
+// descriptor clear 71 (one store moves); the result assigned at the block top 71; both 71; the 3D flag defined first 182
+// (599 bytes, aligned 122, masked 67); that with a long result 158 (618 bytes, aligned 63, masked 23: both bools take
+// retail's roles, the result is a sign-extended copy stored after the range test). After the matched 0x220a70's idiom:
+// both mix-bin records stored count first 74; the 3D block's direct-sound object in a local read before its zeroing 92;
+// the 3D pair array and its own mix-bin record inside the success arm, count first, with that local 117 (623 bytes).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -793,9 +840,10 @@ short sound_driver_voice_new(
 
 	if (voice_index < 0x40)
 	{
-		s_sound_driver_voice &voice = globals->voices[voice_index];
-		bool play = (flags & 2) != 0;
+		globals->voice_count = voice_index + 1;
 		bool three_d = flags & 1;
+		bool play = (flags & 2) != 0;
+		s_sound_driver_voice &voice = globals->voices[voice_index];
 		DSMIXBINVOLUMEPAIR pairs[6];
 		DSMIXBINS mixbins;
 
@@ -803,11 +851,11 @@ short sound_driver_voice_new(
 			DSBUFFERDESC description;
 			memset(&description, 0, sizeof(description));
 
-			globals->voice_count = voice_index + 1;
 			description.dwSize = sizeof(description);
 			description.dwFlags = DSBCAPS_FXIN2;
 			description.dwInputMixBin = input_mixbin;
-			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(globals->direct_sound, &description, &voice.submix, NULL)))
+			LPDIRECTSOUND direct_sound = globals->direct_sound;
+			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(direct_sound, &description, &voice.submix, NULL)))
 			{
 				IDirectSoundBuffer_SetVolume(voice.submix, 0);
 				pairs[0].dwMixBin = 0;
@@ -838,7 +886,8 @@ short sound_driver_voice_new(
 			buffer_description.dwSize = sizeof(buffer_description);
 			buffer_description.dwFlags = (play ? DSBCAPS_FXIN2 : DSBCAPS_FXIN) | DSBCAPS_CTRL3D;
 			buffer_description.dwInputMixBin = input_mixbin;
-			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(SOUND_DRIVER_GLOBALS->direct_sound, &buffer_description, &voice.buffer, NULL)))
+			LPDIRECTSOUND direct_sound = SOUND_DRIVER_GLOBALS->direct_sound;
+			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(direct_sound, &buffer_description, &voice.buffer, NULL)))
 			{
 				buffer_pairs[0].dwMixBin = 6;
 				buffer_pairs[0].lVolume = 0;
@@ -941,6 +990,93 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
 // both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
 // nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.
+// Round 75 (lane 1, fast): diagnostic: two dead loads anywhere between the memset and the 0x12aff0 call with both
+// barriers removed differ from retail only by those two loads, so retail has no barriers and two more scratch steps (or
+// a decibels load that takes no step); one dead load gives decibels EDX but every later register right. Forms that
+// supply no step: the decibels forwarding helper 21 (without the first barrier 27, the second 22, both 28); forced-inline
+// direct-volume or room helpers with parameters 21/27/22/28 each; a defaults helper 21; decibels declared first,
+// definition and caller, 21/27/22/28. Without barriers: named gains 171 (681 bytes), gain fields named 172 (682);
+// named, const or struct-held bounds, an array of bounds, decibels through a local or a struct, a four-parameter
+// forwarder, decibels by const reference, a pointer local for the first stores, const references or an array pointer for
+// the two volumes, the macro at the two volumes, dead zero or floor stores to the room, HF or direct fields, memset
+// forwarders and a zero helper, a volume-store helper for two or four stores: 28 each. `= { 0 }` plus a barrier 192
+// (667 bytes), `= { }` or memset plus a barrier 35 (without the first barrier 41); the gain helper by const reference 183.
+// Round 94 (lane 16, fast): without both barriers (control 28): the globals read at each use 28; the voice pointer assigned
+// after the memset 29; one volume local for the first two volumes and the pinned room 28. The volume helper with early
+// returns 184 (699 bytes; 0x220fd0 204); the voice as a reference 21.
+// Round 79 (fast; compile-only reproduces our registers): with no memset, or a memset of one dword (an immediate store,
+// no zero register), every scratch register is retail's; a load-and-store temporary added anywhere, unused locals, and
+// the zero register's placement change nothing, so the memset's zero is the one free register choice ahead of the
+// decibels load. Without barriers: the room clamp as an if/else-if stored to both fields 96 (672 bytes); a named loss
+// 131 (669); named obstruction/occlusion gains 91 (677); the voice from the global, `globals` after it 28; one `volume`
+// local for both direct values 28; `parameters = DSI3DL2BUFFER();` 195 (684); memset ahead of globals/voice 29.
+// Compile-only: deleting any other block keeps decibels ECX; a zero in a callee-saved register (an explicit nine-value
+// initializer, a nine-dword loop) gives retail's later registers; memset wrappers, RtlZeroMemory/RtlFillMemory keep ours.
+// Real build: the explicit nine-value initializer 211 (638 bytes: LTCG drops every zero store).
+// Round 175 (fast): the volume helper with `volume = -6400` first and the conversion under `gain != 0.0f` 137 (689
+// bytes, 0x220fd0 builds 199 in the reduced image), the same without both barriers 134; a named float product in the
+// helper (`real decibels = log10(gain) * 2000.0f; volume = (long)decibels;`) 21 (same code), without both barriers 28;
+// `real const decibels` as the parameter 21 (same code); a 600 s permuter run (66 tries) none below 21.
+// Round 78 (m3 lane 14, fast; compile-only /O2 /arch:SSE /Gr reproduces every register here, two probe loads at the
+// top, at the memset or after either volume give all of retail's, after the 0x12aff0 call only the later ones; with
+// a 4-byte memset (immediate stores, no zero register) all are retail's, and removing or constant-folding either
+// volume changes nothing, so the zero is the only rotation step ahead of the decibels load): the two buffer calls
+// as the C++ methods 21 (same code); the volume clamp as an inline helper taking the truncated long, without barriers
+// 175 (677 bytes); the voice through an inline getter taking globals and the index 21; decibels as an s_decibels
+// parameter and field (plain; 0x220e00 and 0x220fd0 still match) 21; re-measure between round 75's one- and
+// four-parameter forwarders: the 0x12aff0 call through an inline (decibels, flag) forwarder 21;
+// the filter declared ahead of the buffer parameters, without barriers 28 (same as that control). Compile-only, same
+// registers: forwarders with one, two (with the index) or four parameters, const globals or voice, the buffer
+// parameters declared first, a dword index, the voice from the global or ahead of `globals`, a zero local for the
+// memset, the memset after the first volume.
+// Round 157 (m3 lane 8, fast): the existing gain-to-volume helper `__forceinline` 21 (same code; 0x220fd0 194, 571 bytes).
+// Round 78 (m3 lane 15, fast; a compile-only build of this file reproduces every scratch register): without both
+// barriers (control 28, re-measured): `__assume(voice->buffer != NULL)` after the voice pointer 28; `__assume(voice_index
+// >= 0 && voice_index < globals->voice_count)` there 28; a count local with `__assume(voice_index < count)` 28; an empty
+// `if (voice->buffer != NULL && voice->submix != NULL)` there 28; the first two gains bound to const references ahead of
+// their conversions 28 (all the control's code). Reading (the no-barrier listing): from the truncation on retail is a plain
+// next-fit EAX/ECX/EDX rotation (truncation ECX, mask EDX, buffer set-up EAX/ECX, coefficient EDX, EAX/ECX again) and so is
+// ours one step ahead, which then skips the busy EAX at the mask; the one step is the memset's zero. Compile-only, no
+// form with retail's registers and no added code: 28 dead or code-free statements after the voice pointer or the memset
+// (unused loads, empty tests, inline getters, eight assume shapes); a call ahead of the decibels load (the rotation is not
+// reset by calls); forwarding, reference, out-parameter and forced-inline wrappers of the first two conversions; named
+// volume locals; the helper returning `int`, `dword` or `LONG`, with an `int` local, or converting through `__int64`,
+// `dword`, `double` or log10f. Forms that change the code: the helper returning from both arms 205 lines for 199, a
+// pinned-volume or outer-ternary helper 205/208, early returns or a PIN statement 210 (decibels EAX, the rest ours), the
+// helper returning `short` (a `movsx` per use, 204 lines) gives all three of retail's registers: a widening per conversion
+// is the kind of step retail has two more of.
+// Round 163 (m3 lane 8, fast; 0x220fd0 builds differently in the reduced image, so helper changes need the plain
+// check): a dead `= 0` initialiser on the helper's volume 21 (same code); the helper's clamp as two separate ifs 32; the
+// three aggregates declared ahead of the globals and voice pointers 21 (same code); the 0x12aff0 call made before the
+// memset 104 (672 bytes; decibels then takes EAX, as the rotation predicts); the first barrier moved to right after the
+// memset 41.
+// Also round 163: the filter declared ahead of the I3DL2 parameters (barriers kept) 21; the helper's product as
+// `2000.0f * log10(gain)` 21 (plain; 0x220fd0 and 0x220e00 stay matched).
+// Round 94 (m3 lane 13, fast with 0x220e00, which stays matched): the three float stores right after the memset, ahead
+// of both volumes, 93 (672 bytes); between the two volumes 67 (672 bytes); right after the memset with both barriers
+// removed 91 (672 bytes); the two direct volumes pinned again at the call site, `PIN(volume(gain), -6400, 0)`, 255 (758
+// bytes); the I3DL2 settings filled by a static inline helper taking (globals, voice, decibels, parameters), no
+// barriers, 724 (kept out of line, 133 bytes).
+// Round 98 (m3 lane 14, fast with 0x220e00, which stays matched): the first barrier between the two direct volumes 30,
+// that without the second barrier 31; the second barrier after the room pair, ahead of the two HF levels 27; the
+// attenuation call right after the memset, ahead of both volumes 105 (671 bytes); the room pair chained HF first
+// (`lRoomHF = lRoom = PIN(...)`) 21 (same code).
+// Round 130 (m3 lane 12, fast): a platform type name for the parameters (real build; compile-only before) 21; the helper's zero
+// test as `!gain` 21 (same code; 0x220fd0 builds 194 in the reduced image as before); the voice as a const pointer 21,
+// globals and voice both const 21. Diagnostic: with both barriers removed, the stretch between them (three float
+// stores to the HF levels) as a forceinline helper taking the parameters, globals, voice and decibels 28, the same as
+// no barriers (the lDirectHF store still sinks to the call and decibels still takes ECX), so an inlined body's edge
+// is no fence here; re-measured, no barriers 28.
+// Round 111 (m3 lane 1, fast with 0x220e00, which stays matched; barriers kept): `attenuation` declared first 21; the
+// memset and every I3DL2 field store through one multi-use buffer pointer 21; a platform type name in place of the memset (real
+// build) 21 (all the same code); the 0x12aff0 call between the two direct volumes 71 (672 bytes); between the rolloff
+// and obstruction zero stores 120. Reading: g_47005c from +4 has this aggregate's nine-field layout and 0x220fd0 fills
+// the same five fields there from the same three gains, so the shared stretch is one idiom in both.
+// Round 102 (m3 lane 13, fast with 0x220e00, which stays matched): the two direct volumes through a forced-inline setter
+// taking the field's address and the gain (barriers kept) 21 (same code); both barriers removed with the memset, every
+// parameter store and the call through one multi-use pointer to the parameters 28 (the no-barrier control); the memset
+// ahead of the globals and voice pointers, barriers kept, 25; the voice pointer by byte arithmetic from the voice array
+// 21 (same code); the room HF level from the clamp expression in place of the room level read back 112 (691 bytes).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

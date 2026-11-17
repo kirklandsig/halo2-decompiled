@@ -107,7 +107,82 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
+// argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
+// still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
+// after them), the count loop's sign extension where retail zero-extends the word, and the swapped slots of the count
+// sum and the vertex cursor.
+// MiniMax S (11-15): no new form, no lower score (93): the three field sums spelled as a load and an accumulate
+// give 290 (the body then loses 21 bytes and every row moves), the same sums spelled the other way round compile to
+// the same code, the luminance red, blue, green gives 91, a gain under the review threshold, and the vertex cursor
+// declared in the outer scope gives 496; all were restored.
+// What still differs: retail loads the fifth argument into eax before the register saves and keeps it there, ours
+// loads it into ecx after the saves; the count loop tests the word and zero-extends it, ours sign-extends; the count
+// sum and the vertex cursor take the opposite stack slots; retail's transform rows multiply the x term as up.i*z,
+// y*left.i and forward.i*x, ours left.i*y, z*up.i and forward.i*x; retail calls 0x17cfa0 with the first index in eax
+// and the definition index in ecx where ours passes them the other way round (that callee is in
+// src/unknown_17d2a0.cpp); the global and float-pool addresses differ by the whole-image layout.
+// MiniMax C (11-15): no new form, no lower score (93): the body stands as found.
+// MiniMax D (11-14): no new form, no lower score (93): retail loads the fifth argument into eax before the
+// register saves and calls 0x17cfa0 with the first index in eax, ours loads the strip record into ecx after
+// the saves and passes that index in ecx; the callee's own body is in another file, so the gap stays there.
+// The permuter's 33 annealed tries over the reduced image found nothing below the 93 baseline.
+// MiniMax G (11-14): no new form, no lower score (93): the strip-count index spelled as an unsigned short gives
+// retail's prologue and count loop but scores 103 (the three field sums then load the lower field first and the
+// 0x17cfa0 register roles turn), the same loop with the sums written the other way round gives 102, and a named
+// short strip count read at the entry gives 168; all three were restored. What still differs: the count sum and the
+// vertex cursor take the opposite stack slots, and the 0x17cfa0 call still passes the first index in ecx where retail
+// passes it in eax (that callee lives in another file).
+// MiniMax R (11-17): no new form, no lower score (93): the permuter's annealed tries over the reduced image found
+// nothing below 93, so the body stands; what still differs is that retail loads the fifth argument into eax before
+// the register saves where this build loads the strip record into ecx after them, the count loop sign-extends the
+// word where retail tests it and zero-extends, the count sum and the vertex cursor take the opposite stack slots,
+// and the transform's x row computes left.i*y before up.i*z where retail computes up.i*z before y*left.i; the call to
+// 0x17cfa0 that passes the first index in ecx where retail passes it in eax belongs to that callee's own file.
+// score 93 (was 93): frame 0x4040 agrees; left are the entry guard's registers (ours loads the strip record into
+// ecx after the pushes, retail into eax before them), the count loop's movsx where retail tests the word and
+// zero-extends, the count/counter slots swapped, the 0x17cfa0 call setup (BLOCKED-BY 0x17cfa0, a contributor's)
+// and the transform rows' product forms. Earlier rounds below.
+// MiniMax S (11-14): no new form, no lower score (93): the strip-count index spelled short gives retail's
+// prologue and count loop but scores 102 (the three field sums then load the lower field first and the two call
+// setups turn), and the luminance spelled red, blue, green emits retail's green, blue, red order for 91, a gain
+// under the review threshold, so it was reverted and the original body stands; retail calls 0x17cfa0 with the
+// first index in eax and the definition index in ecx where ours passes them the other way round, but our
+// declared order already matches retail's source order, so that gap is the callee's own body in another file and
+// swapping the arguments here would break the call. The count sum and the vertex cursor still take the opposite
+// stack slots, the four inlined transform copies still compute the x row's first product in the opposite order,
+// and the entry guard still gives the strip pointer to ecx after the register saves where retail loads it into
+// eax before them. The permuter's 27 annealed tries over the reduced image found nothing below the 93 baseline.
+// MiniMax H (11-13): no new form, no lower score (93): the entry guard still loads the strip pointer after the register
+// saves and into ecx where retail loads it before them into eax, and the call to 0x17cfa0 still passes the first index in
+// ecx where retail passes it in eax; that callee lives in another file.
+// MiniMax E (11-11): no new form, no lower score (93); the call to 0x17cfa0 still passes the first index in ECX
+// where retail passes it in EAX, and that order belongs to the callee's own body in another lane's file, so the
+// gap here is a contributor's; the frame, the guard's three tests and the body length agree.
+// MiniMax G (11-11): no new form, no lower score (93): the first difference is at +0xa, in the prologue - retail loads the fifth argument into eax before the pushes and keeps it there, ours loads it into ecx after the pushes and puts the cluster query in eax; the guard's three tests and the body length agree (2683 bytes both), and the guard written as three early returns scores 648 and is reverted.
+// MiniMax G (11-12): no new form, no lower score (93): the entry guard still loads the strip pointer after the register saves and into
+// ecx where retail loads it before them into eax; the guard as one positive test scores 121, a local copy of the strip pointer 168, and
+// the permuter's 22 annealed tries over the reduced image found nothing below the 93 baseline.
 #pragma inline_depth(1)
+// MiniMax E (11-16): no new form kept, the score is still 93: the guard's first index travels on the stack where retail keeps it in eax, and the callee that takes it, 0x17cfa0, has its parameter order in another file (BLOCKED-BY 0x17cfa0); the luminance terms in red, blue, green order score 91 and were restored (a gain of 2 is below the review bar), the guard with the cluster test first scores 650 and the count field as unsigned scores 149, so the body stands.
+// Earlier at 93 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// MiniMax I (11-10): no new form, no lower score (93); the count sum and the vertex cursor still take the
+// opposite stack slots, the three field sums still load the lower field first where retail loads the higher
+// and adds the lower (MSVC canonicalises the spelling either way), and the transform x row's product order
+// is not steerable by the source order; a short strip counter reproduces retail's prologue exactly but
+// scores 102 and was restored, and casting the strip count to unsigned short does reproduce retail's movzx
+// of the count but then widens the guard's signed test as well (93, restored), as an unsigned short local
+// for the count (168).
+// Earlier at 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// creation-call setup and transform scratch ranks differ.
+// MiniMax D (11-09): no new form, no lower score (94); the sixth argument is still read into ECX after the
+// prologue's pushes where retail reads it into EAX before them, and the third argument is still kept in
+// EAX where retail keeps it in ECX, so the whole body sits two instructions off; copying the sixth
+// argument into a local of its own scores 287 and was reverted.
+// MiniMax S (11-09): still differs in the count loop: retail tests the count with a signed compare and then
+// widens it without sign, ours keeps the count sign-extended; retail also reads arg-5 before the prologue's
+// pushes and holds arg-3 in ecx, ours reads arg-5 into ecx after the pushes. The count's spelling was permuted
+// for 600 s and nothing came below the current score.
 // MiniMax E (11-05): no new form, no lower score; a named local for the guard's struct pointer
 // scores 287 (the load moves ahead of the callee-saved pushes and the frame shrinks to 2663 bytes),
 // so it is reverted.
@@ -115,8 +190,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // and the fourth into EAX against retail's EAX for the sixth and ECX for the fourth (the two stack
 // homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
 // separate returns gives 650 and the negated guard compiles identically, so both were reverted.
-// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
-// creation-call setup and transform scratch ranks differ.
+// MiniMax S (11-06): no new form, no lower score.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
 // prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
@@ -185,6 +259,47 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // `y * left.j`, y row), and these spellings change neither, while their length change moves the whole listing. The short strip index re-measured 547 (aligned 85
 // against 67 now: retail's prologue, but the field sums flip to `field_8c + field_90` and the loop head gains a jmp). A compile-only build gives xmm4/xmm5 for the
 // rows, retail and the link xmm3/xmm4, so screen rows only in a real build. BLOCKED-BY 0x17cfa0 (contributor, still 70).
+// AC557: Complete transform scale observed once, mutable/immutable at late/early
+// input boundaries, then each with a named scale test: 227/227/379/379/317/317/392/392.
+// NOT kept: all regress and shorten away from retail; original transform inputs,
+// field reads, interpolation qualifiers and complete body restored.
+// F399: Existing interpolation endpoint/sample/output reference contracts, seven
+// subsets and complete output-reference return: eight forms 94 each.
+// NOT kept: no gain or equality; original helper, both calls and whole body restored.
+// Frame 0x4040 agrees; early mesh, count homes, creation setup and transform ranks remain.
+// Round 159 (m3 lane 6, fast; aligned counts from an instruction diff, 64 for the body as it stands): the short
+// strip-count index 547 (aligned 85); with the three field sums spelled lower field first 547 (aligned 82, the sums
+// compile the same either way); plus luminance terms red, blue, green 545 (aligned 80); the luminance counter
+// reused as the strip loop's counter 293 (2663 bytes), as the strip loop's vertex base 284 (2667 bytes); the count
+// loop's bound compared as an unsigned word 94 (aligned 66). Still BLOCKED-BY 0x17cfa0 (contributor, unmatched).
+// Round 62 (m3 lane 2, fast): the luminance stored into the packed vector's k inside the vertex loop (retail's store
+// sits after the loop's pretest) 546 (held in xmm6 and stored every pass, not hoisted); a named short strip count read
+// once for the guard and both strip loops 649 (2703 bytes); the vertex source fields read at each use without the
+// element pointer 94 (same code); the luminance as one conditional expression 593 (2663 bytes); the squared distance
+// through the existing vector3d_from_points3d and length_sq3f 507 (2697 bytes). Still BLOCKED-BY 0x17cfa0.
+// Round 86 (m3 lane 11, fast; the header read 94 (was 94), the baseline full check gives 93): the short count-loop index
+// re-measured 102 (aligned 81, register-masked 46 against the body's 63/48: with 0x17cfa0 now taking both indices in
+// registers it gives retail's prologue and count loop with no pad change; left are the three field sums loading the lower
+// field first, the count/counter slots [esp+0x10]/[esp+0x14] swapped, a scratch rotation at the 0x13d370 and 0x17cfa0 call
+// setups and the transform rows). Slot pairs: both builds give the strip loop's base 0x10 and its strip length 0x14;
+// retail pairs the count with the length and the vertex counter with the base, ours the other way. New forms: the vector
+// cleared by one chained assignment (short index) 104; the index as a word 590; a named pointer to the current output
+// vertex for its seven uses 577 on both index forms (2690 bytes); the allocation size as `(short)count * 4 *
+// sizeof(vertex)` 93 / 102 (same code); the transform helper's point read as one aggregate copy 543 (2779 bytes).
+// Re-measures: the index renamed, the count renamed to sort last or first, 102 each (slots do not follow names).
+// Still BLOCKED-BY 0x17cfa0: ours passes the NONE first index in ECX and the definition in EAX, retail the other way
+// round (its declared order already matches retail's last-to-first setup, so this is the callee's own body, a
+// contributor's).
+// MiniMax D (11-11): no new form, no lower score (93): the entry guard still gives the `s_180d81` pointer to ECX after
+// the register saves and the cluster-query pointer to EAX, where retail gives them the other way round; splitting the
+// guard into two tests scored 633 and a local copy of the pointer scored 168, and both were reverted.
+// m3 lane 12 r122 (fast; the reduced image warns that callee 0x439d0 builds differently there): the luminance
+// terms red, blue, green 91 (VC emits a three-term sum last term first, so this gives retail's green, blue, red
+// loads; gain two, not kept); with it the short count-loop index 100 (retail's prologue and count loop, the three
+// field sums flip to the lower field first); that with the sums spelled lower field first 100 (same code); the
+// luminance order with the transform x row accumulating the left product first 92 (retail's emission order and
+// load forms for the row, the accumulator register swapped); the luminance order with the x row's first two
+// products in one expression 296 (2658 bytes).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
