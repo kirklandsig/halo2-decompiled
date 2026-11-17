@@ -525,7 +525,7 @@ extern vector3f *g_4687b8;
 extern vector3f *g_4687bc;
 void __stdcall function_b8ee0(long parent_index, long marker_name, long object_index, long a);
 void function_10b360(long object_index);
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle);
 void function_10cf80(vector3f const *impulse, long item_index, bool flag);
 point3f *function_b9ef0(long object_index, point3f *result);
 bool __stdcall function_bc1d0(long object_index, point3f const *point, long ignore_unit_index);
@@ -4765,7 +4765,7 @@ void function_ce6b0(long unit_index, long name, long object_index, real scale)
 	object->linear_velocity = *g_4687a4;
 	*(vector3f *)((byte *)object + 0x94) = *g_4687a4;
 	vector3f direction;
-	random_vector_in_cone(&unit->unknown168, &direction, seed, 0.0f, scale * 0.3926991f);
+	random_vector_in_cone(seed, &unit->unknown168, &direction, 0.0f, scale * 0.3926991f);
 	speed *= scale;
 	direction.i *= speed;
 	direction.j *= speed;
