@@ -1704,6 +1704,11 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // 29; copy sequenced in the changed-settings return 23; restore result assigned by
 // the button dispatch 28; back case before cancel case 2; non-cancel button breaks
 // the event case 9; combined restore predicate with copy-path return 28.
+// Base pointer in the button arm 2; event view before receiver 2;
+// receiver before event view 2; event value for dispatch 47;
+// unsigned button selector 2; early forwarding of unhandled events 9;
+// changed tested after event type 28; common qualified forwarding 28.
+// NOT kept: the best forms leave the final event push and receiver setup reversed.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {

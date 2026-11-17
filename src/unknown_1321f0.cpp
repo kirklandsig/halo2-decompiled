@@ -1155,7 +1155,7 @@ struct s_view_collection_1733e0;
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index, s_view_collection_1733e0 *collection);
 void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera);
 
-// score 26 (was 26, full build; fast build on r846 reads 25): the diff is the g_4e7c18 flag, see below.
+// score 26 (was 26): the camera argument loads and pre-call flag store differ. Fast score 25.
 // b13F (11-17) walk against retail, fast build on r846: the arguments of 0x132b80, the switch (0x13213f-0x132149)
 // and the three case bodies with their call arguments (0x13214b-0x132157, 0x132159-0x13215b, 0x132162-0x13217d) agree.
 // Retail keeps `mov byte ptr [0x4e7c18], bl` (0x13218f) before the call to 0x134390; ours drops it as a dead store,
@@ -1166,6 +1166,10 @@ void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, b
 // 0x4e7c20 table are one 8 + 0x1000 byte block (the callee reads tick and table), which needs edits outside this
 // function (unknown_1689b0.cpp:713, unknown_244c10.cpp:9, and the table above). Also: retail loads ebx (data->context)
 // before eax (cluster) at 0x13214b-0x13214d, ours eax first (a local for the collection leaves it as is).
+// Raw case-2 context 25; context then cluster 25; context then camera 25;
+// camera then context 25; flag before stamp 25; computed stamp snapshot 25;
+// filter declared in its test 25; missing-filter break 25.
+// NOT kept: all tie the reduced build and leave both divergences.
 // @retail 0x1320f0
 s_bit_vector_pool *function_1320f0(long mode, long count, bool use_plane, long flags, byte const *frusta,
 	byte const *center, real radius, void *filter, real plane_offset, long cluster)

@@ -806,6 +806,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the global's j/k in xmm5/xmm4 and the axis i in memory); the axis draw alone through it 152 (880 B), the first draw
 // alone 154 (880 B). On 125: sine and cosine as named locals around the axis draw 152; one `dword *seed` local for
 // the three draws 149 (889 B); the shared helper capturing the vector's j as well as k 155 (893 B; 0x2551f0 63, lost).
+// Shared rotation with original i/k captured 150, all original components 164, all axis
+// components 151, staged result 170, accumulated projection 129, scaled cross components 156,
+// forced inline 130, both component sets captured 163. NOT kept: forced inline ties; the
+// other forms break the other caller's match. The i/k capture and scaled cross restore
+// frame 0x20 at 880 bytes but leave the initial random-state load order and raise the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
