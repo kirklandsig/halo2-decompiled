@@ -70,6 +70,13 @@ static inline s_player_datum *player_get(long player_index)
 // the top; integer arithmetic; memcpy; a byte source pointer. Eight name permutations gave identical
 // listings, and /O1 or /Os (compile-only diagnostic) the same allocation. The pointer before the test 5.
 // Retail keeps the index in ecx and builds the pointer from a copy, as if the index were still live.
+// b14E (11-17) walk against retail, fast build on r847: every instruction matches except the pointer chain at
+// 0x187f0d: retail copies the record index (`mov esi, ecx`) then computes `imul esi, esi, 0x1c` / `add esi, 0x51ea18`
+// in esi; ours scales in ecx and copies the result into esi. Tried and dropped: `result = record.flag1a &&
+// record_index != NONE` (16, 114 bytes: the second test stays), the record index as a `long const &` to the datum
+// field (18, reloads through a pointer), the first-player test through a `bool const &valid` as in function_187f30
+// (43, the test is materialised). No behaviour difference found; the player index, the 0x21c stride, the 0x24 field
+// and the 0x1a flag read match retail.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -704,6 +711,11 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // not from this file, so that lever is out of reach here; what still differs is that this build expands 0x1765e0 into
 // the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body is
 // in src/unknown_175bd0.cpp.
+// MiniMax I (11-17): no new form, no lower score (165): the difference is still that this build expands 0x1765e0
+// into the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's
+// body is in src/unknown_175bd0.cpp, which this lane may not edit: BLOCKED-BY that file. The inline threshold on
+// this file's own flag line changes nothing, because the threshold that decides the expansion comes from the
+// generated ballast.
 // score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
 // expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
 // src/unknown_175bd0.cpp: BLOCKED-BY that file.

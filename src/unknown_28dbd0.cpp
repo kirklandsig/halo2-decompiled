@@ -527,6 +527,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // body measured here: the real cross-file rotate_direction was 236 (round 164). Remaining difference is only
 // schedule/colouring: frame 0x11c vs 0x118, jitter arm sinks the first -0.5 (fxch, ours) where retail subtracts it
 // before the second draw's scale.
+// M3 lane 16 r131 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; base 173): the projection as the existing planar
+// dot_product2d 240 (1195 B; retail's dot does use the k term, a misreading); function_28dbd2 in the statement shape of matched
+// 0x29c860's inline rotation (sine, cosine, projection, cross j/k as members of a local vector, cross i inline in row i, rows
+// `axis * projection + cosine * v - cross * sine`) into a separate output vector 234 (1198 B, frame 0x120: sine first and the
+// cosine after the dot as retail, but the heading at +0x10), written in place 241 (1193 B, frame 0x114); both with that
+// helper's axis alias 232/240. Helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

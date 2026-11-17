@@ -1257,7 +1257,7 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
     }
 }
 
-// score 12 fast (was 16 fast, 13 full): only the mode 1 exit differs: retail
+// score 9 fast (was 12 fast on the earlier base; 16 fast, 13 full before that): only the mode 1 exit differs: retail
 // tests `jne` to the shared false exit and falls into its own `mov al, 1`
 // return, ours jumps back to case 0's identical return and falls into the false
 // exit. The fraction multiplies last only when it is written first (g*s*f and
@@ -1266,6 +1266,13 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
 // false after the switch 18; one shared `return true` after the strength block
 // 16; the fraction inlined 73 or declared before the strength 26. The old
 // `(void)&` parameter line changed nothing (the marker keeps them on the stack).
+// b14K (11-17) walk against retail, fast build on r847: every other statement matches (case 0 call, the case 2 and 3
+// stores, the strength block 0x29a10-0x29ad8, the jump table); the 9 is the mode 1 tail alone: retail 0x29adb
+// `cmp esi, 1; jne 0x29ae6` falls into its own `mov al, 1; pop esi; ret` (0x29ae0) and shares the false exit with the
+// `ja` at 0x29914, ours branches `je` back to case 0's identical return (0x29943). Retried on r847: `if (mode == 1)
+// return true; goto failed` 9; `if (mode == 1) return true; return false;` and `if (mode != 1) return false; return
+// true;` 8 (but `cmp; sete al` with a private false exit for default, not retail's jne form); `return mode == 1` 16;
+// the strength test inverted (`if (strength == 0.0f) {...}` first, then the block) 48. No change kept.
 // @retail 0x298f0 standard
 bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -2964,7 +2971,15 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // point pairs against the wrong instruction; the callee at 0x235a0 is outside this lane's files.
 // MiniMax C (11-16): no new form tried this round, no lower score (330): the body is still 1591 bytes against retail's 1543, so a block is
 // MiniMax C (11-16): still longer here; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax D (11-17): no new form, no lower score (330): the full image counts the same as the reduced one, and both
+// copies of 0x235a0 are still inlined here (the body is 1591 bytes against retail's 1543) where retail inlines the first
+// and calls the second, so the shared exit sits 48 bytes further out and the first difference is the jump to it at
+// +0x52; the forms measured this round (the level's limit through a named local before the level 349, the same local
+// after it 350, the matrix through a pointer local 369) all score worse, and a permuter run (27 tries) finds its only
+// lower form (four instructions under the baseline) by making a local volatile and reordering the sum terms, which is
+// not kept.
 // MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
+// MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
@@ -3082,6 +3097,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[0] = ((x * cosine - y * sine) * scale + 1.0f) * 0.5f;
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
+// MiniMax I (11-17): no new form, no lower score (54): what is left is the scheduler's order of the x87 and SSE chains of the four corners and the XMM registers they take (retail's four scale multiplies use XMM3, XMM7, XMM1, XMM6 and ours XMM1, XMM3, XMM7, XMM6); the first set's store order is 0,3,4,7,1,6,2,5 in retail and 0,3,4,6,7,1,2,5 in ours, and no spelling of the corner helper moves either.
 // MiniMax E (11-17): no new form, no lower score (54): the x87 chain's store still comes before the SSE subtract where retail takes the subtract first and stores after it, and the scheduler still places the x87 coordinate chains one slot earlier among the SSE ones than retail (first difference +0x527).
 
 // MiniMax E (11-16): no new form, no lower score (54): the x87 and SSE work in the scheduler still interleaves the other way round, and the corner orders and helper spellings the earlier rounds tried all leave the bytes unchanged.
@@ -3956,6 +3972,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // every gain register moves; the pairs stay constant first); both selectors defaulted then set under one `if (small)`
 // 948. Diagnostic: mode zero's blending and depth-bias writes without the skip test 894 (4816 bytes): the reloads
 // right after the call are still 1.0f first, so the join is not what orders them.
+// Round 180 (m3 lane 8, fast, base 9; all restored): the switch's default case setting maximum and both permissions with no
+// initialisers 1207 (4856 B); `register` on the shifted input word 9 (same code); mode zero's extra-texture test declared ahead
+// of the mode chain 761; both selectors typed byte with the shifted local kept 861 (4848 B), typed short 480 (4816 B).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

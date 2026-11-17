@@ -50,7 +50,6 @@ long function_213760(dword location, long size, void *buffer, dword *bytes_read,
 void function_213890(void);
 long cache_file_get_maximum_size(long type);
 
-extern long g_55aca8;
 
 s_cache_file_globals cache_file_globals;
 
@@ -84,7 +83,7 @@ struct s_cache_file
 	byte unknown04[0x800];
 };
 
-extern s_cache_file g_557c90[3];
+#include "cache_file_table.h"
 
 long cache_file_find(char const *map_name);
 bool function_122d60(unsigned __int64 location, long size, void *buffer);
@@ -138,8 +137,8 @@ bool cache_files_load_map(char const *map_name)
 	long scenario_index = NONE;
 	bool result = false;
 
-	g_55aca8 = cache_file_find(map_name);
-	s_cache_file *file = &g_557c90[g_55aca8];
+	g_557c90.current = cache_file_find(map_name);
+	s_cache_file *file = &g_557c90.files[g_557c90.current];
 	cache_file_globals.header = *(s_cache_header *)file->unknown04;
 	if (cache_header_verify(&cache_file_globals.header) && version_is_compatible(cache_file_globals.header.build_version))
 	{
@@ -191,10 +190,10 @@ bool cache_files_load_map(char const *map_name)
 	{
 		if (cache_file_globals.field_4_7)
 			cache_file_globals.field_4_7 = NULL;
-		if (g_55aca8 != NONE)
+		if (g_557c90.current != NONE)
 		{
 			function_213890();
-			g_55aca8 = NONE;
+			g_557c90.current = NONE;
 		}
 		/* a statement the release build compiles out: retail keeps the
 		   close's join as its own block (the instance table is reloaded there) */
@@ -213,10 +212,10 @@ bool cache_files_load_map(char const *map_name)
 // @retail 0x122af0
 void cache_files_dispose_map(void)
 {
-	if (g_55aca8 != NONE)
+	if (g_557c90.current != NONE)
 	{
 		function_213890();
-		g_55aca8 = NONE;
+		g_557c90.current = NONE;
 	}
 	cache_file_globals.loaded = false;
 	cache_file_globals.field_4_7 = NULL;

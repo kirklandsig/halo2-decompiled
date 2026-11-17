@@ -10,7 +10,8 @@ struct s_cache_file
 	byte unknown04[0x800];
 };
 
-extern s_cache_file g_557c90[3];
+#include <stddef.h>
+#include "cache_file_table.h"
 
 // @retail 0x214c70
 long cache_file_slot_from_type(long type)
@@ -40,7 +41,7 @@ s_cache_file *cache_file_from_type(long type)
 
 	if (slot != NONE)
 	{
-		result = &g_557c90[slot];
+		result = &g_557c90.files[slot];
 	}
 	return result;
 }
@@ -138,7 +139,7 @@ __forceinline s_cache_header *function_xafcc06(s_cache_file *file)
 // @retail 0x2149c0
 bool cache_file_header_read(long index)
 {
-	s_cache_file *file = &g_557c90[index];
+	s_cache_file *file = &g_557c90.files[index];
 	bool volatile done = false;
 	dword volatile bytes_read = 0;
 	bool volatile result = false;
@@ -191,8 +192,8 @@ bool cache_file_slot_precedes(long first_index, long second_index)
 		result = false;
 		goto done;
 	}
-	s_cache_file const *first = &g_557c90[first_index];
-	s_cache_file const *second = &g_557c90[second_index];
+	s_cache_file const *first = &g_557c90.files[first_index];
+	s_cache_file const *second = &g_557c90.files[second_index];
 
 	if (CompareFileTime(cache_file_time(first), &now) > 0)
 	{
@@ -209,7 +210,6 @@ done:
 	return result;
 }
 
-extern long g_55aca8;
 
 // @retail 0x214b80
 long cache_file_choose_slot(short type, dword size)
@@ -245,7 +245,7 @@ long cache_file_choose_slot(short type, dword size)
 	}
 	for (long index = first; index <= last; index++)
 	{
-		if (g_55aca8 != index && (dword)cache_file_size_limit(index) >= size && cache_file_slot_precedes(result, index))
+		if (g_557c90.current != index && (dword)cache_file_size_limit(index) >= size && cache_file_slot_precedes(result, index))
 		{
 			result = index;
 		}

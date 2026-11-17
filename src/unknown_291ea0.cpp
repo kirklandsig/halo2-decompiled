@@ -93,56 +93,6 @@ inline void dialogue_name_override(long *name, long value)
 #define TAG_GET_291EA0(type, index) ((type *)g_4e3b44[(index) & 0xffff].bytes)
 
 /* plays the actor's variant of a vocalization; returns whether it found one */
-// score 9 (was 9): the elements pointer and the object pool still land in EDX where retail
-// keeps them in EAX, and the scaled object index goes to EAX where retail uses EDX; naming the
-// elements, the pool or both does not move the allocation; the loop padding byte differs too.
-// Round 47: typed default
-// element 9; header pointer arithmetic 9; default if/else 48; cached unit index 129; direct globals
-// access 9; existing object getter 9; first-element syntax 9; scaled header local 9; header-base local 9;
-// pool-pointer local 9.
-// Round 213: byte result 167; short result 165; long result 167; override sentinel first 18; override
-// invalid return 9; override zero nesting 9; override sentinel return 18; named stack homes 9; original
-// executable source restored.
-// the default-element and object-pool temporaries land in EDX where retail keeps
-// them in EAX, and the scaled object index goes to EAX where retail uses EDX; the loop padding
-// follows (our pool load is a byte longer, so the pad before the variant loop is a byte shorter).
-// Naming the elements, the pool or both does not move the allocation. Round 47: typed default
-// pool-pointer local 9. Round 16: the default name from an inline helper with a result local 9, the
-// helper as a ternary 48; the vocalization's default name read at each use 9; a fresh actor lookup
-// for the unit's index 129; the vocalization default declared ahead of the default name 9; the unit
-// index read from the actor at both tests 9.
-// Round 213 (m3 lane 3, fast): retail's two loads reuse the dying register (`mov eax, [eax + 0xcc]`, matched 0x1c9e50 likewise); `globals_tag` reassigned
-// to the element 9; an element local set in the arm 9; both reads kept as two statements 9; an inline helper returning the name 9; g_4e034c read at each
-// use 9; an inline element getter 97 (467 bytes). Dead `volatile` load probes (reverted) before the tag, the test, the name or the unit lookup 84-110
-// (440-448 bytes: the name leaves the stack and the frame shrinks), so no rotation step could be located. Retail's lookup shape (scaled index EDX, pool
-// reuses EAX) also matches 0x28f8d0's difference; both shapes occur in matched functions with the same inline.
-// Round 75 (m3 lane 11, fast): the override helper's pointer parameter without `volatile` 9 (same code, kept); `name`
-// declared first in the found block 9; the default name at function scope, zeroed at entry, 146 (450 bytes); the unit
-// lookup through the `unit_index` local 129 (the listed cached unit index, re-measured); the default name from a
-// force-inline helper with early returns 48; the tag table global read at each use, no `tags` local, 9 (same code).
-// Round 78 (lane 10, fast): the vocalization's name now takes the unit stage's override-then-fallback shape
-// (`name = NONE`, dialogue_name_override, then the default while still invalid) 9 with byte-identical code
-// (kept; it replaces a generic local tested twice). Also: `long name = vocalization->default_name` with one
-// fallback test 177 (438 bytes). On the kept form: the search as its own loop with an `i < count` test after
-// it 124 (468 bytes); the one-use unit_index local dropped 9 and default_name declared before the globals tag
-// pointer 9 (same code each). Diagnostics: one variant override in place of two 56 (451 bytes) and a cut-down
-// default block leave the elements/pool registers where they are.
-// Round 160 (m3 lane 6, fast): a 600 s permuter run (59 tries) none below 9; the unit's dialogue state through a
-// force-inline getter taking the unit index 9; the globals-tag pointer declared at function scope 9; the override
-// helper as __forceinline 9; the actor through the byte-offset actor getter 9; the scenario global read at each use 16.
-// Round 187 (m3 lane 4, fast): `name` declared at function scope 9 (same code); `return result` at the definition and
-// sound NONE exits 87 (478 bytes); the masked unit index in a named local 9 (same code); the definition NONE test as a
-// nested block 9 (same code); the variant mismatch as `continue` 9 (same code). Re-measured on the round-78 override
-// form: round 16's vocalization default read ahead of the default name, now 126 (440 bytes, the name leaves the stack).
-// Round 96 (m3 lane 10, fast): the two differing loads are one cause each: retail's elements and pool loads reuse
-// EAX (the pool's `mov eax, [mem]` is a byte shorter, which is the jump and pad differences). Parameters ordered
-// (actor, name, script, duration) at the definition, declarations and all three calls 9 (same code); the default
-// name and the unit's dialogue state both through inline helpers 9; the override helper by reference 9; result
-// declared before the scenario pointer 9; the tag table pointer declared at function scope 9. All restored.
-// Round 253 (m3 lane 3, fast): the object header as a const reference 9; the elements pointer as a
-// const reference in the arm 9; the elements through a trivial inline accessor 9; the vocalization
-// through an inline accessor 9; the unit and its dialogue state as const references 9 (all the
-// same two eax/edx picks).
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {
@@ -170,7 +120,13 @@ bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real 
 						s_globals_tag_dialogue_view *globals_tag = (s_globals_tag_dialogue_view *)g_4e034c;
 						long default_name = 0;
 						if (globals_tag && globals_tag->count > 0)
-							default_name = *(long *)(globals_tag->elements + 0x68);
+						{
+							/* the first element through a reference-bound local: VC then keeps
+							   the pointer chain in the tag pointer's register, as retail does */
+							byte *elements = globals_tag->elements;
+							byte *&element = elements;
+							default_name = *(long *)(element + 0x68);
+						}
 
 						long name = NONE;
 						dialogue_name_override(&name, vocalization->default_name);
