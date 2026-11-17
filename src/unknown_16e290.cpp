@@ -1574,6 +1574,11 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax S (11-17): no new form, no lower score (87): the classification's plane sum written with the plane's
+// i, k and j terms in that order measures the same as the j, k, i order, so that reorder was restored; retail
+// still reloads the copied forward's second component before the third component's store where ours reloads the
+// third, the shared cross3f fixes the product order, and the permuter's 31 tries over this body (fast) found
+// nothing below 87.
 // MiniMax D (11-14): no new form, no lower score (87): the cross product's second product still takes
 // forward.j before up.k where the shared cross3f (include/vector_products.h, which this lane may not edit)
 // takes them the other way round, and the clip block still folds the cluster address into the load where
