@@ -1359,6 +1359,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // P590: Original six incoming parameter fixed bindings, complete bindings and
 // parameter role identities: eight 258 (fast control 258; full 257). NOT kept:
 // no exact result/presence homes or native case-two tail; original body restored.
+// MiniMax S (11-16): no new form, no lower score (257): the instructions match one for one and only the branch
+// targets differ, because this build lays the case blocks out in a far cold section where retail keeps them next
+// to the function.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1669,6 +1672,10 @@ done:
 // retail builds it in eax and finishes with a lea; this round the offset in a local of its own over the byte base
 // compiles to the same prologue, so the register choice is not steerable from this function.
 // MiniMax D (11-16): no new form, no lower score (9).
+// MiniMax S (11-16): no new form, no lower score (9): the actor lookup still computes the masked slot into the
+// result register and adds it, where retail keeps the slot in a separate register and adds it with a lea; the
+// byte-pointer product, the address of the indexed element and the integer base all compile to the same
+// prologue here.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -2278,6 +2285,8 @@ struct s_actor_looking_turn_request
 // local renamed 442 (all same code). BLOCKED-BY 0x1fdd90 stands: retail keeps it out of line (its only caller) and
 // our build inlines it; what keeps it out of line so far is only a build flag on its file (lane 7 r99's /Ob1, 569).
 // MiniMax D (11-16): no new form, no lower score (442).
+// MiniMax S (11-16): no new form, no lower score (442): the same cold block placement as in 0x2967b0, this
+// build puts the default and the case blocks in a far section where retail keeps them in the function.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

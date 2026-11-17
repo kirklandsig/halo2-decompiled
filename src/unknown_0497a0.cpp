@@ -1225,6 +1225,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
 // MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // MiniMax D (11-16): no new form, no lower score (233).
+// MiniMax S (11-16): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because
+// retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
