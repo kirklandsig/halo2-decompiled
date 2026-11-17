@@ -839,6 +839,19 @@ struct s_1f8a70_actor
 // P586: Unlisted low-family reverse destination orders 524367/542367/543267/534267/
 // 532467/524376/542376/543276: 361/374/235/235/360/376/396/381.
 // NOT kept: no native dispatch/failure-reload repair; original six cases and full body restored.
+// b7O (11-17) walk against retail, fast build on r830: no statement-level or behaviour difference found (182 kept, no
+// source change). Checked block by block: unknown267 and 0x480 exits (0x1f8a96-0x1f8ac3), the 0x504 == 2 test with
+// 0x1e3920 * 3.0f (0x45dbd4) into 0x1f3230 and 0x1f8780 (0x1f8ad3-0x1f8afc), mode 0/1 (0x1f8b0a-0x1f8b1e), the
+// route_mode initial value and the 0xe70b0 block (0x1f8b24-0x1f8b6d), the reset stores and the jump table
+// (0x1f8b82-0x1f8bb9, 0x1f90cc), every case's copy, node and radius (cases 2-7 at 0x1f8bc0/bf0/c14/c5c/ce2/d7c), the
+// 0.0f test of the radius (0x45dbd8; ucomiss, parity-flag test, so NaN counts as nonzero) and the node test
+// (0x1f8e07-0x1f8e2b), the range and route dispatch (0x1f8ca5-0x1f8cd8), route cases 2/1/0 with every argument and
+// register-passed argument (0x1f8e53, 0x1f8e75, 0x1f8f30, 0x1f8f74-0x1f907d), the 0x506/0x504/0x5e8 stores and the
+// two result paths (0x1f9082-0x1f90a0, 0x1f8e31-0x1f8e42). Ours compiles to the same operands and branch senses in
+// all of them (instruction for instruction through 0x1f8c9d). Only layout and scheduling differ: case 7 stores
+// node (0x1f8df6) before radius (0x1f8dfc) where ours stores radius first (no aliasing, so not a behaviour
+// difference), the node test's `setne al` (0x1f8e26), the route dispatch after case 5, and the result read back
+// from [esp+0x12] (0x1f8e42).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
