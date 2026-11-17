@@ -381,6 +381,12 @@ void c_window_channel::v9()
 // the new request for the load and set_next 3; that pointer bound before the type clear and used for the builder too, with
 // the load result passed straight to set_next 25 (76 bytes); the load procedure read into a local at the function's top,
 // used for the builder's argument and the call, 28 (79 bytes). Still HELD on round 100's member-builder lead.
+// Round 103 (m3 lane 13, fast with v9, 0x2354aa and 0x2358c3, which stay matched): v10 moved below 0x2358c3 in the file
+// (source order) 3; a base-type reference to the pending request for the clear, the builder's arguments (its type as the
+// cleared field) and the load 3; one same-type reference to the new request for the builder, the load and set_next 3; the
+// type cleared before the declaration with a base-type reference for all three uses 5; re-measured by mistake, the load
+// result straight to set_next 25 (round 152); an early return with the clear first and the load result straight to set_next
+// 24 (76 bytes). Still HELD on round 100's member-builder lead (BLOCKED-BY 0x149f49's free-function form).
 // @retail 0x23531c
 void c_window_channel::v10()
 {
