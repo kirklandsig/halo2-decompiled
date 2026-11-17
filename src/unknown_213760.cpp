@@ -1787,6 +1787,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `valid = valid && stored == read;` 78; same code: `resized` or
 // `size` declared at the loop body's top, the count declared beside the outer count, the copy written `+= count` (the 83
 // form's count beside the outer count also 83, same code).
+// Write completion from resize/count tests 157; conditional write completion/close outcome/handle first 165/165/168;
+// scoped query with conditional completion/close/handle first 165/165/168; scoped query with count zero 33.
+// Removing the failed-resize count store shrinks the frame to 0x1140. The 0x1144 form keeps the slots exchanged.
 // @retail 0x213970
 void function_213970(void)
 {

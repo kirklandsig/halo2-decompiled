@@ -1143,6 +1143,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // the read]. Compile-only, all [17] on the helper pair: buffer/size declaration order, arm statement order, the clamp as
 // MIN either way round, `if (size > remaining)`, `if (remaining < size)`, the position declared first. On the helper
 // pair, `size = buffer_size; if (size > remaining) size = remaining;` on a scratch-size local 28 (same code as the pair).
+// Shared body extent in grouped body-first/signature-first cases 167/125; direct phase field 167;
+// shared extent after body-first/signature-first phase condition 238/234; direct total conversion
+// on the grouped body-first/signature-first and conditional forms 167/125/238.
+// The body-first group gets the entry EDX total and ECX extent, then changes phase layout and seek registers.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

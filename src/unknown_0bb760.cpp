@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "object_iterator.h"
+#include "object_tag_definitions.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -675,17 +676,20 @@ void function_3dd10(long object_index, bool force);
 // volatile weight with a `<` scan gives retail's jle/jl exits and 1034 bytes but swaps the weight/mask homes
 // ([esp+0x70]/[esp+0x10]) 102, with the inverse in the found block 145; declaration orders of the four scan locals
 // 102-104/146-147; volatile last 131, eligible 248, j 259, last+eligible 283. Best match-only recipe: 102, not kept.
+// Typed tint and model access 132; explicit variant outcomes/named predicate/direct conditional 227/227/227;
+// separate invalid cases/nested conditional 231/231; separate blend seed with conditional/explicit outcomes 227/227.
+// The typed fields retain the same code. The other forms move the saved registers and lengthen the body.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
 
     byte *object = (byte *)((s_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
     color3f *output = (color3f *)(object + *(short *)(object + 0x126));
     long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
     for (long i = 0; i < count; ++i)
     {
-        s_colour_choices_ab *entry = &(*(s_colour_choices_ab **)(definition + 0xb0))[i];
+        s_colour_choices_ab const *entry = &((s_colour_choices_ab const *)definition->tint_sets.address)[i];
         if (color_mask & (1 << i))
             output[i] = colors[i];
         else
@@ -705,9 +709,9 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 real blend = (real)fmod((double)seed, 1.0);
                 char variant_index = *(char *)(object + 0xb1);
 
-                if (variant_index != NONE && *(long *)(definition + 0x38) != NONE)
+                if (variant_index != NONE && definition->model_tag_index != NONE)
                 {
-                    byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+                    byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
                     variant = *(long *)(*(byte **)(model + 0x54) + variant_index * 0x38);
                 }
 

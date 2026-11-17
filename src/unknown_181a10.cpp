@@ -532,7 +532,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 238 (was 238; 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// score 238 (was 238): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // MiniMax E (11-17): no form kept; the score is unchanged at 238. New readings: the 1..16 classifier keeps retail's
 // `mov ecx, 1; cmp ecx, edx; jg` form out of reach (an unsigned word, a signed long, the constant written first, two
 // separate ifs and an if/else chain all compile to a compare with an immediate, 238 each, as in the earlier rounds);
@@ -957,6 +957,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // function-scope local for second's shape at all ten uses 350 (1251 B); the data test ahead of the kind call in the
 // exclusion test 257 (1249 B); the first node's kind-4 test ahead of the root walk 342 (1243 B). Reading: retail's `mov
 // ecx, [eax+0x18]; cmp ecx, 1` is the code matched 0x1388e0 shows for a field compared twice (one CSE'd load).
+// Earlier context (238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end).
+// Shared plane-side distance with aggregate normal or setter, plane/collector scope 337/349 each;
+// shared side predicate with the same publications and scopes 316/328 each. The shared publication
+// shortens the body and keeps the 0x40 frame. The second node still needs retail's +0x20 slot.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
