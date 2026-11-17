@@ -2960,6 +2960,14 @@ struct s_unit_event
 // section and seat name scans index-based (`info->unknowne4 + i * 0x14 + 4`, `seats.address + seat_index * 0xb0 + 4`): each
 // scan becomes retail's code exactly (retail reads the array pointer after the count guard), 513 on the old body (masked 142
 // -> 140 each, 138 both) and 420 on the kept one (masked 51 -> 49).
+// Round 96 (m3 lane 2, fast with 0xdaaa0, 0xdae60 and 0xdb760; control 420, register/stack/global-masked aligned 58): the
+// section name read from the permutation at each use (no local) 420 (same code); the section kind read at each use 425;
+// the region-state update indexed through `*region_reference` 420, with 0xa8360 given it as well 420 (same code); both
+// name scans index-based with the reference-free section test 420 (masked 54). Reading: retail's ESI holds the datum
+// offset from the join after the mode-4 block (all four callee-saved registers busy, so the shift's 1 is spilled into
+// the region argument's dead home), ours holds object_index in ESI and leaves EDI free, so our constant 1 goes to EDI
+// from the 0x20000 test on (`push edi`, `or [x + 0x30], edi`) where retail uses immediates there and ESI = 1 only from
+// the vehicle block to the state compare.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

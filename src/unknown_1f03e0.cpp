@@ -1948,6 +1948,12 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // into the flying copy, the persistent zero, the fallback's -1 and the final loop's zero/0.001 hoisting]. Without the contact
 // move 483/481 (with the count move), without the count move 386; on 384 the height summed settings-first 384 (same code),
 // the flying arm second with the test inverted 388 [113]. Body unchanged.
+// Round 96 (m3 lane 2, fast with 0x1f19c0 (MATCH in each) and 0x1f2a80; control 413, register/stack/global-masked aligned
+// 118): on main's body (volatile count kept), the two flying tests through TEST_FIELD_BIT (retail's `shr eax, 3; test al, 1`)
+// 464 (2105 B) [108]; the first only 440 [109]; the count tests as `switch (count)` with case 2 then case 1 (retail's
+// `dec eax; je; dec eax; jne`) 439 [133]; switch + both bit tests 433 (2105 B) [119]; switch + the first bit test 448 [118].
+// Retail's 0x109fd0 uses no XMM register and 0x1f2e60 only XMM0-5 (neither makes calls), so retail's entry zero survives
+// both in XMM6 up to the normalize test and is materialised again after the 0x1f2a80 call for the final loop.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

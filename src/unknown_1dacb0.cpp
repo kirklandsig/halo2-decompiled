@@ -1800,6 +1800,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // boundaries (each/both), then named/result fill: 989/976/992/989/976/992/922/928.
 // NOT kept: native extent returns but candidate/output homes and EBP zero remain;
 // original complete body, constructors and header set restored.
+// Round 96 (m3 lane 2, fast): retail's frame, read from its iterate call and output stores, holds the found mode at F+0,
+// the found weapon_class output at F+4, the weapon_type output at F+8, the result at F+0xc and the iterator at F+0x10, and
+// gives the per-pass candidate the found-mode argument's dead home; ours gives that home to the found-mode output and puts
+// the other two outputs, the result and the candidate at F+0..F+0xc. Tried: the iterator and its loop in an inner
+// block (outputs outside) 828; the candidate and lookup in their own block in the loop body 828; the outputs renamed to
+// sort after the candidate and result 828; the candidate renamed to sort after the outputs 828 (all the same code); the
+// candidate declared at the block's scope and reset per pass 932 (2825 B, frame 0x30: the candidate gets its own slot).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
