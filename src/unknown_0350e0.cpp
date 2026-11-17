@@ -338,6 +338,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // moves inverse last, j*i first); matrix3x3 locals with the complement in each cross product 371 (1810 B); i and j
 // copied, k read again, with the complement 435 (1673 B); the row copied as an aggregate before the rotation 455
 // (1655 B, integer moves where retail loads floats). Body unchanged.
+// Round 276. Frame 0x90 and the two early x87 angles agree. Axis and square registers
+// and the cross-coefficient and row schedules still differ.
+// Staged cross products 344, shared k partial 336, diagonal accumulator 334,
+// scoped cross pairs 362, shared sine-axis scaler 357, scaler with scoped pairs 357,
+// column dot products 461, and named signed pairs 362.
+// NOT kept: the diagonal form ties, and the other forms regress or change the frame or length.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

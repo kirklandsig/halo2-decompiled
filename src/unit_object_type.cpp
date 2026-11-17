@@ -124,7 +124,7 @@ struct s_unit
 	long unknown1ec;
 	long unknown1f0;
 	byte unknown1f4;
-	byte unknown1f5;
+	char unknown1f5;
 	char unknown1f6;
 	char unknown1f7;
 	byte unknown1f8;
@@ -7137,7 +7137,8 @@ done:
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
 // MiniMax I (11-16): no new form, no lower score (242): the body is retail's length and the first difference is still at +0x51; what is left is retail's native facing GPR transfers, the first-scale ownership, the dead flag-byte stores and the state pointer's home; the permuter over 300 s made nine tries and reached 229 against its baseline of 242 differing instructions (the check's 242), but that variant adds a local holding only a constant, a flag set by one test and tested by the next and a swapped call argument, so it is not kept; the two forms written by hand here - the ternary written as an if/else, and the two tests of the same condition in the other order - measure 242 and 243.
-// score 199 (was 242; earlier 250, 254): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
+// score 187 (was 199): Normalization x-load order, definition-flag bytes, weapon reloads and the state slot still differ.
+// Earlier 199 (was 242): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
 // changed); facing as the planar copy `*(point2f const *)&unit->forward` (retail's four dword moves) 242 at 1104 B; the
@@ -7279,6 +7280,11 @@ done:
 // `mov ecx, 2` appear), bit 9 alone 204, with the weapon array 151. Left on the 151 form: the x multiply, retail's first
 // weapon index in a frame slot (its store kills the unit lookup, which retail repeats for the second index; ours keeps
 // it in EBP) and the state pointer's home (+0x14 retail, +0x1c ours).
+// Nested normalization 199, delayed facing read 219, conditional side selection 199,
+// typed weapon header 199, weapon veto tests 199, flag byte lvalue 199, shared ragdoll test 222,
+// in-place facing 264, and wide side selection 240. The timer's signed field with two stores
+// 187. Direct store and the combined turn guard 187/187. Kept the direct signed timer store and clamp.
+// Earlier counts were 250, 254.
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7358,8 +7364,8 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 				function_10f690(unit_index, &time);
 				time = function_259d0(&g_4e7408->unknown0, 0, 0, time * 0.25f, time * 0.75f);
 			}
-			char ticks = (char)unit_round(g_510c54->field_2_3 * time);
-			unit->unknown1f5 = ticks > 1 ? ticks : 1;
+			unit->unknown1f5 = unit_round(g_510c54->field_2_3 * time);
+			unit->unknown1f5 = unit->unknown1f5 > 1 ? unit->unknown1f5 : 1;
 		}
 		else
 		{
@@ -8122,6 +8128,12 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // original complete body restored. Positive-only bit construction repeats an earlier form and is excluded.
 // MiniMax R (11-17): no new form, no lower score (244): retail's native flag home and frame slots still differ from this build's, and the forms the earlier rounds recorded all measure 244 or worse.
 // MiniMax S (11-17): no new form, no lower score (244): every form tried this round regresses and shortens away from the native extent, so the per-hand expressions and the native frame and flag transport stay as they are.
+// Round 276. The AL query tests and the repeated header-base loads still differ.
+// Zoom predicate 257, byte zoom request 282, predicate with typed header 257, typed holder 224,
+// positive action admission 224, one flag initializer 224, typed live hand header 224,
+// short admitted slot 224, direct sound request 274, single zoom-state read 258,
+// signed stored level 223, and both weapon-index arms 224.
+// NOT kept: the signed stored level recovers the native byte extension for one point.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
@@ -8486,6 +8498,11 @@ struct s_unit_turn_state_view
 // helper `static inline` 268 (same code); its step taken by const reference 268 (same code: the reciprocal stays). Retail
 // saves EBX only after the two admission tests and EDI only around the state pointer's use, and its early exit leaves through
 // a shorter epilogue with AL still 0; every form here saves all four at entry with the unused bottom slot (frame 0x80).
+// Round 276. The 0x80 frame, early EBX/EDI saves and shared reciprocal still differ.
+// Rate subobject 268, look lvalue 380, both direction lvalues 434, planar initialization 368,
+// default shares 351, typed unit header 268, typed state bounds 268, one aim-rate read 331,
+// caller-side divisions 268, and scoped aim/look rates 268.
+// NOT kept: the look lvalue reaches native length with worse code and the same frame.
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {

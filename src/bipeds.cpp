@@ -1609,7 +1609,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
 // the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
 // facing homes stay four bytes out of retail's, so the body stands.
-// score 183 (was 203): m3 lane 4 r208 (plain; every function of this file checked). KEPT 203 -> 185: the alternate
+// score 175 (was 183): Definition/material/point slots, entry scheduling and the walking preload still differ.
+// Earlier 183 (was 203): m3 lane 4 r208 (plain; every function of this file checked). KEPT 203 -> 185: the alternate
 // facing through the existing function_cb7e0(arg, &facing) (retail expands 0xcb7e0 there; the copy itself is the same
 // code, the gain is case 6's inlined 0xe5d50 dot products, which take retail's XMM registers; listed below as "same
 // code" on the old 0xf8-frame body). KEPT 185 -> 183: 0x183670 called with the biped's own component first (retail
@@ -1631,7 +1632,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // moves (185). So the homes follow lifetimes, not names, types, scopes, declaration order or first use.
 // Earlier at 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
 // MiniMax C (11-17): no new form, no lower score (203, was 203): the frame (0xfc) and the 2828-byte extent agree, but the tag, material and animation homes, the entry scheduling, the walking-speed preload and the planar square transport still differ.
-// score 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
+// Earlier 203 (was 566): frame 0xfc and 2828-byte extent agree; tag/material/animation homes, entry scheduling,
 // walking-speed preload and planar square transport remain. Earlier 585, 588 with frame 0xf8: position, ground,
 // MiniMax S (11-15): no new form, no lower score (566): retail's frame is still 0xfc against this build's 0xf8 - the
 // dword it is short of is the gravity argument's, and the inline accessor that would supply it is a new function in
@@ -1991,6 +1992,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P585: Scalar lexical homes on the repaired 0xfc frame: airborne/speed/boost/turning/
 // movement/distance/paired size/all, eight 203. Earlier scalar-name checks used the
 // older 0xf8 frame. NOT kept: no tag/material/animation-home or schedule change; body restored.
+// Two-stage squared planar accumulation 175, kept after the square/add/root sequence matched.
+// Header access at entry/grab/both 183/183/183. Typed state names 183, movement view 654,
+// shared control read 183, explicit case returns 183, named component squares 183,
+// typed mode member 183. On 175, staged walking rate and height adjustment 175/175.
+// NOT kept beyond the planar accumulator. The movement view grows the frame and body.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2116,7 +2122,9 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 					function_e5d50(arg_159e6d, biped->unknown390, &biped->unknown444, &point);
 					dx = nearest_b.x - nearest_a.x;
 					dy = nearest_b.y - nearest_a.y;
-					real length = (real)sqrt(dx * dx + dy * dy);
+					real squared_length = dx * dx;
+					squared_length += dy * dy;
+					real length = (real)sqrt(squared_length);
 
 					distance = length > 0.0f ? length : 0.0f;
 					moved = true;
