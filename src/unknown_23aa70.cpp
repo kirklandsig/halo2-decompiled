@@ -77,7 +77,8 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 #define CLUSTER_MASK_TEST(mask, index) ((mask)[(index) >> 5] & (1 << ((index) & 0x1f)))
 
 /* Starts and stops cluster effects when the active cluster masks change. */
-// score 16 (was 16): frame and prefix agree; palette/entry register ownership differs from +0xba.
+// score 16 (was 16): HELD (needs the owner's OK): matches with the patch build/r116/held-23aad0.patch. Frame and prefix agree;
+// palette/entry register ownership differs from +0xba.
 // BLOCKED-BY 0x17e670: its body takes the effect source in edx and the point in ecx here,
 // retail passes the source in ecx and the point in edx (also at 0x17a8a0).
 // Shared entry 17; entry plus palette 17; shared index 32; const shared entry 17;
@@ -101,6 +102,42 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // first index 86 (356 B); an unsigned inner counter 17; one entry's effect as an inline helper 230 (223 B); the palette
 // index named before the tag 17. Diagnostic on scratch copies (one-link harness, exact at 16 on this body): 0x17e670
 // declared (point, source, ...) 7, and with the entry declared before the tag 0. Still BLOCKED-BY 0x17e670.
+// Round 168 (m3 lane 6): no trial; still BLOCKED-BY 0x17e670 (the call passes the effect source in EDX and the
+// point in ECX where retail passes them in ECX and EDX; the callee's parameter order is not this file's to change).
+// Round 116 (m3 lane 12, plain): HELD. Retail's 0x17e670 reads the source from ECX (`mov esi, ecx`) and the point from
+// EDX (`mov edi, edx`, then hashes [edi], [edi+4], [edi+8]); our build gives that convention only with the point declared
+// first. 0x17e670 declared (point, source, ...) at its definition, both declarations and both calls (here and 0x17a8a0)
+// 7; with that, the entry declared before the tag and the palette index read through it: MATCH (plain; a full check
+// with the patch gains this function and loses nothing; 0x17a8a0 23->21, 0x17e670 429->430). Against the reorder: both
+// retail calls set ECX (the source) last (here `xor ecx, ecx`, at 0x17a8a0 `mov ecx, [0x510c78]` after the point's
+// `mov edx`), which under the last-to-first setup rule points to main's (source, point) order, and 0x17e670's own count
+// does not fall; so our convention more likely follows 0x17e670's unmatched body, and the reorder is a measurement, not
+// evidence. The definition line sits in contributor code (src/unknown_17d9a0.cpp), so the patch is held and the code
+// here stays as on main.
+// Round 194 (m3 lane 4, fast): no trial; from +0xba every difference is still the 0x17e670 call's register pair (ours the
+// source in EDX and the point in ECX, retail the source in ECX and the point in EDX), contributor code. Held patch unchanged.
+// Round 83 (m3 lane 2, fast): cosf/sinf in place of the double calls 16 (same code); the pitch's cosine named once and
+// used for i and j 16; the entry declared first with a palette-record pointer for the tag 60 (354 B); the direction's k
+// stored first 27; an early return when the structure has no value at f4 16. Still BLOCKED-BY 0x17e670 (contributor
+// code; held patch unchanged).
+// Round 90 (m3 lane 15): no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair (ours the
+// entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`). BLOCKED-BY 0x17e670 (contributor
+// code); held patch unchanged.
+// Round 188 (m3 lane 5, fast): no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair
+// (ours the entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`, and the palette
+// loads that follow). BLOCKED-BY 0x17e670 (contributor code); held patch unchanged.
+// Round 93 (m3 lane 15, fast; the reduced image agrees with the full 16): the palette globals pointer named at the top 102
+// (first +0x14); the point passed as the entry pointer cast to `point3f const *` 16 (same code); yaw and pitch `real const`
+// 16 (same code); the cosine products written yaw first 16 (same code); the entries block named at the inner loop's top for
+// the tag and the entry 30 (353 B). Re-measured by mistake: the mask bits as named bools 40 (round 120). Still BLOCKED-BY
+// 0x17e670 (the call's register pair); held patch unchanged.
+// Round 103 (m3 lane 13, fast; 0x17e670 builds differently in the reduced image but the control reads the full 16): the
+// palette record as a const reference with the entry declared between it and the tag read 16; the palette types pointer
+// named first in the inner loop with the entry declared before the tag 17 (first +0xb2); the existing direction_from_angles
+// (vector_angles.h) for the three direction rows 16 (identical code; not kept, since the held patch's hunk has the written-out
+// rows as context and that pairing can only be measured with the avoided 0x17e670 files edited: a lead for when the patch
+// lands); the palette types pointer named first with the tag read in the original expression 16; the cluster's first entry
+// index in a long local for both index expressions 95 (364 bytes). Still BLOCKED-BY 0x17e670; held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

@@ -37,26 +37,52 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 	if (fabs(local_0) < 0.0001f) local_0 = 0.0f;
 	return local_0;
 }
-PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
-{
-	real local_0 = magnitude2d(arg_0);
-	if (!(fabs(local_0) < 0.0001f))
-	{
-		real local_1 = 1.0f / local_0;
-		arg_0->i = local_1 * arg_0->i;
-		arg_0->j = arg_0->j * local_1;
-	}
-	else
-		local_0 = 0.0f;
-	return local_0;
-}
+#define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
-PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
-{
-	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
-}
-
-// score 306 (was 345): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// MiniMax D (11-17): no new form, no lower score (286): the frame's homes are still permuted the way the notes
+// below describe (ours [esp+0x24] against retail [esp+0x1c] for the unit pointer, ours [esp+0x14] against
+// retail [esp+0x10] for the magnitude, and the working-vector group at [esp+0x3c]..[esp+0x64] where retail has
+// [esp+0x38]..[esp+0x58]), and site 1's planar normalize still keeps its own zero path, which needs the shape of
+// the shared 0x2b400 helper in include/unknown_11cc90.h, a file this lane may not edit. BLOCKED-BY 0x2b400.
+// MiniMax E (11-15): no new form, no lower score (286): the magnitude and the settings pointer still take each
+// other's frame homes (ours [esp+0x10] and [esp+0x14], retail [esp+0x14] and [esp+0x10]), the two copies of the
+// global still take each other's homes (ours [esp+0x38]..[esp+0x40] for the position copy and [esp+0x44]..
+// [esp+0x4c] for the global's, retail the other way round), and the planar operand order and the xmm numbers of
+// the floors still differ; site 1's planar normalize still keeps the zero path as the fall-through with a result
+// home of its own where retail stores the zero into the magnitude's own home, which needs the 0x2b400 shape of
+// the shared helper (include/unknown_11cc90.h, another file): BLOCKED-BY 0x2b400. A 35-try permuter run found no
+// better form (best 284 differing instructions = the baseline).
+// MiniMax R (11-14): no new form, no lower score (286): the frame slots still differ (ours reads [esp+0x24] and
+// [esp+0x14] where retail reads [esp+0x1c] and [esp+0x10]), the saved-direction homes differ and the planar
+// operand order differs; the fast check prints caveats that the callees 0x26c180 and 0x1f9e70 build differently in
+// the reduced image, so the full check decides the true score.
+// MiniMax D (11-11): no new form, no lower score (286): the object pointer's spill slot still sits eight bytes above retail's and the 0x1e5450 result four bytes above it, and the call result and the magnitude still take each other's registers; declaring the direction local ahead of the position copy puts the two copies in retail's homes but emits them in the other order (290), and declaring them first and assigning them in retail's order keeps the copy order but not the homes (286).
+// MiniMax D (11-10): no new form, no lower score (286): the call result and the magnitude still take
+// each other's homes, the object view still sits eight bytes higher, and the position copy and the first
+// direction copy are still exchanged.
+// MiniMax I (11-11): no new form, no lower score (286); the two vectors copied from the same global still take
+// each other's frame homes - ours keeps the published vector in the lower slot and the one that feeds the
+// history term in the upper one, retail keeps them the other way round, and only a declaration order gives that.
+// MiniMax B (11-12): no new form, no lower score (286): the saved direction's planar copy taken as one aggregate (310)
+// and the two copies of the global with their declaration order exchanged (286, the same code) leave the score where it is.
+// MiniMax A (11-13): no new form, no lower score (286): the saved-direction homes, the planar operand order and the
+// xmm numbers of the floors differ; the callee that held this one back now matches, so what is left is the homes, the
+// operand order and the frame.
+// score 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
+// actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
+// normalizations (j,i sum), 2922b0 call, 30bf0 == 0 fallback, 0x47c branch, floor/ceiling clamps, 29b2e0 call
+// (+0x290 pointer in EBX), field_50/68/6c/64 arithmetic, -1..1 clamps, 0x656/0x66c/output stores all agree with
+// retail. ONE behaviour difference, fixed: 1f9e70's facing/desired vectors were swapped. Retail pushes &local_15
+// (the +0x290 planar direction, 0x29b0b6..0x29b0be lea [esp+0x28] at shift 0xc = esp+0x1c) first and &local_20 (the
+// new heading, lea [esp+0x3c] = esp+0x2c) second, so arg_4 (facing) = local_20 and arg_5 (desired) = local_15; the
+// callee (0x1f9e70) takes the velocity dot with arg_5. The score is unchanged (306): the compiled pushes now match.
+// The written-out PIN clamp helper became the file-local PIN macro (as bipeds.cpp does) at 306, and the written-out
+// 2-D normalizer became normalize2d_fast from unknown_11cc90.h (already included) at 320 / 1866 bytes (retail keeps
+// the normalizing path as the fall-through, the header helper flips it); written-out form was 306.
+// MiniMax I (11-06): the vector copy order swapped and the magnitude declared early were tried
+// (310, 306); the frame homes of the call result and of the x87 temporary still differ from
+// retail's; no lower score.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -380,6 +406,11 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // then paired final public transfers: 447/363/376/440/501/388/473/480. History-only and secondary/history
 // recover frame 0x64 and first +0x42 but grow to 1907/1894 versus 1863. NOT kept: all regress;
 // original copies, helpers and complete body restored; frame/query-magnitude homes remain.
+// Round 59 (m3 lane 15, fast; the convention agrees: arg_0 EAX, ret 0x20; first difference +0x54 is the definition pointer at frame+4 and
+// the magnitude at frame+0 where retail has them the other way round): the magnitude helper's local named `magnitude` 306 and the definition
+// pointer named `settings` 306 (names do not order these slots); `local_15` as `*(vector2f const *)local_3` 306, both planar locals that way
+// 306; the turn dot through the existing dot_product2d 306 (all the same code). Retail sums the first planar length j, i and the second i, j,
+// and multiplies the turn dot local_13-first; ours puts local_15 first in both products.
 // AC551: Immutable saved direction; XY memcpy/memmove/field producers; immutable saved direction
 // with each library transfer; pre-call destination declaration; transfer after actor publication:
 // 306/305/344/306/305/344/305/305. NOT kept: no qualifying supported improvement; complete
@@ -398,6 +429,43 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // M402: Ordinary private magnitude/planar/clamp declarations, seven subsets,
 // then complete ordinary graph with planar inline metadata: eight at 306. NOT kept:
 // no settings/magnitude or saved-direction/planar home repair; original helpers/body restored.
+// Round 178 (m3 lane 4, fast then plain; aligned = difflib count with addresses masked, 191 at 320): the history
+// weight read from the settings field at each of its three uses instead of a local 286 (kept, aligned 184; retail
+// still loads it once into xmm6 and re-reads it for 1 - weight). Retail's first planar normalize keeps the scaling
+// path as the fall-through and the zero path after it (the 0x2b400 shape, which is noinline here). Also tried: the
+// 0.05 floor as a MAX ternary 309 (on 286: 275, but aligned 196: retail's code is the in-place if); the 0x47c
+// override read into local_18 and tested `== 0` 318 (on 286: 286, aligned 203); the minimum-step test as
+// `local_17 >= local_18` 271 at 1863 bytes (on 286: 298; retail's own compare is `comiss local_18, local_17; ja`,
+// the existing form, so the gain is a shift); the speed clamp as a ternary 320 (same code); on 286 the history
+// pointer read at each use 286 (aligned 183), the velocity pointer local dropped 286 (aligned 185).
+// Round 180 (m3 lane 4, fast; aligned/masked = difflib counts with addresses / also stack offsets masked, 184/107
+// at 286): field_50 written as the first factor of the 0x1f9e70 product 286 (same code; retail reads +0x50 before
+// the call into a stack temp); local_20 as the planar copy `*(vector2f const *)&local_27` 310 at 1864 bytes, but
+// aligned 170 and masked 90 (LEAD: the copy of local_27 and local_20's home are then retail's, local_27.i stays in
+// ESI); local_13 / local_15 as planar copies 286/286 (same code); all three 310. Left: site 1's normalize keeps the
+// zero path as the fall-through and a separate result home (retail stores 0 into the magnitude's own home after
+// the scaling path), the 0x1c/0x20 entry homes and the xmm numbering.
+// Round 183 (m3 lane 4, fast; aligned/register-masked = difflib counts with addresses / also registers masked,
+// 184/131 at 286): site 1's planar normalize is retail's inlined 0x2b400 shape (scaling path falls through, 0 stored
+// into the magnitude's own arg_8 home); 0x2b400 is noinline on main in an avoid-listed file and normalize2d_fast has
+// the other branch order, so that block stays (BLOCKED-BY 0x2b400). Tried: the blend rows k, i, j (retail computes
+// the k row first) 286 (aligned 188); the planar dot as the existing dot_product2d 286 (same code); re-measured the
+// one-use +0x50 scale local before the 0x1f9e70 call 334 (1889 bytes, aligned 174, register-masked 122); that with
+// local_20 as `*(vector2f const *)&local_27` 294 (1882 bytes, aligned 161, register-masked 113; match-only, the
+// closest shape so far). No other untried natural form is left for the slot homes (names, declaration orders and
+// whole copies are all listed above).
+// MiniMax C (11-14): no new form, no lower score (286); the stack homes still sit 8 and 4 bytes above
+// retail's (ours at +0x24 against retail's +0x1c, ours at +0x14 against retail's +0x10).
+// MiniMax I (11-14): no new form, no lower score (286): the magnitude and the query output still take the frame's
+// earlier slots where retail puts the magnitude at +0x10 and the query output at +0x1c, and the group of working
+// vectors is still stored in a different order than retail's.
+// m3 lane 6 r181 (fast with 0x29b2e0/0x2922b0/0x1f9760/0x1f9e70/0x30bf0/0x1e5450/0x26c180/0xb9dd0/0x1f5f30; control 286, aligned/
+// stack-masked/register-masked 234/146/68): the shared normalize2d_fast (include/unknown_11cc90.h) written scaling-path first
+// (`if (!(fabs(m) < eps)) { scale; return m; } return 0;`, the 0x2b400 shape) 286 (masked 134/54: site 1's branch order is then
+// retail's, its zero result still in its own home instead of the magnitude's), but 0x29b2e0 176 -> 203; header restored. Site 1
+// through the existing normalize2d 407 (1786 B: a call, its noinline declaration keeps 0x2c2a70's call). The history weight in a
+// local for the three rows with the complement still read from the field (retail loads it once into xmm6 and re-reads it for
+// 1 - weight) 321 (1867 B); the current sum through the existing vector3f_add 316 (1863 B, aligned 255).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -435,9 +503,9 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 		}
 		function_26c180(arg_0);
 		vector2f local_13 = { arg_2->i, arg_2->j };
-		real local_14 = function_29ab92(&local_13);
+		real local_14 = normalize2d_fast(&local_13);
 		vector2f local_15 = { local_3->i, local_3->j };
-		function_29ab92(&local_15);
+		normalize2d_fast(&local_15);
 		local_4 = *arg_2;
 		real local_16 = 1.0f;
 		real local_17;
@@ -462,15 +530,15 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 			local_18 = (1.0f - local_26) * 0.5f * local_20 * 4.0f;
 		}
 		if (local_2->field_4c > local_19) local_19 = local_2->field_4c;
-		local_18 = function_29ab93(local_18, local_19, 1.0f);
+		local_18 = PIN(local_18, local_19, 1.0f);
 		if (!(local_18 > local_17)) local_18 = local_17;
 		vector3f local_27 = local_4;
 		function_29b2e0(arg_0, arg_1, local_3, &local_4, local_18, &local_4);
 		vector2f local_20 = { local_27.i, local_27.j };
 		*(real *)(local_0 + 0x668) = local_18;
-		function_29ab92(&local_20);
+		normalize2d_fast(&local_20);
 		real local_30 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_7,
-			&local_13, &local_15, &local_20, NULL, local_9, false) * local_2->field_50;
+			&local_13, &local_20, &local_15, NULL, local_9, false) * local_2->field_50;
 		*arg_6 = false;
 		if (local_30 > local_16) local_30 = local_16;
 		vector3f local_22;
@@ -486,18 +554,17 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 			local_22.i = (real)(sqrt(fabs((double)local_25)) * local_2->field_6c * local_26 + local_22.i);
 		}
 		vector3f const *history = (vector3f const *)(local_0 + 0x678);
-		real history_weight = local_2->field_64;
 		vector3f local_31;
 		local_31.i = local_6.i + local_22.i;
 		local_31.j = local_6.j + local_22.j;
 		local_31.k = local_6.k + local_22.k;
 		real local_32 = 1.0f - local_2->field_64;
-		local_5.i = local_31.i * local_32 + history->i * history_weight;
-		local_5.j = local_31.j * local_32 + history->j * history_weight;
-		local_5.k = local_31.k * local_32 + history->k * history_weight;
-		local_5.i = function_29ab93(local_5.i, -1.0f, 1.0f);
-		local_5.j = function_29ab93(local_5.j, -1.0f, 1.0f);
-		local_5.k = function_29ab93(local_5.k, -1.0f, 1.0f);
+		local_5.i = local_31.i * local_32 + history->i * local_2->field_64;
+		local_5.j = local_31.j * local_32 + history->j * local_2->field_64;
+		local_5.k = local_31.k * local_32 + history->k * local_2->field_64;
+		local_5.i = PIN(local_5.i, -1.0f, 1.0f);
+		local_5.j = PIN(local_5.j, -1.0f, 1.0f);
+		local_5.k = PIN(local_5.k, -1.0f, 1.0f);
 		*(short *)(local_0 + 0x656) = NONE;
 	}
 	*(vector3f *)(local_0 + 0x66c) = local_5;

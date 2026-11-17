@@ -106,9 +106,20 @@ public:
 	virtual bool v12() = 0;
 };
 
+#include "impacts.h"
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long unused, long effect_value, s_location const *location, real scale);
+	c_type_47f957 material, long effect_value, s_location const *location, real scale);
 
+// score 6: retail loads the spilled 0x188180 argument into eax after pushing
+// the position; ours loads it into ecx before, so the push sequence is one
+// slot out of step. Permuter (8 min, 60 tries, seed 999): no form below 6.
+// b14H (11-17) walk against retail, fast build on r847: the stores, calls, the branchless variant and the arguments
+// are retail's; only the push schedule differs (retail 0x2470b9..0x2470ce: lea eax,[edi+0xc] / push /
+// mov eax,[esp+0x18]
+// / push material, and `lea ecx,[edi+0x18]` before the last `push edx`; ours loads the material into ecx before the
+// lea and puts the lea after the last push). Each 6 in the fast build: material as a local; (long)&impact->direction
+// in a local (after the material, and before the scale call); the scale call inside the argument list; the normal in
+// a local pointer; impact->index inside the call. None moves the schedule.
 // @retail 0x247070
 void function_247070(s_object_246eb0 const *particle, s_particle_impact const *impact, long definition_index, long tag_index)
 {
@@ -121,7 +132,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 		short index = impact->index;
 		real scale = function_246eb0(particle);
 		function_188180(&impact->position, &impact->normal, tag_index, NONE, 10, variant,
-			index, (long)&impact->direction, &location, scale);
+			c_type_47f957(index), (long)&impact->direction, &location, scale);
 	}
 }
 

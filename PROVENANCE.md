@@ -20,6 +20,12 @@ from leaked or internal material.
   (`tools/check.py`).
 - Publicly released documentation, and source code published by its authors
   under a licence compatible with GPL-3.0-or-later.
+- The tag definitions of the publicly released Halo 2 Vista Editing Kit
+  (H2EK, Microsoft, 2007): the field names its tag editor shows and the
+  layouts it describes, including as documented by community projects such
+  as Project Cartographer (see the README's Credits section). Each layout is
+  verified against the retail Xbox code before use, and no text is copied
+  from sources licensed GPL-3.0-only.
 - Independent research by others that was published openly, with credit. An
   example is BirchWoodGod/halo2-decomp's published analysis (see the README's
   Credits section); each lead taken from it was verified against the retail

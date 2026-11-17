@@ -30,6 +30,14 @@ struct s_visibility_query_list
     long count;
     long capacity;
 };
+
+/* frees a list's indices unless they are its own storage (the capacity's top bit set) */
+PRIVATE __forceinline void release_visibility_list(s_visibility_query_list *list)
+{
+    if (!(list->capacity & 0x80000000))
+        g_480118->allocate((long)list->indices, (list->capacity & 0x7fffffff) * 4, 0x12);
+}
+
 void __cdecl function_2dd930(void *data, s_visibility_plane_query const *query,
     s_visibility_query_list *second, s_visibility_query_list *first);
 template<long N> struct __declspec(align(16)) s_visibility_plane_storage

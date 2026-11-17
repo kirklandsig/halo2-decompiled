@@ -37,10 +37,12 @@ public:
 		as_vector_319f70(field_70).add_mul(broadcast_319f70(length), saved_40);
 		field_60.m128_f32[3] = as_vector_319f70(saved_50).xyz_length() * field_c * length;
 		quaternion_319300 change;
-		quaternion_319300 spin;
-		as_vector_319f70(spin.vector).set_mul(broadcast_319f70(0.5f), saved_50);
-		spin.vector = _mm_and_ps(spin.vector, *(__m128 const *)g_415120);
-		change.function_319300(spin, *(quaternion_319300 const *)&rotation);
+		{
+			quaternion_319300 spin;
+			as_vector_319f70(spin.vector).set_mul(broadcast_319f70(0.5f), saved_50);
+			spin.vector = _mm_and_ps(spin.vector, *(__m128 const *)g_415120);
+			change.function_319300(spin, *(quaternion_319300 const *)&rotation);
+		}
 		rotation = _mm_add_ps(rotation, _mm_mul_ps(broadcast_319f70(length), change.vector));
 		((s_1d8d60 *)&rotation)->function_1d8d60();
 		transform_rotation.function_372500(&rotation);
@@ -78,46 +80,10 @@ solver_result_31a0d0 const *motion_31a0d0::function_31a0d0(float const *step, fl
 // the motion moved to a moment within the last step: back by the part of the
 // step its position's last lane records, then on by the part given, which
 // is recorded in its place
-// score 5 (was 5): the last vector call uses esp+0x28 rather than +0x48;
-// EDI restoration follows two SSE instructions. On the local-product form:
-// a pose pointer 9; product after the position copy 53; output declared
-// before either preceding call 5/5; quaternion scope through either call 3/3;
-// translation via its field 5; immutable quaternion input 5.
-// Earlier notes:
-// score 5 (was 10): EDI is restored after the final vector subtraction/store;
-// retail restores it before those instructions. The scalar schedule and both
-// point homes agree. A local duration product scores 5; shortening the angular
-// temporary's lifetime scores 3, as does scoping both rotation temporaries
-// (not kept: lifetime blocks only, without a match).
-// Earlier single-argument form:
-// previous score 10 (was 37): retail multiplies the length of the saved velocity by
-// the field's factor and only then by the length, ours multiplies by the
-// length first; the second move's locals also sit in different stack slots
-// tried and no better: the length by reference (the same score), by pointer
-// (the same bytes), the length by value with an address-exposed speed local
-// at the top of the move (199), one length variable reused by both moves (48),
-// the assignment as the argument (the same bytes), the product in brackets
-// (23), the field's factor first (10), the length's factor through the
-// vector's accessor (46)
-// other trials: reused elapsed vector 164; angular field pointer 46; pose
-// pointer 9; two scale parameters 51; scalar accessor 46; /Op 166 (also loses
-// both file neighbours); out-of-class helper 10; four local names 5 each;
-// point's wider/entry scopes 16 each; returned translation 10.
-// direct final lane assignment 17/594.
-// object names separately/together 10; distinct duration name 10;
-// grouped product with renamed offset or all renamed objects 23
-// score 5 (was 5): the last receiver uses esp+0x20 instead of esp+0x40,
-// followed by a late EDI pop. Final-value input 5; with a shorter spin scope 3;
-// named vector result 5, with that scope 3; both output changes 5; immutable
-// duration product 5; later quaternion declaration 5; scalar result 5.
-// score 5 (was 5): last stack slot and EDI pop remain different.
-// Shared add/mask 5/5; scalar store accessor 46; saved-vector copy 47;
-// current-value copy 151; duration *= fraction 51; separate _mm_mul_ps 5;
-// delayed field write 10; SSE write 5; SSE write with shorter spin 3.
 // @retail 0x31a2b0
 void motion_31a2b0::function_31a2b0(float time, float step_length)
 {
-	move_31a2b0(-step_length, field_70.m128_f32[3]);
+	move_31a2b0(-step_length, as_vector_319f70(field_70)(3));
 	move_31a2b0(time, step_length);
 	as_vector_319f70(field_70)(3) = time;
 }

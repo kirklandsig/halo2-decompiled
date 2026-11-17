@@ -20,6 +20,8 @@ struct bool_3058b0
 	{
 		value = value_;
 	}
+
+	bool is_set() const { return value; }
 };
 
 struct s_3058b0_pair;
@@ -195,41 +197,43 @@ void pair_305f60::function_307720(table_305f60 *table, int first_axis, int secon
 	function_3076a0(table, &key, distance);
 }
 
-// a direction taken into a transform's frame
-__forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m128 const &direction)
-{
-	__m128 const x = _mm_shuffle_ps(direction, direction, 0x00);
-	__m128 const y = _mm_shuffle_ps(direction, direction, 0x55);
-	__m128 const z = _mm_shuffle_ps(direction, direction, 0xaa);
-	__m128 t0 = _mm_shuffle_ps(matrix->axes[0], matrix->axes[1], 0x44);
-	__m128 t1 = _mm_shuffle_ps(matrix->axes[2], matrix->axes[2], 0x44);
-	__m128 t2 = _mm_shuffle_ps(matrix->axes[0], matrix->axes[1], 0xee);
-	__m128 t3 = _mm_shuffle_ps(matrix->axes[2], matrix->axes[2], 0xee);
-	return _mm_add_ps(_mm_add_ps(
-		_mm_mul_ps(_mm_shuffle_ps(t0, t1, 0x88), x),
-		_mm_mul_ps(_mm_shuffle_ps(t0, t1, 0xdd), y)),
-		_mm_mul_ps(_mm_shuffle_ps(t2, t3, 0x88), z));
-}
-
-// score 316 (was 316): retail computes the newest normal's three splats once,
-// spills them and shares them between the two rotations, and keeps the count
-// in edi; sharing the splats here scores 322 to 326.
-// the faces of the two boxes most nearly facing along the normal of the
-// newest contacts, when both face it closely: their contacts and, when asked,
-// those of the edges around them, with the smallest distance among the
-// contacts
+// Matched (was 100): the newest contact is addressed once after the index, both transforms
+// are named before the axis reads, the first rotation's second row is formed before the second
+// rotation (so the second one's row is the value spilled), the splats are declared z, y, x, and
+// each side's sign bits are read through a reference to the float, which lets the mask's `and`
+// come before the float's store.
 // @retail 0x307840
 void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
-{
-	int const count = table->count;
+{	int const count = table->count;
 	if (count < 1)
 	{
 		return;
 	}
 	contacts_307840 const *contacts = *this->contacts;
-	contact_307840 const *newest = &contacts->data[contacts->size - count];
-	__m128 second = rotate_inverse_307840(second_transform, newest->normal);
-	__m128 first = _mm_xor_ps(rotate_inverse_307840(first_transform, newest->normal), *(__m128 const *)g_4124a0);
+	long const first_index = contacts->size - count;
+	contact_307840 const *const newest = contacts->data + first_index;
+	transform_307840 const *const first_frame = first_transform;
+	transform_307840 const *const second_frame = second_transform;
+	__m128 const a0 = first_frame->axes[0];
+	__m128 const a2 = first_frame->axes[2];
+	__m128 const first_t0 = _mm_shuffle_ps(a0, first_frame->axes[1], 0x44);
+	__m128 const first_t1 = _mm_shuffle_ps(a2, a2, 0x44);
+	__m128 const b0 = second_frame->axes[0];
+	__m128 const b2 = second_frame->axes[2];
+	__m128 const second_t0 = _mm_shuffle_ps(b0, second_frame->axes[1], 0x44);
+	__m128 const second_t1 = _mm_shuffle_ps(b2, b2, 0x44);
+	__m128 const normal = contacts->data[first_index].normal;
+	__m128 const z = _mm_shuffle_ps(normal, normal, 0xaa);
+	__m128 const y = _mm_shuffle_ps(normal, normal, 0x55);
+	__m128 const x = _mm_shuffle_ps(normal, normal, 0x00);
+	__m128 second = _mm_add_ps(_mm_add_ps(
+		_mm_mul_ps(_mm_shuffle_ps(second_t0, second_t1, 0x88), x),
+		_mm_mul_ps(_mm_shuffle_ps(second_t0, second_t1, 0xdd), y)),
+		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(b0, second_frame->axes[1], 0xee), _mm_shuffle_ps(b2, b2, 0xee), 0x88), z));
+	__m128 first = _mm_xor_ps(_mm_add_ps(_mm_add_ps(
+		_mm_mul_ps(_mm_shuffle_ps(first_t0, first_t1, 0x88), x),
+		_mm_mul_ps(_mm_shuffle_ps(first_t0, first_t1, 0xdd), y)),
+		_mm_mul_ps(_mm_shuffle_ps(_mm_shuffle_ps(a0, first_frame->axes[1], 0xee), _mm_shuffle_ps(a2, a2, 0xee), 0x88), z)), *(__m128 const *)g_4124a0);
 	__m128 first_size = _mm_and_ps(first, *(__m128 const *)g_455940);
 	__m128 second_size = _mm_and_ps(second, *(__m128 const *)g_455940);
 	int first_axis;
@@ -271,10 +275,13 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 		return;
 	}
 	float first_side = first_sides[first_axis];
-	key.field_2 = (unsigned short)(((_mm_movemask_ps(second) & 7) << 4) | ((*(unsigned long const *)&first_side >> 20) & 0x800));
+	unsigned long const &first_bits = *(unsigned long const *)&first_side;
+	key.field_2 = (unsigned short)(((_mm_movemask_ps(second) & 7) << 4) | ((first_bits >> 20) & 0x800));
 	float second_side = second_sides[second_axis];
+	unsigned long const &second_bits = *(unsigned long const *)&second_side;
 	key_305f60 second_key;
-	second_key.field_2 = (unsigned short)(((_mm_movemask_ps(first) & 7) << 4) | ((*(unsigned long const *)&second_side >> 20) & 0x800));
+	second_key.id = 0;
+	second_key.field_2 = (unsigned short)(((_mm_movemask_ps(first) & 7) << 4) | ((second_bits >> 20) & 0x800));
 	key.index = (unsigned short)first_axis;
 	second_key.index = (unsigned short)(second_axis + 3);
 	float distance = 1.0f;
@@ -287,7 +294,6 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 		}
 	}
 	function_3061c0(table, key, (unsigned short)second_mask, distance);
-	second_key.id = 0;
 	function_3062e0(table, second_key, (unsigned short)first_mask, distance);
 	if (table->field_50 >= 4)
 	{
@@ -308,19 +314,39 @@ void pair_305f60::function_307840(table_305f60 *table, key_305f60 key)
 	}
 	((pair_305790 *)this)->function_305790((manifold_305790 *)table, first_mask, second_mask);
 }
-// score 24 (was 24): the added-contact flag sits at esp+0x1b, below the spilled this, where retail
-// has it at esp+0x2c, above the two sides (so the other 4-byte slots sit 4 bytes lower in retail);
-// the two distance stores also come after setting the result 2 in the first face branch and before
-// it in the second, the other way round from retail. A temporary or a flag declared earlier scores 51;
-// renaming it changes nothing.
+// Matched: the loop is endless and its last statement returns 0 when the tries run
+// out, which puts the shared `return 2` after the first arm as retail has it.
+// Before, 5 (was 24): the answer is tested through its is_set() member, which
+// makes the one-byte result an aggregate for the frame (retail's esp+0x2c)
+// and lines up every four-byte home. Left: which arm's exit the third arm's
+// return shares.
+// Before, 24 (was 24): Frame 0x44 and extent 847 agree; the returned byte is
+// below the saved this instead of above the two side inputs. The remaining
+// 4-byte stack homes are shifted by four; two distance/return schedules
+// also differ. A prior common result gave 19 in the plain check, then was
+// restored under the exit rule.
+// Earlier: a temporary or early flag 51; flag rename unchanged.
+// SIMD buffers before count 24, before search 24; distinct side names 24;
+// shared side 31; face-index captures 156; backward key pointers 204;
+// named distances 24; common exit 19; direct byte test with it 47;
+// count before result 19; outer returned object with it 47.
 // the features of the axis of greatest separation, tried in turn up to eight
 // times: 1 when the manifold lists them already, 2 when they give a new
 // contact (its separation in the feature), 0 when none does
+// Common result 19 NOT kept: new goto exits require an exact match.
+// New: direct returned temporary 51; constructed/assigned result 51;
+// result before vectors, per pass or before loop 51; shorter vector or side
+// scopes 24; bounded for 282. Original returns and body restored.
+// Round 424: contact_found name 24; mutable returned object 24;
+// valid_contact name 24; encoded keys read through output 24; both side-bit
+// locals 31; both bound-test masks named 24; plain while attempts 282;
+// word edge axes 98. NOT kept: no gain; returned-byte home and the two
+// distance/return schedules still differ.
 // @retail 0x307c40
 int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_305f60 *feature)
 {
 	int tries = 8;
-	do
+	for (;;)
 	{
 		float best_separation = separations[0];
 		int best = 0;
@@ -397,12 +423,15 @@ int pair_305f60::function_307c40(table_305f60 *table, key_305f60 *key, feature_3
 				}
 			}
 			bool_3058b0 const found = function_306f80(feature);
-			if (found.value)
+			if (found.is_set())
 			{
 				return 2;
 			}
 		}
 		separations[best] = -3.40282347e+38f;
-	} while (--tries > 0);
-	return 0;
+		if (--tries <= 0)
+		{
+			return 0;
+		}
+	}
 }

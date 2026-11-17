@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "main_globals.h"
 #include <xtl.h>
+#include "cache_copy_globals.h"
 
 /* unknown_213d20.cpp */
 long map_location_get(char const *map_name);
@@ -19,8 +20,6 @@ bool map_names_equal(char const *map_name, char const *other_map_name);
 bool function_2141f0(void);
 bool function_2148b0(real *progress);
 
-extern char g_55bd21[0x103];
-extern bool g_55bd0c;
 
 enum
 {
@@ -316,7 +315,7 @@ bool __stdcall function_163890(char const *map_name, long mode)
 				}
 				else if (current == _map_location_copying)
 				{
-					if (map_names_equal(g_55bd21, map_name))
+					if (map_names_equal(g_55b4f0.path, map_name))
 					{
 						function_2148b0(&progress);
 					}
@@ -330,7 +329,7 @@ bool __stdcall function_163890(char const *map_name, long mode)
 				{
 					map_copy_request(map_name, priority);
 				}
-				if (g_55bd0c)
+				if (g_55b4f0.done)
 				{
 					function_2141f0();
 				}

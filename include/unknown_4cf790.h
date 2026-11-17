@@ -36,25 +36,38 @@ struct s_4cf790
 	byte field_1d5[3];
 	long field_1d8;
 	long field_1dc;
-	long field_1e0;
-	long field_1e4;
-	long field_1e8;
-	long field_1ec;
-	long field_1f0;
-	long field_1f4;
-	long field_1f8;
-	byte field_1fc[350 * 104];
 };
 
 typedef char assert_4cf790_layout[(
     offsetof(s_4cf790, field_44) == 0x44 &&
     offsetof(s_4cf790, field_148) == 0x148 &&
     offsetof(s_4cf790, field_1d8) == 0x1d8 &&
-    offsetof(s_4cf790, field_1e0) == 0x1e0 &&
-    offsetof(s_4cf790, field_1fc) == 0x1fc &&
-    sizeof(s_4cf790) == 0x902c) ? 1 : -1];
+    sizeof(s_4cf790) == 0x1e0) ? 1 : -1];
 
 extern s_4cf790 g_4cf790_storage;
+
+/* the cache of recently met players at 0x4cf970 (src/unknown_0805e0.cpp): its own
+   object, the 0x8e4c bytes that 0x7fa40 reads from its file and 0x7fb50 writes back
+   (a version, the checksum of the 0x8e44 bytes from the count on, the count, four
+   list heads, then the entries) */
+struct s_4cf970
+{
+	long field_0;
+	long field_4;
+	long field_8;
+	long field_c;
+	long field_10;
+	long field_14;
+	long field_18;
+	byte field_1c[350 * 104];
+};
+
+typedef char assert_4cf970_layout[(
+    offsetof(s_4cf970, field_8) == 0x8 &&
+    offsetof(s_4cf970, field_1c) == 0x1c &&
+    sizeof(s_4cf970) == 0x8e4c) ? 1 : -1];
+
+extern s_4cf970 g_4cf970_storage;
 
 #define g_4cf790 (g_4cf790_storage.field_0)
 #define g_4cf791 (g_4cf790_storage.field_1)
@@ -76,11 +89,11 @@ extern s_4cf790 g_4cf790_storage;
 #define g_4cf964 (g_4cf790_storage.field_1d4)
 #define g_4cf968 (g_4cf790_storage.field_1d8)
 #define g_4cf96c (g_4cf790_storage.field_1dc)
-#define g_4cf970 (g_4cf790_storage.field_1e0)
-#define g_4cf974 (g_4cf790_storage.field_1e4)
-#define g_4cf978 (g_4cf790_storage.field_1e8)
-#define g_4cf97c (g_4cf790_storage.field_1ec)
-#define g_4cf980 (g_4cf790_storage.field_1f0)
-#define g_4cf984 (g_4cf790_storage.field_1f4)
-#define g_4cf988 (g_4cf790_storage.field_1f8)
-#define g_4cf98c (*(s_player_configuration_cache_entry (*)[350])g_4cf790_storage.field_1fc)
+#define g_4cf970 (g_4cf970_storage.field_0)
+#define g_4cf974 (g_4cf970_storage.field_4)
+#define g_4cf978 (g_4cf970_storage.field_8)
+#define g_4cf97c (g_4cf970_storage.field_c)
+#define g_4cf980 (g_4cf970_storage.field_10)
+#define g_4cf984 (g_4cf970_storage.field_14)
+#define g_4cf988 (g_4cf970_storage.field_18)
+#define g_4cf98c (*(s_player_configuration_cache_entry (*)[350])g_4cf970_storage.field_1c)

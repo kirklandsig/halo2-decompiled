@@ -148,7 +148,10 @@ inline void end_agent_316110(agent_316110 *agent)
 	}
 }
 
-// score 6 (was 185): the first cleanup still exchanges eax/edx, and the
+// Matched: the first pair's owner and the merged record's cursor are each
+// held through a reference, which keeps the owner chain in one register and
+// gives the cleanup's registers.
+// Before, 6 (was 185): the first cleanup still exchanges eax/edx, and the
 // first owner load uses ecx between the two loads. A second-member reference
 // with an element reference in each pair loop 6 (from 87); element references alone
 // 84 rejected. First-member reference 170; second or both member references
@@ -181,6 +184,9 @@ inline void end_agent_316110(agent_316110 *agent)
 // cleanup 54; const record cleanup with an element reference 67; external
 // pair-reference argument 6; pair base with agent-value cleanup 6. A single
 // worker search of 474 variants found none below 6.
+// Equal-first order test 241; compound order test 257; pair-loop continues 6;
+// record-loop continue 6; while pair scans 6; source-index shift 52;
+// shift data snapshot 36; earlier first handle 209. NOT kept: no gain.
 // @retail 0x316110
 void cache_316110::function_316110(pair_316110 const *pair)
 {
@@ -199,14 +205,20 @@ void cache_316110::function_316110(pair_316110 const *pair)
 			written++;
 			next++;
 		}
-		end_agent_316110(next->agent);
+		{
+			record_316110 *found = next;
+			record_316110 *&ended = found;
+			end_agent_316110(ended->agent);
+		}
 		next++;
 		return;
 	}
 	collidable_316110 *first = pair->first;
 	collidable_316110 *const &second = pair->second;
 	{
-		pairs_316110 &pairs = island_of_316110(first)->pairs;
+		owner_316110 *owner = static_cast<entity_316110 *>(first)->owner;
+		owner_316110 *&held = owner;
+		pairs_316110 &pairs = held->island->pairs;
 		for (int i = 0; i < pairs.size; i++)
 		{
 			pair_316110 const &entry = pairs.data[i];

@@ -113,7 +113,7 @@ void function_22fba9(c_class_1473c9 *screen)
 }
 
 /* the widgets of the current pane: bitmaps, groups, texts and models */
-// score 23 (was 66): the text loop's offset reset is mov where retail has and, the model loop's
+// score 23 (was 23): the text loop's offset reset is mov where retail has and, the model loop's
 // the other way, and the model loop copies the screen to eax before reading its animation type
 // (retail uses esi, the call's register argument, directly; both copy it in the text loop).
 // Tried: the text definition as pointer arithmetic, the text loop as a while, a model
@@ -145,6 +145,63 @@ void function_22fba9(c_class_1473c9 *screen)
 // the model loop's animation start 23; own text/model/both counters with the counter zeroed above the pane call 25/25/25,
 // zeroed inside the if 66/66/66, above the if 23/23/23 (own counters never change the code). In retail the loops with a
 // value0a store reset the offset with `mov` and the text loop (none) with `and`; ours swaps the text and model loops.
+// Round 94 (lane 16, fast): text, model or block-18 element as pointer plus index 23/23/23; `bool const animating` 23;
+// a const pane pointer 23.
+// Round 73 (lane 14, fast): the text loop as `if (!text) continue;` then the animation test 23; that with the model loop
+// as `if (!model) continue;` 23; the block-18 inner counter declared with i at the top 23; the model call through a base
+// pointer declared in the loop 23; the text call assigned inside its test 23 (all the same code).
+// Round 64 (m3 lane 2, fast): the text test as `animating && text` 26; the block-18 inner counter declared in its
+// `for` 23; the model loop's start as `if (model && animating)` with the store under its own `if (model)` (0x22facd's
+// shape) 23; the model pointer declared before its loop 23; a `*const` screen parameter 23 (all same code but the
+// first); permuter (600 s, 55 tries) best 21 instructions, its baseline. The model loop's copy is the normal shape
+// (matched 0x22facd copies the screen into ECX too); only retail's last loop reads [esi+0x34] directly.
+// Round 85 (m3 lane 14, fast): the text helper 0x22f9bf taking a short index 23 (same code); the model helper 0x22fa5b as
+// a member of the base widget (`this` the parent) 23, this function as a `__stdcall` member of the screen 23 (both same code,
+// every caller still matches); one widget local shared by the five loops 23 (same code); the model loop's test as
+// `pane->model_count > i` 23 (only the compare flips). Diagnostics: without the model loop's value0a store the model needs
+// no callee-saved register and the screen is read as [esi+0x34] directly (54); one more loop after the model loop turns the
+// model loop's reset into `mov` but keeps the EAX copy, so in our build the `and` comes from being the last loop and the copy
+// from the model living in EDI.
+// Round 86 (m3 lane 13, fast): the model loop in a force-inlined helper taking the screen, the pane and the flag 23
+// (same code); `long i = 0;` above the pane lookup, re-measured, 25 (the text store becomes retail's `and`, the zero
+// moves above the call, the model loop unchanged); an empty trailing loop over another pane block after the model
+// loop 23 (deleted, same code); the text loop in such a helper 23, both loops in helpers 23 (same code). Diagnostics:
+// without the second loop the stores stay mov/mov/and (text mov, model
+// and), so the `and` follows the last loop, not a count of loops; the text loop placed after the model loop changes
+// the whole allocation (screen kept in EBX). Reading: `and [slot], reg` is a constant-zero store whose immediate a late
+// pass replaced by a zero register, `mov [slot], reg` a store the optimizer already tied to the counter; retail has
+// the first in the text loop only.
+// Round 157 (m3 lane 7, fast): the model loop walking a definition pointer (incremented in the call) 150 (421 bytes);
+// the text loop walking one 46 (419 bytes); 0x22fa5b's parent parameter typed as the screen class, as 0x22f9bf's, 23 (same
+// code). Stopped there: round 51's 15 counter combinations and round 86's diagnostics cover the counter and loop spellings.
+// Round 122 (m3 lane 9, fast; control 23): 0-7 unused locals at the top 23 at every phase; the shared counter declared in the
+// pane block after the flag 66; the model's animation start without braces 23; the text result typed as 0x22f9bf's return
+// type 23. Diagnostic: the model's value0a store ahead of the animation start 11 at 414 bytes (the model stays in EAX, no
+// EDI save or screen copy; the resets stay swapped), but retail stores after the call.
+// Round 164 (m3 lane 7, fast): widgets and the flag given descriptive names 23, counters named index/child_index 23, the
+// model result typed as the model widget (cast at the call) 23, the model animation start through the qualified base
+// member 23 (all same code); the shared counter declared inside the pane block ahead of the flag 66.
+// Round 166 (m3 lane 7, fast): one `long const &` to the screen's animation type read by all five loops 23; the screen as a
+// base-widget parent pointer for the helper calls and every animation read 23; the model declared in its if condition 23;
+// the text declared in its if condition with the animation test nested 23; both 23 (all the same code).
+// Round 186 (m3 lane 6, fast): on `long i = 0;` above the pane lookup (25: the text reset becomes retail's `and`, the model
+// reset stays `and` with the EAX copy): the model loop as a `while` 25, with `if (!model) continue;` 25, with `if (model &&
+// animating)` and the store under its own `if (model)` 25, with its own counter declared in its `for` 25 or at the top 25 (all
+// the same code); on main's body the text loop's own counter zeroed above the pane lookup 23 (same code).
+// M3 lane 2 r90 (fast; all the same code): a `long const &` to the screen's animation type declared after the model call
+// and read by the model's start 23, the same in the text loop 23; the model result as a `*const` local 23; the model
+// definition as an `s_model_block &` element reference passed by address 23; the pane as a `*const &` bound to the getter's
+// result 23. (The flag getter cannot take the screen without its cast: c_widget is not one of its bases.)
+// M3 lane 13 r101 (fast): the definition moved to the end of the file (a prototype left in its place) 23; the implicit
+// short conversion at all four value0a stores 23; the model's animation read through an explicit base-widget cast of the
+// screen 23; all five animation starts through a forceinline (widget, screen) helper 23 (all the same code); `long i = 0;`
+// above the pane call with `if (!pane) return;` 25 (the zero moves above the call). Permuter (seed 101, 600 s, fast,
+// anneal): 76 tries, none below its reduced-image baseline 21 (full image 23).
+// M3 lane 5 r193 (fast): a guard `if (pane->model_count > 0)` around the model loop 43 (422 bytes) and `if
+// (pane->text_count > 0)` around the text loop 58 (418 bytes) (both emit their own test, nothing folds); the screen bound
+// to a `c_class_1a2c81 &` before the model loop and used for its call and animation read 23; the model result as a
+// `*const &` bound to the call 23; one widget local at function scope shared by the text and model loops 23 (all the
+// same code). Retail's model loop alone reads `[esi + 0x34]` from the call's ESI; matched 0x22facd copies there too.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

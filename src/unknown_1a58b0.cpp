@@ -637,47 +637,16 @@ void function_1a6d80(void)
 	}
 }
 
-// score 6 (was 6): the two output pointers are loaded one after the other here and both before the
-// first store in retail, and the word is written after the stack is restored in retail.
-// Nested count assignment/return count expression/full return expression 6/6/6;
-// comma output statement/indexed and offset returns 6/6/6;
-// const node-list pointer/handler local 6/6.
-// Count at each use 53; table value snapshot 27; validity from a false-default test 52;
-// success/failure output arms 15/15; native group snapshot 26; word count 6; true-default test 79.
-// Round 88: call result local with the count stored first 6 (retail's ECX/EDX pointer registers,
-// but the count store comes first); count stored before the call 12; handler index read in the
-// call 26; output pointer locals 6; forceinline output setter 6.
-// Round 55: table entry pointer local 28 (104 bytes); call result local stored in order 6; short
-// handler index 7; handler index read after the table reads 20; count read before the node list 6.
-// Round 49: actor lookup at both table reads 27; group local without the actor local 14 (103 bytes);
-// result pointer declared first and set after the count 6; char count 6; group local after the actor
-// local 14 (103 bytes); table index read into a local before the node list 6. Diagnostics: the valid
-// pointer takes EDX with the count store removed or a NULL return; with the count stored first the count
-// pointer loads first into EDX and the valid pointer into ECX (retail's registers, wrong store order).
-// Round 85: count output before the call 6; both output pointers after it 6; count output before and valid
-// output after it 6; output references after it 6; valid store scope 6; count store scope 6; const output
-// parameters 6; indexed valid output 6; count value named after the call 6. Opening body restored.
-// Round 79 (fast): a return local set between the two stores 6, before the call 6; output references at the top 6;
-// a named call result with a count output local 6, with both output locals 6; the valid store as an if/else 15 (106 bytes).
-// Round 86 (fast): k identity locals on the node list, k = 1..8, 6 each (these registers do not follow symbol numbering);
-// an output-setting helper with reference or pointer parameters, the call result first or third, forceinline or inline,
-// or the whole tail in a helper returning the list, 6 each; output parameters char/byte with short/word/unsigned short 6 each;
-// the call result stored last 6 (count pointer EDX and valid pointer ECX as retail, stores reversed); the list returned from a
-// second table read 59 (126 bytes). Retail's registers need the count pointer loaded before the valid store.
-// Round 67 (m3 lane 14, fast): a const copy of the count pointer, of the valid pointer, or of both at the
-// top 6/6/6 (same code); the count stored through a read of its own parameter's address 6; the call
-// result compared `!= false` 15 (106 bytes); the permuter (600 s, 65 tries) nothing below 6. Reading: ours
-// gives the count pointer EAX, free once the valid store has used AL, so its load waits for that store;
-// retail's EDX choice means EAX was taken (the return value) when the count pointer was allocated.
+// the nodes of a handler's actions for the owner's actor type: whether the handler took them, and how many
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
 	s_actor_view *owner = actor_get(owner_index);
-	long local_2 = g_46eeb8[id]->index;
+	s_slot_handler const &handler = *g_46eeb8[id];
 	s_action_node **nodes = &g_4f0a60[g_4f2cc0[id][owner->unknown004].index];
 	short node_count = g_4f2cc0[id][owner->unknown004].count;
 
-	*valid = function_1a71f0(node_count, (short)local_2, nodes);
+	*valid = function_1a71f0(node_count, handler.index, nodes);
 	*count = node_count;
 	return nodes;
 }
@@ -1943,12 +1912,17 @@ long __stdcall function_1a54a0(s_sort_weight_view const *arg_0, short arg_1,
 			}
 		}
 		g_4de2f8 = false;
-		for (long local_14 = 0; local_14 < local_8; local_14++)
+		long local_14 = 0;
+		if (local_8 > 0)
 		{
-			local_0 = function_1a56c0(arg_0, local_2[local_14], arg_2, arg_3,
-				local_3, local_5, local_6, arg_4, arg_5, local_0, arg_6);
-			if (local_0 >= 0x40)
-				break;
+			do
+			{
+				local_0 = function_1a56c0(arg_0, local_2[local_14], arg_2, arg_3,
+					local_3, local_5, local_6, arg_4, arg_5, local_0, arg_6);
+				if (local_0 >= 0x40)
+					break;
+			}
+			while (++local_14 < local_8);
 		}
 	}
 	done:

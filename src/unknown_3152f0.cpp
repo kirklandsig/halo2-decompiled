@@ -16,6 +16,7 @@ struct lane_a_mass_restore
 	lane_a_accumulator_prefix *b;
 };
 
+// Preserve the scalar factor loads before the selected x87 products.
 // score 6 (was 6): Three scalar load/product operand choices remain; frame and length agree.
 // Earlier compound/product forms 6; both loops 14; retained pointers 44; both/group scales 38/34;
 // scalar scale/input/result locals 14; native scalar accessors 6; coefficient pointer/reference forms 6;
@@ -40,12 +41,24 @@ struct lane_a_mass_restore
 // @retail 0x315280
 void __cdecl lane_a_scale_masses(void *, lane_a_mass_restore *record)
 {
-	record->a->inverse_mass[0] = record->scale_a * record->a->inverse_mass[0];
-	record->a->inverse_mass[1] = record->scale_a * record->a->inverse_mass[1];
+	{
+		float const volatile &factor = record->scale_a;
+		record->a->inverse_mass[0] = factor * record->a->inverse_mass[0];
+	}
+	{
+		float const volatile &factor = record->scale_a;
+		record->a->inverse_mass[1] = factor * record->a->inverse_mass[1];
+	}
 	record->a->inverse_mass[2] *= record->scale_a;
-	record->a->inverse_mass[3] = record->scale_a * record->a->inverse_mass[3];
+	{
+		float const volatile &factor = record->scale_a;
+		record->a->inverse_mass[3] = factor * record->a->inverse_mass[3];
+	}
 	record->b->inverse_mass[0] *= record->scale_b;
-	record->b->inverse_mass[1] *= record->scale_b;
+	{
+		float const volatile &factor = record->scale_b;
+		record->b->inverse_mass[1] = factor * record->b->inverse_mass[1];
+	}
 	record->b->inverse_mass[2] *= record->scale_b;
 	record->b->inverse_mass[3] *= record->scale_b;
 }

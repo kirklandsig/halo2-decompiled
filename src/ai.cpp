@@ -235,6 +235,8 @@ bool function_1c9500(long unit_index, long actor_index, bool notify)
 	return result;
 }
 
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x1c9580
 long function_1c9580(long object_index, bool a)
 {
@@ -244,6 +246,8 @@ long function_1c9580(long object_index, bool a)
 	{
 		s_ai_unit *unit = (s_ai_unit *)function_badc0(object_index, 3);
 
+		/* retail's callers read object fields again after this call */
+		_ReadWriteBarrier();
 		if (unit)
 		{
 			if (a && unit->unknown24c != NONE)
@@ -262,6 +266,7 @@ long function_1c9580(long object_index, bool a)
 	}
 	return result;
 }
+#pragma function(_ReadWriteBarrier)
 
 /* the ai globals tag, a block at +0xc8 of the tag header globals */
 struct s_ai_globals_definition
@@ -783,7 +788,7 @@ PRIVATE __forceinline s_ai_importance_squad *ai_importance_squad_iterator_next(s
 	if (g_4f55d0->active)
 	{
 		s_record_pool *records = iterator->records.data;
-		long index = data_next_absolute_index_inlined(records, iterator->records.index + 1);
+		long index = data_find_index(records, iterator->records.index + 1);
 		if (index != NONE)
 		{
 			squad = (s_ai_importance_squad *)(records->data + records->size * index);
@@ -801,8 +806,7 @@ PRIVATE __forceinline s_ai_importance_squad *ai_importance_squad_iterator_next(s
 	return squad;
 }
 
-// score 2 (was 143): retail reloads the squad pool pointer between cmp edx, -1 and je in the
-// squad step; ours reloads it after the je on fall-through, the taken branch going to the shared reload.
+// lists the important actors (kind 1) then squads (kind 0), at most 256, and sorts them
 // @retail 0x1c8700
 void __stdcall ai_importance_list_build(long unused, s_ai_importance_list *list, long unused2)
 {
@@ -979,6 +983,12 @@ void function_1ca290(long tag_index, long ticks, long object_index, long node_in
 	}
 }
 
+// b5H (11-06) walk against retail, statement by statement: the tests, constants (15.0, 12.0, 5.0, 4.0, 3.0 seconds) and the
+// three returns of the actor index agree. Fixed (precision): the distance adds z, y, x as retail does ((dz^2 + dy^2) + dx^2,
+// 0x1ca499-0x1ca4c7, rounded once at 0x1ca4d1). Found: retail walks the prop nodes with a 16-byte datum iterator at +0x38
+// (datum_index +0x40, index +0x44; the pool re-read from g_502418 at 0x1ca30a and 0x1ca34d). Written with
+// data_datum_iterator_next_inlined (a new #include "data_iterator.h") the function MATCHES, but the full build then loses
+// the matched 0x54590 and 0xc2d00, so the index walk stays. s_record_pool_iterator 216; `ignore = !actor->unknown009` 209.
 // @retail 0x1ca2d0
 long function_1ca2d0(bool unknown)
 {
@@ -1028,9 +1038,9 @@ long function_1ca2d0(bool unknown)
 		}
 		view = (s_ai_conversation_view *)function_25d740((s_prop_node *)node);
 		function_b9dd0(node->object_index, &position);
-		distance = (real)sqrt((position.x - actor->position.x) * (position.x - actor->position.x) +
+		distance = (real)sqrt((position.z - actor->position.z) * (position.z - actor->position.z) +
 			(position.y - actor->position.y) * (position.y - actor->position.y) +
-			(position.z - actor->position.z) * (position.z - actor->position.z));
+			(position.x - actor->position.x) * (position.x - actor->position.x));
 		if (view && !(node->unknown24 >= 1 && node->unknown24 <= 2) && view->time != NONE &&
 			game_time - view->time < ai_seconds_to_ticks(3.0f) && 12.0f > distance)
 		{
@@ -1538,12 +1548,21 @@ long __stdcall function_1dfb90(long definition_index)
 
 long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v, real radius);
 
-// score 62 (was 62): frame 0x508 and exact length agree; origin/callee argument registers and stack cleanup differ.
+// score MATCH (was 62): fast build on r841; frame 0x508 and exact length agree.
 // Round 530: result initialized at scan, blocker initialized at scan, native long ordinal,
 // both producers, result/ordinal, blocker/ordinal, all three and complete scan role names: 67/62/64/67/64/64/64/64.
 // Original executable body restored; the geometry-call register contracts remain.
+// b10J (11-17) walk against retail, fast build on r841: fields, offsets, jcc senses, loop guard (0x1c8d51-0x1c8d54)
+// and the 0x1c9290-style segment call agree with retail. Differences found: (1) the 0x11ea30 call took (center, axis,
+// origin, direction); retail loads ecx=&center (0x1c8d9b), edx=&value10 (0x1c8d97), esi=direction (0x1c8d31) and
+// edi=origin (0x1c8d2a, reloaded 0x1c8da4), as matched 0x1c9290 does (0x1c9451-0x1c9463): the ray comes first, so the
+// call is now (origin, direction, center, axis, radius) (swapped segments, behaviour unverified: 0x11ea30 is todo).
+// (2) retail's statement order: the result is cleared (0x1c8de3) before the blocker is stored (0x1c8de5).
+// (3) parameter order: the actor is in ecx, the direction in eax, the object to ignore is the first stack slot
+// (0x1c8d60) and the origin the second (0x1c8d2a); the caller pushes blocker, origin, ignore (0x1fd969-0x1fd980,
+// in disabled src/unknown_1fc7e0.cpp, updated). Fast scores: old order with (1)+(2) 3; (1)+(3) without (2) 15.
 // @retail 0x1c8d20
-bool function_1c8d20(long actor_index, point3f const *origin, long excluded_object,
+bool function_1c8d20(long actor_index, long excluded_object, point3f const *origin,
     vector3f const *direction, long *blocking_index)
 {
     bool result = true;
@@ -1558,12 +1577,12 @@ bool function_1c8d20(long actor_index, point3f const *origin, long excluded_obje
         if (capsules[i].active)
             intersects = function_11e5e0(origin, direction, &capsules[i].center, capsules[i].radius);
         else
-            intersects = (char)function_11ea30(&capsules[i].center,
-                (vector3f *)&capsules[i].value10, origin, direction, capsules[i].radius);
+            intersects = (char)function_11ea30(origin, direction,
+                &capsules[i].center, (vector3f *)&capsules[i].value10, capsules[i].radius);
         if (intersects)
         {
-            blocker = capsules[i].value1c;
             result = false;
+            blocker = capsules[i].value1c;
             break;
         }
     }

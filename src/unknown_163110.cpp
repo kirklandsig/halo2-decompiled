@@ -616,9 +616,27 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// MiniMax C (11-16): no new form, no lower score (115): retail loads the view's vector_e4.i into xmm4 before the
+// forward copy and every term order tried here still leaves that load after the copy, so the register colouring of
+// the first plane's dot stays as it is.
+// MiniMax S (11-16): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 right after the copy and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy and reads the normal's i back from the stack; the i term's two operands swapped (115), the terms in j, k, i order (133) and in i, j, k order (146), a named distance (119), the normal's components first (115), the forward pointer's components (442) and the j term first (133) all leave the coefficient load after the copy, and a permuter run over the file (30 tries) found nothing below 115.
+// MiniMax R (11-15): score 115 (was 115): the first plane's dot still keeps the copied normal's i in xmm4 right after the copy and reads view->vector_e4.i afterwards, where retail loads the coefficient into xmm4 before the copy and reads the normal's i back from the stack, so the zero constant of the negation sits in xmm3 instead of xmm4; the shared dot3f (278), all six term orders of each plane (129-149), the per-term operand swaps (115 each), the plane pointer (285), the normal pointer (150), the named components (307) and a 300 s permuter run (3 tries, best 115) all leave that coefficient load after the copy.
+// MiniMax G (11-14): no new form, no lower score (115, was 115): retail loads view->vector_e4.i into xmm4 before the forward copy and keeps the copied normal's i in xmm3, while this build loads the copied normal's i into xmm4 and reads the coefficient late into xmm3, so the zero constant of the negation moves with them; naming the three coefficients before the copy (276), copying the normal component by component (460) and reordering the first plane's d terms (133) all leave the coefficient load after the copy, and the permuter found nothing below 115 in 20 tries.
+// MiniMax G (11-12): no new form, no lower score (115): retail loads view->vector_e4.i into xmm4 before the forward copy, ours loads the copied normal's i into xmm4 and reads the coefficient late into xmm3, swapping the XMM3 and XMM4 roles; every term, grouping and operand order of the first plane's d still leaves the coefficient load after the copy.
+// M3 lane 1 r96 (fast, the file's matched functions unchanged): the near clamp's comparison flipped (`near_sum < k ? k :
+// near_sum`) 115; a `vector3f const *const` forward pointer 115; the plane pointer declared outside the pass loop 115; the
+// far normal copied from `*forward` and negated in place 428 (1867 B); the near clamp on the sum written out at both uses
+// (no near_sum local) 261 (1867 B). Re-measured: the bare-comparison classification 320 (1835 B).
+// MiniMax S (11-09): the plane-0 product with the two operands of the i term written the other way
+// round changes no code at all (115), so the coefficient's register is not chosen by the operand
+// order of that product.
+// MiniMax S (11-09): still differs at the first plane: retail reads all three of view->vector_e4's components
+// before the forward vector's copy (e4.i into xmm4), ours reads e4.j and e4.k there and reads e4.i only at its
+// own product, which exchanges the xmm3 and xmm4 roles for the rest of the function.
+// MiniMax I (11-06): no new form, no lower score; the view vector copied into a local for the first plane's dot product gives 463 and 452 against 115.
 // MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
 // forward copy and keeps the zero in xmm3 where retail has it in xmm4.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
 // the copied normal's x into xmm4; retail keeps the near distance in xmm5 and the zero in xmm4,
@@ -860,6 +878,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // n.k, n.i, ours has n.i before n.j; the far plane already loads its first camera term early. e4.i named before the normal copy 141 (masked 46),
 // as a const reference 119 (38); the i product named after the copy 159 (57); an e4 pointer 251 (35, 1867 bytes); a normal pointer for d 150 (41);
 // `(real)(j + k) + i` 176 (54), `i + (real)(j + k)` 176 (54), `(real)(k + j) + i` 145 (51), all products cast 146 (36), a double subtotal 413 (158, 1835 bytes).
+// Round 75 (m3 lane 10, fast with 0x320b0/0x1648d0; control 115, difflib-aligned 64): the head's only cause is the i term
+// of plane 0's d: retail loads e4.i with the other two coefficients ahead of the normal copy and reads n.i at the
+// product, ours reads n.i early and e4.i at the product; the zero then takes XMM3 for XMM4 (about 35 lines). Both
+// planes' d written j, k, i 152 (emitted i, k, j: VC emits these sums last term first), normal-first products 115 (same
+// code), `i + (k + j)` without casts 247 (1867 bytes); dot3f for both re-measured 155 either order. Classification
+// with the j term point-first 115, all terms point-first 115 (same code: retail's first-row j term loads n.j first).
 // M3 lane 4 r168 (one-file harness, exact at 115). New: all 120 declaration orders of the five top-level locals (points,
 // outside flags, segment flags, planes, culled) 115 each; both planes' normals copied before plane 0's d 133; the near clamp
 // as `near_sum < k ? k : near_sum` 115 (same code), as `near_sum > k ? near_sum : k` 117. Re-measured listed forms: plane
@@ -877,6 +901,130 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // M398: Original delta/transformed-point/intersection zero defaults, masks
 // 1/2/3/4/5/6/7, then all at entry: 115/212/212/115/115/212/212/415.
 // NOT kept: no coefficient/zero-home gain; original outputs, helpers and body restored.
+// M3 lane 16 r97 (fast, 0x1648d0 and 0x320b0 matched each time; body restored): classification stored as the bare
+// comparison with no `? 1 : 0` 320 (1835 bytes); the clip segment loop as a plain `for` 129; the projection segment
+// loop as a plain `for` 129; plane 0's d read through `planes->normal` 115 (same code); the segment flags cleared
+// first, ahead of the plane-1 mask and the bounds copy 158; the clip ratio's arms reversed (`denominator == 0.0f`
+// first) 124; the w clamp as `t.z < k ? t.z : k` 118; plane 1's normal copied from plane 0's finished normal with no
+// negated vector 463 (1819 bytes). Diagnostic (reverted): plane 0's near add dropped 476 (1819 bytes), so the near
+// value's lifetime is not what delays the view vector's i load.
+// M3 lane 11 r81 (fast): dead initialised long probes at the top k = 8..20 135 135 135 138 262 262 135 127 115 119 135 130 243 (period 16),
+// after the normal copy k = 1..8 119 135 130 242 246 135 127 135; the first difference stays +0xbb (the e4.i load is not a numbering tie).
+// Store through `*(outside0 ? p1 : p0)` 368 (1867 bytes); `p1 = p0 + 1` 256 (1867); both segment loops as plain for loops 129;
+// intersection rows point-first 115 (same code); total counted per projected point 116.
+// Lane 3 r230 (fast, 0x1648d0 matched each time): the clip denominator written normal-first in all three terms 115
+// (same code); repeats of lane 16 r97's forms: the clip loop alone as a plain `for` 129, the projection loop alone 135
+// (listed at 129), the classification stored as the bare comparison (no `? 1 : 0`) 320 (1835 bytes); the outside flags
+// as `bool` with `? true : false` 320 (1835); in the projection tail `culled = false` after the cursor step 115,
+// `total += 2` after the per-point loop 214, the per-point counter as `short` 129. The head is still the late camera-i
+// load and the XMM3/XMM4 swap after it.
+// Round 65 (m3 lane 2, fast; 0x1648d0 and 0x320b0 matched each time; difflib aligned/register-masked in brackets, control
+// [73/33]): ours copies `output` (EAX) then `out` (EDX) from the cursor, one `mov` more than retail's `mov edx, edi`, so the
+// inner loop's pad is 3 bytes where retail has `jmp` + pad. Re-measured lane 6 r147's natural forms: walking `out` alone 249
+// (1867 bytes) [69/31]; with the `source` element pointer 114 [71/32]; walking out with `total` first 249 [67/29]; all three
+// 114 [69/30] (the classification's first-row j terms then match; left: e4.i, the denominator and numerator rows, the
+// intersection adds, the outer loop's `jmp` pad and `total` in ECX), on plane3f planes 114; the distance terms' operands
+// swapped on it 114 (same code). New: both outside flags named (`outside1` for the cull and the crossing test) 362 (1867
+// bytes, first +0x15); `if (denominator)` 115 (same code); a const plane pointer 115 (same code); near_sum/near_distance
+// `real const` 115 (same code); the projection cursor declared before the segment guard 115 [75/35].
+// m3 lane 14 r77: lane 6 r147's match-only recipe rebuilt (fast; not keepable below a byte match, it writes out the point and
+// scale helpers and names one delta of three): plane3f locals, `real delta_i` only, the denominator staged j, k, i from
+// `(p1->y - p0->y)` expressions, named scaled rows 25; `total` declared first in the projection block 22 (at the top of the
+// function 468, 1835 B); walking `out` plus a `source` pointer 21 (first +0x28a; saved as build/r77/1652e0-r77-21.patch in
+// worktree m3-lane14); the denominator staged i, k, j instead 37. A compile-only (no /GL) build reproduces that form's
+// clip block exactly, so screened there (SSE stream against retail, 25 at the 21 form): every subset of named deltas in
+// every staged order (48) and every named-before / expression / named-after-t choice per axis for the denominator and
+// the rows in both staged orders (250): none below the 21 form; all 48 ungrouped classification spellings give identical
+// code (grouped ones worse), so its first-row j operand order is not set by the source spelling; all 72 orders of the two
+// planes' negations (and d first or last) none better. Left at 21: the classification first-row j term (both loops), the
+// denominator's computation order (retail x, z, y with y loaded first in its product; a named delta loads first, temps
+// copy first, and the same named x must copy t in the rows), the distance's k operands, and total's register. New fast
+// checks on the 21 form (all screened first; 144 distance spellings, staged or single, none better either): the
+// distance through plane_distance_to_point 153 (1830 B), through dot3f 153 (1830 B); the classification through
+// plane_distance_to_point 39; the denominator in retail's x, z, y order with delta_j named and the rows' x named after
+// t 32 (masked 11 against the 21 form's 13: retail's denominator shape, the deltas computed z, x, y into XMM2/3/5 for
+// retail's x, z, y into XMM5/3/2, and the copied-t row is y for retail's x); the distance staged i, j, k 25.
+// M3 lane 16 r102 (fast, the file's matched functions and 0x320b0 unchanged): the two planes as two named plane locals (either
+// declaration order) 242 (1830 B); the far plane's `pass == 1 &&` test dropped 370; `segment_culled` zeroed by an `= {0}` initializer
+// in place of the memset 489 (1867 B); the far-plane mask as `if (!view->flag84 && !view->flag85) use_plane1 = false;` 474 (1835 B).
+// Body unchanged at 115.
+// M3 lane 12 r111 (fast, the file's 16 matched functions and 0x320b0 unchanged): plane 0's three negations read from `forward`
+// in place of the copied normal 452 (1819 bytes); plane 0's `d += near_distance` after plane 1's block 176; the 0x54 field typed
+// `vector3f vector54`, no cast 115 (same code); the 0xb4/0xe4 fields typed point3f and read as .x/.y/.z 115 (same code); `forward` as
+// a `vector3f const &` 115 (same code). Left as before: retail allocates camera i to XMM4 and hoists it above the normal copy, ours
+// loads the copied normal's i right after its store and takes camera i late into XMM3. Body restored.
+// M3 lane 8 r152 (fast; masked aligned 22): retail's `segment_culled` update is the `|=` (`or byte`) and its bound updates and
+// projection arithmetic are ours. Compile-only, identical code: `for (long i ...)` scope, the clip test as nested ifs, `bool`
+// outside and culled arrays. Real: `outside[segment * 2]` read at each use in place of `outside0` 249 (1867 B); the culled update
+// as `|= !(a | b)` 383, as `x = x || (...)` 284; the clip test's `&&` operands in the other order 275; the `w` clamp as an
+// if-statement on a copy of t.z 249 (all 1867 B). Body unchanged.
+// Round 188 (m3 lane 4, fast with 0x1648d0/0x320b0; aligned/masked 64/23): the `w` clamp as `-1.52588e-5f < t.z ? ...` 115
+// (same code); intersection rows `p0->x + delta.i` 115 (same code); the intersection distance as one expression 251 (1867 B),
+// staged i, k, j 251; the classification through a three-use `point3f const *point` 265 (1867 B); the clip store's arms
+// as `if (outside0) *p1 = ...; else *p0 = ...;` 115 (code differs in 7 places); the projected point as a copy of t scaled
+// in place 402 (1875 B). Re-measured: plane 0's d as `near_distance - d` 423.
+// m3 lane 3 r233 (fast, 0x1648d0 and 0x320b0 matched each time; control 115, aligned 64, register-masked 23). The head's
+// e4.i load still follows the normal copy: ours loads the copy's i into XMM4 straight after its store and e4.i late into
+// XMM3, retail the reverse, and the zero inherits the swap. Forms: plane 0's normal negated straight from `forward` (not its
+// own copy) 452 (1819 B: the copy folds away); each plane's normal negated first and d taken as e4 (b4) times the negated
+// normal with no separate d negation (the same values) 479 (1803 B); that for plane 0 only 276, for plane 1 only 258 (first
+// difference +0x60 each); with d through dot3f 479 (1803 B). Body unchanged.
+// M3 lane 5 r177 (fast, 0x1648d0 and 0x320b0 matched each time): the far-plane mask as `use_plane1 = use_plane1 &&
+// (flag84 || flag85)` 392 (first +0x6); `culled = false` after the per-point loop 238; the clip denominator and distance
+// through a named `vector3f const *normal` 247 (1867 B); the far plane's negated vector as an aggregate initializer 115
+// (same code); plane 0's near distance subtracted before the d negation (`d -= near_distance`, then `d = -d`) 151 (first
+// +0x60). Re-measured: `out = &cursor[k]` with the cursor stepped after the per-point loop 196.
+// M3 lane 9 r118: no trial run. The first difference (+0xbb) is still plane 0's camera-i load after the normal copy
+// (retail loads it with camera j and k ahead of the copy). Every lead in this note was checked: the i term's spellings
+// (named, referenced, pointer, cast groupings, j/k/i order, dot3f either order, negation orders), lane 6 r147's
+// match-only recipe (18 after a 1000-try climb, 21 on lane 14 r77's rebuild, 1600 compile-only clip forms by lane 3 r211
+// and 250+48 by lane 14 r77) and the tail's walker/total forms. Lane 14 r77's 21 form (its saved patch) rebuilt 21 (first
+// +0x28a; the head matches there): the classification j term in both loops, the clip deltas' XMM2/XMM5 roles and products,
+// and `total` in ECX (retail EAX, its store late). On it: `culled = false` after the cursor and source steps 21 (only that
+// store moves; total keeps ECX). No other code-changing form outside the lists above.
+// M3 lane 15 r83 (fast, 0x1648d0 and 0x320b0 matched each time): `__assume(view != NULL)` at the top 145 (the e4.i load stays
+// after the copy; the classification's k and j terms swap operands in every row); `__assume(forward != NULL)` 145;
+// `__assume(plane != NULL)` in the pass loop 145; `__assume(point_count <= 32)` before the point memcpy 263 (1867 B);
+// `__assume(total >= 0)` before the return 247 (1867 B).
+// M3 lane 12 r123 (one-file LTCG harness exact at 21 on lane 14 r77's match-only 21 form, then --fast): on that form,
+// one plane's j and k negations through a `vector3f *` to its normal (either plane) 19 (the unrolled classification loop
+// becomes retail's; j alone 35, i 21, i+j or i+k 33, all three 23, both planes 35-45); on it, all 48 classification
+// spellings 19 (same code), grouped 39-47; every named-delta subset with every denominator order 19 at best (the
+// existing delta_i, j, k, i), 23-38 otherwise; `out = cursor` ahead of `culled = false` 18 (fast 18, first +0x384;
+// build/r123/1652e0-r123-18.patch in worktree m3-lane12). Left at 18: the remainder classification loop's i/k order
+// (retail i, k, j), the clip deltas' order (retail x, z, y), `total` in ECX (retail EAX). On this body: plane 1's
+// j and k negations through a normal pointer 113 (first +0xbb).
+// M3 lane 16 r119 (fast, 0x1648d0 and 0x320b0 matched each time; control 115): the clip ratio as `real t = 0.0f;` set
+// only in the nonzero-denominator arm 252 (first +0xb6); plane 1's normal negated straight into its components from
+// `forward` (no `negated` vector) 465 (1803 B); plane 0's three negations through a `vector3f *` to its normal 251 (1867
+// B), its j and k only 113, both planes' j and k 245. Same code: the projection's `output` taken before `culled = false`,
+// the classification as `-0.0001f < sum`, the cull update as `|= !(outside0 || outside1)`. Body unchanged.
+// Round 247 (m3 lane 3, fast, 0x1648d0 and 0x320b0 matched each time): the intersection rows through the existing
+// vector3f_add (delta, then the point as a vector) 115 (same code, not kept); `out = output + k` 115; `p0`/`p1` as
+// `local_points + segment * 2` (+ 1) 115; the projection factor as `-(1.0f / w)` 258; the scale folded into the rows
+// (`t * delta.i + p0->x`, no vector3f_scale) 119. Body unchanged.
+// M3 lane 8 r172 (fast with the file's 15 matched functions, all kept): as a member of the view (`this` = view, both
+// callers through the view pointer; 0x320b0 stays matched) 251 (1867 B); plane 0's coefficients through a named
+// `vector3f const *` to vector_e4 251 (1867 B); the classification's j term spelled point-first 115 (same code:
+// canonicalised); plane 0's normal copied with memcpy 115 (same code); the far plane's negated vector computed ahead of
+// plane 0's copy 426. Body unchanged.
+// b9D (11-17) walk against retail, fast build on r839: no code change, score 115 (fast, was 115); callers 0x1648d0
+// and 0x320b0 stay matched. Walked statement by statement against h2.py disasm and align.py: the argument slots
+// ([esp+0x200..0x220] after the four pushes), the 0x84/0x85 plane-1 mask, the 0xb0 margin, the near clamp (comiss,
+// ja), both planes' sums and negations (plane 0 at 0x28 with d at 0x34, plane 1 at 0x38 with d at 0x44), the
+// memcpy size, the pass loop, the classification (> -0.0001, comiss + jbe, NaN gives 0), the clip test (ucomiss !=
+// 0, NaN computes t), t = (distance - d) * (-1.0 / denominator), the intersection stores, the |= on
+// segment_culled, the transform's scale test against 1.0, the -1.52588e-5 w clamp, the six bounds tests (jbe, x0
+// x1 y0 y1 z0 z1), the tail, and the constants at 0x45e068, 0x45ddfc, 0x45dbcc, 0x45dbc0, 0x45de30: no field,
+// offset, branch-sense, evaluation-order or behaviour difference found. What is left is register/scheduling only:
+// retail loads e4.i at 0x16539b before the copy at 0x1653a8; the first-row and remainder j terms load n.j first
+// (0x165567, 0x165677); the denominator copies dx and dz (0x16570a, 0x165711) and uses dy in place; the
+// intersection copies t for x and scales y, z in place (0x165773-0x16578b); set-up order at 0x165840-0x165854.
+// M3 lane 4 r207 (fast with 0x1648d0 and 0x320b0, matched each time): plane 0's d through a `real &` bound to the
+// plane's d (assigned, negated and offset through it) 270 (1867 B); plane 0's normal through a `vector3f &` for the dot and
+// the negations 272 (1830 B); the whole plane through an `s_plane &` 285 (1867 B); the clip delta as the aggregate
+// initializer `{ p1->x - p0->x, ... }` 115 (same code); that with the scale folded into the intersection rows (`delta.i * t
+// + p0->x`, no vector3f_scale) 119.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

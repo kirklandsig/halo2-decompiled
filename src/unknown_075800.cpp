@@ -961,13 +961,54 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax E (11-16, second round): no new form tried this round, no lower score (143 plain, 196 on the reduced image):
+// retail's dispatcher takes the message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while
+// the declaration here is a thiscall member with the address, the type and the message, and the only caller
+// (src/unknown_07b330.cpp) passes them in this file's order, so neither the entry registers nor the argument order can be
+// reached from this file.
+// MiniMax I (11-15): no new form, no lower score (143); retail's parameter order is (message type, message, address) and the declaration here is frozen, so the address cannot take the stacked home that retail's convention needs while the case-18 body stays out of line.
+// MiniMax C (11-16): no new form, no lower score (143 plain, 196 on the reduced image): retail's dispatcher takes the
+// message type in EAX, the message in ECX, the receiver in EDX and the address on the stack, while the declaration here
+// is a thiscall member with the address, the type and the message, and a declaration never changes, so the entry
+// registers cannot be reached from this file.
+// MiniMax E (11-16): no new form, no lower score (143): retail's dispatcher takes the message type in EAX, the
+// message in ECX, the receiver in EDX and the address on the stack, while the declaration here is a thiscall
+// member with the address, the type and the message, and a declaration never changes, so the entry registers
+// cannot be reached from this file - and the only caller (src/unknown_07b330.cpp) passes them in this file's
+// order, so the order cannot be changed here either; case 11 sits in the first switch after case 24.
+// score 143 (was 143): native input roles agree; delayed ESI save and terminal-handler expansion remain.
+// Earlier header detail: 153 before): m3 lane 3 r239 C1, kept by the coordinator 11-13; case 11 sits in the first switch after case 24.
+// Earlier 143 (was 153).
+// Earlier (153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// MiniMax B (11-13): no new form, no lower score (153); the address and the message still keep different homes, and the caller that passes them lives in another file.
+// Earlier 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// MiniMax G (11-12): no new form, no lower score (196); retail's convention is eax = the message type,
+// ecx = the message (copied to ebx), edx = the receiver and the address on the stack (copied to edi at
+// the entry), with the esi save delayed past the ja. Declaring the parameters in retail's order (the
+// type, the message, the address) puts the selector in eax and the jump table at retail's address
+// (fast 197 against the control 196), but the message and the address still trade places, and the only
+// caller (src/unknown_07b330.cpp:204) passes them in this file's order, so the change cannot be made
+// here. 0x94420 marked noinline in the handler's member declaration keeps 0x94420 and 0x93aa0 matched
+// and gives 211 (428 bytes): the inline of 0x94420 is not the blocker, the convention is.
+// MiniMax A (11-12): no new form, no lower score (196); the length already agrees with retail's 444 and the first difference is at the entry, where retail keeps the stacked message in edi and this build keeps it in esi, and that one choice fixes the push order and the argument registers of the handler calls.
+// MiniMax S (11-10): no new form, no lower score (153 in the wider set, 196 in the two-source reduced
+// one); the case bodies call the same functions as retail (0x93f60, 0x93fa0, 0x940b0 and the rest are
+// in this file), but the reduced build does not pair their call targets, so most of the rows are that
+// pairing and not a real difference. What is left is the register that carries the address argument
+// (retail keeps it in EDI and pushes ESI for the case bodies, ours keeps it in ESI) and the jump
+// table's address, which follows the data layout of the build.
 // MiniMax H (11-05): no new form, no lower score; forcing 0x94420 inline gives 106 with retail's
 // convention and the delayed ESI save, but 0x93aa0 then inlines it too and loses its match, and
 // retail's final code has no use that crosses a call to home the address in EDI.
 // MiniMax A (11-04, run 41): no new form, no lower score (196 in the 16-address set, 153 in the wider one);
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
-// score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// MiniMax C (11-08): no new form, no lower score.
+// Earlier note (153, was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Earlier 153 (was 153), merged from a second score line: native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
+// Round 147 (m3 lane 8): no unlisted form. Retail's convention needs the address live across a call, but retail calls
+// 0x94420 and 0x94270 out of line and has no such use. Its connection handlers take no address (retail passes them the
+// index in EAX and the message in EDX), so an unread address parameter on them has no retail evidence and was not tried.
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
 // message, address) with the receiver in EDX, which this file's declaration cannot change.
@@ -1068,7 +1109,6 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Direct-case orders 3,4,0,2 / 4,3,0,2 / 2,4,0,3 / 3,2,4,0 score 196/196/191/195 fast;
 // keep 2,4,0,3 at plain 193, retail length. Lookup orders 7,5,6 / 6,7,5 give 196/195;
 // acknowledgment first in residual phase 196; unified observed order 218. All call inputs preserved.
-
 // Earlier at 153: register inputs, the delayed ESI save and the late case layout still differ.
 // Earlier (153, was 153): register inputs, the delayed ESI save and the late case layout still differ.
 // Direct orders 0,4,2,3 / 0,4,3,2 / 2,0,4,3 / 2,3,0,4 give 193/196/193/195 fast;
@@ -1316,6 +1356,175 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Round 74 (m3 lane 10, all plain; caller 0x7afd0 and 0x93aa0, 0x92ef0, 0x92d10 checked): on the one retail-order switch (control 217, 420 bytes, 0x7afd0 3): 0x92ef0 declared in the order its callers set its registers up, (kind, address, link), with definition,
 // declarations and every call 236 (404, 0x7afd0 6); (address, kind, link) 236 (404, 0x7afd0 6); `default: return;` as the switch's first label 217; case 10 first 217; case 10 last 220. A harness without the ballast object: `__assume` on the address, the message,
 // the type or `this` at entry or around the lookups, and nesting the lookups under extra tests, left the address's EAX home alone; not representative, so listed only as a lead that block depth alone doesn't look like the cause.
+// MiniMax D (11-06): no new form, no lower score: the message parameter is in esi here and in edi in
+// retail, and the switch saves the other register before the jump table; the connection index in each
+// case block (196) and the two switches merged into one (213) leave the same choice.
+// P382: Complete complementary lookup-failure outcomes in bool/char/signed-char/byte/
+// short/word/long/dword: 196 each reduced (control 196; full 153). NOT kept:
+// no exact delayed-save or late-handler repair; original classifiers and all call tuples restored.
+// P390: Query-first primary priorities QSDCP/QSCDP/QSCPD/QPDSC/QPDCS/QPCDS/QPCSD/QCDSP:
+// 200/208/206/197/204/208/206/204 reduced, control 196, full 153. Original case interiors and late
+// classifier restored; early ESI/late expansion remain. NOT kept: no qualifying exact/native-shape
+// gain; original complete body restored.
+// Round 139 (m3 lane 7, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control: the one retail-order switch 217/420,
+// 0x7afd0 3): on that switch, the address parameter declared `long` (cast at each pointer use, the call in 0x7afd0 passing `(long)address`)
+// 217 (same code); declared as a `const s_type_99af70 &` (cases passing `&address`, the call passing `*address`) 217 (same code); the lookup
+// declared `inline` in this file as its definition is 217 (same code); the function defined ahead of 0x93aa0 instead of last in the file 217
+// (same code). The kept two switches defined ahead of 0x93aa0 153 (same code). The address keeps EAX in each one-switch form.
+// P400: Connection-first primary priorities CDQSP/CDQPS/CDSQP/CDSPQ/CDPQS/CDPSQ/CQDSP/CQDPS:
+// 207/205/207/205/207/204/202/200 reduced, control 196, full 153. NOT kept:
+// no exact delayed-save/late-handler repair; original classifiers, all case interiors
+// and call tuples restored. Every trial is 456 bytes against native 444.
+// Round 85 (m3 lane 10, all plain, on the one retail-order switch, control 217/420, 0x7afd0 3, 0x93aa0 matched): case 4's receiver field in a named local
+// ahead of the call 217 (same code: retail loads that field before its pushes, ours after them because the address holds EAX); the connection index
+// initialised to NONE at function scope 217 (the dead store goes before allocation); cases 18 and 11 under one label with an inner type test 217/420 (the
+// test is threaded away before allocation and adds no weight to the type); a `message_type < 0` early return 212 (428 bytes, same convention); the link
+// read once into a function-scope local for the three lookups 239 (400 bytes, 0x7afd0 6: the link takes ESI at entry). Reading: the type must outrank the
+// address for EAX at allocation; two extra type tests do it (round 45) but leave their code behind, and every test that folds, folds before allocation.
+// M3 lane 1 r88 (one retail-order switch re-measured 217 plain / 218 fast at 420 bytes, 0x7afd0 3; the rest fast with
+// 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270): on the one switch, cases 18 and 11 first 218; the address parameter
+// copied into a local at entry (body unchanged) 218; an explicit empty `case 1` 218; an unused trailing address parameter on
+// the case 5 and 7 handlers (0x94ae0, 0x94bb0, both stay matched: the link drops it) 218; the connection index declared
+// in each of the case 5, 6 and 7 blocks 218 (same code). Diagnostic (not a trial: it inlines a function retail calls and
+// breaks 0x93aa0): __forceinline on
+// 0x94270 251 (500 bytes) with retail's convention (type EAX, message ECX kept in EBX, address on the stack), as round 60's
+// forced 0x94420 106: inlining either session case, whose body uses the address after a call, is what makes the address a
+// stack argument kept in a callee-saved register; retail calls both, so something else in retail keeps the address live.
+// Round 228 (m3 lane 3, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 153 at 464
+// bytes): every first-switch case ending in `break` 153; each connection case returning early when the lookup fails
+// 153; the late switch's cases returning, with `default: return;` 153; the connection index declared inside the first
+// switch's body 153 (same code each); the three connection cases moved into the late switch ahead of 18 and 11 225
+// (470 bytes, 0x7afd0 3: the convention moves). All restored.
+// Round 91 (m3 lane 1, all plain with 0x7afd0, 0x93aa0, 0x94420, 0x94270; control 153 at 464 bytes): the late switch as
+// `if (type == 18) ... else if (type == 11)` 155; the late switch with case 11 ahead of 18 153 (same code); the late switch
+// nested in the first switch's `default` 153 (same code); `case 11: case 18: break; default: return;` in the first switch
+// with an if/else dispatch after it 216 (420 bytes, 0x7afd0 3: the compiler threads both labels into the jump table, so this
+// is the unified switch and its convention); `case 11: case 18:` added over the first switch's `default: break;` 153 (same
+// code). Body restored.
+// Round 148 (m3 lane 7, fast; this function builds differently in --fast, control 196 against plain 153): re-measured the
+// one retail-order switch 218 (420 bytes; type ECX, address EAX, message on the stack) and the late pair nested in the first
+// switch's default 196 (same code as the control). New: 18 and 11 admitted as `break` cases of the first switch with
+// `default: return;` and the late switch kept as the tail 211 fast, 202 plain (432 bytes, the same convention loss as the one
+// switch; caller 0x7afd0 3); the late pair as two separate ifs 155 plain (the listed if/else-if chain's count). Ours
+// inlines 0x94420 at case 18 because the late switch compiles to a compare chain (one test deep); retail calls it. No
+// unlisted natural form gives the address a use across a call, which our build needs for retail's convention.
+// Round 188 (m3 lane 4, all plain with 0x7afd0/0x93aa0/0x92ef0/0x92d10/0x94420/0x94270): retail's one jump table covers
+// 0-24 with `ja` straight to a two-pop exit and the ESI save after it; ours inlines 0x94420 in the late compare chain.
+// The late switch with 11 ahead of 18 153 (same code); the late pair as a switch ahead of the main one 224 (480 B); as two
+// ifs with returns ahead of it 222; cases 5, 6, 7 moved after 18 and 11 in the late switch 222 (470 B, 0x7afd0 3); no
+// `default: break;` 153 (same code); the late switch inside `if (message_type == 18 || message_type == 11)` 166 (472 B);
+// the late pair as an if/else-if chain with 11 first 155. Plain re-measures of listed orders: cases 5, 6, 7 in numeric
+// place 220 (476 B), case 0 last 199 (468 B).
+// m3 lane 3 r233 (all plain with the file's functions, 0x7afd0, 0x93aa0, 0x92ef0 and the case callees; control 153 at
+// 464 bytes, aligned 55, register-masked 34; --fast reads 196 at 444 bytes here with 0x94220 and 0x942d0 differing, so it is
+// no judge). A second switch holding 18, 11, 5, 6, 7 in retail's layout order behind the first switch's other cases 222 (470 B,
+// 0x7afd0 3); explicit `return` cases for the in-band types 1, 15, 16, 17, 19, 20, 21 in the first switch 146 (464 B, masked
+// 34 -> 38: only the jump table's data moves, so positional); the same cases on the one retail-order switch 217 (420 B,
+// 0x7afd0 3); a free function declared (type, message, handler, address), retail's EAX/ECX/EDX/stack order, on the one
+// switch with 0x7afd0's call updated 217 (same convention: type ECX, address EAX kept there, message loaded into EBX from the
+// stack); the late switch with 11 ahead of 18 153 (same code). On the one switch the address stays in EAX because no use
+// crosses a call and the three lookups want it there; retail homes it in EDI and the message in EBX. Body unchanged.
+// m3 lane 1 r98 (control 153 plain, 196 fast): no new form run. The listing agrees with the notes above: this two-switch body
+// already has retail's convention (type EAX, message ECX kept in EBX, receiver EDX, address on the stack kept in EDI) because
+// the late compare chain inlines 0x94420; what is left is the early ESI save (the late chain's inlined body needs ESI ahead of
+// the range test) and that chain itself. The candidates checked against this note are all listed: the shared lookup for the
+// three connection cases (round 364), an empty call taking the address (round 45), parameter orders with the call in 0x7afd0
+// updated (rounds 63 and 233), and the unified switch's case orders. The open lead of m3 lane 1 r71 (a correct form of the
+// lookup argument that is not a direct EAX use at allocation) has its whole family listed: r71 (address spellings, copies,
+// getters, forced-inline helpers), round 150 (const reference to a cast temporary, file-local handlers), round 139 (address
+// declared long or as a reference), m3 lane 1 r88 (address copied at entry), round 85 (link read once), round 74 (0x92ef0's
+// parameter orders); no unlisted member was found, so no trial was run (0 trials: no unlisted natural form).
+// m3 lane 3 r239 (all plain with 0x7afd0, 0x93aa0, 0x94420, 0x94270, 0x92ef0, 0x92d10, all MATCH unless noted; control 153).
+// Kept (coordinator 11-13; the lane held it as a score-picked case order): case 11 moved from the late switch into the
+// first, after case 24. That follows retail, whose jump table dispatches 11 itself
+// and its block follows 24 there), the late switch keeping only 18 (as a plain `if (message_type == 18)`, the same code),
+// 143 at 460 B (aligned 89 -> 77, register-masked 53 -> 35; build/r239/lead-0x938e0-143-if.patch). The same with case 11 in
+// numeric place (after 10) 157 (masked 35: only the block layout moves): the case's position is retail's block order,
+// which the source order gives (no code runs between the two switches, so behaviour is unchanged). Also: 18 in the first switch with 11 alone late 213 (424 B, 0x7afd0 3: 0x94420 stops inlining and
+// the convention moves); on the lead, 18 tested ahead of the switch with its own return 216, `case 18: break; default: return;`
+// with the call after the switch 217 (420 B, 0x7afd0 3), `case 18:` labelled onto `default: break;` 143 (same code as the lead).
+// P451 (full 153, reduced control 196): Individual late cases in the primary root 216/196;
+// individual default-owned late cases 196/195; separate connection interval 197;
+// unsigned connection result / void call-return expressions / connection result name 196/196/196.
+// NOT kept: one-point best; native delayed ESI and outlined late-handler shape remain.
+// M3 lane 12 r121 (one-file LTCG harness with the caller's and callees' objects: it builds the plain 460 bytes, harness
+// 126 for the plain 143, where --fast builds 444 bytes and 196 here): both switches over `(dword)message_type`, the late 18
+// path as an early return, the connection index declared in case 5's block, the late 18 path as the first switch's default
+// arm: same code each; case 11 last in the first switch 130 harness (fast 195).
+// m3 lane 14 r93 (one-file LTCG harness: this file, 0x7afd0's, 0x92ef0's and 0x785d0's files and a stub entry; it builds the
+// kept two-switch body with retail's convention, 65 aligned rows against retail's code): the one retail-order switch (18 and
+// 11 placed after 24) 91 (type ECX, address EAX, message on the stack into EBX, as the notes say); with `break` 91 (same code);
+// with the address read once through its address 91 (address on the stack, type ECX, message EAX). The three connection
+// handlers given an unread address parameter (passed by this body, NULL from 0x93aa0) on both forms: 91 (same code): LTCG
+// drops the unread parameter before it chooses this function's convention, so it does not give the first pass the address
+// use across a call that retail's convention needs. Diagnostics only (no source kept); no unlisted natural form was found.
+// P488: Primary case 11 before cases 0/2/3/4/8/9/12/13 on the accepted single-late-case graph:
+// 194/194/195/195/195/195/196/196. NOT kept: Case-priority forms require equality; original primary/terminal
+// classifiers, every case body, lookup and call tuple restored.
+// P497: Connection completion at the primary join on the accepted primary-11/terminal-18 graph, seven subsets then all primary operations: 196/196/196/196/196/196/196/196 (reduced control 196; full 143).
+// NOT kept: no delayed ESI save or outlined terminal-handler repair; original complete dispatcher and all call tuples restored.
+// M3 lane 12 r124 (the r121 one-file LTCG harness, plain bytes; control 126 for the plain 143, the one retail-order switch 145
+// at 440 B with type ECX, address EAX, message stacked): on the one switch, the three lookups through a plain `inline` member
+// `find_connection(address)` 179 (416 B: the helper stays out of line, type EAX, address ECX, message stacked), through a
+// file-local `static inline` helper taking (handler, address) 179, through the member defined where it is declared 179 (the same
+// code each); that member helper on this two-switch body 176 (453 B); the in-band types 1, 15, 16, 17, 19, 20, 21 as empty
+// `break` labels beside 18 in the late switch 126 (same code). The address stays a register argument whenever the lookups
+// take it directly or through a call; only an inlined use across a call (the late 0x94420) stacks it.
+// P499: Complete classifier with former terminal case 18 before primary cases 2/3/4/8/9/10/12/13:
+// 216/216/216/216/216/218/218/218. NOT kept: All regress against reduced control 196, shorten to 420 versus native
+// 444, and lose the correct incoming allocation; full baseline 143 stays authoritative. Original complete
+// executable body restored.
+// M3 lane 6 r182 (all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94220, 0x94270, 0x942d0, 0x94420, 0x785d0; control 143):
+// the one retail-order switch as a free function (type, handler, message, address), the order lane P's rule gives for retail's
+// EAX/EDX/ECX plus a stacked address, caller updated, 217 (420 B: type ECX, address EAX, message stacked, as every one-switch
+// form); that switch as the method with every address use read through `const s_type_99af70 *const *sender = &address` 219
+// (424 B: the address stacks but its read is hoisted into EAX and the type stays ECX); 18 and 11 in the first switch with only
+// 5, 6, 7 in the late switch 221 (473 B, 0x7afd0 5); the sender-pointer reads on the kept two-switch body 143 (same code);
+// plain `inline` on 0x94420's member declaration on the kept body 143 (same code). A redeclaration of 0x94420 as
+// __forceinline after 0x93aa0 does not compile (C2761: a member may not be redeclared outside its type).
+// P509: Actual ESI-argument cases 8/24 moved to the terminal classifier, single and paired
+// orders: 194/194/226/226/198/198/198/198 fast (control 196; full 143).
+// NOT kept: two-point best or shorter/wider bodies; delayed ESI save and late expansion remain.
+// Original classifiers, case interiors, lookup inputs and every handler tuple restored.
+// P511: Primary case 11 before 10/14/22/23/24/6/7, then before 14 with default-owned terminal 18:
+// 195/196/196/196/196/196/195/196 fast (control 196; full 143). NOT kept: one-point best; early ESI save remains.
+// Original complete classifiers, every case interior, lookup and handler tuple restored.
+// M3 lane 5 r186 (all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94420, 0x94270; control 143): cases 18 and 11
+// after 24 in the first switch with the three connection cases in a late switch 221 (473 B, 0x7afd0 5); the late 18
+// test written in the first switch's default arm 143 (r121's harness form, plain); case 11 after case 7 148 (positional);
+// explicit empty `return` cases for 1, 15, 16, 17, 19, 20, 21 after case 7 143 (jump table data only); `default: break;`
+// as the first switch's first label 143. Body unchanged.
+// P521: Single-terminal primary connection cases 5/6/7 after 4, 5/6/7 after 8, 5/6 after 9:
+// 195/195/193/195/195/192/195/195. NOT kept: no native delayed-save/outlined-handler match; original complete body restored.
+// Round 123 (m3 lane 16, all plain with 0x7afd0, 0x93aa0, 0x92ef0, 0x92d10, 0x94220, 0x94270, 0x942d0, 0x94420; control 143):
+// an unused message size parameter after the type (the caller passes its decoded size) 143 (same code: dropped by the
+// link); case 24 moved into the late switch ahead of 18 265 (500 B, 0x7afd0 3: 0x945f0 and 0x94420 both inline); case 10
+// (the address's one EDI use, 0x94220) moved there instead 187 (464 B); `default: return;` with 1, 15-21 and 18 as `break`
+// labels ahead of the late 18 test 213 (424 B, 0x7afd0 3: all labels thread into the jump table, 0x94420 stops inlining);
+// the three connection cases moved into the late switch after 18 222 (470 B, 0x7afd0 3). Our early ESI save follows from
+// `ja` reaching the late test (the only path of unknown type), which is also what keeps that site hot enough to inline.
+// P535: ESI-consuming primary cases 8/24 after each connection case, six independent then two paired adjacencies; reduced control 196, full 143. Best six-point preview lead is below the keep gate; delayed ESI save and terminal expansion remain.
+// 194/193/193/196/195/195/193/190. NOT kept: no eligible native-shape gain or byte equality; original complete body restored.
+// P564: All three lookup outcomes set by their original tests, bool/byte/short/long
+// then complementary defaults: 196/196/196/196/196/196/196/196 fast (control 196; full 143). NOT kept:
+// no delayed ESI save or outlined terminal case; original complete dispatch and call tuples restored.
+// P578: Per-case connection-link scalar memcpy at cases 5/6/7, seven subsets,
+// then the actual case-4 receiver transfer: 193/193/195/235/236/236/253/196 fast. NOT kept: no exact delayed ESI
+// save or terminal expansion repair; original classifiers, receivers and full body restored.
+// b8I (11-17) walk against retail, fast build on r836: no logic or structure error found; fast 196 (444 B, retail 444),
+// the full-build 143 above is unchanged and no code was edited. Every case body was compared instruction by instruction
+// with 0x938f9..0x93a33: the same callee and the same argument loads in each case; only esi (ours) against edi (retail)
+// as the home of the address differs, which is the convention difference listed above. Case 4 loads this->unknown10
+// (0x93922, [edx+0x10]) and pushes message, address, handler for 0x785d0 (0x93928). Cases 5/6/7 read the link from
+// [edx+4], pass the address in EAX and 0 in ECX to 0x92ef0, and compare with -1 (0x939eb, 0x93a09, 0x93a25). Case 5
+// loads the message into EDX (0x939f0) because 0x94ae0 reads [edx] (0x94b01); case 6 loads nothing before 0x93a0e
+// because 0x94b40 reads the message from EBX (0x94b5f); case 7 pushes it (0x93a2a), 0x94bb0 reading [esp+4] (0x94bc7);
+// case 2 passes only the handler (0x93908) because 0x93fa0 reads [ebx] (0x93fac). Ours matches each of these. The range
+// check is unsigned in both (retail `ja` at 0x938eb), the in-band types 1/15/16/17/19/20/21 and every type above 24
+// do nothing in both, and the late 18 test with the inlined 0x94420 body (retail calls it at 0x939c4) has the same
+// effect, so there is no behaviour difference to report; the remaining difference is the register assignment.
+// m3 lane 1 r115: no form run. The listing agrees with this note (convention as retail; the early ESI save and the late
+// compare chain that inlines 0x94420 are what is left), and every switch, parameter-order and lookup form found is listed.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
@@ -1361,6 +1570,9 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 	case 24:
 		function_945f0((const s_session_id *)message, address);
 		return;
+	case 11:
+		function_94270((const s_session_id *)message, address);
+		return;
 	case 5:
 		connection_index = network_link_find_connection(field_4_5, 0, address);
 		if (connection_index != NONE)
@@ -1382,9 +1594,6 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 	{
 	case 18:
 		function_94420((const s_session_id *)message, address);
-		break;
-	case 11:
-		function_94270((const s_session_id *)message, address);
 		break;
 	}
 }

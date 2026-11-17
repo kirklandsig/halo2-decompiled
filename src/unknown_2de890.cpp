@@ -190,6 +190,26 @@ answer_2de9e0 c_child_transform::function_2de9e0(ray_2de9e0 const *ray, hit_2de9
 
 // the same cast with results going to a collector: the child is described
 // with its placement composed with the transform
+// score 51 (was 51): Frame 0xa8 and extent 336 agree. Translation and point
+// loads, metadata stores, argument pushes and descriptor carriers differ.
+// Translation named first 51; offset before transpose 52; shared placement
+// input 51; both metadata first 51; child field first 51; shared child 51;
+// whole descriptor 52; all coordinate products named 51. Both inverse users
+// checked. NOT kept: no match or qualifying gain; original body and helper
+// restored.
+// Round 94: point by value 51; third column first 77; transpose macro 77;
+// direct column reads 91; coordinate broadcasts named 51; second metadata
+// read early 51; all object declarations first 51; both metadata stores late
+// 92. The third-column, macro and direct-read forms also lose the shared
+// user. NOT kept: no gain; original helper and body restored.
+// Serial search: 19 variants, best 41. NOT kept: an added volatile pointer,
+// one-use locals and casts without equality.
+// Round 425: inverse transform/point/both pointer contracts 51/51/51;
+// immutable SIMD intermediates 51; named returned vector 51;
+// lower/upper pair move intrinsics 58/70; complete result accumulator 51.
+// NOT kept: no eligible gain; original helper and body restored. Point/translation
+// loads and descriptor carriers remain; both inverse users checked.
+// Pair moves raise the exact inverse user to 9/28; both restored.
 // @retail 0x2deb20
 void c_child_transform::function_2deb20(ray_2de9e0 const *ray, description_2deb20 const *description, void *collector) const
 {

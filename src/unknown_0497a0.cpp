@@ -8,6 +8,7 @@
 #include "unknown_11cc90.h"
 #include "unknown_0494b0.h"
 #include "globals.h"
+#include "object_tag_definitions.h"
 
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -15,21 +16,39 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
+// retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
+// after the product, which no plain spelling of the wave expression reproduces.
+// score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
+// and late x87 factor lifetimes remain, at retail length 2622.
+// Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
+// against retail's 0x60 and the wave sines' x87 order remain; round 151's entry is the last one above the marker.
+// MiniMax H (11-13): no new form, no lower score (536).
+// MiniMax E (11-11, run 80): no new form, no lower score (536): the two perspective-row crosses through the existing
+// staged helper compile to the same code (536) and the special path's two crosses through it score 537; retail
+// computes the cross components in the k, j, i order and keeps the first cross's products alive for the second
+// one, which gives its frame 0x60 with five vector copies against our 0x54 with four, and it holds the reciprocal
+// in xmm5 where we hold it in xmm1, so the shape pointer sits at [esp+0x14] in retail and at [esp+0x1c] here.
+// MiniMax G (11-11): no new form, no lower score: the permuter over this file's wave spellings produced no variant that matches retail's bytes; retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are what keep those three on the x87 stack until after the product, and no plain spelling of the wave expression gives them a second use.
+// MiniMax G (11-12): no new form, no lower score (536): the permuter's search over this body (full image, annealed, 26 tries) found
+// no better form; the frame is still 0x54 against retail's 0x60 and retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y are
+// what keep those three on the x87 stack until after the product.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail holds the secondary shape in EDI, the primary shape at [esp+0x14]
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
 // [esp+0x14], and our frame is eight bytes short of retail's.
 // MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
+// Earlier, retail keeps the primary shape in the stack slot at [esp+0x14].
 // MiniMax D (11-05): retail's single test on source->type_low, with the shape0 pointer in the home at
 // [esp+0x14] and the inverse scalar below it at [esp+0x10], was tried as an if/else over both shape
 // pointers in three declaration orders: 621/621/626; the frame stays 0x58 against retail's 0x60, so no
 // lower score.
-// score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
+// Earlier, at 581: the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
 // thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
 // secondary shape at [esp+0x10].
-// Behaviour difference kept for score: `long tmp2 = scale * d.k` truncates the sixth input
-// product through an integer; retail (0x49f19) is a plain mulss. Coordinator decision.
+// Fixed in the b2E round: the sixth input product `scale * d.k` had been truncated through an integer (a score
+// choice); retail (0x49f0d) is a plain mulss.
 // Round 134: retail reads the wave's sine arguments from the global point: that form 701 (frame 0x60,
 // s1 sinks to its use), s1 before the first cross 701, s0's only 602; both shape pointers
 // NULL-initialized then set by an if/else (retail's entry, retail length 2622) 599, with s0's
@@ -268,6 +287,160 @@
 // aligned 391, shape 203), as a real 600, the same with the 8.2 product written (x * b) * c order 600, the factors as reals with a double argument 628
 // (2632 bytes). Retail's s0 leaves sin(x), cos(7.8y) and cos(7.75y) on the x87 stack and pops all three dead after
 // the product (fstp st(2), st(1), st(0)), with fsin of the 8.2 argument done last; no form here forward-substitutes them that way yet.
+// M3 lane 4 r170 (one-file harness with the ballast object, exact at 581; masked aligned in brackets, base [209]). Kept 537 (plain 536
+// with a named `type` local, not kept: it mixes a local copy with direct field reads): both shape pointers NULL then one if/else at
+// entry, the type switch as `if (source->type == 0) ... else if (source->type != 1)`, the special-flag arm first in the
+// `0x20 & flags` test, the second wave through the existing vector3f_add_scaled. Each part removed alone: 706/631/602/629.
+// `sin(v1.y + v1.x * 5.6f)` 537 (identical, dropped). Grid on the kept form: first/second wave as scale+copy, add_scaled, direct
+// `+=` either operand order, scale+vector3f_add; amp/k named or inline; cross/sine statement orders; default-arm declaration and
+// row orders: best 536 (s0 first, amp and k written inline). Type `if` with a local read everywhere 699. Older forms on this base:
+// type if 580 [175], flag arm first 673 [198], both 670 [164], plain sixth product (behaviour fix) 648 [192], both with it 617.
+// x87 lead (diagnostic, not kept): retail's non-popping `fmul st(1); fmul st(2); fadd st(3)` and the three late `fstp st(k)` pops
+// appear only when sin x, cos 7.8y and cos 7.75y have a second use that is removed late: a dead write through a pointer to a local
+// gives retail's x87 sequence exactly with the 8.2 argument named first (frame 0x60, [111], 656 at 2587 B); `if (false)`, an empty
+// inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
+// vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
+// result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
+// MiniMax D (11-10): 594 (was 661): the wave sines read the global point and each wave scale is written at its
+// use; the frame is still 0x54 against retail's 0x60 and the sines are still not evaluated in retail's order.
+// Retail's two crosses share their products, so its cross result is scalarized while its second cross is a
+// vector; forms tried: the two wave values as an array 604, the cross with shared products written out 677,
+// the cross moved after the two sines 655, all worse than 594 and reverted.
+// At 661 (was 537): behaviour and helper fixes from the b2E walk, each raising the score: the sixth input product is
+// a plain mulss as at 0x49f0d (the integer truncation was +78: 537 -> 615); the camera shifts and the vector scales
+// call vector3f_add_scaled / vector3f_scale (+10, 2622 bytes); the wave's first add calls vector3f_add_scaled (+11);
+// the sine of x * 5.6 + y keeps the sum on the x87 stack as at 0x498a7-0x498d7 (+25, then the sine is stored as a
+// float and scaled by SSE as retail does). Every statement of retail was walked against the source: the rest agrees.
+// Still differs: frame 0x64 against retail's 0x60 (2582 bytes against 2622); s0 and s1 are x87 values that retail
+// rounds to float before the SSE scale by 0.03 and 0.025 (ours folds 0.5 * 0.03 in x87 for s0, a double rounding
+// apart: ~1 ulp); retail leaves sin x, cos 7.8y and cos 7.75y on the x87 stack (0x49951-0x4997c) and reads the
+// sine arguments from the global point at 0x4b9da0 (with the global named in the sines 654, not kept: no behaviour).
+// Tried on this base: (double) casts on the other sine arguments 651/656; double constant 5.6 650; the argument
+// as a named double 650; s1 before the cross product / after s0 650/650. Kept spelling (double)(x * 5.6f) + y: same score,
+// and fld/fmul dword/fadd dword/fsin as retail (the (double)x * 5.6f spelling gave fmul qword). s0 stays double-rounded: retail
+// 0x4995f stores the x87 sum * 0.5 as a float and 0x49963-0x49969 scales it by SSE; ours does fmul 0.5, fmul 0.03, fstp.
+// M3 lane 3 r225 (fast = plain 661 here; [exact, stack-masked, register-masked] aligned counts, base [654, 592, 180]; the frame is now
+// 0x5c against retail's 0x60, not 0x64, and both return with ret 0x20): global sine arguments with the 8.2 argument and the three
+// factors as named doubles 665 (2575 bytes, frame 0x58) [646, 601, 176]; global sine arguments alone re-measured 654 (2579, frame
+// 0x58) [655, 582, 178]. Perspective rows (retail scales r by the first reciprocal, then s by the second, then forms inv * 0.5):
+// vector3f_add_scaled into r and s with named reciprocals and a named half inverse, then two vector3f_scale 677 (2568) [576, 583, 181];
+// the same with the reciprocals and inv * 0.5f written in the calls 664 (2574) [610, 590, 139]; rows in place then two vector3f_scale
+// 671 (2622 bytes, retail's length) [562, 557, 163]; every row as (a * b + c) * k 661 (same code). With the global sines: calls form
+// 659 [618, 579, 129], in-place form 673 (2626) [549, 545, 153]. The two wave values in one two-float local read from the global
+// point 641 (2602 bytes, frame 0x64) [642, 587, 175], as a two-element array 642; with the calls form 639 [622, 583, 128], with the
+// in-place form 692 (2645). Not kept: a local that only groups the two values, and no match. Lead: retail stores both sines as
+// floats at once (0x4990e, 0x4995f) and keeps the cross product ahead of the first fsin, as if they were written to memory the
+// compiler could not sink; with the global arguments in plain locals our build sinks the first sine past the second.
+// m3 lane 12 r106 (fast): with offsets and registers normalised the listings differ only in the special arm (global
+// sine arguments, retail's x87 order, the cross products' order); the rest of the 661 is the 4-byte frame shift
+// (sub esp 0x5c against 0x60, a cross-product spill at [esp+0x14] pushing shape0 to +0x18). On the global sine
+// arguments (654, listed): s1 before the first cross and cross3f_staged for c 654 (frame 0x58, same code as without
+// the reorder); plus cross3f_staged for w 655; w staged with c plain 654; c staged with s1 after the cross 654; both
+// staged with s1 after the cross 655.
+// M3 lane 8 r151 (fast; control 594 = plain): kept `real h = 0.5f * ((shape1->f2c - shape1->f28) * 0.025f);` 536 plain (2622
+// bytes, retail's length). The earlier `(shape1->f2c - shape1->f28) * 0.025f * 0.5f` was folded into one multiply by 0.0125;
+// retail multiplies by 0.025 and then by 0.5 held in a register, as this form does (masked aligned count unchanged at 104;
+// the rest is the frame). Also: s0's four sine/cosine arguments as doubles (no float overloads; retail rounds none of
+// them) 685 (2564 bytes, frame 0x58, the factors still pop), with 0.5 as a double 685; h as `* 0.025f / 2.0f` 594 (same
+// code); the two shift fields read in the calls, no locals, 596. On 536: the shift fields in the calls 537; `0.5f * inv`
+// in the default arm or in the perspective rows 536/536 (same code); sy computed after the v20 rows 550; the six input
+// products all `scale * x` or all `x * scale` 536/536 (same code). Retail reads the four wave constants (8.2, 7.8,
+// 7.75, 5.6) only here, so no shared retail helper accounts for the dead second uses of sin x, cos 7.8y and cos 7.75y.
+// M3 lane 13 r81 (fast = plain 536; aligned exact/fully masked counts, base 519/104): perspective rows in place with each
+// reciprocal just before its rows, k after both, then two vector3f_scale 612 (2622 bytes, aligned 452, masked 107: the later
+// code then aligns with retail apart from inv in xmm3 for retail's xmm5, but the rows store and reload r and s, 8 extra
+// instructions); the same through vector3f_add_scaled(&v2, &r, sx, &r) 637 (2604 bytes); six named row sums in that order 536
+// (forward-substituted); the 8.2 argument as a named double on this base 585; s0 as `0.5f * (...)` 536 (same code); the
+// second cross w computed first, ahead of c, 685 (2596 bytes).
+// T86: Separate wave-origin copies, current/global before/after the cross,
+// 715/646/715/646; coordinate construction 633; library copy 715; separate
+// phase coordinates before/after the cross 626/619. NOT kept: no equality;
+// native frame and wave residence remain; original full body restored.
+// T95: Plain three-channel final-clamp loops over actual scaled input records,
+// mode subsets 1/2/4/3/5/6/7 and all with unsigned ordinals: 618/617/558/656/650/632/647/647.
+// NOT kept: no exact scalarized output-record graph; original six scalar products,
+// clamp arms, shape/wave helpers and complete body restored.
+// P436: Fixed existing view/projection/side basis, special result, both waves, both
+// channel inputs, all six channel products and the complete maximum tree: eight fast
+// 536s, control 536. NOT kept: frame stays 0x54 versus native 0x60 with no byte change;
+// original complete body, every expression and all shared helpers restored.
+// P439: Standard lower/upper six-row mode selections, masks 1/2/4/3/5/6/7,
+// then complete upper-only selection: 952/940/896/1200/1145/1129/1319/1380. NOT kept: native shape/inverse,
+// basis/wave homes and frame remain unresolved; original maxima, clamps, every
+// floating tree, helper and complete body restored. Every form adds 12-36 calls
+// against native zero while retaining frame 0x54 versus 0x60.
+// P441: Existing selected v2/v3/v4 setter producers, singles/pairs/all then point setter: 693/713/646/734/701/698/758/719.
+// NOT kept: Native 0x60 frame, selected-basis homes and late x87 factor pops remain. Original complete body restored.
+// P462: Ordinary defaults then special overwrite for origin/view/projection/side/
+// cross-output, then basis/origin-basis/all: 739/699/698/689/678/805/784/803.
+// Cross-output default recovers frame 0x60 and extent 2622, first +6, but regresses.
+// NOT kept: no equality; original selections, helpers, math and full body restored.
+// T103: Actual first/second/both wave-position results, point then vector receivers,
+// and reused sequential position receivers: 522/692/687/522/692/687/693/693.
+// NOT kept: first-result forms recover frame 0x60 but grow five bytes and use
+// nonmatching one-use results; original helpers and complete body restored.
+// m3 lane 5 r181 (fast = plain 536; aligned 420, masked 104): no new form. The mid-body code matches retail apart from
+// stack offsets: retail keeps nine dwords below v1 (+0x34: inv, shape0, s0's and s1's own float homes, the cross
+// terms) where ours keeps six (+0x28: inv, one shared x87 transfer temp, shape0, three cross terms), and retail
+// evaluates s1 first and stores both sines before scaling them in SSE. The wave scales written `0.03f * s0` /
+// `0.025f * s1` and s1's sum written `y + (double)(x * 5.6f)` are the same code. Rounds 75 (lane 12) and 170 (lane 4)
+// above trace the stored sines and the late x87 pops to a removed third wave term; the forms that reproduce it are
+// dead stores, so no untried natural form is left.
+// P465: Positive special-view result from native lazy tests, bool/byte/short/long,
+// false-default 548/548/668/561; exhaustive test-owned 644/644/657/651. NOT kept:
+// no native 0x60 frame/result recovery or equality; original complete body restored.
+// P468: Special defaults then ordinary overwrite for origin/view/projection/side,
+// origin-view/view-projection/basis/origin-basis: 716/686/701/718/720/731/787/815.
+// NOT kept: frame/basis/wave residence remains unmatched and all regress;
+// original complete body and helpers restored.
+// M3 lane 1 r104 (fast): s0's sum with the cos 7.75y term first 536, its product with sin x first 536 (same code each);
+// sin x, cos 7.8y and cos 7.75y as named doubles ahead of s0 in retail's evaluation order 534 (2622 B; our x87 order is
+// unchanged apart from the two popped values), all four factors named with the 8.2x sine last 536; s1 computed before the
+// first cross 536 (s1 is still substituted into its use after s0).
+// P501: Standard whole-record history/point/input transfer boundaries, seven subsets, then complete fallback
+// publications: 743/679/726/734/753/688/720/732. NOT kept: All regress and fail native frame/extent and rounded
+// wave residence; original copy graph restored. Original complete executable body restored.
+// M3 lane 4 r202 (fast with 0x4a1e0; base 536): ours returns with `ret 0x20` as retail. The frame gap is three scalar
+// homes: retail keeps both wave values as stored floats (s0 at +0x18, s1 at +0x1c, s1 computed first) and multiplies
+// them in SSE, and the first cross's j and k get homes of their own; ours folds the one-use wave values into x87
+// products. The pair as one point2f local (diagnostic) 634 (2672 B, frame 0x60 as retail, the pair at +0x28/+0x2c),
+// that with the first cross staged 634, declared at function scope 634; v4 declared and copied before v3 554; only the
+// special path's first cross through cross3f_staged 536 (same code). Compile-only: out-pointer or twice-assigned wave
+// locals are still folded, and no sin/cos spelling (float or double overloads, named terms, factor orders) keeps sin x,
+// cos 7.8y and cos 7.75y on the x87 stack as retail does.
+// P542: Standard scalar wave-weight providers, real/double first/second/both, then independent complete second/first-wave arithmetic: 732/743/785/779/789/823/865/790.
+// NOT kept: all regress and grow away from 2622 bytes. Original complete body and includes restored; native wave-result homes, x87 residence and frame 0x60 remain.
+// MiniMax D (11-15): no new form, no lower score (536): the frame is 0x54 against retail's 0x60, the constant rides in xmm3 here and in xmm1 there, and the two wave values are folded into x87 products where retail keeps both as stored floats.
+// M3 lane 3 r249 (fast; base 536, ret 0x20 as retail): the second cross renamed so it sorts last 536 (identical listing:
+// names do not move these slots); the special block split in two `if (special)` blocks, the cross and both wave values
+// (declared at function scope) in the first, the two scaled adds and the second cross in the second, 644 (2665 B, frame
+// 0x58: the second test is not threaded, but s1 is then evaluated first and both values get retail's own homes, s0 at
+// +0x18 and s1 at +0x1c, so retail's values are not forward-substituted into their uses: lead); both wave values declared
+// at function scope, assigned in the block, 536 (same code); s0's halving as `s0 *= 0.5f` 536 (same code); the first
+// cross vector at function scope 536 (same code).
+// P565: Actual paired special-cross input/output pointer tables, long/dword/short/word for,
+// long/short while, then long/short staged for: 667/667/757/757/667/757/649/758.
+// NOT kept: no native wave residence or exact frame/extent recovery; original full body restored.
+// P579: Actual scalar memcpy at camera side/vertical offsets, horizontal/vertical extents,
+// selected depth extent, reciprocal depth bounds, displacement depth bounds and output depth inputs:
+// 578/578/579/579/638/624/605/605. NOT kept: no exact native rounded-wave/frame recovery; original
+// complete body, scalar observations, helpers and includes restored.
+// m3 lane 8 r176 (fast with 0x4a1e0; control 536): `inv` declared after the shape pointers 536 (the entry stores in retail's
+// order); the three repeated wave factors as named double locals 646 (2595 B); s0 before s1 536; `w` initialised at its
+// declaration without the else 678; s1 through the float sin overload 538. Compile-only lead: when the first scaled add
+// stores through a pointer the compiler cannot separate from the camera global, s1 is computed first and stored to a float
+// home exactly as retail; so retail's wave values are materialised because something between their definitions and their
+// uses may alias that global (s0 still folds in that form).
+// M3 lane 7 r172 (fast with 0x4a1e0; control 536 = plain; the full build already returns with `ret 0x20` as retail): v1
+// selected by an if/else in place of the ternary 704 (2652 B); s0 halved as `/ 2.0f` 536 (same code); the sine arguments
+// read through a `point3f const &` bound to the camera point 537; the first `w8e` switch as `if (w8e == 1) ... else`
+// 574; the component maximum as one expression (no named partial maxima) 673 (2690 B). Retail's case-1 arm selects the
+// up vector by pointer again (`mov ecx, 0x4b9dac`), as the `up` local does.
+// M3 lane 13 r104 (fast with 0x4a1e0; control 536, both `ret 0x20`): the second cross computed right after the first, ahead
+// of the waves and the adds, 665 (2581 B); both wave values ahead of the first cross 654 (2590 B); s1's argument as a float
+// sum without the double cast 538; s1 computed after the first scaled add, just ahead of its use, 536 (VC sinks it there
+// anyway); the first cross after the first scaled add, ahead of its use, 643 (2603 B). Reading: retail rounds s0 to a float
+// home (fstp, movss) and multiplies by 0.03 in SSE, where ours multiplies by 0.03 on the x87 stack before the one store.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -282,7 +455,12 @@ void function_0497a0(
 	vector4f *old30)
 {
 	real inv = -1.0f;
-	s_view_shape_1 *shape1 = source->type_low == 0 ? 0 : &source->shape1;
+	s_view_shape_0 *shape0 = NULL;
+	s_view_shape_1 *shape1 = NULL;
+	if (source->type_low == 0)
+		shape0 = &source->shape0;
+	else
+		shape1 = &source->shape1;
 
 	bool special = ((0x20 & flags->flags)) && (0x40000 & flags->flags);
 	point3f v1 = special ? g_4b9da0 : source->v2c;
@@ -295,17 +473,11 @@ void function_0497a0(
 	{
 		vector3f c;
 		cross3f(&v4, &v2, &c);
-		real s1 = (real)sin(v1.x * 5.6f + v1.y);
-		real s0 = (real)((sin(v1.x * 8.2f) * cos(v1.y * 7.8f) * sin(v1.x) + cos(v1.y * 7.75f)) * 0.5f);
-		real amp = s0 * 0.03f;
-		vector3f wave_shift;
-		vector3f_scale(&v4, amp, &wave_shift);
-		v1.x = (wave_shift.i) + v1.x;
-		v1.y += wave_shift.j;
-		v1.z = v1.z + (wave_shift.k);
-		real k = s1 * 0.025f;
-		vector3f_scale(&c, k, &wave_shift);
-		vector3f_add((vector3f const *)&v1, &wave_shift, (vector3f *)&v1);
+		/* retail 0x498a7-0x498d7 keeps x * 5.6 + y on the x87 stack up to fsin (no float rounding of the sum) */
+		real s1 = (real)sin((double)(g_4b9da0.x * 5.6f) + g_4b9da0.y);
+		real s0 = (real)((sin(g_4b9da0.x * 8.2f) * cos(g_4b9da0.y * 7.8f) * sin(g_4b9da0.x) + cos(g_4b9da0.y * 7.75f)) * 0.5f);
+		vector3f_add_scaled((vector3f const *)&v1, &v4, s0 * 0.03f, (vector3f *)&v1);
+		vector3f_add_scaled((vector3f const *)&v1, &c, s1 * 0.025f, (vector3f *)&v1);
 		cross3f(&v2, &v4, &w);
 	}
 	else
@@ -324,7 +496,6 @@ void function_0497a0(
 
 		default:
 		{
-			s_view_shape_0 *shape0 = source->type_low == 0 ? &source->shape0 : 0;
 			inv = -1.0f / (shape0 ? shape0->f0c : shape1->f2c);
 			break;
 		}
@@ -337,25 +508,14 @@ void function_0497a0(
 		result->p10 = v1;
 	}
 
-	switch (source->type)
+	if (source->type == 0)
 	{
-	case 0:
-	{
-		result->v20.i = source->v1c.i * inv;
-		result->v20.j = (inv * source->v1c.j);
-		result->v20.k = inv * source->v1c.k;
-		result->v30.i = camera->v34.i * inv;
-		result->v30.j = inv * camera->v34.j;
-		result->v30.k = inv * camera->v34.k;
+		vector3f_scale(&source->v1c, inv, &result->v20);
+		vector3f_scale(&camera->v34, inv, &result->v30);
 		result->f2c = 0.0f;
 		result->f3c = 0.0f;
-		break;
 	}
-
-	case 1:
-		break;
-
-	default:
+	else if (source->type != 1)
 	{
 		vector3f r;
 		vector3f s;
@@ -372,17 +532,13 @@ void function_0497a0(
 		result->v30.k = k * (s.k * sy + v2.k);
 		result->f2c = 0.0f;
 		result->f3c = 0.0f;
-		break;
-	}
 	}
 
 	switch (flags->w8e)
 	{
 	default:
 	{
-		result->v40.i = v2.i * inv;
-		result->v40.j = inv * v2.j;
-		result->v40.k = v2.k * inv;
+		vector3f_scale(&v2, inv, &result->v40);
 		result->f4c = inv * 0.5f;
 		result->v50 = *g_4687a4;
 		result->f5c = 0.0f;
@@ -394,22 +550,18 @@ void function_0497a0(
 		vector3f const * up = special ? &g_4b9dac : &camera->v28;
 		if (source->type != 1)
 		{
-			result->v40.i = up->i * inv;
-			result->v40.j = inv * up->j;
-			result->v40.k = inv * up->k;
+			vector3f_scale(up, inv, &result->v40);
 			result->f4c = inv * (shape1->f28 + source->f28);
-			if (!(0x20 & flags->flags))
-			{
-				real h = (shape1->f2c - shape1->f28) * 0.025f * 0.5f;
-				result->v50.i = h * result->v40.i;
-				result->v50.j = h * result->v40.j;
-				result->v50.k = result->v40.k * h;
-				result->f5c = (source->f28 + 0.0078125f) * h * inv + 0.5f;
-			}
-			else
+			if (0x20 & flags->flags)
 			{
 				result->v50 = *g_4687a4;
 				result->f5c = 1.0f;
+			}
+			else
+			{
+				real h = 0.5f * ((shape1->f2c - shape1->f28) * 0.025f);
+				vector3f_scale(&result->v40, h, &result->v50);
+				result->f5c = (source->f28 + 0.0078125f) * h * inv + 0.5f;
 			}
 		}
 		break;
@@ -420,12 +572,8 @@ void function_0497a0(
 	*old30 = *(vector4f *)&result->v30;
 	real side_shift = camera->f6c;
 	real vertical_shift = camera->f70;
-	result->v20.i = result->v20.i + (side_shift * result->v40.i);
-	result->v20.j = (result->v40.j * side_shift) + result->v20.j;
-	result->v20.k += side_shift * result->v40.k;
-	result->v30.i += result->v40.i * vertical_shift;
-	result->v30.j = (result->v40.j * vertical_shift) + result->v30.j;
-	result->v30.k = (result->v30.k + (vertical_shift * result->v40.k));
+	vector3f_add_scaled(&result->v20, &result->v40, side_shift, &result->v20);
+	vector3f_add_scaled(&result->v30, &result->v40, vertical_shift, &result->v30);
 
 	vector3f c = *c_in;
 	vector3f d = *d_in;
@@ -434,8 +582,7 @@ void function_0497a0(
 	real cc = c.k * scale;
 	real da = (d.i * scale);
 	real db = d.j * scale;
-	long tmp2 = (((scale * d.k)));
-	real dc = tmp2;
+	real dc = scale * d.k;
 	real mc = MAX(ca, MAX(cb, cc));
 	real md = MAX(da, MAX(db, dc));
 	real m = MAX(mc, md);
@@ -593,13 +740,46 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
     return pixel;
 }
 
+// MiniMax G (11-12): no new form, no lower score (233): the frame is four bytes short (0xa8 against retail's 0xac), which puts the
+// definition, source, scale and vertex homes four bytes below retail's, and retail's u step, v and width are in the eight-byte spill
+// slots at the top of its frame in another order than ours; no new spelling of the three scalars moves them.
+// MiniMax D (11-14, run 90): no new form, no lower score (233): the frame is 0xa8 bytes against retail's 0xac and
+// the first-edge Y, the half-width, the cursor and the colour homes differ; the helper this body calls at 0x131e50
+// has its declaration fixed in another file, which this lane may not change; re-measured at 233 (2592 bytes, against
+// retail's 2596). BLOCKED-BY 0x131e50's declaration.
+// MiniMax R (11-15): no new form, no lower score (233): the frame is still four bytes shorter than retail's, so every stack home below the top is off by four; retail keeps the u step and the V end in eight-byte spill slots at the top of the frame where this build keeps them in four-byte homes among the channel homes, and the first-edge Y, the half-width, the cursor and the colour homes differ with them.
+// MiniMax S (11-15): no new form, no lower score (233): the frame is still 0xa8 bytes against retail's 0xac, and the
+// u step and the V end still take four-byte homes among the channel slots where retail spills them to eight-byte
+// homes at the top of the frame, so the first-edge Y, the half-width, the cursor and the colour homes all differ;
+// this round the two vertex positions stored as aggregate copies give 631 (2716 bytes) and case 4's side length
+// through the existing length_sq3f gives 357 (2576 bytes), both regressions, so the body stands. The helper this body
+// calls at 0x131e50 has its declaration fixed in another file: BLOCKED-BY 0x131e50.
+// MiniMax C (11-16): score 233 (was 233): no new form, no lower score; BLOCKED-BY 0x131e50 (src/unknown_131e50.cpp):
+// retail's build inlines pack_color4f from that file while this file's front end expands its own copy, so the
+// frame is still 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes still
+// differ; the u step and the V end still take 4-byte homes where retail spills them to the 8-byte ones.
+// score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
+// step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
+// at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,
+// 31 tries, reduced image) found nothing below its 230 baseline, and the case-1/2 second x load and case 4's
+// per-arm position pointer remain the open leads.
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 250 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax D (11-09): the colour written component by component gives 447/604/623 against 250, and the
+// interpolation unrolled on its own gives 250; the scope moves give 620/250/620 and the case-0 and
+// colour store orders 246/248/244/250/255. The best is 244, under the bar, so the body is unchanged.
+// frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
 // give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
-// score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax E (11-06): no new form, no lower score; retail's frame is 0xac against our 0xa8. Retail
+// keeps u at frame +0x50, v at +0x80, the u step at +0x94 and the v width at +0x9c, ours keeps u at
+// +0x48, the u step at +0x80, the v width at +0x88 and v at +0x90, and retail keeps the state width
+// in a slot of its own at +0x3c where ours keeps the vertex pointer. Declaring v before the u step,
+// with retail's statement order kept, and moving the state width out of the inner scope both give
+// the same code and the same 250.
+// Earlier (265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
@@ -904,11 +1084,177 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // offsets i and j in case 1/2 476-495 (2584 B), named offsets in case 4 428, offset vector in case 4 459 (2580 B); first.z, first.y,
 // first.x weight probes (extra reads after the switch, up to 3/2/1): aligned 104-118, no colouring flip. Left: retail colours first.z
 // XMM3 and the half width XMM4, first.y XMM5 and first.x XMM6 (ours half width XMM3, first.z XMM4, first.x XMM5, first.y XMM6).
+// M3 lane 4 r170 (fast in the tree; one-file harness with the ballast object for the searches, 251 for the real 250): the colour
+// stored to the outer vertex first 248; case 0's points set second x, z, y then first x, y, z 246; both 244 (order picked by score,
+// under the bar); case 4's side scaled in place by the existing vector3f_scale then added and subtracted 423 (frame 0xa4), with case
+// 1/2's side scaled in place too 435 (2608 B). Harness lead: retail's colouring of case 0's tail (half width XMM4, first.z XMM3,
+// first.y XMM5, first.x XMM6) appears as soon as case 4 stops writing `side.i * half_width` twice per axis (named offsets, in-place
+// scaling, an offset vector); then case 0 differs only by retail's first.y spill and two movaps, but the frame drops to 0xa4 and the
+// positional score rises to 410-435 (masked aligned 30 -> 47). About 1,500 harness forms over case 0/1-2/4 statement orders, offset
+// forms, length orders and case 0's normal block: best positional 245, best aligned 90; no frame 0xac without the rejected u/v vector.
+// T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
+// all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
+// canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
+// T70: Real backing flag views on current paired geometry, texture/state/point/pairs/all/endpoint
+// 629/591/250/676/626/591/665/676. NOT kept: no exact native ingress or missing frame-word repair;
+// original flag words, observations, geometry, helpers and complete body restored.
+// P365: Existing norm-dimension/squared-length producers at vertical/side/normal sites,
+// masks 1/2/4/3/5/6/7: 250/368/250/368/250/368/368; planar normalizer retaining
+// third-component scaling 485 (frame 0xac, 2628 bytes). NOT kept: no equality; the camera
+// side sum changes association. Unscaled-third-component diagnostic 426 excluded.
+// Original roots, scaling, geometry, helpers and complete body restored.
+// P367: Next-iteration U after UV/geometry/position/opacity consumers
+// 606/306/304/274; each with transition width after its color loop
+// 564/418/415/386. NOT kept: no native frame/scalar equality; statement-
+// lifetime forms regress. Original texture/width sequence and body restored.
+// P371: Complete complementary normal request in bool/char/signed-char/byte/short/word/long/dword:
+// 567/567/567/567/592/592/596/596, 2576/2596 bytes. NOT kept: regressions and
+// nonnative frame/spill allocation; original per-case observations and complete body restored.
+// P373: Ordinary pretested channel counters for initial/next/blend color walks, seven subsets,
+// all with the tint walk: eight 250s, 2592/2596 bytes. NOT kept: frame 0xa8/0xac
+// and scalar homes unchanged; original color traversals and complete body restored.
+// T72: Complete computed first/second/both edge scalars, then existing output setters
+// for first/second/both scalar graphs: 252/250/252/252/250/252/252/252. NOT kept:
+// no native frame or edge-spill recovery; original complete body and helpers restored.
+// P389: Complete first/second edge publications through native/standard copy/backward
+// range transfers, eight nonoriginal pairs:
+// 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
+// original complete body, observations, helper and call graph restored.
+// M3 lane 8 r144 (fast; control 250, frame 0xa8): retail's unused 4-byte home is at +0xa8, just below v + width (+0xac).
+// The V sum formed at the outer vertex's store 252; the U step negated at the advance (`u += -u_step`) 611 (2596 bytes, frame
+// 0xa8); both 610; both with the sum's operands swapped 610; a named V end declared after the width scaling 250 (same code); u
+// and v read after the two scales 271; one read of the source scale for both tests 608; the colour stored to the first vertex
+// first 248. Re-measures of the rejected grouping (a two-member texture scale vector; not kept, the same locals-grouping form
+// the coordinator threw out for r155): i negated in place with a named V end 239 (frame 0xac); a named U step from i and the V
+// end kept in j 224 (frame 0xac, confirmed in the plain check; the diff is build/r144/lead-42cf0.patch); both in place 250
+// (frame 0xa8). On the 224 form: the colour store order 222; case 4's offsets named in all three rows 459 (2580 bytes, frame
+// 0xa4); case 1/2's offsets named in both rows 490 (2588); both 443 (2596 bytes, frame 0xa4). Body restored.
+// P399: Actual current/next color-bound identities and complete next-color record, subsets 1-7, then output-color identity:
+// 250/250/482/250/250/250/490/447. NOT kept: no byte equality or native home repair; original complete body restored.
+// Round 85 (m3 lane 10, fast; kept form plain 250; 0x42c50, 0x42b20 and 0x43740 stay matched): the `(void)&unknown;` statement removed 250 (same code, kept: it did
+// nothing). On that: the pixel helper's scale declared between its green and red channels 250 (same code: declaration order does not move the asm locals' homes);
+// `index = point->next` before `previous = point` 561 (2596 bytes as retail, but register-masked aligned 30 -> 39); `u += u_step` before `vertex += 2` 251; v_width
+// read before v 251; the vertex cursor declared after source and definition 252. Frame map (after the pushes): retail has three 8-byte homes at the top, each with
+// its upper dword unused: the first.y spill +0xb4, v + width +0xac and the u step +0xa4, then the helper's channels; ours has two (the first.y spill +0xb0 and the
+// helper's blue channel +0xa8) and keeps v + width and the u step in 4-byte homes among the channels. Register-masked aligned differences left: 30, all small
+// schedules (case 0's half-width add and y spill, case 1/2's x load, case 4's position pointer formed after the neighbour lookup, the side length's `fst`,
+// the colour store order and one tail reload).
+// Round 66 (m3 lane 2, fast; 0x42c50, 0x42b20 and 0x43740 stay matched): retail's top homes are 8-byte spill slots (as our
+// first.y spill), so its u step and v + width are register temporaries there, not named locals with 4-byte homes as ours.
+// Retail inlines the matched pack_color4f (0x131e50) at link time where ours inlines the same-file ribbon_pixel copy; the
+// copy as plain `inline` 250 and with no inline keyword 250 (both same code: the compiler still inlines it). `u -= u_step`
+// with no negation 611 (2596 bytes); the tint as three statements 447 (2580 bytes); the object index read from the source
+// at each use 276. Re-measure (diagnostic): `u += -u_step` with the V sum at the outer store 610 (u_step stays a 4-byte home).
+// Round 68 (m3 lane 2; fast, kept form confirmed plain and in a full check; 0x42c50, 0x42b20, 0x43740 matched): case 4's normal
+// through the existing normalize3d 250 -> 233 (kept: its length is then summed i, j, k, retail's x87 order), case 0's normal through
+// it too 233 (identical code, kept: it removes the hand-written copy). Not kept: case 4's side through normalize3d as well (r155's 473
+// re-measured on this base) 351 at 2588 bytes, aligned 145, masked 45: the side's x87 is then retail's, but the body is 4 bytes short
+// because case 1/2 lacks retail's second x load (a colouring symptom), so everything after case 4 shifts; start the next round there.
+// The side alone through it 351; both lengths written i, j, k 362 (diagnostic); case 4's edge points through vector3f_add_scaled 363;
+// view and direction through vector3d_from_points3d 443 (2584 bytes). On 233: side scaled in place by vector3f_scale then +/- 416;
+// case 1/2's points through real_point3d_set 443 (2580); the cursor as `vertex = outer + 1` 656 (2556); the vertex positions through
+// real_point3d_set 233 (same code); case 1/2's normal copy before its points 241; case 1/2's z as `first.z = second.z = ...` 331
+// (2600); case 0's normal set through vector3f_assign in each arm 499 (2620); the side's scale through vector3f_scale 233 (same code).
+// Round 168 (m3 lane 6, fast; 0x42c50, 0x42b20 and 0x43740 matched each time; control 233, aligned 149, register-
+// masked 73): re-measured on this base `u += -u_step` 611 (2596 bytes: the negation moves into the loop, it is not
+// hoisted), with the V sum at the outer store 610, the V sum alone 235. New: the negated step as a single-assignment
+// local 233 (same code); with a single-assignment V end as well 233 (same code); case 4's direction through the
+// existing vector3d_from_points3d in both arms 483 (2584 bytes); case 4's view through it 233 (aligned 164, masked 88:
+// the else arm's view moves after the neighbour lookup and the cross operands swap; not kept); a named pointer for
+// every use of the point's position 612 (2620 bytes). Body restored.
+// R151 (m3 lane 7, fast; 0x42c50, 0x42b20, 0x43740 matched): the pixel through the existing pack_color4f 598 (2448 bytes:
+// its declaration is noinline, so it stays a call where retail expands it at link time). The frame word needs the u step and
+// the V end as compiler temporaries (retail's 8-byte homes), which only the ruled-out two-member grouping gave; case 1/2's
+// early point x load and case 4's per-arm position pointer are schedules of forms listed above. Case 4's direction alone
+// through the existing vector3d_from_points3d in both arms 483 (2584 bytes), the view alone through it 233 (same code);
+// case 1/2's first.x before second.x 233 (same code); both case 1/2 pairs and z first-row first 394 (2600 bytes).
+// T86: Descending initial/next/blend/tint channel indices 509/334/568/244;
+// descending channel pointers 697/604/623/622. NOT kept: no byte match or
+// frame/home recovery; original traversal, arithmetic and complete body restored.
+// MiniMax R (11-11): no new form, no lower score (233): the frame is four bytes shorter (0xa8 against retail's
+// 0xac), so every stack home below the top is off by four; retail keeps the u step and v + width in eight-byte
+// spill slots at the top of the frame, ours keeps them in four-byte homes among the channel homes, and the
+// first-edge Y, half-width, cursor and colour homes differ with them.
+// T95: Complete initial lower/upper and next lower/upper color-bound records,
+// each alone, initial pair, next pair, all and all by library copy: 618/599/596/544/695/666/867/867.
+// NOT kept: input-record copies miss equality and regress; original input reads,
+// frame 0xa8/0xac, geometry, conversion helper and complete body restored.
+// m3 lane 14 r88 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; masked = aligned count with registers and stack offsets
+// masked, base aligned 149, masked 46): re-measured on the 233 base, the colour stored to the first vertex first (`outer->color
+// = vertex[0].color = ...`) 231 (a store order by score, not kept); the zero colour before the zero width 233 (same code); u and
+// v as one point2f texture coordinate (the source fields typed point2f) 582 (2596 B); case 4's else arm with the view computed
+// after the neighbour lookup 328 at retail's 2596 bytes (aligned 149 -> 134, masked 46 -> 35: case 4's per-arm position
+// pointer is then retail's; a statement order, match-only), that with the colour order 329 (masked 33); case 4's direction
+// ahead of the view in both arms 356 (2608 B); case 1/2's z row first 566 (2588 B). Left on the 328 form (masked 35): the
+// frame (retail's u step and V end in 8-byte temporary homes), case 0's load order, case 1/2's early x load, the side
+// length's fst, the colour store order and one tail reload. Body unchanged.
+// P436: Fixed existing point/current-state/next-state receivers, transition weight,
+// V origin, half-width, tint-object handle and side reciprocal: eight fast 233s,
+// control 233. NOT kept: frame 0xa8 versus 0xac and native scalar/spill homes
+// remain with no byte change; original complete tuning body restored.
+// P436: Existing object-tag attachments.address replaces the raw +0x98 read;
+// fast and ordinary checks both preserve 233 and 2592/2596 bytes.
+// M3 lane 11 r96 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233, aligned 149). Frame map: retail has 37 dword
+// homes and three 8-byte homes at the top (u step +0xa4, V end +0xac, first.y spill +0xb4); ours has 40 dword homes (the u step,
+// the V end and one more) and one 8-byte home (the first.y spill, a promoted aggregate field). The loop and tail in a forceinline
+// helper taking the negated step and the V end as argument expressions 527 (2588 bytes, frame still 0xa8: argument temporaries
+// take dword homes too); the three scalars renamed (V end, U advance, V start, and two names at the ends of the alphabet) 233
+// each (same code: names do not move these spill homes); `point3f second, first;` 233 (same code); case 0 with the second edge
+// assigned first 458 (2584 bytes), that with the declarations swapped 458; case 0's first edge copied from the second's x and y
+// 439 (2584 bytes); case 0 as two aggregate copies of the position with the z offsets applied after, second first or first
+// first 698 / 698 (2680 bytes). Retail loads x and y once into XMM0/XMM1 for the second edge and copies them to XMM6/XMM5 for
+// the first; ours loads them for the first and copies down.
+// P441: Current/next/both/complete width-product branches, original then output-owned initial width: 510/511/545/558/576/572/584/590.
+// NOT kept: Native 0xac frame, first-edge Y and texture/color spill homes remain. Original complete body restored.
+// P463: Paired U/V scale-admission positive bool/byte/short/long 627/627/238/238;
+// complementary outcomes 634/634/634/634 reduced (control/full 233).
+// NOT kept: one-use results lack equality and native frame/spill homes;
+// original texture producers, observations and complete body restored.
+// T103: Actual output UV point record direct/first/outer/both setters, then original
+// fields with first/outer/both setters and native UV value publication:
+// 233/241/241/240/241/241/240/410. NOT kept: no native frame/spill equality;
+// original vertex fields, UV stores, helper declarations and complete body restored.
+// m3 lane 5 r181 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233, aligned 135, masked 30): case 4's side
+// length through the existing magnitude3d (0x24590) 715 fast (a call in the reduced image), 357 plain (2576 bytes, inlined);
+// the state scale as `(flags & 0x20) ? point->scale : 1.0f` with the state width as a ternary too 333 (2600 bytes); the scale
+// ternary alone 504 (2600 bytes); the state width ternary alone 510; `width = state_width` moved to an else arm of the
+// transition test 469; case 1/2's add rows written product-first 233 (same code). Diagnostic (listed form, frame map only):
+// the V sum formed at the outer store 235, the hoisted sum takes a 4-byte home (+0x98), not one of retail's 8-byte homes.
+// Retail's homes after the pushes: asm channel a +0x84, colour pointer +0x88, v +0x90, r +0x94, scale +0x98, g +0x9c, b
+// +0xa0, then 8-byte homes for the negated u step (+0xa4), the V end (+0xac) and first.y (+0xb4); ours interleaves the u
+// step (+0x90), the V end (+0x98) and v (+0xa0) with the channels. Body unchanged.
+// P469: Independent double U/U-step/V/V-endpoint/color-scale/current-width/next-width/transition
+// storage 422/631/575/601/670/583/363/604. NOT kept: extended scalar precision misses
+// native code and extent; original real producers, geometry and complete body restored.
+// T105: Read-only paired color bounds/persistent records/point chain,
+// seven subsets then complete current/next state inputs: eight at 233.
+// NOT kept: frame/spill homes unchanged; original complete body restored.
+// m3 lane 15 r84 (fast with 0x42c50, 0x42b20, 0x43740, all MATCH; control 233): the two vertex positions stored as aggregate
+// copies of first/second 631 (2716 B); case 4's side length through the existing length_sq3f 357 (2576 B, the listed
+// magnitude3d shape). Same code (not counted): `__assume` on vertices, input, the point pointer or index != NONE. Frame
+// cause recorded: retail's inlined pack_color4f (0x131e50, another lane's file) puts its asm homes at a +0x84, colour pointer
+// +0x88, r +0x94, scale +0x98, g +0x9c, b +0xa0, interleaved with the caller's v (+0x90); ours (the same-file copy, front-end
+// inlined) gives colour pointer +0x84, scale +0x88, a +0x94, r +0x9c, g +0xa4, b +0xa8, interleaved with the u step, V end and v.
+// The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
+// MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
+// MiniMax D (11-16): no new form, no lower score (233).
+// MiniMax S (11-16): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because
+// retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
+// b7K (11-17) walk against retail, fast build on r830: checked head scale tests and clamp (0x42d0c-0x42d83), state
+// clamp and zero-colour arm (0x42db4-0x42e10), colour/width blend and its constants (0x42e15-0x42fc7; 1.0 at 0x45dbc0,
+// 0.5 at 0x45dbbc, 255.0 at 0x45dc38, epsilon 0.0001 at 0x45dbdc), tint and the 0xbad50 call (0x42fd4-0x43052), the
+// jump table (0x43700: 0 -> 0x430de, 1/2 -> 0x431d8, 4 -> 0x432cd, 3 and above 4 -> 0x436ef false), each case's operand
+// order, the alpha call at 0x43583, the clamp, the pixel, and the endpoint fades (0x43691-0x436e3). No behaviour
+// difference found: fields, offsets, branch senses, callees, register arguments and constants agree. Changed: case 4's
+// side through the existing normalize3d (the file's other two lengths already use it) instead of its hand-written copy,
+// which is retail's evaluation order: retail keeps the cross z on the x87 stack (`fst [esp+0x28]` at 0x433f1, then
+// `fmul` at 0x433f5) where the copy squared the stored float. 233 -> 351 (2588 bytes; round 68 measured the same and
+// did not keep it for the score). Not kept: case 4's view through the existing vector3d_from_points3d 351 (same code),
+// with the direction through it too 443 (2580 bytes; retail 2596): no behaviour change, and the helper is new to this
+// file. 0x42c50, 0x42b20, 0x43720, 0x43740 and 0xbad50 still match (fast).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
-    // Retail keeps all three callback arguments on the stack.
-    (void)&unknown;
     s_ribbon_vertex *vertex = vertices;
     s_ribbon_source *source = input->source;
     s_ribbon_definition *definition = input->definition;
@@ -980,8 +1326,8 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         {
             point3f tint = *g_468710;
             byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-            byte *object_tag = g_4e3b44[(*(long *)object) & 0xffff].bytes;
-            byte *markers = *(byte **)(object_tag + 0x98);
+            s_object_definition *object_tag = (s_object_definition *)g_4e3b44[(*(long *)object) & 0xffff].bytes;
+            byte *markers = (byte *)object_tag->attachments.address;
             function_bad50(object_index, *(short *)(markers + source->marker_index * 24 + 12), &tint);
             for (long c = 0; c < 3; ++c)
                 (&color.red)[c] *= (&tint.x)[c];
@@ -1013,12 +1359,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     normal.j = neighbor->position.x - point->position.x;
                 }
                 normal.k = 0.0f;
-                real length = (real)sqrt(normal.j * normal.j + normal.i * normal.i);
-                if (!(fabs(length) < 0.0001f))
-                {
-                    real inverse = 1.0f / length;
-                    normal.i *= inverse; normal.j *= inverse; normal.k *= inverse;
-                }
+                normalize3d(&normal);
             }
             break;
         case 1:
@@ -1062,24 +1403,14 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     direction.k = neighbor->position.z - point->position.z;
                 }
                 cross3f(&view, &direction, &side);
-                real length = (real)sqrt(side.k * side.k + side.j * side.j + side.i * side.i);
-                if (!(fabs(length) < 0.0001f))
-                {
-                    real inverse = 1.0f / length;
-                    side.i *= inverse; side.j *= inverse; side.k *= inverse;
-                }
+                normalize3d(&side);
                 second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
                 second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
                 second.z = point->position.z - side.k * half_width; first.z = point->position.z + side.k * half_width;
                 if (input->normal)
                 {
                     cross3f(&direction, &side, &normal);
-                    length = (real)sqrt(normal.k * normal.k + normal.j * normal.j + normal.i * normal.i);
-                    if (!(fabs(length) < 0.0001f))
-                    {
-                        real inverse = 1.0f / length;
-                        normal.i *= inverse; normal.j *= inverse; normal.k *= inverse;
-                    }
+                    normalize3d(&normal);
                 }
             }
             break;
