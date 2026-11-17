@@ -408,6 +408,7 @@ const long g_43e8e8[4] = { 32, 64, 128, 256 };
 // copy exit (retail jumps to 0x1d46e). Caller spellings with no effect there: nested ifs, a size local, *4, Unlock
 // after the test, an early return. Retail needs the callee fixed first (0x15b10 is in src/unknown_0158f0.cpp, not
 // touched): BLOCKED-BY 0x15b10.
+// b13A (11-17): with 0x15b10's CreatePalette2 written out (out in ebx, as retail), not kept, this is 64 (fast, was 76).
 // @retail 0x1d3f0
 bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 {
