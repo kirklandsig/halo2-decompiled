@@ -1013,11 +1013,10 @@ __forceinline long vehicle_round(real value)
 // and handing it the up vector's pointer instead of its address scores 94 (735 bytes against retail's 751), so the
 // direct address stays. This file's build flags were also tried without LTCG (the @flags line with /GL-), which
 // leaves this function at 191 and the other two of this file at 596 and 843, so the file stays /GL.
-// score 6 (was 8): retail's length and tail now; three products load the other operand (ours loads up.j
-// for the first cross's k term and the side cross's i term, and up.i for the side cross's j term;
-// retail loads forward each time). Kept: one `bool result` exit, the
-// for the first cross's k term and the side cross's i term, up.i for the side cross's j term, and the
-// velocity for the dot's i term; retail loads forward each time). Kept: one `bool result` exit, the
+// score 4 (was 8): retail's frame, length and exit agree. In the staged side cross, retail loads up.k
+// for forward.i * up.k and forward.j for forward.j * up.i; ours loads the other operands. Earlier
+// versions also differed at the first cross's k term, the side cross's i term and the dot's i term.
+// Kept: one `bool result` exit, the
 // failure arm first (`if (!(...)) { clears } else { ...; result = true; }`) and word_flags_set for the
 // flag clear (the clear stays a fused `and byte` last, as retail).
 // Round 130: result + else-arm stores with `flags348 &= ~0x40` 30 (759 B, clear split), with a word
@@ -1134,6 +1133,9 @@ __forceinline long vehicle_round(real value)
 // Round 121 (m3 lane 9, fast), at 6: the two-second tick count through the codebase's two-local seconds-to-ticks
 // rounding helper shape (ticks_real, ticks), used at all three vehicle_round sites (here, 0xf5e00, 0xf4800) 6 (same
 // code in all three: helper locals inside the condition do not move the products).
+// J262: staged side cross in place on up/forward copies 104/109; correction sum into side 137; selected axis pointer
+// 190; named per-second rate 15; PIN in the strength update 4; separate projected output 63; shared up reference 98;
+// memcpy for the forward copy 4; staged primary cross in place on the axis 186. Opening body restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
