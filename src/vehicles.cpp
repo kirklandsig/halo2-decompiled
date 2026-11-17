@@ -539,7 +539,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and the reversing compare's ja against retail's fxch and jb; the velocity copy the other way round (130), the blend
 // rows' additions the other way round (126), the reversing test written as >= (218), the magnitude read from the
 // vehicle's own fields (128) and the permuter's tries all score no lower.
-// score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
+// score 218 (was 126): the reversing test now has retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
+// retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
+// forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
+// velocity copy's eax/ecx and two x87 operand orders in the atan2 sums.
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
 // MiniMax C (11-10): the score is 126 (was 126); the entry magnitude is added after the velocity copy where retail adds the two squares before the square root, so the 1.0 constant lands in xmm2 instead of xmm3 and the x87 operand order of the sums differs.
@@ -767,6 +770,18 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // P530: Existing 2D normalizer returns success/failure in bool/byte/short/long,
 // with all three callers owning their fallback copies: 126/126/126/126/126/126/126/126.
 // NOT kept: no native velocity/unity repair; original helper, three calls and complete body restored.
+// b9N (11-17) walk against retail, fast build on r840: every field offset, jcc sense, constant (readf: 1.0, 0.0001,
+// 1.9198622, +-pi, +-pi/4, 4/pi, 0.09), callee argument and stack home agrees with retail (0xef070..0xef4dc); the
+// sums' trees are retail's (entry magnitude (t*t + s*s) + z*z; gear recompute at 0xef3bb) and both atan2 sums carry
+// the same operands (0xef331..0xef353, 0xef36d..0xef391; only the product load order differs). One behaviour
+// difference, fixed: retail's reversing flag is `fabs(atan2(..)) >= 1.9198622f` (0xef355 fabs, 0xef35d fxch, 0xef35f
+// fcompi, 0xef363 jb skips the flag for an unordered angle); the old `!(... < 1.9198622f)` compiled `fcompi; ja`,
+// which sets the flag for a NaN angle. That raises 126 to 218 in the fast build (1145 bytes: the one extra
+// instruction is the blend rows' k copy, `movaps`, where retail 0xef2ae/0xef2c4 multiplies forward in place; retail
+// stores blend.y at 0xef2b6 before blend.x at 0xef2cc, ours x first; the rest is positional). Blend rows as
+// k * forward, as heading + forward * k, x first, and k's dot sum x first: each 218. 0xef4f0, 0xeec90, 0x2053c0,
+// 0x2054b0 stay MATCH. Retail's two `0.0f - v` negations, left.x (subss at 0xef22f from the zero register 0xef228)
+// and blend_left.x (x87 fchs at 0xef32f), compile the same from `0.0f - v`.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -825,8 +840,8 @@ void function_ef070(long vehicle_index)
 	blend_left.x = 0.0f - blend.y;
 	blend_left.y = blend.x;
 
-	bool reversing = !((real)fabs(atan2(input.y * blend_left.y + blend_left.x * input.x,
-		blend.y * input.y + blend.x * input.x)) < 1.9198622f);
+	bool reversing = (real)fabs(atan2(input.y * blend_left.y + blend_left.x * input.x,
+		blend.y * input.y + blend.x * input.x)) >= 1.9198622f;
 	real angle = (real)atan2(input.y * left.y + left.x * input.x, forward.y * input.y + forward.x * input.x);
 	real offset;
 
@@ -4483,6 +4498,17 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 2/D/1, D/1/2, D/2/1 and entry cosine/sine/both result declarations:
 // 118/118/118/118/118/118/118/118. NOT kept: no byte-equal projection,
 // trig-slot or return repair; original complete body restored.
+// b9B (11-17) walk against retail, fast build on r839: checked statement by statement (fraction test, local_velocity
+// copy at +0x150, up = g_4687b0, projection, the 0xf4250 and 0x30bf0 calls and their register arguments, the `== 0.0f`
+// test and its NaN skip at 0xf4587-0xf458b, fallback copy, left cross, flip copy, byte switch at +0x350, case angles
+// and constants 0x45e220/0x45e224, default arm axis/sin/cos/forward rows, up rows, final cross, non-flip copy from
+// state+0xc, return): no logic, offset, jcc-sense or evaluation-order difference; fast 118 with caller 0xf4800 (117
+// alone, 797 bytes); only operand ranks, register numbers and slots differ. Retail returns the flag byte as it stands
+// (0xf47ac, 0xf47bf `mov al, dl`) where ours normalises it (`test; setne`); `bool flipping` gives retail's
+// `mov al, dl` but moves the register allocation (131 alone, 132 with member rows), so the byte stays. The up rows as
+// three in-place member statements store i, j, k as retail does (0xf4721-0xf474d) and reload as its final cross does,
+// but score 118 at 800 bytes: not kept. Retail's shared tail starts at the sine load 0xf4713 after a per-arm
+// `cosine * up.i` (0xf468d default arm, 0xf470b case arms); cases 1 and 2 join at 0xf46ae: cross-jumped copies.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

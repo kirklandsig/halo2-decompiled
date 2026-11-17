@@ -7623,6 +7623,7 @@ public:
 // MiniMax D (11-17): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the slot loop's two induction registers and the frame slot layout follow that plan; the call to 0x106030 (src/weapons.cpp, another file) is expanded here where retail calls it out of line, and that file is not this lane's. BLOCKED-BY 0x106030.
 // MiniMax E (11-16): no new form, no lower score (492): the frame and the length agree, but the first block still loads the pool global into eax and the unit into ebp where retail loads the global into ecx and takes the first unit's row pointer in edx, and the rest of the body follows that plan; the forms recorded below (the held index through the existing function_cbd50, the modes stored before the lookup, the empty/loaded pair declared first) all tie or regress.
 // MiniMax E (11-15): no new form, no lower score (492): the call boundaries agree with retail's except that 0x106030 (src/weapons.cpp) is expanded here where retail calls it out of line, and that file is not this lane's. What is left in this file is the pool register, the base and index order of the first lookup and the frame slot layout.
+// score 508 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
 // score 492 (was 492; 530 before): Frame 0x3c and length 1785 now agree. Early object/tag
 // spills, magazine flags, later register/slot choices and the expanded
 // 0x106030 call remain. The indexed magazine pass gives native pointer steps
@@ -7679,6 +7680,20 @@ public:
 // rounds-accumulation/first-slot lifetimes 511/492; actual modes/dual memset 492/492; eager final mode admission 521.
 // NOT kept: ties or regressions. Native early object/tag spills, scan flag homes and query-call boundary remain; whole body restored.
 // MiniMax R (11-17): no new form, no lower score (492): the slot pointer body step, the twice-used magazine receiver and the paired scan names measure 492 each, and the native early object and tag spills and the query-call boundary still differ.
+// b9K (11-17) walk against retail, fast build on r840: every statement, jcc sense, offset, local type and callee
+// argument agrees (magazine pass, slot loop, hand loop, dual/first-slot/empty blocks, 0x1509e0 with the player in eax,
+// the 0x40 call with (player, weapon)); no behaviour difference found. Floats agree: held > weapon at +0x184 is
+// comiss+ja (0xcdbad), the == 1.0f test ucomiss/lahf/test ah,0x44/jnp (0xcddfb-0xcde06, 1.0 at 0x45dbc0). One change,
+// retail's statement order: modes[hand] and modes[hand + 2] are stored (0xcda24, 0xcda28) before the held-weapon
+// lookup (0xcda2b-0xcda4a); the loop head then has retail's opcodes and registers (pool in ebp, tag table in ebx,
+// 0xcd9ed-0xcda20; slot numbers differ) but modes is reloaded into eax after the loop where retail uses ebx: 492 ->
+// 508, 1799 against 1785 bytes. Measured, not kept: the held index through function_cbd50 (0xcbd50; retail's
+// 0xcda3e-0xcda4a is its body inlined, NONE first, and this file calls it elsewhere) 498, with the stores first 511;
+// the engine answer as a ternary, the definition looked up before the compare (0xcdc4c) 508 (no change); rounds set to
+// 0 before the tests (retail's xor edi,edi at 0xcdca4) with an if in place of the ternary 509; empty/loaded swapped,
+// unit after weapon 498. The rest is 0x106030: retail calls it at 0xcd96e (its four other callers too) and expands it
+// with 0x159dd0 at 0xcdcaf-0xcdd24; ours inlines the first site (cached definition index, extra state slot, shifted
+// frame).
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
@@ -7773,12 +7788,13 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 		*(dword *)modes = 0;
 		for (long hand = 0; hand < 2; hand++)
 		{
+			modes[hand] = true;
+			modes[hand + 2] = true;
+
 			s_unit *holder = UNIT_GET(unit_index);
 			short index = (&holder->current_weapon_index)[hand];
 			long held_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
 
-			modes[hand] = true;
-			modes[hand + 2] = true;
 			held[hand] = held_index;
 			if (held_index != NONE)
 			{
