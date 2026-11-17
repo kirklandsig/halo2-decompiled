@@ -1813,6 +1813,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // into the home of the first found output, so the two stores land in the opposite order; the calls, the
 // argument order and the two requests are unchanged, and the remaining difference follows from where that
 // third output is written.
+// Function-scope mode/class/mode-class/type/mode-type/class-type with guarded defaults:
+// 828/828/828/828/828/828. Mode alone or all three defaulted after iterator setup: 828/826.
+// NOT kept: two points fall below the keep threshold. The early class/NONE registers and
+// the result and candidate homes still differ at the original frame and length.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

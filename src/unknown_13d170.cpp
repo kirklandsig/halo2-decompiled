@@ -754,6 +754,10 @@ struct s_physical_block_iterator
 // is given its register before the bit (ESI, then EBX), as here in retail (EDI, then EBX); on the lead ours gives the bit EDI
 // first. In retail's found path EBX carries the bit, then the block data, then the pages (the sum is built there) and last the
 // handle argument, and EDI carries the count, then best.offset (copied to EDX for the second test), then `this`. Body unchanged.
+// Page-first time policy as smaller-first ternary, larger-first ternary, explicit branches,
+// and strict default with inclusive override: 286/273/286/245. With both age masks:
+// 265/233/265/188. NOT kept: 188 has a shared AL test but is 1194 bytes against retail's
+// 1213 and moves best-candidate homes. Retail's ordered time comparisons still differ.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

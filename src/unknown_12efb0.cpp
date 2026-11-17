@@ -139,7 +139,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // score 607 (was 607): frame 0x4820, clears and metadata cursor agree; first +0x15f spans the loop; provider/NONE, palette/record and zero/SIMD homes differ.
 // Earlier header detail: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // MiniMax S (11-16): no new form, no lower score (607): the palette slot is still sign-extended and read as a word where retail reads the byte unsigned at each use, and the 0x130f60 result still stays in EAX where retail moves it to EDX and keeps NONE in EAX; the native byte palette measures 611 and the signed short 616 in this build, and that register home is set by the clamp in the three-scalar helper in this file, whose other callers keep their own match.
-// score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// Earlier score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
 // sign extension and the helper differences in the notes below are unchanged. Body unchanged.
 // MiniMax H (11-12): no new form, no lower score (607); the palette slot is still sign-extended and compared 16-bit where retail compares the byte with -1.
@@ -676,6 +676,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // entry pointer `const` 607; the palette slot `short const` 607; the unit clamp helper as two independent tests (`if (w < 0)
 // w = 0; if (w > 1) w = 1;`) 607 (all four the same code); the clamp helper as one nested ternary 695 at retail's 3817 bytes
 // (register-masked differing lines 662 against the control's 552, so the length is a coincidence). Body unchanged.
+// Typed palette stride, direct typed result arms, table receiver, previous-ordinal snapshot,
+// conditional result with snapshot, missing-first arm, early signed byte with snapshot,
+// and early byte with promoted index: 607/607/607/606/606/607/699/749.
+// NOT kept: the best gain is one point. The provider result and NONE still occupy different
+// registers, and lookup failures still bypass the record test.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

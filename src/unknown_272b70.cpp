@@ -1629,6 +1629,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // branch target. With the unit in a local before or after the type store it is 41/44 and the append order returns.
 // Not kept: no match, and Kirk undoes a written-out helper. Also 32 each: 0x1d + (load ? 1 : 0), (load != 0) + 0x1d,
 // 0x1d + !!load, a forced-inline leave wrapper (same bytes as the plain call).
+// Read the stored row identity for the busy query, as indexed fields or a row reference.
+// Original/branch-local walking slot/branch-local load request/both scopes:
+// 32/199/190/190 and 150/213/207/207. NOT kept: the indexed form ties with the original
+// scopes, and every other form regresses. Handle-before-scaling and request register placement remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2985,6 +2989,10 @@ struct s_scenario_scripting_view
 // P590: Original packed incoming parameter lexical priorities against native
 // local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
 // or guarded-data recovery; original input name and complete body restored.
+// Gate the scripting-data read on the packed sign, as nested admission or early exit.
+// Short/long selector with the original or search-owned counter: 96/98/98/101 in
+// each form. NOT kept: delayed data and the actor in EBP do not recover retail's
+// short comparison or counter and decoded-selector homes. All eight remain 367 bytes.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
