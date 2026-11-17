@@ -2644,8 +2644,10 @@ void function_1e370(void)
 // MiniMax C (11-16): changed the one-caller helper cache_record_new twice (the base in a local of its own, and the active store before the
 // MiniMax C (11-16): count's increment) and those forms measure 21 and 60, so the helper keeps its body.
 // MiniMax R (11-17): no new form, no lower score (8): the record pool's base still rides in edi where retail keeps it in ebp; changing the one-caller helper cache_record_new twice (the base in a local of its own, and the active store before the count's increment) measures 21 and 60, so the helper keeps its body.
+// Parameter order (size, position, callback, data): retail's one caller, 0x174420, loads EDX with the position (0x1748c3)
+// before ECX with the size (0x1748c7), and the body reads them there.
 // @retail 0x1e4e0
-bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
+bool function_1e4e0(long size, point3f const *position, t_1e4e0_callback callback, void const *data)
 {
 	(void)&callback;
 	(void)&data;

@@ -774,6 +774,16 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // where this build keeps it at [ebp-0x3c], and retail's three message flags are bytes at -0xf, -0xe and -0xd while this
 // build gives the timer flag a long and the others bytes at -0x14, -0xd and -2; making the timer flag a bool so the
 // three pack measures 191 (as the round above it found), so the frame is left as it is.
+// b9E (11-17) walk against retail, fast build on r839: 114 fast, 1889 bytes both; 0x24cf66 starts exactly where
+// 0x24cedf ends (0x24cf63 ret 8), no padding or fall-through. Every field offset, jcc sense (NaN included: 0x24d130,
+// 0x24d3ce, 0x24d3ec, 0x24d3f8), callee argument, loop/qsort shape and constant agrees with the code; 0x45de40 and
+// 0x45e570 hold 1.9f and 0.4f promoted to double, 0x45dbc0 1.0f, 0x45dbbc 0.5f. No behaviour difference found.
+// Retail-only details that compile the same: the scripted path stores alpha 1.0 at 0x24d0c2 and 0x24d0ec overwrites it;
+// the timer path's pack_color4f call at 0x24d189 keeps its result unused. `top += (short)height` lost its cast (retail
+// adds the dword at 0x24d32d): 114 fast, 115 in the r841 full build. Left: homes (timer byte 0x24d03b, left word
+// 0x24cffc, view 0x24cf76, font 0x24cfc9), the tutorial colour's block order (retail falls into the a4 load at
+// 0x24d1a2, ours puts it last), and 0x24ce9d's setup (retail pushes the text between the left and top loads at
+// 0x24d2d6-0x24d2dd; ours loads top first through edx; 0x1fa30's ecx/eax loads at 0x24d2eb swap likewise).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
@@ -889,7 +899,7 @@ void function_24cf66(long local_player_index)
 				count--;
 		}
 
-		top += (short)height;
+		top += height;
 		qsort(player->messages, 4, sizeof(s_hud_message), hud_message_compare);
 		for (short i = 0; i < count; i++)
 		{
