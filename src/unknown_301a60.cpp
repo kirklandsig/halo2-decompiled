@@ -134,10 +134,21 @@ struct collector_301a60
 // the walk's state: the offset of the tree's fixed point, how far the swept
 // shape reaches along each axis and along the diagonals, the depth, the size
 // of one unit, the base of the leaves' keys, and a value the commands set
+// a vector of four floats, copied as a whole
+struct vector_301a60
+{
+	__m128 value;
+
+	void operator=(vector_301a60 const &other)
+	{
+		value = other.value;
+	}
+};
+
 struct walk_3028c0
 {
-	__m128 offset;
-	__m128 reach;
+	vector_301a60 offset;
+	vector_301a60 reach;
 	float diagonal_reach;
 	long depth;
 	float scale;
@@ -177,13 +188,7 @@ __forceinline walk_3028c0 *writable_301a60(walk_3028c0 *&position, walk_3028c0 &
 {
 	if (position != &copy)
 	{
-		copy.offset = position->offset;
-		copy.reach = position->reach;
-		copy.diagonal_reach = position->diagonal_reach;
-		copy.depth = position->depth;
-		copy.scale = position->scale;
-		copy.key_base = position->key_base;
-		copy.values[0] = position->values[0];
+		copy = *position;
 		position = &copy;
 	}
 	return &copy;
@@ -203,7 +208,28 @@ __forceinline __m128 lerp_301a60(__m128 from, __m128 to, float fraction)
 	return _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, t), from), _mm_mul_ps(t, to));
 }
 
-// score 884 (was 971): the splat helper takes the value by reference and sets it
+// a vector less another, in place
+__forceinline void subtract_301a60(__m128 &value, __m128 const &other)
+{
+	value = _mm_sub_ps(value, other);
+}
+
+// a vector times a number, in place
+__forceinline void scale_301a60(__m128 &value, float factor)
+{
+	__m128 const single = _mm_set_ss(factor);
+	value = _mm_mul_ps(_mm_shuffle_ps(single, single, 0), value);
+}
+
+// score 68 (was 806): rebuilt in the shape of its sibling 0x3009e0: commands are
+// stepped before their operands are read (cases 0x20, 0x23, 0x60), the corner
+// math uses in-place subtract/scale helpers, the bounds reuse the function's
+// a/b, the walk's vectors are copied member by member through a wrapper with its
+// own assignment (as 0x3009e0's vector type), and the shape is read before the
+// key. Left: key_base folded into an add, the 0x53 key byte order.
+// Before, 806 (was 884): the recorded value goes into a writable copy of the walk
+// (retail reloads it and stores it back); extent now agrees.
+// Before, 884 (was 971): the splat helper takes the value by reference and sets it
 // with _mm_set_ss, and the walk is read directly instead of through a copy.
 // Before, 971 (was 1230; 980 on the fast check): 3680 against 3672 bytes, the same blocks in the same
 // order (the copy of the walk's state is now field by field, as retail's).
@@ -240,7 +266,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		switch (op)
 		{
 		case 0x13:
-			reach = walk->reach.m128_f32[2] + walk->reach.m128_f32[1];
+			reach = walk->reach.value.m128_f32[2] + walk->reach.value.m128_f32[1];
 			reach += reach;
 			second_start = (float)(commands[2] * 2) - reach;
 			first_end = (float)(commands[1] * 2) + reach;
@@ -248,7 +274,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			b = segment->end.m128_f32[2] + segment->end.m128_f32[1];
 			goto split_4;
 		case 0x14:
-			reach = walk->reach.m128_f32[2] + walk->reach.m128_f32[1];
+			reach = walk->reach.value.m128_f32[2] + walk->reach.value.m128_f32[1];
 			reach += reach;
 			second_start = (float)(commands[2] * 2 - 0xff) - reach;
 			first_end = (float)(commands[1] * 2 - 0xff) + reach;
@@ -256,7 +282,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			b = segment->end.m128_f32[1] - segment->end.m128_f32[2];
 			goto split_4;
 		case 0x15:
-			reach = walk->reach.m128_f32[2] + walk->reach.m128_f32[0];
+			reach = walk->reach.value.m128_f32[2] + walk->reach.value.m128_f32[0];
 			reach += reach;
 			second_start = (float)(commands[2] * 2) - reach;
 			first_end = (float)(commands[1] * 2) + reach;
@@ -264,7 +290,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			b = segment->end.m128_f32[2] + segment->end.m128_f32[0];
 			goto split_4;
 		case 0x16:
-			reach = walk->reach.m128_f32[2] + walk->reach.m128_f32[0];
+			reach = walk->reach.value.m128_f32[2] + walk->reach.value.m128_f32[0];
 			reach += reach;
 			second_start = (float)(commands[2] * 2 - 0xff) - reach;
 			first_end = (float)(commands[1] * 2 - 0xff) + reach;
@@ -272,7 +298,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			b = segment->end.m128_f32[0] - segment->end.m128_f32[2];
 			goto split_4;
 		case 0x17:
-			reach = walk->reach.m128_f32[1] + walk->reach.m128_f32[0];
+			reach = walk->reach.value.m128_f32[1] + walk->reach.value.m128_f32[0];
 			reach += reach;
 			second_start = (float)(commands[2] * 2) - reach;
 			first_end = (float)(commands[1] * 2) + reach;
@@ -280,7 +306,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			b = segment->end.m128_f32[1] + segment->end.m128_f32[0];
 			goto split_4;
 		case 0x18:
-			reach = walk->reach.m128_f32[1] + walk->reach.m128_f32[0];
+			reach = walk->reach.value.m128_f32[1] + walk->reach.value.m128_f32[0];
 			reach += reach;
 			second_start = (float)(commands[2] * 2 - 0xff) - reach;
 			first_end = (float)(commands[1] * 2 - 0xff) + reach;
@@ -320,12 +346,13 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		case 0x22:
 		{
 			axis = op - 0x20;
-			float const start = (float)commands[1];
-			second_offset = commands[2];
+			second_start = (float)commands[1];
+			first_end = second_start + 1.0f;
 			commands += 3;
 			first_offset = 0;
-			second_start = start - walk->reach.m128_f32[axis];
-			first_end = start + 1.0f + walk->reach.m128_f32[axis];
+			second_offset = commands[-1];
+			second_start -= walk->reach.value.m128_f32[axis];
+			first_end += walk->reach.value.m128_f32[axis];
 			a = segment->start.m128_f32[axis];
 			b = segment->end.m128_f32[axis];
 			goto split;
@@ -334,20 +361,20 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		case 0x24:
 		case 0x25:
 			axis = op - 0x23;
-			second_start = (float)commands[2] - walk->reach.m128_f32[axis];
-			first_end = (float)commands[1] + walk->reach.m128_f32[axis];
+			second_start = (float)commands[2] - walk->reach.value.m128_f32[axis];
+			first_end = (float)commands[1] + walk->reach.value.m128_f32[axis];
 			a = segment->start.m128_f32[axis];
 			b = segment->end.m128_f32[axis];
-			first_offset = READ_2_301A60(commands + 3);
-			second_offset = READ_2_301A60(commands + 5);
 			commands += 7;
+			first_offset = READ_2_301A60(commands - 4);
+			second_offset = READ_2_301A60(commands - 2);
 			goto split;
 		case 0x10:
 		case 0x11:
 		case 0x12:
 			axis = op - 0x10;
-			second_start = (float)commands[2] - walk->reach.m128_f32[axis];
-			first_end = (float)commands[1] + walk->reach.m128_f32[axis];
+			second_start = (float)commands[2] - walk->reach.value.m128_f32[axis];
+			first_end = (float)commands[1] + walk->reach.value.m128_f32[axis];
 			a = segment->start.m128_f32[axis];
 			b = segment->end.m128_f32[axis];
 		split_4:
@@ -392,8 +419,8 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 					{
 						last_fraction = fraction;
 						((segment_3028c0 *)segment)->end = _mm_sub_ps(lerp_301a60(input->start, input->end, fraction), grid->origin);
-						((segment_3028c0 *)segment)->end = _mm_mul_ps(splat_301a60(walk->scale), segment->end);
-						((segment_3028c0 *)segment)->end = _mm_sub_ps(segment->end, walk->offset);
+						scale_301a60(((segment_3028c0 *)segment)->end, walk->scale);
+						subtract_301a60(((segment_3028c0 *)segment)->end, walk->offset.value);
 						if (axis < 3 && segment->end.m128_f32[axis] < second_start)
 						{
 							return;
@@ -416,8 +443,8 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 					{
 						last_fraction = fraction;
 						((segment_3028c0 *)segment)->end = _mm_sub_ps(lerp_301a60(input->start, input->end, fraction), grid->origin);
-						((segment_3028c0 *)segment)->end = _mm_mul_ps(splat_301a60(walk->scale), segment->end);
-						((segment_3028c0 *)segment)->end = _mm_sub_ps(segment->end, walk->offset);
+						scale_301a60(((segment_3028c0 *)segment)->end, walk->scale);
+						subtract_301a60(((segment_3028c0 *)segment)->end, walk->offset.value);
 						if (axis < 3 && segment->end.m128_f32[axis] > first_end)
 						{
 							return;
@@ -432,9 +459,9 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		case 0x2b:
 		{
 			axis = op - 0x29;
-			float const from_low = (float)READ_3_301A60(commands + 1) * inverse_cell_size * walk->scale - walk->offset.m128_f32[axis];
-			low = from_low - walk->reach.m128_f32[axis];
-			high = (float)READ_3_301A60(commands + 4) * inverse_cell_size * walk->scale - walk->offset.m128_f32[axis] + walk->reach.m128_f32[axis];
+			float const from_low = ((float)READ_3_301A60(commands + 1) * inverse_cell_size) * walk->scale - walk->offset.value.m128_f32[axis];
+			low = from_low - walk->reach.value.m128_f32[axis];
+			high = ((float)READ_3_301A60(commands + 4) * inverse_cell_size) * walk->scale - walk->offset.value.m128_f32[axis] + walk->reach.value.m128_f32[axis];
 			commands += 7;
 			goto bounds;
 		}
@@ -442,22 +469,22 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		case 0x27:
 		case 0x28:
 			axis = op - 0x26;
-			low = (float)commands[1] - walk->reach.m128_f32[axis];
-			high = (float)commands[2] + walk->reach.m128_f32[axis];
+			low = (float)commands[1] - walk->reach.value.m128_f32[axis];
+			high = (float)commands[2] + walk->reach.value.m128_f32[axis];
 			commands += 3;
 		bounds:
 			// the segment cut to the node's range along the axis
 			{
-				float const a_end = segment->start.m128_f32[axis];
-				float const b_end = segment->end.m128_f32[axis];
+				a = segment->start.m128_f32[axis];
+				b = segment->end.m128_f32[axis];
 				long flip;
-				if (a_end < b_end)
+				if (a < b)
 				{
-					if (b_end < low)
+					if (b < low)
 					{
 						return;
 					}
-					if (a_end > high)
+					if (a > high)
 					{
 						return;
 					}
@@ -465,11 +492,11 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 				}
 				else
 				{
-					if (a_end < low)
+					if (a < low)
 					{
 						return;
 					}
-					if (b_end > high)
+					if (b > high)
 					{
 						return;
 					}
@@ -477,14 +504,14 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 				}
 				__m128 const start = segment->start;
 				__m128 const end = segment->end;
-				float const high_a = a_end - high;
-				float const high_b = b_end - high;
+				float const high_a = a - high;
+				float const high_b = b - high;
 				if (high_a * high_b < 0.0f)
 				{
 					(&((segment_3028c0 *)segment)->start)[1 - flip] = lerp_301a60(start, end, high_a / (high_a - high_b));
 				}
-				float const low_a = a_end - low;
-				float const low_b = b_end - low;
+				float const low_a = a - low;
+				float const low_b = b - low;
 				if (low_a * low_b < 0.0f)
 				{
 					(&((segment_3028c0 *)segment)->start)[flip] = lerp_301a60(start, end, low_a / (low_a - low_b));
@@ -510,16 +537,16 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 			corner.m128_f32[1] = (float)commands[2];
 			corner.m128_f32[2] = (float)commands[3];
 			corner.m128_f32[3] = 0.0f;
-			((segment_3028c0 *)segment)->start = _mm_sub_ps(segment->start, corner);
-			((segment_3028c0 *)segment)->end = _mm_sub_ps(segment->end, corner);
+			subtract_301a60(((segment_3028c0 *)segment)->start, corner);
+			subtract_301a60(((segment_3028c0 *)segment)->end, corner);
 			float const factor = (float)(1 << (unsigned char)op);
 			__m128 const factor4 = splat_301a60(factor);
 			((segment_3028c0 *)segment)->start = _mm_mul_ps(segment->start, factor4);
 			((segment_3028c0 *)segment)->end = _mm_mul_ps(segment->end, factor4);
-			copy.offset = _mm_mul_ps(_mm_add_ps(walk->offset, corner), factor4);
+			copy.offset.value = _mm_mul_ps(_mm_add_ps(walk->offset.value, corner), factor4);
 			copy.depth = walk->depth + op;
 			copy.scale = factor * walk->scale;
-			copy.reach = _mm_mul_ps(factor4, walk->reach);
+			copy.reach.value = _mm_mul_ps(factor4, walk->reach.value);
 			copy.diagonal_reach = factor * walk->diagonal_reach;
 			copy.values[0] = walk->values[0];
 			copy.key_base = walk->key_base;
@@ -554,9 +581,12 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = commands[1];
+		{
+			long const read = commands[1];
 			commands += 2;
+			copy.values[op - 0x60] = read;
 			goto record_value;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
@@ -603,11 +633,10 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 	}
 
 reached:
-	key += walk->key_base;
 	{
-		input_301a60 const *source = input;
-		shape_301a60 *shape = source->body->holder->shape;
-		if (!source->dispatcher->filter->slot_0(source->dispatcher, source->swept, source->body, shape, key).value)
+		shape_301a60 *shape = input->body->holder->shape;
+		key += walk->key_base;
+		if (!input->dispatcher->filter->slot_0(input->dispatcher, input->swept, input->body, shape, key).value)
 		{
 			return;
 		}
