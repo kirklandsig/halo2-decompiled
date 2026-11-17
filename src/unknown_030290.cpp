@@ -543,6 +543,20 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 0x1ee340/0x1689b0/0xa76b0 use); that helper returning its output pointer; the displaced sums written in retail's operand
 // order (d.i + a.x, a.y + d.j, d.k + a.z: the compiler picks the load order, ours stays a-first for x and z); the three
 // defaults as `a = a ? a : g_468788;` and likewise; the helper scaling with `x *= camera->scale`. Body unchanged.
+// In-place scaling in transform output fields, point input copy, scalar snapshot before final row stores
+// 392; Branch-owned scaling in transform output fields, point input copy, scalar snapshot before final row
+// stores 371; In-place scaling in transform output fields, component input copy, scalar snapshot before
+// final row stores 230; Branch-owned scaling in transform output fields, component input copy, scalar
+// snapshot before final row stores 250; In-place scaling in transform output fields, point input copy,
+// complete transformed result 690; Branch-owned scaling in transform output fields, point input copy,
+// complete transformed result 690; In-place scaling in transform output fields, component input copy,
+// complete transformed result 338; Branch-owned scaling in transform output fields, component input copy,
+// complete transformed result 341; Stage only Z in the transform output before the scale test, snapshot Z
+// for all rows 197; Stage only Z in the transform output in the scale branches, snapshot Z for all rows
+// 225; Stage only Z in the transform output before the scale test, read Z per row 234; Stage only Z in the
+// transform output in the scale branches, read Z per row 281.
+// NOT kept: Whole-point/scalar and three Z-only forms recover frame 0x2c but still regress, including
+// unresolved inverse homes.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

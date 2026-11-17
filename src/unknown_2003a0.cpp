@@ -3043,6 +3043,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // After-scan action via trigger list, event encoding, completing condition or actor options
 // 50/80/50/50. Remaining qualifying count, normalized count and short/long
 // pre-decrement tests 90/141/100/137. First follow-up reload stays on tied forms.
+// Actor walk after the scan using the selected group, definition or entry 50/50/50; with the latch
+// set at the scan exit 60/60/60. Walk gated by the final predicate count 119; with the earlier latch 119.
+// NOT kept: the first event still reloads the squad index; the count forms add a threshold test.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

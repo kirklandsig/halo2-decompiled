@@ -66,6 +66,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // score 489 (was 489): m3 lane 4 r203 (plain, starting at 679) kept the target point local_14 as a vector3f from the existing
 // Earlier score history (679 before m3 lane 4 r203).
 // score 489 (was 489): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// score 489 (was 489; 679 before m3 lane 4 r203): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
 // local_14 the other way round, local_2 at +0x30 for retail's +0x1c between local_5 and local_6, local_6/local_7/local_15
@@ -605,6 +607,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // declaration forms tie at 489. Ending the query workspace at its result reaches the 3499-byte
 // retail extent but regresses to 665. The returned point and later query flag also regress. The
 // position and target stack homes and the order of the normalizer squares still differ.
+// Round 455: Common fallback with path admission and fallback arm first 753, Common fallback with path
+// admission and fallback arm first, query outputs declared before admission 753, Common fallback with path
+// admission and movement arm first 753, Common fallback with path admission and movement arm first, query
+// outputs declared before admission 753, Common fallback with path bypass and fallback arm first 753,
+// Common fallback with path bypass and fallback arm first, query outputs declared before admission 753,
+// Common fallback with path bypass and movement arm first 753, Common fallback with path bypass and
+// movement arm first, query outputs declared before admission 753. The common fallback reaches 3499 bytes
+// with frame 0x8c and shifts the position to +0x90. All scores rise. Restored the original path check and
+// fallback branches.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

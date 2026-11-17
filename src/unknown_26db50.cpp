@@ -454,6 +454,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 // Earlier score history (71 before).
 // score 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
 // (retail's cvtsi2ss/store/fld/mulss/fmul) and the frame now agree: the distance is computed in the trace call's
@@ -1011,6 +1013,13 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // sector-trace and collision calls keep their argument roles. The 0xd8 frame and the matched
 // companion functions agree. The initial rotation loads, planar-dot order and collision-marker
 // scheduling still differ.
+// Round 455: Axis rotation helper, named sine and cosine 45, Axis rotation helper, named sine 215, Axis
+// rotation helper, named cosine 59, Axis rotation helper, direct sine and cosine 215, Axis rotation helper,
+// named sine and cosine, direction copied by memcpy 45, Axis rotation helper, named sine, direction copied
+// by memcpy 215, Axis rotation helper, named cosine, direction copied by memcpy 59, Axis rotation helper,
+// direct sine and cosine, direction copied by memcpy 215. The alternate axis helper with both trigonometric
+// values named ties the opening score. The other call forms raise it. Restored the original rotation call
+// and direction copy.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

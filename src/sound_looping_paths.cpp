@@ -622,6 +622,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // With the count also shared: 848/919/970/957 in the same order.
 // NOT kept: full-width choices recover the entry ESI zero but shorten the body and raise the score.
 // The target-count, primary and query-array homes remain.
+// B460: Completed matching-sound search with reloaded index/carried index/while ordinal/pointer range
+// 918/931/918/921, or with one first-choice tag for each scan 918/931/918/921.
+// Sound table held through the scan and matched row reacquired after the distance call,
+// with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
+// Original body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

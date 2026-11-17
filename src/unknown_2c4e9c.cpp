@@ -401,16 +401,6 @@ void c_xbox_live_message_list::v20(c_class_1a2c81 *item, long unused)
 bool function_19acc6(XUID const *xuid);
 bool online_title_is_this_title(DWORD title_id);
 
-// score 173 (was 173): Retail outlines the lower-priority flag branches and shares
-// the item12 clear after classification.
-// flag-10 fallback branch written first 173; flag-11 fallback branch written first
-// 173; flag-12 fallback branch written first 173; all three fallback branches written
-// first 173; default-class filter after classification 173; default item set before
-// its optional-item filter 173; defer session negation to the matching class 184;
-// positive same-title predicate in both item selections 193; default item derived
-// from recognition result 168 (NOT kept: form requires a byte match); last optional-
-// item flag assigned after exclusion tests 166 (NOT kept: form requires a byte
-// match).
 // @retail 0x2c6b65
 void c_xbox_live_message_list::set_message(s_online_message_view *message)
 {
@@ -432,7 +422,6 @@ void c_xbox_live_message_list::set_message(s_online_message_view *message)
 		bool not_in_session = !function_19acc6((XUID const *)&message->xuid);
 		bool other_title;
 
-		item12 = false;
 		if (TEST_FIELD_BIT(this->message->flag_bits.flag10))
 		{
 			item2 = true;
@@ -459,8 +448,8 @@ void c_xbox_live_message_list::set_message(s_online_message_view *message)
 			{
 				item11 = true;
 			}
-			item12 = true;
 		}
+		item12 = !item0 && !item7 && !item3;
 		other_title = !online_title_is_this_title(this->message->title_id);
 		if (item0)
 			list_item_add(this, 0);
@@ -1604,6 +1593,10 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // Conditional list index with description refresh 51; guarded assignment, explicit fallback and memcpy
 // index with description refresh 69 each; one-word memset for both buffers 55 and title only 50; copy the
 // empty wide string 15; fetch the title string id before clearing 71.
+// Round 456: guarded title index in nested definition scope 69, guarded title index with shared refresh
+// exit 69, definition declared in guard with title index 69, index reassigned before description 69,
+// shared buffer scoped to valid index 71, title text receiver named at lookup 69, title index with
+// dereferenced buffer clears 69, guarded index reused on description-only path 93.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -3096,6 +3089,19 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // bytes against retail's 81. Pool-first and chained sentinel writes 29 each, NOT kept: one-point gains
 // only. Chosen datum after loop 31; use the iterator's result for loop and selection 56; named lookup
 // definition and pool read ahead of the guard 30 each; mismatch continue and hit return 33.
+// Round 456: iterator declared before saved ID 30, pool supplied by for initializer 30, absolute index
+// reset by for initializer 29 (NOT kept: gain below the retention threshold), success declared in while
+// condition 30, const current entry at lookup 30, named entry map ID at lookup 30, const saved ID and
+// qualified base selection 30, continue on mismatch and break on selection 33.
+// Round 459: last map compared at both direct reads 30, named validity of saved map before iteration 30,
+// iterator success carried by for loop 30, loop condition saves the next result before mismatch 33, pool
+// read between guard and sentinel writes 30, map definition through a read-only reference 30, selection
+// through named inherited list pointer 30, loop skips mismatched definitions and publishes current datum
+// 27 (NOT kept: gain of three with prologue still differing), selected datum named only at the hit 30.
+// Round 462 void selection return 30, common exit 30, selected definition/entry after the scan
+// 30/30, sentinels before the guard 31, empty invalid arm 30, signed int snapshot 30, unsigned
+// one-based sentinel test 9 (NOT kept: 82 bytes and LEA/TEST in place of the native EAX compare
+// and EBX copy). Complemented sentinel test 32. The opening 0x10 frame and body were restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
