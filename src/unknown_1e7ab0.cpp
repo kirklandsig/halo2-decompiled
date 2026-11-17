@@ -171,6 +171,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // inlined lookup, where retail keeps the table in ECX and the null result in EAX while this build keeps them the
 // other way round, and the rotation is decided by 0xd0590's parameter order in another file; the permuter's 65
 // tries (607 s, one job) left the best at 118.
+// MiniMax I (11-17): no new form, no lower score (118): the inlined lookup still hands the table to EAX where
+// retail hands it to ECX and keeps the result in EAX; four spellings of the getter (the early return, the negated
+// condition, pointer arithmetic instead of the subscript and the two tests split apart) all compile to the same
+// bytes, so the rotation is not the getter's shape but the allocation around it.
 // score 118 (was 118): no new form and no lower score; every instruction but a register rotation among EAX,
 // ECX and EDX differs, and it starts at the inlined lookup where retail keeps the table in ECX and the null
 // result in EAX; the permuter's 24 tries found nothing below 118, and 0xd0590 in another file settles it.
