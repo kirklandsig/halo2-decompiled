@@ -670,6 +670,18 @@ struct s_object_damage_view
 // has killer == NONE (0x1ea15c, 0x1ea182, 0x1ea191, 0x1ea1a4, 0x1ea1b0), so retail's 0x1ea227 test runs on NONE and
 // leaves at 0x1ea29e; ours skips the killer block directly, the same work. Only non-behaviour spots: retail re-reads
 // the record's player at the assist stores (0x1ea336, 0x1ea33f) and the related player at 0x1ea43c (listed above).
+// M3 lane 17 r46 (fast, control 353, aligned 132): the selected record's pointer used only for the validation test 353
+// (same code, it folds back); a file-local inline accessor returning `&object->history[index]` at each of the three reads
+// 353 (same code); the pointer for the test and the killer with the amount indexed 452 (1599 B), for the test and the
+// amount with the killer indexed 432 (1580 B), as `object->history + selected` declared after the damage code read 454
+// (the listed 454's code); 1 to 3 unused locals on the 454 form 454 each (diagnostic). The 454 form loses EDI for
+// `selected` because the -1 constant follows `selected` into its register: with `selected` in memory the constant takes
+// ESI and the pool EDI. A fast-check search over 111 combinations of fourteen listed forms (both flags, the record
+// pointer with and without a named player, the amount read once, the assist reads, the related player re-read, the found
+// flag dedupe, the team byte argument, the fallback arm order, self/friendly order, `self` in the call, a record pointer
+// in the selection loop, three declaration orders, a history pointer for both loops): best 340 (1544 B: both flags,
+// `self` in the call and the history pointer), then 342 twice and 350; nothing at or under 350 without a flag set by a
+// test, and the unchanged body has the lowest aligned count of all (132, next 137). Body unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
