@@ -315,6 +315,13 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // code); start time read into a local before the clock 420 (before these changes, unchanged); reset flag declared
 // after the ready flag 402; long reset flag 427 against bool 419 (before the helper); the 0x75870/0x75890 helpers (earlier rounds)
 // 468-512.
+// m3 lane 1 r115 (fast with 0x72140, 0x71ff0, 0x71e00, all MATCH; control 387, the fast check warns that callee 0x7e210
+// builds differently in its image): a `static __forceinline` redeclaration of the header's live-state test (retail expands
+// it at both sites, ours calls the copy twice) 426 (1602 B): both sites expand but 0x5b080 stays inlined at the top.
+// Diagnostic, not kept (a private copy of 0x75890): both elapsed times through an inline copy of 0x75890's body 419 (1597 B:
+// each start field is then read ahead of the clock as in retail), with the redeclaration too 427 (1602 B); 0x5b080 stays
+// inlined in every form, so its call in retail is not explained by the size of the other expansions. BLOCKED-BY 0x75890
+// for the two elapsed reads: its file is /Ob1, which LTCG never expands from.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
