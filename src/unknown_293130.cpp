@@ -354,6 +354,11 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // 43; the rotation written out in the body with local axis and vector pointers (the forceinline helper is this file's own)
 // 44 (1409 bytes); the angle as a `real const &` to the entry's field 41; the selected entry as a const reference with dot
 // reads 30 (same code); the projection over the named components in 0xc7840's i, k, j order 43.
+// M3 lane 13 r101 (fast with 0x2936b0 0x259d0 0xb7930): the projection summed j, k, i over the named components 43 (it
+// sums k, j, then i: the i product stays last); summed i, k, j with retail's operand order in each product (a.i*v.i, a.k*v.k,
+// v.j*a.j) 43 (the same k, j, i code: the flat order is reassociated); grouped `(k + i) + j` 55 (1409 bytes; k the
+// accumulator, a.k loaded first); `(1.0f - cos) * dot3f(...)` 30 (same code); the rows built in a local vector then copied
+// to the output 184 (1431 bytes, frame 0xe0).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

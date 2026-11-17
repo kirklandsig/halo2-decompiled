@@ -557,6 +557,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // length-first/second/both, both first-inputs and all metric inputs:
 // 428/425/470/553/553/777/594/865. NOT kept: no exact selected-home/x87 recovery; original private
 // metrics, all observations, bitmaps, traversals and complete body restored.
+// M3 lane 1 r113 (fast with 0x29e730/0x29de20, both MATCH; base 382, aligned with offsets masked 394, registers too 169): the
+// group entry as a pointer (`&local_10->field_84[local_14]`, group and first point read through it) 382 (same code); the output
+// loop indexed (`&arg_4->field_30[local_37]`, no walking pointer) with the group record named once ahead of it 388 (masked 397/155:
+// the loop then reads field_4 per pass and forms the record and the output as retail does); that with the group bitmap cleared by
+// memset 385 (393/153); with `short local_2` too 388 (330/145, retail's word compare of the endpoint); with `long local_15` too 487
+// (1559 B). Left on the 388 form: the outer loop's entry jump and the continue path's reload of local_10 (retail reloads it at the
+// latch and keeps the group in EBX), the selected-default homes, the per-site x87 orders.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

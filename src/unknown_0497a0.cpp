@@ -745,7 +745,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // retail's build inlines pack_color4f from that file while this file's front end expands its own copy, so the
 // frame is still 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes still
 // differ; the u step and the V end still take 4-byte homes where retail spills them to the 8-byte ones.
-// score 233 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes
 // at +0xa4 and +0xac, so the body stays four bytes short after case 4; a permuter run over this function (300 s,
@@ -1225,6 +1225,20 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // The declaration that keeps 0x131e50 out of line blocks calling it here: BLOCKED-BY 0x131e50. Body unchanged.
 // MiniMax D (11-15): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
 // MiniMax D (11-16): no new form, no lower score (233).
+// MiniMax S (11-16): no new form, no lower score (233): the frame is 0xa8 against retail's 0xac because
+// retail's inlined colour packer gives its homes an order of its own, and that helper belongs to another file.
+// b7K (11-17) walk against retail, fast build on r830: checked head scale tests and clamp (0x42d0c-0x42d83), state
+// clamp and zero-colour arm (0x42db4-0x42e10), colour/width blend and its constants (0x42e15-0x42fc7; 1.0 at 0x45dbc0,
+// 0.5 at 0x45dbbc, 255.0 at 0x45dc38, epsilon 0.0001 at 0x45dbdc), tint and the 0xbad50 call (0x42fd4-0x43052), the
+// jump table (0x43700: 0 -> 0x430de, 1/2 -> 0x431d8, 4 -> 0x432cd, 3 and above 4 -> 0x436ef false), each case's operand
+// order, the alpha call at 0x43583, the clamp, the pixel, and the endpoint fades (0x43691-0x436e3). No behaviour
+// difference found: fields, offsets, branch senses, callees, register arguments and constants agree. Changed: case 4's
+// side through the existing normalize3d (the file's other two lengths already use it) instead of its hand-written copy,
+// which is retail's evaluation order: retail keeps the cross z on the x87 stack (`fst [esp+0x28]` at 0x433f1, then
+// `fmul` at 0x433f5) where the copy squared the stored float. 233 -> 351 (2588 bytes; round 68 measured the same and
+// did not keep it for the score). Not kept: case 4's view through the existing vector3d_from_points3d 351 (same code),
+// with the direction through it too 443 (2580 bytes; retail 2596): no behaviour change, and the helper is new to this
+// file. 0x42c50, 0x42b20, 0x43720, 0x43740 and 0xbad50 still match (fast).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1376,12 +1390,7 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
                     direction.k = neighbor->position.z - point->position.z;
                 }
                 cross3f(&view, &direction, &side);
-                real length = (real)sqrt(side.k * side.k + side.j * side.j + side.i * side.i);
-                if (!(fabs(length) < 0.0001f))
-                {
-                    real inverse = 1.0f / length;
-                    side.i *= inverse; side.j *= inverse; side.k *= inverse;
-                }
+                normalize3d(&side);
                 second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
                 second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
                 second.z = point->position.z - side.k * half_width; first.z = point->position.z + side.k * half_width;

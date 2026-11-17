@@ -1515,6 +1515,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax I (11-16): no new form, no lower score (134): what still differs is the frame, 0x10 here against retail's
+// 0x14 - retail spills the masked flags byte to the stack and keeps the loop entry in EBX where this build keeps the mask
+// in BL and spills the entry - and the incoming actor index stays in ECX where retail keeps it in EDX; the memory summary
+// of the root call 0xbaf40 decides that split and its body is in src/unknown_0bad50.cpp, which this lane may not edit:
+// BLOCKED-BY 0xbaf40.
 // MiniMax A (11-13): no new form, no lower score (134); what still differs: the frame is 0x10 here and 0x14 in
 // retail (retail spills the 0x20 mask byte to the stack where this build keeps it in bl), the actor index stays in
 // ecx where retail keeps it in edx, and retail keeps the iterator result in ebx and pushes it where this build keeps

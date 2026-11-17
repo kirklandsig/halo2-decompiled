@@ -327,6 +327,16 @@ inline void set_index2_2e3b00(long const &owner_ref, cell_2e1090 *cells, long in
 		((cell_2e1090 *)((char *)cells + (owner & ~1)))->box = (unsigned short)index;
 	}
 }
+// how many endpoints a list holds
+inline long count_2e3b00(endpoints_2e0f80 const &list)
+{
+	return list.size;
+}
+// how many boxes a cell holds
+inline long count_2e3b00(shorts_2e1090 const &boxes)
+{
+	return boxes.size;
+}
 // sorts `count` entries by key
 inline void sort_2e02d0(entry_2e0250 *entries, int count)
 {
@@ -338,37 +348,9 @@ inline void sort_2e02d0(entry_2e0250 *entries, int count)
 	}
 }
 
-// score 41 (was 76): the cell and axis loops are guarded by their own entry
-// tests (`if (0 <= boxes.size - 1)`, `if (0 < axes[axis].size)`), which lines the
-// axis loops up with retail, and the moved box's cell is addressed in place.
-// Before, 76 (was 100): the owner loop reads each element through a reference (the
-// cell addressed as in 0x2e50d0), the cell loop through a reference to the
-// cell's box list, and the axis loop steps the endpoint in its header. Extent
-// now agrees; the owner copy and the cell loop's registers remain.
-// Before, 100 (was 111): the sort is set up by a helper that takes the entries and
-// their count (retail loads the list and steps past the sentinel before the
-// count test). Owner-loop copy, cell-loop registers and axis step order remain.
-// Before, 111 (was 171): first written form 171; frame now agrees. Sort setup
-// and loop registers differ. Object argument 141; its scope 141; cell
-// reference 130; named count 101 (NOT kept: repeated array pointer reads);
-// endpoint cursor 111; range pointer 100 (NOT kept: one use); element
-// reference 99; owner pointer 100; shared index 100 (NOT kept: shared local);
-// owner mask 40 (NOT kept: extra mask); separate pointers 99 (NOT kept:
-// one use); index first 100; int indices 100; while 100; axis reference 100;
-// early owner pointer 100 (NOT kept: one use); cell pointer 100; unscoped
-// indexed loop 101 (NOT kept: repeated array pointer reads); unscoped cursor 111.
-// New: record copies 111; tagged branch first 111; axis pointer/count 110
-// (NOT kept: gain 1); box decrement in body 111; captured endpoint count 115;
-// direct size test 147; inclusive last ordinal 147; unsigned owner 111.
-// P419: Context before count 111; branch-local context and direct empty value
-// 110/110; paired memcpy 111; once-loaded indexed endpoints 111; head-tested
-// box ordinal 111; distinct loop names 111; initial bulk copy 189.
-// NOT kept: best gain one; sort setup and later loop registers remain.
-// P428: order base shared across sort/remap 186; empty object without
-// initialization 194; whole sort scope 111; original count for box loops
-// 216; saved-record base shared across both passes 164; forward cell
-// indices 111; cell pointer/countdown 199; endpoint-id reference 111.
-// NOT kept: no gain; sort-base setup and later loop carriers still differ.
+// Matched (was 41): the owner word is read once through the element and the untagged
+// store goes through the array again; the cell and axis loops take their bounds from
+// count_2e3b00, which puts each loop's pointer before its counter; no loop guards.
 // @retail 0x2e3b00
 void class_2e1090::function_2e3b00()
 {
@@ -394,35 +376,30 @@ void class_2e1090::function_2e3b00()
 	for (long i = 1; i < elements.size; i++)
 	{
 		element_2e1090 const &element = elements.data[i];
-		if ((element.owner & 1) == 0)
+		long const owner = element.owner;
+		if ((owner & 1) == 0)
 		{
-			*(long *)element.owner = i;
+			*(long *)elements.data[i].owner = i;
 		}
 		else
 		{
-			((cell_2e1090 *)((char *)cells + (element.owner & ~1)))->box = (unsigned short)i;
+			((cell_2e1090 *)((char *)cells + (owner & ~1)))->box = (unsigned short)i;
 		}
 	}
 	for (long i = 0; i < cells_used; i++)
 	{
-		shorts_2e1090 &boxes = cells[i].boxes;
-		if (0 <= boxes.size - 1)
+		cell_2e1090 &cell = cells[i];
+		for (long j = count_2e3b00(cell.boxes) - 1; j >= 0; j--)
 		{
-			for (long j = boxes.size - 1; j >= 0; j--)
-			{
-				boxes.data[j] = (unsigned short)remap.data[boxes.data[j]];
-			}
+			cell.boxes.data[j] = (unsigned short)remap.data[cell.boxes.data[j]];
 		}
 	}
 	for (long axis = 0; axis < 3; axis++)
 	{
 		endpoint_2e0f80 *endpoint = axes[axis].data;
-		if (0 < axes[axis].size)
+		for (long i = 0; i < count_2e3b00(axes[axis]); i++, endpoint++)
 		{
-			for (long i = 0; i < axes[axis].size; i++, endpoint++)
-			{
-				endpoint->id = (unsigned short)remap.data[endpoint->id];
-			}
+			endpoint->id = (unsigned short)remap.data[endpoint->id];
 		}
 	}
 }

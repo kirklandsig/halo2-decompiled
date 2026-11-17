@@ -842,6 +842,13 @@ static inline long font_character_pixel(long alpha, long color)
 // P576: Long-result helper static forced/ordinary and external ordinary/forced expansion: original byte parity 59/59/59/59;
 // full-width parity 203/203/203/203. Earlier expansion contracts used the word-result graph.
 // NOT kept: no byte equality; original helper, decoder, alias-sensitive reloads and frame restored. Parity/literal/run-two gaps remain.
+// P590: Immutable original size/code/class/literal/alpha/ordinary-pixel bindings
+// and source/output parameter identities: eight 59 at 512/504. Pointer-formal
+// fixed bindings also tie 59 but leave the caller unresolved; excluded. NOT kept:
+// no exact native parity/literal/run-two recovery; original full body restored.
+// P592: Eight-level opacity enum at the existing pixel helper, byte/numeric parity,
+// long/word result and signed/unsigned color: 59/203/109/192/59/203/109/192. NOT kept: no native
+// parity/literal/run-two equality; original helper, calls and complete decoder restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

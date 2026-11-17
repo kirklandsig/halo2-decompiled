@@ -6987,6 +6987,13 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // extended slot result.
 // Fast scores 343/343/350/347/298/295/298/291. NOT kept: no permitted confirmed gain; original body restored.
 // NOT kept: widened slot gains seven and widened hand gains three, both below the keep gate.
+// Round 170 (m3 lane 7, fast with 0xc4820/0xccab0/0xcce00/0x19ef40, all matched each time): the +0x12c test through
+// TEST_FIELD_BIT 298 (same code); the three admission tests as separate `goto done` ifs 298 (same code). P550's admission
+// through the existing readiness (`bool ready = !flag7 && !(+0x12c & 1) && function_cd6a0(...); if (!ready) goto done;`)
+// re-measured 290 at 1064 bytes: it gives retail's weapon EDI and mode BX homes (aligned differences 142 -> 105), but LTCG
+// then inlines 0xcbd50 at the mode 3/4 site, which retail (and this body) call out of line: that inline is the 12 extra
+// bytes. On it: assigned after a bare declaration 290; TEST_FIELD_BIT on +0x12c too 290; mode 4's inner readiness exit
+// dropped 301; mode 6's dropped 296; both 307. Lead: the admission form with the mode 3/4 0xcbd50 call kept out of line.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -7148,7 +7155,7 @@ done:
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
 // MiniMax I (11-16): no new form, no lower score (242): the body is retail's length and the first difference is still at +0x51; what is left is retail's native facing GPR transfers, the first-scale ownership, the dead flag-byte stores and the state pointer's home; the permuter over 300 s made nine tries and reached 229 against its baseline of 242 differing instructions (the check's 242), but that variant adds a local holding only a constant, a flag set by one test and tested by the next and a swapped call argument, so it is not kept; the two forms written by hand here - the ternary written as an if/else, and the two tests of the same condition in the other order - measure 242 and 243.
-// score 242 (was 250; earlier 254): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
+// score 199 (was 242; earlier 250, 254): m3 lane 16 r120 (fast and plain agree): the direction through the existing header
 // normalizer normalize2d_fast (retail's scale block before the `> 0` test; P494's 242, kept now that losing 0xc2d00 is
 // accepted) 242; both weapon indices through the existing 0xcbd50 getter in place of its body written out 242 (code
 // changed); facing as the planar copy `*(point2f const *)&unit->forward` (retail's four dword moves) 242 at 1104 B; the
@@ -7265,6 +7272,23 @@ done:
 // boundaries 266/257/255/253; uninitialized copies at those boundaries 266/257/247/253.
 // NOT kept: all regress; several enlarge frame/extent. Original body and headers restored;
 // native facing GPR transfers, first-scale ownership, flag bytes and state home remain.
+// Round 170 (m3 lane 7, fast, then plain, with 0xc42e0/0xd6bc0/0xd6800/0xc6b30 matched each time): 242 -> 199. Kept: the
+// bit-9 test through TEST_FIELD_BIT (as 0xc58f0 and 0xc60c0 test this field) with the planar facing copy 199 at 1112 bytes
+// (the bit-9 form alone 208 at 1116, the copy alone 242 at 1104). Not kept (HELD lead, r120's char type for +0x1f5): on
+// the 199 body the ticks stored to +0x1f5 and clamped there, read back through `(char)` casts standing in for the char
+// type, give 187 with retail's store/cmp/movsx/store block (one cast 187; `if ((char)field <= 1) field = 1;` 198); the
+// casts on the comparison are not kept, so this waits on the owner's OK for the type. Not kept: `!(time >=
+// 0.0f)` (retail's comiss order; it admits NaN as retail does) 242 at first, 187 (same score) on the 187 body; with
+// 0x10f690's output in its own `duration` local 241, 199 on the 187 body; the bit-1 test through TEST_FIELD_BIT 248, 233 on
+// the 187 body (it gives retail's hoisted `mov ecx, 2` and `cmp [edx+8], ecx`, the tail then shifts); both tests through
+// it with the duration form 257, with the copy too 251; the face switch in retail's layout order 3,0,1,2 218, with
+// `default: __assume(0)` 213 (both on the duration form); the ticks clamp as `if ((char)field <= 1) field = 1;` 198;
+// byte_flags_set for the side bit and for the two `|=` of the !animated block, UNIT_ANIMATION for the 0x6c byte (all same
+// code); diagnostics (removed): a named bool for bit 9 (same code), a named-result inline bit test on bit 9 (same code) and
+// on both (233), an inline wrapper for the first weapon lookup (same code). Still differing: the scale block's x multiply,
+// retail's dead bit-9 and bit-1 byte stores, the first weapon index in a frame slot with the unit looked up again, the
+// side-bit `sete` and `or byte [mem]` updates, the state pointer's home (+0x14 retail, +0x1c ours), unit_index in ESI for
+// the tail, the face switch (no range check, case 3 laid out first) and the ticks' second store (held type).
 // @retail 0xc98a0
 bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
@@ -7279,12 +7303,11 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	if (direction)
 	{
 		toward = *direction;
-		facing.x = unit->forward.i;
-		facing.y = unit->forward.j;
+		facing = *(point2f const *)&unit->forward;
 		if (normalize2d_fast((vector2f *)&toward) > 0.0f && normalize2d(&facing) > 0.0f)
 		{
 			angle = function_11cc90((vector2f const *)&toward, (vector2f const *)&facing);
-			if (!((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
+			if (!TEST_FIELD_BIT((definition->unit.flags >> 9) & 1) && unit->type == 0 && unit->parent_index == NONE)
 			{
 				if (function_e70b0(unit_index).value == NONE)
 				{
@@ -8444,6 +8467,12 @@ struct s_unit_turn_state_view
 // vector3f_assign snapshots/targets/neutral/planar 450/428/421/368; snapshot names 268.
 // NOT kept: no eligible gain; native frame 0x7c, deferred saves and separate divisions remain.
 // Original executable body restored.
+// Round 170 (m3 lane 7, plain with 0xc6b30 matched each time; the reduced check reads 299 on this body and flags 0x11f0d0):
+// the two admission tests as an early `return moved;` 402 (1670 bytes; EBX is still saved at entry), as `return false;` 415
+// (fast); the share helper storing its quotient through a pointer to the share and clamping it there 377 (1690 bytes); the
+// helper `static inline` 268 (same code); its step taken by const reference 268 (same code: the reciprocal stays). Retail
+// saves EBX only after the two admission tests and EDI only around the state pointer's use, and its early exit leaves through
+// a shorter epilogue with AL still 0; every form here saves all four at entry with the unused bottom slot (frame 0x80).
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
