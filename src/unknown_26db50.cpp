@@ -971,6 +971,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // src/unknown_1eb8a0.cpp, was another lane's this round) and the marker/entry stores before 0x2104b0. Lead for that file:
 // the shared helper's dot staged as the planar dot_product2d plus k*k (the held copy's only difference), checking its
 // other users 0x1ecf50 and those in bipeds.cpp, unit_object_type.cpp and unknown_1ff010.cpp.
+// P581: Rounded angle/sine/cosine promoted receiver storage, seven subsets and immutable
+// complete graph: 46/80/209/59/216/100/209/209. NOT kept: no exact native j/k SIMD and marker-publication recovery;
+// original rounded producers, shared rotation and complete body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

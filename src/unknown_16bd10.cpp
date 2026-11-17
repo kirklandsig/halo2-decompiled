@@ -731,7 +731,8 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // camera point's left.k into xmm1 where retail preloads left.j, and the zero register stays xmm1 for
 // the timer, the animation case and the field-of-view tail; `t = 0.0f;` before the test (375), the
 // swapped dot3f operands (394), length_sq3f (399) and a `direction` pointer local (417) are worse.
-// score 126 (was 126; earlier 149, and 149 was 331): 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
+// score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// Earlier header detail: earlier 149, and 149 was 331; 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
 // timer, animation case and field-of-view tail), following the plane length's hoisted left.k load (retail left.j); that
 // costs the animation case a zero copy and the field-of-view tail its reuse of the target test's register (the 4 extra
 // bytes). Also left: the distance dot's operand loads, the yaw rotation's product/negation order, and the pan arm's
@@ -1164,6 +1165,16 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // component taken from zero 129 (products first, but the zero still XMM1); the distance's negation stored ahead of the
 // three offset rows 127; the offset's k row chained into the command's k store 126 (same code); the squared length as
 // dot3f(left, plane normal) 394 (1700 B); the plane offset as dot3f(normal, position) 126 (same code).
+// P574: Original-site point-distance cap admission, positive/complementary
+// bool/byte/short/long: 395/395/395/395/395/395/395/395. NOT kept: no native direction-j
+// preload or length/zero-home recovery; original comparison and full body restored.
+// P577: Scalar memcpy for captured scale/mode/point handle/FOV start 471/126/126/405;
+// paired FOV time-duration 408; admitted timer ticks 399; complete target 389;
+// animation zero-float memset pair 155. NOT kept: no equality; original frame,
+// direction observations, persistent zero, helpers and entire body restored.
+// P580: Promoted yaw/sine/cosine receiver storage, seven subsets then immutable reused yaw:
+// 126/342/341/343/336/341/348/348. NOT kept: no exact direction-j/length-zero recovery; original scalar domains,
+// real API-result conversions, helpers and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -247,7 +247,10 @@ __forceinline __m128 lerp_3009e0(__m128 from, __m128 to, float fraction)
 // first (recursively, with the ray cut at the split) and then the far one
 // with what is left of the ray; bounds cut the ray to a node's range; each
 // leaf reached is cast against.
-// score 892 (was 892): the command widens through ecx; retail uses eax
+// score 188 (was 892): the command is held as a long (narrowed only for the
+// shift), and the key and filter test go through a pointer to the ray inside
+// their own block.
+// Before, 892 (was 892): the command widens through ecx; retail uses eax
 // and a different saved-object home. The frame is 0x194 in both.
 // Copy pointer 892; copy reference 892; vector initializer 1018; scale cases
 // first 958; value cases first 955; leaf cases first 892; hit block 892;
@@ -278,7 +281,7 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 	float high;
 	for (;;)
 	{
-		unsigned char const op = *commands;
+		long const op = *commands;
 		axis = 999;
 		switch (op)
 		{
@@ -531,7 +534,7 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 			corner(3) = 0.0f;
 			segment->from.subtract(corner);
 			segment->to.subtract(corner);
-			float const factor = (float)(1 << op);
+			float const factor = (float)(1 << (unsigned char)op);
 			segment->from.scale(factor);
 			segment->to.scale(factor);
 			copy.offset.value = _mm_mul_ps(splat_3009e0(factor), _mm_add_ps(position->offset.value, corner.value));
@@ -622,10 +625,13 @@ void class_2df670::function_3009e0(pending_301800 *position, void const *root, f
 	}
 
 reached:
-	key += position->key_base;
-	if (ray.filter != 0 && !ray.filter->slot_0(&ray, shape, key).value)
 	{
-		return;
+		ray_301800 const *const cast = &ray;
+		key += position->key_base;
+		if (cast->filter != 0 && !cast->filter->slot_0(cast, shape, key).value)
+		{
+			return;
+		}
 	}
 	char buffer[0x100];
 	leaf_3009e0 *leaf = ((shape_3009e0 *)shape)->leaf_at_key(key, buffer);
