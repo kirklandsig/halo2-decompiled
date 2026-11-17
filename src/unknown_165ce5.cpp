@@ -1380,6 +1380,10 @@ point2f *g_4687c4;
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
 // score 220 (was 220; earlier noted 218 (was 218), the full check gives 220; m3 lane 16 r130 at the end): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// MiniMax C (11-17): score 220 (was 220): no new form, no lower score. The look clamps still share one 1/rate
+// reciprocal where retail divides x / rate and -1.0f / rate and reloads g_510c54 after the yaw store, and retail's
+// look homes are -0x2c/-0x28 in a 0x2c frame against ours' -0xc/-0x8 in a 0x28 frame; the s_view_angles aggregate
+// (216), the rate hoisted into a local (541) and the cast-spelled divisor (220) were measured and dropped.
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look

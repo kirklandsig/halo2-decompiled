@@ -738,6 +738,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // once before its first query and reads the header flags after the first test; this build reads the table inside
 // the loop and hoists the flags before the test (splitting the condition measures 232, worse), and the frame is
 // still ours at 0xac where retail realigns to 0xb4, so the result byte stays at [esp+0xf] against [esp+0x13].
+// MiniMax E (11-17): no new form, no lower score (165): the result byte still lands at +0xf where retail uses +0x13, retail loads the options global before the call to 0xb8a80 where this build loads it after, and retail's tail computes the angle in x87 (fpatan) where this build calls the CRT atan2.
 // score 165 (was 165): the body is main's again (the 71-point form was reverted, its shapes only hold with a
 // byte match); the frame is ours (0xac, unaligned) where retail realigns to eight bytes with a 0xb4 frame, the
 // result byte sits at [esp+0xf] where retail keeps it at [esp+0x13] and the link iterator at [esp+0x30] where
@@ -2103,6 +2104,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // MiniMax I (11-17): no new form, no lower score (285): the shared epilogue at retail's 0xb987a is still not
 // reached here, so the first difference is the jump target at +0x76; the marker pointer retail inlines belongs to
 // 0xb8bd0 in another file, which is /Ob1, so LTCG keeps the call here and it cannot be changed from this lane.
+// MiniMax E (11-17): no new form, no lower score (285): the permuter's best variant (283) came from an argument swap and a constant local, which the rules rule out, so the body stands.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
