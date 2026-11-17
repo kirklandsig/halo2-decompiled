@@ -2397,6 +2397,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // B458: Final width and height as in-place scales before/after texture bind, after depth state, and after
 // vertex setup 586/523/517/514; separate width and height values at those sites 586/532/526/523.
 // Frame 0x90 versus 0x94 and shared direction/draw-point home remain.
+// B460: Draw-point aggregate or component stores after texture/depth/vertex/trig
+// 511/509/509/509 for both forms. These recover frame 0x94 but leave tag and
+// addressed-output homes off and grow the body. Projected point or three coordinates
+// before texture, with the draw receiver at texture success or at draw 552/511/548/566.
+// The separate draw-point slot at retail's ordering still differs. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
