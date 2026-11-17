@@ -1379,9 +1379,24 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
+// retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
+// score 220 (was 220; earlier noted 218 (was 218), the full check gives 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
-// score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
+// start): all four spring defaults and overrides (0x166dbb-0x166e87), the five-term idle-motion test, the idle
+// counters (0x1674b3-0x167597), the overlay logic (0x1671d8-0x167307), the fmod frame (0x167353-0x1673ab), the tail
+// (0x1675df-0x167602) and every callee argument agree. One BEHAVIOUR FIX kept: the idle-blend spring call passed
+// (speed 9, acceleration 6); retail loads xmm5 = 6.0 (0x1673b9, the fifth argument as in the four calls above it) and
+// stores 9.0 at [esp + 8] (0x1673df, 0x1673e7), so it is (6.0, 9.0) now (220 -> 220: the pool constants were swapped
+// with each other, the positional score cannot see it). Not behaviour, not kept: the yaw is x / rate in retail
+// (0x166f2b divss) but ours multiplies by the shared reciprocal (an fp rounding difference that follows from the
+// missing rate reload, see rounds 8/68/82); the pitch (-1 / rate) * y is bit-identical either way. `(real)fmod(..)
+// * 30.0f` compiles the same with and without the cast (220 both), left as is. Retail's zoomed/scoped bytes at
+// [ebp - 2]/[ebp - 1] hold the positive sense of ours (no_zoom/no_scope) and the else-arm `cmp [ebp - 2], 0; je`
+// (0x1672cb) is implied by the outer test: the same behaviour, positive form 385 (older rounds), so not kept.
+// `volatile` look locals 475 (not allowed without a match). No new include, helper or double local.
 // Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
 // -0x18/-0x1c against retail's -0x1c/-0x18) declared in the other order, with the two
@@ -1764,6 +1779,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (2191, aligned 103). Retail's logic decoded: zoomed = speed > 0.1; scoped = zoomed && query; both cleared on the second query; scoped cleared
 // when the overlay lookup fails; the play's `else if (zoomed)` under `if (zoomed || scoped)` is retail's own implied test (`cmp [ebp-2], 0; je`).
 // Still BLOCKED by the stand-in (round 98) for ESI/EDI; no byte match is reachable without it, so no match-only form can stay. Body unchanged.
+// Round 76 (m3 lane 1, fast control 220, full 218; aligned 116): look outputs declared first in the unit block 220; declared at
+// their PIN assignments 220; the aiming velocity as a named pointer for its three uses 233 (2190 B, aligned 118; the pointer takes
+// unit's home, unit/mode homes unchanged); a const unit pointer 220; a const look pointer 220. Retail's movzx flag test is not
+// followed by any use of EAX (the next instruction reloads it), so no two-use local is behind it. Body unchanged.
 // Round 132 (m3 lane 7, fast, control 220): the look values declared where they are computed 220, as
 // `real const` there 220, declared first in the block 220 (all same code: their homes stay -0xc/-8);
 // the look pointer, flags and weapon counter declared at first use 220; the pitch as `y * (-1 / rate)`
@@ -1783,6 +1802,33 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // M398: Original clamped-yaw/clamped-pitch/late-magnitude zero defaults, masks
 // 1/2/3/4/5/6/7, then complete activity/zoom/scope defaults: eight at 220 fast (control 220, full 218).
 // NOT kept: no frame/look-home gain; original producers, all five smoothing tuples and body restored.
+// M3 lane 7 r167 (plain where noted; the reduced image misbuilds caller 0x16760c, 142 with no change, MATCH in plain):
+// `inline` on 0xb6760's definition (now ours; round 30's lead) 217 plain, channelb8 then kept in ESI as retail, but
+// 0x106790 250->254 and 0x1cd070 210->269, not kept; diagnostic (a file-local copy of 0xb6760's body for this
+// function's three calls, not keepable) 215 fast: retail's callers disagree about 0xb6760's register summary, as with
+// 0x24590 at 0xe3380. Dead-local phase scan 1-7 at the top 220 each; `long const mode` 220; the overlay channel read
+// in place (no `channel` local) 220.
+// P569: Idle draw real/const-real/double/const-double receivers 220/220/220/220;
+// complete chance decision bool/byte/short/long 220/220/220/220.
+// NOT kept: no equality or frame/home recovery; original call/test/body restored.
+// Frame 0x28 versus native 0x2c, unit/mode and independent look homes remain.
+// M3 lane 1 r113 (fast with 0x165dc1, MATCH; control 220, aligned with offsets masked 86, registers too 88): the two look values
+// as one `real look_angles[2]` 216 (frame 0x30: they take retail's -0x2c/-0x28 homes, but 1/rate is still shared and a dword at
+// -0x30 is left unused; a grouping array, under the bar), the same array in its own block around the look springs 216, at function
+// scope 216, with the callback written `index == 0 ? right : left` (retail's arm order) 216 (masked 82/75); `active` cleared, then
+// set from the animation test under the three-term guard 416 (2188 B). On the array forms retail's unit, mode and weapon-active
+// homes are -0x1c/-0x18/-0x14 where ours are -0x14/-0x1c/-0x18. Still BLOCKED by the stand-in (round 98) for ESI/EDI.
+// M3 lane 12 r132 (fast with 0x165dc1, 0x166561 and 0x11eed0, MATCH; control 220; 0x16760c 142 in the reduced image as noted):
+// the four spring overrides as ternaries 220 (same code); the aiming velocity copied into a local vector for the two spring
+// calls 512 (2194 B); the look angles copied once into a local point 465 (2214 B); the orientation block index written
+// user-major 220 (same code); the unit index in a named local for the test and the lookup 220 (same code). Still BLOCKED by
+// the stand-in (round 98) for the ESI/EDI save after the unit test.
+// M3 lane 9 r131 (fast; base 220): a redundant `if (0 < MAXIMUM_FIRST_PERSON_WEAPONS)` guard around the weapon loop 220
+// (same code); the two look rates as `real &` references to the user fields, used for the clamps and the smoothed stores
+// 225; each look value divided in one statement and clamped in the next 223; the look values declared and clamped in a
+// scoped block around their two smoothing calls 220 (same code: they still share the spring slots); guard and block
+// together 220. Retail's g_510c54 reload after each look store still says those stores go through something that may
+// alias the global; the ESI/EDI save region stays BLOCKED-BY the build's stand-in caller (round 98).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
@@ -1964,7 +2010,7 @@ overlay:
 					}
 				}
 
-				function_11eed0(&weapon->indices.unknownc, &weapon->indices.unknown10, 0.0f, g_510c54->rate, 9.0f, 6.0f, false, 0.0f, 1.0f);
+				function_11eed0(&weapon->indices.unknownc, &weapon->indices.unknown10, 0.0f, g_510c54->rate, 6.0f, 9.0f, false, 0.0f, 1.0f);
 				if (weapon->indices.unknownc == 1.0f)
 				{
 					weapon->indices.unknown10 = 0.0f;

@@ -33,6 +33,7 @@ union quaternionf
 {
 	real n[4];
 	struct { real i, j, k, w; };
+	struct { vector3f vector; real scalar; };
 };
 
 struct matrix3x3

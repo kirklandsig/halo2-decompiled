@@ -14,21 +14,22 @@ struct timer_mark_2ebc80
 	long field_8;
 };
 
+__forceinline void timer_append_2ebc80(char const *label)
+{
+ timer_mark_2ebc80 *mark = (timer_mark_2ebc80 *)g_480154;
+ mark->label = label;
+ unsigned long time;
+ __asm
+ {
+  rdtsc
+  mov time, eax
+ }
+ mark->time = time;
+ g_480154 = (char *)(mark + 1);
+}
 __forceinline void timer_add_2ebc80(char const *label)
 {
-	if (g_480154 < g_480158)
-	{
-		timer_mark_2ebc80 *mark = (timer_mark_2ebc80 *)g_480154;
-		mark->label = label;
-		unsigned long time;
-		__asm
-		{
-			rdtsc
-			mov time, eax
-		}
-		mark->time = time;
-		g_480154 = (char *)(mark + 1);
-	}
+ if (g_480154 < g_480158)
+  timer_append_2ebc80(label);
 }
-
 #endif

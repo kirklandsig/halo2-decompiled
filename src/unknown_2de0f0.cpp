@@ -40,6 +40,8 @@ public:
 
 // both ends placed by the transform, the box around them grown by the radius
 // and the tolerance
+// (the lower corner is finished before the upper one is started: with the
+// four steps interleaved the compiler stores the corners in the other order)
 // @retail 0x2de0f0
 void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, float tolerance, bounds_2de0f0 &out) const
 {
@@ -57,8 +59,8 @@ void rounded_segment_2de0f0::function_2de0f0(transform_2de0f0 const &transform, 
 		end++;
 		point++;
 	}
-	out.upper.set_max(points[0], points[1]);
 	out.lower.set_min(points[0], points[1]);
 	out.lower.subtract(grow);
+	out.upper.set_max(points[0], points[1]);
 	out.upper.add(grow);
 }

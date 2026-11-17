@@ -10,6 +10,7 @@
 #include "globals.h"
 #include <xtl.h>
 #include "main_messages.h"
+#include "cache_copy_globals.h"
 
 /* unknown_12de70.cpp: the geometry cache's pending loads */
 extern long g_4e64a0;
@@ -21,8 +22,6 @@ bool g_4ed39e;
 dword g_4ed3a0;
 long g_4e6470;
 
-long g_55bd04;
-long g_55bd08;
 bool g_55c14c;
 
 void function_593e0(void);
@@ -78,6 +77,13 @@ void function_12ba90(void)
    revert instead kills the bl register entirely (test al, al and immediate
    stores), so the two constraints can't both be met from this source shape;
    the permuter's floor is this one instruction. */
+// score 5 (was 5): the two-byte `mov al, bl` before the shared `pop ebx; ret` on the false paths.
+// b14C (11-17) walk against retail, fast build on r847: logic, branch senses and stores agree with retail (0x12bad0
+// load, 0x12badc/0x12bae0 compares against bl, call 0x12bae5, stores 0x12baf2-0x12bb07); the only difference is the
+// return. Retail leaves the loaded/inverted revert value in al on every false path (0x12bb14 ret after je 0x12baf8
+// or 0x12bb0e), ours copies bl (result) into al. Tried: a `zero` local compared with != and stored (21, the compiler
+// folds it and drops bl); `return revert` with `revert = true` in the branch (21); result kept for the stores of
+// false and true but `return revert` (23); `return result | revert` (19, 6 bytes longer). No better source form found.
 // @retail 0x12bad0
 bool function_12bad0(void)
 {
@@ -120,10 +126,10 @@ void function_12bf00(void)
 // @retail 0x12bf40
 void function_12bf40(void)
 {
-	if (g_55bd04 && g_55bd04 < 0x11)
+	if (g_55b4f0.state && g_55b4f0.state < 0x11)
 	{
-		g_55bd08 = 2;
-		g_55bd04 = 0x11;
+		g_55b4f0.result = 2;
+		g_55b4f0.state = 0x11;
 	}
 	function_120d50(&g_55c14c, true);
 }

@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "slot_handler.h"
 #include "unknown_0259a0.h"
+#include "normalize3d.h"
 #include <math.h>
 
 __forceinline s_firing_position *firing_position_get(long reference);
@@ -86,9 +87,16 @@ PRIVATE inline void actor_point_target_position(s_actor_point_target const *targ
 	}
 }
 
-// score 300 (was 300): our stack frame is 4 bytes smaller than retail's, so
-// every local offset is shifted and the two nested zone loops are laid out
-// differently.
+// score 276 (was 301): retail's cost vector (prop position - target point) has the same NONE / not-NONE split as the
+// other two target reads, now written that way. Retail's direction normalize sums k, j, i (normalize3d's dot3f(v, v)),
+// not normalize_inline's j + (i + k). What still differs: retail rounds the cost vector's squared length to a float
+// (SSE sum, movss [esp+0x38], fld) before the double sqrt at 0x1c0e85-0x1c0e97; ours sums it on the x87 stack without
+// that rounding, so the stack frame is 8 bytes larger (0xe8 vs 0xe0) and every local offset moves.
+// Tried: a float local for the squared length 276; the sum spelled k, j, i or accumulated with += 276/278; one `length_squared`
+// local shared with the first range test 276; float dx/dy/dz locals 281; the first test's sum spelled k, j, i 298; the root and
+// add in a forceinline helper taking the squared length 276; sqrtf for the root 276; a helper returning (real)(k*k + j*j + i*i) 276.
+// With normalize_inline instead of normalize3d (cost vector split only): 296 (301 before the split). Retail's walk found no other
+// logic difference (fields, conditions, calls, stores and loop shapes all agree).
 // @retail 0x1c0b80
 bool function_1c0b80(long actor_index, long const *excluded, short excluded_count,
 	s_actor_point_target *target, long *unknown, long *reference)
@@ -162,8 +170,13 @@ bool function_1c0b80(long actor_index, long const *excluded, short excluded_coun
 							vector3f direction;
 							point3f cost_point, direction_point;
 
-							actor_point_target_position(position_target, &cost_point);
-							vector3d_from_points3d(&cost_point, prop_position, &vector);
+							if (position_target->output_index == NONE)
+								vector3d_from_points3d(&position_target->point, prop_position, &vector);
+							else
+							{
+								actor_point_target_position(position_target, &cost_point);
+								vector3d_from_points3d(&cost_point, prop_position, &vector);
+							}
 							distance = (real)sqrt(length_sq3f(&vector)) + path_distance;
 							if (position_target->output_index == NONE)
 								vector3d_from_points3d(prop_position, &position_target->point, &direction);
@@ -172,7 +185,7 @@ bool function_1c0b80(long actor_index, long const *excluded, short excluded_coun
 								actor_point_target_position(position_target, &direction_point);
 								vector3d_from_points3d(prop_position, &direction_point, &direction);
 							}
-							if (normalize_inline(&direction) > 0.0f)
+							if (normalize3d(&direction) > 0.0f)
 							{
 								vector3f facing;
 								real alignment;

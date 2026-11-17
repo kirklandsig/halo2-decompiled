@@ -31,7 +31,9 @@ long function_18d5b0(long label);
 long function_189fe0(s_sound_request const *request, long tag_index);
 long function_189340(long object_index, long tag_index, long audible, s_sound_marker const *marker, s_sound_source_callbacks const *source, real scale, long platform_playback, char const *variant);
 
-// score 21 (was 21): retail reads the object index once, after the playback call, into
+// score 11 (was 11): every object-index read is plain but the started test, which reads
+// through the reference; the code is retail's except that test (`cmp [esp+0xb8], -1`
+// where retail compares the late EBX load, 526 bytes). Before round 173 (at 21): retail reads the object index once, after the playback call, into
 // ebx and copies it to esi for the call; ours reads it into esi at the call and again
 // into ebx for the started test (526 bytes). With plain reads at the call, test and
 // dispatch (round 45, 90) the late read is one load as in retail, but into esi (the
@@ -109,6 +111,117 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // bytes). Every one-load form gives the late object ESI before the sound index is coloured; retail colours the sound index
 // ESI and copies an EBX object into ESI for the call. Plain reads throughout (diagnostic, 116) put the object in EBP and
 // the tag in EDI from the early test on and spill spatialization. Restored.
+// M3 lane 11 r76 (plain): the two arms swapped (the positioned arm as the `if`) 21 (same code), with plain late
+// reads 90; the playback result named for the test, the dispatch and the slot 65 (526 bytes: the merged sound index
+// drops to EAX in the request arm), that with plain late reads 57 (521 bytes, first difference at +0xd1: the late
+// object keeps ESI, the named result EDI); plain late reads with the audible value named before the call 90.
+// Round 73 (lane 14, plain): the sound index declared first in the function 21; the early object local declared at the
+// top 21; the sound index first with plain late reads 90 (523 bytes, the request arm's sound index takes EDI); no
+// reference, an early plain copy for the test and marker calls with plain late reads 116 (531 bytes), that copy declared
+// at the top 116. 0x109220 takes the object in EBX and 0x189340 in ESI, so retail's EBX load plus ESI copy is a colouring
+// order between the late object and the sound index.
+// Round 64 (m3 lane 2, plain): one late local read through the reference as its own statement before the call, used
+// for the call, test and dispatch 85 (it takes ESI and copies to EBX for 0x109220; the sound index takes EDI); that
+// with the sound index declared first in the function 85 (same code); a late local assigned a plain read inside the
+// call's arguments 90; the positioned arm (description, marker, call, dispatch) as a __forceinline helper taking the
+// object by value: given the early local 154 (528 bytes, frame 0xa4), given the plain parameter 168 (545 bytes). Every
+// single-load form also changes the request arm (zero stores as immediates, the NONE stored from ESI).
+// Round 113 (m3 lane 9, plain; four aligned lines left at 21: ours loads the object for 0x189340 into ESI before the
+// label push and reloads it into EBX after the call, retail loads it once into EBX after the positioned test and copies
+// it to ESI): the started test as object first 41 (528 bytes); the slot store at the end of each arm with one return
+// test after the join 76 (529 bytes), with the call's object read plain 95 (530 bytes); re-measured (round 90's
+// both-branch forms): each arm with its own sound index local, slot store and return test 90, with the call's object
+// read plain 87 (525 bytes). The request's object index set from the early `object` local 21 (same code); the scale
+// clamp at the function's top 166 (540 bytes).
+// Round 173 (m3 lane 6, plain): with the early uses (NONE test, marker test, both marker calls) read plain instead
+// of through an early local, and the playback call reading plain: the started test through the reference 11 (kept;
+// the early plain reads share one ESI load, the late plain reads one EBX load copied to ESI, as retail), the dispatch
+// through the reference instead 121 (536 bytes, frame 0xa4), a late local read through the reference for the call,
+// test and dispatch 85, the test through a non-volatile reference 116 (plain code); the first NONE test alone through
+// the reference with plain reads after it 169 (540 bytes); an early local for the first test only 169; the reference
+// declared and unused, volatile or not 116/116 (diagnostic). Every volatile read is one load more than retail, whose
+// two object loads each serve several uses; retail behaves as if the object index were memory-resident without one.
+// On the kept form: the call's operand through the reference with the test plain 41 (the volatile load goes straight into
+// ESI and the test and dispatch reload), call and test through it 28, test and dispatch 28, all three 28; the started test
+// nested 11 and `sound_index = NONE` at its declaration 11 (same code each). A volatile read never shares its load, so no
+// placement of it can match; a match needs a plain form that keeps the object index out of a register.
+// Round 112 (m3 lane 16, plain; every form without the reference reads plainly): a named `attached` test for the
+// early, marker and started tests 107 (530 bytes); for the marker and started tests only 162 (540 bytes); the
+// positioned test written out at both uses 131 (528 bytes), with the reference kept 132 (527 bytes); no duration
+// local (the parameter cast at both uses) 116 (531 bytes, the plain-reads code).
+// Round 113 (m3 lane 16, plain; this body's listing differs only in the started test, `cmp [esp+0xb8], -1` for retail's
+// `cmp ebx, -1`): the started test and dispatch in a forceinline helper given `&object_index` (read through the pointer)
+// 116 (the address folds away, object in EBP, spatialization spilled); the started test and dispatch after the arms' join
+// with plain reads 109 (533 bytes, not threaded past the request arm); plain reads with the request's object index set from
+// the parameter 116; an arm-scoped object copy for every use in the positioned arm 116 (copy-propagated); the marker test
+// alone through the reference with the started test plain 96 (523 bytes); plain reads with `positioned` started false and
+// set under the spatialization test 141 (531 bytes).
+// Round 430, plain object reads: address-first class pointer 128f/120p;
+// direct class fields 119f/124p; shared class index 152f/144p; shared
+// class flags 115f/113p; success predicate 141f/148p; request input
+// 114f/116p; early tag exit 114f/116p; early slot exit 114f/116p.
+// Unchanged preview 94f against 11p; every executable form restored.
+// P432: plain object reads with marker/request/description scopes, source admission,
+// class selection, independent/upper-first scale limits, native description bit;
+// plain scores 116/116/116/148/154/116/120/120.
+// NOT kept: no permitted confirmed gain; original executable body restored.
+// Round 80 (m3 lane 15, plain; fast does not reproduce this file): the difference is a contest for EBP between the tag
+// index (8 uses over the whole function) and the object index (7 uses over its second half). Diagnostics, all with every
+// object read plain and no reference: the object part of the started test removed 27 at 521 bytes (retail's code but for
+// the missing compare); ONE extra use of the tag index in the positioned arm (a store of it into the description) 48 at
+// 525 bytes, which is retail's code exactly (tag EBP, spatialization EDI, object ESI then EBX, `cmp ebx, -1`) plus that
+// store; one far extra use of the object index (in the tail) 158 (568 bytes: tag EBP, object EDI in pieces). So retail's
+// compiler saw one more use of the tag index, or one fewer of the object index, than this body gives it; the volatile
+// read stands in for the latter. Forms tried, all reads plain: the started test in a by-value inline wrapper around the
+// dispatch 116; the marker lookup and description fill in a by-value inline helper 190 (470 bytes, out of line), forced
+// inline 116 (an inlined by-value parameter is propagated before allocation, so no wrapper takes a use off the
+// parameter); the spatialization pointer and the positioned test through two tag-taking inline helpers 121 (the
+// predicate stays out of line), both forced inline 162 (544 bytes, the second lookup is not merged); the function's
+// unused fourth and fifth arguments forwarded to 0x189340 as two parameters it ignores 116 (0x189340 and its callers
+// still match). Lead: an argument LTCG drops still counts in the caller's allocation, so a callee of this function
+// that takes the tag index in a parameter it never reads would give the extra use without code; no retail call shows
+// which, so none was added.
+// M3 lane 13 r92 (plain, every object read plain, no reference): an implied `tag_index != NONE` added to the started test
+// 116 (folded before allocation: a folded test is no use); a named permutation pointer for the duration, request variant and
+// playback variant 149 (528 bytes); the clamp into its own local in place of the parameter 133; the started test object first
+// 118; one exit (sound index at function scope set NONE, the duration reset tested on it after the blocks) 116. In the plain
+// listing the tag takes EDI and is reloaded from its home for the dispatch after 0x189340 takes EDI for the source, so the
+// allocator splits a variable across regions; the object holds EBP from its first test to the dispatch.
+// Round 164 (m3 lane 7, plain): on the plain-read form (no reference) the tag parameter named sound_tag_index 116, the
+// object parameter named source_object_index 116, both 116, the tag named definition_index 116 (parameter names do not
+// move the EBP contest); the started test and dispatch in a forceinline helper taking the object by value with its own
+// parameter's address taken 116 (the address folds away).
+// Round 166 (m3 lane 7, plain, every object read plain, control 116): the positioned arm first under `object_index != NONE
+// || positioned` 116; the clamp through the existing PIN_126660 macro 116; the description bit as one ternary assignment
+// 116; the sound index declared per arm, each arm storing it and returning on success 165 (537 bytes); the tag index
+// copied once into a local used by every later read 116.
+// MiniMax H (11-13): no new form, no lower score (11): the early object reads through a named local filled from the
+// reference with the started test read plain scores 90 (plain build), and the reduced image does not reproduce retail's
+// shape for this file (the permuter's reduced image scores the original 83 against the full image's 7), so the plain
+// check is the only reliable one here; what still differs is the started test, which reads the reference
+// (`cmp dword ptr [esp + 0xb8], -1`) where retail compares its late EBX copy (`cmp ebx, -1`).
+// Round 186 (m3 lane 6, plain): two reads through the reference mirroring retail's two loads (an early local for the NONE
+// test, the marker test and both marker calls, a late local for 0x189340, the started test and the dispatch) 85 (523 bytes); no
+// duration local 11 (same code); `positioned` started false and set under the spatialization test 146 (536 bytes); the class
+// index through the existing sound_definition_get 11 (same code); the request's object index from the parameter 11 (same
+// code); the slot pointer declared before the sound index 11 (same code).
+// M3 lane 2 r90 (plain): a late local declared at the function's top, assigned one read through the reference before
+// 0x189340 and used for the call, the started test and the dispatch 85 (523 bytes); the reference as a `long const volatile &`
+// variable 11 (same code); no pointer local, the started test reading `*(long const volatile *)&object_index` 11 (same code);
+// the pointer declared in the arm just before the started test 11 (same code); the reference read for 0x1892a0's object
+// argument instead, the started test plain 85 (524 bytes). The listing on main differs from retail only in that test.
+// M3 lane 13 r101 (plain; every form without the reference, object reads plain, control 116 per the notes above): the request
+// test written `!positioned && object_index == NONE` 118 (531 bytes); the spatialization picked by one ternary 154 (541 bytes);
+// the sound tag read inline where the classes table is indexed (no tag local) 116; the marker declared at the positioned arm's top with
+// the description 116; the started test from a bool set just before 0x189340 116. Plain: tag in EDI, object in EBP, the
+// spatialization spilled (frame 0xa4); retail keeps the tag in EBP and the spatialization in EDI (frame 0xa0).
+// M3 lane 5 r193 (plain; every object read plain, no reference): an ignored trailing parameter on 0x189340 passed the tag
+// index (its other callers NONE; diagnostic) 116, the same code: LTCG drops the argument before allocation, so round 80's
+// dropped-argument lead does not add a use; the object index as a by-value one-long class-type parameter (converting
+// constructor, declarations updated; diagnostic) 116, promoted like a long, and the five callers lose their matches; the
+// description flag tested as `spatialization && (spatialization->flags & 7)` (one more spatialization use; diagnostic)
+// 131 (540 bytes; the object keeps EBP); the description declared at the slot block's scope 116; the request arm in a
+// forceinline helper taking the tag, scale, label and slot 116.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
@@ -138,8 +251,7 @@ void __stdcall function_189cd0(long tag_index, long object_index, real scale, lo
 			else if (scale > 1.0f)
 				scale = 1.0f;
 
-			long object = *object_reference;
-			if (object == NONE && !positioned)
+			if (object_index == NONE && !positioned)
 			{
 				s_sound_request request;
 				request.location.unknown02 = 0;
@@ -159,20 +271,20 @@ void __stdcall function_189cd0(long tag_index, long object_index, real scale, lo
 			{
 				s_sound_source_description description;
 				description.flags = 0;
-				if (object != NONE)
+				if (object_index != NONE)
 				{
 					s_object_marker local_4f80fe;
-					function_b8d30(object, 0x4000095, &local_4f80fe, 1, false);
+					function_b8d30(object_index, 0x4000095, &local_4f80fe, 1, false);
 					function_1892a0(local_4f80fe.node_index, &local_4f80fe.node_matrix.position,
-						&local_4f80fe.node_matrix.forward, tag_index, object, &description);
+						&local_4f80fe.node_matrix.forward, tag_index, object_index, &description);
 				}
 				if (spatialization)
 					description.flags |= 1;
 				else
 					description.flags &= ~1;
-				sound_index = function_189340(*object_reference, tag_index, positioned ? 2 : 1, (s_sound_marker *)&description,
+				sound_index = function_189340(object_index, tag_index, positioned ? 2 : 1, (s_sound_marker *)&description,
 					&g_444b3c, scale, function_18d5b0(label), (char const *)&slot->permutation);
-				if (sound_index != NONE && object_index != NONE)
+				if (sound_index != NONE && *object_reference != NONE)
 				{
 					object_dispatch_sound_started(object_index, tag_index, sound_index);
 				}

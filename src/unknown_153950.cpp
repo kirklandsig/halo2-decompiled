@@ -406,9 +406,42 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax C (11-16): no new form, no lower score (13): all thirteen differences are the j and k rows of the inlined
+// rotation, whose term order is the shared rotate_vector_170d70 helper's own text in src/unknown_170d70.cpp, a file
+// this lane may not edit.
+// MiniMax E (11-16): no new form, no lower score (13): the thirteen differences are still the j and k rows of the inlined rotation, where retail adds the projection term first and this build adds the cosine term first; that text is the shared rotate_vector_170d70 helper's own, in src/unknown_170d70.cpp, which this lane may not edit, and a copy of it written for this caller is a same-behaviour twin that builds to the same bytes (13); writing the three rows out in the caller scores 59 and computing them into locals first scores 84, so the body stands.
+// MiniMax S (11-16): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, where this build adds the cosine term first and retail adds the projection term first; the permuter over the whole image (the reduced image scores 245 here) reported nothing below the baseline of 13 before it was stopped, and the rows follow the shared rotate helper's own text in another file: BLOCKED-BY 0x170d70.
+// MiniMax D (11-14): no new form, no lower score (13): the thirteen differences are all in the j and k rows
+// of the inlined rotation, whose text is the shared rotate_vector_170d70 helper's in src/unknown_170d70.cpp,
+// a file this lane may not edit.
+// MiniMax H (11-14): no new form, no lower score (13): exchanging the two draws scores 66, and a one-caller copy of the shared rotation that adds the projection term first in the j and k rows builds to the same bytes as the shared one.
+// MiniMax H (11-13): no new form, no lower score (13): the thirteen differences are all inside the inlined rotation - the load of the vector's j component and the store of its i component trade places, and the k component's two products land in the other pair of registers - and that text is the shared rotate helper's, in src/unknown_170d70.cpp, which this lane may not edit.
+// MiniMax H (11-11): no new form, no lower score (13): the only difference left is the j and k rows of the inlined rotation, whose helper (rotate_vector_170d70) lives in src/unknown_170d70.cpp and may not be edited from here.
+// MiniMax S (11-11): no new form, no lower score (13): only the rotation's j and k rows differ, and the shared rotate helper that produces them lives in src/unknown_170d70.cpp.
+// MiniMax D (11-10): no new form, no lower score (13); the whole-image check still reads 13, and the
+// rows that are left are the shared rotation's j and k terms, whose helper is in another file.
+// MiniMax S (11-10): no new form, no lower score (13 on the full image, 339 on the reduced one): the only
+// difference left is in the rotation's j and k rows, which still add the cosine term where retail adds the
+// projection term; the shared rotate helper that produces those rows lives in src/unknown_170d70.cpp, so the
+// rows cannot be ordered here, and the frame and the copies around them already agree.
+// MiniMax E (11-09, second part): the reduced image of the fast check scores 339 (the body
+// comes out 219 bytes short) because the shared rotation helper is not inlined there; the plain
+// check over the whole image scores 13, and the j and k rows of the shared rotation still add
+// the projection term first, with the helper in src/unknown_170d70.cpp.
+// MiniMax E (11-09): no new form, no lower score (13); the j and k rows of the shared
+// rotation still add the projection term first, and the helper is in src/unknown_170d70.cpp.
+// MiniMax D (11-09): no new form, no lower score (13); the j and k rows of the inlined rotation still add
+// the cosine term first where retail adds the projection term, and that rotation's text lives in the
+// shared helper in another file this lane may not edit.
+// MiniMax C (11-09): no new form, no lower score (13); the j and k rows of the shared rotation still add the cosine term first (BLOCKED-BY src/unknown_170d70.cpp).
+// MiniMax E (11-06): score 13 (was 13): no new form lowered it. The only difference left is in the
+// j and k rows of the inlined rotation: retail adds vector * cosine to projection * axis while ours
+// adds the projection term first, and the fix belongs to the shared rotate_vector_170d70 helper in
+// src/unknown_170d70.cpp, not to this file.
 // Lane 8 r134 (held, coordinator): MATCH with a one-caller copy of rotate_vector_170d70 whose j and k rows add
 // projection * axis before vector * cosine (rotate_slot_vector); a same-behaviour twin picked for this caller, not kept
 // (twin ruling); build/held/lane8-r134-154df0-twin.patch. Kept only through the shared helper (one text for every caller).
+// MiniMax G (11-12): no new form, no lower score (13): the j and k rows of the inlined rotation still differ and follow the shared rotate_vector_170d70 text in src/unknown_170d70.cpp, which this lane may not edit; a copy of that helper written for this caller is a same-behaviour twin and was not kept.
 // score 13 (was 13): only the j and k rows of the inlined rotation differ: retail adds
 // projection * axis + vector * cosine (u.j loaded before the u.i store), ours the other way round
 // (the i row agrees).
@@ -534,6 +567,32 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // M396: Complete memmove direction/angle/bounds transfer subsets 1/2/4/3/5/6/7
 // 210/284/293/279/300/296/296; signed-angle conditional result 13. NOT kept:
 // no exact rotation/load repair; original complete body restored.
+// Round 93 (m3 lane 16, fast with 0x170d70): `angle = -angle` 13; `fabs(1.0f - length)` in both unit tests 15;
+// the unit tests as `0.0001f > fabs(...)` 13; the clamp as `dot < -1.0f` / `1.0f < dot` 60 (1105 bytes); the priority
+// store after the duration and timer stores 35. Re-measured listed forms: forward j before i 25, cosine before sine 33.
+// BLOCKED-BY 0x170d70: the rows follow the shared rotate_vector_170d70 text in its file, src/unknown_170d70.cpp (held).
+// P362: Existing planar dot/cross and forward point-setter subsets 1/2/4/3/5/6/7
+// 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
+// no byte equality or gain. Original body and includes restored; held rotation helper
+// untouched. Native j/k input-load and sum ownership remain.
+// MiniMax R (11-11): no new form, no lower score (13): the rotation's j and k rows still differ from retail's, and the shared rotation helper's text decides them while its file is held.
+// MiniMax R (11-10): no new form, no lower score (13): the rotation's j and k rows still differ from retail's,
+// and the shared rotate helper in the other file decides them.
+// MiniMax B (11-14): no new form, no lower score (13); only the j and k rows of the inlined rotation still differ,
+// and they follow the shared rotation helper's text in src/unknown_170d70.cpp, which this lane may not edit
+// (BLOCKED-BY 0x170d70); every other row of the body is retail's.
+// MiniMax I (11-15): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined rotation, whose helper (rotate_vector_170d70) is defined in src/unknown_170d70.cpp and not in this lane's file; no spelling of the call made from here produces retail's operand order for those two rows.
+// MiniMax I (11-15): no new form, no lower score (13): all thirteen differences are still the j and k rows of the inlined
+// rotation, whose helper (rotate_vector_170d70) is defined in src/unknown_170d70.cpp and not in this lane's file; no
+// spelling of the call made from here produces retail's operand order for those two rows.
+// score 13 (was 13): unchanged this round: only the j and k rows of the inlined rotation still differ, and the
+// rotate helper's own text decides the order of the two products; that helper is in src/unknown_170d70.cpp, which
+// this lane may not edit.
+// score 13 (was 13): unchanged this round: the inlined rotate helper computes the `projection * axis` term after the
+// `v * cosine` term in the j and k rows; the helper's text is in src/unknown_170d70.cpp.
+// MiniMax S (11-15): no new form, no lower score (13): only the j and k rows of the inlined rotation differ, where the
+// helper adds the projection term after the cosine term and retail adds it before; the helper's own text fixes that order
+// and it lives in another file.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -623,6 +682,8 @@ s_object *function_badc0(long index, dword mask);
 point3f *function_b9dd0(long index, point3f *point);
 void function_caf60(long index, point3f *point);
 __declspec(noinline) s_player_state *function_16f3a0(long index);
+bool function_14ddc0(long local_player_index);
+long function_14de70(long local_player_index);
 long function_189fe0(s_sound_request const *request, long tag_index);
 void rumble_player_play_effect(long player_index, long definition_index, long effect_index, real scale);
 void function_225df0(long tag_index, long entry_index);
@@ -684,6 +745,72 @@ struct s_player_axes_153d10
 // the slot register): all 63 sets of `(real)` casts on the six products 5 or above; dots before the cross 47; only the forward or
 // up dot before it 46/36; delta after the cross 47; rows jik/jki/kij/kji 48; six named products 48; three scalar cross locals 48;
 // negated j row 48; `real basis[2][3]` 48; a basis pointer 10; a pointer to the axes sub-struct 48, with the dots through it 10.
+// Round 56 (m3 lane 2; one-file harness over the whole file, control 5: this product plus 3 harness-only lines; plain not run because none beat the control): an inline cross helper with
+// pointer parameters in four parameter orders, all row orders, direct or staged, all product text orders, 4 phases: 240 samples, best 31 (helper forms flip far more products); per-read spelling of the 12 cross reads through axes
+// or forward/up, dot spellings, both pointer orders, 0-3 unused locals: 1,100 samples and three hill climbs, floor 5, several at 7/9 with this product right but the up.k-against-forward.j product or the up.i one wrong, none with all right;
+// origin and target swapped or split 5/5; state dropped, axes from the call 11; axes at the top of the block 5; the pointers after delta 5; relative before cross 5; owner index named 9; slot fields by array 5.
+// Round 94 (lane 16, plain): forward/up as const references 2; cross as an aggregate initializer 2; relative as an aggregate
+// initializer 2; a const axes view pointer 2; const axis pointers (`vector3f const *const`) 2.
+// Round 98 (m3 lane 12, plain): the local player tests and lookups through the existing 0x14ddc0/0x14de70 at both
+// sites 2 (the same code: LTCG inlines both; kept in place of the hand copies), at the first site only 2, the second only 2,
+// 0x14de70 only 2, 0x14ddc0 only 2. Compile-only (exact here): 1-12 unused locals at the top, before the axes pointer or
+// before delta leave the cross block unchanged; 1-4 redundant parens in any cross row or in delta all shift the six
+// products together with period 4 (3 puts this product right and the up.k-against-forward.j one wrong).
+// Round 60 (m3 lane 2, plain): the unit-index reads through the existing player datum type 2, the object header read
+// through the existing header type 2, both 2 (all the same code); `state != NULL` 2 (same code); named forward/up fields
+// in the player state and a named 0x8c vector in the speed slot (globals.h), the cross and slot stores through them
+// without the axes view 4 (this product right, the k row's forward.i x up.j and the j row's forward.k x up.i flipped).
+// Untried on that named-field form: the axis pointers dropped or declared after the cross.
+// Round 145 (m3 lane 7, plain): a compile-only build differs from the LTCG build in products 1 and 5 together, so
+// its screens are no model here. The i and j rows read partly through forward/up (the closest form of a compile-only
+// screen) 14; mixed reads with every product swapped 25; this product's up.k through the up pointer 16 (the
+// up.k-against-forward.j product flips with it); its forward.i through the forward pointer 2 (same code); both 16.
+// Round 74 (m3 lane 2, plain): up.k named once for both products that flip together 112 (1296 bytes); delta from three
+// named components 2 (as round 134's three-statement delta); cross declared before delta 2; cross and relative in one
+// declaration 2 (all three the same code); the slot's direction written through a real pointer as an array 18 (re-measured,
+// as round 41). Forms earlier measured only in a harness, now plain: the axes, forward and up pointers declared at the top
+// of the block 2; forward and up declared after delta 2 (both the same code).
+// Round 117 (m3 lane 12, plain), on round 60's named-field form (forward 0x20 / up 0x2c in the player state, the 0x8c
+// vector in the speed slot, globals.h; the axes view dropped): both axis pointers dropped, cross and dots through the
+// state 37; the pointers declared after the cross 6 (this product right; the i row's first and the k row's two products
+// load up first); the pointers before delta with the cross and dots through them 103; cross3f and dot3f 8; cross3f_staged
+// and dot3f 8 (the same code). Header and body restored.
+// Round 91 (m3 lane 14, fast with 0x154d70/0x154df0/0x155240/0x170d70 listed, which reproduces 2): forward and up
+// copied by value 419 (1393 bytes), forward only 183, up only 183; up as `forward + 1` with the cross and dots through
+// the pointers 105, with the cross through axes 12; the j row's first product with up.i through the up pointer 2 (same
+// code), forward.k through the forward pointer 24, both 24. Diagnostics: 1-7 unused locals 2/2/101/102/16/2/2 (the
+// six products never move); 1-3 parens in delta give per-product windows {0,1} fj*uk, {0,3} fk*uj and fk*ui,
+// {0,1,3} fj*ui and fi*uj, {2,3} uk*fi, so no shift fits; three parens around the j row's first product move only
+// later products but flip fj*uk with uk*fi (2): the two share up.k's key.
+// Round 107 (m3 lane 10, fast with the four callees listed): both fabs calls as fabsf 10 (all six products load up first);
+// atan2 as atan2f 2 (other code: this product right, the up.k-against-forward.j one up-first), on it the i row's first
+// product read `forward->j * axes->up.k` 6, `axes->forward.j * up->k` 18, `forward->j * up->k` 18. Diagnostics:
+// `#pragma optimize("p", on)` (float consistency) 98 (1325 bytes; atan2/fabs become calls, the six products unchanged);
+// the cross as a plain out-of-line function in another /O2 file, inlined by LTCG 105 (three products flip), removed.
+// M3 lane 8 r171 (fast with the four callees listed, control 2): the cross through this file's own cross helper (the one
+// 0x1546f0 uses, declared ahead) 105; a named 0x8c vector in the speed slot alone, axes view kept 2 (same code); the axes
+// view taken straight from the state call (no state local) 4 (+0x379); target declared before origin 2 (same code).
+// Diagnostic screens (redundant parens, not kept): 1/2/3 parens around any one product give 6/10/2 (around the i row's
+// first product 4/10/8): one paren flips fk*uj and fk*ui to up first, two flip every product but uk*fi; the first product
+// wrapped twice with 1/2/3 around the k row's last product 2/2/6, with one around any other product 2, but always either
+// fj*uk or uk*fi stays wrong (they share up.k); 1 or 2 parens around any single operand change nothing (2).
+// M3 lane 4 r204 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the i row's first forward.j and this
+// product's forward.i read through the forward pointer 2 (same code); the k row's first forward.i through it 2 (same code);
+// every forward read of the cross through the forward pointer 12; the j row as `forward->k * up->i - up->k * forward->i`
+// 34 (first difference +0x13); every up read of the cross through the up pointer 28.
+// M3 lane 4 r205 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): the cross written inside relative.i's dot (no
+// cross local), rows in k, j, i order 46 (an earlier inlined block reorders, first difference +0x364), in i, j, k order 46; the
+// cross read through the forward and up pointers with this product's text kept 105; relative declared before cross 2 (same
+// code); the j row as `-(up.k * forward.i - forward.k * up.i)` 117 (1301 B).
+// Also r205: forward/up as const references (cross and dots through them) declared after delta, after the cross and
+// relative declarations or at the top of the block 105 each, declared after the cross for the dots only 10, after delta for
+// the dots only 2; a `real const &` to up.k for both its products 8, declared after the i row for the j row only 2; to
+// forward.i for both its products 6, after the i row 10; to forward.j for both 6; the axes view as a const reference after
+// or before the two point calls 2/2.
+// M3 lane 6 r188 (fast with the four callees listed, control 2): the j row as `-(up.k * forward.i) + forward.k * up.i` 6;
+// a `(real)` cast on this product's up.k or forward.i operand alone 2/2 (same code); the axis pointers, the axes view, or
+// cross/relative/delta renamed 2/2/2 (names do not key the order); in the real build the forward and up dots ahead of the
+// cross 115 (1300 B), the forward dot only 47, the up dot only 46.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
@@ -692,9 +819,9 @@ void __stdcall function_153d10(long user_index, long tag_index, void *owner, voi
         return;
     s_camera_effect_tag_153d10 *definition = (s_camera_effect_tag_153d10 *)g_4e3b44[tag_index & 0xffff].bytes;
     s_speed_slot *slot = &g_510c5c->slots[local_index];
-    if (local_player_present(local_index))
+    if (function_14ddc0(local_index))
     {
-        long player_index = g_4e8c20->entries[local_index];
+        long player_index = function_14de70(local_index);
         long unit_index = *(long *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x2c);
         if (unit_index != NONE)
         {
@@ -772,9 +899,9 @@ void __stdcall function_153d10(long user_index, long tag_index, void *owner, voi
             return;
         }
         long unit_index;
-        if (local_player_present(local_index))
+        if (function_14ddc0(local_index))
         {
-            long player = g_4e8c20->entries[local_index];
+            long player = function_14de70(local_index);
             unit_index = *(long *)(g_4e8c24->data + (player & 0xffff) * 0x21c + 0x2c);
         }
         else

@@ -9,6 +9,9 @@ c_z_capsule_temp::c_z_capsule_temp(void const *first, void const *second, real r
 	this->radius = radius;
 	first_point = *(__m128 const *)first;
 	second_point = *(__m128 const *)second;
-	first_point.m128_f32[3] = radius;
-	second_point.m128_f32[3] = radius;
+	/* the component index stays in a local: writing 3 directly makes VC copy
+	   `second` into ECX one instruction before retail does */
+	long index = 3;
+	first_point.m128_f32[index] = radius;
+	second_point.m128_f32[index] = radius;
 }

@@ -70,6 +70,13 @@ static inline s_player_datum *player_get(long player_index)
 // the top; integer arithmetic; memcpy; a byte source pointer. Eight name permutations gave identical
 // listings, and /O1 or /Os (compile-only diagnostic) the same allocation. The pointer before the test 5.
 // Retail keeps the index in ecx and builds the pointer from a copy, as if the index were still live.
+// b14E (11-17) walk against retail, fast build on r847: every instruction matches except the pointer chain at
+// 0x187f0d: retail copies the record index (`mov esi, ecx`) then computes `imul esi, esi, 0x1c` / `add esi, 0x51ea18`
+// in esi; ours scales in ecx and copies the result into esi. Tried and dropped: `result = record.flag1a &&
+// record_index != NONE` (16, 114 bytes: the second test stays), the record index as a `long const &` to the datum
+// field (18, reloads through a pointer), the first-player test through a `bool const &valid` as in function_187f30
+// (43, the test is materialised). No behaviour difference found; the player index, the 0x21c stride, the 0x24 field
+// and the 0x1a flag read match retail.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -566,11 +573,14 @@ bool function_172750(long mode, point3f const *point, real radius);
 // the second tag lookup first 172. Re-measured: the 4th/5th parameters as the material class (0x188180's
 // call adapted) still match here (fast), 0x188180 56; still BLOCKED-BY the declarations in
 // src/impacts.cpp and src/projectiles.cpp.
+// MATCH (APPLIED 11-10 by the m3 coordinator, fix v2-1102, full check 0 lost): the 4th/5th parameters as the material
+// class at the definition and the declarations/calls in src/impacts.cpp, src/projectiles.cpp and src/unknown_050690.cpp;
+// 0x1882d0 still matched, 0x188180 77 -> 56, 0x2285d0 176 -> 164, 0xfd740 49 -> 8.
 // @retail 0x1883e0
-void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
+void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, c_type_47f957 element_index, c_type_47f957 entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)
 {
-	s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, (short)entry_element_index);
+	s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, entry_element_index.m_index);
 	long first_index = index == 13 ? 14 : index;
 	long first04 = NONE;
 	long second04 = NONE;
@@ -586,16 +596,16 @@ void function_1883e0(long tag_index, bool ignore_distance, point3f const *point,
 
 		if (tag_index != NONE)
 		{
-			first_entry = function_188130(tag_index, first_index, 0, (short)entry_element_index);
-			second_entry = function_188130(tag_index, index, 1, (short)entry_element_index);
+			first_entry = function_188130(tag_index, first_index, 0, entry_element_index.m_index);
+			second_entry = function_188130(tag_index, index, 1, entry_element_index.m_index);
 		}
 		if (!first_entry)
 		{
-			first_entry = function_1882d0(0, c_type_47f957(element_index), first_index, c_type_47f957((short)entry_element_index));
+			first_entry = function_1882d0(0, element_index, first_index, entry_element_index);
 		}
 		if (!second_entry)
 		{
-			second_entry = function_1882d0(1, c_type_47f957(element_index), index, c_type_47f957((short)entry_element_index));
+			second_entry = function_1882d0(1, element_index, index, entry_element_index);
 		}
 
 		if (first_entry)
@@ -673,9 +683,60 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax I (11-16): no new form, no lower score (165): the whole difference is still that this build expands 0x1765e0
+// (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in src/unknown_175bd0.cpp,
+// which this lane may not edit; the declarations that would give retail's own parameter list are fixed by call sites in
+// other files: BLOCKED-BY that file.
+// MiniMax A (11-14), NOT kept (coordinator: 6 points, under the 8-point bar): a dword index for the scan over the
+// first values (like retail's) gave 159 from 165 by dropping one instruction from the scan. What still differs: retail calls 0x1765e0 out of line with the
+// promoted register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c
+// against retail's 0x48. That call is not in this file: 0x1765e0's own code and its three callees
+// match retail byte for byte, so the inlining is a whole-program decision of the LTCG group that the
+// other call sites in src/unknown_050690.cpp, src/unknown_1c25a0.cpp and src/unknown_29f5b0.cpp fix.
+// MiniMax G (11-14): no new form, no lower score (165): BLOCKED-BY src/unknown_175bd0.cpp, which needs "/Ob1" to keep 0x1765e0 out of line (with that flag this function scores 60).
+// MiniMax H (11-14): no new form, no lower score (165): retail calls 0x1765e0 out of line with the promoted
+// register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's 0x48, and
+// retail's parameter list differs from the declaration here, which the call sites in other files fix.
+// MiniMax C (11-14): no new form, no lower score (165): retail's own parameter list is not this declaration's
+// - it takes the point in EAX and the forward vector in ECX and keeps the effect value in a stack slot, and
+// the seventh argument reads best as a short - but the declarations that fix that split live in other files,
+// so the list stands as it is; the frame is 0x16c against retail's 0x48 because retail keeps 0x1765e0 out of
+// line and this build expands it.
+// MiniMax D (11-16): no new form, no lower score (165): the whole difference is still that this build expands
+// 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48); no form of this file's own body keeps the
+// call out of line, and the only known lever ("/Ob1" on src/unknown_175bd0.cpp) is in a file this lane may not
+// edit: BLOCKED-BY that file.
+// MiniMax R (11-17): no new form, no lower score (165): adding /d2inlT60 and then /d2inlT0 to this file's own flag
+// line leaves the score at 165, because the threshold that decides the inline comes from the generated ballast and
+// not from this file, so that lever is out of reach here; what still differs is that this build expands 0x1765e0 into
+// the three-iteration loop (frame 0x16c) where retail calls it out of line (frame 0x48), and that callee's body is
+// in src/unknown_175bd0.cpp.
+// score 165 (was 165): MiniMax R (11-15): no new form, no lower score; the difference is still that this build
+// expands 0x1765e0 (frame 0x16c) where retail calls it out of line (frame 0x48), and 0x1765e0's body is in
+// src/unknown_175bd0.cpp: BLOCKED-BY that file.
+// score 165 (was 165): unchanged this round: retail calls 0x1765e0 out of line with the promoted
+// register split (ESI, EBX and EAX) while this build inlines it, so our frame is 0x16c against retail's
+// 0x48; retail's own parameter list differs from the declaration here (the forward vector is third and
+// there are eleven parameters against our ten), and that list is fixed by the call sites in other files.
+// score 46 (was 56): the six NONE defaults now precede the effect point; left are the second scan's
+// index register and the stack slots of the scale and the object index, which follow the parameter
+// order that the callers in other files fix (MiniMax D, 11-10).
+// MiniMax S (11-10): no new form, no lower score (56): the first difference is still the call's register split,
+// which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix;
+// past that call the homes of the two vectors and of the four scalar values sit at different offsets from
+// retail's and the home stores come in a different order.
+// MiniMax I (11-08): no new form, no lower score (77); the argument order still comes from the call sites in other files.
+// MiniMax R (11-07, run 38): no new form, no lower score (77); still BLOCKED-BY 0x1883e0's fourth and fifth
+// parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's point and
+// forward register split, its twelve stack arguments and the two scans stand as they are.
+// MiniMax C (11-06): no new form, no lower score; still BLOCKED-BY 0x1883e0's fourth and fifth
+// parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's
+// point and forward register split, its twelve stack arguments and the two scans stand as they are.
 // MiniMax H (11-05): no new form, no lower score; still BLOCKED-BY 0x1883e0's fourth and fifth
 // parameter types, so retail's point and forward register split, its twelve stack arguments and the
 // two scans stand as they are.
+// MiniMax S (11-09): no new form, no lower score (77); the call's stack homes still sit four bytes below retail's,
+// which is the parameter-size difference the other file's declaration carries.
 // score 77 (was 77): still BLOCKED-BY 0x1883e0's 4th/5th parameter types (their declarations in
 // src/impacts.cpp and src/projectiles.cpp). Round 71 (lane 9, fast): the compressed forward in a named local
 // 77; the velocity source through a named pointer 77; `(short)entry_element_index` at the 0x1883e0 call 95
@@ -739,25 +800,47 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
 // their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
 // src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
+// MiniMax H (11-11): no new form, no lower score (165): retail calls 0x1765e0 out of line with the
+// promoted ABI (ESI = arg1, EBX = arg2, EAX = arg3) while this build inlines it, so our frame is 0x16c
+// against retail's 0x48; retail's first parameter is the vector multiplied by 0.01 while our declaration
+// has the point first, and the clip call's flag in DL and point in ESI come from 0x171d00's declaration.
+// MiniMax S (11-11): no new form, no lower score (165): the call's register split still follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix, so our frame is 0x16c against retail's 0x48 and the two scans sit elsewhere.
+// MiniMax E (11-10): no new form, no lower score (77); the first difference is still the call's register split, which follows the parameter list that 0x1883e0's declarations in src/impacts.cpp and src/projectiles.cpp fix.
+// MiniMax E (11-10): no new form, no lower score: the arguments land in the other registers and the
+// scan's registers are rotated against retail's, because retail's parameter list puts the forward
+// vector third and has eleven parameters against our ten, and that list is fixed by the callers
+// in src/items.cpp and src/bipeds.cpp, which this lane may not edit.
+// MiniMax E (11-09): no new form, no lower score (77); the arguments land in the other registers (retail takes
+// the point in EAX and the forward vector in ECX and reads its fourth argument from the stack into EBX, while
+// ours takes the forward vector in EDX and the tag index in EBX), because retail's parameter list puts the
+// forward vector third and has eleven parameters against our ten, and that list is fixed by the declaration and
+// by the callers in src/items.cpp and src/bipeds.cpp, which this lane may not edit.
+// MiniMax R (11-09): no new form, no lower score (77): the scan's registers are rotated against
+// retail's (the index, the none and the scale sit in other registers), retail pushes edi after the
+// first float multiply while we push it before, and the curve values are stored at other stack
+// offsets; the block is still blocked by 0x1883e0's declarations, which live in src/impacts.cpp and
+// src/projectiles.cpp and name the old parameter types, so the effect point and the velocity forms
+// that were measured (77 each) leave the body as it is.
+// MiniMax R (11-11): no new form, no lower score (46): retail's second scan keeps a dword index in EDI and the scale in EBP, ours strength-reduces the scan into a pointer walk with a countdown in EBP; a 32-bit index gives retail's index form but rotates the other homes.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
-	long entry_element_index, long effect_value, s_location const *location, real scale)
+	c_type_47f957 entry_element_index, long effect_value, s_location const *location, real scale)
 {
 	long first_values[3];
 	long second_values[3];
 	point3f effect_point;
 	s_sound_position position;
 
-	effect_point.x = forward->i * 0.01f + point->x;
-	effect_point.y = forward->j * 0.01f + point->y;
-	effect_point.z = forward->k * 0.01f + point->z;
 	second_values[0] = NONE;
 	second_values[1] = NONE;
 	second_values[2] = NONE;
 	first_values[0] = NONE;
 	first_values[1] = NONE;
 	first_values[2] = NONE;
-	function_1883e0(tag_index, false, point, g_47d8e0, entry_element_index, index, variant,
+	effect_point.x = forward->i * 0.01f + point->x;
+	effect_point.y = forward->j * 0.01f + point->y;
+	effect_point.z = forward->k * 0.01f + point->z;
+	function_1883e0(tag_index, false, point, c_type_47f957(g_47d8e0), entry_element_index, index, variant,
 		&first_values[0], &second_values[0], &first_values[1], &second_values[1], &first_values[2], &second_values[2]);
 
 	for (dword i = 0; i < sizeof(second_values) / sizeof(second_values[0]); i++)

@@ -889,6 +889,32 @@ byte g_55e708;
 // index computed after the light and definition 38 (same code); the clamp test `count >= 2` 38. The rotations left
 // (fallback object EAX/count EDX, loop amount EAX/absolute EDX/index ECX, single-arm amount ECX/colour EDX/position EAX,
 // opacity ECX) do not move with any of these.
+// Round 160 (m3 lane 5, fast with the same list), each on the current form: no absolute-index local (the mask at the lookup and both
+// calls) 38; the opacity clamp as if/else-if in place of PIN 45; the first-person count as a ternary initialiser 38; the fallback as
+// `count = count ? count : ...` 38; the single-marker arm first 107.
+// m3 lane 2 r71 (fast with the same list): the loop index declared at the top of the function, before or after the
+// absolute index, 38/38; the marker array declared at the top of the function 38 (all three the same code: the loop's
+// load order does not follow declaration order here).
+// Round 112 (m3 lane 16, fast with the same list): the first-person count assigned inside the fallback test
+// (`if (type != 2 || ... || !(count = ...)) count = ...`) 38; the clamp as two tests on `count > 1` 38; the outer
+// test as an early return 38; the outer test as nested ifs 38 (same code each); the second tag read into a named local
+// for its test and call 40.
+// M3 lane 9 r126 (fast with the same list, control 38): retail computes the fallback count into EDX and copies it to EAX
+// for the join (ours computes it straight into EAX), and every later scratch pick follows that rotation. The first-person
+// count in its own variable with `count = first_person_count ? first_person_count : <fallback>` 106; one object-index local
+// for the two marker queries only 128 (618 B); the fallback result in a `short` local copied to count 38 (same code); the
+// fallback query written in both arms of the first-person test (count zero-initialised or not) 156/156 (639 B, not merged).
+// b13H (11-17) walk against retail, fast build on r846: logic and statement order agree with retail (the
+// 0x4e030c/0x4e3b44/ 0x4e0300 lookups, the 0x31520 and flag tests, the 0x94 and 0xa0 tag tests, the object-marker query
+// at 0xc33d7, the first-person test and its count at 0xc33f9, the clamp to 1 with the 0x55e708 flag at 0xc342d-0xc3445,
+// the loop's pushed values and the 0x2dba0 and 0x42850 argument order); no behaviour difference found. Left are scratch
+// picks only: the fallback arm loads the object into EAX and the count through `movsx edx, ax; mov [esp+0x14], edx; mov
+// eax, edx` (0xc3409-0xc3426: the result is a separate register copied into the join) where ours takes EDX then EAX
+// with no copy; the loop loads the absolute index early into EDX (0xc3476) and the marker index late into ECX
+// (0xc3484), ours the reverse; the single-marker arm takes the colour in EDX and the position in EAX (0xc34ed,
+// 0xc34f4); the opacity reloads into ECX (0xc3568). Tried on the current form, none moves it: if/else with the
+// first-person count assigned inside its test 38; `+ 0` on the fallback result 38; a named long fallback copy also
+// tested in the clamp 146 (623 bytes).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1055,7 +1081,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 290 (was 315; 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 290 (was 290; 315 before round 79; 482 before round 68; m3 lane 2 r79 and m3 lane 8 r164 notes at the end): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1097,7 +1123,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // projections 481 (plain); a const matrix pointer for them 486, both 483; up / left vector pointers in
 // the sphere arm 620/630 (with the face and/or matrix pointer 619-636); a plane pointer for the normal
 // and distance 543; depth from the radius local 607; the projections as a corner loop 529 (plain),
-// with depth from the radius 610; the projection's vector as one struct copy 624 (2892 bytes); one scale
+// with depth from the radius 610; the projection's vector as one aggregate copy 624 (2892 bytes); one scale
 // local for both projection scales 500; the inner scale named `inverse` 482 (identical); the scale as
 // three divides 599. Diagnostic: dead initialised locals change it by count alone (+1..+12:
 // 479/479/539/315/483/480/480/480/479/479/483/483, any position); +4 gives 2826 bytes and fixes most of
@@ -1164,6 +1190,146 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // Round 56 (m3 lane 15, plain; masked = aligned diff with stack offsets and registers masked, 137 here): rows in stages (forward j, i, k; left i, k, j; up k, i, j) as retail's sum trees,
 // x first 573 (2801 B, masked 167), y first 571 (2803 B, masked 174); plain rows with y stored first 299 at retail's 2840 B (masked 154); the reference as a ternary 643 (2797 B), as if/else
 // 574 (2822 B). Harness with the 0x11f5f0, 0x141590, 0x163db0 files and the ballast is not exact (414 for 290): source term order is canonicalised (same code in five orders).
+// Round 59 (m3 lane 15, fast, base 290): the plane normal copied before the plane point 560 (2817 B); the projection's matrix scale in a named local
+// for its test and divide 521 (2809 B); the cone reciprocal from `entry->plane_offset` 562 (2815 B); chained flag stores 290 (same code); the cone depth
+// summed from `entry->plane_offset` 291; at the first difference (+0x33, retail's memset `lea edi` inside the bounds copy) `memset(&entries[i], ..)`
+// before the entry pointer 628 (2821 B). Retail divides for the cone scale after the centre projection, with 1.0 in XMM6 (ours XMM4).
+// Statement walk against retail (f1E, base r709, 2840 bytes): no logic or structure difference. Checked: count 6/1 and the
+// `i < *count` reload (0xc1da5-0xc1dc1, 0xc287e); entry stride 0x1bc and memset (0xc1e1c); the eight vertices (0xc1eb0-0xc1f57),
+// six faces (0xc1f67-0xc1fcf) and six directions (0xc1fd6-0xc206f); depth = radius, orthogonal/has_plane cleared (0xc1ea9,
+// 0xc2078, 0xc207b); up = -direction, reference g_4687a8 or g_4687ac for i == 1 or 3 (0xc20bc-0xc20e2); left = up x reference
+// and forward = left x up (0xc20e2-0xc213c, 0xc21b0-0xc21fb); normalize skipped for |len| < 1e-4 (0xc216e-0xc2172); four
+// projections through faces[i][0..3] (-1 / z, scale test against 1.0) into points[0..3], count 4, 0x11f5f0 (0xc2577); cone arm:
+// count 1, forward = shape->left, left = frame->up, up = -frame->forward, orthogonal = (kind == 1), has_plane = offset > 0,
+// plane n = frame->forward and d = n . (origin + offset * forward), depth = far_distance + offset, centre projection, half
+// extents = size * (1 / offset) * 0.5, corners x0y0 x1y0 x1y1 x0y1, bounds x0 x1 y0 y1 (0xc258f-0xc2820); tail flags,
+// 0x141590 (matrix -> ecx, inverse -> eax), 0x163db0 (0xc282a-0xc285f). The only differences are rounding-level:
+// retail sums the length as (i*i + k*k) + j*j (ours (j*j + i*i) + k*k), and the projection rows as forward (j, i, k),
+// left (i, k, j), up (k, i, j) (ours forward (k, i, j), left (j, k, i), up (j, i, k)); everything else left is
+// operand folding and register colours. Callers 0x31c80 (184) and 0x32350 (448) and callees unchanged by this note.
+// Permuter, 30 minutes (11-06): 277 only with the sphere radius read through a volatile pointer and word casts. Not kept.
+// Round 160 (m3 lane 5, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): the cone plane through an inline (plane, normal, point)
+// helper storing d through the plane pointer 563 (2795 bytes); cone bounds after the points in x0, y0, x1, y1 order with the far edges
+// as `half + centre` 290 (masked aligned 126 -> 115); the projection's component locals renamed x/y/z 290 (identical); a face-row
+// pointer for the four sphere projections 481 (2814 bytes); a `points` pointer local for the projections and the bounds call 555
+// (2798 bytes). Retail's sphere arm sums the projection's forward row (j, i, k) but its cone arm (k, j, i): per-instance order.
+// Round 97 (m3 lane 9, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0; aligned in brackets, base [273]): the four sphere projections as a
+// corner loop 528 (2810 bytes) [405]; a direction pointer for the negate 290 (same code); the sphere test in a bool 479 (2814) [293]; a
+// matrix pointer set after the memset and passed to 0x141590 479 (2814) [293]; a points pointer for the cone corners 479 (2814) [288];
+// the orthogonal test with the kind cast to short 599 (2778); the cone width and height read into named locals 576 (2800); the far
+// distance in a named local 580 (2796); the sphere point count in a short local 575 (2801). As before, any added local moves the
+// projection rows and the length; none below 290. Body unchanged.
+// Round 161 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0, all matched): in the sphere arm the two flag clears
+// before the depth 352; the reference picked before the up negate 508 (2828 bytes); the matrix scale stored before its
+// position 306; the position and scale stored before the up negate 517 (2840 bytes); the tail flags as 84, 85, 8c 290
+// (same code); the first three re-measure listed forms. New on top: has_plane as `0.0f < offset` 290 (same code); the cone
+// corners read back from the bounds fields 290 (same code); the sphere depth stored right after the radius read 310.
+// Body unchanged.
+// Round 84 (m3 lane 1, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, 290 as the full check; aligned and masked aligned counts in brackets,
+// base [199, 81]): r148's lead (`entry` declared before `bounds` with the cone arm's `entry = entries; memset(entry, 0, sizeof(*entry));`) re-measured
+// 288 [180, 71]; new: those two with the cone bounds stored after the points as x0, y0, x1, y1 288 [178, 67] (everything up to the first cross and the
+// loop tail are then retail's; only float operand folding, the length sum and the projection rows are left; two points, not kept:
+// build/r84/lead-0xc1d90-288.patch); that with the far edges as `half + centre` 288 [178, 67] (same code); the cone-arm form with the bounds order,
+// with or without the far edges, 290 [179, 68]; `entry` first with the bounds order and far edges 288 [196, 76]. Diagnostic on the 288 form: dead
+// initialised locals +1..+8 at the top 477/478/478/482/481/481/477/477 (2809-2814 bytes) [189-196]: no symbol-count phase is nearer than the current
+// one. On the 288 form: the reference as a pointer chosen by a ternary 701 (2749 bytes, first difference +0x2) [382, 173], chosen by an if 684 (2757)
+// [313, 173], chosen by an if before the up negate 704 (2763) [357, 203]; the bounds copied after the memset 305 (2830) [186, 75]. The if-chosen pointer
+// on the kept body 685 (2757) [330, 183]: a reference pointer changes the prologue (retail copies the reference). Body unchanged.
+// Round 87 (m3 lane 1, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290): `bounds` declared at function scope and
+// assigned at the loop top 290 (same code); the entry pointer as a loop cursor (`entry = entries`, `entry++` in the for) 656
+// (2807 bytes). On round 84's 288 lead (re-measured 288, aligned/masked 178/67): the projection storing y before x 297 (2840
+// bytes, retail's length, aligned 195), the plane distance as dot(normal, plane point) 313, the sphere depth from the radius local
+// 529. No other natural form that this note does not already list is left (projection rows, sums, normalize helpers, vertex and
+// face tables, store orders, symbol-count probes). Body unchanged.
+// Round 164 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): light_projection_point_ab reading the point's
+// components in the other five orders (it is used only here): k, j, i 531 (2815 bytes); j, i, k 479; i, k, j 293; k, i, j 481;
+// j, k, i 532 (the declaration orders listed at 551-571 were on the old y-first base). The read order moves every
+// projection's sum tree, but i, j, k stays best. Body unchanged.
+// Round 166 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; masked = register-masked aligned count, base 122):
+// a `short` loop index 659 (2809 bytes); the forward cross through the plain shared cross3f 579 (2801 bytes); in the cone arm
+// the up negate before the two copied axes 356 at 2840 bytes (masked 160); the bounds declared once outside the loop 290
+// (same code); the cone plane point from the shape's origin instead of the matrix position 600 (2777 bytes). Body unchanged.
+// m3 lane 2 r71 (fast with the same list): light_projection_point_ab with `transformed` declared first 290 (same
+// code), with the rows as three named scalars 539 (2801 bytes), with the point copied as a vector3f 623 (2891); the
+// point read in each arm of the scale test (if/else) 554 (2756); the face table declared first, then vertices and
+// directions 424, then directions and vertices 442 (both at retail's 2840 bytes; the bounds copy and memset then
+// misalign). Body unchanged.
+// M3 lane 9 r109 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, base 290, aligned 273, masked 148): what differs is
+// unchanged (the entry pointer formed before the bounds' last stores, the projection rows' sum orders per instance, the left
+// normalize's sum, the cone plane distance stored through [esi + 0x80] where retail stores through the plane's own pointer, the
+// cone scale divided before the centre projection, the loop-end cursor registers); no untried natural form left and no
+// existing plane setter in include/. Body unchanged.
+// M3 lane 14 r83 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0xc35a0/0xc28b0; matched 0xc35a0 reads DIFF in every
+// --fast run here, the unmodified file too): the cone half height before the half width 290 (different code); the plane
+// distance as dot(plane point, frame->forward) 600 (2777 B); the plane point scaled by shape->origin_offset 554 (2803 B);
+// the cone bounds computed into `bounds` and the corners read back from it 486 (2809 B); the scale before the centre
+// projection re-measured 597 (2780 B). Round 84's 288 lead with the half height first 288 (masked 106 against 126); on it
+// the cone scale from entry->plane_offset 560 (2815 B), depth stored before the plane 301, has_plane tested on
+// entry->plane_offset after its store 560, the matrix scale stored before the position 305, the edges computed x0, y0,
+// x1, y1 288 (masked 101). Same code: `real const radius`, `transformed` declared first in the projection helper, its
+// -1/k local renamed.
+// M3 lane 3 r236 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0/0xc35a0; aligned 273, register-masked 122): the
+// existing vector3f_add_scaled (vector_products.h) for the cone plane point 290, with the distance through dot3f(plane
+// point, normal) 290 (same code each: the file's point_add_scaled_c35a0 is the same expression). Checked the other include/
+// vector helpers: vector3f_rotate_into_axes sums the matrix columns (not the projection's rows), plane_distance_to_point
+// subtracts d (not the plane's own distance), magnitude3d is out of line (retail has no call), the reciprocal normalizers
+// skip only a zero length (retail tests 1e-4). Re-measured on this base: cross3f for the left cross with normalize_inline
+// 548 (2817 B, masked 146); the file's cross_product_c1a80 there with normalize_inline 566 (2810 B, masked 134). No unlisted
+// helper or natural form is left.
+// m3 lane 15 r79 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, = full 290; masked = aligned rows with registers and
+// constants masked, 108): `__forceinline` declarations on the projection helper, the negate helper, the file's dot helper
+// (0xc1a80 and 0xc0520 stay matched), and forceinline redeclarations here of normalize3d and cross3f_staged: 290 each (same
+// code). In the forward cross retail loads the left vector's component first in every product except those with left.i,
+// and reloads left.i after the normalize where ours keeps it in XMM5 from the first cross. The direction table declared
+// before the face table 322, declared first of the three 367.
+// M3 lane 2 r79 (fast with the file's functions, 28 MATCH unchanged; base 290): retail's left normalization is 0x30bf0's own code
+// (loads k, j, i, sums (i*i + k*k) + j*j, then `v->i * inv`, `inv * v->j`, `inv * v->k`), but that function's file is /Ob1 and
+// LTCG keeps it a call here: function_30bf0 with a `__forceinline` redeclaration 701 (2730 B, still called); a private inline
+// copy of its exact text 290 (same code as normalize3d: the x87 order follows the context, not the text). Also: the count test
+// without its `(short)` cast 598 (2815 B, a dword compare for retail's word neg/sbb); the face and direction tables `const` 290
+// (same code); one `vector3f const *` for frame->forward in the cone arm 579 (2797 B); the cone half extents as one point2f
+// 480 (2813 B). Lane 1 r84's lead re-measured 288; the private normalize is round 148's listed form (290).
+// m3 lane 8 r164 (fast with 0xc1a80, MATCH each time; base 290). Retail sums every projection's rows in one order, i
+// (fj vj + fi vi) + fk vk, j (li vi + lk vk) + lj vj, k (uk vk + ui vi) + uj vj, where ours varies per instance: those rows
+// parenthesised 554 (2801 B), with the left row as (lk vk + li vi) + lj vj 554. The projection storing y before x 299 at
+// retail's 2840 bytes (retail stores y first in every instance); on it the cone corners stored before the bounds, both
+// in retail's x0, y0, x1, y1 order, 303 (2832 B: that tail's stores are then retail's, but the cone scale is still divided
+// ahead of the centre projection), with the far edges as `half + centre` 303 (same code). All restored.
+// M3 lane 16 r117 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): `vector3f reference;` declared at the top of the
+// loop body, of the sphere arm or of the function (assigned in place) 290 each (same code); the cone scale declared ahead
+// of `center` 290 (same code); the scale computed before the centre projection 597 (2780 B).
+// M3 lane 7 r161: no unlisted natural form found (the first difference is the memset's `lea edi` scheduled inside the
+// bounds copy; the rest is the listed float operand order, the normalize sum and the projection rows).
+// m3 lane 8 r168 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): in light_projection_point_ab each row's sum order
+// moves with the order the three components are scaled: the scale statements as vk, vj,
+// vi (match-only, a statement order) 281 at retail's 2840 bytes; the rows then use retail's register pattern but hold other
+// components (ours fj vj + fk vk + fi vi, retail fj vj + fi vi + fk vk), and the point loads become i, j, then k where retail
+// loads j, k, then i. Grid of read order by scale order (36 forms): reads ijk or ikj with scales kji 281/281, jik 286/286, kij
+// 290/289, jki 297/297, ikj 299/298; reads beginning with j or k 479-532 (2814-2815 B). Also: the scale test `1.0f !=
+// matrix->scale` 479 (2815 B; one phase step, like a dead local), with +1..+7 dead locals 505-510; dead locals on main +1..+7
+// 479/480/480/484/483/483/479; the result products `transformed.i * scale` 290 and the scaling as `vi = scale * vi` 290 (same code);
+// the reference by if/else 574 and by a ternary copy 643 (re-measured). Body unchanged.
+// M3 lane 13 r95 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): the reference test as
+// `i == 3 || i == 1` 565 (2840 bytes); the arm test `shape->kind == 0` without its `(short)` cast 577 (2816); the sphere
+// depth and flag clears after the matrix setup 575 (2831); in the cone arm the left copy ahead of the forward copy 300;
+// the sphere point count stored ahead of the four projections 638 (2806). Body unchanged.
+// M3 lane 9 r126 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, control 290): the sphere depth from the `radius`
+// local 531 (2831 B); `center` declared at the cone arm's top 290 (same code); `box2f bounds;` assigned after the entry
+// pointer 288, with `entry` declared first 288 (two points, under the bar); `entries + i` 290 (same code). Body unchanged.
+// M3 lane 8 r172 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; the file's other matched functions
+// build differently in the reduced image, so they are no guide there): the entry pointer and its clear ahead of the bounds
+// copy 305; the element cleared through `&entries[i]` before the pointer is named 628 (2821 B); the cone scale written at
+// both uses with no scale local 580 (2797 B); the cone arm without `entry = entries;` 721 (2744 B: the reassignment is
+// retail's); the two true flags as one chained store 290 (same code). Body unchanged.
+// M3 lane 11 r109 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290): in the cone arm
+// `entry = entries;` ahead of its memset, cleared through `entry` 290 (same score); in light_projection_point_ab the
+// pre-scale reciprocal renamed `inverse` (it shared the name `scale` with the perspective factor) 290 (names do not
+// move it); the three transformed rows as named scalars (no `transformed` vector) 539 (2801 B); the sphere arm's
+// reference copy declared at the arm's top, ahead of the radius and the tables, 418 (2831 B); the radius read at the
+// loop top ahead of the entry pointer and its memset 304. Body unchanged.
+// m3 lane 1 r115: no form run. Checked against this note: retail's left normalize reloads each component from memory after
+// the length test (0x30bf0's code, whose declaration on main is noinline; its private copy was the same code as normalize3d,
+// m3 lane 2 r79), and the projection rows, sums, store orders and helper forms are all listed above.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1347,6 +1513,14 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius, lo
 void function_11bed0(s_location *location, point3f const *point);
 point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
+// score 2 (was 2): exact in the reduced (--fast) image; in the full image the two reloads after the
+// marker call (light_index from its stack home into EBP, the definition spill into EBX) come out in
+// the other order, a scheduling tie that the contents of other files flip. Round 76 (m3 lane 10):
+// the light and definition through typed record fields 234 fast (1032 bytes: the weapon-marker byte
+// test becomes a dword shift-and-test); the same with that test written in the if 156 (1007 bytes);
+// the one-use weapon-marker bool removed alone 156 (1007); the marker declared in the else arm 8
+// fast (the forward load moves ahead of the position copy); the parameter-address local declared
+// before the marker 2 plain (the same tie).
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {

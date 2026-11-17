@@ -7,7 +7,14 @@
 #include "unknown_0a9f20.h"
 #include "reference_counted_2d88a0.h"
 
-class kind_object_3192b0 : public c_reference_a9f20
+// Shared teardown has no table transition before the reference-base call.
+class __declspec(novtable) kind_reference_3192b0 : public c_reference_a9f20
+{
+public:
+	virtual ~kind_reference_3192b0();
+};
+
+class kind_object_3192b0 : public kind_reference_3192b0
 {
 public:
 	kind_object_3192b0();

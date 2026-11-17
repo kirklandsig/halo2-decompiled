@@ -123,8 +123,12 @@ PRIVATE inline void timed_effect_point_fallback(point3f *point)
         *point = *g_468720;
 }
 
-// score 19 (was 454): same size and instructions; retail stores each interpolated value
-// before it loads the next pair of inputs, where ours loads one input ahead of the store.
+// Matches retail: destination references keep each store before the next input loads.
+// (Codex P555, 11-16: each output's reference declared just before its call.) Earlier 19 (was 454): same size and
+// instructions; retail stores each interpolated value before it loads the next pair of inputs, where ours loaded one
+// input ahead of the store.
+// MiniMax E (11-16), NOT kept: the eight outputs through one-use pointer locals declared together ahead of the calls
+// measured 19 in the merge check (its run reported a match the merge did not reproduce).
 // @retail 0x1fd20
 s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
 {
@@ -139,9 +143,12 @@ s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
             ? (real)PIN((g_4858a0 - globals->unknownd0) / (globals->unknownd4 - globals->unknownd0), 0.0, 1.0)
             : 1.0f;
 
-        timed_effect_interpolate(globals->unknownb0, globals->unknownb4, fraction0, &globals->unknown04);
-        timed_effect_interpolate_clamped(globals->unknownc0, globals->unknownc4, fraction1, &globals->unknown10);
-        timed_effect_interpolate_clamped(globals->unknownc8, globals->unknowncc, fraction1, &globals->unknown14);
+        real &output_04 = globals->unknown04;
+        timed_effect_interpolate(globals->unknownb0, globals->unknownb4, fraction0, &output_04);
+        real &output_10 = globals->unknown10;
+        timed_effect_interpolate_clamped(globals->unknownc0, globals->unknownc4, fraction1, &output_10);
+        real &output_14 = globals->unknown14;
+        timed_effect_interpolate_clamped(globals->unknownc8, globals->unknowncc, fraction1, &output_14);
 
         timed_effect_point_fallback(&globals->unknown18);
 
@@ -204,11 +211,16 @@ s_timed_effect_globals *function_01fd20(s_timed_effect_globals *result)
         real fraction4 = 0.0f;
         if (globals->unknown128 != globals->unknown124)
             fraction4 = (real)PIN((g_4858a0 - globals->unknown124) / (globals->unknown128 - globals->unknown124), 0.0, 1.0);
-        timed_effect_interpolate(globals->unknownfc, globals->unknown100, fraction4, &globals->unknown4c);
-        timed_effect_interpolate(globals->unknown104, globals->unknown108, fraction4, &globals->unknown50[0]);
-        timed_effect_interpolate(globals->unknown10c, globals->unknown110, fraction4, &globals->unknown50[1]);
-        timed_effect_interpolate(globals->unknown114, globals->unknown118, fraction4, &globals->unknown50[2]);
-        timed_effect_interpolate(globals->unknown11c, globals->unknown120, fraction4, &globals->unknown50[3]);
+        real &output_4c = globals->unknown4c;
+        timed_effect_interpolate(globals->unknownfc, globals->unknown100, fraction4, &output_4c);
+        real &output_50_0 = globals->unknown50[0];
+        timed_effect_interpolate(globals->unknown104, globals->unknown108, fraction4, &output_50_0);
+        real &output_50_1 = globals->unknown50[1];
+        timed_effect_interpolate(globals->unknown10c, globals->unknown110, fraction4, &output_50_1);
+        real &output_50_2 = globals->unknown50[2];
+        timed_effect_interpolate(globals->unknown114, globals->unknown118, fraction4, &output_50_2);
+        real &output_50_3 = globals->unknown50[3];
+        timed_effect_interpolate(globals->unknown11c, globals->unknown120, fraction4, &output_50_3);
 
         for (long i = 0; i < 4; i++)
         {

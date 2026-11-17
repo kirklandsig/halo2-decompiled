@@ -311,11 +311,35 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// score 2 (was 2): only the two loads' registers differ: ours loads the samples address into EDI (the data
+// pointer's dying register) and the entry's data offset into EDX, retail the samples into EDX and the offset into EDI.
+// MiniMax E (11-09): 2 (was 7): the samples pointer is copied into a dword and the scale is passed
+// sample-base/offset registers and final object setup remain;
+// MiniMax E (11-09): score 2 (was 7): the samples pointer is copied into a dword and the scale is passed
+// straight to the callee, so the scale is loaded early and the sum's first operand is the samples pointer,
+// which matches retail's load order and its call setup (the curves address by lea ecx and the object index
+// loaded after the pushes); what is left is the two loads' destination registers, ours putting the samples
+// pointer in EDI (the data pointer's own register) and the entry's data offset in EDX, where retail puts
+// the samples pointer in EDX and the offset in the dying EDI.
+// MiniMax I (11-08): no new form, no lower score (7); the sum spelled with the samples pointer first gives the same bytes.
+// MiniMax R (11-06/07): the samples' memcpy form (2; H 11-04, C 11-06) again, not kept; a memcpy copy of the entry's data offset 3
+// (also a field's bits read through its address), every plain spelling of the sum 8, the offset through the
+// array expression 23, a short cast of the offset 17.
+// MiniMax C (11-06): no new form, no lower score; copying the samples' address into a dword with memcpy
+// and passing the scale straight to the callee scores 2, and copying the entry's data offset instead scores 3,
+// but both read a field's bits through its address and are not kept; passing the scale straight to the callee
+// gives retail's lea ecx and its late object index but loads the scale last (8), and the sum still loads the
+// entry offset into EDX as the add's destination in every spelling (the source order, the offset cast to
+// unsigned, int or size_t, the samples as an integer, the offset as a pointer and both as dwords all give the
+// same bytes); keeping the scale's volatile read and passing the scale as well loads the scale twice; a union
+// overlay of the samples' pointer and its address, the index form (&samples[data_offset]) and the sum with
+// both operands cast to size_t all score 8, so the original body is restored.
 // MiniMax H (11-04): no new form, no lower score; the tail still loads the entry offset into EDX and the samples into ESI where retail loads the samples into EDX and the offset into the dying EDI, and the object index still loads into ECX before the pushes; every spelling of the sum gives the same bytes (7).
 // MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
 // loads before the pushes, and the permuter's 1806 tries never beat 7.
-// score 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
+// Earlier 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
+// Earlier (7, was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
 // retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
 // into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
 // where retail uses lea ecx. This round: the front end canonicalises the sum, so every spelling gives the
@@ -327,7 +351,15 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
 // last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
 // 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
-// score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
+// MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
+// entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
+// MiniMax S (11-09): the 2-diff memcpy form still differs only in the two loads' registers (retail keeps the
+// sample base in EDX and the offset in EDI, ours the other way round); a round trip of the base through a dword
+// folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
+// in the add's destination, at 7 or 8.
+// Earlier 2 (was 7): sample-base and offset registers plus object call setup remain; readonly data
+// Earlier (7, was 7): sample-base and offset registers plus object call setup remain; readonly data
+// Earlier (2, was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
 // output callee 7; final object address read 7; split construction around count 9; split
@@ -340,6 +372,83 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // MiniMax H (11-04): the curve address built from the samples' address copied into a dword with memcpy, plus
 // the entry's data offset, with the scale passed straight to the callee: 7 -> 2. NOT kept: the memcpy reads the
 // field's bits through its address (kept only with a byte match); without it the same body is 8.
+// T80: Count-presence/missing results at the original comparison, bool/byte/short/long:
+// 7/7/7/7/7/7/7/7. Sample-base/offset register reuse and final object setup remain.
+// NOT kept: no byte equality or qualifying gain; original complete body restored.
+// MiniMax R (11-09): no new form, no lower score (7): the curve set's address is built from the
+// entry's data offset plus the samples' address with the operands in the other order here (ours adds
+// the samples to the offset, retail the offset to the samples), the curve pointer is computed in eax
+// here and in ecx in retail, and the scale is loaded before the pointer's push in retail and after it
+// here; the memcpy form that reads the field's bits through its address is the only one that reaches
+// 2 and it is kept out of this lane's changes.
+// Lane 9 r99 (fast): a file-local helper returning a tag data's address plus an offset, over the promotion data's head
+// read as that tag data (diagnostic cast), 8, with the count stored first 10, the helper indexing `&address[offset]` 8;
+// the count stored before the address 4; on the memcpy body the offset in a named local before or after the copy 2/2,
+// the sum as an integer sum either way round 2/2, the offset written first 2 (all the same code); `samples_address +=
+// offset` then the cast 8; the copy made straight into the curve set's address field, then `+=` 8.
+// Round 156 (m3 lane 8, fast): 1-16 unused initialised locals at the top, 1-8 between data and entry, 1-8
+// before the copy all 2 (no numbering tie: VC ranks the add's operands by tree depth); a promotion pointer
+// with `promotion->data->samples + offset` 22 (the samples become the add's destination, as retail, but
+// the plain-sum schedule returns), with the copy from that read 23; the samples through the full promotion
+// expression 25; the count stored first on this body 4, on the plain sum 10; an inline helper filling the
+// set through a pointer 8 (count first 10), returning it by value 10/10; both reads copied with memcpy 9/9.
+// Round 77 (m3 lane 15, fast with every function in this file): the copy into a `byte const *` local then `samples +
+// offset` 2, `&samples[offset]` 2, the dword indexed as `&((byte const *)samples_address)[offset]` 2, the entry as
+// `data->entries + entry_index` 2, no count local (the count read at the test and the store) 2, all the same code;
+// re-measured: the offset read into a local at the top 2 (same code), the offset through `data->entries[...]` at the
+// sum 23. The permuter on this memcpy body (600 s, anneal): 68 tries, best 2 on both images.
+// Round 160 (m3 lane 8, fast): in retail both reads are plain temporaries of one sum evaluated while the scale sits in
+// EAX: the samples go to EDX (the destination) and the offset to EDI, free once the samples are read. The curve set
+// built as a temporary object in the call's argument list 8 (the plain sum's code: the sum is still evaluated ahead
+// of the scale); the plain sum with 1-3 unused locals 8 each (no count effect); the entry's data offset copied with
+// memcpy instead of the samples 3 (the samples become the EDX destination as in retail, but the offset is read first,
+// into ESI in place), with a samples local before or after it 3/3, with the count read again from the entry 3; the
+// address field assigned the samples and then advanced by the offset 8, by the memcpy'd offset 3 (also with the samples
+// copied straight into the field); the set as an aggregate initializer 10 (the count stored first frees EBX for the
+// second read; with a samples local or the index form 10/10); the field assigned, the count stored, then the field
+// advanced 11, with the memcpy'd offset 10.
+// Round 195 (m3 lane 4, fast): the curve set as the existing two-field tag-data aggregate (size, address) 2; the object
+// test nested in its own if 2; the curve address through an inline helper taking the data pointer and the offset 8 (the
+// plain sum's schedule: the add ahead of the scale load); the curve set and the copy declared at function scope 2; the
+// guard as an early return 2 (all the 2s the same code).
+// Round 200 (m3 lane 4, fast): retail's tail is the samples plus the offset with the samples as the add's destination
+// (EDX) and the offset in the dying EDI; every form whose samples read is a leaf or as shallow as the offset's makes the
+// offset the destination. A deeper samples read gives retail's tail registers but rotates the head's: through a promotion
+// pointer 22, through the full promotion expression 25 (re-measured). On the plain sum: the offset in a local read before
+// the count store 10; a pointer to the offset field 8; entry declared bare first and assigned after data 8; data renamed
+// to sort after entry 8; no data local, the full promotion expression for the entries and the samples 25.
+// Round 184 (m3 lane 6, fast): every non-memcpy form below has the plain sum's schedule (samples into EAX ahead of the
+// scale, the offset the add's destination): an inline setter returning the set's address, called in the call's argument
+// list, 8 (with the memcpy'd samples 2, same code as this body); an inline tag-data address helper taking (tag data,
+// offset, size) over the data head 8; the set as the existing two-field tag-data aggregate with the plain sum 8; the
+// samples fetched through an inline out-parameter getter into an address-taken local 8 (only memcpy keeps the scale first);
+// the offset through an inline entry getter, plain samples 8, memcpy'd samples 2 (the getter's result propagates).
+// Round 91 (m3 lane 15, fast): the memcpy replaced by a conversion of the samples address: `(byte const *)(dword)
+// data->samples + offset` 8, a dword local initialised from that cast 8, `(byte const *)(data->samples + offset)` 8,
+// `(byte const *)((dword)data->samples + offset)` 8, through `(void const *)` 8 (all the plain sum's schedule).
+// M3 lane 11 r108 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10, all matched throughout): the set built and passed
+// in a forceinline helper taking (object, tag, samples, offset, count, scale) with the plain sum 8 (the add still runs
+// ahead of the scale load); the samples block read as a by-value copy of the existing two-field tag-data aggregate of
+// include/unknown_246cd0.h (address + offset) 28 (155 bytes: the dead size copy stays); the sum named where it is
+// computed with the count stored before the address 4 (registers unchanged, the stores follow source order); a
+// forceinline setter taking (set, count, offset, samples) and returning the set, called in 0x10e480's argument list with
+// the plain sum 8; `entry` declared before `data` and the copy local before the set 2 (same code). Reading of the
+// listings: in every plain-sum form the samples take EAX, so the scale load (EAX) waits for the add; retail's samples
+// and offset are both short temporaries (EDX, then EDI only because EAX holds the scale and ECX the set's address and
+// the object index across the add), which needs the add to come after the argument setup in the IR.
+// Round 91 (m3 lane 2, fast with 0x10e480): the plain sum with the scale first copied into a block local passed
+// to the call 8 (samples into EAX, the offset still the add's destination, the add ahead of the scale load); on
+// the copy body: const data, const entry and const sound pointers 2/2/2, a `long const` count 2 (same code). Restored.
+// Round 94 (m3 lane 2, fast with 0x10e480): the offset in a named local on the plain sum 8; the set's address field
+// bound by reference, assigned the samples, then `+= offset` 9 (the samples become the add's destination with the
+// offset in EDI as retail, but the offset loads first into EAX and the samples reuse EDI, ahead of the scale); the
+// same with the count stored first 11; the copied samples assigned to the field then `+= offset` 8 (the plain sum's
+// schedule returns); the samples copied with memcpy straight into the referenced field, then `+=` 9; the copied
+// samples assigned to the referenced field, then `+= offset` 9; a `dword &` bound to the copy, `+= offset`, then
+// stored 2 (same code). A compile-only screen (CL without /GL reproduces this body's tail) shows the add's first
+// operand is the more complex one and, for two field reads, the offset (pointer arithmetic puts the index first);
+// every plain spelling, rename (data after entry), declaration order or integer sum keeps the offset first; only a
+// non-forwardable offset (a copy of the entry, a memcpy, or a reference to the result) puts the samples first.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -351,12 +460,12 @@ void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permut
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		union { dword field_0; real field_4; } local_0;
-		dword const volatile *local_1 = (dword const volatile *)&scale;
-		local_0.field_0 = *local_1;
-		curves.data = entry->data_offset + data->samples;
+		dword samples_address;
+
+		memcpy(&samples_address, &data->samples, sizeof(samples_address));
+		curves.data = (byte const *)samples_address + entry->data_offset;
 		curves.count = count;
-		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, local_0.field_4);
+		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
 }
 
@@ -549,8 +658,36 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax I (11-16): no new form, no lower score (184): spelling the flags aggregate with byte-wide members and
+// byte-wide bitfields (retail tests a byte at offset 4) scores 336 and was restored, the last condition split into two
+// nested tests is 184, and the permuter over the reduced image found nothing below 184; what still differs is the frame,
+// 0x84 against retail's 0x80, because the literal 1 is pooled into EBX and the leftover store takes a four-byte home, which
+// moves the case-3 vector, the marker and the trailing dword four bytes up, and the top field is read as a value where
+// retail reads it through a pointer.
+// MiniMax C (11-16): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80, so the extra four bytes are not in the case-0 cluster local, the object index local or the marker name local (dropping each of them leaves the frame at 0x84 and the score at 184); what is left is the pooled literal 1 in EBX, the four-byte gap between case 3's compress source and the 0x17b2d0 out-parameter where retail shares one slot, and the audibility byte's store.
+// MiniMax I (11-15): no new form, no lower score (184): the only lever left is the held chain - `inline` on 0x188790's
+// definition, which lives in src/unknown_1887d0.cpp and not in this lane's file (113 alone, 49 with the ternary this body
+// already keeps), and the steps after it rest on match-only forms; the body stands.
+// MiniMax R (11-17): no new form, no lower score (184): the frame is still 0x84 against retail's 0x80, the constant 1
+// still sits in ebx, and the audibility byte and the flag stores still take other registers; the chain that reaches
+// the lower scores needs the inline contract on 0x188790, whose definition is in src/unknown_1887d0.cpp, and the rest
+// of that chain (the flags cleared by memset, the named listener, the named object index) may be kept only with an
+// exact match.
+// score 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
+// where this build keeps it in ECX with a 0x84 frame, and that follows whether 0x188790 is expanded, which is decided
+// by its definition in src/unknown_1887d0.cpp: BLOCKED-BY that file.
+// score 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
+// ruling): `inline` on 0x188790's definition, 113 alone and 49 with the ternary (build/r170/held-0x18cbc0.patch in the m3-lane6
+// worktree); round 170's line at the end of this note has the forms.
+// MiniMax E (11-10): no new form, no lower score (246); the literal 1 is still pooled in EBX, so the frame stays 0x84 against retail's 0x80 (a byte flag field 324, word bitfields 246 and the flag-0 bitfield test 324 all score the same or worse).
+// MiniMax E (11-06), at 246 (was 264): the type cases now run 0, 2, 3 as retail does, with the type test
+// falling through to case 3; case 3 keeps its own failure byte and calls the position routine only when
+// flag1 is clear; the audibility byte is declared at the audibility call. Not kept (coordinator): case 0's listener
+// as a one-use local read before the 0x1000 flag store (244; 246 without it). Still different: our frame is 0x84 against retail's 0x80, so every stack home is
+// off by four; retail merges the audibility byte into the 4-bit field where ours assigns it; retail's clear
+// path sets the flag byte with `or byte ptr [edi], 2` where ours folds it into a word store.
 // MiniMax C (11-04): no new form, no lower score: the flag-0 mask is the same literal 1 as the type tests and the shift, so the compiler hoists it into EBX and the frame stays 0x84 (a unique mask value folds to `test byte ptr [esi+4], imm`); a byte flags field with byte or word bitfield views, the mask spelled byte, unsigned, long, short, true or character, `== 0`, `!= 0` and `% 2`, the type test as a switch, and the audibility form that reproduces retail's neg/sbb/inc store all score 265 or worse.
-// score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
+// Earlier 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
 // so the object pointer goes to ECX; retail tests with immediates and loads `mov bl, 1` only after the b8d30
 // call. Retail also stores case 3's failure byte (`neg/sbb/inc`, slot shared with the audibility output) and
@@ -683,6 +820,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// Round 154 (m3 lane 6, fast with 0x188790 exact): `inline` on 0x188790's definition gives retail's 0x80 frame, xmm0
+// re-zeroed after the calls and the object in EBX but scores 301; on it case 3's failure as `bool failed = true` set
+// from the call only when flag1 is clear 162, audible declared right before 0x18d4f0 134, the object index named
+// before it 125, the top field as `sound->type == 0 ? sound->owner : g_444ae0` 91, cases in order 0, 2, 3 40, the
+// flags cleared by memset 22, a long listener named ahead of the 0x1000 flag 20 (aligned 15). Without the `inline`
+// and the match-only forms (ternary, case order, memset, audible placement kept) 287. NOT kept: the 20 rests on a
+// compiler hint on another function and on match-only forms; the chain is held as build/held/l6-1106-18cbc0-inline-chain.patch.
 // AC555: Effect-provider char/byte/signed-char returns with original Boolean
 // and native failure receivers, eight forms 264 each; provider stays exact. NOT
 // kept: no gain; original declarations/body restored; one-spill/failure byte remain.
@@ -693,21 +837,83 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // N396: Selected owner-word memcpy/memmove through conditional/branch/selected-source/negative
 // sources: 264/307/280/324/264/307/267/310. NOT kept: no equality or gain; original owner transfer
 // and body restored, constant-one spill and native failure-byte store remain.
+// b5F (11-06) statement walk against retail 0x18cbc0-0x18cfc4, no logic or precision difference found: every field, offset, test
+// direction, callee and argument matches (flag0 0x18cdab, type 1 owner/NONE selects 0x18cdb5/0x18cecd, object-type mask 0x400
+// 0x18cddf, field tests 0x134/0x138/0x13c/0x140 are > 0 and 0x144 is < 0 at 0x18ce14-0x18ce86, comiss only, no rounding steps;
+// case 0 cluster/leaf/bsp stores 0x18cd88-0x18cda7; case 2 impact stride 0xa0 at 0x18cd2f; case 3 effect stride 0x190 and velocity at +0x30
+// at 0x18cc83; audible merge 0x18cf7b-0x18cf9f; flag5 -> 0x400 at 0x18cfac). Spelled the case-0 location stores through
+// s_location's leaf_index/cluster_index/bsp_index (same bytes, 246) and dropped the (short) cast on the cluster store (246).
+// Tried: flags |= 0x1000 or unknown0c |= 1 in place of the byte-wide or 249 (word or); the case-3 failure as a block-local
+// without the true default (call path only, size 1029 as retail) 285 (loses the failure byte retail stores at 0x18cc60 on the
+// call path only); cluster as short 250. Not matched: frame 0x84/0x80, the constant 1 in EBX, case 2's `or byte [edi], 2` (ours folds to a word store).
+// Round 170 (m3 lane 6; fast unless marked, 0x188790 and 0x21db80 MATCH in every row; al/m = aligned / register-masked
+// aligned counts). Kept: the top field as `sound->type == 0 ? sound->owner : g_444ae0` 184 (plain, 1034 B, al 82, m 48; it
+// no longer takes the address of the shared const g_444ae0). Held: `inline` on 0x188790's definition 113 (0x188790 stays out
+// of line and exact; ours then re-zeroes xmm0 after its calls and keeps the object in EBX as retail, frame 0x80), with the
+// ternary 49 (plain, 1031 B). On the held 49, round 154's match-only chain: the object index named before audible 40, flags
+// cleared by memset 22 (1029 B), the listener named ahead of the 0x10 flag store 20 (al 15, m 9). Left at 20: retail selects
+// the top value through a pointer (`lea eax, [esi + 0x10]; ...; mov eax, 0x444ae0; mov eax, [eax]`, main's earlier spelling),
+// and its marker position copy runs edx/eax/ecx where ours runs eax/ecx/edx. On the 20 chain: main's pointer select 98 (head
+// exact as retail's, but the load lands in EDX where retail reuses EAX and every scratch register after it is one step off;
+// al 171, m 13), without the object index 107, memset only 109; the select written `sound->type != 0 ? g_444ae0 :
+// sound->owner` 305 (al 14, m 8: everything but those two spots agrees, one instruction short), `*(sound->type != 0 ?
+// &g_444ae0 : &sound->owner)` 101, as an if/else 317; the type read once into a char for the select and the switch 157;
+// the datum as pointer arithmetic 98 (same code); the three type-0 ternaries through small inline accessors 20/98 (same
+// code as the written ternaries). On the kept 184 (no inline): the object index named before audible 184 (9 lines differ),
+// memset 177, the listener named 182, all three 175; the select with swapped arms 307; a char type for the select and the
+// switch 302. On the 175 chain: the marker name as a ternary 174 (alone on 184: 183), the 0xbab40 call through the object
+// block's index 199 (1005 B); on 174: the audibility test as `!location->audible && (*definition & 8)` 173; on 173: the
+// 0x400 flag as `|= ... ? 0x400 : 0` 185 (186 on 174), case 2's `audible = 1` after its if/else 373 (0x21db80 lost),
+// the 0xba1d0 call through a named object index 183 (1020 B), case 3's failure test with the clear first 218. Same code:
+// a char failure flag, `marker` or case 3's forward vector at function scope, braces on the last else, case 0 as an
+// early break, case 0's 0x10 flag as a word or.
+// MiniMax B (11-11): score 184 (was 246): the location's second dword now takes the owner's value instead of
+// the address of the owner field, which keeps the address out of the load; still different: the frame is 0x84
+// against retail's 0x80, the literal 1 is still pooled in EBX (retail tests with immediates and materialises it
+// only for the shift), and the audibility byte and the flag stores still take other registers.
+// M3 lane 14 r94 (fast with 0x188790, both as before; base 184, aligned 82, register-masked 48): the clear helper's flag set
+// through a byte view of the flags word 277 (1038 bytes: a load/or/store, not retail's `or byte ptr [edi], 2`). Reading: retail
+// keeps the object pointer in EBX because its caller treats 0x188790 as clobbering ECX and xmm0 (xmm0 re-zeroed after each call),
+// so the literal 1 never gets a register; ours keeps the object in ECX and the zero in xmm2 across those calls. At the end
+// retail shares the last `mov [edi+3], al` between the forced `audible = 1` and the outer `else audible = 0` (load/and/store,
+// laid out before the join); ours emits the else as `and byte ptr [edi+3], 0xf0` after the `ret`. Tried: the forced block as
+// `flags |= 1; audible = 1;` 183 (only the `or` moves up, as retail); the type-1 test inverted with `audible = 0` first 193.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
 	s_loop_location_datum *sound = &((s_loop_location_datum *)g_4ed28c->data)[looping_sound_index & 0xffff];
 	byte *definition = g_4e3b44[sound->tag & 0xffff].bytes;
 	location->flags = 0;
-	location->unknown08 = *(sound->type == 0 ? &sound->owner : &g_444ae0);
+	location->unknown08 = sound->type == 0 ? sound->owner : g_444ae0;
 	location->unknown02 = 0;
 	switch (sound->type)
 	{
+	case 0:
+	{
+		long cluster = sound->type == 0 ? sound->cluster : NONE;
+		if (cluster != NONE)
+		{
+			location->spatial.location.cluster_index = cluster;
+			location->spatial.location.leaf_index = NONE;
+			location->spatial.location.bsp_index = sound->type == 0 ? sound->listener : NONE;
+			((byte *)&location->flags)[1] |= 0x10;
+		}
+		break;
+	}
+	case 2:
+		location->audible = 1;
+		if (!TEST_FIELD_BIT(sound->flag1))
+			impact_sound_location_get((s_impact *)((byte *)g_51ebfc->data + (sound->owner & 0xffff) * 0xa0),
+				(s_impact_sound_location *)&location->spatial, &location->scale);
+		else loop_location_clear(location);
+		return;
 	case 3:
 		{
 			location->audible = 1;
 			vector3f forward;
-			bool failed = TEST_FIELD_BIT(sound->flag1) || !function_17b2d0(sound->owner, &location->spatial.position, &forward, &location->scale);
+			bool failed = true;
+			if (!TEST_FIELD_BIT(sound->flag1))
+				failed = !function_17b2d0(sound->owner, &location->spatial.position, &forward, &location->scale);
 			if (!failed)
 			{
 				location->spatial.compressed_forward = vector3d_compress(&forward);
@@ -717,25 +923,6 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 			else loop_location_clear(location);
 			return;
 		}
-	case 2:
-		location->audible = 1;
-		if (!TEST_FIELD_BIT(sound->flag1))
-			impact_sound_location_get((s_impact *)((byte *)g_51ebfc->data + (sound->owner & 0xffff) * 0xa0),
-				(s_impact_sound_location *)&location->spatial, &location->scale);
-		else loop_location_clear(location);
-		return;
-	case 0:
-	{
-		long cluster = sound->type == 0 ? sound->cluster : NONE;
-		if (cluster != NONE)
-		{
-			*(short *)((byte *)&location->spatial.location + 4) = (short)cluster;
-			*(long *)&location->spatial.location = NONE;
-			*(short *)((byte *)&location->spatial.location + 6) = sound->type == 0 ? sound->listener : NONE;
-			((byte *)&location->flags)[1] |= 0x10;
-		}
-		break;
-	}
 	}
 	if (!(sound->flags & 1))
 	{
@@ -756,7 +943,6 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 	else location->scale = sound->scale;
 	if (sound->type == 1)
 	{
-		char audible = 1;
 		long marker_name = 0;
 		if (sound->marker != NONE) marker_name = function_b8c40(sound->owner, sound->marker);
 		s_object_marker marker;
@@ -765,6 +951,7 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		location->spatial.compressed_forward = vector3d_compress(&marker.matrix.forward);
 		function_ba1d0(loop_location_object_index(sound), &location->spatial.velocity, NULL);
 		object_get_root_location(loop_location_object_index(sound), &location->spatial.location);
+		char audible = 1;
 		function_18d4f0(loop_location_object_index(sound), &audible, NULL);
 		location->audible = audible;
 		if ((*definition & 8) && !location->audible)

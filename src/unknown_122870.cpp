@@ -9,6 +9,7 @@
 #include "unknown_122870.h"
 #include <xtl.h>
 #include <string.h>
+#include "cache_copy_globals.h"
 
 struct s_cache_tag_instance
 {
@@ -371,7 +372,6 @@ bool function_122d60(unsigned __int64 location, long size, void *buffer)
 long map_location_get(char const *map_name);
 bool map_names_equal(char const *map_name, char const *other_map_name);
 bool function_2148b0(real *progress);
-extern char g_55bd21[0x103];
 extern char const *g_4687fc;
 extern char const *g_468800;
 extern char const *g_468804;
@@ -387,7 +387,7 @@ static __forceinline void cache_map_progress(char const *name, real *output)
 	}
 	else if (location == 2)
 	{
-		if (map_names_equal(g_55bd21, name))
+		if (map_names_equal(g_55b4f0.path, name))
 			function_2148b0(output);
 	}
 	else

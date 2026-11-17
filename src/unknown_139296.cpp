@@ -1265,6 +1265,94 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // of their guards (second, third, both) with a sibling or indexed first loop 118 each (same code); offset-compared do re-measured 12. `__assume` forms: on the
 // count, the offset, the pointer, a count bound or `count > 0` in the for form 1 each; on the first offset, pointer, item, field or count with a sibling first
 // loop 118 each; on the later counts or offsets, the first mask or the pointer after the setup 118 each. A 600 s permuter run, none below 1.
+// Round 96 (m3 lane 12, fast): later loops indexed over the field (`i < field`, element base + i * size) 61 (372 bytes, the count
+// re-read after the calls); the masks declared ahead of the flag and the definition pointer 6; the first loop's offset in the for
+// initialiser beside the count 1; the first guard written `0 < count` 1; the item output declared before the masks 1.
+// Round 58 (m3 lane 2, fast): the masks declared (and zeroed) in reverse order 5; declared bare and assigned zero in
+// reverse order before the call 5; the item output declared ahead of the masks 1; an indexed first loop with the masks in
+// reverse order 122 (375 bytes); the success byte declared after the setup call 19.
+// Round 157 (m3 lane 6; one-file LTCG harness entered through 0x1393f3, exact here). Loop forms (first, second, third):
+// F for form, S guarded do-while, I/J indexed over the field/a named count, X offset and count in the for header, D index
+// and offset in the header, E stepped element pointer, T count first then guarded do-while, G guarded indexed for, H
+// guarded for form, K guarded X, W while with count and offset first. XSS 1 (same code); FXX 7; JXX/JFF/JWW/JFX 6 (loop 1
+// exact, both later loops zero EBX before their guards; fast JXX 6); JSX/JXS/JHX 3 (fast JSX 3); JSS 106 (fast 118, 375 bytes), JTT 105, JHH 106, JGG 51, JKK 72, JTX 106,
+// JGX 49 (two guarded later loops compare with the kept zero, so it stays in EBX through loop 1 and the offsets spill);
+// ISS/IXX/ISX/IXS 87, DSS/DXX/JDD 88, JII 88, JJJ 106, JEE 102.
+// Round 161 (m3 lane 5, fast): first loop as `while (count-- > 0)` 1 (same code); count in the for initialiser with the
+// colour buffer at loop scope 1 (same code); descriptive names for every local 1 (same code); those names with an
+// indexed first loop over the field 106 (379 bytes, as unnamed); the success byte declared after the definition pointer 1.
+// Round 171 (m3 lane 6; round 157's LTCG harness, revived with the build's ballast, reproduces 1). Lead: a `> 0`
+// guard around a for over a nonzero count (`if (n > 0) { long offset = 0; for (long count = n; count; --count) ...`)
+// compares with the mask zero in EBX and lets it die into the offset exactly as retail, but keeps a redundant inner
+// `test eax, eax; je`: harness 102 (aligned 2) with indexed later loops, the same with the offset in the header,
+// `count != 0`, `while (count--)`, `for (; count--; )` or `while (count)`. Indexed later loops (strength-reduced
+// offset zeroed after the guard) are exactly retail's with the for-form first loop (1). Guarded do-while first
+// loops keep the zero: `--count != 0` 106, `--count > 0` 105, decrement in the body 106, `count-- > 1` 106, count
+// before the offset 106, guarded indexed for 106, guarded index do-while 88; the offset before the guard 1 (the
+// guard tests an immediate again); offset and count before a count guard 9. Sibling loops with the draw result in a
+// named bool stored on failure 106, `success = draw(...) && success` 114, `success &= draw(...)` 103; diagnostic: no
+// success flag at all still keeps the zero (106), as retail 0x13a532 does.
+// Round 86 (m3 lane 14, fast): the indexed first loop over a named count with loops 2 and 3 sharing one offset and count
+// declared after loop 1 127 (375 bytes); one element pointer declared at function scope for the current form 1 (same
+// code); the indexed first loop with the later bottom tests written `--count > 0` 125 (381 bytes); the indexed first
+// loop with the four masks declared in one statement 118; the same with a `short` index 138 (373 bytes).
+// Round 174 (m3 lane 6; round 157's harness, counts as its positional differences). Diagnostics: with three sibling
+// (or three indexed) loops every instruction is retail's once the zero is not kept: three masks instead of four,
+// or one more reference to loop 1's offset (a store of it inside loop 1 or after it), each leave only the missing
+// or added store. So the zero (ten uses) ties with loop 1's offset and wins the tie. Forms: one function-scope
+// offset for three guarded do-whiles 115 (it takes arg_4's home), with a shared count 115, three indexed loops
+// over one function-scope index and count 106; one mask typed long (first or last) 106/106; the guard followed
+// by an inner `if (count)` around the do-while, offset before or after it 106/106 (the inner test folds); round
+// 171's guard + `for (count = n; count; --count)` in the first, second or third position with sibling loops
+// elsewhere 102/71/39 (retail's code plus that loop's own `test eax, eax; je`), in all three 103; the first loop
+// indexed with a long/short/word/dword/char/byte index and a long/short/dword count, or sibling with a
+// dword/short/word offset (27 forms) best 105; count-down loops with an up-counting index (`for (i = 0; count > 0;
+// count--, i++)`, `while (count-- > 0)`, the index declared ahead) in any position (11 forms) 106 each; the count
+// read ahead of its guard in the first loop only 31 (no zero register: the masks are cleared with `and`, the
+// count takes EBX, loops 2 and 3 exact), in the second or third only 106/106.
+// Calibration (same harness, diagnostic stores to a volatile global): one extra zero use restores the zero in
+// every form that drops it, so the comparison is one for one and those forms stand at nine. Per loop the sibling,
+// indexed, named-count and guarded-for forms count two, an offset set before its guard (do-while or for header)
+// one, round 171's guard + nonzero-count for one. Against the zero count: any reference to a loop's offset or
+// element pointer, and an in-loop read of arg_2, arg_3, the definition pointer or the success flag (each gives
+// retail's three loops plus the added store); not counted: those three outside the loops, the count, the item
+// pointer, a mask, an in-loop constant store. Forms that add no such reference: typed widget pointers in loops 2
+// and 3, a named masks pointer, the element formed in two statements 106 each (folded before allocation); the
+// first draw routine given the two unused trailing parameters its siblings have 106 (and that routine moves 6).
+// M3 lane 7 r158 (fast): the four masks typed dword with word out-pointers 1 (same code), with the guard-first first loop 118
+// (375 B); the success flag declared after the masks 6; the table pointer declared after the masks 1; the four masks in one
+// declaration 1.
+// M3 lane 11 r103 (fast with 0x13a532, 0x1393f3): sibling first loop with the later loops indexed by a `short` over the
+// field 122 (379 B); sibling first loop with both later loops in round 171's guard + nonzero-count for (S G G, not listed
+// above) 82 (372 B: loop 1 exact, first difference +0xae, each later loop is retail's plus its own `test eax, eax; je`);
+// the same with the inner for testing `count > 0` 118 (375 B: the inner test threads away and the zero is kept again);
+// sibling first loop with later bottom tests `--count > 0` 125 (381 B), with the later counts declared before their
+// offsets 118 (375 B).
+// M3 lane 8 r171 (fast with 0x13a532, 0x1393f3): the indexed first loop over a named count with sibling later loops
+// re-measured 118 (375 B), on it the fourth mask initialised from the first (copy-propagated) 118 and the four masks
+// typed long with `(word *)` out-pointers 118; the sibling first loop with its offset declared bare at the top of the
+// function and zeroed inside the guard 118; sibling loops sharing one function-scope count 127; round 171's guard +
+// nonzero-count for in the first position only, real build 107 (368 B; the guard compares with the zero register, the
+// inner `test eax, eax; je` stays).
+// M3 lane 4 r204 (fast with 0x13a532, 0x1393f3; round 157's letters): JSG 44 (368 B: loops 1 and 2 exactly retail's, the
+// third is retail's plus its inner `test eax, eax; je`), JGS 76 (368 B), JSF 3 (only the third loop's offset zeroed before
+// its guard), JSW 3 (the same), JTG 44 (368 B). So a guard + nonzero-count for in the third position costs one zero use
+// and leaves loops 1 and 2 exact; its redundant inner test is the only difference there.
+// M3 lane 4 r205 (fast with 0x13a532, 0x1393f3; SSS = three guarded do-whiles as 0x13a532): SSS with loop 1's offset named
+// local_8/a_offset/z_offset/local_0/offset 118 each (names do not break the tie); SSS with the later loops' offset and count
+// typed dword/dword, dword/long, long/dword, int/int, or loop 1's dword/dword, 118 each (the zero is shared across types);
+// the four masks zeroed by one chained assignment, local_3 first 5 (store order) or local_6 first 1 (same code), on SSS 122/118;
+// SSS with a `>= 1` guard on loop 1/2/3 120/119/119 (`cmp eax, 1`); `!(count <= 0)` on loop 3 118. Diagnostic (not kept): SSS
+// with one mask left uninitialised gives retail's three loops exactly (the guard's `cmp eax, ebx`, loop 1's offset in EBX,
+// loops 2 and 3 `test` then `xor ebx, ebx`) less the store: retail is SSS with one zero-constant use fewer than ours.
+// Also r205: loop 1's draw call through a file-local bool wrapper (inline or forceinline) on SSS 118/118, on the current body 1.
+// Also r205: the definition as a const reference on SSS 118, on the current body 1; loop 1's element through a
+// `byte const &` on SSS 118.
+// M3 lane 6 r188 (round 157's harness with this build's ballast, control 1): in every S form the three failure stores
+// take BL (the kept zero) where retail stores AL, so the zero gains three in-loop uses; in the current form they are AL.
+// SSS with the draw result named and stored on failure in loop 1/2/3 only 106/106/106; the current form with it in loop 1
+// 107; S first with later `long count = field; long offset; for (offset = 0; count > 0; --count)` 6 (xor before the
+// guard, as S F F); SSS with `success = 0;` 106 (same code).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

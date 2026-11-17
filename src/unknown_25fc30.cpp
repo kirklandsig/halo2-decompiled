@@ -70,7 +70,7 @@ bool function_1b6070(long index, short unknown0, short unknown2);
 bool function_262890(long actor_index, s_reference reference);
 void *function_272a00(long actor_index);
 void *function_1e5240(long actor_index);
-short function_267a80(real *distance, point3f const *point, vector3f const *direction, point3f const *position, vector3f *unknown);
+short function_267a80(point3f const *point, vector3f const *direction, point3f const *position, real *distance, vector3f *unknown);
 void function_1b0710(long object_index, long actor_index, real *distance_squared, real *maximum_distance_squared);
 
 /* the squads (g_51e9d8, 0x98 bytes): the zone they hold and their leader */
@@ -1218,7 +1218,7 @@ void __stdcall function_25f290(
 
 				if (type == 0 || type == 1)
 				{
-					short result = function_267a80(&distance, &context->lines[j].point, &context->lines[j].direction, point, 0);
+					short result = function_267a80(&context->lines[j].point, &context->lines[j].direction, point, &distance, 0);
 
 					if (nearest > distance)
 					{
@@ -1241,7 +1241,7 @@ void __stdcall function_25f290(
 
 					if (result == 0 && context->unknown55)
 					{
-						result = function_267a80(NULL, &context->lines[j].point, &position->unknown40, point, 0);
+						result = function_267a80(&context->lines[j].point, &position->unknown40, point, NULL, 0);
 						if (moving <= result)
 						{
 							moving = result;
@@ -1632,7 +1632,7 @@ bool __stdcall function_25ff90(
 // @retail 0x260060
 void function_260060(
 	long a,
-	long b,
+	short b,
 	s_type_967e20 *context,
 	s_type_b36ac5 *position)
 {
@@ -1722,7 +1722,7 @@ void function_1e3b00(long object_index, long mode, point3f const *reference,
 	void const *unknown0, void const *unknown1, point3f *position);
 short __stdcall function_272af0(s_match_globals *arg_0, point3f const *arg_1);
 short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, long arg_0,
-	void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+	point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 real normalize2d(point2f *v);
 
 /* the whole result 0x1697c0 fills: 0x5c bytes, where the shared view stops
@@ -1737,54 +1737,46 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
-// MiniMax H (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 even when its
-// declaration moves to the function top (it keeps the top byte of the first four byte pack, so retail must
-// create three boolean objects before it), and the product keeps the hit fraction in the register: swapping
-// the two product operands and writing the test as `1.f > a * b` both compile to the same bytes.
-// MiniMax B (11-03): the entry short inlined, the allow flag inlined and the collision flag declared
-// first each promote that flag to a register (261); its byte home and the product order still differ.
-// Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
-// alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
-// MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).
-// MiniMax G (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 and the product keeps the hit fraction in the register.
-// score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
-// and the product loads the hit fraction where retail loads the distance.
-// Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
-// collision flag, scoped ray setup/result, guarded collision fraction, hit distance, native
-// collision output, ray/distance endpoints, final query point, projection and displacement
-// workspace forms, product operand swap, flipped comparison, named product local, local_4
-// rename, local declaration orders, uninitialized-early local_22; none beat this score.
-// its low word, so the test reads it as a short (same width pattern as the kept cast in
-// 0x1af5c0); that also cleared the constant/call-address artifacts and the trailing pad.
-// Still differ: the collision bool's byte home (+0x13 against +0x10), the product's load
-// order (loads the hit fraction where retail loads the distance), and the allow-byte init
-// store placed after the second type test in retail (sunk past the first branch).
-// Earlier rounds at 14: byte collision flag 14; byte allow flag 43; long initial mode 34;
-// short collision flag 247; scoped ray setup/result 14 (plain).
-// Guarded collision fraction 14 plain; hit distance 14; native collision output 228; ray endpoint 232;
-// distance endpoint 201; both endpoints 266; final query point 111; horizontal normalization value 177.
-// reuse ray displacement 14p; existing dot helper 14p.
-// squared length lifetime 14p; normalization result lifetime 14p.
-// shared projection output 25p; shared displacement workspace 60p.
-// sibling byte home name 14p; native projection mode 14p.
-// Immutable collision decision and cluster/origin values 14 each; external actor/candidate/context
-// records 14 each; visible-path collision decision 257; external definition record 53;
-// initialized native collision output 236 (plain).
-// parent index 251; early collision mask 255.
-// unattached decision 15; mask bit clear 14.
-// index plus bit clear 251; unattached mask bit 17.
-// shared parent index 249; shared attachment decision 53.
-// This round (from 14, all plain): bool declared at block top 14; product operands swapped,
-// flipped comparison, named product local, local_4 rename, local_18-first and local_15/16
-// declaration orders, bool declared after the first query call, local_22
-// uninitialized-early, byte-typed local_4: all tie at 7. local_22 initialized before the
-// mode selection 113; the entry type copy reused in the allow test 260.
-// tried immutable distance 7p; guarded classification 210p; nested hit classification 199p; classification enum 7p;
-// projection first 7p; allow from second type 6p; allow from first type 8p; native query flag 123p.
-// collision byte home, distance product loads and allow store remain;
-// early short result 7; entry short result 7; unsigned short result 7; early unsigned result 7;
-// early distance 7; entry distance 7; shared candidate field pointer 7; early definition pointer
-// 7.
+/* what an actor at origin sees of a target point: 0 clear, 2 blocked close by the target, 4 blocked or out of sight;
+   the parameters follow retail's setup, which evaluates them last to first (the parent test, the cluster, the origin) */
+static __forceinline short target_sight_type(point3f const *origin, short origin_cluster, short target_cluster,
+	point3f const *target, bool parented)
+{
+	short type;
+	if (clusters_visible_11c010(origin_cluster, target_cluster))
+	{
+		s_collision_result_25f7b0 collision;
+		collision.unknown24 = NONE;
+		long flags = 0x15808c2f;
+		if (parented)
+			flags = 0x15808c0f;
+		vector3f direction;
+		vector3d_from_points3d(origin, target, &direction);
+		if (!function_1697c0(flags, origin, &direction, NONE, NONE, (s_collision_result_1697c0 *)&collision))
+		{
+			type = 0;
+		}
+		else
+		{
+			real fraction = collision.t;
+			vector3f offset;
+			vector3d_from_points3d(origin, target, &offset);
+			real distance = (real)sqrt(length_sq3f(&offset));
+			if (distance < 1.f)
+				type = 4;
+			else if (distance * fraction < 1.f)
+				type = 2;
+			else
+				type = 4;
+		}
+	}
+	else
+	{
+		type = 4;
+	}
+	return type;
+}
+
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
 {
@@ -1801,41 +1793,8 @@ void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *
 				local_3 = function_272af0(g_4e0348, &arg_2->position);
 			else
 				local_3 = arg_2->definition->unknown12;
-			bool local_4 = local_0->unknown26c != NONE;
-			short local_5 = *(short *)((byte *)local_0 + 0x254);
-			point3f const *local_6 = (point3f *)((byte *)local_0 + 0x22c);
-			short type;
-			if (clusters_visible_11c010(local_5, local_3))
-			{
-				s_collision_result_25f7b0 local_7;
-				local_7.unknown24 = NONE;
-				long local_8 = 0x15808c2f;
-				if (local_4)
-					local_8 = 0x15808c0f;
-				vector3f local_9;
-				vector3d_from_points3d(local_6, &local_2, &local_9);
-				if (!function_1697c0(local_8, local_6, &local_9, NONE, NONE, (s_collision_result_1697c0 *)&local_7))
-				{
-					type = 0;
-				}
-				else
-				{
-					vector3f local_10;
-					vector3d_from_points3d(local_6, &local_2, &local_10);
-					real local_13 = (real)sqrt(length_sq3f(&local_10));
-					if (local_13 < 1.f)
-						type = 4;
-					else if (local_13 * local_7.t < 1.f)
-						type = 2;
-					else
-						type = 4;
-				}
-			}
-			else
-			{
-				type = 4;
-			}
-			arg_2->type = type;
+			arg_2->type = target_sight_type((point3f *)((byte *)local_0 + 0x22c), *(short *)((byte *)local_0 + 0x254),
+				(short)local_3, &local_2, local_0->unknown26c != NONE);
 		}
 		else
 		{
