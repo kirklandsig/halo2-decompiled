@@ -825,6 +825,20 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // MiniMax S (11-16): no new form, no lower score (286): retail carries state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links), where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and a pointer to the node and a named node pointer compile the same way. Changing the parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax C (11-16): no new form, no lower score (286): retail still carries the state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail's parameter order differs and changing a parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax I (11-17): no new form, no lower score.
+// b7I (11-17) walk against retail, fast build on r830: walked every block of 0x270d90 against retail statement by
+// statement (field offsets and strides, branch senses, callee and register arguments, loop shapes, local widths and
+// the float constants) and found no behaviour difference; the body is unchanged and the score stays 286 (1389
+// bytes, caller 0x270930 MATCH). Checked and agreeing: the entry depth, min and fill (0x270db8-0x270dc3,
+// 0x270de0-0x270e05: edge words, step +0, +8 and +2); the link test (0x270e50-0x270e7d: type NONE, else edge index
+// in range and flag bit 7); the 8-byte link copy (0x270e7f-0x270e96); depth gate (0x270e9e) with count
+// (0x270eb2-0x270ec2); step node, point and edge index stores (0x270ecf-0x270f3a); the special test and arm order
+// 1, 6, 5, special, 2 (0x270f42-0x270f7f); the 0x26f3f0 call (eax pathfinding, ecx index, edi entry point, seven
+// stack words from actor_index to the step node, 0x270fa3-0x270ffe); margin 1.2f (0x271031), 2.0f (0x271137),
+// 1600.0f (0x271286); clamp senses (0x271186, 0x271194); k, j, i sum order (0x271166-0x27117c); the two
+// conversions; the distance test before j < count - 1 (0x27128f-0x27129c); the outputs (0x2712c9-0x2712f9). Only
+// width differences, not observable: retail compares, indexes and stores link_count as 16 bits (0x270e3f, 0x270e86,
+// 0x2712e8) while incrementing a dword (0x270e96), and its vertex words are widened then compared with -1
+// (0x27109b, 0x2710ac: never equal), as the body already does.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

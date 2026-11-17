@@ -23,12 +23,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
     vector3f scaled = { arg_1->i, arg_1->j, arg_1->k };
     if (arg_0 != 1.f)
         vector3f_scale(arg_1, arg_0, &scaled);
-    real *output = arg_2->n;
-    for (long component = 0; component < 3; ++component)
-    {
-        *output = g_4b9e14.forward.n[component] * scaled.k + g_4b9e14.up.n[component] * scaled.j + g_4b9e14.right.n[component] * scaled.i;
-        ++output;
-    }
+    arg_2->i = g_4b9e14.right.i * scaled.i + g_4b9e14.up.i * scaled.j + g_4b9e14.forward.i * scaled.k;
+    arg_2->j = g_4b9e14.right.j * scaled.i + g_4b9e14.up.j * scaled.j + g_4b9e14.forward.j * scaled.k;
+    arg_2->k = g_4b9e14.right.k * scaled.i + g_4b9e14.up.k * scaled.j + g_4b9e14.forward.k * scaled.k;
 }
 // MiniMax R (11-16): no new form, no lower score (206): re-measured in this round's nine-address set, the body is 1140 bytes against retail's 1136 and the frame is 0x18 against retail's 0x14; retail keeps the first point's three offsets in registers (XMM1, XMM3 and XMM5) and spills the second point's, where this build materialises both offset vectors in the frame, and the orthographic dot still runs i, j, k where retail runs j, k, i.
 // MiniMax C (11-16): no new form, no lower score (206): retail keeps the first point's three offsets in registers
@@ -40,7 +37,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // offset vectors and both views in the frame), the orthographic dot product still runs i, j, k where retail runs
 // j, k, i, and the scale is still applied in place where retail copies the raw offsets before the test; the source
 // permuter's search on this function was cut at its time limit before it scored any variant.
-// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// score 304 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products.
 // MiniMax G (11-13): no new form, no lower score (206): the diff re-read this round puts the first difference in the frame size (ours 0x20, retail's 0x14), and the forms that change the two offset loops' order or the scale step measure at or above the body, so the body stands.
@@ -559,6 +556,20 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // P567: Standard transform pair/final/both sum boundaries, weighted-position sums,
 // their combinations and complete metadata sums: 277/277/328/432/454/454/501/485.
 // NOT kept: regressed native frame/input/coefficient residence; original complete helper/body restored.
+// b7L (11-17) walk against retail, fast build on r830: branch senses (0x5025e and 0x50324 scale != 1;
+// 0x503c3..0x50431 depth and cone tests; 0x5044a perspective split; 0x50556 radicand test; 0x505fa and 0x5061e
+// clamp), NaN sides, constants (1, 0.5, 2, 4, 0), field offsets and the dword copy at 0x50507, weight pairing, blend
+// and dot add order, fstp rounding and the eax set at 0x50598 all agree; the weights negated at 0x5043f and 0x50446
+// before the je and overwritten at 0x50461 and 0x50471 are retail's shape. One difference, retail's evaluation order
+// and not a behaviour fix: retail adds (forward*z + up*y) + right*x in every row of both views (first view i 0x502a4
+// and 0x502af, j 0x502c3 and 0x502d3, k 0x50301 and 0x5030f; second view i 0x50370 and 0x503c6, j 0x50387 and
+// 0x50399, k 0x503aa and 0x503bc); the loop form compiled i and j so but the depth row as (up*y + right*x) +
+// forward*z, so k rounded differently in both views. Writing the rows right, up, forward as matched 0x30290's
+// transform_vector does gives retail's tree in all six sums (checked on the symbolic trees of the fast build); loop
+// form 206, rows indexed through the output 213 (same k tree), the call of transform_vector itself 306 (gives
+// (right*x + up*y) + forward*z). Rows 304 (1084 B), 0x4f7e0 stays 325, 0x30290 and 0x30bf0 stay MATCH. The clamp at
+// 0x505fa..0x50626 is PIN_126660's body; its header needs a new include, so it stays written out. Not kept: the
+// segment and both offsets through vector3d_from_points3d, which this file doesn't use yet, 301 (no behaviour change).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

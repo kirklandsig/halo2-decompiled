@@ -304,6 +304,26 @@ extern real g_4c9798[36];
 // calls); both limits from one if/else 346 (1458 B); the clamp as two independent ifs 258 (1484 B); the direction reference
 // declared ahead of the first plane rows and used there too 326 (1483 B). Same code: `maximum` declared ahead of the limits,
 // the two rounding results named before their 64-alignment.
+// b7E (11-17) walk against retail, fast build on r829 (174, 1486 B vs 1479; no source change, so no other function
+// moves): no logic, field, condition, loop or constant difference found; walked block by block. Fields and offsets:
+// aspect state+8 (0x48ee3), distance state+0x64 (0x48eeb), offset state+0x28 under tag word +0x8e == 1
+// (0x48ef6-0x48f13), extent state+4 and cone state+0xc (0x48ff4-0x4901c), tag+0x14 for mode 1 (0x48fdd), tag+0x10 for
+// the size, tag+0x2c/+0x30 for the near plane, direction matrix+0x28 and origin matrix+0 (ebp = ebx+0x28), all as the
+// draft. Constants read from retail and equal: 1.0, 0.5, -FLT_MAX (distance 0 fallback), 1/3, 0.125, 128, 16777215,
+// 0.75, 0.01, 100, -100 and 1000. Order and rounding: aspect rounds to float at 0x48f0d, the extent stays on the x87
+// stack unrounded to 0x4901c (ours compiles the same), the size rounds at 0x490a7 and the maximum at 0x49071, then
+// width = size / aspect is rounded first and height = size * aspect second, the fix-up compares the width with the
+// height (0x4912e) and divides by the other side, the border is width * 0.75 / maximum (0x49230-0x49238) and both
+// planes' dot sums run k, then j, then i, all as ours. The callers pass the second argument in ECX (state) and the
+// first in EBX (matrix) at 0x3129a and 0x32905, the tag on the stack, so the parameter order is retail's. Two things
+// retail shows that the source keeps for a reason: the border's zero is stored to its frame slot at entry (0x48efe,
+// read back at 0x49240) and the offset's zero is copied to xmm3 before the tag test (0x48f0a) and overwritten at
+// 0x48f13, so `border = 0.0f` and `offset = 0.0f` ahead of their tests are retail's own shape, not a steering value; as
+// ternaries with no earlier zero they score offset 323, border 320 and both 187 (1479 B, but a 0x24 frame against
+// retail's 0x28), not kept. The one real type difference: retail's maximum height is a full dword (0x49116, 0x49194),
+// ours a short; both hold only 128 or 512, so it changes no behaviour, and the long form scores 250, so it stays a
+// short (a type change that only raises the score). No include, helper or double added; the parameter conventions of
+// 0x48ee0 and its callees are unchanged.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

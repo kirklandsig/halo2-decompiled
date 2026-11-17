@@ -609,31 +609,10 @@ public:
 // child cell, split the walk where the sphere spans both sides of a plane
 // (the first side by recursion), cut it off where the sphere misses a slab,
 // move the key base, or give a key to add to the list
-// score 3 (was 4): case 0x20 keeps the axis value in the function's position
-// variable (retail's base/index order). Left: case 0x29's first three-byte read
-// accumulates in the other register (an allocation tie).
-// Before, 4 (was 375): case 0x60 reads its byte before stepping and storing; cases
-// 0x23 and 0x20 name the box's radius between the bounds they declare, in
-// retail's load order. Left: one base/index order in case 0x20 and the
-// accumulating register of case 0x29's first three-byte read.
-// Before, 375 (was 521): Frame 0x2c and extent 1596 agree; first +0x176
-// exchanges two reads. Loop-tail value update 537; limits first 400; limits
-// between position and extent 514; byte command 521/1608; box rename 521;
-// limit declarations first 521; paired word reads 521; axis loop 521.
-// Limits first with the loop-tail update 375, confirmed by ordinary check.
-// The latter follows the shared block at 0x3006e3; neither change adds a label.
-// One-plane radius snapshot 377; split value names 375; two-plane limits
-// first 376; all axial radii captured 213 (NOT kept: 1600 versus 1596 bytes);
-// named bounds, joined slab tests and unsigned command 375/375/375;
-// word distances 393 (1612 bytes). Original body restored.
-// Round 426: first limit read 375; first limit/radius read 374; lower
-// limit first 376; two-plane radius copy 205 (1600 bytes, NOT kept);
-// memcpy 375; signed int words 375; next_slot 376; one exit 375.
-// NOT kept: one-point gain or length beyond retail; original body restored.
-// Shared axial position 375; shared two-plane bounds 375; shared axial
-// extent 210 (1600 bytes, NOT kept: four excess bytes); nested bounds 375;
-// first distance decoded first 380; OR byte joins 496; append_copy 375;
-// mutable axial scalars 375. Original body and decoder macros restored.
+// Matched (was 3): the command byte is kept as a byte and the switch value made from it;
+// cases 0x26 and 0x29 name the radius after the position along the axis; and case 0x29's
+// first three-byte read takes its address from a named pointer. With those values defined
+// before it, the read gathers into the middle byte's register as in retail.
 // @retail 0x300290
 void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char const *node)
 {
@@ -646,7 +625,8 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 	long high;
 	for (;;)
 	{
-		long const op = *node;
+		unsigned char const code = *node;
+		long const op = code;
 		switch (op)
 		{
 		// planes across two axes or three, then one
@@ -790,11 +770,12 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x28:
 		{
 			long const along = box->centre[op - 0x26];
-			if (along + box->radius < node[1])
+			long const reach = box->radius;
+			if (along + reach < node[1])
 			{
 				return;
 			}
-			if (along > node[2] + box->radius)
+			if (along > node[2] + reach)
 			{
 				return;
 			}
@@ -807,11 +788,13 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 		case 0x2b:
 		{
 			long const along = centre[op - 0x29];
-			if (radius + along < READ_3_300290(node + 1))
+			long const reach = radius;
+			unsigned char const *const first = node + 1;
+			if (reach + along < READ_3_300290(first))
 			{
 				return;
 			}
-			if (along > READ_3_300290(node + 4) + radius)
+			if (along > READ_3_300290(node + 4) + reach)
 			{
 				return;
 			}
