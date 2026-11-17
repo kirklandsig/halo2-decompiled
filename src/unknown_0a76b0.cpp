@@ -1166,6 +1166,12 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // move together); the velocity copied from direction and scaled in place 322; the else arm's direction copied
 // component by component 301 (1736 B); the velocity scale written out with the speed read in each product 135 (1701 B:
 // three speed loads); permuter (619 s, 19 tries) best 22.
+// M3 lane 14 r105 (fast, on the 22 lead rebuilt: 1700 B, only the throw velocity's i product unfolded): the speed bound as
+// `real const &speed`, the velocity as `vector3f &throw_velocity`, the direction as `vector3f const &throw_direction` at
+// the scale 22/22/22; `spread = false;` before the 0xb75a0 call 24; the throw-block forward declared bare and copied just
+// before the first cross 22; the scale written out with a `real speed` local in the six operand orders v*s/s*v per row
+// (vss, vsv, ssv, svs, sss, vvs) 36 each (1699 B: the blend's velocity*ratio product folds instead, as r103 found). A
+// compile-only build of this file does not reproduce it (it reloads the speed for each written-out product).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1473,6 +1479,11 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // in one combined test (no player_value local) 57 (984 bytes), `result = true` as the success block's first store 58, the
 // notice in the then-arm without its goto and the rest in the else-arm 16. Diagnostic (reverted): an address-taken result
 // with the notice ending in its own `return result;` 257 (969 bytes, the pointer store adds code).
+// M3 lane 12 r134 (fast, base 19): the notice's player value in the matched unit_object_type.cpp idiom (`animate` alone
+// guarding a `player index == NONE ? NONE : table value` ternary) 19 (same code); that with the notice ending in `return
+// result;` 45 (958 B), with the immediate throw ending so too 74 (956 B), both as the listed forms (the returns fold); the
+// grenade count from a ternary on the grenade pointer, tested `<= 0` once, 176; the notice written under `!grenade` and
+// again under the count test (two blocks) 184 (968 B: the copies are not merged).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2686,7 +2697,7 @@ __forceinline char unit_action_round(real value)
 // MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
-// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// Earlier: 234 (235 before the b5Q walk). Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax E (11-16): no new form, no lower score (234); the prologue still loads the pool into EDI where retail uses
 // EBP and the getter's NONE compare is 8-bit against retail's 16-bit `cmp ax, bx`; the short-slot getter alone measures
 // 297 and the reordered statements 314, so both bodies were reverted.
@@ -2883,6 +2894,17 @@ __forceinline char unit_action_round(real value)
 // reads it from its stack byte at the exit); is_biped typed byte 234 (same code); the channel declared with the top locals
 // 300 (re-measured); the weapon through the existing unit_get_current_weapon (short slot, own unit lookup) 297 (1196 B),
 // with first_person_name = NONE declared first 314 (1195 B).
+// M3 lane 14 r105 (fast with 0xe9ed0/0xea090; none kept): a goto-free selection with one goto to the only return (the
+// switch's default and mode-else `break` with the rest under `if (name != NONE)`, the animation failure as `if
+// (!animation && channel) animation = ...; if (!animation) goto done;`) and the 0xe9780 fallback as a switch 326 (1199 B:
+// no threaded copy of the fallback block, and the exit is retail's single one reading the result byte, though result
+// sits at 0x13 and is_biped at 0x12); the same with the old fallback test 329 (1224 B, lane 7 r161's form). On the 326
+// form: first_person_name = NONE first 296 (1184 B), the short-slot hand getter 329, TEST_FIELD_BIT on the 0x1b test 331,
+// the lunge speed read through a melee-globals pointer at both uses 325, all four 310 (1188 B: the 16-bit NONE compare
+// is retail's, but the callee-saved homes rotate: ours NONE/pool/offset/actions in ESI/EDI/EBX/EBP, retail
+// actions/offset/NONE/pool), with is_biped renamed to sort after result 310 (same code), result declared first 313,
+// result before is_biped 310; pairs and triples with first_person_name first 291-317 (with the hand getter 291).
+// Kept: the lunge test's velocity/forward dot as the existing dot3f 234 (identical code, either operand order).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -3066,9 +3088,7 @@ bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byt
 
 	real lunge_speed = *(real *)(*(byte **)((byte *)g_4e034c + 0x134) + 0x2c);
 
-	if (lunge_speed > 0.0f &&
-		(unit->linear_velocity.k * unit->forward.k + unit->linear_velocity.j * unit->forward.j +
-		unit->linear_velocity.i * unit->forward.i) / lunge_speed > 0.9f)
+	if (lunge_speed > 0.0f && dot3f(&unit->linear_velocity, &unit->forward) / lunge_speed > 0.9f)
 	{
 		actions->melee_unknown31 = 0x7f;
 	}
@@ -4663,6 +4683,12 @@ extern vector3f *g_4687bc;
 // the effect tag declared ahead of the definition and assigned from the named model 8, with the element through `.data`
 // 8 (all the same code). Screen only: the effect tag's address taken in a local reference (dropped, same code); the
 // component looked up again for the 0xb67a0 argument (the material stays in DX, the array still loads first).
+// M3 lane 12 r134 (fast, base 8): the rigid body as byte arithmetic with the array first, with the offset first, and as a
+// const reference to the element 8 each (same code); the component index read into a local between the tag test and the
+// material 8 (same code); the global read into a short ahead of the lookup with the material built after it 10 (the load
+// sinks to the store, in AX, as the material built after the lookup, re-measured 10). Ours stores the material at once
+// because it holds it in DX, which the pool's data load needs; retail holds it in CX until `mov ecx, esi`, so the late
+// store follows from the register alone.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

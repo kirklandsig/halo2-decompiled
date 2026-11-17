@@ -987,6 +987,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // P586: Actual final interpolation argument table, long/dword/short/word/byte/char for,
 // then long/short while: 369/369/408/408/408/408/369/408. NOT kept: argument grouping and
 // traversal miss native entry/frame/extent; original scalar outputs and complete body restored.
+// M3 lane 3 r254 (fast with 0x270d90 at 286 and 0x270400 MATCH; control 218, register-masked aligned 23): the entry
+// parameter declared mutable as `start_out` (definition and path.cpp's declaration; the const_cast copy dropped) 220; the
+// origin dot computed ahead of the projection 218 (same code); corners a, b, c, d re-measured on the plain check 287 (1284 B,
+// the plain check agrees with the fast one: the actor loads at entry and case 1/6's origin dot then sums k, j, i as retail,
+// register-masked 21, but pathfinding arrives in EDX); on that, the mutable `start_out` parameter 295; on that form, the
+// surface pointer set ahead of the start_out copy 287 (same code). Retail also forms `inverse * radius` in the inverse's
+// register (`mulss xmm2, [radius]`) where ours loads the radius first.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

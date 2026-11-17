@@ -544,6 +544,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // P569: Maximum-angle policy positive bool/byte/short/long outcomes 281/281/281/281;
 // complementary outcomes 287/287/287/287. NOT kept: no native storage equality;
 // original producer/body restored. Unity, root/yaw and rotation homes remain.
+// M3 lane 4 r207 (fast with 0x29b990; masked = registers and stack offsets masked, aligned, base 176 at masked 114): the
+// rotations through the in-place helper 0x2551f0 and 0x117dd0 now share (include/axis_rotation.h) with the sine and
+// cosine as call arguments, or as locals before or after the copy: 244 (1694 B, frame 0x28, masked 97); with the second
+// axis through the existing cross3f 257 (1679 B, masked 81); that axis computed before the first rotation 184 (1706 B,
+// frame 0x2c, aligned 187, masked 112; retail computes it after); the matched sibling 0x29c860's angle-taking helper for
+// both rotations 245 (1691 B, masked 97); the first two normalizations through the existing normalize3d after the k
+// store 186 (1718 B, masked 179).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

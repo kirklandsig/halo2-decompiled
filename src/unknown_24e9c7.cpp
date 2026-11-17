@@ -79,12 +79,15 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
+// left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
+// xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
+// MiniMax R (11-17): no new form, no lower score (125): the corner sums written with the other operand first (up + origin, then back + that) compile to the same code, and the same sums written as back + (up + origin) grow the body to 749 bytes (137); retail still computes the two across products right after the size and spills the second to [ebp-8], so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.
 // MiniMax S (11-15): no new form, no lower score (125, was 125): the file's /O2 flag measures 279, so it keeps /O1, and a
 // permuter run over this body (86 tries) stays at the starting score; a second run with a new seed reaches 121 only by making
 // the height volatile, which is not kept; retail computes the two across products right after the size and spills the second to
 // [ebp-8], which this build sinks into the side computation, so the result, kind and bitmap homes stay eight bytes above
 // retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.
-// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // MiniMax G (11-14): no new form, no lower score (125, was 125): retail's early across-product spill at [ebp-8] still has no counterpart here, so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5; the extra room comes from retail's scratch chain of summed values below the marker copy, which this build keeps in registers, and no form listed in the earlier rounds' notes produces that chain.
 // MiniMax B (11-12): no new form, no lower score (125, was 125): retail computes the two across products early and
 // spills the second one to [ebp-8], which it then reuses for the side vector's y, so its result home is [ebp-0x10];
@@ -118,8 +121,6 @@ struct s_24e9c7_points
 // MiniMax B (11-06): no new form, no lower score (125); the source permuter (240 s) found 123, but it adds a bool set by one test and tested by the next and swaps two arguments of function_22a664, so the original body is restored.
 // MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // MiniMax D (run 46): no new form, no lower score.
-// left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
-// xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
 // Earlier (125, was 125): reassociating the corner sums and splitting them into two steps both
 // canonicalise back to retail's association, so what is left is the SSE schedule itself, the
 // eight-byte-higher stack homes and the sprite pointer staging; no source form found.
@@ -516,6 +517,11 @@ struct s_24e9c7_points
 // spill is not register pressure; the pair [ebp-0xc/-8] has x untouched and y with five references (0x24eb01,
 // 0x24eb75, 0x24eb95, 0x24eba9, 0x24ebcf), like ours' back pair but allocated above result. New (fast): `size *=
 // forward_i` as across j with `0.0f -` across i 138 (739 B); the same with unary minus 125 (same code).
+// M3 lane 12 r135 (fast with 0x24e59f/0x22a664, both matched each time; control 125): our frame has six 4-byte cells (a
+// scalar spill at -0x14) where retail has four and an 8-byte aggregate at -0xc whose y half holds across j and then side y;
+// ours forward-substitutes the across products into side. Forms: side filled y first 125 (other code); back filled y first
+// 125 (same code); up filled y first 137 (741 B); the alpha computed ahead of the corner points 173 (762 B); the four marker
+// stores after the alpha 139 (748 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

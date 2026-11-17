@@ -165,6 +165,11 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // swapped 13; the 0x261280 outputs declared bool before long, all three ahead of the scratch buffer 12 (same code); the search's
 // +0x59 flag as a ternary on the 0x1e4be0 result 222; the search's +0x698 bool stored before the +0x69a short 14. Still the
 // homes tie (0x260670, ours, is 440 at 3097 bytes against 3077, on the bool output's chain). Body unchanged.
+// m3 lane 13 r103 (`--fast 0x1af160 0x1e1f20`, control 12; reference bindings as in the contributor's slot forms, each
+// match-only): the prop node bound by reference for its two later uses 12; the bool output bound by reference for the
+// 0x2626b0 argument 12; the bool output's address in a pointer local for the 0x261280 call 12; the actor bound by reference
+// for the node lookup 12 (all the same code); re-measured on the real 0x260670 body, the three 0x261280 outputs declared at
+// the function's top 12 (same code). 0x260670 (ours) is still 440 at 3097 bytes against 3077.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
