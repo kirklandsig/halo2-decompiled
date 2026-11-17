@@ -947,6 +947,7 @@ bool function_e4050(long object_index);
 // iterator's helper (include/data_iterator.h and src/unknown_0bad50.cpp), which this lane may not edit.
 // score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
 // include/data_iterator.h and src/unknown_0bad50.cpp.
+// MiniMax E (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
 // score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
@@ -2757,6 +2758,7 @@ static __forceinline long player_round_ticks(real value)
 // 702 at 2741 bytes, and the activity words as `|` of shifted bools give 714 at 2743 bytes, so none of them is kept.
 // score 701 (was 701): unchanged this round: the frame is still 0x4c against retail's 0x74, and this build inlines
 // 0xccd20 and the first 0x151b80 call where retail calls them.
+// MiniMax E (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the permuter's best variant (700) used a flag set by one test and read by the next, a comparison written as `!= 0` and an argument swap, all ruled out.
 // score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
 // MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
