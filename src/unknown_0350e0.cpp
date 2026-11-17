@@ -4586,6 +4586,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
 // NOT kept: no native frame word or final scratch recovery; original common
 // byte outputs, final direct fade path and complete executable body restored.
+// Stored point by byte-range copy, coordinate stores, setter or coordinate
+// aggregate, then each with the region output scoped to its query:
+// 51/205/205/205/51/205/205/205. NOT kept: the range copies tie; coordinate forms
+// use SSE differences and grow the frame to 0x20. Final fade scratch remains.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

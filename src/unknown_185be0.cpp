@@ -608,6 +608,10 @@ union s_185be7
 // 791/829/791/1009. Native view pair, native movement source, both, and both
 // pairs copied 791/590/791/788. NOT kept: the control-root reload and NONE
 // register remain unresolved.
+// Signed controller index after the full NONE test, nested admission or a
+// single exit guard, in mutable/const short and promoted long: 590/590/590/590/989/989/989/989.
+// NOT kept: nested admission ties. The exit guard grows to 3781 bytes.
+// The second control-root load and its EBX conflict remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

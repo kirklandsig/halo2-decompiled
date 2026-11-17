@@ -3380,6 +3380,10 @@ real g_47ff30 = 2.5f;
 // AC564: Scoped force coefficients, bank inputs and angular response, alone then
 // paired and together 672/672/673/672/673/673/673. All three with const force
 // coefficients 673. NOT kept: no gain. Frame 0x100 versus 0xfc and scalar homes remain.
+// Projected up through desired construction, lateral basis through friction,
+// linear velocity through the bank clamp and quaternion through axis-angle,
+// alone and nested: 672/672/672/672/672/672/672/672. NOT kept: the frame remains 0x100 against
+// retail 0xfc, with the velocity and quaternion slots still separate.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5659,6 +5663,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // with the entry kind/spin/engine definition 1037/1032/1023/1046.
 // NOT kept: the entry forms collapse separate lookups and shorten the body.
 // Entry definition in EBP, zero/result registers and per-site unity still differ.
+// Entry definition for kind, spin and engine with the later speed, steering/turn
+// and reverse accessors, separately and together, then the accessor at entry too:
+// 997/983/998/983/998/981/1026/1026. NOT kept: the compiler merges the remaining
+// lookups and shortens the body. Native definition and SIMD homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -6397,6 +6405,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // after subtraction, then component or shared scaling. Vector staging 1020 each.
 // Scalar staging 978/1045 before and 978/1045 after. NOT kept: no gain.
 // Frame 0xfc versus 0xd8, vehicle index and matrix homes remain.
+// State matrix through tensor multiplication, tensor and angular acceleration
+// through torque, alone and nested, then independent relative output:
+// 978/978/978/978/978/978/978/1032. NOT kept: the scoped forms tie at frame 0xfc.
+// The independent output reaches 0xdc but shortens the body to 5062 bytes.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
