@@ -5666,7 +5666,7 @@ void c_class_2b0b5e::v1()
 #include "unknown_07f720.h"
 
 // @retail 0x2b10a3
-void function_2b10a3(dword const *appearance, c_class_2b0b5e *widget, long type)
+void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type)
 {
     bool visible = false;
     if (appearance)
@@ -6174,7 +6174,7 @@ void c_multiplayer_settings_screen::v3()
 	c_class_2b0b5e *model = (c_class_2b0b5e *)find_child(7, 0, false);
 	// Keep the child pointer addressable across both preview updates.
 	c_class_2b0b5e **model_reference = &model;
-	function_2b10a3((dword const *)g_54e5d0.settings.colors, *model_reference, 0);
+	function_2b10a3(*model_reference, (dword const *)g_54e5d0.settings.colors, 0);
 	model = (c_class_2b0b5e *)find_child(7, 1, false);
-	function_2b10a3((dword const *)g_54e5d0.settings.colors, *model_reference, 1);
+	function_2b10a3(*model_reference, (dword const *)g_54e5d0.settings.colors, 1);
 }
