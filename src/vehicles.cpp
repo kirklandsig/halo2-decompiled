@@ -4186,6 +4186,18 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+// MiniMax C (11-17): no new form, no lower score (118): the trig homes still swap (ours the sine at
+// [esp+0x18] and the cosine at [esp+0x1c], retail the reverse) and the swap survives every order tried
+// here - the declarations (sine before cosine), the default arm computing the cosine first, the forward
+// row and the up row written with the sine first, and the two names themselves - so the homes are not
+// steered from this source; the flag as a bool gives retail's `mov al, dl` at both exits but costs the
+// up rotation's register choice (130) and the flag as an int is 222, and the dot's arguments swapped,
+// the three up rows written as three assignments (118/119) and the row orders all stay at 118. What is
+// left: the shared dot3f's sum order (ours i, j, k; retail j, k, i - the helper is in a header this lane
+// may not edit), the three float constants' addresses (retail's .rdata against the reduced image's),
+// retail's cosine living in an SSE register before the join where ours ties sine and cosine, and
+// retail's up.i*cosine term computed in each arm before the join where ours computes it in the shared
+// block.
 
 // score 118 (was 118; 136 before): projection/cross input ranks and angle/trig homes remain;
 // MiniMax C (11-10): the score is 136 (was 136); the dot product multiplies the forward by the up where retail multiplies the up by the forward, the fallback copy moves one word and two floats where retail moves three words, and the trig block spills the sine and cosine where retail keeps the angle on the x87 stack.
@@ -4702,6 +4714,15 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax C (11-17): score 24 (was 48): the two marker counts are summed into a 16-bit local and the
+// loop bound is that local widened to 32 bits - the capacities the two calls are given (15 and
+// 16 - primary_count) bound the sum, so the value is unchanged - and the sum's sign extension then
+// lands in ECX with the total in EDI as in retail (movsx ecx, ax; add edi, ecx). Still different:
+// the 16-bit total is widened again with a movsx where retail has no such step, the first count's
+// marker offset rides in EBX here and EDX in retail with the remaining capacity in EAX here and
+// ECX in retail, the scratch zero store precedes the sum here and follows it in retail, the loop's
+// lea and add are in the other order, and the colour constant still takes EAX where retail takes
+// ECX.
 // MiniMax C (11-15): no new form, no lower score (48): the marker count sum still lands in EAX here (movsx eax, ax;
 // add eax, edi) where retail has movsx ecx, ax and add edi, ecx - the sum written with the call first and with the
 // operands swapped both compile to the same EAX form - the definition pointer is still read into EDX before the memset
@@ -4767,6 +4788,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // pointer is still read into EDX before the memset where retail reads it into EAX after it, and the facing copy
 // still stores its three components in the order i, k, j where retail stores them in another order.
 // MiniMax S (11-14): no new form, no lower score (48): the marker count sum still lands in EAX (movsx eax, ax; add eax, edi) where retail has movsx ecx, ax and add edi, ecx; the count taken as the primary count and summed in place, and the sum's operands swapped, all compile to the same EAX form, and the scratch zero store still follows the sum.
+// NOT kept (review 11-17): the 16-bit sum through the one-use local marker_total took 48 -> 24 (fast), but a one-
+// use local is kept only with a byte match; the same truncation written as a cast, long count =
+// (short)(primary_count + ...), is the form to try next.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
