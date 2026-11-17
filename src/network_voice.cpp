@@ -3710,6 +3710,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax S (11-17): no new form, no lower score (139): retail still takes the channel in ebp from the entry and
+// spills the member to a frame slot, while this build keeps the member in ebp and the data pointer in a register; the
+// cursor's absolute start and the route home are as before, and the permuter over this body found nothing below 139.
 // MiniMax C (11-15): no new form, no lower score (139): the member still takes ebp where retail keeps the channel from entry and spills the member, and the cursor and route homes still differ.
 // MiniMax G (11-13): no new form, no lower score (139): the member takes ebp where retail keeps
 // the channel from entry and spills the member, and the cursor and route homes differ.

@@ -69,6 +69,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax S (11-17): no new form, no lower score (334): the body is still 1781 bytes against retail's 1779 and
+// the frame still 0x98 against retail's 0x90; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with
+// the squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this
+// build keeps the axis in xmm4, xmm5 and xmm6 and forms the cross terms first.
 // MiniMax R (11-16): no new form, no lower score (334): the body is retail's 1779 bytes; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with the squares in xmm1, xmm4 and xmm6, while this build keeps the axis in xmm4, xmm5 and xmm6 and publishes the nine entries from xmm0, xmm1 and xmm2, and the frame stays 0x98 against retail's 0x90.
 // MiniMax S (11-16): score 334 (was 334): no new form; the frame 0x90 agrees but the length is 1781 against
 // retail's 1779, and the trig prologue still loads the three axis squares into different registers than retail
@@ -2110,6 +2114,10 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
+// 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
+// +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in
+// another order; no source form tried here moves them.
 // MiniMax R (11-16): no new form, no lower score (496 in this round's nine-address set, 492 in the single-function set): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order; no form tried this round moves them.
 // MiniMax C (11-16): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the tag, position, direction, colour, alpha, amount and scale slots stay in another order; tried the context alpha before the time (526), the context alpha declared without its initialiser (492), the visibility after the context alpha and the selected colour at function scope (533, a scope move and so reverted), and none of them moves the slots.
 // MiniMax R (11-16): no new form, no lower score (492): the body is retail's 2285 bytes; the frame is still 0x90 against retail's 0x94, so the ratio, the definition, the source, the scale and the vertex homes sit four bytes below retail's, and the tag, position, direction, colour, alpha, amount and scale slots are in another order. The permuter over this body (600 s, twelve tries) found no form below the baseline.
@@ -2798,6 +2806,10 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax S (11-17): no new form, no lower score (170): retail still keeps the raw current length in its own slot
+// and the pinned value in another, where this build reuses one slot for both, so the later homes shift; retail
+// still re-reads the dot as a float for the arccosine where our acosf and fabsf widen to their double forms, and
+// the reduced image of this file is not faithful, so the permuter cannot search this body.
 // MiniMax I (11-15): no new form, no lower score (170): retail still keeps the raw current length in its own slot and the pinned value in another, where this build reuses one slot for both, so the later homes shift; the reduced image of this file is not faithful (it scores 315 against the full build's 170), so the permuter cannot search this body.
 // MiniMax R (11-16): no new form, no lower score (170): the reduced image of this file is not faithful (it scores 315 against the full build's 170), so a permuter search here cannot be kept; retail still keeps the raw current length in its own slot and re-reads the dot as a float for the arccosine, where our acosf and fabsf widen to their double forms and drag the later homes along.
 // score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
@@ -3101,6 +3113,10 @@ s_cached_input_list g_5234e8[4];
 // MiniMax G (11-13): no new form, no lower score (113): a named list local for the pool's filtered list (plain 132), an explicit output cursor (113, the same code), the view declared before the count (113, the global load moves above the frame) and the cursor with the list local (133) all measure at or above the body, so the body stands.
 // MiniMax I (11-11): no new form, no lower score (147 in the reduced image, 113 in the full build): the body is 16 bytes shorter than retail's 548 and the first difference is at +0x2; the reduced image's score is inflated because the globals it leaves out are not masked.
 
+// MiniMax S (11-17): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where
+// retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and
+// reloads it at the loop top and keeps the total on the stack with the cursor in ebp, where ours holds the total
+// in ebp.
 // MiniMax E (11-16): no new form, no lower score (113): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and 0x31590's own body is matched, so its argument register preference is fixed.
 // MiniMax H (11-12): no new form, no lower score (113); the frame is still 0x9c against retail's 0xa0 - retail spills
 // the input list and reloads it at the loop top and keeps the total on the stack, the index in EBX and the cursor in
@@ -3771,6 +3787,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
+// keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
+// the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this
+// build's locals and register plan differ from the start.
 // MiniMax I (11-15): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position and reads the delta from the stored view position, while this build's locals and register plan differ from the start.
 // MiniMax R (11-16): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from the stored view position and copies the scaled projection inputs into fresh registers in both arms, so this build's locals and register plan differ from the start; the permuter (18 tries in 307 s, annealing) reached only 484 by splitting the flags declaration, narrowing the cycle flag to a byte and swapping two stores, so it was reverted.
 // score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
@@ -4273,6 +4293,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax S (11-17): no new form, no lower score (51): the frame is still 0x18 against retail's 0x1c, because
+// retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at
+// +0xc; that getter lives in another file, and the initial alpha and kind homes still differ.
 // MiniMax R (11-16): no new form, no lower score (51): the frame is still 0x18 against retail's 0x1c, because retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at +0xc; that getter lives in another file.
 // score 51 (was 51; earlier 51 (was 62), 62 (was 177)): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them

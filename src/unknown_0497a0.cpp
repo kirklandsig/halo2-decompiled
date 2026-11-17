@@ -16,6 +16,9 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
+// retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
+// after the product, which no plain spelling of the wave expression reproduces.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
