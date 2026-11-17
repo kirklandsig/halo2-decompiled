@@ -921,6 +921,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // terms built in a private inline helper (axis, sine, cosine in; forward/left/up out) 718 (3599 B, frame 0x21d4, masked
 // 268, rotation still reloads 1.0); `one_minus_cosine * axis.k` named once for both k terms 536 (3663 B, masked 328); the
 // definition typed as the decal definition with a short limits index at +2 read at each use 535 (same code).
+// M3 lane 7 r173 (plain each; base 535): the tag's spill reload is single (entry store, one reload), so its home follows
+// the allocator's spill order, which runs exactly reversed against retail's for tag/edge base/outer index. Forms: the
+// first plane and the collection loop in their own `{}` block 535 (same code); the loop indices as function-scope
+// `short i, j;` shared by every loop 575; `first_edge` read from the face and `edge_index` copied from it 535 (same
+// code); `remaining -= group_count;` after the group loop rather than inside its body 746; both distance tests with
+// the call on the left (`function_17d900(...) < projection->radius * 0.05f`) 535 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
