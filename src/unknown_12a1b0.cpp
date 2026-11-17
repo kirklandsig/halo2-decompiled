@@ -1379,6 +1379,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // yields NONE first anyway) 72 (194 B). Diagnostics: a store in an `else` arm of the state test 50 (221 B) and the next
 // helper without its index test 55 (205 B) both leave the index in ESI, so one use more or less does not flip the tie.
 // The permuter refuses it (its reduced image scores 57 against the full 24, with or without the four contexts).
+// M3 lane 5 r193 (fast with 0x126df0, 0x12a810, 0x21bd00 and 0x21b870, all matched each time; `ret 8` and 210 B in both
+// builds): the index as a `long const &` bound to iterator.index with the loop testing the next call's result 24 (same
+// code). Diagnostics with a forceinline fade-in helper taking the element (0x126df0's first half written out, not
+// keepable): the element as a `*const &` bound to the macro's rvalue 35 (211 B), from a named pool-data local 35, as an
+// `s_sound_playback &` passed to a reference-parameter helper 35, declared at function scope 35. All keep retail's
+// registers (index EDI, element ESI) with the state load hoisted above the element's add (`mov al, [esi + edx + 2];
+// add esi, edx`): the offset is computed in the element's register whenever the element is a named variable.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

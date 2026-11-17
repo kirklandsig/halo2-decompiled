@@ -390,9 +390,10 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 43 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
-// arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
-// (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// score 31 (was 43; 43 at r76; before r98 was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's, and
+// since r192 both dots too. Left: case 3's arms are laid out none-first (retail selected-first, about 22 lines), the first cross's
+// a.k * b.i and average.i load a first (retail b.i first) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// Before r192 both dots summed k, j, i (retail i, k, j).
 // MiniMax D (11-11): no lower score (43): the permuter over the case arms and the dot products found nothing better in its
 // time; re-laying the arms the way retail has them breaks the tail that the two selected arms share, so the body stands.
 // Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
@@ -647,6 +648,18 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // as `z < lowest` or `-0.999f < z` 43/43 (same code); case 2's selected normal as `selected == 0 ? a : b` 261 (983 bytes); the two
 // selected arms crossing with a and b directly (no normal lookup) 258 (980); `selected >= 0` for the case 2 test 192 (975); the
 // component index as a dword 43 (same code).
+// m3 lane 5 r192 (fast with 0x1f2250/0x1f2e60/0x1201a0/0x1f19c0, plain for the kept form; aligned/masked in brackets): kept 43 -> 31
+// [12/10]: both dots through the existing basis_dot_xzy (0x143120's i, then k, then j sum, moved unchanged from
+// src/unknown_141590.cpp to include/vector_products.h; 0x143120 stays matched), which gives retail's dot code exactly (either
+// argument order, same code). Before it: case 3's normal read inline with no pointer local 240 (1010 B: the two address
+// computations are not merged), selected-first that way 227; the normal as a `vector3f const &` 43 (same code). On 31:
+// re-measured on the new base, case 3 selected-first 178 (991 B), case 3 without the none-arm copy 192 (988 B), the average
+// through vector3f_add(b, a) 61 (974 B); velocity declared first (definition and call) 31 and an early `break` after the
+// none-arm copy 31 (both the same code now); new, case 3's row as vector3f_scale then vector3f_add 296 (1013 B, 0x1f2250
+// 414). Diagnostic (match-only, as lane 8 r135's lead): case 3 selected-first with a case-3 up pointer for both of its
+// reads 9 [7/5], left the first cross's j-row first product, average.i and the tail's j product. Also on 31: the entry copy of
+// the up vector ahead of the loop 347 (1042 B, 0x1f2250 419); dot_average computed before dot_a 31 and both dots inside the
+// compare 31 (both the same code).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -694,8 +707,8 @@ void function_1f2a80(byte const *request, bool moving,
                 average.j = b->j + a->j;
                 average.k = b->k + a->k;
                 function_30bf0(&average);
-                real dot_a = dot3f(desired, a);
-                real dot_average = dot3f(desired, &average);
+                real dot_a = basis_dot_xzy(desired, a);
+                real dot_average = basis_dot_xzy(desired, &average);
                 if (dot_a < dot_average)
                     *out = *a;
                 else
@@ -1920,6 +1933,20 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // it too (same code), case 2's normals through it as well 557; plain count + switch + the bit helper at both flying tests re-measured 423
 // (case 1 or case 2 first, same code), the list base on it 551 (2035 B); the first loop's negation through a named normal pointer 413
 // (six lines move; the fallback's negation the same way is identical); the selected contact as a normal pointer for the one-contact arm 419.
+// m3 lane 5 r192 (fast with the file's functions and 0x1201a0/0x30bf0/0x109fd0/0x1e5af0/0x23de50; masked = aligned rows with
+// registers and esp offsets masked; control 413 [118]): retail's final loop saves `(flags >> 1) & 1` as a byte before the loop
+// (in the dead surface parameter slot) for the stepping test only, and recomputes the flag for 0x1f2e60's argument. A
+// `stepping` bool before the final loop used for both the call and the test 413 [126] (2088 B: the byte is stored as retail,
+// the call then reads it); plain count + switch + the bit helper at both flying tests re-measured 423 [124], with that bool
+// 422 [118]; on 422 count declared between the surface and object NONE stores 420 [116], the selected contact formed before
+// the surface/index stores 419 (2072 B) [107]; the tangent as contact_cross(second, first) (sign-free under the projection)
+// 413 [118]. Lead (match-only: the contact formed before the two stores is a statement move): lane 10 r91's 397 form (plain count,
+// switch, bit helper, contact before the stores, count between the NONE stores, the inner loop's candidate as
+// `list + i * 0x48`, counts read in the loop heads, case 2's normals through the list) plus the bool for call and test 384
+// (2088 B) [85]; with the bool for the test only (retail's call) 391 (2096 B) [71: left are the velocity subtraction merging
+// into the flying copy, the persistent zero, the fallback's -1 and the final loop's zero/0.001 hoisting]. Without the contact
+// move 483/481 (with the count move), without the count move 386; on 384 the height summed settings-first 384 (same code),
+// the flying arm second with the test inverted 388 [113]. Body unchanged.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)

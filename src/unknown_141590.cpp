@@ -909,16 +909,6 @@ vector3f *function_1427f0(
 inline bool function_a0190(vector3f const *vector);
 __declspec(noinline) bool function_a0200(real a, real b);
 
-static __forceinline real basis_dot_xzy(vector3f const *a, vector3f const *b)
-{
-	real result = a->i * b->i;
-	result += b->k * a->k;
-	real side = a->j;
-	side *= b->j;
-	result += side;
-	return result;
-}
-
 static __forceinline real basis_dot_xzy_vertical(vector3f const *a, vector3f const *b)
 {
 	real result = a->i * b->i;
