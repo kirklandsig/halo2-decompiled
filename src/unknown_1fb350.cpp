@@ -323,6 +323,12 @@ extern "C" void _ReadWriteBarrier(void);
 // needs a read/write barrier, which the rules forbid, so the iterator's own declaration stands.
 // MiniMax C (11-14): no new form, no lower score (122): the frame is still 0xc against retail's 0x14 and the pool is still forwarded into EDI for both reads; the form that matches retail's body needs the iterator step written out by hand, which this round does not use.
 // MiniMax D (11-16): no new form and no lower score (122): retail's 0x14 frame with the pool in two stack homes and the datum index in EDI still needs the iterator step written out by hand, which the rules bar, and the shared header step keeps the pool in EDI with a 0xc frame (162); the pool local, the four-field iterator orders, the barrier's places and the step written out in the body all measure 122 or worse.
+// MiniMax D (11-16): no new form, no lower score (122): this round compared the two bodies again and the delta is the
+// same as before: this build's frame is 0xc and it forwards the pool into EDI for both the scan and the element,
+// while retail's frame is 0x14 with the pool in two stack homes and the iterator's home read back inside the loop;
+// retail also packs the two 16-bit halves into EDI where this build packs them into EBX and keeps the element pointer
+// in EBP where this build keeps it in ECX; the length is 473 against retail's 473; the form that reaches retail's
+// frame needs the iterator step written out by hand, which the rules bar.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.

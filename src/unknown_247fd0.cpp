@@ -771,6 +771,19 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // P565: Effect/allocation/child ordinal/child handle/tag/event/flags eight-byte
 // logical storage, each then all: 445/450/378/338/356/354/357/540. NOT kept: native values
 // are narrow and no split-address/home equality; original complete body restored.
+// M3 lane 5 r191 (fast with 0x247fd0/0x248cc0, both matched throughout): the gate test without the volatile flag
+// local 394 (frame moves); the first random sample in the shared `last_sample` local re-measured 392 (it only lines up
+// once the gate's unfolded `add eax, edx` is also there, retail being one instruction ahead from the gate on); the
+// velocity pointer through a named effect pointer inside an `if` 348 (frame moves); one function-scope effect pointer
+// for the gate and the velocity 414 (1633 bytes); the gate flag as the named effect's `flag3` bitfield 334 (same code).
+// Retail forms both effect addresses unfolded (gate `add eax, edx; mov dl, [eax + 2]`, velocity `add eax, edx; add
+// eax, 0x30`) where ours folds them into one operand or `lea`; no pointer-returning getter exists in retail to call.
+// P589: Original incoming system/settings/flags/blend/step/scale/link/cache parameter
+// identities, eight independent forms: 334/334/334/334/334/334/334/334. NOT kept:
+// no split effect-address or gate/settings-home recovery; complete original body restored.
+// MiniMax S (11-16): no new form, no lower score (334): the gate's byte is still read with the base and the
+// index in one operand where retail adds the index to the base first and reads the byte from it, and the flag
+// byte and the settings still sit in the frame's later slots where retail keeps them at +0x1b and +0x1c.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
