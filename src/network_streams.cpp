@@ -1067,6 +1067,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the window pointer declared at the top (before the send call) for the bound local and the index, the count through
 // the member, 60; the bound compare written `newest > next` 60; a guarded do-while (`if (next < newest) do {...} while
 // (++next < newest);`) on the window-pointer form 60. All the same code: the offset is still strength-reduced.
+// Window references in index/count/first helpers, seven subsets, and all three with the loop
+// limit read at use: 60 each. NOT kept: the latest-sequence load and reduced offset remain.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

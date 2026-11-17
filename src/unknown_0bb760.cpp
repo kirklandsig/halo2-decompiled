@@ -685,6 +685,12 @@ void function_3dd10(long object_index, bool force);
 // 146, with the object byte 146. Native variant block 132, with checked handle 146.
 // Typed lookup under nested guards 132. Checked lookup with entry reference 147.
 // NOT kept: the rounded result still stores before the byte comparison on the later read forms.
+// Late variant with single-precision blend remainder 144, both remainders 129, blend absolute
+// value and remainder 129, both absolute values and remainders 129. Object position members
+// with original variant read 123, late read 132, late read and single-precision blend remainder 144,
+// late read and both single-precision absolute values and remainders 129. Both remainder overloads
+// recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
+// signed scan exits and fallback unity reload still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
