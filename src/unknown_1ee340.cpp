@@ -552,6 +552,19 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // m3 lane 6 r181: no new form, no lower score (192): the first steps of the round 59 chain still need 0x23a220's points
 // parameter ahead of its point (src/unknown_239b80.cpp is on this round's avoid list), and every in-function form left
 // (start/end copies, count local, clamp, field_c literal, hit-block order, axis width) is listed above at 192 or worse.
+// b7N (11-17) walk against retail, fast build on r830: no behaviour difference found, source unchanged (192 control,
+// 1007 bytes against retail's 1001). Walked every block: the ray end - start at 0x1edf62..0x1edf82 and the two edges
+// from vertex 0 (0x1edf8f..0x1edff6), the cross product (components and operand order), the normalize (float rounding
+// of the length at 0x1ee068, skip below 1e-4 at 0x1ee074/0x1ee078, scale 1.0f / length at 0x1ee07a..0x1ee0a3), d = 0
+// at 0x1ee0b5, the offset from the start, `dot != 0` (0x1ee0fe..0x1ee105: equal skips, unordered computes), the -1.0f
+// / dot fraction (0x1ee113..0x1ee12b), `fraction < result->fraction` (0x1ee148/0x1ee14b), the clamp and its
+// ordered-equal test (0x1ee151..0x1ee16d), `n[axis] > 0` (0x1ee185..0x1ee18e), the three hit-point sums from the
+// fraction (not the clamped value), the table at 0x440b94 (18 shorts read from the XBE equal g_440b94), the dword
+// count and its loop (0x1ee202..0x1ee2c3), the call (push 0 = epsilon, push edx = count; the callee reads the count as
+// a word, so short is right) and the hit block (0x1ee2e9..0x1ee316: fraction, normal, field_c = the zero in xmm6,
+// result + 0x10 untouched). All of it agrees in field, direction, constant and rounding. Only the known non-behaviour
+// deltas remain: frame 0x84 against 0x90, the dead second movsx at 0x1ee182, the count pushed as a dword at 0x1ee2c7,
+// retail's store of plane.d at 0x1ee0b5.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
