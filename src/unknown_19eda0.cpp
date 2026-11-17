@@ -385,13 +385,20 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+/* how far past its radius a hill's ring fades out, as a multiple of the radius (retail's .data float
+   at 0x47ff94; only 0x19f680 reads it) */
+real g_47ff94 = 1.5f;
+
 // MiniMax E (11-17): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5
 // factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0
 // still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not
 // edit.
 // MiniMax S (11-16): no new form, no lower score (370); retail's 1.5 factor still comes from its writable .data float at 0x47ff94 and the 0x4b2d0 call still takes its three arguments in another lane's order.
-// score 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
+// score 322 (was 370): frame 0x34 against retail's 0x30 (the loop's step counter has a stack home), the 0x4b2d0 call still takes
+// three stack arguments (held change, see the note above 0x4b2d0), and retail expands 0x1ccb0(59) and 0x1cd90 here; see r136 at
+// the end of this note.
+// Earlier at 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
 // factor from a writable .data float this lane may not add, and still keeps its frame at 0x30 against our
 // 0x34 because 0x4b2d0 takes the tag, the group and the variant in EDX, ECX and EAX (src/unknown_01cf50.cpp).
 // MiniMax E (11-15): no new form, no lower score (370): the distance's zero test against the float 0.0f
@@ -399,7 +406,7 @@ PRIVATE inline long polygon_round_19f(real value)
 // could reach retail's 0x30 measures 419 (1495 bytes); what still differs is unchanged: the frame 0x34
 // against retail's 0x30, retail's 1.5 factor in its own writable .data float, and the 0x4b2d0 call's
 // argument order, which is set in another file.
-// score 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
+// Earlier at 370 (was 370; earlier 316, 379, 393): see the round 170 line at the end of this note.
 // MiniMax A (11-13): no new form, no lower score (370); what still differs is unchanged: retail keeps the
 // third argument of this call in a register where ours keeps it on the stack, so retail's frame is 0x30 and
 // ours is 0x34, and the order of the three register arguments is fixed by the callers and by the callee in
@@ -413,7 +420,7 @@ PRIVATE inline long polygon_round_19f(real value)
 // MiniMax H (11-14): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail
 // still reads its 1.5 factor from its own writable .data float at 0x47ff94 and still expands two contributor
 // helpers in place, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX.
-// score 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
+// Earlier at 370 (was 316; earlier 379, 393): see the round 170 line at the end of this note.
 // MiniMax G (11-10): no new form, no lower score (370); retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that only this function reads, the frame is still 0x34 against retail's 0x30, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from a file this lane may not edit.
 // MiniMax E (11-10): no new form, no lower score (370); the frame is still 0x34 against retail's 0x30 and retail still makes its two 1.5 multiplies from the factor in its .data (the centre distance in single precision 379, the fade limit written out 402, a writable global factor 389 and the parameter read without its alias 419 all score worse).
 // MiniMax I (11-05): no new form, no lower score. Retail's callee 0x4b2d0 takes the tag in edx, the
@@ -554,27 +561,51 @@ PRIVATE inline long polygon_round_19f(real value)
 // distance a real compared with 0.0f 379 (1495 B: rounded through its slot before the compare); the top point initialised from
 // the vertex with `center->z + height` 406; the fade as `1.0f - fade * (1.0f / fade_limit)` 393; `top.z = bottom.z + height`
 // 410. Body unchanged; still BLOCKED-BY 0x1ccb0 (its file is /Ob1, retail inlines it here).
+// M3 lane 12 r136 (fast with 0x244470, 0x2be5d0, 0x4b2d0 and 0x116b00; the plain check agrees on the kept form): kept, 370 -> 322
+// (1495 B; aligned 89 -> 37): (1) the parameters in the order the callers hold them, variant before pass (0x244470 and 0x2be5d0 pass
+// their arg_3 and arg_4 in that order); with it the variant is read plainly and still arrives on the stack to be homed in EBP as
+// retail's prologue has it, so the volatile reference is gone and both callers still match; (2) the 1.5 factor read from its .data
+// float g_47ff94, with the centre distance rounded to real and clamped in place (`if (fade < 0.0f) ... else if (fade > g_47ff94 *
+// radius)`), the bound written at each use: retail multiplies twice, once inside the clamp's arm (0x19f6ee) and once for the
+// division (0x19f6fd), which one named bound cannot give; (3) the attribute scan indexing the block's array (no walked pointer, no
+// comma step; retail loads the array only inside the count guard, 0x19f82a).
+// Steps on the way (both callers matched unless noted): the order with the plain variant alone 419 (1495 B); the fade forms alone on
+// the old order 389 (callers lose 2 each); order + plain variant + the bound at each use as a ternary 340, the ternary with the bound
+// first 340, as the in-place clamp 330; with one named bound: global and real distance 412, global and double distance 413, literal
+// and real distance 434; the bound at each use with the double distance 408; the scan indexed 332; clamp and scan together 322
+// (kept). On the kept form: a `vertex` pointer local for the six vertex reads 322 (same code); the bottom point assigned member by
+// member 322 (same code).
+// With 0x4b2d0's parameters as (tag, group, record index, variant, pass) (HELD, see the note above 0x4b2d0): on its present body 321,
+// on its lookup-array body 311 (the call is then retail's: two pushes, variant in EAX, group in ECX, tag in EDX).
+// Still differs: frame 0x34 against 0x30 (the step counter has a stack home and ours keeps &vertices[index].y in EBP where retail
+// keeps the step), the 0x4b2d0 call (held), and 0x1ccb0(59)/0x1cd90, which retail expands here (their file is /Ob1).
+// MiniMax D (11-17): no new form, no lower score (370): retail has no frame pointer here and takes its
+// first three arguments in registers (EAX into EBX, EDX into ESI, ECX into EDI), so its frame is 0x30 and
+// its argument homes are the register ones, while ours still takes them on the stack under a frame
+// pointer with a 0x34 frame; that transport is decided by this function's two callers, which this lane may
+// not edit. Retail also still reads its 1.5 factor from its own writable .data float before the frame
+// push, where ours materialises the literal, and still expands the two contributor helpers in place.
 // @retail 0x19f680
-void function_19f680(long tag, long group, long pass, long variant, void *context,
+void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
     real perimeter, point3f const *color, real height)
 {
-    long const volatile *variant_reference = &variant;
-    long variant_value = *variant_reference;
     real inner_radius = radius - 0.0001f;
     double delta_x = (double)center->x - (double)g_4b9da0.x;
     double delta_y = (double)center->y - (double)g_4b9da0.y;
-    double distance = sqrt(delta_x * delta_x + delta_y * delta_y) - radius;
-    real fade_limit = 1.5f * radius;
-    real fade = distance < 0.0 ? 0.0f : ((real)distance > fade_limit ? fade_limit : (real)distance);
-    fade = 1.0f - fade / fade_limit;
+    real fade = (real)sqrt(delta_x * delta_x + delta_y * delta_y) - radius;
+    if (fade < 0.0f)
+        fade = 0.0f;
+    else if (fade > g_47ff94 * radius)
+        fade = g_47ff94 * radius;
+    fade = 1.0f - fade / (g_47ff94 * radius);
     if (fade > 0.0f)
     {
         real spread = fade * radius * 2.0f;
         real maximum_distance = inner_radius + spread;
         function_1bd50(0);
         function_1cdd0(0, 0);
-        function_4b2d0(tag, group, (*variant_reference), ((byte *)context)[4], pass);
+        function_4b2d0(tag, group, variant, ((byte *)context)[4], pass);
         long material = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
         byte *reference;
         dword kind = *(dword *)&g_4e3b44[(short)material];
@@ -584,16 +615,15 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
             reference = polygon_pointer_19f(polygon_tag_19f(material), 0x24);
         byte *groups = polygon_pointer_19f(polygon_tag_19f(*(long *)reference), 0x5c);
         long group_offset = *(word *)(polygon_pointer_19f(groups, 4) + group * 10) & 0x1ff;
-        long variant_offset = *(word *)(polygon_pointer_19f(groups, 0xc) + (group_offset + variant_value) * 2) & 0x1ff;
+        long variant_offset = *(word *)(polygon_pointer_19f(groups, 0xc) + (group_offset + variant) * 2) & 0x1ff;
         long shader = *(long *)(polygon_pointer_19f(groups, 0x14) + (variant_offset + pass) * 10 + 4);
         byte *attributes = polygon_pointer_19f(polygon_tag_19f(*(long *)(polygon_pointer_19f(
             polygon_pointer_19f(polygon_tag_19f(shader), 0x20), 4) + 0x100)), 8);
         long attribute_count = *(long *)(attributes + 4);
-        short *types = *(short **)(attributes + 8);
         long uv = NONE;
-        for (long i = 0; i < attribute_count; ++i, ++types)
+        for (long i = 0; i < attribute_count; ++i)
         {
-            if (*types == 3)
+            if ((*(short **)(attributes + 8))[i] == 3)
             {
                 uv = i;
                 break;

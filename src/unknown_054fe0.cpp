@@ -1849,6 +1849,16 @@ struct s_summary_player_sort_entry
 // MiniMax S (11-16): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session
 // pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail's conditional
 // move for the output's state needs an architecture flag this file's flags do not set.
+// M3 lane 12 r136 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160; control 339, aligned 160, register-masked 102): the name copied
+// through a `summary_name` pointer used for the copy and for the terminator (retail stores the terminator through the copy's
+// destination register) 339 (aligned 156); the id/key copy through this file's session_get_id 390 (1259 B: it stays a call),
+// through network_session_get_key 393 (1323 B, aligned 143: retail's per-destination null tests); the full-session arm as
+// `long used` and a switch on the mode 355 (1291 B, aligned 142); the member index from 0x5a680 (NULL, &member_index) with the
+// identity read through it 353; the name pointer, session_get_id, the `used` switch and the member index together 386 (1259 B);
+// those with network_session_get_key instead 374 (1307 B, aligned 123, register-masked 77). One build-flag diagnostic, not a
+// keepable form: the same four with `short state = 0; if (initialized) state = ...;` and this file built without /Ob1 and with
+// /arch:SSE 377 (frame 0xaa0, aligned 106, register-masked 65: retail's cmovne and the early member-index store come, the
+// membership pointer and the type pointer still have no homes); those flags alone on this body 339 (same code). Body unchanged.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

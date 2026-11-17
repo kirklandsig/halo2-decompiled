@@ -185,6 +185,10 @@ union s_185be7
 // control global is still carried in EBX from the entry block, where retail reads it into ECX a second time at the
 // flag test after the magnitude and pow calls and keeps NONE in EBX for its early uses; the only spelling that
 // reproduces the reload takes the global's address, which this lane may not do.
+// MiniMax I (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777 and the
+// control global is still carried in EBX from the entry block, where retail reads it into ECX a second time at the
+// flag test; the only spelling that reproduces that reload takes the global's address, which this lane may not do,
+// and the earlier rounds' counted-mask and selected-input forms all score above the score here.
 // score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected

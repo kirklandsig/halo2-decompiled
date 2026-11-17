@@ -273,6 +273,11 @@ static inline void font_copy_wait(bool volatile *done)
 // score 4 (was 4): the three font file arrays sit in the frame in another
 // order: retail puts the old directory's files first, then the source's,
 // ours puts the source's first and the old ones in the middle.
+// b14F (11-17) walk against retail, fast build on r847: the instructions match; the 4 differing lines are only the
+// three arrays' frame offsets (retail 0x121c5e, 0x121ca3, 0x121e4d: old 0xf70, source 0x1b20, destination 0x26d0).
+// Declaration order and scope of the arrays, the delete loop's spelling and the parse order change nothing. Only an
+// extra use of the old array in the pointer loop `old_file < old_files + old_count` (score 227) moves it first, with
+// different loop code.
 // @retail 0x121b00
 bool function_121b00(void)
 {
@@ -850,6 +855,9 @@ static inline long font_character_pixel(long alpha, long color)
 // long/word result and signed/unsigned color: 59/203/109/192/59/203/109/192. NOT kept: no native
 // parity/literal/run-two equality; original helper, calls and complete decoder restored.
 // MiniMax R (11-17): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the three decode sites where retail widens it to thirty-two, and the two fills still merge into one block; a helper without the byte cast gives retail's parity at every site but moves the run out of EBX into EBP (203), a byte alpha in the helper narrows it further (209) and a word result for the two bytes of the type 0 value changes nothing else (103).
+// P594: Separate word-store/cursor-advance boundaries at packed first/second/both, single,
+// literal, single-literal, all packed and all stores: 59/59/59/59/59/59/59/59. NOT kept: no exact native
+// parity/literal/run-two recovery; original scalar helper and complete decoder restored.
 // MiniMax S (11-17): no new form, no lower score (59): the shared helper without the byte cast on the low alpha bit (the
 // lead's form) makes all three decode sites match retail's parity (xor ecx, ecx; mov cl, al; and ecx, 1) and the pixel
 // blocks are retail's, but the allocator then keeps the type 3 run in EBP where retail keeps it in EBX (and the fill's

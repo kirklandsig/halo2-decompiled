@@ -157,7 +157,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 846 (was 846; earlier 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 846 (was 846): unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
 // MiniMax E (11-11, run 80): no new form, no lower score (866): retail reads the shared global g_44a0b4 from
@@ -584,6 +585,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P592: Completed count before conversion/override/existing append, subsets 1/2/4/3/5/6/7,
 // then full-width query/choice on the complete append graph: 926/871/860/929/914/880/917/947. NOT kept:
 // no exact native entry-zero/count/query-home recovery; original body and helpers restored.
+// M3 lane 3 r255 (fast, control 846; aligned/register-masked lines 640/527): the listener tail with an early return
+// when the slot's sound already has the detail tag 846 (same code); the second loop's matched sound through a pointer
+// formed after the distance call 929 (3305 B); both fade times through a by-reference inline fade-time helper 846 (same
+// code); the definition table read inside the choice-to-target loop 927 (3309 B); on this base, the allocation through
+// the existing looping_sound_new_attached(tag, NONE, NONE, 0) 896 (3274 B). Diagnostic, reverted at once: 0x14b240
+// storing into its owner (its call then clobbers the bsp) 928, so retail's re-read of the sound table after that call
+// is not a callee summary. Nothing in retail takes 0x44a0b4's address (no immediate, no data pointer); the matched
+// 0x2195f0/0x2197f0 read it for a -64.0f literal, so its 14 reads are reloads of a literal, not an aliasing effect.
 // M3 lane 1 r114 (fast with 0x18bb80): retail's matched-sound overrides read the matched sound's address once after the
 // distance call (`mov ebp, [ebx+0xd8]` reloaded, one `imul`), because the choice count holds ESI and no callee-saved
 // register is left for the sounds base; ours keeps the base in EBP across 0x14b240. One `other` pointer to the matched
@@ -592,6 +601,12 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // 981 (3255 B; long counts alone re-measured 965 at 3264 B); the inside/outside level named before the gain sum 846
 // (same code); that with the portal named too 905 (3337 B). g_44a0b4 should be a const global in .rdata (retail reads it
 // from memory 14 times), but its other declaration is in a held file.
+// M3 lane 9 r133 (fast with 0x18bb80, which stays matched; control 846): redundant guards that repeat a loop's own test,
+// meant to move callee-saved homes without code: `if (0 < query_count)` around the first loop 857, `if (0 < choice_count)`
+// around the choice-to-target loop 909 (3328 B), `if (0 < target_count)` around the target loop 850, `if (0 < existing_count)`
+// around the existing search 850; the first loop's new choice filled through `s_loop_path_choice &choice =
+// choices[choice_count]` with the increment last 925 (3288 B: the reference becomes a strength-reduced pointer, as the listed
+// pointer forms). Body unchanged.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

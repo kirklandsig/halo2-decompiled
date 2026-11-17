@@ -12,7 +12,7 @@ struct s_cache_file
 	s_copy_header_view header;
 };
 
-extern s_cache_file g_557c90[3];
+#include "cache_file_table.h"
 
 s_cache_copy_globals g_55b4f0;
 
@@ -87,8 +87,8 @@ bool function_2141f0(void)
 					{
 						long slot = cache_file_slot_from_type(type);
 
-						if (!g_557c90[slot].header.path[0] ||
-							CompareFileTime(&g_557c90[slot].header.source_time, &g_55b4f0.header.dependency_times[type]) != 0)
+						if (!g_557c90.files[slot].header.path[0] ||
+							CompareFileTime(&g_557c90.files[slot].header.source_time, &g_55b4f0.header.dependency_times[type]) != 0)
 						{
 							success = false;
 						}
@@ -115,7 +115,7 @@ bool function_2141f0(void)
 			long slot = cache_file_choose_slot(g_55b4f0.header.type, g_55b4f0.header.size);
 			if (slot != NONE)
 			{
-				s_cache_file *file = &g_557c90[slot];
+				s_cache_file *file = &g_557c90.files[slot];
 
 				g_55b4f0.slot = slot;
 				memset(&file->header, 0, sizeof(file->header));
@@ -131,7 +131,7 @@ bool function_2141f0(void)
 		break;
 	case 9:
 		{
-			s_cache_file *file = &g_557c90[g_55b4f0.slot];
+			s_cache_file *file = &g_557c90.files[g_55b4f0.slot];
 
 			g_55b4f0.task = async_flush_file(file->file, 1, priority, &g_55b4f0.done);
 		}
@@ -149,7 +149,7 @@ bool function_2141f0(void)
 			long remaining = g_55b4f0.progress.total - g_55b4f0.progress.completed;
 			long chunk = g_55b4f0.buffer_size <= remaining ? g_55b4f0.buffer_size : remaining;
 			g_55b4f0.chunk_size = chunk;
-			g_55b4f0.task = async_copy_position(g_55b4f0.file, g_557c90[g_55b4f0.slot].file, (void *)g_55b4f0.buffer,
+			g_55b4f0.task = async_copy_position(g_55b4f0.file, g_557c90.files[g_55b4f0.slot].file, (void *)g_55b4f0.buffer,
 				chunk, g_55b4f0.progress.completed, g_55b4f0.progress.completed, 1, priority, &g_55b4f0.transfer_size, &g_55b4f0.done);
 			state = 12;
 		}
@@ -182,7 +182,7 @@ bool function_2141f0(void)
 		break;
 	case 13:
 		{
-			s_cache_file *file = &g_557c90[g_55b4f0.slot];
+			s_cache_file *file = &g_557c90.files[g_55b4f0.slot];
 
 			g_55b4f0.task = async_flush_file(file->file, 1, priority, &g_55b4f0.done);
 		}
@@ -190,7 +190,7 @@ bool function_2141f0(void)
 		break;
 	case 14:
 		{
-			s_cache_file *file = &g_557c90[g_55b4f0.slot];
+			s_cache_file *file = &g_557c90.files[g_55b4f0.slot];
 			file_ref_clock_time(&g_55b4f0.header.last_used);
 			s_file_handle handle = file->file;
 			g_55b4f0.task = function_1a1050(handle, &g_55b4f0.header, 0x800, 0, s_file_write_flags(0), 1, 0, &g_55b4f0.transfer_size, &g_55b4f0.done);
@@ -202,7 +202,7 @@ bool function_2141f0(void)
 		state = 16;
 		break;
 	case 16:
-		memcpy(&g_557c90[g_55b4f0.slot].header, &g_55b4f0.header, sizeof(g_55b4f0.header));
+		memcpy(&g_557c90.files[g_55b4f0.slot].header, &g_55b4f0.header, sizeof(g_55b4f0.header));
 		memset(&g_55b4f0.header, 0, sizeof(g_55b4f0.header));
 		g_55b4f0.result = 1;
 		state = 17;

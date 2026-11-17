@@ -92,6 +92,8 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
+// 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
 // where this build merges the two fetches, because that callee writes no memory, and the callee's body is in
 // src/unknown_0bad50.cpp, which this lane may not edit; the alternative that tests the weapon index against NONE
@@ -112,7 +114,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // weapon lookup through that second fetch, while this link knows the callee writes no memory and merges the
 // two fetches, so the entry saves, the unit index's register and every later register differ; the callee's
 // memory summary is in a file this lane may not edit.
-// score 110 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
+// Earlier 110 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list): retail fetches the unit
 // again after the two 0xbadc0 calls (its link treats that callee as writing memory) and does the weapon lookup
 // through the second fetch; our link merges it into the entry fetch, so the entry saves, the unit index's
 // register and every later register differ. Earlier rounds below.
@@ -343,6 +345,12 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // cmp bp, -1, movsx ecx, bp); no behaviour change; callers ca0b0 62, e7fb0 19, 102fb0 643, fdfb0 1420 unchanged, the
 // other 13 MATCH. Left: the second fetch (0xc8748), saves, was_zoomed in dl (0xc8784), keep reloaded into al (0xc87e8),
 // the weapon-NONE jump to the epilogue (0xc87f3; ours sets eax = -1 first): BLOCKED-BY 0xbadc0 above.
+// M3 lane 15 r95 (fast with 0x103b10, MATCH each time; control 110, register-masked aligned 13): new combinations of
+// the listed forms: the `&&` weapon flag with the early-return sound helper 107; those two with the zoom flag declared
+// just before the reset test 102 (356 bytes, but aligned 31: its parts alone are 104/113/125, a positional artifact,
+// not kept); the early-return helper with the globals' sound as the default 115; the `&&` flag with that default 107.
+// Re-measured on this base: the `&&` flag alone 104 (367 bytes), the early-return helper alone 113, the late zoom
+// flag alone 125, `&&` with the late flag 116, the early-return helper with the late flag 127. Still BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

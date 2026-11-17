@@ -1091,6 +1091,13 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // retail). On it: the bit-29/+0x34b tests through a fresh by-index object_get() (matched 0xe3c90 reads its bit-29 test
 // through a fresh lookup beside its object local) 262 (same code: merges with `object`); the mask copy ahead of final_matrices 312 (804 B); final_matrices
 // declared ahead of object_orientations 262; node_count computed after the mask copy 262 (same code each).
+// m3 lane 7 r174 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800, all matched throughout; control 240): `result` initialised
+// from `&input_matrices[0]` 240 (same code: folds); final_matrices initialised at the top ahead of `result` 240 (other code:
+// both homes are then stored from ESI at entry, where retail keeps input_matrices in EDX until the late final store);
+// const parameters 240 (same code); the sample arm's two pointers as one chained assignment 240; the mask declared at the
+// top 240 (same code). Reading: retail's bit-30 flags load is a separate value from the clear's reload (`mov edi, [ebp +
+// 4]`), as the 0xbfe20 clear gives (re-measured 262, 813 B), and its entry keeps three values (object_index ESI, the
+// parameter EDX, result EDI) where ours coalesces the parameter with result in ESI.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

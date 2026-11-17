@@ -225,6 +225,22 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // NOT kept (coordinator review, MiniMax D 11-15): 106 -> 64 rested on match-only forms: a one-use current_maximum
 // local copied into old_maximum, a one-use counter pointer for the store, and the typed groups[index][12] written
 // as flattened all[index * 0x1b5 + 12] indexing.
+// M3 lane 15 r95 (fast with 0x1968b0, 0x196960, 0x196e60, 0x196ef0, 0x1e9ce0, all MATCH; control 106): the clamp's
+// limits and value as `short` locals 104 (426 bytes); the limits as `word` locals (the table's own type) 103 (426 bytes,
+// under the keep gate); the clamp applied to `consecutive` itself with no value local 106; the limits read from the
+// table at each use 116 (415 bytes); the maximum tested before the minimum 106. Still BLOCKED-BY 0x196960/0x1968b0
+// (src/unknown_1967d0.cpp, held) and the enable byte's aggregate in include/globals.h.
+// MiniMax C (11-17): no new form, no lower score (106): the counter's 15-bit read still uses movzx where retail
+// zeroes the register and loads the word, the old maximum's home stays EAX where retail holds it in ECX, and the
+// enable byte stays in DL where retail reloads it into AL, CL and DL; the flat all[] indexing that gives retail's
+// read form is the match-only form the coordinator rejected, and the permuter's best (80) adds volatile, a swapped
+// call argument and constant locals. The parameter layout is now known: LTCG gives this body player_index in EDX,
+// statistics at +0x4, threshold at +0x8 and code at +0xc (three stack arguments, ret 0xc), with ECX carrying only
+// the byte argument, so the remaining gap is codegen shape and not the convention: the old maximum nested into a
+// value local with a word intermediate 108, the maximum read written as a conditional assignment inside the enable
+// block 111, and the row addressed through a typed player pointer with the counter reached by its address 110 (the
+// prologue's register allocation shifts and EDI and EBP swap). The flat all[] indexing that gives retail's read
+// form stays a match-only form the coordinator rejected.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -654,6 +670,18 @@ struct s_object_damage_view
 // has killer == NONE (0x1ea15c, 0x1ea182, 0x1ea191, 0x1ea1a4, 0x1ea1b0), so retail's 0x1ea227 test runs on NONE and
 // leaves at 0x1ea29e; ours skips the killer block directly, the same work. Only non-behaviour spots: retail re-reads
 // the record's player at the assist stores (0x1ea336, 0x1ea33f) and the related player at 0x1ea43c (listed above).
+// M3 lane 17 r46 (fast, control 353, aligned 132): the selected record's pointer used only for the validation test 353
+// (same code, it folds back); a file-local inline accessor returning `&object->history[index]` at each of the three reads
+// 353 (same code); the pointer for the test and the killer with the amount indexed 452 (1599 B), for the test and the
+// amount with the killer indexed 432 (1580 B), as `object->history + selected` declared after the damage code read 454
+// (the listed 454's code); 1 to 3 unused locals on the 454 form 454 each (diagnostic). The 454 form loses EDI for
+// `selected` because the -1 constant follows `selected` into its register: with `selected` in memory the constant takes
+// ESI and the pool EDI. A fast-check search over 111 combinations of fourteen listed forms (both flags, the record
+// pointer with and without a named player, the amount read once, the assist reads, the related player re-read, the found
+// flag dedupe, the team byte argument, the fallback arm order, self/friendly order, `self` in the call, a record pointer
+// in the selection loop, three declaration orders, a history pointer for both loops): best 340 (1544 B: both flags,
+// `self` in the call and the history pointer), then 342 twice and 350; nothing at or under 350 without a flag set by a
+// test, and the unchanged body has the lowest aligned count of all (132, next 137). Body unchanged.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

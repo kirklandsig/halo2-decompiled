@@ -947,6 +947,7 @@ bool function_e4050(long object_index);
 // iterator's helper (include/data_iterator.h and src/unknown_0bad50.cpp), which this lane may not edit.
 // score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
 // include/data_iterator.h and src/unknown_0bad50.cpp.
+// MiniMax E (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
 // score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
@@ -2757,6 +2758,7 @@ static __forceinline long player_round_ticks(real value)
 // 702 at 2741 bytes, and the activity words as `|` of shifted bools give 714 at 2743 bytes, so none of them is kept.
 // score 701 (was 701): unchanged this round: the frame is still 0x4c against retail's 0x74, and this build inlines
 // 0xccd20 and the first 0x151b80 call where retail calls them.
+// MiniMax E (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74; the permuter's best variant (700) used a flag set by one test and read by the next, a comparison written as `!= 0` and an argument swap, all ruled out.
 // score 701 (was 701): unchanged this round: the frame is 0x4c against retail's 0x74, and 0xccd20 and the first
 // 0x151b80 call are still expanded here where retail calls them; both callees live in other files.
 // MiniMax I (11-17): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, and this
@@ -3384,14 +3386,26 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // 0xb8540 and 0xb7b40 leave nothing on loop 2's call tree seen to write g_4e8c20: BLOCKED-BY 0xb8540, 0xb7b40 and
 // 0xe4050. The loop 1 busy test with the vehicle arm first, the busy test as two conditional expressions, the busy
 // test set by `&&` and loop 2's flags word in a named local all leave the same code.
-// score 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
+// Earlier 193 (was 193): unchanged this round: our build keeps the players-globals pointer in EDI across both loops
 // where retail has ESI and late reloads; the same source scores 103 on its own.
-// score 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
+// Earlier 103 (was 193): unchanged this round: the players-globals pointer is still kept in EDI across both loops
 // where retail keeps it in ESI and reloads it late, and retail inlines the status test that this build calls
 // out of line; that callee lives in src/unknown_13bf00.cpp, which this lane may not edit.
 // MiniMax I (11-17): no new form, no lower score (plain 103, fast 193 - the fast build of this function is not
 // faithful): our build still keeps the players-globals pointer in EDI across both loops where retail keeps it in
 // ESI and reloads it late, and retail still inlines the status test this build calls out of line.
+// m3 lane 10 r115 (fast in round 34's widened image with 0x14d3a0 listed, every listed callee as in the baseline;
+// control 103 = the full build's 103; body unchanged; the two stacked score lines above are relabelled `Earlier`). Same
+// code as the body (not trials): the busy test in a forced-inline bool helper with early returns; both iterator set-ups
+// through one forced-inline begin helper; the prologue's globals as a reference instead of a pointer; the loop-1 player
+// through a reference; `value` and `last_position` declared at the function's top; the countdown read into a local for
+// its test and its decrement. New, both worse: the last position copied by components through a position pointer 117
+// (625 B); the pause test called once into a bool used for the countdown and the status 177 (611 B; retail re-reads
+// the byte at both tests). Every other code-changing natural form I found is listed above. BLOCKED-BY 0xb8540 and
+// 0xb7b40 stands (both still disabled stubs, so nothing on loop 2's call tree is seen to write g_4e8c20 and our build
+// carries it in EDI to the final store); 0xe4050 now matches and the web is unchanged. What follows from the web, as
+// before: loop 1's datum and unit swap ESI/EDI, NONE is an immediate where retail keeps -1 in EDX, the last unit sits
+// in EBP where retail keeps it in memory for loop 2.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

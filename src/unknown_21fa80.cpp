@@ -73,6 +73,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// MiniMax C (11-17): score 534 (was 534): no new form, no lower score. The frame stays 0x22c against retail's
+// 0x224, retail keeps the stream pointer in EBX and the gain bits in EBP where ours keeps them the other way
+// round, and the changed/direct/mode locals sit at -0x13/-0x1b/-0x1c against retail's -0xf/-0xe/-0x10; retail's
+// body was built without /Op, which the file's flags rule out.
 // score 534 (was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
 // /Op file still calls the CRT for them, and this build's frame is 0x22c against retail's 0x224.
 // MiniMax R (11-16): the level's square root taken in double, as retail's inline fsqrt keeps the extended
@@ -412,6 +416,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // P564: Separate per-query playing/stopped results in both original playback arms,
 // bool/byte/short/long: 534/534/534/534/536/536/536/536. NOT kept: native frame/stream/gain homes and
 // unrounded math expansion remain; original queries, guards, calls and complete body restored.
+// M3 lane 11 r111 (fast with 0x21f8a0 matched): `#pragma optimize("p", off)` around the body 534 (identical code, a
+// repeat of round 54's diagnostic); the cached gain stored as `*(long const *)&gain` 534, the mixbin gain passed as
+// `*(s_decibels const *)&gain` 534, both 534 (same code: the reference folds back to gain_bits, so the stream/gain
+// register swap stays); `stream` declared before `input` 534 (same code); `direct` declared before `mode` 533.
 // M3 lane 4 r207 (fast with 0x21f8a0): the linear gain through the float pin, `exp(channel_pin_gain(value) * 0.05f *
 // 2.3025851f)`, 557 (1875 B); the two mode sends as `if (mode == 1) add; add;` inside the mode test 544; the gain as a
 // value copy of the bits in place of the const reference 534 (same code); the direct bit read at each use (no local)

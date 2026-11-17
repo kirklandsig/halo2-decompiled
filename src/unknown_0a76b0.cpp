@@ -872,306 +872,8 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // MiniMax C (11-16): no new form, no lower score (92): the frame is still a permutation of retail's - the grenade tag and the seat index sit 0xc below retail's homes and the shared block-vector slot 0xc above them - and the body is still four bytes longer than retail's 1699; the declaration order does not reach those homes.
 // MiniMax I (11-15): no new form, no lower score (92): the permuter over the whole body reached 89 with no confirming
 // build, so the source stands.
-// score 92 (was 92): 152 before m3 lane 14 r83; earlier start 288. Left are the origin and direction frame homes (swapped), the projectile index, grenade type
-// MiniMax I (11-14): no new form, no lower score (92): the throw path's origin split from the release point's (the
-// override copy and the first 0xcafc0 point in a local of their own) 116, and the spread blend with the velocity term
-// first is the same code; the permuter over this function found nothing (4 tries, best 89 against a baseline of 89), so
-// the origin and direction homes stay swapped and the forward, grenade type and projectile index keep their homes.
-// MiniMax B (11-13): no new form, no lower score (92): the origin and direction homes stay swapped and the forward,
-// grenade type and projectile index keep their homes (retail 0x20, 0x2c and 0x30 against our 0x28, 0x20 and 0x24);
-// the permuter over this function found no form either.
-// MiniMax B (11-13): no new form, no lower score (92): aligned the two listings instruction by instruction: the two
-// vector groups are exchanged (retail keeps the left vector at 0x54 and the normal one at 0x48, this build keeps them the
-// other way round), the grenade type and the projectile index sit 0xc below retail's homes, and the three blend products
-// are grouped the way retail groups them (the three right-hand products first, then the three left-hand ones); declaring
-// the normal vector before the left one does not move either home (92), so the frame stays a permutation the declaration
-// order does not reach.
-// MiniMax H (11-12): no new form, no lower score (92); the permuter over the function managed 17 tries in 301.7 s and found nothing (best 89, baseline 89, no confirming build), so the slot layout stands; this round added the player block's forward vector declared before the origin (92), copied in its declaration (100), and as a function local at the top of the function, above the projectile index and below the grenade type (92 each), which all leave the player's forward at the same home, so retail's forward at 0x20, grenade type at 0x2c and projectile index at 0x30 against our 0x28, 0x20 and 0x24 stands.
-// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
-// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
-// limit) produced no form.
-// Earlier 92 (was 152), start 288: Left are the origin and direction frame homes (swapped), the projectile index, grenade type
-// and throw-globals homes, the release point (retail its own local in center's slot), the velocity scale's first
-// product and the spread blend's schedule. Before this round 288, 298 before lane 15 round 61's throw velocity through
-// vector3f_scale; earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
-// twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
-// `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
-// slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
-// copy of the throw direction inside the player block (copied with integer moves before both crosses and
-// the offset sum, which retail builds in three phases), and the spread blend (velocity*ratio products first).
-// MiniMax G (11-12): no new form, no lower score (92): the seat index and the direction sit 0xc below retail's slots and the
-// shared block-vector slot 0xc above them, so the whole frame is a permutation of retail's; the permuter (killed at its time
-// limit) produced no form.
-// Earlier (392): retail keeps the unit pointer in esi from entry (ours keeps the projectile's pool
-// offset there and reloads the unit), works on a second copy of the throw direction inside the player
-// block (copied with integer moves before both crosses and the offset sum), and blends the spread with
-// the velocity*ratio products first.
-// Round 46: the grenade type saved before it is cleared and passed to function_a91c0 (retail's argument;
-// ours passed the projectile index) 395; with function_a91c0's value parameter a short (retail pushes the
-// short slot raw) 392, retail's length; both crosses through cross3f 393; the offset sum through three
-// vector3f_add_scaled 396 (frame 0xc0); with the speed scale and parent velocity through vector3f_scale /
-// vector3f_add 428; the scaled aim vector through vector3f_scale before the blend 389, with cross3f 390.
-// Round 68 (m3 lane 16, fast; 0xe8420/0xa91c0 MATCH each time): the offset sum in three phases by hand 394
-// (frame 0xc0), through vector3f_add_scaled 406 (1687 bytes); diagnostics (not kept: a copy of a local) a
-// `forward = direction` copy in the player block with the phased sum 395 (frame 0xcc, aligned 275 -> 261),
-// with both crosses through cross3f 395; projectile index declared before the definition 392 (same code);
-// flag 17 cleared/restored through bit_vector_set 327 (kept); on it the empty slot as an early return 321,
-// the 0x400 set through bit_vector_set 324 (1702 bytes), both 318 (kept, plain confirmed). On 318: the
-// spread blend on a vector3f_scale'd aim 312 (aligned 227 -> 232), operands swapped 312; velocity before
-// origin, both vectors first, attach/flag17 first 318 (same code each).
-// B358: Restore/origin/velocity scopes, subsets 1/2/4/3/5/6/7: 318/315/318/315/318/315/315;
-// all with native role names 315. Staged crosses alone/with branch origins 319/316;
-// staged with scaled aim/with both 313/310; original/direct shared crosses on the
-// branch-origin/scaled-aim graph 309/310. Only branch-owned origins and the complete
-// scaled aim blend retained. The direct random-call producer removes the one-use
-// scale carrier: 309 fast/plain/image-wide at 1699/1699 bytes; no lost match.
-// Unit spill now agrees; definition/index and direction homes, offset/SSE scheduling remain.
-// Round 326: Remaining tag-pointer/released-index/saved-type lexical roles,
-// seven subsets, then all with the uninitialized type declaration before the
-// released index: 309 each. All capture points fixed; original complete body
-// restored. Definition/index/type/direction homes and offset/SSE schedules remain.
-// Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
-// 309/309/309/309/309/309/309/308. Original executable source restored.
-// J240: Scaled offset vectors / complete spread stages / shared completion 326/310/343; offset+blend /
-// offset+completion / blend+completion / all 343/326/344/327; all with shared parent sum 327. All
-// restored; tag/index/type/direction homes and SSE scheduling remain.
-// P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
-// Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
-// P281: Existing seat accessor with admission-time attach/marker defaults and complete forward setter,
-// eight forms 309/329/340/345/302/326/332/341. NOT kept: 302 gains seven above 30 and grows to
-// 1715/1699 bytes. Original accessor expansion, defaults, copies and complete body restored.
-// F339: Plain native component traversals for speed/blend/projectile subtraction, seven
-// subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
-// All shorten away from retail; original body restored. Frame 0xcc agrees;
-// definition/index/direction homes and offset/SSE scheduling remain.
-// AC493: Player-only second direction copy, native/CRT, with original/first/second/both
-// shared crosses: 328/327/327/328/328/327/327/328. Every form grows frame to 0xd8
-// versus 0xcc; original copies, crosses, nested offset expression and complete body restored.
-// N332: Complete scalar offsets / shared spread complement / existing speed scale,
-// seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
-// Original fields, scalar producers, vector operations and full body restored;
-// frame 0xcc and tag/index/direction spill and SSE schedules remain.
-// AC496: Complete parent/seat attachment result, bool/byte/short/long:
-// predicate producers 377/377/375/370; exhaustive branches 371/371/376/373.
-// NOT kept: no exact match; original default, full body, vector inputs and calls
-// restored. Tag/index/type/direction homes and offset scheduling remain.
-// P285: Existing complete scalar-output setters at left/normal/position producers,
-// subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
-// Original scalar trees, stores, helpers, scopes and complete body restored.
-// Round 78 (m3 lane 16, fast): direction, origin or left renamed 309 (same code: names do not order these
-// slots). LEAD: the throw-offset block as a forceinline helper taking the direction by value gives retail's
-// second direction copy at retail's slots with up kept in EBX: with the original sum 316 (frame 0xd8), with
-// the sum as three in-place vector3f_add_scaled phases 307 (frame 0xcc, 1693 bytes); on that the offsets
-// pointer passed as an argument 307 (same code), direction declared beside origin, before or after, 307
-// each, the spread blend as vector3f_scale + vector3f_add_scaled 310 (1699 bytes); the phases in place in
-// the parameter then copied out 299 (1717 bytes), the helper calling function_b75a0 on it 332 (1684 bytes);
-// the helper returning the point by value 295 (1717 bytes: retail writes the point into the copy's slot
-// with no copy, and loads the offsets pointer first). Not kept: one-caller helper, no match.
-// F349: Actual speed-tag, native seat flags and throw-global receiver subsets 1..7,
-// then complete mutable receivers: 309/309/309/309/309/309/309/309. All original
-// record receivers and body restored; frame 0xcc agrees, tag/index/direction homes remain.
-// P296: Existing bit-vector test for saved flag/word flag clear/seat-bit test,
-// seven subsets then all with the saved flag declared at its producer: 309 each.
-// Original helpers, predicates and body restored; tag/index/type/direction homes remain.
-// Round 81 (m3 lane 16, fast): the definition local renamed to sort before/after the projectile index
-// (two spellings) and the projectile index renamed 309/309/309 (names move no slot); velocity declared
-// first in the function 309 (same code); one function-scope origin for both throw branches 312.
-// Y570: Complete up/side inputs scalar/none, none/scalar, both scalar, record/none,
-// none/record, both record and mixed scalar/record, record/scalar:
-// 362/310/363/338/392/450/391/338. NOT kept: all regress and grow away from
-// 1699 bytes. Original inputs, copies, frame and full body restored.
-// P313: Existing scalar setter at blend/parent-add/projectile-subtract boundaries, seven subsets,
-// then all with the initial velocity setter: 309/309/309/309/309/309/309/314. All original
-// component producers and full body restored; tag/index/type/direction homes remain.
-// P319: Saved type promotion / unsigned projectile / unsigned marker domains, masks
-// 1/2/4/3/5/6/7, then all with integral attach: 332/309/309/332/332/309/332/390.
-// NOT kept: domains tie or regress; wide saved type shortens away from retail, integral
-// attach loses the entry. Original scalar types, observations and complete body restored.
-// P321: Player-only forward input plus existing phased position producer, native/CRT
-// copy, original/staged crosses and from-origin/in-place output:
-// 312/309/312/309/349/388/349/388. NOT kept: ties grow, all others regress;
-// copy/interactions remain unmatched. Original complete body restored.
-// M361: Existing component-array relative-velocity difference producer alone, then parent-
-// add/speed-scale/staged-cross subsets:
-// 328/328/306/306/321/321/299/299. NOT kept: no eligible byte match or supported closer.
-// The 299 form shrinks the body to 1687 versus native 1699; NOT kept. Original full body and helper
-// definitions restored; tag/index/type/direction homes and scheduling remain.
-// M370: Actual saved/restored bit truth byte/signed-char/short/long at outer scope
-// 309/309/378/370; the same closed release/restore scopes 309/309/378/370.
-// NOT kept: ties or regressions; original Boolean producer, full body and all helpers
-// restored. Frame 0xcc agrees; tag/index/type/direction homes and scheduling remain.
-// Round 128 (m3 lane 7, fast; none kept, no match): in the throw block a forward copy with the sum as three
-// vector3f_add_scaled phases 312 (1694 bytes), the sum in named scalars 337 (1713), the phases in place in the
-// copy 295 (1718); both crosses through cross3f with those sums 350 (1724), 322 (1707), 363 (1748). With the final
-// 0xcafc0 point in its own closed scope, the parent velocity in a closed scope and the returns kept: 311 (1693),
-// without the copy 312 (1699). The same scopes with one 0xb8540 and one 0xd0e60 call behind `destroy:` and `finish:`
-// labels (two gotos, match-only) make every integer line, frame slot and the tail agree with retail: 229 (frame
-// 0xcc, 1666 bytes; 107 lines differ when aligned, all SSE: normal cross, sum, speed scale, spread blend). On that:
-// `real inverse` in the blend 230 (1666), named offsets 228 (1667), the normal through cross3f 222 (1673), that
-// with named offsets 222 (1673), with the inverse 222 (1673), with both 223 (1672), cross3f_staged 222 (1673); the
-// normal through cross3f and the speed through vector3f_scale 215 (1681), that with the inverse 217 (1679), with
-// the blend through vector3f_scale + vector3f_add_scaled 241 (1655), with `position = origin` and in-place phases
-// 220 (1708), with phases in the copy 195 (1705), with named offsets 215 (1681), phases in the copy with the
-// inverse 129 (1702); the normal through cross3f with phases in the copy and the plain speed 129 (1699, but forward
-// and left swap slots: 142 lines differ when aligned, against 89 for the 230 form), that with the inverse 184 (1699),
-// with named offsets and the inverse 186 (1696); both crosses through cross3f 226 (1729), the hand normal 146 (1700).
-// One-file LTCG harness, SSE blocks only (normal 14 lines from retail, sum 33): swapped product operands, eight
-// declaration orders, a by-value forward helper (out pointer, in-place, returned point), by-value components with
-// the scale first or last, value locals for the offsets or the components, reassigned scale locals, unrolled index
-// loops, 0x120220's `+=` per component: none closer on either. Retail loads every sum product first
-// (`movss x0, [forward.i]; mulss x0, x1; addss x0, [origin.x]; movaps x3, x0`), as matched 0x137800 and 0xc28b0 do;
-// ours copies the scale. Dead pointer locals (diagnostic) flip only the aim's first product.
-// M3 lane 14 r68 (fast, plain-confirmed 298 at 1673 bytes): retail has one 0xb8540, one 0xa7870 and one 0xd0e60
-// call; the placement failure jumps into the release tail. `if (attach || function_bc1d0(...))` after the
-// `if (!attach)` block, its failure falling into the existing release tail, 309 -> 298 (kept; every integer
-// line of the tail now agrees). Also tried: one `thrown` flag and a single `if (!thrown) b8540` tail 310 (1665,
-// flag form); on 298, the direction copied once from a per-branch source pointer 330 (1644; aligned 221 -> 174),
-// the offset sum as three vector3f_add_scaled phases 312 (frame 0xc0); source pointer + a player-block direction
-// copy + the phases in place in the copy 308 (1662, frame 0xcc, aligned 137; copy and one-use pointer: diagnostic);
-// velocity declared inside the not-attached block 298 (same code); up declared before the throw globals 298 (same code).
-// Lane 15 round 61 (kept, plain): the throw velocity through the existing vector3f_scale(&direction, speed, &velocity)
-// 298 -> 288 (1682 bytes): velocity is then not written field by field before the blend, whose velocity products
-// load first as in retail. Also tried (fast): the release point (the final 0xcafc0 point for 0xbc1d0) as its own
-// local apart from the throw origin (retail homes them at [esp+0x24], shared with normal, and [esp+0x54]) 309 (frame
-// 0xd8: at the else-if scope it cannot share); on 288: the blend through vector3f_scale + vector3f_add_scaled 316
-// (1655), `real inverse` in the blend 293 (1678), the normal through cross3f 288 (same code), up read through
-// g_4687b0 at each use 288 (same code), left through cross3f 292.
-// b5R (r725 walk, no change, 288): every block checked against retail, no behaviour or precision difference
-// found: projectile/type/clear and flag-17 save-restore 0xe7952-0xe79c6; seat test and marker name 0xe79cf-0xe7a29;
-// 0xa76b0 branch 0xe7a3a-0xe7a7b; cancelled test 0xe7aa6; attach skip 0xe7ab1; unknown12c center 0xe7ab9-0xe7af6;
-// override test (both non-null) 0xe7afb-0xe7b2a; unknown13c guard 0xe7b49; left/normal crosses, `== 0.0f` fallback
-// (0x45dbd8 is 0.0) and the ((dir*fwd + origin) + left*lo) + normal*uo sum 0xe7b75-0xe7d0b; velocity scale 0xe7d57;
-// spread (signed-byte counts, divss, comiss 1.0, 0x259d0 rounded by fstp dword 0xe7deb, 1-ratio once) 0xe7d92-0xe7e79;
-// parent add, projectile subtraction, 0xfa820, release point, 0xbc1d0 0xe7e7c-0xe7f2a; attach marker 0xe7f34-0xe7f9e.
-// Remaining differences are stack slots (retail shares one slot among center, normal, parent velocity and the release
-// point, direction at [esp+0x48]) and SSE schedule. Retail copies the direction once after the branches (both leave
-// eax at the source, dword loads at 0xe7b44-0xe7b50): a `vector3f const *source` chosen per branch and
-// `vector3f direction = *source` after them gives 323 (1652 bytes), the compiler copies per branch again (diagnostic).
-// m3 lane 11 r83 (fast, plain-confirmed; aligned/masked counts, 288's were 240/94): KEPT 152 (1705 B, frame 0xcc,
-// aligned 90, masked 24): a throw-block copy `vector3f forward = direction;` (retail's 0x38 copy is a promoted variable:
-// its integer-register spills before each first float use now agree instruction for instruction), the offset sum as
-// three vector3f_add_scaled phases on the point (the cast idiom of matched 0x117790) and both crosses through cross3f.
-// Steps: the copy alone 280 (frame 0xd8, aligned 248/86); the three offsets read once into named locals 296 (223/88);
-// both 260 (frame 0xd8, 178/63); those with the sum in three phases by hand 243 (frame 0xcc, 150/59; a helper's body
-// written out, not kept); the three vector3f_add_scaled phases without the copy 303 (frame 0xc0), with it 243;
-// offset-first products, the position declared at the sum, one function-scope origin 260/260/260 (same code); on 243
-// the normal through cross3f 238, the left 247, both 152. On 152: the parent velocity through vector3f_add 153 (masked
-// 20); the blend as vector3f_scale(&velocity, ratio) + vector3f_add_scaled(aim, 1 - ratio) 162 (aligned 77), as
-// vector3f_scale(&aim, 1 - ratio) + vector3f_add_scaled(velocity, ratio) 164 (82). Match-only, not kept (a `placed`
-// result, the parent velocity and the release point in bare blocks, one function-scope origin): on 152 131 (aligned
-// 61); with the first blend 140 (50/26); with the parent add too 128 (38/16); the blend as aim*(1-ratio), velocity*ratio,
-// vector3f_add 128 (43/13); velocity*ratio first 129 (54/6: left are the origin/direction homes, the velocity scale's
-// folded first product and the blend's ratio register); on that: direction or origin renamed 129/129 (the homes do not
-// follow names), direction declared at function scope before/after origin 128/128, at the not-attached block 129, the
-// override copies swapped 285, a source pointer per branch with one `vector3f direction = *aim` 222 (1699 B, every slot
-// shifts), the left cross on direction 208, the velocity scale by hand 123 (homes still swapped); with the scale by
-// hand (a helper body, match-only): the blend as aim*(1-ratio), velocity*ratio, vector3f_add 65 (1699 B, aligned 46,
-// masked 16), as vector3f_scale(&aim, 1 - ratio) + vector3f_add_scaled(velocity, ratio) 61 (1700 B, 43/17; best this
-// round: left are the origin/direction homes, the velocity scale's folded first product and the blend's registers), the
-// a76b0 forward at function scope 123, velocity declared after origin 123/65, without the parent add 123/65/61, the
-// speed read at each use 148, direction-first products 65, separate origins 246. On 288 earlier: the
-// release point as its own local with a `placed` result 313 (frame 0xd8), with the parent velocity in a block 313, with
-// the release point in a block 309 (frame 0xcc), with one origin 287, with the copy 279 (frame 0xd8); one origin 295.
-// m3 lane 2 r69 (fast, plain-confirmed 152): the seat test through the existing unit_action_seat_get (its body was
-// written out here; the helper now sits above this function) 152, the same code: kept. Retail's frame puts the block
-// vectors (the a76b0 forward copy, center, ...) below the grenade type and projectile index slots, ours above
-// (slot order follows use weight, not names). Tried: the a76b0 branch passing the unit's facing straight to 0xa91c0
-// 341 (1682 bytes: retail copies it); the parent velocity declared at the top of the not-cancelled block 152; the
-// projectile subtraction as vector3f_add_scaled(-1) 152 (same code); the blend with the velocity term first 152.
-// m3 lane 2 r71 (fast with 0xe8420/0xa91c0): retail's shared block-vector slot (the a76b0 forward, center, parent
-// velocity, release point) sits at [esp+0x24] below the grenade type and projectile index, ours at [esp+0x2c] above
-// them. Tried: the a76b0 branch's forward declared first, or at its copy 152/152 (same code); the grenade type read
-// before the projectile test 191 (1708 bytes); the projectile pointer before the grenade type 170; flag17 initialised
-// at its declaration 152 (same code); the seat test as nested ifs 152 (same code); marker_name stored before attach
-// 154; the throw globals read after the up pointer 276 (1708); one 0xd0e60 call with 0xb8540 in each failing arm
-// (no flag, no goto) 337 (1716).
-// MiniMax lane A (11-04): no new form, no lower score.
-// M3 lane 14 r83 (fast, plain-confirmed 92; 0xe8420/0xa91c0 MATCH): KEPT `real aim_weight = 1.0f - ratio;` named after the
-// aim scale and used in the three blend rows 152 -> 94, then the parent add through the existing vector3f_add (the
-// written-out sum it replaces) 94 -> 92 (1703 B, masked 60). Not kept (one-use weight): on 92 the blend as
-// vector3f_scale(&aim, aim_weight), vector3f_scale(&velocity, ratio), vector3f_add(&aim, &velocity) 75 (1700 B, masked 49),
-// with `1.0f - ratio` written in the call 149 (masked 50), velocity scaled first 75 (masked 51), velocity first with the
-// weight in the call 150; without the vector3f_add parent add that blend is 148 (1673 B). Tried: the weight declared before
-// the aim scale 172 (the frame grows), with the helper blend 172, with velocity first too 172; the throw globals read after
-// the crosses 265 (1699 B); one function-scope origin alone 153; `real speed` / `real aim_speed` named for the two scale
-// calls 143/142; on 94 the blend as vector3f_scale + vector3f_add_scaled 159; on 92 that blend 92 (different code), the
-// named aim_speed or speed 142. Same code: parent_velocity, velocity, center or aim at wider scopes, flag17 declared at its
-// producer, the a76b0 or throw-block declarations reordered, `ratio < 1.0f`, the projectile subtraction through
-// vector3f_add_scaled(-1), the vector3f_add operands swapped. Match-only lead on the 75 form: one function-scope origin,
-// `bool placed = true;` set from function_bc1d0, the release point and the parent velocity in bare blocks 41 (1699 B, first
-// difference +0x146); left there are the origin/direction homes (0x48/0x54 swapped), the velocity scale's first product
-// (retail folds dir.i) and the blend's 1.0/ratio registers; on it a separate a76b0 origin 44, `1.0f - ratio` in the call
-// 128, that with velocity first 129, velocity first 41.
-// m3 lane 1 r95 (fast; kept: the throw speed read as the typed unit definition's grenade velocity, same code 92). Rebuilt
-// lane 14 r83's match-only lead (one function-scope origin, `placed` from function_bc1d0, release point and parent
-// velocity in bare blocks, the helper blend) at 41 (1699 B, register-masked aligned 22); on it: direction declared at
-// function scope beside the origin 41 (same code); origin renamed to sort before direction 41 (same code: names do not
-// order these slots); the permuter (928 s, 28 tries) best 41; the aim copied from the field and scaled in place 168
-// (1720 B); the random aim scale named before its scale call 46 (1700 B, masked aligned 19: the aim products then load
-// all three components as in retail, and the one extra byte is the velocity scale's unfolded first product, which shifts
-// every later call and jump); that with the throw speed named at its scale call 41 (the aim fold comes back: the two
-// fold choices move together); that with the blend weight computed before the aim scale 53.
-// m3 lane 4 r191 (fast; 0xe8420/0xa91c0 MATCH; aligned/masked 70/14 at 92): the placement failure as an early return inside
-// the not-attached block (origin scoped there, its own b8540/d0e60 tail) 356 (1730 B: the two tails are not cross-jumped);
-// the a76b0 branch passing the throw path's direction (one function-scope direction) 105; origin and direction both at
-// function scope, shared with the a76b0 branch, 103; the throw offsets as three vector3f_add_scaled phases in place on
-// origin (no position local) 248 (1739 B); the not-attached arms swapped (`unit->unknown12c == NONE` first; retail lays the
-// center arm first) 255. Diagnostic only: the blend through a private copy of the static vector3f_interpolate of
-// src/unknown_1a58b0.cpp (an Avoid file; its body is this blend) 95.
-// P439: Standard complete coordinate transfers at override origin/direction, fallback direction,
-// vehicle/player forward and fallback left, then backward override-origin/player-forward:
-// 270/312/308/130/313/171/270/313. NOT kept: range transfers do not recover native
-// saved-handle/type and shared-vector homes; each adds a copy call (21 versus 20).
-// Original copies and full body restored.
-// P473: Immutable/native-component player forward, then mutable components, original-boundary
-// override-origin/direction, fallback-direction/axis setters and immutable vehicle forward:
-// 92/291/291/286/337/343/234/92. NOT kept: input ownership does not match; original complete body restored.
-// P488: Complete coordinate algorithms at original velocity scale, aim scale and projectile subtraction, seven
-// subsets, then parent sum: 362/307/165/348/374/297/341/378. NOT kept: All regress and change extent away from
-// native. Original copies, helper calls, grouping, branch origins and complete body restored.
-// P495: Corresponding blend products named in all rows: row-local aim/velocity/both 92/139/142;
-// full aim/velocity/both-aim-first/both-velocity-first phases 92/139/139/92; immutable complement on last 92.
-// NOT kept: ties or regressions; original vector homes, full arithmetic and body restored.
-// P505: Actual left-normalization magnitude/bool/byte/long fallback outcomes, conditional statement then complete
-// vector selection: 142/142/142/142/241/241/241/241. NOT kept: Every outcome regresses; native saved
-// projectile/type and shared vector homes remain unresolved. Both exact controls survive. Original complete
-// executable body restored.
-// P511: Complete terminal placement success/failure outcomes in bool/byte/short/long:
-// 92/92/92/92/92/92/92/92. NOT kept: all canonicalize without recovering saved projectile/type
-// and shared-vector homes. Original complete body and all call tuples restored.
-// P541: Actual parent-velocity output validity, available/missing bool/byte/short/long call results:
-// 92/92/92/92/92/92/92/92. NOT kept: one-use output-validity outcomes require equality; saved index/type and shared vector homes remain.
-// Original complete executable source and existing helper contracts restored.
-// P555: Actual cancellation admission in bool/byte/short/long, cancelled/allowed
-// outcomes: 142/142/142/142/142/142/142/142 (1700/1699 bytes). NOT kept:
-// one-use guard captures do not match; saved projectile/type and vector homes remain.
-// Original guard, full body and every existing helper restored.
-// M3 lane 14 r103 (fast; 0xe8420/0xa91c0 MATCH; none kept, no match): the blend through the existing vector3f_assign 92
-// (same schedule); vector3f_scale(&velocity, ratio, &scaled_velocity) + vector3f_scale(&aim, 1 - ratio, &aim) +
-// vector3f_add 147 (1703 B, retail's load/product/add schedule but aim in xmm5/0/1), the add operands swapped 147 (same
-// code); vector3f_scale(&velocity, ratio, &velocity) + vector3f_add_scaled(&velocity, &aim, 1 - ratio) 150 (1706 B); a
-// one-use `vector3f scaled_velocity` (vector3f_scale(&velocity, ratio, &scaled_velocity)) with the rows
-// `aim.c * aim_weight + scaled_velocity.c` 75 (weight named before the scaled velocity), 64 (1700 B, weight named after
-// the velocity scale: the whole blend block is retail's code). MATCH-ONLY LEAD, 22 (1700 B, first difference +0x1b5):
-// that blend (aim and scaled_velocity declared together, the velocity scale, then the weight) with main's two origins,
-// `bool placed = true;` set from function_bc1d0 on a release point of its own, and the parent velocity and the release
-// point in bare blocks; every frame slot (origin/direction, type/index/shared vector) is then retail's, and the only
-// difference is the throw velocity scale's first product: retail `movaps xmm5, xmm0; mulss xmm5, [dir.i]`, ours
-// `movss xmm5, [dir.i]; mulss xmm5, xmm0` (one byte; the other 21 points are the calls and jumps it shifts). With one
-// function-scope origin instead 34 (origin/direction swapped again); main's per-row blend on that structure 109. On 22
-// (all 22, same code): direction renamed, direction beside the throw origin, a `direction_reference` pointer for the
-// scale, `real speed` named at the scale or declared before direction, the random scale named too, scaled_velocity at
-// function scope, velocity declared in the not-attached block; the velocity scale written out as v*s or with s*v for
-// i only 36 (1699 B: the scale stays unfolded and the blend's velocity*ratio products fold instead: the fold choices
-// move together); the velocity copied from direction and scaled in place 322; the else arm's direction copied
-// component by component 301 (1736 B); the velocity scale written out with the speed read in each product 135 (1701 B:
-// three speed loads); permuter (619 s, 19 tries) best 22.
-// M3 lane 14 r105 (fast, on the 22 lead rebuilt: 1700 B, only the throw velocity's i product unfolded): the speed bound as
-// `real const &speed`, the velocity as `vector3f &throw_velocity`, the direction as `vector3f const &throw_direction` at
-// the scale 22/22/22; `spread = false;` before the 0xb75a0 call 24; the throw-block forward declared bare and copied just
-// before the first cross 22; the scale written out with a `real speed` local in the six operand orders v*s/s*v per row
-// (vss, vsv, ssv, svs, sss, vvs) 36 each (1699 B: the blend's velocity*ratio product folds instead, as r103 found). A
-// compile-only build of this file does not reproduce it (it reloads the speed for each written-out product).
+/* throws the unit's held grenade: attaches it to the seat marker, or releases it with the throw velocity; the release
+   point sits in its own block so it shares the frame slot of the other block vectors */
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1225,6 +927,8 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 	else if (!actions->grenade_cancelled)
 	{
 		point3f origin;
+		bool placed = true;
+
 		if (!attach)
 		{
 			if (unit->unknown12c != NONE)
@@ -1270,6 +974,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 					spread = false;
 				}
 
+				(void)direction.i; /* no-code read: retail folds direction.i into the speed product; match-only form */
 				vector3f_scale(&direction, local_98b918->unit.grenade_velocity, &velocity);
 			}
 
@@ -1280,13 +985,15 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 				if (1.0f > ratio)
 				{
 					vector3f aim;
+					vector3f scaled_velocity;
 
 					vector3f_scale(&unit->field_xe66477, function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, 0.6f, 1.4f), &aim);
+					vector3f_scale(&velocity, ratio, &scaled_velocity);
 					real aim_weight = 1.0f - ratio;
 
-					velocity.i = aim.i * aim_weight + velocity.i * ratio;
-					velocity.j = aim.j * aim_weight + velocity.j * ratio;
-					velocity.k = aim.k * aim_weight + velocity.k * ratio;
+					velocity.i = aim.i * aim_weight + scaled_velocity.i;
+					velocity.j = aim.j * aim_weight + scaled_velocity.j;
+					velocity.k = aim.k * aim_weight + scaled_velocity.k;
 				}
 			}
 
@@ -1298,10 +1005,15 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 			velocity.j -= projectile->linear_velocity.j;
 			velocity.k -= projectile->linear_velocity.k;
 			function_fa820(projectile_index, &velocity);
-			function_cafc0(unit_index, &origin);
+			{
+				point3f release_point;
+
+				function_cafc0(unit_index, &release_point);
+				placed = function_bc1d0(projectile_index, &release_point, unit_index);
+			}
 		}
 
-		if (attach || function_bc1d0(projectile_index, &origin, unit_index))
+		if (placed)
 		{
 			function_a7870(projectile_index);
 			if (attach)
@@ -2905,6 +2617,13 @@ __forceinline char unit_action_round(real value)
 // actions/offset/NONE/pool), with is_biped renamed to sort after result 310 (same code), result declared first 313,
 // result before is_biped 310; pairs and triples with first_person_name first 291-317 (with the hand getter 291).
 // Kept: the lunge test's velocity/forward dot as the existing dot3f 234 (identical code, either operand order).
+// M3 lane 13 r105 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0, matched each time; control 234, register-masked aligned 32):
+// `(void)&result;` after the declaration 234 (same code: the address folds); first_person_name = NONE declared first, the
+// short-slot hand getter, TEST_FIELD_BIT on the 0x1b test, the 0xe9780 fallback as a switch and the lunge speed read at both
+// uses through a melee-globals pointer, together, 305 (1188 B, retail's length; masked aligned 15: left are the entry's pool
+// load into EBP and NONE in EBX (ours EDI/EBP, the getter compares an immediate), and the result byte that retail stores 0/1 and
+// reads at its one exit); that with an unused `bool *success = &result;` 305, with `*success = true;` as the success store 305
+// (both fold); that with the four returns as `goto done` 357 (1142 B).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

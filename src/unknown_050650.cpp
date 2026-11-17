@@ -904,6 +904,11 @@ struct s_collision_result_buffer_1697c0
 // pointer 308 (1446 B); each rotation's sine/cosine pair as named locals in its own block 217 at 1423 B (masked 86), with
 // the best vector before best_fraction 214 (1423 B, masked 84). All match-only (the wrapper's body written out or a one-use
 // pointer); body unchanged.
+// score 299 (was 299): MiniMax D (11-17): no new form, no lower score (299): the frame-bottom homes still differ -
+// retail's three locals sit at [esp+0x1c]/[esp+0x20]/[esp+0x24] against this build's [esp+0x18]/[esp+0x1c]/[esp+0x20],
+// retail's flag byte is at +0x2f against this build's +0x2b, and retail keeps the magnitude result at [esp+0xc] where this
+// build keeps it at [esp+0x2c]; the masked count is 154, so what is left is the homes rather than the statements, and
+// lane 14 r84's reused sine/cosine pair is a match-only form (its body written out), which is not a permitted shape.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -1701,6 +1706,11 @@ done:
 // result register and adds it, where retail keeps the slot in a separate register and adds it with a lea; the
 // byte-pointer product, the address of the indexed element and the integer base all compile to the same
 // prologue here.
+// score 9 (was 9): MiniMax D (11-17): no new form, no lower score (9): the prologue still differs in one byte - retail
+// builds the actor offset in eax (`mov eax, ecx`, `and eax, 0xffff`, `imul eax, eax, 0x888`) and finishes with
+// `lea esi, [eax + edx]`, where this build folds the masked slot into the result register and adds the base with
+// `add esi, edx`; the shared getter cannot change (sixteen matched functions in this file use it), so the spelling would
+// have to be this function's own, and the twenty-five forms the earlier rounds list all build the same prologue.
 // @retail 0x296580
 void function_296580(long actor_index)
 {
@@ -2319,6 +2329,13 @@ struct s_actor_looking_turn_request
 // MiniMax D (11-16): no new form, no lower score (442).
 // MiniMax S (11-16): no new form, no lower score (442): the same cold block placement as in 0x2967b0, this
 // build puts the default and the case blocks in a far section where retail keeps them in the function.
+// score 442 (was 442): MiniMax D (11-17): no new form, no lower score (442 plain, 548 on the reduced image): the entry
+// block still differs in register roles and in when the record address is formed - retail keeps the actor index in esi,
+// builds the slot offset in eax and adds it to the base (`and eax, 0xffff`, `imul eax, eax, 0x888`, `add ebp, eax`) and
+// spills the offset to [esp+0x30], and then reads the record through ebp, where this build keeps the actor index in edi,
+// the offset in esi, reads the record through `mov eax, [ebp + esi + 0x18]` and only then adds the offset to the base;
+// the shared getter cannot change (sixteen matched functions in this file use it), so the spelling has to be this
+// function's own. BLOCKED-BY 0x1fdd90: retail calls it out of line and this build expands it inline.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
