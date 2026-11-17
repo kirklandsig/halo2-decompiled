@@ -280,8 +280,9 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 214 (was 214; earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
-// MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
+// score 206 (was 214): The frame is 0x24 against retail's 0x2c and the source arrives in ECX.
+// Earlier scores were 209 and 214 after the j-row correction.
+// MiniMax I (11-16): the second material code is read before the first, the
 // matrix is taken in a named local inside the transform block, and the side bits are extracted with
 // an unsigned shift so retail's shr/and survives instead of our sar/xor fold; still differs: the
 // frame is 0x24 against retail's 0x2c, retail keeps the source in ESI and reloads the matrix into
@@ -295,9 +296,8 @@ void function_245400(s_source_245400 const *source, long index,
 // differ: BLOCKED-BY the caller 0x245aa0 (src/unknown_245850.cpp).
 // MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // MiniMax S (11-06): no new form, no lower score: reading the second material index before the first only gained one instruction (209 to 208, below the keep threshold) and was restored; retail still reads the two element material indices in the other order, keeps the source in ESI and frames 0x2c against our 0x24.
-// retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
-// source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
-// home and the side bytes still differ.
+// The plane table read at the top of the material-test block and the source-first order match
+// the caller 0x245aa0. The register homes, the plane table's home and the side bytes still differ.
 // Earlier at 203 (MiniMax H): no new in-file form moved it; retail declares 0x245540 with its
 // matrix and source the other way round, and that declaration and its call live in src/unknown_245850.cpp.
 // Earlier at 203 (from 203): the frame is 0x24 against retail's 0x2c and the source receiver's home
@@ -361,7 +361,7 @@ void function_245400(s_source_245400 const *source, long index,
 // Frame 0x24 versus 0x2c, source receiver and independent side homes remain;
 // a separate rotation output vector copied into the direction scores 193 but adds 19 bytes (one-use
 // staging copy, not kept).
-
+//
 // Round 74: plane table declared as a source field and read at each use 204; plane codes declared
 // before the edge vector 203; source parameter declared last (definition, declaration and the one
 // call) 204, still edx; material pointer for the final call (as 0x245400) 204; transformed point
@@ -726,10 +726,15 @@ void function_245400(s_source_245400 const *source, long index,
 // table after the edge vector 225 (762 B, 0x245aa0 3), with unsigned-shift side bits 229 (763 B). Retail still computes
 // both side bits ahead of the plane-index compare (byte slot plus BL) where ours folds them into one xor in the branch.
 // Also the side bits shifted from the short material codes (`(first_material >> 15) & 1`) 213 (positional noise only).
-// MiniMax C (11-17): score 206 (was 214): the two material codes are now read in retail's order (the surface's second
+// MiniMax C (11-17): the two material codes are now read in retail's order (the surface's second
 // code at field_0a first, then the one at field_08) and the two side bits are sign tests of the sign-extended codes.
 // Left: retail's 0x2c frame with the source copied to ESI, its matrix read from its stack slot at the test instead of
 // kept in EBP, its shr/and side bytes and the cross-product register order.
+// Round 456: plane codes masked in place after sign tests 209, plane codes masked in place after shifted
+// side tests 212, sign and mask completed one plane at a time 209, plane addresses formed in facing
+// guard after in-place decoding 231, rotation rows in existing vector setter 206, named rotation results
+// in existing vector setter 206, rotation rows in native vector initializer 200 (NOT kept: six-point
+// gain and 804 bytes against retail 783), vector setter with direction scale read once 206.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
