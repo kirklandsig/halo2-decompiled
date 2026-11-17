@@ -1296,13 +1296,13 @@ long function_181800(s_sphere_frustum const *, point3f const *, real);
 real function_249bb0(s_distance_fade const *, real);
 bool function_3eb20(long cluster_index);
 typedef void (__stdcall *t_1e4e0_callback)(void *);
-bool function_1e4e0(point3f const *, t_1e4e0_callback, void const *, long);
+bool function_1e4e0(long, point3f const *, t_1e4e0_callback, void const *);
 struct s_sort_record;
 typedef bool (__stdcall *t_record_fill)(long, void *, long, long, long, void *, s_sort_record *);
 void function_40e30(short, long, real, long, short, dword, dword, t_record_fill, dword, void *);
 
 // MiniMax S (11-06): the permuter's 41 rewrites all score 135 or worse on the reduced image; no new form, no lower score.
-// score 108 (was 135): lane 9 r99: the loop reads the request's location field at every use (typed as a location
+// MATCH (was 108): lane 9 r99: the loop reads the request's location field at every use (typed as a location
 // pointer; retail reloads it from the request after 0x1e4e0), the camera rotation and cross product go through the
 // existing vector3f_rotate_into_axes and cross3f, the second getter call's result is kept as a pointer whose tag is
 // read at each use, and bit 5 is the definition's named flag5 (retail's mov dl/shr/test). Left: the tag is
@@ -1420,6 +1420,18 @@ void function_40e30(short, long, real, long, short, dword, dword, t_record_fill,
 // declared at the top or renamed 6, the 0x2477b1 rotation 12-17, other camera orders 10-20, the rotation written out 237, the
 // cross product written out 298, the bitfield tests without the macro 200-332 (the alias test folds), camera_relative read
 // through its address 195, the bias short named 195, the bias product constant-first 6.
+// b9I (11-17) walk against retail, fast build on r839: checked every field and offset, each jcc and its NaN sense (view
+// test 0x1745e1, fade comiss/ja 0x174822/0x174829, draw default mov bl, 1 0x1745f6, flag10 0x17472f/0x1747aa, stamps
+// 0x1746c2/0x174837/0x174914), the cross product 0x17452b-0x1745a3, the rotation trees 0x174621-0x1746be, the bias sums
+// 0x17486b-0x1748b1, the x87 distance 0x1747eb-0x174813 (one rounding at the fstp) and the register arguments of
+// 0x165010/0x181800/0x249bb0/0x40e30: no behaviour difference, no missing or extra statement. MATCH (fast) needs these
+// forms, all match-only (retail's order, not a behaviour change): request.system and the location index set ahead of
+// the bias and the camera test (0x1744da/0x1744ef before 0x1744f9); the tag index in a local (kept in EDX, 0x17445b);
+// the frustum index in a local (0x41640's form, 0x174759); 0x1e4e0 as (size, position, callback, data) (EDX before ECX,
+// 0x1748c3/0x1748c7); 0x40e30's definition in a pointer local (0x1751d0 before the pushes, 0x1748df); cross3f_staged,
+// forward/cross/up copies (the camera block's registers); shader folded into table (the rotation's xmm phase); and a
+// volatile read of the parameter camera_relative at the camera test, which gives the rotation's vector-first z * up
+// products (0x17462c, 0x174675, 0x174692). Progress 108 -> 102 (order alone) -> 28 -> 26 -> 33 -> 6 -> MATCH.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1428,27 +1440,29 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
     {
         s_effect_particle_system_definition *tag_definition = system->function_1751d0();
         long const *reference;
-        dword group = TAG_GROUP(tag_definition->tag_index);
+        long tag_index = tag_definition->tag_index;
+        dword group = TAG_GROUP(tag_index);
         if (group == 0x5052544d || group == 'prt3')
-            reference = function_137bd0(tag_definition->tag_index)->function_x947334();
-        else reference = *(long const **)(TAG_GET(byte, tag_definition->tag_index) + 0x24);
-        byte *shader = TAG_GET(byte, *reference);
-        byte *table = *(byte **)(shader + 0x5c);
+            reference = function_137bd0(tag_index)->function_x947334();
+        else reference = *(long const **)(TAG_GET(byte, tag_index) + 0x24);
+        byte *table = *(byte **)(TAG_GET(byte, *reference) + 0x5c);
         dword render_flags = *(dword *)(*(byte **)(table + 4) + 2);
         s_effect_particle_system_definition *definition = system->function_1751d0();
         if (!TEST_FIELD_BIT(definition->flag5))
         {
-            real bias = *(short *)definition->unknown14 * 0.05f;
-            matrix3x3 camera;
-            if (camera_relative)
-            {
-                camera.forward = g_4b9dac;
-                camera.up = g_4b9db8;
-                cross3f(&g_4b9db8, &g_4b9dac, &camera.left);
-            }
             s_particle_render_request_173c90 request;
             request.system = system;
-            for (long index = system->location_index; index != NONE; )
+            long index = system->location_index;
+            real bias = *(short *)definition->unknown14 * 0.05f;
+            matrix3x3 camera;
+            /* volatile: retail's load order for the rotation's products (0x17462c, 0x174675, 0x174692) needs this load */
+            if (*(volatile bool *)&camera_relative)
+            {
+                camera.forward = g_4b9dac;
+                cross3f_staged(&g_4b9db8, &g_4b9dac, &camera.left);
+                camera.up = g_4b9db8;
+            }
+            while (index != NONE)
             {
                 request.location = DATUM(g_51ec8c, s_particle_location_datum, index);
                 bool in_view = ((byte *)request.location)[2] != 0;
@@ -1476,8 +1490,9 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                                 if (!TEST_FIELD_BIT(definition->flag9))
                                 {
                                     bool contained = false;
+                                    long frustum = ((signed char *)g_547f88.indices)[cluster];
                                     draw = function_165010((s_frustum_set_view const *)g_547f88.context,
-                                        ((signed char *)g_547f88.indices)[cluster],
+                                        frustum,
                                         (point3f const *)((byte *)request.location + 0x20), *(real *)((byte *)request.location + 0x2c), &contained);
                                 }
                                 else
@@ -1509,10 +1524,13 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                         position.y += g_485618.forward.j * bias;
                         position.z += g_485618.forward.k * bias;
                         if (render_flags & 0x8000)
-                            function_1e4e0(&position, (t_1e4e0_callback)function_173c90, &request, sizeof(request));
+                            function_1e4e0(sizeof(request), &position, (t_1e4e0_callback)function_173c90, &request);
                         if (render_flags & ~0x8000)
-                            function_40e30(0, system->function_1751d0()->tag_index, 0.0f, 5, (word)NONE, NONE, 0,
+                        {
+                            s_effect_particle_system_definition *record_definition = system->function_1751d0();
+                            function_40e30(0, record_definition->tag_index, 0.0f, 5, (word)NONE, NONE, 0,
                                 (t_record_fill)function_173cb0, (dword)function_173d80, (void *)system_index);
+                        }
                     }
                 }
                 else *(dword *)((byte *)request.location + 0x30) = g_4ba034;
