@@ -2639,6 +2639,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // still takes ECX); the first normalize through the header's inline normalize3d 405 (2954 B), the relative one 507 (2967 B);
 // approach and facing in two declarations 168 (same code); the player pointer as `if (index == NONE) player = NULL; else
 // player = &...;` 374.
+// MiniMax S (11-17): fast build on r852: the permuter's 2 tries and the source order of the inlined 0x26be00 both stay at 168;
+// the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
+// reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
+// further down allocates the table base and the index to different registers.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

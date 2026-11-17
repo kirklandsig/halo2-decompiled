@@ -655,6 +655,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 194 (same code); the two inverse sums through a force-inline (1-t)*a + b*t helper 238 (1943 B); remaining_blend assigned
 // at the top of each aspect arm 338 (1972 B). Retail's sequence arm jumps over a join block that reloads the blend into
 // XMM5 for the other paths; ours falls through and the aspect block reads the blend from memory (about 19 bytes longer).
+// MiniMax S (11-17): fast build on r852: declaring the four 16-byte locals at the top in the order geometry, uv_a, tint, uv_b
+// scored 194 (same code, the slot order does not follow the declarations), so the tint keeps its home at +0x60 against retail's
+// +0x50 with uv_b the other way round; retail's join block reloads the blend into XMM5 where ours reads it from memory, which
+// leaves the body 10 bytes longer than retail.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

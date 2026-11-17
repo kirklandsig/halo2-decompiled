@@ -857,6 +857,10 @@ struct s_1f8a70_actor
 // `result = route_found;` after it 326 (1680 B, re-measured); route_found written through a pointer to it at every
 // assignment 182 (same code: folded, so no reload after 0x1f8750); one actor pointer from a single actor_get ahead of the
 // first test 207. Retail's case 6 `route_mode = 1` cross-jumps into case 5's tail (0x1f8c9d); ours keeps its own store.
+// MiniMax S (11-17): fast build on r852: duplicating the route switch into an if/else pair scored 747 (1900 B, MSVC does not
+// tail-merge the two bodies) and the permuter's 3 tries stayed at 182; retail lays the route check as case 5's fall-through
+// with cases 6-7 jumping back to it and the route==0 block jumping back to one shared switch dispatch, and the goto
+// restructure scored 316, so the shared dispatch needs a source form not found here.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

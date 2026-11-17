@@ -879,6 +879,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-17): no new form, no lower score (129): retail reads the count argument as a dword home and keeps the low word in cx, where this declaration's short count is read as a word home and the previous side is kept in cl; the parameter's width is declared in another file this lane may not edit, so the zero and epsilon registers and the side bytes stay out of step.
 // MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and keeps
 // it in CX, and that parameter's type is declared in another file this lane may not edit; the zero constant still takes
 // xmm4 where retail creates it in xmm2, and the previous side byte still sits at [esp+0xd] where retail has it at

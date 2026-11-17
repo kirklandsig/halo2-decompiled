@@ -910,6 +910,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // {sum, second side, timing3} groups at +0x14/+0x18, retail the reverse) the timing reals declared distance-last 17, the
 // location index and record ahead of the side outputs 17, the second side output declared at function scope 17 (same code
 // each: shared slots follow liveness, not scope or declaration order). Body unchanged at 87.
+// MiniMax S (11-17): fast build on r852: the request store through a named local scored 107 (was 87) and the permuter's 5 tries
+// stayed at 87; retail's homes are side0 +0x10, {sum, side1} +0x14, {length, adjusted} +0x18, index +0x1c against ours {sum, side0}
+// +0x10, {length, side1} +0x14, index +0x18, adjusted +0x1c, and retail loads the 0x110ab0 argument in EAX where ours uses ECX.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
