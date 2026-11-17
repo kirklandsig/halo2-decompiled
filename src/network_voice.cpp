@@ -1525,6 +1525,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax C (11-16): no new form, no lower score (60): the head still keeps the player bit in ebx where retail keeps
+// it in ebp, makes the entry size in ebp where retail makes it in ebx, shifts before the word load instead of after it,
+// tests include_mask after the entry copy instead of before it, and ends with an extra zero-return exit block.
 // MiniMax E (11-16): no new form, no lower score (60): the entry size declared first and assigned late leaves the bytes
 // as they are (60), computing it at the declaration costs (158) and an early return for the disabled queue moves the
 // layout (174). Retail keeps the player bit in EBP for the whole body and the entry size in EBX, this build keeps the
