@@ -1072,6 +1072,16 @@ bool __stdcall function_1d44f0(s_havok_component *component, point3f *center, re
 void __stdcall function_b87b0(long object_index);
 void __stdcall function_b8600(long object_index, long unknown);
 
+static __forceinline transform4x3f const *object_node_matrix_bdef0(byte const *object)
+{
+    return (transform4x3f const *)(object + *(short const *)(object + 0x116));
+}
+
+// Unmatched. The component lookup is written as the argument of the physics query and
+// the node matrix comes through a small helper on the fresh object lookup: the lookup
+// is then index-first between the pushes, and the scale is reloaded for each product,
+// as in retail. Left: the secondary sphere's sum order and which callee-saved register
+// holds the definition.
 // @retail 0xbdef0
 bool __stdcall function_bdef0(long object_index)
 {
@@ -1082,14 +1092,11 @@ bool __stdcall function_bdef0(long object_index)
     bool from_physics = false;
     if (component_index != NONE && ((1 << object[0xaa]) & 0x800) && TEST_FIELD_BIT(((s_object_view *)object)->physics_active))
     {
-        s_havok_component *component = (s_havok_component *)(g_51e9b8->data +
-            (component_index & 0xffff) * 0xa0);
-        from_physics = function_1d44f0(component, (point3f *)(object + 0x30), (real *)(object + 0x3c));
+        from_physics = function_1d44f0(havok_component_get(component_index), (point3f *)(object + 0x30), (real *)(object + 0x3c));
     }
     if (!from_physics)
     {
-        byte *node_object = (byte *)OBJECT_GET(object_index);
-        transform4x3f const *matrix = (transform4x3f const *)(node_object + *(short *)(node_object + 0x116));
+        transform4x3f const *matrix = object_node_matrix_bdef0((byte const *)OBJECT_GET(object_index));
         point3f center;
         real_point3d_set(&center, *(real const *)(definition + 8),
             *(real const *)(definition + 0xc), *(real const *)(definition + 0x10));
@@ -1108,17 +1115,19 @@ bool __stdcall function_bdef0(long object_index)
             matrix->forward.k * center.x + matrix->position.z;
         *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * *(real const *)(definition + 4);
     }
+    point3f *sphere_center = (point3f *)(object + 0x30);
+    point3f *secondary_center = (point3f *)(object + 0x50);
     real secondary_radius = *(real const *)(definition + 0x20);
     if (secondary_radius > 0.0f)
     {
-        *(real *)(object + 0x50) = *(real *)(object + 0x30) + *(real const *)(definition + 0x24);
-        *(real *)(object + 0x54) = *(real *)(object + 0x34) + *(real const *)(definition + 0x28);
-        *(real *)(object + 0x58) = *(real *)(object + 0x38) + *(real const *)(definition + 0x2c);
+        secondary_center->x = sphere_center->x + *(real const *)(definition + 0x24);
+        secondary_center->y = sphere_center->y + *(real const *)(definition + 0x28);
+        secondary_center->z = sphere_center->z + *(real const *)(definition + 0x2c);
         *(real *)(object + 0x5c) = *(real *)(object + 0xa0) * secondary_radius;
     }
     else
     {
-        *(point3f *)(object + 0x50) = *(point3f *)(object + 0x30);
+        *secondary_center = *sphere_center;
         *(real *)(object + 0x5c) = *(real *)(object + 0x3c);
     }
     point3f center;
@@ -1140,7 +1149,7 @@ bool __stdcall function_bdef0(long object_index)
         delta.j = center.y - *(real *)(object + 0x44);
         delta.k = center.z - *(real *)(object + 0x48);
         if (delta.k * delta.k + delta.i * delta.i + delta.j * delta.j > 0.1f * 0.1f ||
-            radius != *(real *)(object + 0x4c))
+            *(real *)(object + 0x4c) != radius)
             function_b87b0(object_index);
         else
             return false;
