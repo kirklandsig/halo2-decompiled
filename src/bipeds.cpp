@@ -3178,6 +3178,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // P587: Fixed original biped/tag/component pointer bindings in seven subsets,
 // then all with the native body producer immutable: eight 63 at 245 bytes.
 // NOT kept: no EBP/count/body or byte-mask repair; original full body restored.
+// MiniMax D (11-17): no new form, no lower score (63): retail's call to 0x1d5120 takes the step count in eax with six
+// stack arguments and writes its result through a byte pointer, where this build passes seven stack arguments and a long
+// out-parameter; that callee's declaration lives in src/unknown_1d5120.cpp and a declaration's shape may not change here:
+// BLOCKED-BY 0x1d5120.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
