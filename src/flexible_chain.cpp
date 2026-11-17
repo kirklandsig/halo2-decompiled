@@ -707,6 +707,10 @@ void __stdcall function_1160c0(real dt)
 // in its own `{}` block; the segment through a forceinline accessor. Diagnostic dead volatile loads (reverted at
 // once) before the node, after the node, after the segment and before the velocity rows: none moves the segments
 // base out of EDI, so that base is not a scratch-rotation step.
+// P595: The selected segment still needs EDX and the scalar/axis and previous/offset homes. for with
+// refreshed count, original selector/branch index/terminal decrement/index plus base 171/171/175/171,
+// while with refreshed count, same four selectors 171/171/175/171. NOT kept: the refresh and selection
+// forms leave the segment register and stack allocation unresolved.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
