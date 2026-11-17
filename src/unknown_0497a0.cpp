@@ -16,6 +16,9 @@
 
 #include "vector_products.h"
 #include "normalize3d.h"
+// MiniMax S (11-17): no new form, no lower score (536): the frame is still 0x54 against retail's 0x60, and
+// retail's second (dead) uses of sin x, cos 7.8y and cos 7.75y still keep those three on the x87 stack until
+// after the product, which no plain spelling of the wave expression reproduces.
 // score 536 (was 536): Frame 0x54 versus retail 0x60; independent rounded-wave/cross homes
 // and late x87 factor lifetimes remain, at retail length 2622.
 // Earlier header detail: 594 before that): earlier first lines 661 (was 661), 661 (was 661; 537 before that), 661 (was 537); frame 0x54
@@ -428,6 +431,11 @@
 // stores through a pointer the compiler cannot separate from the camera global, s1 is computed first and stored to a float
 // home exactly as retail; so retail's wave values are materialised because something between their definitions and their
 // uses may alias that global (s0 still folds in that form).
+// M3 lane 7 r172 (fast with 0x4a1e0; control 536 = plain; the full build already returns with `ret 0x20` as retail): v1
+// selected by an if/else in place of the ternary 704 (2652 B); s0 halved as `/ 2.0f` 536 (same code); the sine arguments
+// read through a `point3f const &` bound to the camera point 537; the first `w8e` switch as `if (w8e == 1) ... else`
+// 574; the component maximum as one expression (no named partial maxima) 673 (2690 B). Retail's case-1 arm selects the
+// up vector by pointer again (`mov ecx, 0x4b9dac`), as the `up` local does.
 // M3 lane 13 r104 (fast with 0x4a1e0; control 536, both `ret 0x20`): the second cross computed right after the first, ahead
 // of the waves and the adds, 665 (2581 B); both wave values ahead of the first cross 654 (2590 B); s1's argument as a float
 // sum without the double cast 538; s1 computed after the first scaled add, just ahead of its use, 536 (VC sinks it there

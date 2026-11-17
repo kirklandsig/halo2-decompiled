@@ -21,6 +21,10 @@ struct s_visibility_bound_record
 // them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
+// MiniMax S (11-17): no new form, no lower score (443): the frame 0x74a4 agrees with retail's and the first
+// difference is still at +0x10, where retail forms the entry address with a lea into ebx from an index in eax
+// before the register saves and we form it with an add into edi after them; the part centre's body is inlined
+// from 0x142570 in another file.
 // MiniMax E (11-11, run 80): no new form, no lower score (443): a named local for the entry index gives the same
 // code (443) and reading the entry's flags at each of its three uses instead of once at the top scores 465; the
 // frame 0x74a4 agrees with retail's and the difference sits in the head, where retail forms the entry address with

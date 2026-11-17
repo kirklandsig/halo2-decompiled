@@ -289,6 +289,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // masked index in a local stored again after the call 93 (224 B): the data still loads after the scaling into EAX, so the
 // index's live range is not what makes retail load the data first. The getter given `havok_object_get(object_index)->
 // havok_component_index` (the physics view the matched data-first 0x1c4b00 uses) 55 (211 B: the object is looked up again).
+// M3 lane 10 r114 (fast with 0xb73b0/0x1ed340/0x1d1c60/0xb7360/0xb58c0/0xa03d0/0xe18d0, all matched each time):
+// `__assume(component != NULL)` on a named component before the call 4 (same code); the component computed at entry,
+// before the three tests, 4 (sunk into the arm); the index test and the lookup through the havok object view
+// (`havok_object_get(object_index)`, the matched data-first 0x1c4b00's spelling) 4 (CSE'd with `object`); the type
+// local renamed `object_type` 4; a `bool const enable = !disable` for the two tests 55 (205 B).
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -1883,6 +1888,11 @@ done:
 // before the call 27 (the 27 form's code: once the datum is named the definition avoids EAX). Reading: retail's
 // definition-in-EAX-then-ESI copy needs the size's EAX claim to appear only after the definition is placed, with the
 // product still formed ahead of the pushes; no tried form gives both.
+// M3 lane 10 r114 (fast with 0xbf0f0/0xbf090/0x29fd40/0x29fd60/0x2a12f0, all matched each time): on main's body the palette
+// offset alone as a long 17, the placement offset alone as a long 17, the size read ahead of the palette offset 17 (all three
+// the same code); the palette pointer formed after the placements read 26 (237 B). On the 27 form (re-measured 27, 236 B: type
+// ESI, definition ECX, size read first, no copy): one function-scope placement type declared at the top and assigned in the
+// placement block 27 (same code).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

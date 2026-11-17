@@ -559,6 +559,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // M3 lane 14 r101 (fast with 0x404b0): a named const entries base used as the copy's source and for `&entries[n]` 2; with
 // `index` computed ahead of `entry` 2; with the base named ahead of `first` 2; with `entry = entries + n` 2; the base named
 // just ahead of the `for` only 2 (all the same code: `first` keeps the mode parameter's home).
+// M3 lane 14 r104 (fast with 0x404b0): `first` renamed to the running index and stepped with `++n, ++index` (no `first + n`)
+// 163 (492 bytes: the index lives in EBP, mode on the stack); the index built in two steps (`index = first; index += n;`) 2;
+// n declared right before the `for` 2; the part context declared at the top of the entry test's body 2; material declared at
+// the function top and assigned NONE where it was declared 2 (all four the same code). Re-measured: first declared then
+// assigned with `n + first` 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

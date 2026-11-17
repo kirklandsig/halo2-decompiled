@@ -576,6 +576,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // P582: Rounded persistent minimum/active range/complete angle-limit promoted receiver
 // storage, seven subsets, then immutable range/angle receivers: 658/691/675/722/740/725/784/784. NOT kept: no exact native
 // success/input/hit homes or inactive-exit recovery; original real receivers, helpers and full body restored.
+// M3 lane 7 r172 (fast; control 558, aligned 491, register- and slot-masked 326): nothing kept. Diagnostics (removed): 0x1697c0
+// storing its point pointer to a global leaves this body byte-identical, so the per-point half-width reloads are not
+// the callee's escape summary; the minimum updated through its own address keeps the shared (1/range)*minimum. Tried: the
+// two outputs under two separate `FLT_MAX > minimum` tests 558 (same code, product still shared); a named inverse with
+// `fraction *= minimum` for the clamp input 556 (still shared; a reused name, under the bar); `*arg_5 = 0` ahead of the
+// input copy 559 (the zero still in XMM1 before the input copy); the inactive test as `!(0.0f < field_48)` 558 (same
+// code); the ray lengths by one chained assignment 558 (2872 B, aligned 497); the hit flags declared ahead of `*arg_5 =
+// 0` 558 (same code); the input copy after `*arg_5 = 0` 559.
 // M3 lane 13 r104 (fast; control 558): the range local dropped and field_48 read from the definition at each use 631
 // (2892 B); `*arg_5 = 0.0f;` after the hit-flag initialisation 558 (same code: the zero still takes XMM1 ahead of the
 // minimum's store); the minimum update as a ternary 558 (same code); the root helper's product written root * angle

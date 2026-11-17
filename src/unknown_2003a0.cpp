@@ -2719,10 +2719,10 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
-// score 29 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
+// score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
-// which shifts the later jump targets and drops the actor loop's alignment nop; and since the int/long trigger tail,
-// its 32-bit index where retail's is 16-bit (round 169 below). Earlier 50 (was 50) with the short tail.
+// which shifts the later jump targets and drops the actor loop's alignment nop. Earlier 29 (was 50) with the
+// int/long trigger tail, whose 32-bit index retail does not have (round 169 below; reverted 11-17, short tail back).
 // MiniMax D (11-16): no lower score (29): retail reloads the squad index from its stack home in the second half's
 // 0x290e20 call (mov edx, [esp+0x30]) and keeps the EBP copy alive up to the first 0x1fb8a0 call, while this build
 // drops the copy there and reloads the home instead; where the copy's live range ends is the whole difference, and
@@ -3029,6 +3029,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 16-bit (`mov bp, [ebp+2]`, `cmp di, -1`) and the int/long width took 50 -> 29 through the scoring's alignment
 // only, a width picked by score; the short tail is back (50), whose one real difference is the first follow-up's
 // index reload (lane 16 r128).
+// Round 189 (m3 lane 6, fast with the file and 0x290e20, 0x290cd0, 0x1fb8a0, 0x204d30, 0x1e4570; control 50): the
+// threshold word and the list's first word read through `*(byte **)(local_5 + 0x68)` 78 (582 B; the first word alone is
+// CSE'd, same code); the squad's trigger byte stored after the 0x204d30 call 51; the entry's sense bit read as a byte
+// (`*local_10 & 1`) 52; the entry base read once ahead of the trigger loop 121 (595 B); the trigger index ternary with
+// its arms swapped 54. The first follow-up still reloads the index from its home.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
