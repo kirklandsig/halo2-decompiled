@@ -1559,11 +1559,13 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// score 12 (was 12): main's body (MiniMax D's form, below); only the `same_view = 1` store's block differs (ours the view
+// test's, retail the availability test's); m3 lane 12 r134's forms are at the end of this note.
 // MiniMax E (11-15): 12 (was 47): the view global read at each use, the availability produced by a branch on
 // the query result and the same-view flag cleared by one owner/view/availability test; what still differs is
 // the flag's true store, which ours emits ahead of the view test where retail's sits between the
 // availability's test and its branch; the body is otherwise retail's, at retail's 498 bytes.
-// score 47 (was 47): availability clear/production and later view observation remain;
+// Before MiniMax D's form, 47 (was 47): availability clear/production and later view observation remain;
 // MiniMax E's not-kept 12 form (above): the same-view flag's true store is emitted ahead of the view test, retail writes it
 // between the availability's test and its branch; the availability's zero store also comes before the second
 // definition call where retail's comes after the owner lookup; frame 0x14, the owner, the view, the boolean
@@ -2030,6 +2032,14 @@ bool function_17afd0(long effect_index, long value);
 // MiniMax D (11-17): stores it in the flag's set path.
 // MiniMax D (11-17): retail's shape needs the flag written as the conjunction of the owner test and the availability,
 // which moves the constant and the owner out of EBP (138); copying the availability into the flag gives 56.
+// M3 lane 12 r134 (fast; base 12): the plain conjunction re-measured 138 (510 B: NONE EBX, availability spilled, same_view
+// BL); the availability as `!(g == NONE || query(g) != 0)` with the plain conjunction 113, on this body 96 (branchy, but
+// same_view then takes BL); same_view as `owner != NONE && g == owner ? available : false` 56 (498 B: availability BL and
+// same_view on the stack as retail, but it stores BL where retail tests BL and stores 1, and the pairs are NONE+availability
+// EBX, pool+owner EDI, data+effect index EBP against retail's NONE+owner EBP, pool+effect index EDI, data+availability EBX);
+// on that, the owner NONE-defaulted then set 121 (495 B: effect index EDI as retail, owner ESI), the owner as one ternary 56
+// (same code); same_view from the owner pair then `if (!available) same_view = false;` 135 (508 B). Permuter on the 56 form
+// (900 s, 97 tries): best 56. Body unchanged.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -1479,6 +1479,11 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // in one combined test (no player_value local) 57 (984 bytes), `result = true` as the success block's first store 58, the
 // notice in the then-arm without its goto and the rest in the else-arm 16. Diagnostic (reverted): an address-taken result
 // with the notice ending in its own `return result;` 257 (969 bytes, the pointer store adds code).
+// M3 lane 12 r134 (fast, base 19): the notice's player value in the matched unit_object_type.cpp idiom (`animate` alone
+// guarding a `player index == NONE ? NONE : table value` ternary) 19 (same code); that with the notice ending in `return
+// result;` 45 (958 B), with the immediate throw ending so too 74 (956 B), both as the listed forms (the returns fold); the
+// grenade count from a ternary on the grenade pointer, tested `<= 0` once, 176; the notice written under `!grenade` and
+// again under the count test (two blocks) 184 (968 B: the copies are not merged).
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -4678,6 +4683,12 @@ extern vector3f *g_4687bc;
 // the effect tag declared ahead of the definition and assigned from the named model 8, with the element through `.data`
 // 8 (all the same code). Screen only: the effect tag's address taken in a local reference (dropped, same code); the
 // component looked up again for the 0xb67a0 argument (the material stays in DX, the array still loads first).
+// M3 lane 12 r134 (fast, base 8): the rigid body as byte arithmetic with the array first, with the offset first, and as a
+// const reference to the element 8 each (same code); the component index read into a local between the tag test and the
+// material 8 (same code); the global read into a short ahead of the lookup with the material built after it 10 (the load
+// sinks to the store, in AX, as the material built after the lookup, re-measured 10). Ours stores the material at once
+// because it holds it in DX, which the pool's data load needs; retail holds it in CX until `mov ecx, esi`, so the late
+// store follows from the register alone.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

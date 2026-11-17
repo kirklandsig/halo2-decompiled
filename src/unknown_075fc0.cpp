@@ -70,6 +70,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax I (11-17): no new form, no lower score (356): re-measured the baseline; the first difference is still at
+// +0x2, retail's prologue reserves 0x34 with the connection in EDI, the NONE state in ESI and the channel index in
+// EBP where this build reserves 0x38 and splits the callee-saved registers differently, and the timed-out check's
+// result is tested as a byte in retail where this build's callee returns a long; that callee, 0x75910, is defined
+// in another file, so the call's shape cannot be settled here. The body stands.
 // MiniMax D (11-14): no new form, no lower score (356): the first difference is still at +0x2, retail's prologue
 // `sub esp, 0x34; push ebx; push ebp; push esi; or esi, -1; push edi; mov edi, ecx` against this build's 0x38 frame
 // and its other split of the callee-saved registers, and the timed-out check's result is still tested as a byte in

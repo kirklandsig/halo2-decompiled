@@ -584,6 +584,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P592: Completed count before conversion/override/existing append, subsets 1/2/4/3/5/6/7,
 // then full-width query/choice on the complete append graph: 926/871/860/929/914/880/917/947. NOT kept:
 // no exact native entry-zero/count/query-home recovery; original body and helpers restored.
+// M3 lane 1 r114 (fast with 0x18bb80): retail's matched-sound overrides read the matched sound's address once after the
+// distance call (`mov ebp, [ebx+0xd8]` reloaded, one `imul`), because the choice count holds ESI and no callee-saved
+// register is left for the sounds base; ours keeps the base in EBP across 0x14b240. One `other` pointer to the matched
+// sound taken after the distance call and used by both overrides 929 (3305 B); a per-target pointer to the fade
+// definition used for both fade-time reads 885; long counts with `&choices[choice_count++]` and that `other` pointer
+// 981 (3255 B; long counts alone re-measured 965 at 3264 B); the inside/outside level named before the gain sum 846
+// (same code); that with the portal named too 905 (3337 B). g_44a0b4 should be a const global in .rdata (retail reads it
+// from memory 14 times), but its other declaration is in a held file.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

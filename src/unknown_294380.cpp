@@ -272,6 +272,12 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // position shares the post-walk vector's slot, ours the offset); the neighbour test as `local_26 > 0.0f && field_34 >
 // local_26` 256 [95/30]; the squared distance named once and used for the reciprocal and the separation test 281 (3717
 // bytes) [106/38]; the nearest point copied before its distance 255 [91/27].
+// m3 lane 5 r192 (plain with 0x293b30/0x293d30/0x294050/0x295600, all unchanged; control 252, aligned 90, masked 25): the
+// centroid sum typed as a vector (no casts) 252, the post-walk vector and its scalar in a block ending after the waypoint
+// step 252, the nearest test as `local_26 < local_10` 252, the scalar declared at the top uninitialised 252 (all the same code:
+// neither scope nor type moves the swapped slot pairs); the half radius computed where the cohesion arm uses it 500 (3703 B);
+// the walk test as `cos(...) < dot` 628; the steer flag's declaration moved to the top 772 (3730 B); the path step's maximum
+// declared just before the 0x294050 call 726 (3718 B); the strength total declared after the walk 785 (3731 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

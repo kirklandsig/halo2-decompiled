@@ -51,6 +51,15 @@ inline long unit_get_current_weapon(long unit_index)
 	return result;
 }
 
+/* the weapon in one of a unit's weapon slots */
+static __forceinline long unit_weapon_in_slot(s_unit_weapon_view const *unit, short slot)
+{
+    long result = NONE;
+    if (slot != NONE)
+        result = unit->weapon_indices[slot];
+    return result;
+}
+
 /* how a character uses a weapon (0xcc bytes) */
 struct s_character_weapon
 {

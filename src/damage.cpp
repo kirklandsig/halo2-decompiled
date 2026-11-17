@@ -1103,6 +1103,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // MiniMax S (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the objects array still sits at base+0xc0, the player ordinal still keeps a register where retail homes it at +0x34, and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
 // MiniMax C (11-16): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the objects array still sits at base+0xc0, the player ordinal still keeps a register where retail homes it at +0x34, and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (206): the frame is still 0x1a4 against retail's 0x1b4, the query's mode
+// value (the flags' bit 2 as 3 or 0) is still computed after the four argument pushes where retail computes it before them,
+// and the first of the three verifiers is still expanded here where retail calls it: BLOCKED-BY 0xbadc0.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1625,6 +1628,10 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // MiniMax S (11-16): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after the record's address is built where retail stores them before the push; the two are one cause, the late store keeps eax live across the address computation.
 // MiniMax C (11-16): no new form, no lower score (10): the owner copy goes through ecx, edx and eax in retail and through eax, ecx and edx here, and retail keeps the event's flags in eax until the address of the event is pushed while this build stores the flags before the four pushes.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (10): the owner's three dwords still go through ecx, edx, eax where retail
+// uses eax, ecx, edx and the flags store still sinks below the record's address computation; the union's flags member, a memcpy
+// of the owner and a member-wise copy all leave the same ten (the last one worse), and a permuter run over the body (13 tries)
+// found nothing below the ten.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -2151,6 +2158,10 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // MiniMax S (11-16): no new form, no lower score (45): the delay block's temporaries are still rotated by one register against retail, and its first load is still the one byte shorter `mov eax, [moffs]`, which moves the nine later branch targets.
 // MiniMax C (11-16): no new form, no lower score (45): the delay block's three temporaries are still rotated by one register against retail, and its first load is still the one byte shorter `mov eax, [moffs]`, which moves the nine later branch targets; a permuter run of 300 s over the body found nothing below the baseline.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (45): the second delay block's three temporaries are still rotated by one
+// register against retail (the rate pointer takes eax where retail takes ecx, the byte eax where retail takes al and the sum
+// edx where retail takes eax), while the first delay block matches retail exactly; the rotation is the allocator's choice for
+// the block and no spelling of the block's statements changes it.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2742,8 +2753,9 @@ struct s_unit_event
 // MiniMax I (11-16): no new form, no lower score (513): the first difference is the schedule of the argument loads - retail pushes
 // the saved registers first and reads the arguments from the shifted slots, this build reads one argument
 // before the pushes.
-// score 513 (was 513): Frame 0x38 and permutation EAX agree; first +0xc exchanges region EBX/
-// permutation EBP against retail EBP/EBX; 1884/1868 bytes and the constant-one home still differ.
+// score 420 (was 513): Frame 0x38, permutation EAX and retail's 1868 bytes agree; first +0xc exchanges region EBX/
+// permutation EBP against retail EBP/EBX; the constant-one home and the drop blocks' datum offset (retail ESI, with
+// the pool global held in EDI) still differ. Earlier 513: 1884/1868 bytes and the constant-one home differed.
 // Earlier header detail: 513 at m3 lane 12 r125 and r128, 517 before m3 lane 12 r125's drop-block helper, 476 before m3 lane 7 r155's region read through its address, 472 before r94's walk; frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // MiniMax G (11-12): no new form, no lower score (476); retail's prologue takes only the object index in
 // EAX and reads the other five arguments off the stack with a 0x38 frame, ours takes the region index
@@ -2938,6 +2950,16 @@ struct s_unit_event
 // changes: 0xdae60 48, 0xdb760 9, 0xdaaa0 67); object_index read once through its address 513 (same code); a named
 // `object_index & 0xffff` for all six lookups 571 (1896 B); all six vehicle bits as word ORs 513 (same code); region and
 // permutation declared ahead of the object 513.
+// m3 lane 1 r115 (fast with 0xdaaa0, 0xdae60, 0xdb760; kept form confirmed plain): kept together, 513 -> 420 at retail's 1868
+// bytes (register-masked 142 -> 49): both drop values as `long barrel_index` (the callees' parameter type), the destroy block
+// written in each arm of the destroy test (retail's one cross-jumped 0xdb110 call), and the drop, 0x20000 and vehicle blocks
+// reading the datum's type through the pool at each use (retail keeps the pool global in EDI and re-reads its data per
+// block; the vehicle through DAMAGE_OBJECT, the same code as a datum pointer there). Alone: long drops 544 (1896 B, masked
+// 87), per-use reads 543 (1896 B, masked 88); long drops + per arm 528 (1852 B, masked 64). Leave-one-out on 420: without
+// long drops 528 (1852 B), without the arms 523 (1900 B), without the per-use reads 528. Same score, not kept (lead): the
+// section and seat name scans index-based (`info->unknowne4 + i * 0x14 + 4`, `seats.address + seat_index * 0xb0 + 4`): each
+// scan becomes retail's code exactly (retail reads the array pointer after the count guard), 513 on the old body (masked 142
+// -> 140 each, 138 both) and 420 on the kept one (masked 51 -> 49).
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -3009,52 +3031,49 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 	if (permutation->flags & 0x400000)
 		accumulator->flags |= 0x400;
 
-	s_damage_object_datum *datum = &((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff];
-
 	if (permutation->flags & 0x60)
 	{
-		bool drop = !((permutation->flags >> 5) & 1);
+		long barrel_index = !((permutation->flags >> 5) & 1);
 
-		if ((1 << datum->type) & 3)
+		if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 3)
 		{
 			long weapon_index = unit_get_current_weapon(object_index);
 
 			if (weapon_index != NONE)
-				function_100390(weapon_index, drop);
+				function_100390(weapon_index, barrel_index);
 		}
-		else if ((1 << datum->type) & 4)
+		else if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 4)
 		{
-			function_100390(object_index, drop);
+			function_100390(object_index, barrel_index);
 		}
 	}
 	if (permutation->flags & 0x300)
 	{
-		bool drop = !((permutation->flags >> 8) & 1);
+		long barrel_index = !((permutation->flags >> 8) & 1);
 
-		if ((1 << datum->type) & 3)
+		if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 3)
 		{
 			long weapon_index = unit_get_current_weapon(object_index);
 
 			if (weapon_index != NONE)
-				function_1003e0(weapon_index, drop);
+				function_1003e0(weapon_index, barrel_index);
 		}
-		else if ((1 << datum->type) & 4)
+		else if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 4)
 		{
-			function_1003e0(object_index, drop);
+			function_1003e0(object_index, barrel_index);
 		}
 	}
 	if (permutation->flags & 0x20000)
 	{
-		if ((1 << datum->type) & 0x1c)
+		if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 0x1c)
 			function_10d4e0(object_index);
-		else if ((1 << datum->type) & 0x20)
+		else if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 0x20)
 			function_fc330(object_index, false, 0.0f);
 	}
 
-	datum = &((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff];
-	if ((1 << datum->type) & 2)
+	if ((1 << ((s_damage_object_datum *)g_4e0300->data)[object_index & 0xffff].type) & 2)
 	{
-		byte *vehicle = (byte *)datum->object;
+		byte *vehicle = (byte *)DAMAGE_OBJECT(object_index);
 
 		if (permutation->flags & 0x400)
 			*(word *)(vehicle + 0x352) |= 1;
@@ -3070,13 +3089,23 @@ void __stdcall function_da110(long permutation_index, s_damage_info *info, long 
 			vehicle[0x352] |= 0x20;
 	}
 
-	if ((permutation->flags & 1) ? !function_db110(object_index, false, false) :
-		(permutation->flags & 0x10000) &&
-		(g_4e6948->state != 1 || !function_db110(object_index, true, false)))
+	if (permutation->flags & 1)
 	{
-		object->body_vitality = 0.0f;
-		function_d6800(object_index, owner, true, false);
-		accumulator->flags |= 1;
+		if (!function_db110(object_index, false, false))
+		{
+			object->body_vitality = 0.0f;
+			function_d6800(object_index, owner, true, false);
+			accumulator->flags |= 1;
+		}
+	}
+	else if (permutation->flags & 0x10000)
+	{
+		if (g_4e6948->state != 1 || !function_db110(object_index, true, false))
+		{
+			object->body_vitality = 0.0f;
+			function_d6800(object_index, owner, true, false);
+			accumulator->flags |= 1;
+		}
 	}
 
 	if (permutation->flags & 0x80)
@@ -3322,6 +3351,11 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // MiniMax S (11-16): no new form, no lower score (5): only the order of the two cold exits differs, and an early return that leaves the state test in place compiles to the same five, so the source order does not decide the block order; dropping the inner damage return merges the two exits (24), inverting the enemy test flips the branch (16) and writing the block as an if/else changes nothing (5).
 // MiniMax C (11-16): no new form, no lower score (5): the two cold returns hold the same values on both sides, but retail lays the outer return out before the not-enemy return and this build lays the not-enemy one first; an explicit else on the enemy test compiles to the same order.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (5): the two cold returns still hold the same values on both sides, but retail
+// lays the outer return (xmm1) out before the not-enemy return (the stack slot) where this build lays the not-enemy one first;
+// the source order of the two returns does not decide it (an early return, an explicit else and a merged tail all keep the
+// same order or score worse), so the difference is the compiler's block layout; a permuter run over this body
+// (30 tries, 305 s) found nothing below the five.
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -4565,6 +4599,7 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
+// MiniMax E (11-17): no new form, no lower score (194): the first block still masks the index in eax where retail copies it into esi and masks the copy, and the blocks after that then sit at other offsets, so the calls and the jumps below compare one instruction out.
 // MiniMax I (11-16): no new form, no lower score (357): the body is two bytes longer than retail's and the first difference is
 // the schedule of the mask and the word store (retail moves the mask into ESI and stores the word first, this
 // build masks in EAX and stores the word after the move).
@@ -5125,6 +5160,9 @@ dword function_db810(long object_index, long node_index)
 // MiniMax S (11-16): no new form, no lower score (4): retail still masks the tag index before it pushes ebp and still reuses eax for the tag entry and its field, where this build masks it after the push and takes the entry in edx; a local for the masked index, a local for the tag bytes and the typed tag field all compile to the same four instructions, and a permuter run over the body (110 tries) found nothing below the four.
 // MiniMax C (11-16): no new form, no lower score (4): the model index's mask sits between the two prologue pushes in retail and after both pushes here, and retail loads the entry pointer into eax and reuses that register for the field while this build loads it into edx; both differences are one instruction.
 // MiniMax I (11-17): no new form, no lower score.
+// MiniMax D (11-17): no new form, no lower score (4): retail still masks the model tag index before it pushes ebp and reuses
+// eax for the tag entry and its field where this build masks the index after both pushes and takes the entry in edx; a
+// permuter run over the body (27 tries) found nothing below the four, and the frame still lacks retail's extra dword.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
@@ -5434,6 +5472,16 @@ struct s_damage_object_creation
 // EAX and mask_a in EDI and spills the datum offset; ours keeps the offset in EDI and spills the count into the mask's slot):
 // the count declared in the for-init 146 (same code); both mask parameters `word` 146 (same code); the bound read as
 // `info->unknowne0` 172 (793 B); `info` declared first, assigned after the definition 146; `word` masks without the casts 146.
+// m3 lane 1 r115 (fast with 0xdb810 and 0xdbb40, control 146, register-masked 35): lane 12 r128's lead (root node named,
+// retail's guard `detached > 0 && tag != NONE` around a do-while ending `!= 0`, the piece object pointer, the node bit
+// unnamed, the while/ternary search) re-measured: zero before the node loop 77 (808 B, masked 10), zero where it is now 138
+// (814 B, masked 7: only the zero's placement, the search's shape and one definition reload left), zero at the mask block's
+// top 106 (810 B, masked 8); with the for/break search 221 (792 B) / 188 (776 B) / 222 (790 B). New on the block-top and
+// current-zero leads: the search as an inline helper taking the mask and count by value (`return i;` in the loop, `return
+// NONE;` after) 224 (788 B) / 191 (772 B), with a NONE start and break 221 / 188; the helper taking the mask by pointer is the
+// same code (the address folds away once inlined); `~piece_nodes` named once for the update and the node mask 146 (same
+// code). Diagnostic: one to three dead initialised locals on the for/break lead 221/222 each, so the flip is not a
+// symbol-count phase. Every search with retail's for/break shape hands the mask a register (frame 0x13dc).
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
