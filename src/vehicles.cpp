@@ -533,13 +533,19 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax I (11-17): no new form, no lower score (218): the frame, the length and the layout are retail's and what is
+// left is the velocity copy's colouring (ours holds the i component in ECX where retail holds it in EAX, so both loads
+// and the first store differ), the entry magnitude's SSE order (retail adds the throttle's i and j squares before it
+// computes the k square and keeps the 1.0 in xmm3 from there, ours computes the k square first and loads the 1.0 into
+// xmm2 at the end) and the reversing compare's shape; the velocity copy written the other way round measures 222 and
+// the speed's squares the other way round 222, so the body stands;
 // MiniMax D (11-17): no new form, no lower score (126): the frame, the length and the layout are retail's and what is
 // left is the register colouring and two x87 shapes - the velocity copy's i in ECX where retail has EAX, the 1.0
 // constant in xmm2 against retail's xmm3 (retail adds the entry magnitude's first two squares before the square root)
 // and the reversing compare's ja against retail's fxch and jb; the velocity copy the other way round (130), the blend
 // rows' additions the other way round (126), the reversing test written as >= (218), the magnitude read from the
 // vehicle's own fields (128) and the permuter's tries all score no lower.
-// score 218 (was 126): the reversing test now has retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
+// score 116 (was 218): the reversing test now has retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
 // retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
 // forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
 // velocity copy's eax/ecx and two x87 operand orders in the atan2 sums.
@@ -782,13 +788,19 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // k * forward, as heading + forward * k, x first, and k's dot sum x first: each 218. 0xef4f0, 0xeec90, 0x2053c0,
 // 0x2054b0 stay MATCH. Retail's two `0.0f - v` negations, left.x (subss at 0xef22f from the zero register 0xef228)
 // and blend_left.x (x87 fchs at 0xef32f), compile the same from `0.0f - v`.
+// Round 611: initial velocity reused for heading 255, blend 256, both 255; in-place
+// direction with heading reuse 153, with heading and blend reuse 255. Whole blend
+// assignment 282, whole heading reload 289, separate velocity scopes 218.
+// In-place direction alone 116 at retail length with the original slots, kept.
+// Shared direction/heading renamed or declared after forward 153/153.
+// NOT kept: the shared direction/heading swaps the velocity and forward slots.
+// Velocity-copy registers, early unity and the normalizer/angle registers still differ.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	point2f velocity;
-	point2f direction;
 	point2f forward;
 	point2f heading;
 	point2f input;
@@ -804,18 +816,13 @@ void function_ef070(long vehicle_index)
 	{
 		real inverse = 1.0f / speed;
 
-		direction.x = inverse * velocity.x;
-		direction.y = inverse * velocity.y;
-	}
-	else
-	{
-		direction.y = velocity.y;
-		direction.x = velocity.x;
+		velocity.x = inverse * velocity.x;
+		velocity.y = inverse * velocity.y;
 	}
 	forward.x = vehicle->forward.i;
 	forward.y = vehicle->forward.j;
-	input.x = vehicle->throttle * direction.x - vehicle->steering * direction.y;
-	input.y = vehicle->steering * direction.x + vehicle->throttle * direction.y;
+	input.x = vehicle->throttle * velocity.x - vehicle->steering * velocity.y;
+	input.y = vehicle->steering * velocity.x + vehicle->throttle * velocity.y;
 	vehicle_normalize2d(&forward, g_468778);
 
 	point2f left;
@@ -1000,6 +1007,11 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
+// MiniMax I (11-17): the flip rate reads the up vector's k member directly, so the up pointer serves the first
+// cross alone: 2 (was 4), with retail's length. The side cross's staged products then load retail's operands and
+// only its a->k * b->j term still takes the up component in the register where retail takes the forward's; the
+// pointer at both crosses (94) and the pointer removed (6) both move away, and a permuter over 34 tries found
+// nothing below 2.
 // MiniMax I (11-14): the side cross through the shared staged cross helper (cross3f_staged) 6 (was 8);
 // cross3f_staged at the first cross as well 10; the two count variables, the compound sum and the
 // swapped operands of 0xf6060's marker sum all leave that sum in EAX.
@@ -1134,6 +1146,9 @@ __forceinline long vehicle_round(real value)
 // Round 121 (m3 lane 9, fast), at 6: the two-second tick count through the codebase's two-local seconds-to-ticks
 // rounding helper shape (ticks_real, ticks), used at all three vehicle_round sites (here, 0xf5e00, 0xf4800) 6 (same
 // code in all three: helper locals inside the condition do not move the products).
+// Coordinator review 11-17 (MiniMax I): NOT kept, 4 -> 2: the rate read through vehicle->up.k where the body
+// already holds up = &vehicle->up is a re-read of a value held in a local, a steering form kept only with a byte
+// match.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1642,6 +1657,23 @@ long function_10f5f0(long object_index);
 // P510: Native dispatch case orders 013465/013645/016345/061345/134560/134506/134056/130456:
 // 562/564/564/564/561/560/559/561, all 2264 bytes, frame 0x1990 versus native 0x1984.
 // NOT kept: one/two-point leads fail the margin; original full body and case order restored.
+// m3 lane 4 r208 (fast, all restored; still 561). The count here is positional and mostly misalignment: retail's first
+// block is four instructions longer (the bit-12 test extracted and stored), so every later row pairs with the wrong
+// one; a sequence-aligned diff of the two listings (build/r208/aligned.py, addresses and stack slots masked) gives 327
+// differing instructions for this body. On that measure: the six stored-bit tests through a file-local inline bool
+// helper (the bipeds file's field_bit_test shape) 577 at 2280 bytes, aligned 299 (retail's `shr`/`test cl, 1`
+// extractions, no stores); that with `__assume(vehicle != NULL)` 577 (same code; the assume alone 561, same code as
+// the body); that with `case 2: break; default: __assume(0)` on the type switch 588 at 2324 bytes; the names array
+// zero-filled by memset and then its two names stored, as the matched biped update 0xe2d80's caller does and as
+// retail's three zero stores show, 572 at 2268 bytes, aligned 329 (the zero takes ECX where retail has EAX); the final
+// `result |= changed; return result;` 568, aligned 320 (retail's `mov al, bl; or al, cl` exactly; ours had a dword
+// `or eax, ecx`); all three together 586 at 2288 bytes, aligned 268. None kept: each raises the positional count.
+// Still BLOCKED on build flags for a byte match: retail expands 0x10f5f0 here and calls 0x113e40, and 0x10f5f0's file
+// is /Ob1 in this tree.
+// Round 611: three axis bounds and three-by-two endpoints at the bounds call,
+// steering block and entry, plus axis bounds with separate velocity outputs and
+// call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
+// 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3046,6 +3078,7 @@ real g_47ff30 = 2.5f;
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
+// MiniMax S (11-17): no new form, no lower score (672, was 672); our frame is still 0x100 against retail's 0xfc, the float chain still sits in xmm5/xmm6 against retail's xmm6/xmm7 and the float local at +0x20 against +0x34, and the two leads that reach retail's frame (the mass field read at each use, 676, and the final force and torque scaling through vector3f_scale, 710) each score worse, so the body stays as it is.
 // MiniMax B (11-13): no new form, no lower score (682): our frame is 0x100 where retail's is 0xfc (our mass local takes
 // the extra slot); the lead that reads the mass field at each use reaches retail's frame but only scores 676, under the
 // eight-point bar, and the entry XMM numbering, the maximum speed product's operand form and the force/torque scheduling
@@ -3336,6 +3369,10 @@ real g_47ff30 = 2.5f;
 // but 710 (the rest reshuffles); the same two calls with the mass local 672 (same code). Retail keeps the 0x22c rates
 // pointer in EDX across both 0x2053c0 calls and the state pointer in EBX for the force block (ours the other way round),
 // and its SSE values sit one register higher (the constant 1 in xmm7, ours xmm6).
+// Complete directional squares, immediate/phased/immutable/weighted, 672 each;
+// the same with a mass-field binding 724 each. NOT kept: the field binding
+// recovers frame 0xfc but adds 20 bytes and raises the count. Acceleration,
+// velocity and scalar homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3739,6 +3776,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // the head then loads scale, 1.0 and x, y, z as retail, but the scaled values get copies at the join), with `x *= inverse`
 // 1079; the existing 0x1427f0 called with that output 1174 (out of line; a re-measure of round 44's form). The header's
 // matrix_transform_vector has no scale step, so it is not 0x142640. BLOCKED-BY 0x1427f0/0x142640 inlining.
+// MiniMax I (11-17): no new form, no lower score (1000): the frame stays 0x78 against retail's 0x74, so every
+// stack home sits four bytes higher, retail keeps the matrix products in the XMM registers where this build
+// spills them, and the transform helpers' inlining is decided in their own file (BLOCKED-BY 0x142640 and
+// 0x1427f0), so the two bodies differ in shape from the first difference on.
 // MiniMax B (11-14): no new form, no lower score (1000): the frame is 0x78 here and 0x74 in retail, so
 // every stack home sits four bytes higher, and retail inlines 0x142640 and 0x1427f0 from another file
 // (BLOCKED-BY), which is why the two bodies differ in shape from the first difference on.
@@ -4221,6 +4262,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+// MiniMax I (11-17): no new form, no lower score (118): the trig homes still swap (ours the sine at [esp+0x18]
+// and the cosine at [esp+0x1c], retail the reverse), the four cross products still load the other operand and
+// the shared dot's sum order is still i, j, k against retail's j, k, i, so the row and the home order stay as
+// found; ours is 797 bytes against retail's 806.
 // MiniMax C (11-17): no new form, no lower score (118): the trig homes still swap (ours the sine at
 // [esp+0x18] and the cosine at [esp+0x1c], retail the reverse) and the swap survives every order tried
 // here - the declarations (sine before cosine), the default arm computing the cosine first, the forward
@@ -4518,6 +4563,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // three in-place member statements store i, j, k as retail does (0xf4721-0xf474d) and reload as its final cross does,
 // but score 118 at 800 bytes: not kept. Retail's shared tail starts at the sine load 0xf4713 after a per-arm
 // `cosine * up.i` (0xf468d default arm, 0xf470b case arms); cases 1 and 2 join at 0xf46ae: cross-jumped copies.
+// Returned projection, mutable/read-only and outer/scoped, with member stores
+// or the complete setter 116 each, first +0x108. On that form the vehicle cross
+// 129 and sequential rotated-up stores 121. NOT kept: two-point gain only on
+// the projection forms. First cross and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4760,6 +4809,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // MiniMax C (11-17): score 24 (was 48): the two marker counts are summed into a 16-bit local and the
 // loop bound is that local widened to 32 bits - the capacities the two calls are given (15 and
 // 16 - primary_count) bound the sum, so the value is unchanged - and the sum's sign extension then
@@ -4793,7 +4843,6 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
 // operands swapped both leave the second count's sign extension in EAX.
 // MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
-// score 46 (was 48): from the marker count sum on, retail's scratch registers run one step
 // ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
 // loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
 // block), plus the 0x146320 set-up pair (its declared order, BLOCKED-BY 0x146320: seed declared
@@ -4850,6 +4899,11 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // secondary_count; i++)` 43 (`add edi, eax` and the zero store as retail, but movsx eax and shifted loop registers);
 // `long count = (short)(primary_count + ...)` 22 (loop body clean, but the pre-call code and the colour constant
 // differ); `long count = f(); short primary_count = count;` 141.
+// Still differing: the signed marker total in EAX rather than EDI and the subsequent scratch registers.
+// Index initialized before/between fills 60/47, short-index while 240,
+// scoped short secondary result 46, scoped secondary with primary accumulation 46,
+// array-derived short remaining capacity 46, scoped facing before parameters 46,
+// parameters declared where cleared 46. NOT kept: no qualifying gain or native total register.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -5584,6 +5638,20 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // sites are retail's; left: 22 f78b0 call tails against retail's 14 (retail keeps the later copy, 0x900000e jumps into
 // 0xa00000f's tail where ours keeps the earlier), the re-zero after the magnitude3d paths, three x87 dot operand orders,
 // 0xe000583's `setne cl` bool and zero/result in XMM3/XMM2). A case reorder, so kept only on a match.
+// m3 lane 4 r208 (fast, all restored; still 749; a sequence-aligned diff of the listings, build/r208/aligned.py with
+// addresses and stack slots masked, gives 237 for this body): the three products whose x87 load order differs from
+// retail's with their operands swapped in the source (0xb000587's i term velocity first; the lateral cross's first
+// row as `up.j * forward.k`; its third row as `forward.j * up.i`) 749 each and together (same code: the order does
+// not follow the source); a named entry definition `tags[vehicle->definition_index & 0xffff].bytes` for the +0x264,
+// +0x1f0 and +0x20c reads with the limit sites left as written 1027 at 2707 bytes, aligned 234 (the prologue is then
+// retail's, `push ebp` and the definition in EBP, but every limit site reuses the entry's row address where retail
+// re-derives the row as the expanded 0xf78e0 does). Besides the case-order lead above, a byte match is BLOCKED-BY
+// 0x24590: retail re-zeroes XMM2 after each magnitude3d call and loads 1.0 at each use, so retail's link treats
+// 0x24590 as clobbering every XMM register (a build-flag question for its file).
+// Round 611: paired speed, turn, steering and all limit records 756/773/751/757;
+// with the entry kind/spin/engine definition 1037/1032/1023/1046.
+// NOT kept: the entry forms collapse separate lookups and shorten the body.
+// Entry definition in EBP, zero/result registers and per-site unity still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -6314,6 +6382,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // guard around the tail's point loop (diagnostic) 981. Retail reads: index ESI only up to 0xf44a0 (then stack reloads,
 // ESI becomes the forward pointer), offset EDI spilled to +0x28; the reversal loop stores every pass with the
 // acceleration sign as a byte and the target sign as a dword.
+// Returned tensor input/result/both and scoped transform 1019/1063/1063/1063;
+// with a separate relative-rotation product 1027/1056/1056/1056. NOT kept:
+// every form shortens and raises the score. Frame 0xfc versus 0xd8, index
+// placement and matrix homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

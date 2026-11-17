@@ -274,6 +274,17 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // where retail compares it in memory between the stack pushes and the EBX load (retail evidence for the current order).
 // Body forms: top-level const on both point parameters 20 (same code); both modes' positive/negative points through one inline
 // helper (side, distance, centre, positive, negative) 20, with the centre first 20 (same code).
+// Round 116 (m3 lane 1): the mode-1 x row through a `real &` bound to the point's x, product then `+=` the centre 20 (fast,
+// same code); all three positive rows as product then `+=` the centre 20 (same code). Compile-only screen (it reproduces
+// every order the notes list: current m1/M2, round 188's matches, r127's 22 with the mode-2 x row loading first): all 210
+// interleavings of the register parameters (arg_2, arg_3, arg_4, arg_0, in the callers' setup order) with the stack
+// parameters (arg_1, arg_5 .. arg_9, in push order): 70 fold both x rows as retail and every one of them has arg_4 after
+// arg_8; 133 with arg_4 after arg_1 but before arg_8 fold mode 1 and load mode 2's x first; the 7 with arg_4 before arg_1
+// (this order among them) are ours. 0x1b0400 needs arg_4 and arg_0 before arg_7, so no order satisfies both.
+// `point3f const &` for the centre or the target (body and
+// calls through `.` and `&`) 20/20 compile-only. The centre parameter declared last (fast, all callers edited): 10 here
+// (only its stack offsets differ) but it pushes the centre first, so every caller breaks (0x1b0400 16, 0x1b2770 11,
+// 0x1be120 7, 0x25f7b0 8); not keepable (and 0x264b50's calls are a contributor's).
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

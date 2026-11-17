@@ -3034,6 +3034,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // CSE'd, same code); the squad's trigger byte stored after the 0x204d30 call 51; the entry's sense bit read as a byte
 // (`*local_10 & 1`) 52; the entry base read once ahead of the trigger loop 121 (595 B); the trigger index ternary with
 // its arms swapped 54. The first follow-up still reloads the index from its home.
+// m3 lane 7 r174 (fast with 0x202e90, 0x1fb8a0 and 0x290cd0, all matched): the follow-up (start, then the event) as a
+// forceinline helper taking the squad index by const reference 50 (same code: the reference folds); the else-if's index
+// test read as a word against `(word)NONE` 54 (580 B); the first test's index read as a word 50; its lock bit read
+// word-wide 50 (same code each); the second half's pending test read as a word 52 (580 B). Re-measured, listed: the
+// query result in its own task local with local_4 set in the else 50, the second half's index named 50, the delay named
+// 50. The first follow-up still reloads the index from its home.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

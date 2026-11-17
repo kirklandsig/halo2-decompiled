@@ -184,6 +184,11 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // source order); the location test inverted with an empty first arm 10; a multi-use `char *path` over the buffer for
 // the clear, the build and the read 10 (all but the third the same code). 0x2160b0, the path helper of the matched
 // 0x2174b0, has no language test, so it is not the builder inlined here.
+// Round 116 (m3 lane 1, fast with 0x2161d0, 0x216d70, 0x122810, which stay matched): 0x216d70's body moved into this
+// file ahead of this function (diagnostic, so it inlines in the same unit) 10 (same code: `mov edx, esi` stays); the
+// build given `path` through a `char *const &` 10; the read's path through a trivial inline accessor 10; the build's
+// name and type through a `const &` to the location record 10 (all same code). Retail 0x122810 preserves ESI (it
+// returns the string from ESI), so retail's `lea edx` still needs a block boundary after the append call.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

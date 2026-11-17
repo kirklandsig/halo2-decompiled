@@ -21,6 +21,7 @@ struct s_visibility_bound_record
 // them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
+// score 443 (was 443): The entry address and tag table have different register homes, moving the entry spill and the plane/query schedule.
 // MiniMax S (11-17): no new form, no lower score (443): the frame 0x74a4 agrees with retail's and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from an index in eax
 // before the register saves and we form it with an add into edi after them; the part centre's body is inlined
@@ -54,9 +55,9 @@ struct s_visibility_bound_record
 // ahead of the tag test where retail reads them in each arm, and the parts calls' pushes are hoisted where retail sets up each arm;
 // the permuter (annealing, 420 s) found no variant below 443 - the best it wrote ties the baseline and only respells the constants and
 // adds a volatile entry pointer, so it was reverted.
-// score 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
+// Earlier 443 (was 443): earlier 476; plain, 1760 B: the releases through the existing release_visibility_list (moved from
 // earlier 443 was 476 (plain, 1760 B); the releases through the existing release_visibility_list (moved from
-// score 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
+// Earlier 443 (was 443; 476 before; plain, 1760 B): the releases through the existing release_visibility_list (moved from
 // unknown_044720.cpp to unknown_044e90.h; retail's `test; js`), counts and capacities as chained assignments, and the tag
 // table in a local read at entry (retail's ESI). Left: the entry in EDI (retail EBX via `lea`), the flags read ahead of
 // the tag test (retail in each arm), the parts calls' pushes hoisted (retail sets up each arm), register rotations.
@@ -442,8 +443,19 @@ struct s_visibility_bound_record
 // (232/103). Left on that: the zero constant in EBX (retail keeps the entry there), the list-start stores, the two-step frustum source
 // pointer, the plane cursor at .k and the j/k register naming, the tag table reloaded in the bottom arm, the bound centre copied with
 // integer moves (retail loads it into xmm0-2 and scales in place: 0x142570's body, /Ob1 file).
-// @retail 0x44e90
+// Geometry/query/fallback entry scope, seven nonempty subsets, then all with direct fallback visibility mark: 449/457/449/449/449/449/449/449.
+// NOT kept: seven forms come within two bytes of retail at 449 differences. All eight preserve the first entry-address difference and increase the score.
+// Original executable body restored.
+// score 443 (was 443): MiniMax D (11-17): no new form, no lower score (443, re-measured with the full check; 1760 bytes
+// against retail's 1742): the first difference is still at +0x10, where retail forms the entry address as a scaled index
+// added to the entry table (`movsx eax, word [ebp + 8]`, `shl eax, 5`, `lea ebx, [eax + 0x4ba138]`) and this build forms it
+// as a shifted copy added to the same table (`shl edi, 5`, `add edi, ...`), and retail then loads the tag table into esi and
+// spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the
+// allocator's choice of live ranges, not a source shape, and the forms the earlier rounds list (the tag table local, the
+// entry and the two views in five declaration orders, the release masks, the chained counts and capacities, the query data
+// read in the arms, the plane loop as a plain `for`) all measure 443 or worse.
 // MiniMax C (11-17): no new form, no lower score (443): this build is 1760 bytes against retail's 1742 and the first difference is at +0x10, where retail forms the entry address as a scaled index added to the entry table (movsx, shl, lea) where this build forms it as a shifted copy added to the same table (shl, add), and retail then loads the tag table into esi and spills the entry at [esp+0x30] where this build keeps the entry in a register; what stands between the two is the allocator's choice of live ranges, not a source shape - this round's named entry-offset local (the entry taken from the table with an index held separately) gives 443, unchanged, and the earlier rounds' forms measure 443 or worse.
+// @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
     s_visibility_query_workspace workspace;

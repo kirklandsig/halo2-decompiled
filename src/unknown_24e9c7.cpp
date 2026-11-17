@@ -522,6 +522,13 @@ struct s_24e9c7_points
 // ours forward-substitutes the across products into side. Forms: side filled y first 125 (other code); back filled y first
 // 125 (same code); up filled y first 137 (741 B); the alpha computed ahead of the corner points 173 (762 B); the four marker
 // stores after the alpha 139 (748 B).
+// M3 lane 13 r105 (fast with 0x24e59f/0x22a664, both matched each time; control 125): retail's frame has an 8-byte pair above
+// the result (-0xc never touched, -8 with five references: across j, then side y), ours the back pair below the bitmap index
+// (-0x18 untouched, -0x14 back y). Forms: the across scalars scaled in place by the half width (`across_i = (real)half_width *
+// across_i;`, no side point, corners and back read the across scalars) with `(0.0f - forward_j)` 138 (739 B), with back as
+// `0.0f -` 138; the in-place side point declared at the function's top ahead of the result, `(0.0f - forward_j)` 139 (742 B:
+// its home stays below the scalars); across j bound as `real &across_j = size; across_j *= forward_i;` with `(0.0f -
+// forward_j)` 139 (742 B); both across terms as a copy of size scaled in place with across j a reference to size 144 (746 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

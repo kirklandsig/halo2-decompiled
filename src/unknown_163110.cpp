@@ -616,6 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115; m3 lane 16 r130 at the end): coefficient XMM roles, classification operands and projection staging still differ.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax C (11-16): no new form, no lower score (115): retail loads the view's vector_e4.i into xmm4 before the
 // forward copy and every term order tried here still leaves that load after the copy, so the register colouring of
@@ -1020,6 +1021,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // retail loads e4.i at 0x16539b before the copy at 0x1653a8; the first-row and remainder j terms load n.j first
 // (0x165567, 0x165677); the denominator copies dx and dz (0x16570a, 0x165711) and uses dy in place; the
 // intersection copies t for x and scales y, z in place (0x165773-0x16578b); set-up order at 0x165840-0x165854.
+// m3 lane 16 r130 (fast with 0x1648d0 and 0x320b0, both MATCH; control 115): the classification loop under a redundant
+// `if (0 < point_count)` 271 (1867 B); plane 0's normal bound as `vector3f &` and copied, dotted and negated through it
+// 290 (1867 B); the view's near coefficients bound as `vector3f const &` for plane 0's d 251 (1867 B); plane 0's normal
+// copied through a trivial inline setter 127 (head unchanged, the e4.i load still after the copy); the forward vector
+// bound as `vector3f const &` in place of the pointer 115 (same code).
 // M3 lane 4 r207 (fast with 0x1648d0 and 0x320b0, matched each time): plane 0's d through a `real &` bound to the
 // plane's d (assigned, negated and offset through it) 270 (1867 B); plane 0's normal through a `vector3f &` for the dot and
 // the negations 272 (1830 B); the whole plane through an `s_plane &` 285 (1867 B); the clip delta as the aggregate

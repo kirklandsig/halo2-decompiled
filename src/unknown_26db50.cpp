@@ -980,6 +980,28 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P591: Actual half-axis ordinal signed-byte/byte/short/word/int/uint/dword domains,
 // then long equality termination: 176/176/176/176/45/45/45/176. NOT kept: narrow domains and equality
 // regress; wide domains tie. Native rotation j/k roles and marker timing remain; original body restored.
+// Round 179 (m3 lane 8, fast; every rotate_direction user listed: 0x1ecf50 MATCH, 0x1e5bb0 114, 0xe3910 79,
+// 0x1ff360 77, 0xd0080 58, this 45): the shared helper's dot staged as the planar dot_product2d then `+= k * k`
+// (the held copy's form) 6 here (left: the marker and entry pointer before 0x2104b0) and 0xd0080 38, but 0x1ecf50
+// stops matching (112) and 0xe3910 99, 0x1e5bb0 134, 0x1ff360 121; the same planar dot in one expression 45
+// (same code as dot3f everywhere); dot3f(axis, vector) 45 (same code); the dot folded into the projection 71
+// (0xd0080 36, 0x1e5bb0 94 at its retail length, 0x1ecf50 lost 91, 0xe3910 144); the vector copied into an
+// aggregate before the rows 248 (all users worse). Retail 0x1ecf50 sums its two dots (k + j) + i and
+// (i + k) + j, this function (i + j) + k, so one shared spelling cannot serve both: the held private copy stays
+// the only form found.
+// M3 lane 9 r133 (fast with the file's other 13 functions and 0x1ecf50, all matched each time; users of the shared rotation
+// measured too: 0xe3910 79, 0xd0080 58, 0x1e5bb0 114, 0x1ff360 77 at control): the shared rotate_direction's dot staged as
+// dot_product2d of the planar parts plus k*k 45 (identical code here and in every user: the held twin's staging only acts
+// in a same-file copy, and in this build not even there: the held twin with either declaration order 41/39); that plus the collision record and entry pointer declared at
+// the top of the trace's success block, entry first, 41; the collision record and its marker store first, then the entry
+// pointer, there 39 re-measured (a declaration move, kept only with a match; only the rotation block is left on it); the
+// shared helper with its crosses ahead of the dot (cross_j, dot, cross_i, cross_k or cross_i, cross_j, dot, cross_k) 43
+// each, but 0x1ecf50 MATCH -> 139 and every user worse (e3910 123, d0080 67, 1e5bb0 154, 1ff360 127), so retail's helper
+// computes the dot first. On the 39 form: the direction declared then assigned 39 (same code); angle, sine and cosine
+// before the copy 233 (1104 B). Diagnostic (scratch same-file copy, not kept): all 24 orders of the dot and the three
+// crosses, best 43 (any cross ahead of the dot puts the direction's i in retail's XMM4, but j and k come out XMM5/XMM3 for
+// retail's XMM3/XMM5); the dot written k, i, j or j, k, i 45 (same code). The matched 0x1ecf50 sums the same helper's dot
+// (k + j) + i as this build does here, so retail's (j + i) + k at this site comes from the caller's context, not the helper.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
