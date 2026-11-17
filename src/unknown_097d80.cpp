@@ -520,6 +520,10 @@ struct c_aggregate : c_child
 // bytes); v5's room and destination computed from `starts[i]` 31 (same code); produced declared in the collection loop's
 // for-init and zeroed in the call's block 42; the child pointer declared at function scope 31 (same code). Frame 0x8024 in
 // each. Still BLOCKED by the build flag.
+// MiniMax S (11-16): no new form, no lower score (31): the frame is 0x8024 here against retail's 0x8020 and the
+// count's slot and the children's cursor come out in the other order, so every stack reference sits four bytes
+// off; adding /GL- to this file's own flags line builds the body byte-exact (it matches exactly) but costs
+// 0x97f60, 0x97fe0 and 0x980d0 their matches (52, 80 and 56), so the flags line stays as it is.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
