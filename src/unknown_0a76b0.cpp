@@ -1166,6 +1166,12 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // move together); the velocity copied from direction and scaled in place 322; the else arm's direction copied
 // component by component 301 (1736 B); the velocity scale written out with the speed read in each product 135 (1701 B:
 // three speed loads); permuter (619 s, 19 tries) best 22.
+// M3 lane 14 r105 (fast, on the 22 lead rebuilt: 1700 B, only the throw velocity's i product unfolded): the speed bound as
+// `real const &speed`, the velocity as `vector3f &throw_velocity`, the direction as `vector3f const &throw_direction` at
+// the scale 22/22/22; `spread = false;` before the 0xb75a0 call 24; the throw-block forward declared bare and copied just
+// before the first cross 22; the scale written out with a `real speed` local in the six operand orders v*s/s*v per row
+// (vss, vsv, ssv, svs, sss, vvs) 36 each (1699 B: the blend's velocity*ratio product folds instead, as r103 found). A
+// compile-only build of this file does not reproduce it (it reloads the speed for each written-out product).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2686,7 +2692,7 @@ __forceinline char unit_action_round(real value)
 // MiniMax I (11-15): no new form, no lower score (234): retail loads the weapon index with a 16-bit sign extension
 // (movsx ax, byte [ecx+0x212]) and compares it in 16 bits against the -1 it keeps in ebx; a short local for the index
 // reproduces that load (297) but the compare folds back to an immediate (298), so the register roles stay wrong.
-// score 234 (was 234): 235 before the b5Q walk. Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// Earlier: 234 (235 before the b5Q walk). Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // MiniMax E (11-16): no new form, no lower score (234); the prologue still loads the pool into EDI where retail uses
 // EBP and the getter's NONE compare is 8-bit against retail's 16-bit `cmp ax, bx`; the short-slot getter alone measures
 // 297 and the reordered statements 314, so both bodies were reverted.
@@ -2883,6 +2889,17 @@ __forceinline char unit_action_round(real value)
 // reads it from its stack byte at the exit); is_biped typed byte 234 (same code); the channel declared with the top locals
 // 300 (re-measured); the weapon through the existing unit_get_current_weapon (short slot, own unit lookup) 297 (1196 B),
 // with first_person_name = NONE declared first 314 (1195 B).
+// M3 lane 14 r105 (fast with 0xe9ed0/0xea090; none kept): a goto-free selection with one goto to the only return (the
+// switch's default and mode-else `break` with the rest under `if (name != NONE)`, the animation failure as `if
+// (!animation && channel) animation = ...; if (!animation) goto done;`) and the 0xe9780 fallback as a switch 326 (1199 B:
+// no threaded copy of the fallback block, and the exit is retail's single one reading the result byte, though result
+// sits at 0x13 and is_biped at 0x12); the same with the old fallback test 329 (1224 B, lane 7 r161's form). On the 326
+// form: first_person_name = NONE first 296 (1184 B), the short-slot hand getter 329, TEST_FIELD_BIT on the 0x1b test 331,
+// the lunge speed read through a melee-globals pointer at both uses 325, all four 310 (1188 B: the 16-bit NONE compare
+// is retail's, but the callee-saved homes rotate: ours NONE/pool/offset/actions in ESI/EDI/EBX/EBP, retail
+// actions/offset/NONE/pool), with is_biped renamed to sort after result 310 (same code), result declared first 313,
+// result before is_biped 310; pairs and triples with first_person_name first 291-317 (with the hand getter 291).
+// Kept: the lunge test's velocity/forward dot as the existing dot3f 234 (identical code, either operand order).
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -3066,9 +3083,7 @@ bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byt
 
 	real lunge_speed = *(real *)(*(byte **)((byte *)g_4e034c + 0x134) + 0x2c);
 
-	if (lunge_speed > 0.0f &&
-		(unit->linear_velocity.k * unit->forward.k + unit->linear_velocity.j * unit->forward.j +
-		unit->linear_velocity.i * unit->forward.i) / lunge_speed > 0.9f)
+	if (lunge_speed > 0.0f && dot3f(&unit->linear_velocity, &unit->forward) / lunge_speed > 0.9f)
 	{
 		actions->melee_unknown31 = 0x7f;
 	}

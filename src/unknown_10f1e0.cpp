@@ -675,6 +675,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // read named 41 (545 B); the two markers as one two-element array 2 (same code); `found` as a long 81 (546 B); the target
 // name declared bare at the loop top 2 (same code). Probe stores of 0, 1, -1, 2, 4 through the nodes pointer (diagnostic,
 // reverted) leave the table first; no loop callee is opaque (all matched C or the naked 0x142a60).
+// M3 lane 14 r105 (fast, all the same code at 2): the state read once per pass through a const pointer to the
+// parameter 2; the loop under a redundant `if (target_index != NONE)`, `if (object_index != NONE)` or `if (weight >
+// 0.0f)` 2/2/2, under a repeated node-count test 96; `s_animation_state &animation = *state;` in the loop body or
+// ahead of the loop for the arms' reads 2/2; `s_graph_pair_iterator &pair = *iterator;` for the pair reads 2. Retail's
+// 0xb8ca0 (reached through the first query) passes 0x10cf50's argument in ECX, so it is link-time compiled too.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
