@@ -4060,6 +4060,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
 // copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
 // view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
+// DH393: Half-angle, tangent and radius-product locals 486/498/486.
+// Half-angle/tangent, half-angle/product and tangent/product 505/490/489.
+// All three with direct assignment or a short producer scope 494/494.
+// NOT kept: ties or regressions. The 0x60 frame, velocity reads and projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5017,6 +5021,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
 // before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
 // the keep bar, so the body stands.
+// DH393: One scale observation, unity-first input assignment, scaled-first input assignment,
+// and scaled-first with one scale observation. Scalar alpha 403/412/412/411.
+// Four-channel color 369/398/398/397. NOT kept: the color recovers the frame but radius remains
+// at +0xc instead of +8. All eight regress. Original helper and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

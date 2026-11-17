@@ -1635,6 +1635,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // and request/slot publication still differ.
 // DH391: Combined flag mask with all six flag/seat/vehicle store orders, 32/34/51/41/52/41;
 // split clear/set around seat and vehicle stores 51/52. NOT kept: tie or regression.
+// DH393: Departure gates split after parent, after attachment or into three tests 32/32/32.
+// Shared parent alone/with split gates 32/32. Selected seat bound after departure 93.
+// Full-byte busy field with nested gates/shared parent 29/29, first +0x255 at 846 bytes.
+// NOT kept: three-point prefix gain only. Departure type registers and request/slot stores remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2998,6 +3002,9 @@ struct s_scenario_scripting_view
 // DH391: Shared tag-array views for scripting data, point sets and points in seven
 // subsets, then all with a typed point payload, eight at 80. NOT kept: no actor,
 // counter or guarded-data scheduling change.
+// DH393: Unsigned word range/sign-bit admission with admitted selector or original high bits
+// 89/79 and 97/91. Dword counterparts 89/95 and 98/98.
+// NOT kept: 79 grows to 372 bytes and loses the exact wrapper. Actor, counter and selector homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
