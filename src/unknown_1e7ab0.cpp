@@ -488,6 +488,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // 0x1e83c0, 0x1e6bd0 (303 before and after), 0x1e8eb0, 0x1e7a10, 0x1e7a60, 0xd0590 and 0xd05c0 unchanged.
 // M405: Typed seat array; iterator exhaustion via while/for, each with direct/sampled seat; single exit with typed/raw seats; copied child flags.
 // Scores 117/484/484/484/484/117/117/117. Typed seat-array field confirmed in a plain check at the same score. Other forms restored.
+// MiniMax C (11-17): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX; a getter whose first parameter is the table gives retail's lookup bytes
+// exactly, but the body grows to 2312 bytes against retail's 2308, so every later jump target moves (164), and
+// case 4's parent still sits in ECX where retail holds it in ESI (a hoisted parent read and the inlined
+// parent-unit expression do not move it).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

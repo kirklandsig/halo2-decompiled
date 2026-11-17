@@ -318,6 +318,11 @@ long g_55e6c0;
 // a force-inline setter that stores it 166 (497 bytes, the listed if / else-if shape); the clamp's store written right
 // after the packing 32 (the height then takes EAX as retail, but the clamp branch follows the zero stores and the
 // packing is scheduled above the dimension stores). All restored.
+// Round 106 (m3 lane 14, fast with 0x1dc40/0x1db10, all on the round-51 signed pitch/packed lead, re-measured 29 at 484
+// bytes): a redundant `0 < element_count` guard around the level loop 36 (the top swap stays, the loop's offset store
+// moves); the kind stored through a trivial force-inline setter 29 (same code); the packing's height term read from the
+// stored height field 29 (same code: the store is forwarded); the clamp assigned through a reference bound to the
+// element-count field 30; the clamp through a reference-bound copy of the count, set by if / else-if, 166 (497 bytes).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

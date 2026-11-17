@@ -592,6 +592,22 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Shift the group bitmap read and compare the masked point bitmap word to its bit 430.
 // Compare the masked group bitmap word to its bit and shift the point bitmap read 482.
 // NOT kept: every bit-read form regressed; the original bitmap updates and body were restored.
+// m3 lane 10 r115 (fast with 0x29e730 and 0x29de20, both MATCH; control 382). Three rounds above record that no untried
+// natural form is left (m3 lane 2 r70, m3 lane 11 r90, m3 lane 9 r118). Two forms I did not find listed, both other
+// code at the same count: the length helper's three deltas declared z, y, x 382 (the deltas then load z, y, x and
+// every site squares x, y, z, top of the x87 stack first as before); the pass-start length with its two points
+// swapped (the visited-point length left as it is) 382. Same code: the marker position through a const pointer local
+// for both marker lengths. New diagnostics, compile-only (this file with /O2 /Ob1
+// /arch:SSE, which shows this body's four length sites as the fast build does: squares z, y, x at each): the per-site
+// order (retail z, y, x at the pass start, y, x, z at the visited point, x, z, y at both pair lengths, with the deltas
+// loaded x, y, z every time) does not move with the length helper's shape (a named length, a named sum, both, a
+// vector local for the deltas, a nested squared helper, plain `inline`, a double return: 8 forms) nor with other
+// inline expansions between the sites (the group and point bit tests and sets through bit_vector_test/bit_vector_set
+// in all 16 combinations). Reading: retail's order advances one step from the first site to the second and from the
+// second to the third and not between the two pair lengths, which share one statement, so the rank of the three
+// deltas changes per statement, not per expansion; nothing in a single helper's source gives that here. In x87 stack
+// positions retail squares st0, st1, st2 at the first site, st1, st2, st0 at the second, st2, st0, st1 at the third
+// (ours st0, st1, st2 at all three).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

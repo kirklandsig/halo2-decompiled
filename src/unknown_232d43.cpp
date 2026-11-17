@@ -1099,6 +1099,12 @@ struct s_string_buffer
 // ahead of its loads 70 (487 bytes: the arm stays apart and the chain's loads cross-jump into it, but the 9 test and
 // its arm stay in line ahead of the format call, where retail keeps the chain's loads in line and the 9 test past the
 // return). All restored.
+// Round 106 (m3 lane 14, plain; the body re-measured 13 at 476 bytes): the scored modes through a forced-inline
+// predicate holding a 1/3/4/7/8/9 switch that returns true 100 (475 bytes: lowered to a compare tree); the `== 9` arm
+// first, then the 1/3/4/7/8 chain arm with the same loads 55 (481, merged into one 9-first chain); a 1/3/4/7 chain
+// arm, then separate `== 8` and `== 9` else-if arms 50 (481, merged, 9 in line); a forced-inline predicate returning
+// true from the 1/3/4/7/8 chain, then from `if (== 9)`, else false 50 (481, same as the six-way chain); the same
+// predicate ending `return mode == 9;` 95 (490 bytes).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

@@ -215,6 +215,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // 2026-10-30 ruling on identical branches). Lead: retail's source tests the kind against 0 and 2 as well, in arms that
 // compile to the default; a natural form of that with non-identical arms should match. Also: a three-case switch
 // (0, 1, 2, default) 33 (100 bytes, `movsx; sub; dec` chain); the selection as one ternary in place 32 (95 bytes).
+// M3 lane 11 r112 (fast with 0x8c5b0/0x8c660; base 4): the request read through the pending-message header's own fields
+// (the matched siblings 0x8c790/0x194260 read this word the same way), plain: the kind and index from `unknown0c`'s high word
+// and `unknown10` 32 (95 B), the selection as the siblings' one condition 32 (95 B: both fold the compare); the selector
+// taking `bool succeeded` (`kind == 1` at the call, the volatile read kept) 4 (same code). Diagnostics (identical arms, not
+// keepable): plain read with one extra `else if (kind == 2)` arm giving 1, 4; plain read with an `else if (kind < 0 ||
+// kind > 2)` arm giving 1, MATCH (fast). So any two late-merged compares of the kind give retail's ECX/AX pair, an equal
+// pair or a range test alike; retail's source evidently had arms for other results that compile to the default.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -565,6 +565,8 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 	return result;
 }
 
+// MiniMax I (11-17): no lower score (34): a local copy of the player count, so that the parameter is read only once
+// in the copy loop, compiles to the same code, and the count's register home stays the caller's to pick.
 // MiniMax R (11-15): no new form, no lower score (34): the two count arguments still take the other registers - the
 // player count still arrives in edx where retail puts it in eax - and the copy loop, the rep stosd fill, the call setup
 // and the final clamp all follow from that one exchange; the register homes of the arguments decide the whole body,
