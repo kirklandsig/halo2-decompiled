@@ -610,7 +610,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34; m3 lane 16 r130 at the end): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -1120,6 +1120,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // P588: Repeated file/signing-handle/phase field lvalues, seven subsets,
 // then all with mutable offset: 161/161/162/161/162/162/38/191. NOT kept:
 // no fresh-total/seek/size recovery; original body, scratch getter and record restored.
+// m3 lane 16 r130 (fast with 0x2adb10 and 0x2ada70, both MATCH; control 34), the contributor's rotation, guard and accessor
+// forms (#1225): the entry total's header size through a trivial inline accessor 36 (the loads turn header first); the
+// parameters view through a trivial inline accessor 34; on the no-total-local form (88) the signature sum's header size
+// through that accessor 88 (same code: no rotation shift); the byte count declared inside the not-cancelled block 34;
+// an implied `if (0 < body_size - body_offset)` guard before the buffer arms 179 (701 B, not folded).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -1255,13 +1255,13 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// score 121 (was 121; m3 lane 16 r130 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
 // but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
 // duration and the two ramp times, retail xmm5/xmm7/xmm1); the permuter found no spelling that moves them.
 // MiniMax I (11-15): no new form, no lower score (121): retail has no prologue and holds the initial velocity in xmm6, so it
 // returns 0x14 stack bytes; this build passes it on the stack and returns 0x18, and the parameter list is not mine to change.
 // MiniMax E (11-16): no new form, no lower score (121): the initial velocity stays stack-passed where retail takes it in xmm6 with five stack floats and a 0x14 return.
-// score 121 (was 121; m3 lane 8 r166 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax C (11-09): no new form, no lower score (121); the initial velocity is still passed on the stack where
 // retail keeps it in xmm6 and takes five stack floats, so the whole register assignment after the entry differs.
 // MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
@@ -1555,6 +1555,11 @@ bool function_108530(long device_index, long name)
 // M3 lane 7 r163 (fast, callers 31/13 throughout): 1-7 unused locals 121 each; the cruise numerator's products velocity
 // first (re-measured) 121; both distance denominators as `2.0f * rate` 121; the denominator summed half ramp-up, cruise,
 // half ramp-down 121; the reset stores in field order 121; the deceleration from the local cruise velocity 121.
+// m3 lane 16 r130 (fast, callers 0x108600/0x108670 in brackets, base 31/13): retail's inner order (cruise time, the
+// target/position/start stores, then the half times) with both ramp-down clamps as ifs 170 (486 B, the ramp times then
+// passed in xmm7/xmm6) [19/34]; with the half ramp-up named first 171 (485 B) [19/34]; the cruise time first, then all
+// seven inner stores, then the half times 144 (509 B) [26/28]; the ramp-down minimum under a redundant
+// `if (ramp_down_time > 0.0f)` 133 [31/13]; the position pin through a trivial inline accessor 121 (same code).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

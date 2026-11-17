@@ -727,11 +727,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// score 126 (was 126; m3 lane 16 r130 at the end): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // MiniMax I (11-16): score 126 (was 126): no new form, no lower score; the length still preloads the
 // camera point's left.k into xmm1 where retail preloads left.j, and the zero register stays xmm1 for
 // the timer, the animation case and the field-of-view tail; `t = 0.0f;` before the test (375), the
 // swapped dot3f operands (394), length_sq3f (399) and a `direction` pointer local (417) are worse.
-// score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // Earlier header detail: earlier 149, and 149 was 331; 1696 bytes as retail since r202; earlier 1700 bytes for retail's 1696. Every block's zero is XMM1 where retail uses XMM0 (the plane arm,
 // timer, animation case and field-of-view tail), following the plane length's hoisted left.k load (retail left.j); that
 // costs the animation case a zero copy and the field-of-view tail its reuse of the target test's register (the 4 extra
@@ -1180,6 +1180,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // (k + j) + i 394, i + (k + j) 394, all 1700 bytes. Only j, k, i hoists retail's left.j load (into XMM1), but every
 // written-out form also reorders the plane-distance dot ahead of it (position z and y loads swap, the k operand is read
 // from the field instead of through the copied pointer), so the length/zero registers still do not follow. Body unchanged.
+// m3 lane 16 r130 (fast with 0x16c6f0 and 0x13cb40, both MATCH; control 126): the camera point's direction through a
+// trivial inline accessor for the plane copy and the length 126; the plane normal bound as `vector3f &` and filled through
+// it 126; the field-of-view target through a trivial inline accessor at its test and reached arm 126 (all same code); the
+// timer through an inline helper returning a literal zero on the zero-scale path 126 (same code); the plane scale `t`
+// through such a helper 394 (1700 B). Re-measured: `real length_squared` declared at its assignment 126 (same code).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
