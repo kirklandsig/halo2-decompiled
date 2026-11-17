@@ -3137,7 +3137,7 @@ void playlist_list_focus_playlist(c_playlist_saved_game_file_list *list)
         }
     }
 }
-// score 9: the body is retail's byte for byte with ECX and EDX exchanged —
+// score 9 (was 9): the body is retail's byte for byte with ECX and EDX exchanged —
 // retail keeps the loop counter in ECX and the entry cursor in EDX, ours the
 // reverse (the xor, lea, inc, add, cmp, jb, imul and both loads). Declaration
 // order, a scoped counter, a do/while loop, commutative conditions, a named
@@ -3145,6 +3145,12 @@ void playlist_list_focus_playlist(c_playlist_saved_game_file_list *list)
 // direct return all measured 9 to 30 (the pointer and reference forms 30, 49
 // bytes). Permuter: 178 tries (seed 999) and 173 (seed 7), 300 s each, no form
 // below 9.
+// Array-size counter 9; sentinel loop bound 10; whole-entry result 24;
+// named match predicate 9; nullable-result bound 30; mismatch scan with
+// projection on success 11; separate match index 38; bounded while 10;
+// named array reference 24; nested comparisons 9; exhaustion exit 10.
+// NOT kept: the success projection restores retail registers but adds a
+// second bounds check and grows to 64 bytes.
 // @retail 0x2b221d
 long *c_playlist_saved_game_file_list::find_playlist(byte type, long index)
 {
@@ -4470,13 +4476,18 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56): only case 3 differs. Retail keeps controller in esi, spills controller_index
+// score 54 (was 56):
+// only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
 // function_1a334a. Our build reuses the index loaded before player_slot_get_identity: LTCG here
 // treats function_1a334a as writing no memory (an impure call placed after it gives retail's
 // registers exactly), so the cause is outside this function. Tried: bool member (199: 8 bytes
 // shorter, though closer by align.py), no controller_index local (199), long volatile
 // controller_index (188). Case 2's count = 0 first: 56 -> 54.
+// With a boolean membership result, early identity failure, affirmative break, choice first, XUID member
+// address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
+// bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
+// index rather than re-reading it for the dialogs.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5462,13 +5473,20 @@ long qos_service_lookup();
 bool qos_is_complete(long handle);
 void function_1486b8(long error, bool keep);
 
-// score 10 (155/155 bytes): retail keeps an entry `result = false` store
-// (`mov byte ptr [ebp - 1], 0`) before `*completion = false`, and stores 0
-// again on the else path; ours eliminates the entry store and starts with
-// `*completion = false`. Tried: `bool result = false;` at the declaration, an
+// score 10 (was 10): retail stores false in the result byte before clearing
+// completion. Ours has the same frame and argument homes, with the false
+// result store in the no-probe branch. Tried: `bool result = false;` at the declaration, an
 // explicit `result = false;` after the completion store, and the initializer
 // after that store: all tie at 10 (the later branch stores make it dead);
 // dropping the else assignment gives 150 bytes and 56. The rest matches.
+// With an entry-initialized result: initial completion from result 56;
+// completion from QoS predicate 15; byte result 49; pending-task predicate
+// assignment 52; finished bitfield 56; completion from active result 56;
+// named continuation predicate 56; success status first 58; unfinished task
+// gates type assignment 55; single cleanup exit 56; named QoS predicate
+// with literal store 56; incomplete probe to single return 56. NOT kept:
+// storing the QoS predicate recovers the entry store and stack argument,
+// but changes the completion store and shortens the body.
 // @retail 0x2bb04e
 bool function_2bb04e(long task_index, bool *completion)
 {
@@ -5666,7 +5684,7 @@ void c_class_2b0b5e::v1()
 #include "unknown_07f720.h"
 
 // @retail 0x2b10a3
-void function_2b10a3(dword const *appearance, c_class_2b0b5e *widget, long type)
+void function_2b10a3(c_class_2b0b5e *widget, dword const *appearance, long type)
 {
     bool visible = false;
     if (appearance)
@@ -5704,6 +5722,13 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
+// score 97 (was 97): The retail frame agrees, but the friend-query outputs and later
+// boolean predicates use different byte slots.
+// origin predicate scoped through join eligibility 97; request result scoped through
+// add-member eligibility 97; regular-player predicate scoped through membership
+// actions 97; friend-query outputs scoped through membership actions 97; independent
+// origin and request predicate scopes 97; origin predicate as a byte 97; request
+// result as a byte 97; regular-player predicate as a byte 97.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
@@ -6174,7 +6199,7 @@ void c_multiplayer_settings_screen::v3()
 	c_class_2b0b5e *model = (c_class_2b0b5e *)find_child(7, 0, false);
 	// Keep the child pointer addressable across both preview updates.
 	c_class_2b0b5e **model_reference = &model;
-	function_2b10a3((dword const *)g_54e5d0.settings.colors, *model_reference, 0);
+	function_2b10a3(*model_reference, (dword const *)g_54e5d0.settings.colors, 0);
 	model = (c_class_2b0b5e *)find_child(7, 1, false);
-	function_2b10a3((dword const *)g_54e5d0.settings.colors, *model_reference, 1);
+	function_2b10a3(*model_reference, (dword const *)g_54e5d0.settings.colors, 1);
 }

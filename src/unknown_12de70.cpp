@@ -650,6 +650,13 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // still straight to ESI); the tail's pointer clear through an inline helper taking the group with the loop read at each
 // use 51 (tail exact, EDI/EBP swap); both linked tests through an inline accessor taking the cache block 27 (same code);
 // the cache block bound by reference for every access 27 (same code).
+// Round 174 (m3 lane 7, fast with 0x12e210, which stays matched): the count named, the block read, then the count stored
+// to 0x12b450's never-address-taken spelling g_4e28f0 73 (266 B: the count takes EDI, the cache block EBP); round 163's
+// named count and flag with the store to g_4e28f0 and a tail block local 51 (the store now moves above the flag read, as in
+// retail, but the flag and argument reads merge into ESI again and EDI/EBP swap: with async_globals the store stays below);
+// the time decrement as `physical_block->time--` with no field pointer 55; the arm's group read through a second field overlaid
+// on `block` (an anonymous union) 27 (same code: the two reads still merge); the time field bound as `long &` 27
+// (same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

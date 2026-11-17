@@ -464,6 +464,7 @@ bool g_47f05b;
 // forms the address with a lea, and both follow from the shared constructors in include/unknown_146a20.h, which this lane
 // may not edit. BLOCKED-BY that header.
 // @retail 0x146a20
+// MiniMax E (11-17): no new form, no lower score (34): the 1 in EDX and retail's reload of the block on the constructed arm still never come together (the forms that keep the 1 read the block from a local, the forms that reload it read the global), and the abstract allocator's vtable store retail keeps still comes from the shared constructors in include/unknown_146a20.h, which this lane may not edit (BLOCKED-BY that header).
 // MiniMax C (11-17): no new form, no lower score (34): the abstract allocator's vtable store retail keeps is still dropped as a dead store, and the pool's placement is still loaded and added where retail reloads the block and forms the address with a lea; both follow from the shared constructors in include/unknown_146a20.h, which this lane may not edit, and the permuter's 53 variants in 310 s found nothing below the kept form. BLOCKED-BY that header.
 void function_146a20(void)
 {
@@ -556,6 +557,13 @@ void function_146b80(void)
 // it after the other arguments are pushed; here the callee takes it in DL, so the
 // byte is loaded into DL before the other byte is stored. The callee lives in
 // src/unknown_1c25a0.cpp and is far from retail.
+// b14H (11-17) walk against retail, fast build on r847: every instruction matches except the call setup at
+// 0x146c8e..0x146ca8 (statement by statement: the bool `recent` stored at [esp+0x1c] and read back as a dword for the
+// even_if_unknown push at 0x146c96/0x146c9a, push -1, then `mov al, byte ptr [esp + 0x1b]` at 0x146ca1 AFTER the
+// pushes). The values, the push order and the loop and flag logic are retail's; ours reads the active byte into dl
+// before the pushes (3 instructions out of step, 5 differing lines). Retail's callee 0x1c4040 tests al at 0x1c4043
+// and ours tests dl (fast check of 0x1c4040: 8), so the register comes from that body, which sits outside this lane.
+// No change is made to this function.
 // @retail 0x146bf0
 void function_146bf0(void)
 {

@@ -672,6 +672,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // field_6c before the last two products' stores. The char slot re-measured 700 (masked 275); field_6c stored first
 // after the reciprocal 604 (masked 273); field_6c stored just before field_70[7] 604 (masked 273); the helper's
 // intensity product written factor first 607 (same code); the char slot with field_6c first 700. Body unchanged.
+// M3 lane 9 r133 (fast; control 607 at 3832 B): a redundant `if (0 < count)` guard around the cluster loop 607; the cluster
+// entry pointer `const` 607; the palette slot `short const` 607; the unit clamp helper as two independent tests (`if (w < 0)
+// w = 0; if (w > 1) w = 1;`) 607 (all four the same code); the clamp helper as one nested ternary 695 at retail's 3817 bytes
+// (register-masked differing lines 662 against the control's 552, so the length is a coincidence). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

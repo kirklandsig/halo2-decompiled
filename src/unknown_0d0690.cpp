@@ -307,6 +307,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // components 213 (841, the seed becomes SSE moves); the contribution declared once at the top of the lights branch 121 (same
 // code); a power local named inside the blend arm for the divide and the add (the test still reads the field) 188 (835: the
 // add goes in place, `addss xmm7, [esp + 0x28]`, but the power spills across the call); `strength = strength + power` 121.
+// M3 lane 16 r131 (fast; base 30): colour first re-measured 121 (828 B; only the load-first post-call strength add and the
+// ECX/EDI pair differ). On colour first: a typed light entry {flags, colour, power} 121; the colour seed copied as a point
+// (`*(point3f *)&color.red = *g_468718`, the idiom of that global's other users) 121; the entry colour copied by the same
+// point idiom 121; the scenario's sky block read through the shared tag-array and tag-reference types in the sky helper 131
+// (the sky lookup's registers swap; the add stays load-first). Diagnostic: the blend through a forceinline (result, a, b, t)
+// wrapper over 0x131c20 253 (878 B: LTCG then inlines 0x131c20's body). Body unchanged.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1857,6 +1863,7 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax I (11-17): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears the mobile flag byte in the entry block where this build clears it after the first branch, the four query components still reach the x87 stack in the other order and the three colour scales still multiply in the other order; the normalize's squared length summed as (k, i, j) measures 372, six points and under the keep bar, and the flag as a test-set measures 362 but is kept only with a byte match, so the body is as it was.
 // MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
 // MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
 // MiniMax E (11-15): no new form, no lower score (378 plain, 474 on the reduced image): the call boundaries agree with retail's (0x131bb0 twice, 0xd37f0, 0x117c80 and 0x30bf0), but the reduced image leaves one callee out, so its score there is above the plain one. What is left is the frame and the normal, limited and rotation homes.

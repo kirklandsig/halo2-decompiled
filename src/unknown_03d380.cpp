@@ -314,6 +314,14 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax D (11-17): no new form, no lower score (36): the getter at 0x221810 is already called out of line in this build as
+// in retail, so what is left is the block order (this build lays the blocks special, removal, kind, keep where retail lays
+// them kind, special, removal, keep), the record's address (an imul into ESI and an add here against a multiply into EAX
+// and a lea in retail), the b flag's load (hoisted above the address formation here, read after it in retail) and the two
+// materialised tests (retail's sete for !a and its direct branch on the policy byte against this build's branch on !a and
+// its setne). The forms measured this round: the type arms split into two else-ifs 87, the same split nested 89, the
+// special arm written as an if/else 89, every action written in its own arm with no flag 115 (424 bytes) and the record's
+// offset through a named local 36 (the same code). A permuter run (35 tries) finds nothing below the baseline.
 // MiniMax D (11-17): no new form, no lower score (36): the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into ESI where retail multiplies into EAX and forms the address with a lea; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp, which this lane may not edit. BLOCKED-BY 0x221810.
 // MiniMax R (11-16): no new form, no lower score (36): re-measured in this round's nine-address set, the body is retail's 415 bytes and the frame and the length are right; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into ESI where retail multiplies into EAX and forms the address with a lea; the layout that puts retail's special arm first needs the getter at 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp, which this lane may not edit. BLOCKED-BY 0x221810.
 // MiniMax C (11-16): no new form, no lower score (36): the body is retail's 415 bytes; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still built with an imul into esi where retail multiplies into eax and forms the address with a lea; the layout that puts retail's special arm first needs 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
