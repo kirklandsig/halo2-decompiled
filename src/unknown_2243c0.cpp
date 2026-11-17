@@ -640,6 +640,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // thiscall (same code each); that member with the fallback masked `& 0xffff` 152; block_element_224db0 plain `inline` 117 (same
 // code); the fallback re-reading the tag field masked `& 0xffff` 152 (the field load CSEs with the tag, in-place `and`, table to
 // ECX ahead of the frame); the material definition named before its +8 read 117 (same code).
+// P576: Actual scalar acquisitions through memcpy, head/stage/pass subsets 1/2/4/3/5/6/7: 142/141/117/172/142/141/172;
+// all three through memmove 255. NOT kept: no byte equality; word acquisitions expand the native frame, pass copy ties.
+// Original full body/helper/includes restored. Fallback EDX normalization, stage/pass homes and unfused loads remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

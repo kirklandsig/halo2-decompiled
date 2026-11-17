@@ -369,6 +369,7 @@ void player_action_initialize(s_player_action *arg_0);
 // read does not follow the symbol phase that orders float operands); the cycle loop written in the body (main's own loop text) in
 // place of the 0xcbec0 call 1 (same [edx + edi]); that with the count read into a named char before its test 1; that with the
 // unit lookup placed after the start-type normalization 316 (the lookup moves, everything after shifts). BLOCKED-BY 0xcbec0 stands.
+// MiniMax I (11-16): no new form, no lower score (134): the permuter tried 22 variants of this body in 300 s and none came below the kept form (112 differing instructions in both images); the remaining difference is still the inlined 0xcbec0 count read [edx + edi] against retail's [edi + edx], and that helper is defined in src/unit_object_type.cpp, which this lane may not edit. BLOCKED-BY 0xcbec0.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
