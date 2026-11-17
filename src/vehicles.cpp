@@ -1145,6 +1145,9 @@ __forceinline long vehicle_round(real value)
 // Round 121 (m3 lane 9, fast), at 6: the two-second tick count through the codebase's two-local seconds-to-ticks
 // rounding helper shape (ticks_real, ticks), used at all three vehicle_round sites (here, 0xf5e00, 0xf4800) 6 (same
 // code in all three: helper locals inside the condition do not move the products).
+// Coordinator review 11-17 (MiniMax I): NOT kept, 4 -> 2: the rate read through vehicle->up.k where the body
+// already holds up = &vehicle->up is a re-read of a value held in a local, a steering form kept only with a byte
+// match.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1178,7 +1181,7 @@ bool function_ef870(long vehicle_index)
 			axis = vehicle->forward;
 		}
 
-		real rate = vehicle->up.k / g_510c54->rate * -2.0f;
+		real rate = up->k / g_510c54->rate * -2.0f;
 
 		if (*(real *)(definition + 0x23c) > rate)
 			rate = *(real *)(definition + 0x23c);
