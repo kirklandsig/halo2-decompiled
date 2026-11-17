@@ -6653,13 +6653,10 @@ dword g_4b8430;
 // MiniMax S (11-16): no new form, no lower score (127): retail reads the model through the entry's address (a
 // lea plus a separate load) where this build fuses the address into one load, and the two float reloads after
 // the second grow call come out in the other order.
-/* one entry of the model reference table: eight bytes, the model index at +4 */
-struct s_4e260_model_entry
-{
-	long unknown00;
-	long model;
-};
-
+// NOT kept (review 11-17): the model read through a reference to the table entry (s_4e260_model_entry const *const
+// &entry) took 127 -> 2, but a reference-bound local is a match-only form (the notes above already list it); the
+// entry struct and the split index test go with it (the split test alone is 125, under the keep bar). Code back to
+// main.
 // @retail 0x4e260
 void __stdcall function_4e260(long tag, long context, long first, long second,
     long third, dword handle, byte *material)
@@ -6678,8 +6675,7 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     byte *references = *(byte **)((byte *)g_4e0350 + 0x37c);
     byte *record = *(byte **)(table + 0x1c) + ((handle >> 8) & 0x3fffff) * 24;
-    s_4e260_model_entry const *const &entry = &((s_4e260_model_entry const *)references)[(signed char)record[0]];
-    long model = entry->model;
+    long model = *(long *)(references + (signed char)record[0] * 8 + 4);
     byte *definition = g_4e3b44[model & 0xffff].bytes;
     byte *block = *(byte **)(table + 0x14) + *(short *)(record + 6) * 0x2c;
     word const *indices = *(word **)(definition + 0x2c);
@@ -6704,11 +6700,8 @@ void __stdcall function_4e260(long tag, long context, long first, long second,
         for (long part = 0; part < *(short *)(record + 0xa); ++part)
         {
             long index = *(short *)(record + 8) + part;
-            if (index < 0)
-                continue;
             byte *geometry = *(byte **)(block + 0x28);
-            if (index >= *(long *)geometry)
-                continue;
+            if (index < 0 || index >= *(long *)geometry) continue;
             byte *vertex = *(byte **)(geometry + 4) + index * 24;
             dword packed = *(dword *)vertex;
             byte *group = *(byte **)(definition + 0x14) + (packed & 7) * 20;
