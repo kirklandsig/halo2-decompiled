@@ -283,6 +283,11 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // neither scope nor type moves the swapped slot pairs); the half radius computed where the cohesion arm uses it 500 (3703 B);
 // the walk test as `cos(...) < dot` 628; the steer flag's declaration moved to the top 772 (3730 B); the path step's maximum
 // declared just before the 0x294050 call 726 (3718 B); the strength total declared after the walk 785 (3731 B). Body unchanged.
+// M3 lane 9 r133 (plain with 0x293b30/0x293d30/0x294050/0x295600, all matched throughout; control 252): the early exit as two
+// returns (parent, then member) 252; the neighbour count declared ahead of the nearest distance and point 252; the self test
+// on the iterator's flock pointer (`local_21 != (s_flock_object *)local_2`) 252; the walk iterator brace-initialised from the
+// record's head 252 (all four identical code: declaration order does not move the object/nearest or record/sum spill
+// pairs); the walk guarded by the head as well (`field_34 > 0 && head != NONE`) 721 (3731 B). Body unchanged.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

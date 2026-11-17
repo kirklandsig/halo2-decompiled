@@ -660,6 +660,12 @@ struct s_text_line_measurement
 // order moves, first +0x2); the running width/index and the break point both as measurement aggregates, the result
 // returned directly 83 (398 bytes); the update through `real &running = width;` 77 (same code); the scale read once
 // into a `real const` local before the loop 77 (same code: propagated away). Still the advance copy and early width load.
+// M3 lane 9 r133 (fast with the file's other 17 functions; control 77): reference-bound forms meant to keep a second advance
+// range (a bound reference is not folded back into its expression): the update through `real &running = width;` 77; the
+// update reading the advance through `real &step = advance;` 77; the test reading it through that reference 77; the update
+// accumulated in the advance through the reference (`step += offset; step += kerning; width += step;`) 77 (all four identical
+// code: the reference is folded here); the bound read through `real const &right = bounds->x1;` 77, and the caller 0x13f0e0
+// then falls from MATCH to 144 (936 B). Body unchanged.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
