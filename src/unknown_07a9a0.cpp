@@ -1502,6 +1502,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `if (!balance_teams_by_count(...)) result = false;` 902 (2764 B: retail's exact `test al, al; jne; mov byte ptr [esp +
 // 0x13], al` after 0x91e30, but its direct form is main's `result &=`, so match-only); both 890 (2768 B). The same
 // conditional clear with the excess exit left as `return false` 917 (2736 B).
+// Deep round 410: existing inline upper-capacity selector 852; selector after summary admission
+// 852; validated count through remaining capacity 942; selector and validated count 900;
+// separate capacity rejection branches 942; const index and variant pointer 942; result
+// initialized after admission 901; late result and inline selector 846. NOT kept: inlining the
+// existing upper-capacity selector reaches 852, and with the later result 846. Both forms stack
+// the session and lose the 0x73530 caller in preview. The later result alone reaches 901 with
+// the caller still exact, but initializes the result after validation where retail stores it
+// before the output clear. The 0xb4 workspace and out-of-line opening lookup still differ.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

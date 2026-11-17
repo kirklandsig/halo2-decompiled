@@ -1181,6 +1181,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 236 (1382 B), both 394 (1423 B); a `vector3f const *axis = &state->up;` for the rotation only 144 (1397 B). Reading of
 // the listing: in the rotation, retail keeps every product with axis.j or axis.k text-ordered (vector copy, axis from
 // memory) while ours loads axis.j/axis.k first; the axis.i products and those with vector.i agree in both.
+// Deep round 410: shared forward sample 226; rotation input point setter 205; rotation input
+// memcpy 114; rotation input aggregate 192; angle before forward sample 125; shared axis copy
+// 246; small-turn exit 114; rotated heading memcpy 114. NOT kept: the block copies and
+// small-turn exit tie at 114. The shared forward and axis values, point setter, aggregate input
+// and angle-first setup all regress. The axis-memory rotation products, oriented side products
+// and forward-copy scheduling still differ.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
