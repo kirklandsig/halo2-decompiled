@@ -1640,6 +1640,19 @@ long function_10f5f0(long object_index);
 // P510: Native dispatch case orders 013465/013645/016345/061345/134560/134506/134056/130456:
 // 562/564/564/564/561/560/559/561, all 2264 bytes, frame 0x1990 versus native 0x1984.
 // NOT kept: one/two-point leads fail the margin; original full body and case order restored.
+// m3 lane 4 r208 (fast, all restored; still 561). The count here is positional and mostly misalignment: retail's first
+// block is four instructions longer (the bit-12 test extracted and stored), so every later row pairs with the wrong
+// one; a sequence-aligned diff of the two listings (build/r208/aligned.py, addresses and stack slots masked) gives 327
+// differing instructions for this body. On that measure: the six stored-bit tests through a file-local inline bool
+// helper (the bipeds file's field_bit_test shape) 577 at 2280 bytes, aligned 299 (retail's `shr`/`test cl, 1`
+// extractions, no stores); that with `__assume(vehicle != NULL)` 577 (same code; the assume alone 561, same code as
+// the body); that with `case 2: break; default: __assume(0)` on the type switch 588 at 2324 bytes; the names array
+// zero-filled by memset and then its two names stored, as the matched biped update 0xe2d80's caller does and as
+// retail's three zero stores show, 572 at 2268 bytes, aligned 329 (the zero takes ECX where retail has EAX); the final
+// `result |= changed; return result;` 568, aligned 320 (retail's `mov al, bl; or al, cl` exactly; ours had a dword
+// `or eax, ecx`); all three together 586 at 2288 bytes, aligned 268. None kept: each raises the positional count.
+// Still BLOCKED on build flags for a byte match: retail expands 0x10f5f0 here and calls 0x113e40, and 0x10f5f0's file
+// is /Ob1 in this tree.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5573,6 +5586,16 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // sites are retail's; left: 22 f78b0 call tails against retail's 14 (retail keeps the later copy, 0x900000e jumps into
 // 0xa00000f's tail where ours keeps the earlier), the re-zero after the magnitude3d paths, three x87 dot operand orders,
 // 0xe000583's `setne cl` bool and zero/result in XMM3/XMM2). A case reorder, so kept only on a match.
+// m3 lane 4 r208 (fast, all restored; still 749; a sequence-aligned diff of the listings, build/r208/aligned.py with
+// addresses and stack slots masked, gives 237 for this body): the three products whose x87 load order differs from
+// retail's with their operands swapped in the source (0xb000587's i term velocity first; the lateral cross's first
+// row as `up.j * forward.k`; its third row as `forward.j * up.i`) 749 each and together (same code: the order does
+// not follow the source); a named entry definition `tags[vehicle->definition_index & 0xffff].bytes` for the +0x264,
+// +0x1f0 and +0x20c reads with the limit sites left as written 1027 at 2707 bytes, aligned 234 (the prologue is then
+// retail's, `push ebp` and the definition in EBP, but every limit site reuses the entry's row address where retail
+// re-derives the row as the expanded 0xf78e0 does). Besides the case-order lead above, a byte match is BLOCKED-BY
+// 0x24590: retail re-zeroes XMM2 after each magnitude3d call and loads 1.0 at each use, so retail's link treats
+// 0x24590 as clobbering every XMM register (a build-flag question for its file).
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
