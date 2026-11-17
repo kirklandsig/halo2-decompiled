@@ -266,6 +266,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // `*(long *)(state + 4)` read for the position move (retail reads [state+4] once per inlined helper) 319: the tail then
 // has retail's re-read and its lea/object/flags registers, but the count does not move; on it the input flag in shift
 // form 330, the shape match as `compound ? a || b : a` 345 (1204 bytes), both 348. All restored.
+// MiniMax C (11-17): no new form, no lower score (319): the arguments already sit in retail's homes (the move
+// pointer in EAX, the state at +0x8 and the input at +0xc) and only the two pointer registers differ (retail's
+// out in EBX and its input in EDI, ours the other way round), which turns every later instruction; the six
+// orders of the three aliases do not move them.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
