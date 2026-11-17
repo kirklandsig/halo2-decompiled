@@ -1606,6 +1606,16 @@ extern "C" void _ReadWriteBarrier(void);
 // result = 2/0/1 assigned in an else-if chain (62), per-field observer->channels[index].x (91), the slot as
 // &channels[index] minus offsetof(channels) (41), the slot after the 0x79560 call (88).
 // Permuter (25 min on r663): nothing lower.
+// b13I (11-17) walk against retail, fast build on r846: every compare, constant, field offset and callee argument
+// matches retail. The 18 missing bytes are the epilogue block at 0x7a28b (return 1, kept apart), `mov esi,1` at 0x7a271
+// and `mov eax,esi` at 0x7a284. Retail returns 1 (0x7a28b), 2 (0x7a25b) and 0 (0x7a269) as literal epilogues but
+// returns esi for the tail, so that value is not a folded constant. A result with a second, different reaching
+// definition stays in a register, but then `return 0` merges into it. Tried, new (score, bytes): uchar/short/__int64
+// result (41, 196); result in a __forceinline helper built under optimize("g", off) (41, 196); `acceptable || (call,
+// 1)` (41, 196); `result = acceptable`, then 1 after the call (28, 203: set-then-override); result = 0/1 in if/else or
+// `result = 1` then `result = 0` (63, 214); body inside `if (elapsed >= limit) {..} return 1;` with `result = 0` (32,
+// 215: layout as retail's 0x7a28b, but result in ebp and 0 merged); `test ? 0 : 1` then `if (!result) return 0;`, and a
+// `bool improved` form (41); optimize("g", off) around the function (134).
 // @retail 0x7a1c0
 long function_7a1c0(s_network_observer *observer, long index)
 {

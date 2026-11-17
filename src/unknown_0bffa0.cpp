@@ -904,6 +904,17 @@ byte g_55e708;
 // count in its own variable with `count = first_person_count ? first_person_count : <fallback>` 106; one object-index local
 // for the two marker queries only 128 (618 B); the fallback result in a `short` local copied to count 38 (same code); the
 // fallback query written in both arms of the first-person test (count zero-initialised or not) 156/156 (639 B, not merged).
+// b13H (11-17) walk against retail, fast build on r846: logic and statement order agree with retail (the
+// 0x4e030c/0x4e3b44/ 0x4e0300 lookups, the 0x31520 and flag tests, the 0x94 and 0xa0 tag tests, the object-marker query
+// at 0xc33d7, the first-person test and its count at 0xc33f9, the clamp to 1 with the 0x55e708 flag at 0xc342d-0xc3445,
+// the loop's pushed values and the 0x2dba0 and 0x42850 argument order); no behaviour difference found. Left are scratch
+// picks only: the fallback arm loads the object into EAX and the count through `movsx edx, ax; mov [esp+0x14], edx; mov
+// eax, edx` (0xc3409-0xc3426: the result is a separate register copied into the join) where ours takes EDX then EAX
+// with no copy; the loop loads the absolute index early into EDX (0xc3476) and the marker index late into ECX
+// (0xc3484), ours the reverse; the single-marker arm takes the colour in EDX and the position in EAX (0xc34ed,
+// 0xc34f4); the opacity reloads into ECX (0xc3568). Tried on the current form, none moves it: if/else with the
+// first-person count assigned inside its test 38; `+ 0` on the fallback result 38; a named long fallback copy also
+// tested in the clamp 146 (623 bytes).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
