@@ -1257,7 +1257,7 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
     }
 }
 
-// score 12 fast (was 16 fast, 13 full): only the mode 1 exit differs: retail
+// score 9 fast (was 12 fast on the earlier base; 16 fast, 13 full before that): only the mode 1 exit differs: retail
 // tests `jne` to the shared false exit and falls into its own `mov al, 1`
 // return, ours jumps back to case 0's identical return and falls into the false
 // exit. The fraction multiplies last only when it is written first (g*s*f and
@@ -1266,6 +1266,13 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
 // false after the switch 18; one shared `return true` after the strength block
 // 16; the fraction inlined 73 or declared before the strength 26. The old
 // `(void)&` parameter line changed nothing (the marker keeps them on the stack).
+// b14K (11-17) walk against retail, fast build on r847: every other statement matches (case 0 call, the case 2 and 3
+// stores, the strength block 0x29a10-0x29ad8, the jump table); the 9 is the mode 1 tail alone: retail 0x29adb
+// `cmp esi, 1; jne 0x29ae6` falls into its own `mov al, 1; pop esi; ret` (0x29ae0) and shares the false exit with the
+// `ja` at 0x29914, ours branches `je` back to case 0's identical return (0x29943). Retried on r847: `if (mode == 1)
+// return true; goto failed` 9; `if (mode == 1) return true; return false;` and `if (mode != 1) return false; return
+// true;` 8 (but `cmp; sete al` with a private false exit for default, not retail's jne form); `return mode == 1` 16;
+// the strength test inverted (`if (strength == 0.0f) {...}` first, then the block) 48. No change kept.
 // @retail 0x298f0 standard
 bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real *out, long unused)
 {

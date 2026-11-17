@@ -1135,6 +1135,17 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // New: existing clamp helper 257; standard fill in pair/width/zero-only/
 // height ranges 94/68/119/68; pair plus width 97; all ranges 137;
 // standard color copy 141. NOT kept: all regress; range forms also lose a caller.
+// b14A (11-17) walk against retail, fast build on r847 with 0x19be0/0x19ca0 (both MATCH except where stated):
+// still score 2. The [8]/[c] stores follow source evaluation order, but the compiler flips every such pair at once
+// (case 10 at 0x1b46e, the 12/13 tail at 0x1b49c, the 14/18 block at 0x1b4e3) whenever the 12/13 zero pair is
+// stored in the same order as the LAST TWO zeros of 14/18: 12/13 ascending (`out[3] = out[2]` or two statements) with
+// 14/18 as `out[3] = out[2] = out[1]` scores 6, and so does descending 12/13 with 14/18's last two as
+// `out[3] = out[2]`.
+// Retail has both blocks ascending, which is that configuration. Any other 14/18 order moves the 2 into 14/18
+// (0x1b4de..0x1b4e8), eval orders 123/132/213/231/312/321: 6/2/2/3/3/2 with 12/13 ascending, 2/6/4/5/7/4 with the
+// kept 12/13. A zero local or a split pair in 14/18 flips as well (6). Writing the 12/13 zeros as
+// `((real volatile *)out)[2]`/`[3]` matches that tail (2, left in 14/18) but costs 0x19ca0 its match (130), like the
+// `out + 2` copy: any non-direct access to out[] is out. Kept: the direct stores.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
