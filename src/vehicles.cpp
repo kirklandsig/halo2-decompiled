@@ -545,7 +545,7 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and the reversing compare's ja against retail's fxch and jb; the velocity copy the other way round (130), the blend
 // rows' additions the other way round (126), the reversing test written as >= (218), the magnitude read from the
 // vehicle's own fields (128) and the permuter's tries all score no lower.
-// score 218 (was 126): the reversing test now has retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
+// score 116 (was 218): the reversing test now has retail's `>=` NaN sense (b9N, 11-17); frame, length and layout
 // retail's; left: SSE register colouring (the 1.0 constant in xmm2 against retail's xmm3, the normalized
 // forward/heading in other registers), the blend rows' k copy (the one extra instruction) and store order, the
 // velocity copy's eax/ecx and two x87 operand orders in the atan2 sums.
@@ -788,13 +788,19 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // k * forward, as heading + forward * k, x first, and k's dot sum x first: each 218. 0xef4f0, 0xeec90, 0x2053c0,
 // 0x2054b0 stay MATCH. Retail's two `0.0f - v` negations, left.x (subss at 0xef22f from the zero register 0xef228)
 // and blend_left.x (x87 fchs at 0xef32f), compile the same from `0.0f - v`.
+// Round 611: initial velocity reused for heading 255, blend 256, both 255; in-place
+// direction with heading reuse 153, with heading and blend reuse 255. Whole blend
+// assignment 282, whole heading reload 289, separate velocity scopes 218.
+// In-place direction alone 116 at retail length with the original slots, kept.
+// Shared direction/heading renamed or declared after forward 153/153.
+// NOT kept: the shared direction/heading swaps the velocity and forward slots.
+// Velocity-copy registers, early unity and the normalizer/angle registers still differ.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	point2f velocity;
-	point2f direction;
 	point2f forward;
 	point2f heading;
 	point2f input;
@@ -810,18 +816,13 @@ void function_ef070(long vehicle_index)
 	{
 		real inverse = 1.0f / speed;
 
-		direction.x = inverse * velocity.x;
-		direction.y = inverse * velocity.y;
-	}
-	else
-	{
-		direction.y = velocity.y;
-		direction.x = velocity.x;
+		velocity.x = inverse * velocity.x;
+		velocity.y = inverse * velocity.y;
 	}
 	forward.x = vehicle->forward.i;
 	forward.y = vehicle->forward.j;
-	input.x = vehicle->throttle * direction.x - vehicle->steering * direction.y;
-	input.y = vehicle->steering * direction.x + vehicle->throttle * direction.y;
+	input.x = vehicle->throttle * velocity.x - vehicle->steering * velocity.y;
+	input.y = vehicle->steering * velocity.x + vehicle->throttle * velocity.y;
 	vehicle_normalize2d(&forward, g_468778);
 
 	point2f left;
@@ -1669,6 +1670,10 @@ long function_10f5f0(long object_index);
 // `or eax, ecx`); all three together 586 at 2288 bytes, aligned 268. None kept: each raises the positional count.
 // Still BLOCKED on build flags for a byte match: retail expands 0x10f5f0 here and calls 0x113e40, and 0x10f5f0's file
 // is /Ob1 in this tree.
+// Round 611: three axis bounds and three-by-two endpoints at the bounds call,
+// steering block and entry, plus axis bounds with separate velocity outputs and
+// call-local first sample: all eight 561. NOT kept: frame still 0x1990 versus
+// 0x1984, with separate bounds and velocity homes. Native flag-byte stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5638,6 +5643,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // re-derives the row as the expanded 0xf78e0 does). Besides the case-order lead above, a byte match is BLOCKED-BY
 // 0x24590: retail re-zeroes XMM2 after each magnitude3d call and loads 1.0 at each use, so retail's link treats
 // 0x24590 as clobbering every XMM register (a build-flag question for its file).
+// Round 611: paired speed, turn, steering and all limit records 756/773/751/757;
+// with the entry kind/spin/engine definition 1037/1032/1023/1046.
+// NOT kept: the entry forms collapse separate lookups and shorten the body.
+// Entry definition in EBP, zero/result registers and per-site unity still differ.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
