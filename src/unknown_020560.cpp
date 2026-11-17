@@ -157,6 +157,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // skeleton or the call, is what pushes the clear's temporary into EDX on this full LTCG build. The floor helper written
 // with the compiler's SSE intrinsics (truncate, convert back, compare not-equal and less-than, mask, subtract) 141
 // (423 B: a `movaps` before the conversion, the constant in a register), so retail's floor is this asm too.
+// M3 lane 10 r114 (fast with 0x143c0, which matched each time): the level steps in three variables (floored, clamped,
+// level) 4 (same code); the floor inside the PIN macro 202 (489 B: the macro evaluates the floor three times); the entry as
+// `state + 0x1320` then `+= index * 0x40` 4; a `long const slot` copy of the scanned index for the entry, the call and the
+// clear 4 (all the same code); the bias zero as an else arm of the flag test 90 (384 B).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -934,6 +938,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax D (11-17): no new form, no lower score (547, was 547); retail's 0x2c frame still needs its
+// offset.x home at +0x24, the dead store each pass, the pass counter at +0x18 and the hoisted entries
+// pointer in scan 2, and retail's EBX/EAX pair against our ECX/EDX stays. The permuter (30 tries,
+// annealed) found no better form.
 // MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
 // pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
 // 0x18 against retail's 0x2c.

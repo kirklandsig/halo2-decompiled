@@ -1062,6 +1062,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // after the main epilogue); the names local_12 and local_13 swapped 569 (same code: the +0xd0/+0xf4 homes do not follow
 // the names); diagnostic, the radius read once through its own address 569 (same code). Retail loads the radius inside
 // the first arm where ours hoists it into XMM5 at entry (+0x14).
+// M3 lane 16 r129 (fast; control 569, aligned 254, register-masked 215): the obstacle loop under `if (arg_7->field_2 >
+// 0)` 638 (3349 B); the sweep loop under `if (local_23 >= 1)` 569 (different code); `arg_7 && local_0` 657; the
+// result test `local_51 > local_36 || local_35 == NONE` 574; the final bound as `1.0f` 608 (3326 B; retail compares
+// against a double, `fld qword`). The three-term sums here (the obstacle bounds, both distance helpers, the sweep
+// rotation rows) already round as retail's.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

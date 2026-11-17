@@ -52,6 +52,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax I (11-17): no new form, no lower score (43): retail keeps the index and the entry pointer in one
+// register - esi holds the index, is scaled in place into the pointer and the successor goes to ebx - where this
+// build scales the index in ecx and copies it into a second register for the pointer; the forms measured this round
+// - the successor in its own local with the index stepped at the loop's end 51 (the copy stays), the same with the
+// result returned from inside the loop 49, and the exclusion mask as a byte local in place of the literal 3 43 (the
+// mask stays an immediate) - are all worse than the kept 43, so the original body stands.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -474,6 +480,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // share ECX with a copy into ESI); the same flag loop with `index = entry->next` 57; a guarded `do { ... } while (!result
 // && index != NONE);` 43 (same code). Lead: only a rotated loop testing the successor at the bottom can match, and the
 // flag forms keep the head test.
+// M3 lane 15 r94 (fast with 0x1a303b/0x2b393c, both MATCH in every trial): on the listed inline record predicate with early
+// returns (re-measured 40): with `if (index == NONE) return false;`, `while (true)`, a successor local, `return true` in the
+// found arm and `if (next == NONE) return false;` before `index = next` 63 (138 B); in main's result/break loop with a
+// successor local stepped at the end 48; in a successor loop with `return true` / `return false` 51; in `while (!result &&
+// index != NONE)` 56; that with a successor local and `else index = next` 56 (masked 17: the mask hoisted into AL and the
+// index scaled in place, but in ECX, the loop head-tested). Same code: a redundant `if (index != NONE)` guard around main's
+// loop 43; the predicate in a guarded do-while 40; the predicate as one `&&` expression 43. The predicate with the name
+// test as an early return as well: in the `!result` successor loop 57, in the `while (true)` latch loop 55 (133 B), in main's
+// loop 43 (same code).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

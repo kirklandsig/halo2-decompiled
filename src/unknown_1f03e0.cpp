@@ -1052,6 +1052,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // retail uses EDX, the two cross products that take their operands the other way round belong to the shared cross helper
 // (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
 // where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
+// MiniMax I (11-17): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where retail uses EDX, and the two cross-product terms that involve up.k keep the other side in the register where retail keeps up.k (commuting the shared cross helper's six products leaves the code, and the file's nine matched functions, unchanged), and the general arm's k row still ends in XMM2 where retail's ends in XMM0, so the first arm's out.k store is not shared with it; the body is unchanged.
 // score 234 (was 234): m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
@@ -1491,6 +1492,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // `addss xmm2, [eax + 8]`, so the first arm keeps its own out.k store); vector3f_add(&limited, current, out) there 469 (same
 // code); on the body, the first arm clearing gravity as its first statement 233 (a one-point gain); all three together 468
 // (aligned 153, masked 55). Body unchanged.
+// M3 lane 2 r95 (fast with 0x1f0450/0x24590/0x30bf0/0x1f1e50/0x1f1ee0, all MATCH; base 234): the contact flags word as
+// 1-bit fields beside the dword (bits 0, 1, direct, gravity, damping) read through TEST_FIELD_BIT for the three entry
+// flags 232 (3050 B, entry unchanged: damping still in ECX); every flags test through the bits 599 (3025 B, first +0x6);
+// the bits with `gravity = false` ahead of the first arm's last add-scaled 231 (3050 B); the bits with the flags declared
+// flying, direct, damping, gravity 228 (3050 B, first difference +0x31: the damping bit then takes EDX as retail; under the
+// bar, a declaration order, not kept). On the 469 form (re-measured 469): the direct arm's `limited` renamed `bounded`
+// 469 (identical listing: names do not place the delta/limited slots, retail delta +0xc, limited +0x14, ours the reverse).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

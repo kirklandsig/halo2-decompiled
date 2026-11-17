@@ -1316,6 +1316,9 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // move it); the three transformed rows as named scalars (no `transformed` vector) 539 (2801 B); the sphere arm's
 // reference copy declared at the arm's top, ahead of the radius and the tables, 418 (2831 B); the radius read at the
 // loop top ahead of the entry pointer and its memset 304. Body unchanged.
+// m3 lane 1 r115: no form run. Checked against this note: retail's left normalize reloads each component from memory after
+// the length test (0x30bf0's code, whose declaration on main is noinline; its private copy was the same code as normalize3d,
+// m3 lane 2 r79), and the projection rows, sums, store orders and helper forms are all listed above.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
