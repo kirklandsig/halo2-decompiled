@@ -54,7 +54,7 @@ PRIVATE inline void rotate_scalars_146320(vector3f *v, real axis_i, real axis_j,
 }
 
 // @retail 0x146320
-void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle)
+void random_vector_in_cone(dword *seed, vector3f const *forward, vector3f *result, real min_angle, real max_angle)
 {
 	vector3f random_vector;
 	vector3f axis;

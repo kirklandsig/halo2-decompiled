@@ -381,7 +381,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // direction in xmm3-xmm5 while our copy's address reaches cross3f and dot3f, and retail's dot is summed k, j, i, an order the shared
 // dot3f cannot produce; the seed and time register roles remain; the permuter (annealing, 420 s, 49 tries) found no variant
 // below 117.
-// score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
+// score 171 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // MiniMax I (11-10): no new form, no lower score (117); the draw before the time product (193) and the oscillation
 // before the draw (197) move the seed update up but split the float chain, so both are worse.
 // MiniMax D (11-05): no new form, no lower score.
@@ -772,6 +772,20 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // mutable/immutable component results 117/117; entry product declarations 117;
 // reused component result/accumulator 117/117. NOT kept: all tie; original helper/body restored.
 // Frame 0x28 versus native 0x20 and direction/cross/seed homes remain.
+// b9C (11-17) walk against retail, fast build on r839: fields, offsets, constants (readf), jcc senses with NaN, callee
+// arguments and statement order all agree; no behaviour difference found. Checked: 0x30bf0 test `ja` skip (0x117ed1;
+// NaN sets the flag), signed `jle` (0x117ee6), clamp `jbe`s (0x1180d8, 0x1180f7: NaN skips), 0x117c80 args (eax = ecx =
+// &g_55ecd4, push 0x3eb2b8c2 at 0x118050), frame-count reload (0x118064), wind stores (0x118122-0x118137). The strength
+// constant 0x45e208 is 0x3da3d70b, not 0.08f (0x3da3d70a); float products such as 0.1f * 0.8f round to it. Kept,
+// retail's x87 sequence for the tail (0x118070-0x1180b4): cos(time * 0.001) first, then 0.0006f, with the float stores
+// at 0x118098, 0x11809e and 0x1180b0 (copies only: st(0) keeps the unrounded value, so the result is the same);
+// `cos((real)(time * 0.001)) * cos(time * 0.0006f) + (real)sin((real)(time * 0.005))` gives it op for op, 117 -> 171
+// (892 bytes; round 69's form, measured again). Not kept, written-out rotation (cross3f/dot3f
+// bodies; axis_i, old_j, old_k captured after the axis draw, dot staged k, j, i, scalar cross j, k, i in the i row),
+// match-only: 100 (880 B, frame 0x20), with that tail 103 (885 B), with `short ticks` read before the draw and the time
+// 93 (880 B: esi loads first as retail, but `mov dx,[ecx+2]; movsx` and `fst` where retail has movsx and fstp+fld); on
+// 103: draw first 158, `dword *seed` 134; `long ticks` 194. Left at 100: retail copies the axis (xmm7, 0x117f85) where
+// ours copies g.i; g.i stores before the row j loads (0x118006); sine*cross_j reads memory (0x118023).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -800,7 +814,7 @@ void function_117dd0(long index, vector3f *wind)
 		/* retail reloads the frame count after the call, as for an address-taken global (0x4a7c0, 0x248620) */
 		g_55e710 = *(dword const *)&g_4ba034;
 	}
-	real wave = (real)((cos(time * 0.001) * cos(time * 0.0006f) + (real)sin(time * 0.005)) * cos(time * 0.0001f)) * 0.01f;
+	real wave = (real)((cos((real)(time * 0.001)) * cos(time * 0.0006f) + (real)sin((real)(time * 0.005))) * cos(time * 0.0001f)) * 0.01f;
 	g_55ecd0 += wave * 0.3f;
 	if (g_55ecd0 < -0.1f) g_55ecd0 = -0.1f;
 	else if (g_55ecd0 > 0.1f) g_55ecd0 = 0.1f;
