@@ -2399,6 +2399,11 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 0x2ec40-0x2ec58, 0x2ed71-0x2ed97, 0x2ed99-0x2edb9); every term order written in the forward dot compiles to the same
 // code, and explicit grouping `(j + i) + k` in all four gives retail's order too (493). With k, i, j all four round as
 // retail's: 492 plain (register-masked aligned 242 -> 237).
+// Frame 0x90 versus 0x94 and the decoded output homes remain. Immutable snapshots of position,
+// direction, tint, position/direction, position/tint, direction/tint and all three: 592/573/572/623/637/617/668.
+// Center components through saved-position stores 469, with aggregate saved-position transfer 486.
+// NOT kept: 469 grows to 2288 bytes and emits scalar stores instead of the integer-word transfer.
+// 486 preserves length and the transfer, but gains six and keeps the 0x90 frame.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

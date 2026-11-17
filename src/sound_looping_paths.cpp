@@ -612,6 +612,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // target cursor 961; choice cursor 920; branch-produced ordinal 956; branch-produced completed count 939.
 // NOT kept: all eight target-count forms regress against 846. The two retail-length variants retain the entry
 // zero-register difference.
+// Entry zero stays in EBP in the usual form, with the choice, target and query homes displaced.
+// Complete source/default, default-first, initialized-default and common-predicate gain staging,
+// published before scaling 939/939/936/932 and after scaling 984/984/984/933.
+// NOT kept: all regress. The predicate with publication after scaling keeps 3327 bytes but changes the first load.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

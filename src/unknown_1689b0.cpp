@@ -2014,6 +2014,10 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // head, so `inc`/`idiv` run first and the successor is stored at once; ours keeps the successor in EBP across the body.
 // Retail tests the edge count and zeroes the index with fresh literals (`test ecx, ecx`, `xor eax, eax`), so its
 // function-level zero dies into the prism cursor (ESI) while ours keeps it in EBX for the edge loop's start.
+// The sum homes and early remainder still differ with frame 0xb964.
+// Inside accumulated with logical or compound AND 654/645. Outside accumulated with logical or compound OR
+// 661/636. A skip of the exterior edge gives the same respective scores.
+// NOT kept: outside logical OR recovers ESI query zero but moves the outer saves and grows to 2940 bytes.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
