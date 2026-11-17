@@ -1260,6 +1260,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // Cached header base with shared source, without or with checked parent 329/415.
 // NOT kept: the initial object registers recover on the shared form, but the extra spill and
 // displaced time and null homes lengthen it.
+// Object-table/time load order and current/suppression bytes still differ. Shared header lookup at
+// primary, parent and other-unit fetches, seven subsets, then all with a read-only prop record
+// reference: eight at 91 reduced (control 91, full 90).
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

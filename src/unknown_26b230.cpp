@@ -2164,6 +2164,8 @@ void function_269250(long clump_index, long actor_index);
 // (to let the pool be hoisted as retail's EBX) 126 (same code: the pool is still reloaded, the selection still in EDI); an
 // `if (active)` guard around the walk loop 163 (453 B); the team mismatch as `continue` re-measured 126, with an activity guard
 // around that loop 136 (488 B). Body unchanged.
+// Pool EBX, stack-only selection and the x87 compare still differ. Actor, candidate and position
+// record references in all seven subsets, plus the shared clump layout for the team read: eight at 87.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

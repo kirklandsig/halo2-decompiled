@@ -186,6 +186,9 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // Single callback read with row advance before testing result 543, with sort-local scratch 505.
 // NOT kept: the 420/412 forms grow to 3113 bytes and change the callback register. The explicit
 // result forms at the 0x8a0 frame and 3077-byte extent score 507 and 505.
+// Range flags and two call boundaries still differ. Existing request admission, direction/bypass
+// and published evaluator members, seven subsets at 440. All with branch-local sort scratch 440
+// (frame 0x8a4). NOT kept: the frame is four bytes closer, with the same score and extent.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)
