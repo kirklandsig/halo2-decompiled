@@ -622,7 +622,8 @@ void swarm_leader_detach(long actor_index);
 // compiles to the same bytes as the && form, and the permuter's best variant (300 s, two tries, 205 differing
 // instructions on the reduced image against a baseline of 219) only reaches it through a constant local and a bool
 // flag set by one test, both banned, so the body stands.
-// score 236 (was 236): no new form and no lower score; the prologue still loads the actor pool into ECX and
+// score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
+// Earlier: no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
 // is 22 bytes short of retail's 980 because retail expands 0x26ed40 into it (src/unknown_26e370.cpp).
 // MiniMax E (11-16): no new form, no lower score (236); the body is still 22 bytes short of retail's 980 because
@@ -631,7 +632,7 @@ void swarm_leader_detach(long actor_index);
 // MiniMax B (11-14): no new form, no lower score (236); retail's first slot loop builds the `slot_index < 4` argument with
 // setge/dec/and and its memory loop is a countdown over the actor base, while ours branches on the ternary and re-reads the
 // actor through the pool; a permuter run was stopped at its time limit without reporting a variant.
-// score 236 (was 281): frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
+// Earlier at 236 from 281, frame 0x1c versus 0x20 (earlier body), entry actor displacement and cleanup stack homes remain;
 // at 236 the prologue registers, the memory walk (retail's inlined joint_decline: offset in EDX, count in a stack
 // slot) and the iterator compare against the cached actor differ.
 // MiniMax I (11-09): no new form, no lower score; the body has retail's shape but the allocation differs from the first instruction: retail loads the actor table into EAX and keeps the scaled actor index in EBX with the actor pointer in EBP, ours loads the table into ECX and keeps the index in EAX; the memory walk's helper 0x26ed40 is another lane's file: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
@@ -884,6 +885,16 @@ void swarm_leader_detach(long actor_index);
 // NOT kept (coordinator review, MiniMax D 11-15): 236 -> 216 rested on a bool flag set by one test and read by the
 // next (definition_bit = false; if (definition) definition_bit = ...; if (definition_bit)), a form kept only with
 // a byte match.
+// Round 454: successor captured before unlink, while, byte address, same tracking receiver 237, successor
+// captured before unlink, while, typed helper, same tracking receiver 237, successor captured before
+// unlink, for, byte address, same tracking receiver 237, successor captured before unlink, for, typed
+// helper, same tracking receiver 237, successor captured before unlink, while, byte address, refreshed
+// tracking lookup 278, successor captured before unlink, while, typed helper, refreshed tracking lookup
+// 278, successor captured before unlink, for, byte address, refreshed tracking lookup 278, successor
+// captured before unlink, for, typed helper, refreshed tracking lookup 278. Capturing the successor
+// separately scores 237 with the existing tracking receiver. Refreshing the receiver after the callback
+// follows the retail load but scores 278. The original walk and body are restored. The two opening score
+// headings are merged into one.
 // MiniMax D (11-17): no new form, no lower score (236): the first difference is still at +0x3, where retail
 // loads the record pool pointer into ECX and this build loads it into EAX, and the body is still 22 bytes
 // short of retail's 980 because retail expands 0x26ed40 into it; BLOCKED-BY 0x26ed40

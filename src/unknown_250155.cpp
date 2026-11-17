@@ -1601,6 +1601,13 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // EBX and, in the rows loop, `this` in EBX with index_count read from memory (0x251659+); ours gives index_count EBX
 // for the whole body, spills mode and reloads `this` each pass. The branch-two reload after 0x19a9b4 (0x2515a6) is
 // that call's summary. Best match-only recipe: none reached MATCH; the pointer fills of the kept body (83) stand.
+// Round 454: common eligibility scan with pointer tail 176, common eligibility scan with indexed tail 174,
+// common eligibility scan with range tail 181, common eligibility scan with counted tail 172, common
+// eligibility scan with indexed/pointer tails 139, common eligibility scan with pointer/indexed tails 155,
+// common eligibility scan with range/counted tails 153, common eligibility scan with counted/range tails
+// 151. The common scan increased the score in all eight forms. The indexed/pointer tail pair reached retail
+// length with a larger frame and different homes. The two original scans and their pointer fills are
+// restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2920,6 +2927,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // 0x53750 call 89 (earlier round); still three causes short of a match. New trials (reverted): the last loop as a
 // do-while 92 (919 bytes); a loop-scope const copy of the screen 87 and a pointer to the screen parameter, unused or
 // used by the five calls, 87 (same code). No trial this round beat 87.
+// Round 454: paired text indices from the first text with switch offset 197, paired text indices from the
+// second text with switch offset 183, paired text indices from the first text with switch index 190, paired
+// text indices from the second text with switch index 191, paired text indices from the first text with if
+// offset 216, paired text indices from the second text with if offset 201, paired text indices from the
+// first text with range guard 204, paired text indices from the second text with range guard 177. The
+// paired text producer increased the score in all eight forms. The shown-count slot, voice reload and final
+// receiver still differ. The original four-output helper and target body are restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
