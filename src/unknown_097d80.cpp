@@ -552,6 +552,11 @@ struct c_aggregate : c_child
 // call); the collection child bound by reference 42; the cleanup item's object field bound by reference (tested, released
 // and cleared through it) 67 (376 B); a redundant `if (starts[i] < starts[i + 1])` guard around the dispatch's inner loop
 // 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
+// M3 lane 16 r132 (fast with the six file-mates, all still matched): `register long produced` 31 (same code); the count
+// declared zeroed at the collection loop body's top with `total += produced` after the gated call 60; the count as `int`
+// passed through a `long *` cast 31 (same code); the count and its call in a bare block inside the gate 31 (same code);
+// the count in the loop's for-init, zeroed in the gate (repeat of r108) 42; the total re-formed as `starts[i] + produced`
+// 31 (same code). Frame 0x8024 in each; still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

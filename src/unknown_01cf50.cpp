@@ -6661,6 +6661,14 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // is kept. Retail forms pass (0x4b37e) and record (0x4b3ae) addresses that are dead: `byte *const &` on pass (alone or
 // with record) gives 251 B and 81 (62 on the old body, same code); on entry or record alone 91. No form matches; the
 // open difference is the tag table in EBX (retail) against ESI (ours).
+// m3 lane 16 r132 (fast, for caller 0x19f680; see its note): on the (tag, first, third, second, fourth) order with both
+// calls, the chain's seven values as fields of a local record 63 (+0x32: the group read folds where retail forms
+// `add eax, ebx` then reads, the pass definition takes EDX where retail reuses EBX, and the record address lacks retail's
+// dead `add eax, edx`), which gives retail's convention and lets 0x19f680 MATCH; the record filled by a force-inlined
+// helper 64; the group read through an instance reference or `.unknown00` 63, as a `dword const &` 81. Natural bodies on
+// that order (`first * 10` in place; entry and range as word pointers formed and read; the tag entry by pointer; C-style
+// declarations at the top) 95 each, first then in EBX; `(void)&third; (void)&fourth;` on main's body 62 (same code), on
+// the in-place body 95. None kept (main's body, 62).
 // @retail 0x4b2d0
 // MiniMax C (11-17): no new form, no lower score (62): the second argument still arrives in eax where retail takes it in ecx, and the arguments behind it still sit one stack slot lower; the callers of this function are in other files, so the calling convention cannot be changed from here, and the permuter's best (60) only renamed constants and swapped the arguments of the two calls, so it was reverted.
 void function_4b2d0(long tag, long first, long second, long third, long fourth)

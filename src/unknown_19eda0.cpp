@@ -585,6 +585,29 @@ real g_47ff94 = 1.5f;
 // pointer with a 0x34 frame; that transport is decided by this function's two callers, which this lane may
 // not edit. Retail also still reads its 1.5 factor from its own writable .data float before the frame
 // push, where ours materialises the literal, and still expands the two contributor helpers in place.
+// m3 lane 16 r132 (fast with 0x244470, 0x2be5d0, 0x116b00, 0x4b2d0, 0x22a664, 0x23ea80, 0x47930, 0x46ea0, 0x52040,
+// 0x1ccb0, 0x1cd90, 0x1cc60, 0x35b00; base 322). LEAD, nothing kept: four pieces together MATCH this function, confirmed
+// by a plain check of the set (diagnostic, then restored): (1) 0x1ccb0(59) and 0x1cd90 expanded here, as retail does;
+// (2) the edge length reading the current vertex through `point2f const *vertex = &vertices[index];` (vertex->x,
+// vertex->y; the alpha and the bottom point keep `vertices[index]`), which stops the compiler keeping
+// &vertices[index].y in EBP, so the step counter takes EBP, the denominator retail's perimeter slot and the frame
+// 0x30; (3) 0x4b2d0's parameters as (tag, first, third, second, fourth) with both calls; (4) a 0x4b2d0 body whose
+// chain values sit in memory in the early IL (round 136's pointer array, or the same seven values as fields of a local
+// record), which gives 0x4b2d0 retail's convention (first ECX to ESI, second EAX to EDI, ret 8) and this call retail's
+// two pushes. Measured: piece 2 alone 331 (1475 B, frame 0x30, loop now retail's; the edge read from `bottom` 330);
+// `inline` on 0x1ccb0 and 0x1cd90's definitions 261 (0x116b00 167) but 0x22a664 loses its match (42) and 0x47930 rises
+// 244 -> 341 (both call them out of line in retail), on 0x1ccb0 alone 290, on 0x1cd90 alone 320; 0x1cd90 defined in an
+// /O2 file without `inline` (diagnostic move) 320 with 0x22a664 kept, both moved 261 with 0x47930 still 341; pieces 1-2
+// with `inline` 11 at 1518 B (only the 0x4b2d0 call and its one-byte padding shift left); 1-3 10; 1-4 MATCH (0x116b00
+// 27). With the two bodies written in place instead (`g_43f408[59]` made extern; the shader-state words through
+// g_51f0f0 offsets 0x8c/0xcc/0x20c) 1-4 MATCH with 0x22a664, 0x23ea80, 0x47930 untouched and 0x116b00 280. Not kept:
+// piece 4 is a grouping of locals in 0x4b2d0 (63 with it, main 62) and pieces 1-2 are written-out helper bodies and a
+// mixed vertex read, all kept only with a match. Natural 0x4b2d0 bodies on the new order (`first * 10` in place,
+// pointer entry/range, the tag entry by pointer, C-style declarations at the top) give 95 with first in EBX; record
+// filled through a force-inlined helper 64; group read by reference or through `.unknown00` 63. Next: a natural
+// 0x4b2d0 form that keeps the chain values out of the callee-saved registers (BLOCKED-BY 0x4b2d0's convention).
+// Body trials on main: previous index as `(index != 0 ? step : count) - 1` 323; the vertex distance named in
+// double before the alpha 322; `step != count ? step : 0` 322.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
