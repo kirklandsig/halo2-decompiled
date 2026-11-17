@@ -533,6 +533,12 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax I (11-17): no new form, no lower score (218): the frame, the length and the layout are retail's and what is
+// left is the velocity copy's colouring (ours holds the i component in ECX where retail holds it in EAX, so both loads
+// and the first store differ), the entry magnitude's SSE order (retail adds the throttle's i and j squares before it
+// computes the k square and keeps the 1.0 in xmm3 from there, ours computes the k square first and loads the 1.0 into
+// xmm2 at the end) and the reversing compare's shape; the velocity copy written the other way round measures 222 and
+// the speed's squares the other way round 222, so the body stands;
 // MiniMax D (11-17): no new form, no lower score (126): the frame, the length and the layout are retail's and what is
 // left is the register colouring and two x87 shapes - the velocity copy's i in ECX where retail has EAX, the 1.0
 // constant in xmm2 against retail's xmm3 (retail adds the entry magnitude's first two squares before the square root)
@@ -1000,6 +1006,11 @@ __forceinline long vehicle_round(real value)
 
 /* flips a vehicle back over: a spin about its forward (or its side) for up
    to two seconds while it's upside down */
+// MiniMax I (11-17): the flip rate reads the up vector's k member directly, so the up pointer serves the first
+// cross alone: 2 (was 4), with retail's length. The side cross's staged products then load retail's operands and
+// only its a->k * b->j term still takes the up component in the register where retail takes the forward's; the
+// pointer at both crosses (94) and the pointer removed (6) both move away, and a permuter over 34 tries found
+// nothing below 2.
 // MiniMax I (11-14): the side cross through the shared staged cross helper (cross3f_staged) 6 (was 8);
 // cross3f_staged at the first cross as well 10; the two count variables, the compound sum and the
 // swapped operands of 0xf6060's marker sum all leave that sum in EAX.
@@ -1167,7 +1178,7 @@ bool function_ef870(long vehicle_index)
 			axis = vehicle->forward;
 		}
 
-		real rate = up->k / g_510c54->rate * -2.0f;
+		real rate = vehicle->up.k / g_510c54->rate * -2.0f;
 
 		if (*(real *)(definition + 0x23c) > rate)
 			rate = *(real *)(definition + 0x23c);
@@ -3739,6 +3750,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // the head then loads scale, 1.0 and x, y, z as retail, but the scaled values get copies at the join), with `x *= inverse`
 // 1079; the existing 0x1427f0 called with that output 1174 (out of line; a re-measure of round 44's form). The header's
 // matrix_transform_vector has no scale step, so it is not 0x142640. BLOCKED-BY 0x1427f0/0x142640 inlining.
+// MiniMax I (11-17): no new form, no lower score (1000): the frame stays 0x78 against retail's 0x74, so every
+// stack home sits four bytes higher, retail keeps the matrix products in the XMM registers where this build
+// spills them, and the transform helpers' inlining is decided in their own file (BLOCKED-BY 0x142640 and
+// 0x1427f0), so the two bodies differ in shape from the first difference on.
 // MiniMax B (11-14): no new form, no lower score (1000): the frame is 0x78 here and 0x74 in retail, so
 // every stack home sits four bytes higher, and retail inlines 0x142640 and 0x1427f0 from another file
 // (BLOCKED-BY), which is why the two bodies differ in shape from the first difference on.
@@ -4221,6 +4236,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+// MiniMax I (11-17): no new form, no lower score (118): the trig homes still swap (ours the sine at [esp+0x18]
+// and the cosine at [esp+0x1c], retail the reverse), the four cross products still load the other operand and
+// the shared dot's sum order is still i, j, k against retail's j, k, i, so the row and the home order stay as
+// found; ours is 797 bytes against retail's 806.
 // MiniMax C (11-17): no new form, no lower score (118): the trig homes still swap (ours the sine at
 // [esp+0x18] and the cosine at [esp+0x1c], retail the reverse) and the swap survives every order tried
 // here - the declarations (sine before cosine), the default arm computing the cosine first, the forward
