@@ -1,3 +1,4 @@
+#include "object_tag_definitions.h"
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "object_iterator.h"
@@ -963,19 +964,37 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // destination in EDI and the source in EBX. New: the blend output passed as the expression `base + count` instead of
 // `current` 89 and a separate `out` alias for the clamp 89 (both identical code). Measured 89 on r841 (fast), 581
 // bytes vs retail's 580: retail pads one loop head (`lea ebx, [ebx]`, 0xbea0a), ours two (`lea esp, [esp]`).
+// P595: The destination still takes EDI and the source spills only across the inner loops.
+// typed object tag flag/tint fields 89 (kept, plain). Input end (< or !=) 111/111, output end 169/169,
+// output end with indexed input 174, independent remaining count and ordinal 83,
+// with a separate walking output 106. NOT kept: the 83 form reaches retail length
+// and first +0x6a, but the six-point reduction is below the keep bar.
+// P598: post-increment at blend/scale/both entry lookups 182/166/183. Continue past unnamed
+// blend/scale/both entries 89/89/89. Exact ordinal termination and outer while 89/89.
+// The input cursor still spills across the inner loops and the output stays in EDI.
+// Round 601: copy the input cursor from the output cursor and rebase the output once before traversal 149; put
+// the input copy and output rebase inside the positive-count block 156; advance the input as its colour is
+// copied and advance the rebased output at the latch 165; advance the input after the colour copy and advance
+// the rebased output in a pointer-step for loop 165; walk the two rebased cursors with an independent
+// descending colour count 149; carry the beginning of the output range as the end of the input walk 112;
+// initialize the input cursor before the size read and then rebase the output cursor 106; rebase the output and
+// walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
+// reshuffles both cursor homes and raises every score. The input spill and the destination register at the
+// blend call still differ.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
     byte *object = (byte *)((s_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    s_object_definition const *definition =
+        (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
     bool result = false;
-    if (definition[0x1c] & 1)
+    if (definition->runtime_flags & 1)
     {
         color3f *base = (color3f *)(object + *(short *)(object + 0x126));
         long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
         for (long i = 0; i < count; i++)
         {
-            s_colour_choices_ab *entry = &(*(s_colour_choices_ab **)(definition + 0xb0))[i];
+            s_colour_choices_ab *entry = &((s_colour_choices_ab *)definition->tint_sets.address)[i];
             color3f *current = base + count;
             *current = *base;
             for (long j = 0; j < entry->function_count; ++j)

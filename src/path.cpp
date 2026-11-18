@@ -375,6 +375,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax R (11-17): no new form, no lower score (286): the node pointer at function scope with the previous pointer's NULL
+// initializer dropped gives retail's frame (0xe4) and the same parameter homes, but the body grows by three bytes and the score
+// rises to 357, so the body is as it was.
 // MiniMax C (11-14): no new form, no lower score (286): retail's frame is 0xe4 against this build's 0xe8 - retail keeps the edge's
 // walkable bit in a byte local written only on the "index in range" path and reuses it in the special test, while this build keeps
 // that bit in the flags and gives the frame an extra dword; the node depth is read at one address here and through a lea there.

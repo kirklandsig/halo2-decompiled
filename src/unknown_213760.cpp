@@ -1811,6 +1811,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `valid = valid && stored == read;` 78; same code: `resized` or
 // `size` declared at the loop body's top, the count declared beside the outer count, the copy written `+= count` (the 83
 // form's count beside the outer count also 83, same code).
+// M3 lane 7 r175 (fast; control 33). Retail holds the slot-range bound in ESI (`mov esi, 1`, then `cmp eax, esi` twice and
+// `cmp ecx, esi` for the `index != 1` test) where ours compares immediates. The range bounds read from a file-local
+// const copy of the slot-limits table at 0x448f98 ({1, 1} for the shared slot; diagnostic, reverted) fold to the same
+// immediates, 33. Same code (33 each): `done` declared first in the loop body; the close clearing the handle through
+// `file`; the write count declared ahead of the query size in the handle-valid block; the two file-time pointers written
+// in the CompareFileTime call. With the count declared ahead of the size, the close tested as `(!resized ||
+// bytes_written != 0x800)` with no else arm 157 (the listed frame 0x1140 form).
 // Write completion from resize/count tests 157; conditional write completion/close outcome/handle first 165/165/168;
 // scoped query with conditional completion/close/handle first 165/165/168; scoped query with count zero 33.
 // Removing the failed-resize count store shrinks the frame to 0x1140. The 0x1144 form keeps the slots exchanged.

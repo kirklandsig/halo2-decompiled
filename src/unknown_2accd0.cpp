@@ -623,7 +623,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
-// score 34 (was 34; m3 lane 16 r130 at the end): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34; m3 lane 7 r175 at the end): round 103 unchanged; the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -1148,6 +1148,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // the read]. Compile-only, all [17] on the helper pair: buffer/size declaration order, arm statement order, the clamp as
 // MIN either way round, `if (size > remaining)`, `if (remaining < size)`, the position declared first. On the helper
 // pair, `size = buffer_size; if (size > remaining) size = remaining;` on a scratch-size local 28 (same code as the pair).
+// M3 lane 7 r175 (fast with 0x2adb10 and 0x2ada70, both MATCH; control 34): the signature position summed body size first
+// 34 (same code); the body case's file handle in a two-use local (seek and read) on this body 168 (695 B); the task's
+// state store through a trivial inline setter 180 (688 B); the total and its conversion `const` 34 (same code); the
+// task pointer in a local for the state store 180 (688 B).
 // Shared body extent in grouped body-first/signature-first cases 167/125; direct phase field 167;
 // shared extent after body-first/signature-first phase condition 238/234; direct total conversion
 // on the grouped body-first/signature-first and conditional forms 167/125/238.

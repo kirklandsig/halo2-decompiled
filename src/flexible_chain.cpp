@@ -707,6 +707,10 @@ void __stdcall function_1160c0(real dt)
 // in its own `{}` block; the segment through a forceinline accessor. Diagnostic dead volatile loads (reverted at
 // once) before the node, after the node, after the segment and before the velocity rows: none moves the segments
 // base out of EDI, so that base is not a scratch-rotation step.
+// P595: The selected segment still needs EDX and the scalar/axis and previous/offset homes. for with
+// refreshed count, original selector/branch index/terminal decrement/index plus base 171/171/175/171,
+// while with refreshed count, same four selectors 171/171/175/171. NOT kept: the refresh and selection
+// forms leave the segment register and stack allocation unresolved.
 // m3 lane 10 r115 (fast with 0x116750, 0x116010 and 0x1160c0, matched throughout; control 171; body unchanged). Reading
 // from retail's operand orders: VC 7.1 puts the younger of two fields first in each float product, and here retail has
 // every axis component ahead of every offset component, the reciprocal ahead of axis i but behind axis j and k, the
@@ -740,6 +744,16 @@ void __stdcall function_1160c0(real dt)
 // cross3f(v, axis, &cross) inside the helper 143 (1368 B); the cosine taken ahead of the sine 121 (1369 B); the helper
 // writing a separate `rotated` vector that the rows add to position 164 (1368 B); the cosine complement named, or the
 // dot named ahead of the sine and cosine, the same code as the lead.
+// M3 lane 8 r181 (fast; base 171): the projection as `(1.f - cosine) * dot3f(&axis, &offset)` 171; the cross terms
+// as `sine * (...)` in all three rows 171; the dot named ahead of the complement (`projection * (1.f - cosine)`) 171;
+// a `vector3f const` vertical 171; a `vector3f const` rest offset 171 (all the same code). The segments base still
+// takes EDI and the segment ECX where retail uses EDX for both.
+// Round 563. The selected segment still uses EDI/ECX and +0x1c against EDX and +0x14. point setter for the
+// anchor position 356; vector setter for the anchor direction 306; point setter for the interpolated position
+// 171; point setter for the predicted position 171; vector setter for the node velocity 175; point setters for
+// the committed and previous positions 359; vector setter for the angle reference 171; point and vector
+// setters for both attachment outputs 380. NOT kept: the anchor-position and commit setters shorten the body
+// and demote the update caller.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -533,6 +533,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 }
 
 // score 238 (was 238): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// Earlier at 238 in round 95. See the m3 lane 11, lane 2 r79 and lane 8 r164 forms below.
+// frame 0x40 versus 0x44, with a different second-node slot.
+// Retail reuses the origin y/z slots and leaves two dwords below the plane unused.
+// Earlier score 238 in lane 11 round 95, lane 2 round 79 and lane 8 round 164.
 // MiniMax E (11-17): no form kept; the score is unchanged at 238. New readings: the 1..16 classifier keeps retail's
 // `mov ecx, 1; cmp ecx, edx; jg` form out of reach (an unsigned word, a signed long, the constant written first, two
 // separate ifs and an if/else chain all compile to a compare with an immediate, 238 each, as in the earlier rounds);
@@ -977,6 +981,14 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (1287 B, other code); the same pin returning by value 238 (same code as the body). Reading: retail's `mov edx,
 // [eax+8]` after the zero test, its constants in the result register and the unfolded `mov ecx, edx; cmp ecx, edx`
 // say the clamp read the data through a form the first test's read was not merged with; a reference return is not it.
+// AC564: Component property scan with end pointers < and !=, counted cursor,
+// and indexed element pointer 327/327/339/341. Break with one result in the same
+// forms 347/347/325/326. NOT kept: all raise the score and retain frame 0x40.
+// The second-node spill, repeated classifier reads and plane homes remain.
+// One material output with branch stores 250 or one later store 316, at
+// either scope. Separate body material before/after the index lookups 261/258,
+// also from branch entry 261/258. NOT kept: the shared output restores frame
+// 0x44 but raises the score and grows the body; separate outputs also regress.
 // DH393: Branch-owned plane with instance/level/both immutable returns 317/297/310.
 // Both returned planes with shared pointer 310, branch-owned buffers with local/shared
 // pointers 310/310, immutable returns 310, both with existing normal setter 305.

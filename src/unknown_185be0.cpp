@@ -143,6 +143,7 @@ union s_185be7
     vector2f field_8;
 };
 
+// score 590 (was 590): Frame 0xe0 and input home agree. Control-root reload, NONE register, range and flag joins differ.
 // MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
 // MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
 // `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
@@ -189,7 +190,7 @@ union s_185be7
 // control global is still carried in EBX from the entry block, where retail reads it into ECX a second time at the
 // flag test; the only spelling that reproduces that reload takes the global's address, which this lane may not do,
 // and the earlier rounds' counted-mask and selected-input forms all score above the score here.
-// score 590 (was 590; earlier 622, the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
+// Earlier 622 and the mixed form 516: 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
 // yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
 // a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected
 // input 606, bitfield selectors 604, selector struct copy 606, named selector dword 604, byte-pointer flags 609, word flags 687 (3742 B). On 589, word
@@ -603,6 +604,19 @@ union s_185be7
 // EBX where retail keeps it in ECX and the -1 sentinel in the other register, and the two zeroing loops and the store order
 // follow from that.
 // MiniMax I (11-16): no new form, no lower score (590): the head still differs in register assignment - the entry record base in EBX where retail keeps it in ECX and the -1 sentinel in the other register - and the flag test reloads the root global in retail where this build keeps it in EBX; that reload follows from retail treating 0x24590 as an opaque callee, so the fast check builds this body differently from the full image and no source form in this file can force it.
+// View-angle pair copied/moved together or one component at a time
+// 791/829/791/1009. Native view pair, native movement source, both, and both
+// pairs copied 791/590/791/788. NOT kept: the control-root reload and NONE
+// register remain unresolved.
+// Signed controller index after the full NONE test, nested admission or a
+// single exit guard, in mutable/const short and promoted long: 590/590/590/590/989/989/989/989.
+// NOT kept: nested admission ties. The exit guard grows to 3781 bytes.
+// The second control-root load and its EBX conflict remain.
+// MiniMax I (11-17): no new form, no lower score (590): the head still differs in register assignment - retail loads
+// the root global into ecx for one lea and gives ebx to the -1 sentinel, this build keeps the root global in ebx and
+// gives ecx to the sentinel - and the first local's home sits at esp+0x3c against retail's esp+0x38; retail reloads
+// the root global after the magnitude call because it treats 0x24590 as an opaque callee, and that helper's
+// declaration lives in src/unknown_023540.cpp, which this lane may not edit.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

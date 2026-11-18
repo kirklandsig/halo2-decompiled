@@ -1702,6 +1702,7 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax S (11-17): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail writes the output's state with a conditional move that needs the SSE architecture flag this file's flags do not set.
 // MiniMax B (11-14): no new form, no lower score (339): retail's conditional move for the state store is still out of
 // reach - it needs the SSE architecture flag this file's flags do not set, and the flags stay as they are - and the
 // frame stays 0xa9c against retail's 0xaa8, so the type, membership and member-index homes keep their different
@@ -1859,6 +1860,11 @@ struct s_summary_player_sort_entry
 // keepable form: the same four with `short state = 0; if (initialized) state = ...;` and this file built without /Ob1 and with
 // /arch:SSE 377 (frame 0xaa0, aligned 106, register-masked 65: retail's cmovne and the early member-index store come, the
 // membership pointer and the type pointer still have no homes); those flags alone on this body 339 (same code). Body unchanged.
+// Player source cursor 359, collected-entry cursor 339, both cursors 374, source-end test with
+// array-derived ordinal 433, indexed player base 375, physical source range with collected-entry
+// cursor 374, map defaults on query failure 357, map stores selected by query success 398.
+// NOT kept: the source cursor adds one frame word and reaches 1292 bytes, but raises the score.
+// Failure-path map defaults reach 1291 bytes and raise the score. The type and membership homes remain.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

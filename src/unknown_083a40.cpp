@@ -828,6 +828,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // re-measured 32: that key spelling 32, the key as `(byte *)collection + 4 + i * sizeof(player)` 32 (both the same code);
 // on main's order, separate `removal`/`addition` record pointers for the occupied and last records (the first arm's
 // pointer block-scoped) 103 (the last record's loads reorder).
+// M3 lane 14 r107 (fast with 0x84e90/0x84c90/0x83c90/0x69260, all matched each time), the #1225 scratch-rotation idea
+// on the swap set-up (retail loads `updates` into ECX after the slot push): a forced-inline update allocator
+// (`&updates[++*count - 1]`) at all five sites 28; the slot through a forced-inline accessor at the swap call 28; the
+// swap's update base through a forced-inline identity accessor 28; its index through a forced-inline `++*count - 1`
+// accessor 28; for the occupied key, `collection` bound by reference (`s_type_c67652 *&`) at the key copy 28 (all the
+// same code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

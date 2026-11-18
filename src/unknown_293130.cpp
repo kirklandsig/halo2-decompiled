@@ -366,6 +366,12 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // store and the reload still move up); the axis pointer named after the vector copy 44 (1409 B). Re-measured (listed):
 // the two accumulators declared in the other order 32. Retail's tail looks like the reload cannot pass the member stores
 // (an aliased home), which no plain parameter form gives.
+// M3 lane 15 r96 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the j cosine term read through the vector pointer 30 (same
+// code: CSE'd with the name); the two false flags as one chained store 30 (+0xd then stored before +0xc). Re-measured, round
+// 162's lead (the +0x18 pair through a two-short pointer and the weighted loop sharing the first loop's counter) 24: the tail
+// then matches and all 24 left are the rotation (dot j, k, i; retail i, k, j; v.j/v.k in each other's registers), the same
+// 24 as in the 30 form. On that lead: the cross terms before the dot 53; the angle passed straight 35; the true flag stored
+// before the two false ones 27. Restored.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
