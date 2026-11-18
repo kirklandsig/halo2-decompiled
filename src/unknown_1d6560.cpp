@@ -488,6 +488,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // shift of the same three values), and the owner chain through ESI where retail uses EBP. On this body: `long result`
 // declared first 96, the object index typed dword 96 (both same code); the main switch's type and case 0's object
 // through one header element pointer 91 at 256 B (caller 146).
+// M3 lane 7 r177 (fast with the file and the caller 0x1d5bf0, all MATCH; control 96): the rigid body bound by reference
+// 96 (same code); the two flag selections as ternaries 98 (272 B); case 11 as one nested ternary 96 (same code); `long
+// result` declared first 96 (same code); case 0 through the header array with the component's index 96 (same code).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
