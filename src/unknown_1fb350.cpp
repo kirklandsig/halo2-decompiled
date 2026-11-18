@@ -330,6 +330,9 @@ extern "C" void _ReadWriteBarrier(void);
 // retail also packs the two 16-bit halves into EDI where this build packs them into EBX and keeps the element pointer
 // in EBP where this build keeps it in ECX; the length is 473 against retail's 473; the form that reaches retail's
 // frame needs the iterator step written out by hand, which the rules bar.
+// MiniMax A (11-18): no new form, no lower score (122): a separate pool local (the second stack home retail shows) with
+// the iterator's data still set from the global gives 163, the same form with the datum index copied into a local gives 163,
+// and the shared step without __forceinline gives the same code, so the pool stays in EDI and the frame stays 0xc.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.
@@ -605,6 +608,32 @@ extern "C" void _ReadWriteBarrier(void);
 // without it 150 (473 bytes, frame 0x14 and the first difference at +0xe: the pool is homed once at F+0 where retail
 // homes it at F+0 and F+8; aligned 16); the iterator set from the global, barrier kept, 162; the pool local only for
 // the iterator, release through the global, 162; the release through iterator.data 166 (463 bytes). Body unchanged.
+// M3 lane 11 r115 (fast with 0x1fb6f0, 0x1fb760, 0x1fb4c0, all MATCH; body unchanged, lead saved as
+// build/r115/lead-1fb510.patch in the m3-lane11 worktree): cause of the materialized header pointer found. Retail
+// keeps the lookup's header in a register and tests it (`xor ebp, ebp` ... `mov ebp, ecx` / `test ebp, ebp`) only
+// while the unit result has a second use after its first test; with one `if (unit)` the compiler threads every
+// failed lookup straight to the release, which the barrier was covering for. Without the barrier:
+// `if (unit && !(flags & 1)) { tick; continue; } if (unit) { restore } release;` 127 (478 bytes; from the lookup to
+// the end the body is then retail's but for registers); an if/else with the second test in the else arm 127; the
+// `!unit || (flags & 1)` arm first 127 (same code each). A bool cleared in the tick arm and tested before the
+// release gives the same code as these once the step below is used.
+// On that body, the step as matched 0x7b430 writes it (four-field datum iterator, `iterator.data` from the global, a
+// `pool` local set after the iterator's two stores, `while ((index = data_find_index(iterator.data, iterator.index
+// + 1)) != NONE)` and data_datum_iterator_set_current(&iterator, pool, index)) with the lookup through the existing
+// function_badc0(object_index, 3): 20 at retail's 473 bytes, with retail's 0x14 frame, prologue, scan and two pool
+// homes. All 20 are one rotation: the datum index takes EBP and the header EDI (retail EDI and EBP), so the
+// element's data temporary and the release arm's temporaries land in EBX/EDI for retail's EBP/EBX. Not kept: `pool`
+// is a one-use local beside direct reads of the global (match-only), and the spellings without it lose the two
+// homes: the pool local feeding the iterator, the element and the release 153; the global at every use 154; the
+// element from iterator.data 161 (464 bytes). On the 20 form (20 each unless noted): the scan as
+// data_next_absolute_index_inlined; the lookup through the file's unit getter; a named datum-index local after the
+// step, or declared at the top; a file-local step taking (iterator, pool) with the miss arm, and with a named datum
+// index inside it; a second release call (diagnostic) 30 (480 bytes); the datum index through data_datum_index
+// before or after the set-current call 36 (474 bytes); the unit getter without its type test, or returning the
+// header (diagnostics) 122/103, the header still in EDI; a header lookup with early returns 154 (485 bytes).
+// Without the barrier on the old step: function_badc0 in place of the getter 161 (plain agrees); the lookup as one
+// test in the body 161; a direct `if (function_badc0(...))` 161; two release calls 188 (505 bytes); the header's
+// four-field step with the iterator from the global 161 (464 bytes), from a pool local 153.
 // 463: four-field iterator with shared current-datum setter and either index scan. A local or
 // field index with the iterator pool scores 152, and with an entry pool scores 149. NOT kept:
 // the entry pool gives frame 0x14 at retail length, but one pool store and the register split differ.

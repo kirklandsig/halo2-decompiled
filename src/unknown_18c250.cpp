@@ -454,6 +454,11 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // file-local forceinline (base, offset) address helper 2; `samples_address += offset` then the cast 8. Re-measured the
 // memcpy'd offset with plain samples 3: the samples load into EDX as retail, but the offset loads first, into the entry's
 // ESI in place, where retail loads it second into the data pointer's dying EDI.
+// m3 lane 14 r109 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): both sum operands copied with memcpy into locals, the
+// pointer sum 9 (the scale moves to EDX, the offset loads into the entry's ESI in place and becomes the add's destination,
+// `add esi, edi`), as an integer sum 9, with the offset local declared ahead of the samples local 9 (same code: the
+// commutative add keeps the offset as its destination whatever the declaration order); the sum named before the set's
+// declaration 2; the scale copied into a local at the call 2 (both the same code).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

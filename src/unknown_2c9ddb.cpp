@@ -55,6 +55,10 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax G (11-18): no new form, no lower score (61): the choice between the default load and the existing one
+// is still spilled to a byte slot where retail branches on the selected index itself and keeps two load call
+// sites, and the name copy is still expanded in place where retail calls 0x13fac0 out of line (a file this
+// lane may not edit); the arms swapped under `!create_default` give 60 (one point, not kept).
 // MiniMax E (11-17): no new form, no lower score (61): the arms swapped under `!create_default` give 60 (one point,
 // not kept), the same one point as the earlier round's measurement of it; retail's two 0x212bc0 call sites and its
 // out-of-line 0x13fac0 name copy still need another lane's file (src/unicode_strings.cpp).
@@ -93,6 +97,9 @@ extern long g_55c154;
 // and reuses ESI and EDI for the 0x216a50 call that follows; this link expands the copy into a wcsncpy call plus a
 // terminator store, so the whole second block is a different length and the jumps land elsewhere. The helper lives
 // in a file this lane may not edit, so the expansion stands.
+// MiniMax A (11-18): no new form, no lower score (61): branching on the selected index itself, with one 0x212bc0 call
+// in each arm, measures 77; the name copy is still expanded in place where retail calls 0x13fac0 out of line, and that
+// helper lives in a file this lane may not edit.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a

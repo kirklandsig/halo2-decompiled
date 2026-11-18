@@ -40,6 +40,11 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax G (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the two
+// flag bytes still take homes eight bytes apart (ours 0xb and 0x13, retail 0x6 and 0x7), so every home above
+// them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup
+// and the other way round, and the two flags written as bytes still give each its own home (439, one point,
+// below the bar); all restored.
 // score 440 (was 528): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
 // Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // MiniMax I (11-17): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and this build
@@ -189,6 +194,26 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // Range flags and two call boundaries still differ. Existing request admission, direction/bypass
 // and published evaluator members, seven subsets at 440. All with branch-local sort scratch 440
 // (frame 0x8a4). NOT kept: the frame is four bytes closer, with the same score and extent.
+// M3 lane 15 r97 (fast; 0x2605d0, 0x2613d0, 0x2600a0, 0x262a30 matched unless noted; aligned = LCS count in brackets, base
+// 440 [119]): where 0x2600a0 inlines is decided by its size at the inliner. With the first pass written as the call
+// (604 at 3077 B, both sites inline) every form of 0x2600a0 that still matches inlines at both sites: an indexed loop 526, a
+// named mask, a while loop, copied parameters and an inline flag-test helper 604 each (same code); the sorted-loop argument
+// as `&positions[index]` 529, as `&positions[(short)sorted_indices[i]]` 595, the call's result in a named bool 604 (same
+// code). Diagnostics (0x2600a0 then unmatched, removed): one extra byte store in 0x2600a0 inlines both sites, two stores of
+// one value (65 B) give retail's decisions (the NULL-position pass inline, the sorted-loop site a call: 445 at 3049 B), a
+// byte result under the bool return (65 B) the same (656 at 3026 B), one constant store more calls both; a third call site
+// outside the loop and sixteen more all inline (no budget, no loop bonus), so retail's 0x2600a0 weighs about two
+// instructions more at the inliner than ours at the same 60 bytes, and a NULL argument earns the discount. A threshold
+// option on this file's flags (80, 78, 70) changes nothing in the reduced image. The 0x270590 store order (`unknown4c`
+// before the call, as retail) 439. Grid on that store order (A first pass as 0x2600a0, C tail as 0x271300, D sort scratch
+// in its block, B1 the `selected == NONE` test after the if/else, B2 plus `selected = NONE` when the random pick's
+// 0x260160 fails, B3 plus the tail nested under `selected != NONE`): D 439, C 575, CD 577, A 602, AD 600, AC 525, ACD 515
+// [105], B1 547, B1D 568, B1C 567, B1CD 537, AB1 615, AB1D 613, AB1C 537, AB1CD 529 [107], B2 549, B2D 559, B2C 553, B2CD
+// 548, AB2 598, AB2D 579, AB2C 520, AB2CD 494 [103], B3 559, B3D 569, B3C 565, B3CD 560, AB3 635, AB3D 616, AB3C 560,
+// AB3CD 531 [101, frame 0x8a0, 3034 B]. normalize3d for the unknown40 loop on the 440 base 626 (retail's x87 order, the
+// scale products one instruction short). In the frame-0x8a0 forms the lockstep count is lost at two places: the unknown40
+// loop's `inv * i` product is one byte short of retail's `i * inv`, which turns the main loop's pad `jmp; lea ecx` into
+// one `lea ebx`, and the random path keeps its own epilogue where retail has `je exit; jmp shared test`.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

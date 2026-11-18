@@ -39,6 +39,11 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
+// where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
+// magnitude), the working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has
+// [esp+0x48]..[esp+0x38], and site 1's planar normalize still keeps its own zero path where retail uses the
+// shared helper in include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
 // score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the

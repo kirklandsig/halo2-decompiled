@@ -109,6 +109,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // where this build holds it in dl across that store; the reload needs one object for the enable byte and the counters
 // (include/globals.h and src/unknown_1967d0.cpp) and the maxima's homes follow the held helpers 0x196960 and 0x1968b0
 // in src/unknown_1967d0.cpp: BLOCKED.
+// MiniMax H (11-18): score 106 (was 106): no new form, no lower score; retail keeps the old maximum in ECX with
+// the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load),
+// this build keeps the maximum in EAX and the enable byte in DL; the enable reload needs the enable byte and
+// the input counters in one object: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp. The permuter's best
+// (80 against its 99) swaps the arguments of 0x196e60 and 0x1968b0 and adds a volatile pointer and constant-only
+// locals, so it changes what the calls do and is dropped.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the
