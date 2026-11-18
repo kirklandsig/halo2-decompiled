@@ -1218,6 +1218,11 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // (declaring the transition id first at the top was screened before and gave 342-344), and retail keeps the
 // blend byte in memory across the 0xe6800 call while ours keeps it in a register, because the build knows
 // that callee's clobbers; that callee's file is not this lane's to edit.
+// MiniMax I (11-17): no new form, no lower score (210): the only difference left is the order of the two ids in
+// the frame - this build puts the animation id at esp+0x14 and the transition id at esp+0x18, retail puts the
+// transition id at esp+0x14 and the animation id at esp+0x18 - while both ids' -1 stores, the lookup's out-parameter
+// and the blend id's home agree; declaring the transition id at the function scope measures 357 (the fraction then
+// takes esp+0x14), with the same re-init 250, and the transition id declared after the animation id measures 250.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

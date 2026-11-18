@@ -608,6 +608,16 @@ real g_47ff94 = 1.5f;
 // 0x4b2d0 form that keeps the chain values out of the callee-saved registers (BLOCKED-BY 0x4b2d0's convention).
 // Body trials on main: previous index as `(index != 0 ? step : count) - 1` 323; the vertex distance named in
 // double before the alpha 322; `step != count ? step : 0` 322.
+// P599: Frame 0x34/0x30 and the EBP vertex-Y/step allocation remain.
+// shared vertex input search 322.
+// material setup scope 371.
+// texture scale scope 322.
+// material and texture scale scopes 371.
+// initial texture position scope 322.
+// material and initial position scopes 371.
+// scale and initial position scopes 322.
+// all three setup scopes 371.
+// NOT kept: Shared search and texture-only scopes tied. Material scopes raised the score. Both matched callers stayed matched in every preview.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
