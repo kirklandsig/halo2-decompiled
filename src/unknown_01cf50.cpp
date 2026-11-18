@@ -5041,7 +5041,7 @@ long function_184000(long index, long bit);
 // where we keep it in ebx and compute the section after the call. Tried: bool and raw-call forms of
 // function_184000 (316), the visibility byte assigned in both branches (241), the early-return null path (275),
 // the call before the section load (239) and five spellings of the definition load (239).
-// score 239 (was 303): our body is 15 bytes shorter than retail's (982 against 997); retail keeps `visible` in
+// score 255 (was 303): our body is 15 bytes shorter than retail's (982 against 997); retail keeps `visible` in
 // cl and the stack slot (0x45da9, 0x45e32-0x45e36) where we store a setne result, returns cl for a failed
 // visibility test (0x460be) where we return a constant, and keeps the tag record in edx across the
 // table_entry_data call (0x45e7d) where we use ebx. Tried: `bool function_184000` (no setne) 277,
