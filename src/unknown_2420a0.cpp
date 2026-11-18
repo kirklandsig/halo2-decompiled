@@ -1620,6 +1620,20 @@ void function_2422d0(long slot)
 // nested 7; the team view through an inline accessor 7; the team view read through a const view 7 (all the 7s the
 // same code). Re-measured by mistake (listed): object declared bare first 7, `NONE ==` 7, a named second-loop
 // element 7, `short slot` 7.
+// Round 110 (m3 lane 14, fast with 0x243a80, 0x2422d0, 0x15e130 and the caller 0x2447f0, all matched each time). The pair is
+// a weight contest, not a symbol-order tie: 0-30 dead initialised locals at the top 7 each, and 16 of them between the index
+// and the object with 0-30 more at the top 7 each. Diagnostics (value-wrong, reverted), registers as index / object / team
+// walker / rejected count: main's body EDI / EBP / EBX / stack; retail EBP / EDI / EBX / stack; one more object read in the
+// block after the 0x243a80 call (a third condition) EBP / EDI / EBX / stack, retail's whole assignment (54 with the extra
+// compare); the same read in the reject arm EBP / EDI / stack / EBX (77), in the accept arm EBP / EDI / stack / stack (98,
+// 295 bytes); no slot local EDI / EBP / stack / EBX (79). So retail's object carries one more reference than ours inside
+// the two blocks around the call, or its index one fewer, and the walker keeps EBX only while the object's range ends at the
+// table test. Tried: the slot through a `short const &` to the object's field for the call, the test and the store 60 at 284
+// bytes (retail's four registers, but the field address is formed, `add edi, 0x17e`, and the re-read is `[edi]`); a
+// `short *` to the field 60 (the same code); a second pointer local copied from the object, before or after the slot read,
+// 7/7 (copies fold); a named header pointer with the object read from it 7; a pointer or a reference to a zero-offset first
+// member of a view of the object 7/7, a derived view converted to its base 7 (all fold to the object); the slot local at
+// function scope and reused as the third loop's counter 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {
