@@ -825,6 +825,10 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // new cluster address before map/order stores 129; separate slots with chained stores 152;
 // count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
 // The opening EBX save and later BP volume index are still exchanged.
+// Separate entry cursor 133; immutable map result 129; reserved index from tested count 129;
+// count read after entry admission 129; next-volume count 129; group head from published
+// index 129; direct portal field 129; one resolved plane value 123. NOT kept: the resolved
+// plane gains six and still exchanges the entry EBX save with the volume-loop BP save.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)

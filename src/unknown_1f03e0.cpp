@@ -1573,6 +1573,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
 // ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
 // score, so the body stands.
+// Entry contact-word snapshot 610; scoped settings/contact reads 630; shared motion mask
+// with disabled/direct first 614/650; three-way motion selection 628; general before direct 612;
+// enabled-input dispatch 635; gravity retained from bounded-step admission 453. NOT kept: all
+// scores rise and the original damping extraction and vector-home differences remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

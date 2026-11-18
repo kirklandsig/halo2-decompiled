@@ -1055,9 +1055,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
 // Earlier: 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
-// score 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
-// Frame 0xd0 versus retail 0xb4, with an expanded opening variant lookup
-// and a capacity selector call. The dword histogram trials reduce the frame to 0xb0.
+// Independent dword histograms reduce the frame to 0xb0.
 // Earlier score 942 (was 964): 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier: frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // frame 0xd0 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
@@ -1559,6 +1557,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Admitted player count for availability or also output count 947/908; mode before the minimum or both capacity tests 883/883.
 // Early mode with carried count 927/899; named capacity bounds with carried count 908/927.
 // NOT kept: frame and opening lookup still differ, and every form scores higher.
+// One indexed signed/unsigned dword ID and histogram workspace 959/959; advancing workspace
+// 948; entry-sized library copy 936; paired ID cursors 968; ID snapshot 963; ID copy after
+// counter clears 950; workspace scoped through party counts 959. NOT kept: every form moves
+// the body farther from retail's 2828 bytes and scores higher. The opening lookup still expands.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

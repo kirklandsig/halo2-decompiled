@@ -5800,6 +5800,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // guards 392 or selections 396, roster actions under other-user gate 349 or by
 // player status 402, paired modification actions under rank gate 360 or
 // regular-player gate 365. NOT kept: title output byte remains displaced.
+// Outer title-output scope 89; query outputs before list reset 89; title, player and friend
+// output-to-scalar transfers 89/89/89; roster transfers at first predicate 89; regular contact
+// before pending queries 384; regular-friend test at invitation 400. NOT kept: the first six
+// forms retain the displaced title-state byte and the invitation forms change the branch layout.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
