@@ -655,7 +655,8 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 4 (was 10): the path block is read through the actor's own fields except in the not-last arm, which
+// score 4 (was 10): Frame and extent match. The entry swaps the homes of the path count and current index.
+// The path block is read through the actor's own fields except in the not-last arm, which
 // takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
 // count/index reads); left: the entry test loads the index before the count.
 // Before that, 10 (was 12): the first dot product takes the projection vector first; left: the two dot
@@ -792,6 +793,9 @@ struct s_1f9762
 // Terminal fields before tag 6.
 // Referenced count field 6.
 // Can advance result 107.
+// tag index before count 6; tag index before count and successor 4; last between tag index and table
+// 143; object header tag lookup 4; object receiver before count 6; scoped count and successor 6; count
+// and prefix successor 6; index via point bound 18. NOT kept because the forms tie or raise the score.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)
@@ -1450,7 +1454,9 @@ real function_50650(real cosine);
 // and keeps the actor in esi and the object in edi; the two 1.0f entry stores still come out in the opposite order, the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, and the callee declaration
 // order (object index first) is fixed by four other files.
-// score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
+// score 120 (was 137): Frame 0x1c agrees. Retail scales the actor index before the pool load and
+// holds the actor in EDI and the object in ESI. This build exchanges those homes.
+// Earlier score 120 (was 137): round 183 (m3 lane 6, plain): the turn clamp through the existing PIN_126660 on the dot expression, with no
 // named double (the double clamp kept: retail's fld qword 1.0), 137 -> 120; it also ends #581's padding of 0x1f38c0's
 // callers, so 0x1f38c0's body is enabled. Earlier at 137: no new form and no lower score; retail still computes the actor offset in EDX before
 // the frame pushes and keeps the actor pointer in EDI with the object pointer in ESI, where this build loads
@@ -1571,6 +1577,12 @@ real function_50650(real cosine);
 // object in edi, so the prologue is two bytes longer and every later row pairs with the wrong row; the offset-first
 // expression, the scaled offset in a local of its own and the actor getter all compile to the same code, and the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, which this lane may not edit.
+// actor pool read after settings 333; actor getter after settings 333; early actor offset deferred
+// pool read 333; early actor slot deferred indexed pool read 333; object receiver loaded after
+// settings 120; object receiver in each use phase 117; early offset with receivers after settings 333;
+// actor pool and entry data separate 333. NOT kept because phase-specific object lookups gain only
+// three points and leave the two-byte excess and first difference in place. The other forms tie or
+// regress.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,
