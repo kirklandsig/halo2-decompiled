@@ -345,6 +345,13 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // an else block for both unoccupied-arm calls 99 (368 bytes); the unit index read once at function scope with `unknown3b4
 // != 0` 109 (389 bytes); both unoccupied-arm tests through an inline helper taking the seat by `const &` 95 (frame 0x310: the
 // seat address is no longer spilled, its fields read through ESI). Restored.
+// Round 118 (m3 lane 10, fast with 0x1b8eb0/0x11b0c0/0x11ade0, all matched each time): a pointer local to the
+// seat-index field at the bit11 block top for all three calls 3 (same code); a forceinline helper taking (unit, seat
+// pointer) for the 0xc8200 test 74 (frame 0x310, 380 bytes); a `const &` to seats[i] at the bit11 block top for all
+// three calls' arguments 103 (363 bytes); pointer locals to both the object-index and seat-index fields there 102 (392
+// bytes); the seat-index field pointer with 0xc8200 nested under the 0x1b8d80 test and a block-local unit index 3
+// (reload EAX as retail, but the order is reload, unit, seat, object where retail has reload, seat, object, unit).
+// Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
