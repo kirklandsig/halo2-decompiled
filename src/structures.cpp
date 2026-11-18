@@ -729,6 +729,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
 // MiniMax C (11-16): no new form, no lower score (172): retail still holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
+// MiniMax I (11-17): no new form, no lower score (172): the prologue still pushes ebx first and keeps the BSP global in ebx
+// where this build keeps it in ebp and defers the ebp and esi pushes, and the 0x11e800 call still hands its four pointers
+// over in another register order (retail ecx, edx, eax, esi); that callee's body is in another file: BLOCKED-BY 0x11e800.
 // MiniMax I (11-17): no new form, no lower score.
 // b8B (11-17) walk against retail, fast build on r836: fields, offsets, branch senses, loop shape and callees
 // agree (type 1 at 0x14acb5, type 3 at 0x14acee, loop 0x14ad82-0x14aee0, fill 0x14aef4); no behaviour error
