@@ -534,6 +534,7 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // change register between the two loops and retail's final success byte stays unnormalised, while the
 // request expansion is the inlined graph_resources_request from another lane's file; the permuter's 34 tries
 // over the reduced image found nothing below the 332 baseline.
+// MiniMax B (11-18): no new form, no lower score (348): the remaining differences all sit inside the inlined graph_resources_request, whose body is in another lane's file, so the graph's EBX/EBP roles, the add of 0x34 and the lazy reload into EBP are not ours to move from here.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps
@@ -1062,6 +1063,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // name in ebp, ours reloads it from a stack slot).
 // MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
 // MiniMax S (11-16): no new form, no lower score (210); the permuter's only lower form swaps the first and fourth arguments of the channels[2].set call, which retail does not do (retail passes the state's graph tag in ecx and the set name in ebp), so it is not kept; passing the set parameter instead of names.set measures 223, the third parameter 221, and naming the third and fourth parameters the other way round 214.
+// MiniMax B (11-18): no new form, no lower score (210): the transition id still sits at frame+0x08 where retail keeps it at frame+0x04 with its stores in the block; hoisting it to function scope in either order (357 and 359), an aggregate of the two ids (368) and a two-element array (361) all score worse because the hoist changes the register allocation, and the blend byte's residency across the 0xe6800 call follows that callee's file.
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives

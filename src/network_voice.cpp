@@ -3780,6 +3780,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // recomputing the cursor from the counter at the loop's end scores 167, both worse than the 139 baseline.
 // MiniMax S (11-16): no new form, no lower score (139): retail still keeps the channel in ebp from the entry and spills the member, while
 // this build loads the data pointer and keeps the member in ebp; the cursor and route homes are as before.
+// MiniMax B (11-18): no new form, no lower score (139): retail still takes the channel in EBP from the entry and spills the member to a frame slot, while this build keeps the member in EBP and the data pointer in a register, and the cursor's absolute start and the route home still differ; the recorded forms (the local channel 139, the advanced cursor 164/159/180) do not move the split.
 // score 139 (was 139): the member takes EBP (retail: the channel from entry, the member spilled), the cursor and route
 // homes differ.
 // MiniMax D (11-11): no new form, no lower score (139).
