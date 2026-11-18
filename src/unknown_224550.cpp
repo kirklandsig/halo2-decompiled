@@ -692,6 +692,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Independent initialized/branch-set scales 355/244; final vector scales 363/342.
 // With secondary reciprocals after primary aspect 392/310/415/327.
 // NOT kept: each form regresses and widens the extent; blend remains unmatched.
+// Both UV encodes before, between, or after the aspect phases 431/438/419;
+// flip between span pairs 356; in-place reciprocal division for primary,
+// secondary or both pairs 162/162/162; blend initialized in each arm 497.
+// NOT kept: the 1936-byte form changes the frame and raises the score.
+// Blend still spills through the bitmap aspect block.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

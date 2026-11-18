@@ -172,6 +172,12 @@ __forceinline long portal_path_gain(real distance, real range)
 // assignments 377 (aligned 89, a shared zero register appears); one helper with the first pin in the normal arm 243;
 // macro pins in one helper 254; the exponent as one expression 262 (1352 B). With main's 0x14b240: the test helper
 // alone 317; the long-bits decibel helper alone 323; the path entry types alone 357; all three 359 (none kept).
+// Keep the table reloads and starting cluster in EBP together on the 0x428 frame.
+// Path-list ordinal before seed 357; separate seed and search lookup 365; seed
+// validation before bitmap clear 296; walk count snapshot 364; link cursor 355;
+// sound comparison before portal flags 322; nearest distance after path-list
+// lookup 293; signed admission index through range and bitmap 317.
+// NOT kept: 293 gains three and moves the first difference earlier.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
