@@ -126,6 +126,9 @@ __forceinline long portal_path_gain(real distance, real range)
 // confirmed). Bitmap clear before cluster 312. Closest distance after seed 308. Search and sort scopes 296.
 // Early scratch 311. Named ordinals 311. Bounded output count 311. Shared output element 311. Explicit gain
 // arms 302 (NOT kept: frame 0x434). Search scope 311. Sort scope with gain arms 302 (NOT kept: frame 0x430).
+// Round 422: Explicit portal table / cluster table / both / pointer addition 296/296/296/296.
+// Sort-preparation count snapshot 296, capacity-first limit 296, selected comparison distance 296,
+// default range with an override 351. The table spills, starting-cluster and validity homes remain.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
