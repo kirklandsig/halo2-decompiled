@@ -636,6 +636,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // floating-point stream is 130 lines from the fast build of the same source. Retail's exit block is laid out as: the two
 // two-level exits enter at 0x26caff (reload distance, success = 0), the four entry guards at 0x26cb0d (reload direction), the
 // failed magnitude test and the loop's own exit at 0x26cb14, so only the two-level exits run the success store. Body unchanged.
+// Initial-point availability 245; shared planar dot 244; typed sector edge 244; staged
+// magnitude 262; iterator-loop rejection guards 244; conditional hit acceptance 336;
+// shared terminal point addition 244; combined blocked-result exit 493.
+// NOT kept: ties or regressions. Success and first-boundary homes still differ.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

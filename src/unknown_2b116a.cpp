@@ -5739,6 +5739,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // by roster state 388 or addition gate 381; add/pending branches by roster state
 // 381 or admission 86; shared removal gate 360; joined title and joinability 95.
 // NOT kept: the admission form gains three; the title-state output slot still differs.
+// Request as preliminary add permission 106; staged join admission 89; selection origin as
+// preliminary join permission 100; valid-session protection conditional 389; invitation
+// branch 369; offer branch 340; staged roster removal 89; staged title permission 89.
+// NOT kept: ties or regressions. The title-state byte address still differs.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

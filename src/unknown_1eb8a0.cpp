@@ -190,7 +190,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // score 603 (was 622; 636 before the settle factor): m3 lane 14 r105 put the settling align through the existing dot3f
 // (plain 622 -> 603, 2885 B). Earlier: the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // MiniMax I (11-17): no new form, no lower score (622 plain, 614 fast): retail keeps q, the fourth stack argument, in EBX from the activation block on (its fallback is the cmove ebx, [0x4687a4]) and reads d from its stack slot at each of its five uses, this build keeps d in EBX and reloads q, and d is used here four times against q's three, so the choice is not reachable from the source; the body is unchanged.
-// score 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
+// Earlier at 622 (was 622; 636 before): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // Earlier heading: 622 (was 622; 636 before the settle factor): the settle factor held as a double (retail keeps it on the x87 stack for the step product,
 // `fld [rate]; fmul st(1)`, and copies nq with integer moves). Still: q in EBX at entry (ours d), the 12/8 factor
 // selected before t in each clamp, xmm homes and coefficient schedules.
@@ -631,6 +631,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 0.866 test as dot3f(&s->direction, d) 601; the globals local kept for the update block and the output stage reading
 // g_510c54 at each use (retail reloads it there) 600. Retail's final block pops EDI, EBP, EBX before the closing tests
 // and ORs memory directly (`or dword ptr [eax], 4`); ours pops in each exit.
+// Object-valued reference selection 673; conditional pointer copy 673; reference copy
+// branches 663 at retail length; active-only output pointer 659; shared output rate 681;
+// early speed-factor branches 697; ramp cap branches 726; activation limit defaults 681.
+// NOT kept: all regress. Direction still occupies the reference velocity register at entry.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
