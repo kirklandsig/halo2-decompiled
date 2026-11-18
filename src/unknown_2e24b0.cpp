@@ -112,8 +112,8 @@ __forceinline void report_added_2e24b0(class_2e1090 *sweep, long *owner, int ind
 {
 	pair_2e1090 pair;
 	pair.first = owner;
-	element_2e1090 *group = sweep->elements.data;
 	long *word = bits;
+	element_2e1090 *group = sweep->elements.data;
 	long *end = bits + (sweep->elements.size >> 5) + 1;
 	for (; word < end; group += 32, word++)
 	{
@@ -129,7 +129,8 @@ __forceinline void report_added_2e24b0(class_2e1090 *sweep, long *owner, int ind
 			}
 			if (found & 1)
 			{
-				unsigned long const apart = apart_yz_2e1090(box, *other);
+				unsigned long apart;
+				apart_yz_2e1090(box, *other, apart);
 				if (!apart)
 				{
 					if ((other->owner & 1) == 0)
@@ -153,7 +154,7 @@ __forceinline void report_added_2e24b0(class_2e1090 *sweep, long *owner, int ind
 // is reported as a pair with `owner`, and a grid cell's box loses `index`
 // from its cell's list
 __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsigned long index, long *bits,
-	element_2e1090 &box, pairs_2e1090 *pairs)
+	element_2e1090 &box, pairs_2e1090 *const &pairs)
 {
 	pair_2e1090 pair;
 	pair.first = owner;
@@ -174,7 +175,8 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 			}
 			if (found & 1)
 			{
-				unsigned long const apart = apart_yz_2e1090(box, *other);
+				unsigned long apart;
+				apart_yz_2e1090(box, *other, apart);
 				if (!apart)
 				{
 					if ((other->owner & 1) == 0)
@@ -195,7 +197,9 @@ __forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsig
 	}
 }
 
-// score 39 (was 49): the marking helper's cell walk counts down through a reference bound
+// Matched (was 39): the y/z test accumulates in the scan's own `apart` (the
+// helper takes it by reference), and the scan declares the word before the group.
+// Before, 39 (was 49): the marking helper's cell walk counts down through a reference bound
 // to its counter, and its y/z test takes the box first. Left: in the pair scan's preheader
 // retail allocates the end pointer before the word pointer (ours the reverse), and the
 // y/z test's four loads come in another order.
@@ -250,7 +254,9 @@ __forceinline void drop_endpoints_2e29b0(class_2e1090 *sweep, element_2e1090 *da
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
-// score 102 (was 130): the scan's end pointer takes the box count through
+// Matched (was 102): the y/z test accumulates in the scan's own `apart`, and
+// the removal scan takes the pair list by const reference.
+// Before, 102 (was 130): the scan's end pointer takes the box count through
 // box_count_2e29b0, and the overlaps size and the mark call use the count directly instead
 // of a second local. Left: retail keeps `this` in esi and the box index in edi (ours the
 // reverse), and the scan's word and end pointers as in 0x2e24b0.
