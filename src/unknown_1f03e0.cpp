@@ -1538,6 +1538,23 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // after those two forms 495/495. In the general/direct/both branches 486/485/241.
 // Gravity branch owns the accumulated vertical output 558. NOT kept: all regress.
 // First and general arms still use separate vertical stores.
+// M3 lane 13 r107 (fast with 0x1f0450/0x24590, both MATCH in each; base 234, difflib-aligned 194, masked 109): what places the
+// delta/limited homes. The general delta through the existing vector3d_from_points3d(current, &scaled, &delta) 485 (3052 B, homes
+// unchanged: an out-parameter of an inlined helper does not move it); the general copy/normalize/scale-or-restore block as a new
+// three-argument inline helper 244 (same homes, a new one-caller helper); the general output through vector3f_add with the direct
+// rows as statements, re-measured, 469 (aligned 190, masked 89), with the flags flying, direct, damping, gravity, input after them
+// and the first arm clearing gravity first 469 (masked 92), those with both lengths through magnitude3d 567 (3033 B, masked 140);
+// 1-7 unused locals on the last two (diagnostic) 413/489/505/496/496/485/582 and 465/469/568/565/469/472/484: no count comes near.
+// The direct delta as two real scalars 591 (3024 B): the scalars take retail's 0xc/0x10 and limited retail's 0x14, but the copies
+// then go through XMM where retail copies through EAX/ECX (an aggregate copy). The direct arm's limited as a 12-byte vector filled
+// and normalized through its first two members 482 (3053 B): delta takes retail's 0xc, limited 0x2c (retail 0x14). One function-
+// scope vector serving as limited in both arms 496 (3058 B, aligned 185): the direct delta 0xc and limited 0x14 and the general
+// delta 0x2c are retail's, the general limited sits at 0x14 (retail 0x20, desired's slot). Two function-scope vectors in either
+// order, or one at function scope and one in its arm, 482 each (same code as the in-arm 12-byte form: scope and declaration order
+// place nothing, sharing one variable between the arms does). The general arm reusing desired as the working copy 439 (3051 B:
+// desired then takes 0x14 and the flying left 0x20), with the 12-byte direct vector 441. Lead: the 8-byte slot at 0xc goes to the
+// only 8-byte aggregate when the other one is 12 bytes, and a variable live in more arms sorts to the lowest 12-byte slot; retail's
+// general limited shares desired's slot without being desired. Body unchanged.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
