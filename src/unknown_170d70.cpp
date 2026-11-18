@@ -757,8 +757,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	if (cluster_index != NONE)
 	{
 		dword visible[16];
-		function_16de20(cluster_index, (s_16e150_bits const *)g_4e0348, visible);
-		for (long i = 0; i < g_4e0348->list_count; ++i)
+		s_match_globals const *bits = g_4e0348;
+		function_16de20(cluster_index, (s_16e150_bits const *)bits, visible);
+		for (long i = 0; i < bits->list_count; ++i)
 		{
 			if ((visible[i >> 5] & (1 << (i & 31))) && collection->cluster_count < 128)
 			{
