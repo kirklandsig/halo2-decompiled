@@ -1630,6 +1630,22 @@ static inline s_players_globals *players_globals_14f2e0()
 // block as a forceinline helper returning success 248 (1034 B), with the outputs in the mode block 250 (1036 B); the
 // second and third user-index tests merged into one 41 (1020 B); the reuse arm reading the unit through the `globals` local
 // throughout 225 (1019 B); the profile clamp as `profile_index >= starting_profile_count` 24 (1030 B).
+// M3 lane 3 r261 (fast with 0xa9440, 0x14d3a0, 0x14f040, 0x14ef00 and 0x14cad0, all MATCH; control 5): the five lines
+// left are retail's own instructions in another order: ours has `or eax, -1` and the two output stores ahead of the
+// `cmp byte [edx+0xc], 4; je`, retail after it. With the outputs in the mode block (43, 1031 B, `mov eax, 0xffffffff`):
+// the mode test through two nested inline predicates (one returning the negation of the other) 43; an inline helper
+// holding the mode test, the NONE stores and the 0x14f040 call and returning whether it ran 43; the outputs set through
+// an inline pointer setter 43; the 4 passed as a parameter of an inline compare 43; an inline predicate with two
+// returns 43; `switch (mode) { case 4: break; default: ... }` 43; the outputs set through reference-bound locals 43.
+// Compile-only screens of the same test (it reproduces both forms): one output declared ahead of the test and one in
+// the block keeps -1 in EAX across the test, the mode byte then goes through CL unfolded (`mov cl, [edx+0xc]; or eax,
+// -1; cmp cl, 4`) with one store ahead of the `je`; the pointer stays EDX and the byte AL whatever scratch work is
+// added ahead of the test (one or two read-modify-write statements before it or at the end of the kept-unit arm), so
+// the byte's register is not a rotation step; removing the 0xb8540 call, the 0xb9d20 test, the kept-unit `result =
+// true`, the result test, the kept index's clear or the tail's `result = true` each keeps `mov`; 500 combinations of
+// where the two outputs, the unit index and the reuse flag are declared and first set (function top, result block,
+// mode block; with or without a NONE initialiser) give `or` only with a store ahead of the test; the outputs declared
+// between the kept-unit block and the result test stop the result test's threading (287 lines for 282).
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
