@@ -2126,6 +2126,10 @@ void function_b7360(long object_index);
 // M421: Low-word actor/command/both pool ordinals 471/471/482; point-set accessor in movement/recording/both 272/272/270;
 // named point sets 270; word set and point ordinals 465. NOT kept: the word ordinals change entry scheduling without
 // restoring actor/output register roles. The packed reference still stays live across validation.
+// DH406: Positive validation scopes for movement/initial point, recording and follow, each alone, all
+// three pairs and all together 270 each. With separate actor and point guards in recording, 270. NOT
+// kept: ties. The actor and output registers stay reversed and the post-validation reference reload is
+// still missing.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2541,7 +2545,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // dot product, which this build computes with another file's helper where retail inlines it, and the facing
 // and colour copies, which choose the other registers. The turn-facing sum written with its terms in the other
 // order measures 431, a gain of two, which is below the keep bar.
-// score 479 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
+// score 433 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
 // m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // frame 0x1c and entry agree. Dispatch span, planar copy and request flag stores differ.
 // Earlier m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
@@ -2958,6 +2962,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // retained selected object 479; facing scalars 627; playback admission guard 479;
 // committed turn flags 475. NOT kept: the tick and turn forms shorten to 2400 bytes,
 // but gain only two and four points and leave the dispatch span different.
+// DH406: Direct completed returns for case 1 distance, case 4 facing, or the clear timer flag in cases
+// 7/8 at 574/452/482. The three pairs 559/574/451; all three 559; all three with the default and case
+// 13 sharing a return 619. NOT kept: every form regresses at 2416 bytes. The native full-width
+// completion tail and dispatch span still differ.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

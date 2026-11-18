@@ -633,6 +633,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope
 // with for count 558; staged hit distance 563; query writes hit flag 559; collision displacement inner
 // scope 566. NOT kept: the scored forms tied or regressed.
+// DH406: Previous minimum read before the distance or between hit stores 563/563; early comparison at
+// those sites 650/650; selected minimum formed before/between the hit stores and published last
+// 665/654; formed first and published between stores 665; conditional update between the stores 556.
+// NOT kept: selecting the minimum first recovers the success slot but regresses. The conditional
+// update gains only two points and leaves ESP+0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
