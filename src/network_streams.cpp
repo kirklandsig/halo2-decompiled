@@ -1075,6 +1075,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Head-first with shared count/index pointer and cached/member/live bound
 // 118/76/118. NOT kept: the single-cursor forms miss native count reuse or
 // the upper-bound reload. Original index helper restored.
+// Count-based bound with the index helper through pointer/member/reference or
+// the message getter: reconstructed newest 88/91/88/91; wide distance from
+// oldest 172/165/172/165. NOT kept: native loads and single cursor remain
+// different, and all eight extents move away from 225 bytes.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

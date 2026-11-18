@@ -415,6 +415,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // result, shared result before cursor, separate successful choice, or immutable
 // first index with separate choice 106/106/169/168. The for walk repeats these.
 // NOT kept: cache-hit bypass, trailing ESI return and native length still differ.
+// Separate cache-hit and replacement results, with initialization after the join
+// or inside the miss, early or common exhaustion, and hit predicate or stale
+// handle reset: 186/155/192/134/186/134/177/164. NOT kept: none retains the
+// native hit bypass and trailing ESI return. Shared selected result restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

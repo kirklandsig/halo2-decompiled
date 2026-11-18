@@ -364,7 +364,7 @@ bool function_26d370(point3f const *point, vector3f const *direction, plane3f co
 real function_30bf0(vector3f *vector);
 
 // MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
-// score 84 (was 84; m3 lane 8 r166 at the end): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // MiniMax H (11-12): no new form, no lower score (84): the result long still lands at [esp+0xc] where retail
 // keeps it at [esp+8], the clip's amount out-parameter sits at [esp+0x10] against retail's [esp+0x1c] and
 // retail's range is at [esp+0x30] against our [esp+0x18]; the seat loop's two cross products keep our
@@ -843,6 +843,10 @@ real function_30bf0(vector3f *vector);
 // forward.k and world-up.j * forward.i (retail loads the up component first, 0x263b57 and 0x263b7d) and in the
 // second's side.j * forward.k and side.i * forward.k (retail copies the register first, 0x263bd2 and 0x263bf7);
 // the second cross's two are the 2 extra bytes. Best match-only recipe: none (84).
+// Select original or clipped point by pointer/value, or select the displacement
+// by pointer/value: 345/322/301/283; with the shared point setter 337/331/301/282.
+// NOT kept: none recovers the native clip/distance home. The closest score grows
+// to 1334 bytes and keeps the first result-store mismatch.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

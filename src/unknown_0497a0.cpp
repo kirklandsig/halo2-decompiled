@@ -452,6 +452,10 @@
 // weighted tables, split wave records and weighted wave records 635/635/704/625;
 // short separate/weighted tables 753/708; separate scale then add with tables or
 // weighted records 791/705. NOT kept: no exact rounded-wave or cross schedule.
+// Opposing cross products shared as three retained terms, component-by-component,
+// paired terms, or separate product families 638/649/646/640. Moving the short
+// wave before those forms gives the same four scores. NOT kept: every form
+// shortens the body and leaves the frame and rounded-wave homes different.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
