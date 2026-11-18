@@ -573,6 +573,21 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 172 forms add five bytes (459 versus the opening 454 and retail 427) and leave the eight-byte frame and
 // reversed input convention. Sharing the fallback also increases the score. The original starter, fallback,
 // deletion and body are restored.
+// m3 lane 7 r178 (fast with 0x189fe0, its ten matched callers and every caller of 0x221810; then one full check): body unchanged, still
+// 181; HELD, full diff in build/r178/held-21d110.patch. This function MATCHES byte for byte with both starts through the existing
+// 0x125f70, the delete called out of line and one result variable assigned in both arms with a single return (`long sound_index; if
+// (effect_index != NONE) { ...; sound_index = start; if (sound_index != NONE) { ... } else delete; } else { sound_index = start; } return
+// sound_index;`): the failed starts then stay on retail's shared `cmp esi, -1` and are not threaded to the delete, the last difference
+// of the 94 form. It takes the state in EAX as retail does, so its caller has to follow: 0x189fe0 with the flags built in the state's
+// own field by three set-or-clear steps, the source and the priority in locals and the +0xa bits as word bitfields keeps its request in
+// EAX/EBX and all ten callers matched (0x189fe0 150 -> 32), but only when its first 0x221810 lookup stays out of line as retail has it
+// at every site. Measured with 0x221810 in a file of its own built /Ob1 (a build-flag decision, and src/unknown_221490.cpp is lane 6's
+// this round): full check 10685 game functions matched, lost against HEAD none, gained this function; 0x21c400 (339) unchanged once its
+// lookup site calls the header's inline accessor (555 otherwise). Other forms this round: the 94 form again 94 at 427 B (0x189fe0 137,
+// ten callers lost); one start call site shared by both paths 245 (336 B, callers kept); the failed start tested first with its own
+// return 154 (437 B, old convention, callers kept, aligned 80 -> 49; an arm order picked by score, not kept); `inline` on 0x221810's
+// definition (diagnostic) leaves this at 181 and loses matched 0x129790 (it re-zeroes XMM0 after the call, retail keeps it), so
+// retail's lookup is not an opaque inline function. Still BLOCKED-BY 0x189fe0, which is BLOCKED-BY 0x221810 (its expansion).
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
