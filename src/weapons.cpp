@@ -848,13 +848,15 @@ long function_105ba0(short type, bool flag)
 	return result;
 }
 
+// Clears the weapon's animation; the pair is cleared through a reference, the only form with which 0xfdad0 (which inlines this) matches.
 // @retail 0x105be0
 void function_105be0(long weapon_index)
 {
 	s_weapon *weapon = WEAPON_GET(weapon_index);
+	c_type_709360 &animation = weapon->animation_254;
 
-	weapon->animation_254.graph_index = NONE;
-	weapon->animation_254.index = NONE;
+	animation.graph_index = NONE;
+	animation.index = NONE;
 	weapon->value258 = 0.0f;
 	weapon->value250 = NONE;
 }
@@ -2701,20 +2703,6 @@ long __stdcall function_fda00(long weapon_index, s_scenario_weapon_view *placeme
 	return weapon_index;
 }
 
-// score 3 (was 3): the word is stored at +0x254 where retail stores it at +0x256, so the two
-// stores are in the wrong order. That is `pop esi`: ours pops it right after edi, before the
-// inlined reset's two word stores; retail after them. Tried: the reset storing value250 before
-// value258 3 (0x105be0 2); the reset's animation as one default object 18; 0x105be0 defined
-// after this function 3; one short index for all three loops 3; the definition read after the
-// field resets 110. A true result declared first 3, or just before the reset 3; loop indices
-// declared at the top 3; the +0x17e word as a named field 3; magazine index declared in its loop 3.
-// Round 43: the reset called before the +0x17e store 11 (that store cannot pass the reset's); the reset's
-// two words as one chained assignment 3; a __forceinline redeclaration of 0x105be0 above this function 3
-// (0x105e80 then inlines it); the barrel loop indexing weapon->barrels[i] directly 100; the reset storing
-// value250 first 4 (stores follow source order, `pop esi` stays second).
-// Round 3 (w2A): retail's `pop esi` follows the +0x254/+0x256 stores; no source spelling of the inlined reset moved it
-// (nothing new tried beyond the above; the two word stores and the epilogue pops are scheduled together).
-// Permuter, 25 minutes (11-05): nothing below 3.
 // @retail 0xfdad0
 bool __stdcall function_fdad0(long weapon_index, void *placement, bool *flag)
 {
@@ -2915,6 +2903,10 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax I (11-17, run 103): no new form, no lower score (389): retail still opens with one four-byte slot and a
+// comparison tree rooted at 0x10000573 that branches jle, while this build reserves eight bytes and tests the two
+// activity names before the switch, whose tree then branches jg; the single-switch form with both activity names as
+// ordinary cases was measured at 412 by another lane, and the tree's shape does not follow the order of the case labels.
 // MiniMax I (11-17): no new form, no lower score (389): this build still reserves eight bytes where retail reserves one
 // four-byte slot and still keeps the weapon index in ebp with the weapon in edi where retail takes the table entry into
 // ebp, so the prologue and the switch tree's block order differ (ours branches `jg` to an out-of-line greater block,
@@ -3279,6 +3271,10 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax I (11-17, run 103): no new form, no lower score (190): retail still holds the destination weapon in EBP and
+// stores the acquired flag with setg, where this build holds the destination in EDI and stores the not-acquired flag
+// with setle, and the conversion scan still needs its entry tested for null; the entry kept by its index measures 194
+// and the acquisition flag with retail's polarity 211, so the body stands.
 // MiniMax I (11-17): no new form, no lower score (190): the conversion scan still needs its entry tested for null, and the
 // destination weapon's register and the acquisition flag's sense still differ (this build holds the destination in edi and
 // stores the not-acquired flag with `setle`, retail holds it in ebp and stores the acquired flag with `setg`); the forms
@@ -3568,6 +3564,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax I (11-17, run 103): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in
+// EBX and the barrel index in EDI and reads the first argument after its first push, where this build keeps the barrel
+// index in EBX, the definition in EDI and reads the argument before the pushes; the frame still agrees at 0x1c60.
 // MiniMax I (11-17): no new form, no lower score (607 plain, 643 fast): the frame still agrees with retail at 0x1c60 but
 // ours is 2545 bytes against retail's 2533, retail keeps the weapon index in ebx, the weapon pointer in ebp and the barrel
 // offset in edi and spills the definition to [esp+0x14] where this build keeps the weapon index in a stack slot, the

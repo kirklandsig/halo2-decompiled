@@ -99,7 +99,7 @@ struct input_2f3920
 };
 
 // the cross product of two vectors' first three terms
-inline __m128 cross_2f3920(__m128 const &a, __m128 const &b)
+inline __m128 cross_2f3920(__m128 a, __m128 b)
 {
 	__m128 b_yzx = _mm_shuffle_ps(b, b, 0xc9);
 	__m128 b_zxy = _mm_shuffle_ps(b, b, 0xd2);
@@ -113,6 +113,14 @@ inline __m128 cross_2f3920(__m128 const &a, __m128 const &b)
 inline __m128 sum_2f3920(__m128 const &v)
 {
 	return _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v));
+}
+
+// the sum of the products of two vectors' first three terms
+inline float dot_2f3920(__m128 const &a, __m128 const &b)
+{
+	float result;
+	_mm_store_ss(&result, sum_2f3920(_mm_mul_ps(a, b)));
+	return result;
 }
 
 // a vector of four copies of a float
@@ -133,6 +141,7 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 	body_2f40e0 const *side_b = (body_2f40e0 const *)b;
 	capsule_2f40e0 const *capsule_a = side_a->shape;
 	capsule_2f40e0 const *capsule_b = side_b->shape;
+	contact_collector_2f3920 *contacts = (contact_collector_2f3920 *)collector;
 	struct query_head
 	{
 		__m128 direction_a;
@@ -147,12 +156,11 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 	};
 	query_head head;
 	query_tail tail;
-	contact_2f3920 &contact = head.contact;
 	__m128 (&ends_a)[2] = tail.ends_a;
 	__m128 (&ends_b)[2] = tail.ends_b;
 	closest_points_308590 &closest = tail.closest;
-	contact.a = a;
-	contact.b = b;
+	head.contact.a = a;
+	head.contact.b = b;
 	{
 		c_query_transform const *frame = &side_a->placement->transform;
 		__m128 const *end = capsule_a->ends;
@@ -175,11 +183,9 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 			end++;
 		}
 	}
-	__m128 &direction_a = head.direction_a;
-	direction_a = _mm_sub_ps(ends_a[1], ends_a[0]);
-	__m128 &direction_b = tail.direction_b;
-	direction_b = _mm_sub_ps(ends_b[1], ends_b[0]);
-	int const clamped = function_308590(&ends_a[0], &direction_a, &ends_b[0], &direction_b, &closest);
+	head.direction_a = _mm_sub_ps(ends_a[1], ends_a[0]);
+	tail.direction_b = _mm_sub_ps(ends_b[1], ends_b[0]);
+	int const clamped = function_308590(&ends_a[0], &head.direction_a, &ends_b[0], &tail.direction_b, &closest);
 	float const radius = capsule_a->radius + capsule_b->radius;
 	float const reach = radius + ((input_2f3920 const *)input)->tolerance;
 	// Retail rejects ordered separation; an unordered comparison continues.
@@ -190,24 +196,22 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 		{
 			if (closest.distance_squared > 0.0f)
 			{
-				contact.normal = closest.offset;
+				head.contact.normal = closest.offset;
 				goto normalize;
 			}
 		}
 		else
 		{
-			__m128 across = cross_2f3920(direction_a, direction_b);
-			float length_squared;
-			_mm_store_ss(&length_squared, sum_2f3920(_mm_mul_ps(across, across)));
+			__m128 across = cross_2f3920(head.direction_a, tail.direction_b);
+			float length_squared = dot_2f3920(across, across);
 			if (length_squared > 1.192092896e-07f)
 			{
-				float along;
-				_mm_store_ss(&along, sum_2f3920(_mm_mul_ps(across, closest.offset)));
+				float along = dot_2f3920(across, closest.offset);
 				if (along < 0.0f)
 				{
 					across = _mm_xor_ps(across, *(__m128 const *)g_4124a0);
 				}
-				contact.normal = across;
+				head.contact.normal = across;
 				goto normalize;
 			}
 		}
@@ -215,10 +219,10 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 			int smallest = 0;
 			int second = 1;
 			int third = 2;
-			double const &x = (float)fabs(direction_a.m128_f32[0]);
+			double const &x = (float)fabs(head.direction_a.m128_f32[0]);
 			float minimum = x;
-			float const y = (float)fabs(direction_a.m128_f32[1]);
-			float const z = (float)fabs(direction_a.m128_f32[2]);
+			float const y = (float)fabs(head.direction_a.m128_f32[1]);
+			float const z = (float)fabs(head.direction_a.m128_f32[2]);
 			if (y < minimum)
 			{
 				second = 0;
@@ -230,22 +234,22 @@ __forceinline void capsule_contact_2f3920(void const *a, void const *b, void con
 				third = smallest;
 				smallest = 2;
 			}
-			contact.normal.m128_f32[smallest] = 0.0f;
-			contact.normal.m128_f32[second] = direction_a.m128_f32[third];
-			contact.normal.m128_f32[third] = -direction_a.m128_f32[second];
+			head.contact.normal.m128_f32[smallest] = 0.0f;
+			head.contact.normal.m128_f32[second] = head.direction_a.m128_f32[third];
+			head.contact.normal.m128_f32[third] = -head.direction_a.m128_f32[second];
 		}
 normalize:
 		{
-			__m128 const normal = contact.normal;
+			__m128 const normal = head.contact.normal;
 			__m128 const sum = sum_2f3920(_mm_mul_ps(normal, normal));
 			__m128 const inverse = _mm_rsqrt_ss(sum);
 			__m128 const correction = _mm_sub_ss(_mm_set_ss(3.0f), _mm_mul_ss(_mm_mul_ss(sum, inverse), inverse));
 			__m128 const scale = _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f), inverse), correction);
-			contact.normal = _mm_mul_ps(_mm_shuffle_ps(scale, scale, 0), normal);
+			head.contact.normal = _mm_mul_ps(_mm_shuffle_ps(scale, scale, 0), normal);
 		}
-		contact.point = _mm_add_ps(closest.first_point, _mm_mul_ps(splat_2f3920(capsule_b->radius - distance), contact.normal));
-		contact.point.m128_f32[3] = distance - radius;
-		((contact_collector_2f3920 *)collector)->add_contact(&contact);
+		head.contact.point = _mm_add_ps(closest.first_point, _mm_mul_ps(splat_2f3920(capsule_b->radius - distance), head.contact.normal));
+		head.contact.point.m128_f32[3] = distance - radius;
+		contacts->add_contact(&head.contact);
 	}
 	timer_add_2ebc80("Et");
 }
@@ -256,23 +260,18 @@ public:
 	void function_2f3920(void const *a, void const *b, void const *input, void *collector);
 };
 
+// Matched (was 2): in the shared body the contact and the two directions are used through
+// their structures instead of reference locals, the cross product takes its vectors by
+// value, the two dot products go through dot_2f3920 and the collector is typed once before
+// the query. With the body in this shape both loops' stores are `[cursor + offset]` as in
+// retail; the order depends on the whole inlined body, so recheck after any change to it.
 // @retail 0x2f3920
 void capsule_pair_2f3920::function_2f3920(void const *a, void const *b, void const *input, void *collector)
 {
 	capsule_contact_2f3920(a, b, input, collector);
 }
 
-// score 2 (was 2): Only the base/index encoding of the two transformed-point
-// stores differs; frame 0xe4 and extent agree. Source-first steps 2; aligned
-// store intrinsic 2; indexed walk 28; ascending counter 2; source limit 260;
-// source step at use 262; output step at use 2; both steps at use 262;
-// direct array members 2; output limit 248; unsigned counter 2; ordinary absolute value 5.
-// Separate first record 26; separate second record 222; all locals separate 258;
-// output pointer declared first 28; both traversal scopes widened 2;
-// named SSE result 2; forced transform expansion 2; explicit input load 2.
-// Input vector reference 2; matrix reference 2; output reference 2; output pointer 2;
-// input vector value 2; matrix member 2; member output reference 2; member input reference 2.
-// NOT kept: no equality; original shared body and both users restored.
+// Matched (was 2): see 0x2f3920; the shared body decides it.
 // @retail 0x2f3d00
 void __cdecl function_2f3d00(void const *a, void const *b, void const *input, void *collector)
 {

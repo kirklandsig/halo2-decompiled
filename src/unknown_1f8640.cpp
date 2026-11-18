@@ -375,7 +375,8 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 182 (was 182; 182 before): earlier 182, 188; Frame 0x80, prologue, first exit and the unit-mode slot agree; the route test's layout, case 7's stores and the result's home differ.
+// score 182 (was 182): earlier scores 182 and 188. Frame 0x80, prologue, first exit and the unit-mode slot agree.
+// The route test layout, case 7 stores and result home still differ.
 // MiniMax C (11-15): no new form, no lower score (182): the route dispatch still lands after the mode cases where
 // retail puts it between case 5 and case 6, and the result still comes back through BL where retail loads the
 // route-found byte into AL; switching on the route word without the long copy measures 397 and returning the
@@ -857,6 +858,13 @@ struct s_1f8a70_actor
 // `result = route_found;` after it 326 (1680 B, re-measured); route_found written through a pointer to it at every
 // assignment 182 (same code: folded, so no reload after 0x1f8750); one actor pointer from a single actor_get ahead of the
 // first test 207. Retail's case 6 `route_mode = 1` cross-jumps into case 5's tail (0x1f8c9d); ours keeps its own store.
+// Shared destination publication for modes 4/6, 5/6 and 4/5/6: 433/363/428. Shared writers for modes
+// 2/4 and 3/5: 384/390, both writers 402. One writer for 2-5 or 2-6: 446/538. The dispatch and
+// failure-result reload still differ.
+// MiniMax S (11-17): fast build on r852: duplicating the route switch into an if/else pair scored 747 (1900 B, MSVC does not
+// tail-merge the two bodies) and the permuter's 3 tries stayed at 182; retail lays the route check as case 5's fall-through
+// with cases 6-7 jumping back to it and the route==0 block jumping back to one shared switch dispatch, and the goto
+// restructure scored 316, so the shared dispatch needs a source form not found here.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

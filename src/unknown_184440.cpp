@@ -400,6 +400,11 @@ __forceinline bool function_184448(long arg_0)
 // worklist array and every later slot sit at a different offset and the scene and geometry homes are rotated; the
 // earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters)
 // scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
+// MiniMax I (11-17): no new form, no lower score (965): the first difference is still the stack reserve (retail
+// 0x11cc against our 0x11d4), so the worklist array and the scene and geometry homes sit at other offsets and retail
+// carries the start surface in edi where this build carries it in esi; the earlier rounds' form that does reach
+// retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter
+// and width forms of those rounds score 965 or worse.
 // @retail 0x184440
 // MiniMax C (11-17): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later slot sit at a different offset, and the scene and geometry homes are rotated (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx); the earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)

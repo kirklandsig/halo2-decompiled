@@ -1629,10 +1629,25 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // branch target. With the unit in a local before or after the type store it is 41/44 and the append order returns.
 // Not kept: no match, and Kirk undoes a written-out helper. Also 32 each: 0x1d + (load ? 1 : 0), (load != 0) + 0x1d,
 // 0x1d + !!load, a forced-inline leave wrapper (same bytes as the plain call).
+// Read the stored row identity for the busy query, as indexed fields or a row reference.
+// Original/branch-local walking slot/branch-local load request/both scopes:
+// 32/199/190/190 and 150/213/207/207. NOT kept: the indexed form ties with the original
+// scopes, and every other form regresses. Handle-before-scaling and request register placement remain.
 // Published handle for busy query, indexed/row reference/row pointer 32/150/150;
 // explicit busy outcomes 32/150/150; nested admission indexed/reference 32/150.
 // NOT kept: ties or regressions. Iterator-handle acquisition, leave selector
 // and request/slot publication still differ.
+// Round 462 full busy byte backed by short/word/long/dword bitfields 29/29/29/29,
+// with named query level 32/32/32/32. NOT kept: three-point gain. The unsigned
+// variants also regress the comparator. Short-backed byte with seat/vehicle first 38,
+// clear and set around seat/vehicle 48, default departure type 59, branch-assigned type 44.
+// The original busy field, requests and slot stores are retained.
+// DH391: Combined flag mask with all six flag/seat/vehicle store orders, 32/34/51/41/52/41;
+// split clear/set around seat and vehicle stores 51/52. NOT kept: tie or regression.
+// DH393: Departure gates split after parent, after attachment or into three tests 32/32/32.
+// Shared parent alone/with split gates 32/32. Selected seat bound after departure 93.
+// Full-byte busy field with nested gates/shared parent 29/29, first +0x255 at 846 bytes.
+// NOT kept: three-point prefix gain only. Departure type registers and request/slot stores remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2989,10 +3004,25 @@ struct s_scenario_scripting_view
 // P590: Original packed incoming parameter lexical priorities against native
 // local owners: eight 80 at 367/367. NOT kept: no exact actor/counter/selector
 // or guarded-data recovery; original input name and complete body restored.
+// Gate the scripting-data read on the packed sign, as nested admission or early exit.
+// Short/long selector with the original or search-owned counter: 96/98/98/101 in
+// each form. NOT kept: delayed data and the actor in EBP do not recover retail's
+// short comparison or counter and decoded-selector homes. All eight remain 367 bytes.
 // Round 611: guarded short-to-long selector with nested admission, negative exit,
 // original packed high word or narrow-selector commit 96/96/77/96; with the typed
 // candidate record 95/95/90/95. NOT kept: keeping the original high word broke
 // the wrapper, and the 77 form grew to 372 bytes. Actor and counter homes remain.
+// Round 462 admitted set pointer from nested or conditional bounds with success/failure
+// admission, early counter 77/77/77/77, search-owned counter 74/74/74/74. Loop-owned
+// counter with raw/typed point access 74/74. Availability in the loop bound 94/94.
+// NOT kept: best gain six with score above 30. The guarded data read and selector spill
+// improve in the 74-point forms, with the actor and counter still in the wrong registers.
+// DH391: Shared tag-array views for scripting data, point sets and points in seven
+// subsets, then all with a typed point payload, eight at 80. NOT kept: no actor,
+// counter or guarded-data scheduling change.
+// DH393: Unsigned word range/sign-bit admission with admitted selector or original high bits
+// 89/79 and 97/91. Dword counterparts 89/95 and 98/98.
+// NOT kept: 79 grows to 372 bytes and loses the exact wrapper. Actor, counter and selector homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
