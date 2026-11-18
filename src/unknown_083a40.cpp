@@ -840,6 +840,13 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // right after the slot search 27 (it sinks to the key; the key sum is (offset + cursor) + (collection + 4) where retail
 // adds (collection + offset) first, so only the occupied block's head differs), after the machine pointer 320 (1089
 // bytes); a 600 s annealing permuter run on the 30 form (seed 114, 84 tries) none below 30. Restored to main's order.
+// M3 lane 13 r110: no trial (baseline 28 at 1062 bytes, first difference +0x28). Every form I could derive is
+// already listed above, so none was re-run. Reading added from retail: `collection` is formed once, in ESI, right
+// before the slot search (`add esi, 0x88` on the reloaded watcher) and stays there across the search and swap calls
+// and through the occupied record; ESI is then reused for the last record's source and watcher + 0x88 is formed
+// again for the final apply, whose tail retail shares with the first arm. So retail's `collection` behaves like a
+// common subexpression of `&watcher->players` held over that region (which ranks it with the invariants in the key
+// sum) rather than a loop-top variable; no listed form gives that without folding the key into the cursor.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

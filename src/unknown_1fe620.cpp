@@ -45,6 +45,12 @@ static __forceinline long real_to_long(real value);
 // is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where
 // ours caches the random state there, and the two flag bytes are still stored before the random state is
 // loaded.
+// MiniMax H (11-18): no new form, no lower score (373): the frame stays 0x4c against retail's 0x48 (both use the
+// same total below the entry, retail saving three registers against this build's two) and retail still holds the
+// third settings input in ESI from the entry where this build reloads it from its stack slot and keeps the random
+// state pointer in ESI instead; dropping the random-globals pointer local and using the global directly gives 423
+// (the state pointer then stays live across the vector work), and the reduced image cannot search this function
+// (464 differing instructions there against the full image's 373), so the permuter is of no use here; the body stands.
 // MiniMax G (11-12): no new form, no lower score (373); the frame is still 0x4c against retail's 0x48, retail keeps the third settings pointer in esi from the entry where ours caches the random state there, and the two flag bytes are still stored before the random state is loaded.
 // MiniMax D (11-14): no new form, no lower score (373): retail keeps the third settings pointer in ESI from
 // the entry and the random-state pointer in ECX, ours keeps the random state in ESI and reloads the third

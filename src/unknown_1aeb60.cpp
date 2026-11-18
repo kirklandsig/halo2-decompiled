@@ -506,7 +506,10 @@ struct s_1af5c6
 	point3f field_10;
 };
 
-// score 20 (was 20): the index is masked in EAX where retail masks it in ECX; the argument is
+// score 5 (was 20): retail loads the 0x1697c0 ignore-index argument (`mov ecx, [esp + 0x14]`) ahead of the first ray
+// difference, ours after it, and retail's hit product loads the distance first (ours the hit fraction). Round 137
+// fixed the other sites (see its entry at the end of this note).
+// Before round 137, at 20: the index is masked in EAX where retail masks it in ECX; the argument is
 // passed in the other register.
 // Also: retail loads the 0x1697c0 object argument before the first ray difference, keeps the distance in
 // the slot at +0x14 (ours +0x10) and loads it first in the hit product.
@@ -625,6 +628,33 @@ struct s_1af5c6
 // 16-byte NONE/point pair); the NONE cell and source point as separate locals 159 (565 bytes, the NONE folds). 0x1b2770
 // given the existing magnitude3d for its hand-written length still inlines 0x1c8df0 (656). On the kept hand-written body a
 // `short` return type 56 (601 bytes). Still BLOCKED-BY 0x1c8df0's call-site inlining (0x1b2770 must keep it out of line).
+// Round 137 (m3 lane 9, fast with 0x1af810, 0x1b2770 and 0x1c8df0, then plain with the file's functions; control 20): the
+// 0xbaf40 call written in each arm of the header-type test (`type == 0 && field != NONE` passes the field, else the object
+// index) 5, kept: the second header mask moves to ECX and the distance to the +0x14 home, both as retail. On it: the hit
+// fraction read into a local after the test 3 (only the ignore index's load is then late; a one-use field copy, not kept
+// without a match); the product operands swapped 5; `<` compares 5 either operand order; the last test as an if with
+// returns 5; the distance declared at the top 5 (all the same code); the ray vector built in the call's argument list
+// through a helper returning its output 5 (same code), with the fraction local 3; a named copy of the ignore index ahead of
+// the ray vector 5 (the copy propagates); the mask chosen below the ray vector 22; the result's NONE store below the ray
+// vector 25; a two-point collision helper taking the vector's storage and the ignore index by value 9, with the fraction
+// local 7 (the magnitude's x87 order changes). On the fraction-local form (3): the mask as a ternary 26; no vector pointer
+// local 3; the NONE store ahead of the cluster test 12; the mask ahead of the NONE store 10 (the ignore index then loads at
+// the block's top, but the pushes run ahead of the first difference); the mask cleared with `&= ~0x20` 3; the ray vector
+// ahead of the mask 20, ahead of the NONE store 21. On the old body (20): the ignore index from an inline helper with
+// literal returns 123 (585 bytes), an inline header-type getter 20, the 0xbaf40 result in its own variable 20 (same code).
+// Reading: retail's early load is the by-value ignore-index parameter of the two-point probe 0x16a040, which retail
+// inlines inside the inlined 0x1c8df0 (0x16a040 and 0x1c8df0 are both kept out of line on main).
+// Diagnostics on that reading (a file-local inline copy of the two-point probe with its own vector, not keepable: an
+// inline twin of 0x16a040; all with the fraction local): on the kept frame 44 (frame 0x8c; aligned with registers and
+// stack offsets masked 3: only the frame size differs, the early load and the product order are retail's); with the
+// source cell and point as a 16-byte pair and the point copy at function scope 37 (frame 0x8c, the pair below the copy
+// as retail); with the copy in a block that ends before the cluster lookup 27 (584 bytes, frame 0x80, masked 0: every
+// instruction is retail's, but the 12-byte copy/vector home sorts below the 16-byte pair, retail has the pair lower);
+// that with the motion buffer in the block and the result in a block around the tail 27, the copy and the pair renamed
+// either way 27 / 27, the pair declared first in the function 27, the buffer declared last 27, the cell's NONE store
+// inside the block after the copy 27 (masked 2) or ahead of a bare copy 27; the cell as its own long or one-member
+// aggregate 158 (566 bytes: it folds, so retail's cell and point are one object); the first half as an inline helper
+// owning the copy 312 (439 bytes: it stays out of line).
 // M3 lane 12 r139 (fast with 0x1af810, 0x1b2770, 0x1c8df0 and 0x1c8df0's other callers; diagnostics with 0x1c8df0's separate
 // noinline declaration dropped, restored): whether an inline-level boundary at 0x1b2770's call keeps 0x1c8df0 out of line
 // there: 0x1b2770's visibility query in a static helper 957 bytes (the helper stays out of line with 0x1c8df0
@@ -652,15 +682,10 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	function_2640c0(local_19, (s_object_motion_view *)&local_7);
 	local_19 = local_1->object_index;
 	local_3 = &((s_1af5c2 *)g_4e0300->data)[local_19 & 0xffff];
-	if (local_3->field_3 == 0)
-	{
-		local_8 = ((s_1af5c3 *)local_4)->field_14;
-		if (local_8 == NONE)
-			local_8 = local_19;
-	}
+	if (local_3->field_3 == 0 && ((s_1af5c3 *)local_4)->field_14 != NONE)
+		local_8 = function_baf40(((s_1af5c3 *)local_4)->field_14);
 	else
-		local_8 = local_19;
-	local_8 = function_baf40(local_8);
+		local_8 = function_baf40(local_19);
 	if ((short)arg_3 == 0)
 	{
 		local_9.field_4 = local_5;
