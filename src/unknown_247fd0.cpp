@@ -810,6 +810,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // with the base and the index in one operand where retail
 // adds the index to the base first and reads the byte from it into a second register, the gate flag's home is at +0x1f
 // here against retail's +0x1b, and the effect definition's home is at +0x18 here against retail's +0x1c.
+// M3 lane 16 r134 (fast with 0x247fd0/0x248cc0, both matched throughout; control 334, aligned 246, 420 instructions against
+// retail's 430): the gate through a named const effect pointer with the flag set from TEST_FIELD_BIT(flag3) as its own
+// statement 344; the flag from `(effect->flags >> 3) & 1` assigned then tested 417 (1665 B); the velocity pointer defaulted to
+// the global and replaced in an `if` 348 (first difference +0x2); as an if/else 334 (same code); the age step written
+// `field_08 = arg_5 * arg_6 * field_0c + field_08` 334 (same code).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

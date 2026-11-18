@@ -263,6 +263,11 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // any of them): the vertex bound by reference as the m128 element 6, as a point3f 6; the count bound by reference
 // (`long &count = vertex_count;`) for the address, the tag and the increment 6; the source point bound by const
 // reference 6; the vertex pointer passed through a const reference 6.
+// M3 lane 16 r134 (fast with 0x1ee4d0/0x1ee500, both matched throughout; control 6): the vertex set through a member
+// `set(x, y, z, w)` of a 4-real record view of the array 6 (same code); a member `set(point, w)` reading the point inside 106;
+// the radius from `real g_47f068 = 0.01f;` defined here, the four members in the initializer list and the member setter, in
+// all seven combinations, 6 each; the vertex append (address, set, w, tag, increment) as an inline member function 6; the edge
+// as a `s_shape_edge const &` 6 (same code each).
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
