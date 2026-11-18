@@ -330,6 +330,10 @@ extern real g_4c9798[36];
 // MiniMax D (11-17): no new form, no lower score (174 in both images); retail's frame homes (size, mode, maximum and
 // extent one slot further down than ours), the mode flag's register (EAX there, EDX here) and the near plane's dot
 // product (retail reads the published normal back) still differ, and the permuter found nothing in 300 s.
+// M419: shared first sizing bit 180; sampled sizing word and first bit 180; separate size-limit branches 180;
+// first bit with dword height limit 243; reused pixel cap before height alignment 323, with dword height 351;
+// pixel cap between rounding calls 323; cap with separate width alignment 323.
+// NOT kept: every form regressed. Mode flag register, mode and size homes, and rounding reloads still differ.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
