@@ -525,6 +525,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // inline rotation (either parameter order, four row orders, with none, one or both trig locals): none starts the y row
 // before the sine's branch. Left as before: the short count (blocked by the EBX convention above), the constant's
 // XMM1/XMM2 and the near arm's order.
+// Real radial upper bound 365, tangent upper/lower 366/361, lower-first
+// tangent clamp 342. One real quarter turn 360, separate y products 305,
+// near continue 305, complete signed endpoint initializer 305.
+// NOT kept: the real radial bound restores the first unity load but shortens
+// the body by 15 bytes. Near cosine and candidate ordinal homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

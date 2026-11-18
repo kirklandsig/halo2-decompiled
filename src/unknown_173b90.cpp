@@ -894,6 +894,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // 122/122/122 and with the offset in a for initializer and step 122.
 // NOT kept: the member reads tie and the low-byte mask grows the body by six bytes.
 // Empty-chain offset initialization, receiver reloads and row-i products still differ.
+// Typed ordinal for-latch and declared array member 115/115, on it
+// staged position rotation 119. Packed scale bit 42, all three property
+// bitfields 229, shared mutable update mask 209, input block copies 42,
+// linked latch with empty-emitter continue 212. NOT kept: the indexed
+// loop advances the first difference but the rotation rows grow the body.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

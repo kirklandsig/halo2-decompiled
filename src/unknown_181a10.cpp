@@ -1019,6 +1019,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // copy of the zero test's load where retail reloads the data into EDX and compares `cmp ecx, edx`). Reading: matched
 // 0x1c5400 and 0x1d4880 compile the same test with immediate compares and one load, so retail's three loads here go with
 // the bounds-in-register form (the zero test's ECX is taken by the bound, so the data is reloaded, not copied).
+// Second node first 245, scoped root and entity 238, nested data guards 238,
+// bound-specific classifier returns 336, validated result key 331,
+// entity arm first 310 at 1243 bytes, named coefficient outputs 238,
+// first-node scope ending at input capture 245. NOT kept: frame 0x40 and
+// the second-node spill remain in all eight forms.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
