@@ -1534,6 +1534,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // source 936; scoped ids with native width and shared count 936; native histogram bucket addresses
 // 936; native buckets with shared group count 936. NOT kept because the equal-width controls tie and
 // the dword forms shorten the body and raise its score.
+// Separate machine success byte 948. Separate invalid-machine byte 947.
+// Grouped summary and capacity guards 871. Result from initial admission 1014.
+// Admission failure through result 871. Chained group-mask clear 871.
+// Group decision from admission tests 899. Group decision inside party mode 896.
+// Separate machine-validation bytes shorten the body to 2704 bytes. Initializing the result from admission
+// grows it to 2952 bytes and changes caller 0x73530 from matched to 8 in preview. The other forms tie or
+// regress. The opening call and the ID/histogram frame layout still differ.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
