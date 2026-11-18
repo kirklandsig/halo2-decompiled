@@ -627,6 +627,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Sound table held through the scan and matched row reacquired after the distance call,
 // with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
 // Original body restored.
+// F417: Shared gain after tag 900; two-use computed gain 851; target gain readback 900;
+// tag and decibels before shared gain 900; target entry before range 866; local gain with target-first
+// publication 852; named endpoint before shared gain 900; allocation before choice gain 900.
+// NOT kept: the entry zero and query array homes remain and the scores regress. Original body restored.
 // AC571: Full producer count in the first scan or in repair 915/856. Capacity checked on acceptance,
 // short/full-width count, 950/965. Count advanced before record stores and capacity checked afterward 964/984.
 // Primary set during first inside conversion or first target append 940/956. NOT kept: all regress.

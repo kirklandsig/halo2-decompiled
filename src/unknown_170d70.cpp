@@ -1043,7 +1043,7 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 346 (was 346). Logic walked block by block against retail: every call, constant and field offset agrees.
+// score 346 (was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
 // 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
@@ -1055,6 +1055,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // in retail, ours loads all three first.
 // Tried (no gain, all 356-383): sk/sj/si locals before or after the squares (357-383), ratio/original/vertical
 // statements moved (360-361), deviation as float sum (367), per-term (double)(a*a) (372), double locals (419).
+// The first unity load and original-axis squares keep their opening registers. The frame still agrees.
+// Shared cross 346; staged cross 350; unconditional input vector 370; input scalars 413;
+// staged output scalars 465; complete output vector 396; native three-axis matrix 346; reciprocal-bound ternary 346.
+// NOT kept: the four alias-free transforms also demote the matched view initializer in preview.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1805,11 +1809,12 @@ PRIVATE __forceinline void follow_matrix_point(transform4x3f const *matrix, poin
 	real z = point->z;
 	real y = point->y;
 	real x = point->x;
-	if (matrix->scale != 1.0f)
+	real scale = matrix->scale;
+	if (scale != 1.0f)
 	{
-		x = matrix->scale * x;
-		y = matrix->scale * y;
-		z = matrix->scale * z;
+		x = scale * x;
+		y = scale * y;
+		z = scale * z;
 	}
 	point->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
 	point->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
@@ -1832,7 +1837,7 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 336 (was 346; 464 before that, fast): same behaviour as retail. Walked statement by statement against retail
+// score 325 (was 336): same behaviour as retail. Walked statement by statement against retail
 // (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
 // order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
 // The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
@@ -1862,6 +1867,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // real direction_x/y locals (346), the direction array (320, above).
 // Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
 // stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
+// The point transform now reads its scale once. The state and collision-point registers still differ at entry.
+// Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
+// named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
+// cached vector-transform scale 397; signed-word location cluster 336.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

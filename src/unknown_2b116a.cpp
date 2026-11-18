@@ -4515,6 +4515,12 @@ bool __stdcall function_2b278e(long controller_index)
 // or an identity-only controller view 199/197. Each pair forms masks at their
 // dialog calls or in the corresponding arm. The original reference and index
 // stack home are still missing.
+// Retail still retains the controller reference through membership and reloads both pointer levels before the dialog context calls.
+// Native membership: bitwise operands 192, ternary decision 60, kind-first confirmation decision 194,
+// named warning decision 199, kind tested before membership 199, explicit window recheck 199,
+// explicit window and channel 187. Both virtual queries explicit with the inherited long result 201.
+// The controller reference and the initial index still need their separate retail homes in the opening body.
+// Independent membership ID value 204. NOT kept: one-use field copy requires a match.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

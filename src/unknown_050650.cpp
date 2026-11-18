@@ -929,6 +929,11 @@ struct s_collision_result_buffer_1697c0
 // or best direction 348; normalize best direction after loop 446; deferred clear
 // store with separate fallback 358. NOT kept: all raise the score and change the
 // matched caller; the frame-bottom magnitude/draw/trig home remains.
+// The initial pitch-axis slots and the shared magnitude, random and sine transfer word still differ.
+// Planar magnitude before/after axis initialization 328/328; fallback with planar length 339;
+// direct scaled-axis setter 309; planar normalization with field stores/setter 341/357;
+// fallback-first planar normalization 407; planar length from initialized axis 302. NOT kept:
+// the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

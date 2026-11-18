@@ -1443,6 +1443,9 @@ PRIVATE inline long score_string_list_1608e0()
 // 704; separate section heights 699, with shared gap 706. The presence forms recover
 // the 0x79c frame with the viewer still in EDI. NOT kept: all eight variants add
 // nine bytes and raise the score.
+// The viewer register, early origin and separate late masked-index homes still differ in the four-byte frame gap.
+// Timer-branch score record 681; pre-branch score record 691; shared mask with branch/pre-branch record
+// 687/681; native points record 691, with shared mask 681; timer-field offset 717; native record ternary 681.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

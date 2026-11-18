@@ -879,6 +879,7 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// score 135 (was 135):
 // MiniMax I (11-09): no new form, no lower score (135); the first difference is the trajectory result's
 // register home: retail copies the call's return into DL (`mov dl, al`), loads the force flag into AL and
 // stores DL to the reused target-parameter slot only afterwards, while ours stores AL to that slot at once
@@ -921,7 +922,7 @@ real normalize2d(point2f *v);
 // and EDX and returns with ret 0x28, retail eleven and ret 0x2c), which is 0xfa1a0's own body in a
 // contributor's file.
 // MiniMax D (11-16): no new form and no lower score (135): retail still caches the trajectory result in DL across the force test (`mov dl, al`, `mov al, byte ptr [esp + 0x60]`, `test al, al`, `mov byte ptr [esp + 0x5c], dl`) where this build stores AL to its home at once, so the request, the facing stores and the returned flag stay off by that register turnover; retail's unit-request path returns the request's value straight in AL, so its result has two assignments and not three - returning `function_e6900(...)` directly from that branch drops the third assignment but scores 182 (919 bytes) because the exits are then split differently, and is restored.
-// score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
+// Earlier: frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
 // goes to EDX not ESI, the first facing store loads EAX/ECX, and the validity flag comes back in BL
@@ -1207,6 +1208,10 @@ real normalize2d(point2f *v);
 // (0x1f82c5, 0x1f8336); retry speed shares the force slot (0x1f82f6 `fstp [esp+0x6c]`). Our build reads the same slot.
 // Constants checked: 1.25f (0x45dc88), 0.03f (0x4508f8), 1.2f (0x45dce8). Offsets, call tuples and the force/fast and
 // scan logic agree statement by statement; no other logic difference found. Callers 0x1be8f0, 0x1f7c70 still MATCH.
+// F417: Terminal request with first-type/speed/normalized-facing returns,
+// their three single forms and three pairs 182 each; non-request arm first with
+// speed or normalized-facing return 178 each. NOT kept: both lengths shorten and
+// DL and independent invalid return remain. Original result and body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1859,6 +1864,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// score 239 (was 238): The 0x3c frame agrees. The zero/radius registers and type-arm join differ.
 // MiniMax D (11-16): no new form, no lower score (238): this round compared the two bodies side by side and the delta
 // is still the frame's slot map and the colouring of the vector block: this build keeps the two squared components at
 // +0x28/+0x2c, the normalizer's length at +0x14 and the flag byte at +0x54, where retail keeps the components at
@@ -1870,6 +1876,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // The build uses XMM2 and XMM7 and materializes the unsupported-type result separately.
 // Earlier default-flag form: direction at +0x28/+0x2c, radius at +0x20 and length at +0x14
 // instead of +0x1c/+0x20, +0x14 and +0x54. The direction's products also used the opposite order.
+// Earlier: no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
+// score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
+// +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
+// +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
+// xmm1 and multiplies the direction's y first where retail multiplies the x first.
 // MiniMax C (11-14): no new form, no lower score (238): with the side test written as a flag
 // (bool left = <dot> > 0.0f) every stack home lines up with retail (the direction at +0x1c/+0x20, the
 // radius at +0x14, the length in the dead origin slot at +0x54) but it scores 239, because the flag stays
@@ -2041,6 +2052,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // where retail compares the float with comiss at 0x1f9de5 before its fld qword 1.0 at 0x1f9df0, so the written-out
 // clamp is retail's form), `MIN(cosine, 1.0f)` 264; without the volatile origin read 273 at 1173 bytes. 0x29a190
 // stays MATCH and 0x29cbb0 378.
+// F417: Shared radial axis and center member/aggregate/in-place scaling 296/296/299;
+// per-type offsets and member/aggregate translation 288/288; shared difference helper 296;
+// signed scale at type join 310; center as scaled offset then translation 299.
+// NOT kept: the zero/radius registers remain and the scores regress. Original body restored.
 // Round 625: direction before result and radius 264; radius then direction then result 239;
 // direction between result and radius 264, with direct initialization 260. Named squared length 239,
 // float square root 240, separate squared components 240, small-length early exit 240.

@@ -945,6 +945,11 @@ static inline long team_score_195ed0(long team)
 // On 100: a named statistics pointer in the score helper 100 (same code); the rank counter `short` 222 (1255 B);
 // the rank declared in each `for` 100 (same code); the entry fields written through the table (no entry pointer)
 // 105; the team helper `__forceinline` 322 (1051 B).
+// The team-mode load still precedes the player copy, and the final score call still expands.
+// Statborg across both tests 107; shared mode 214; shared mask 149; statborg/mode 202; engine
+// receiver 202; statborg/mask 160; statborg/mode/mask 178; shared eligibility 165; engine receiver and
+// mask with both mode guards 210/215. NOT kept: the 107 form grows the frame to 0x78. The mask
+// and shared-eligibility gains omit retail guards, and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

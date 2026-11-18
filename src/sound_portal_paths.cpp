@@ -232,6 +232,11 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
 // before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
+// F417: Invalid output first 353; count-stop return 354; explicit gain arms 365;
+// sort cursor with ordinal bound 376; default two-entry limit 354; shared valid row 374;
+// sort ordinal after distance write 354; separate output bounds 362; index with sort cursor 360;
+// bounded end cursor 332. NOT kept: the end cursor recovers the 0x428 frame but shrinks to
+// 1346/1363 bytes and keeps the table bases live. Original indexed output and body restored.
 // AC571: Combined rejecting guard / combined accepting guard / same-environment guard within the open-portal
 // block / eligible path inside the flag guard 368/368/368/354. Signed endpoint test 373, with a short cluster
 // index 354 at retail length. One destination index through the cap with fresh publication 333, and a separate
