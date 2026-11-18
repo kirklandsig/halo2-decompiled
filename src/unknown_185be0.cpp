@@ -3,6 +3,7 @@
 #include "unknown_1cec30.h"
 #include "unknown_11cb00.h"
 #include "unknown_11cc90.h"
+#include "slot_handler.h"
 #include <math.h>
 #include <string.h>
 // @flags /O2 /Ob1 /arch:SSE /Gr
@@ -27,8 +28,7 @@ struct s_186ab3
     real field_10;
     real field_14;
     dword field_18;
-    byte field_1c;
-    byte field_1d[3];
+    dword field_1c;
     word field_20;
     byte field_22[6];
     s_186ab2 field_28;
@@ -106,12 +106,7 @@ void player_control_update_action_flags(s_player_action *arg_0, s_player_action_
 
 #define FLAG(bit) (1 << (bit))
 #define SET_FLAG(flags, bit, value) ((value) ? ((flags) |= FLAG(bit)) : ((flags) &= ~FLAG(bit)))
-__forceinline real function_185be1(real arg_0, real arg_1, real arg_2)
-{
-    if (arg_0 < arg_1) arg_0 = arg_1;
-    else if (arg_0 > arg_2) arg_0 = arg_2;
-    return arg_0;
-}
+#define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 __forceinline byte *function_185be2(long arg_0)
 {
     return *(byte **)(g_4e0300->data + (arg_0 & 0xffff) * 12 + 8);
@@ -119,13 +114,6 @@ __forceinline byte *function_185be2(long arg_0)
 __forceinline bool function_185be3(long arg_0)
 {
     return arg_0 != NONE && ((1 << g_4e0300->data[(arg_0 & 0xffff) * 12 + 3]) & 1);
-}
-__forceinline void function_185be4(dword *flags, dword mask, bool enabled)
-{
-    if (enabled)
-        *flags |= mask;
-    else
-        *flags &= ~mask;
 }
 __forceinline void function_185be5(s_186ab2 *arg_0)
 {
@@ -143,7 +131,7 @@ union s_185be7
     vector2f field_8;
 };
 
-// score 590 (was 590): Frame 0xe0 and input home agree. Control-root reload, NONE register, range and flag joins differ.
+// score 396 (was 590): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
 // MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
 // MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
 // `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
@@ -617,6 +605,41 @@ union s_185be7
 // gives ecx to the sentinel - and the first local's home sits at esp+0x3c against retail's esp+0x38; retail reloads
 // the root global after the magnitude call because it treats 0x24590 as an opaque callee, and that helper's
 // declaration lives in src/unknown_023540.cpp, which this lane may not edit.
+// M3 lane 15 r97 (fast, plain confirmed; 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30 and 0x1a4900 matched
+// throughout, 0x186ab0 114 unchanged; aligned = LCS count in brackets, base 590 [204]). KEPT 590 -> 396 [87], the head now
+// retail's (NONE in EBX with `or ebx, -1` ahead of the second memset, the root global read twice):
+// - the two unit bytes at +0x212/+0x213 read as signed chars against NONE, as 0x186ab0's view and this function's own
+//   weapon lookup read them (the shared 0xff constant had taken BL, which kept the selector bytes out of EBX and the NONE
+//   constant out of a callee-saved register);
+// - every flag of field_18 and field_1c through the file's SET_FLAG macro (field_1c declared as the dword it is used as; the
+//   inline flag helper is gone): consecutive flags on one condition then share one branch, as retail's do;
+// - every clamp through a PIN macro in place of the inline clamp helper (retail re-reads a memory operand at each
+//   comparison and stores the result in each arm); the speed fraction and the two scaled turn values are named before
+//   their clamps, and the blend factor is stored as `1 - a` where it is computed;
+// - one object header pointer (the shared object_header_get view) for the type test and the object of the controlled unit;
+// - the exponent field read at each use (retail's `fld [esi + 0x5c]`); the tick count through the existing real_truncate
+//   (retail's store, reload and `cvttss2si eax`); input 3 tested at both uses (retail tests CL twice; with the named bool
+//   again 426).
+// Steps, each on the one before (fast): the field_18 flags through SET_FLAG 801 [169]; + real_truncate and the direct input-3
+// tests 794 [156]; + the field_1c flags 769 [151]; + the header pointer 712 [147]; + the signed-char compares 914 [97]; + the
+// exponent at each use 727 [100]; + PIN for the two memory clamps 640 [99]; + the turn values named and clamped 430-439
+// (clamp helper 430, PIN 432, PIN in the sum 439); + `1 - a` stored 415 [91] (clamp helper spellings 417/420); + every
+// clamp through PIN 396 [88]. Alone on the 590 body: real_truncate 608, direct input-3 tests 589, header pointer 785, field_1c
+// flags 639, signed-char compares 903, exponent at each use 713 (none is a gain alone: the lockstep count needs them together).
+// Not kept, on the way: the selector bytes as a copied aggregate 712 (same code), as bitfields of one dword 752 or of one
+// word 742, as a word or dword field with byte casts 712/751, as a two- or four-byte array field 712 (same code), through a
+// getter returning the aggregate by value 712/744; shared conditions in named bools 733; the element stores indexed in
+// place of the element pointer 712 (same code); a 0xfe second constant (diagnostic) 755 [128], which showed the 0xff
+// constant was what held EBX. On 396: the default 1.0 in an else arm (retail's `jmp; movaps xmm1, xmm4` edge) 916 [86],
+// and, in the inline-magnitude diagnostic state (384): the weapon index through an inline getter 384, the zoom test
+// through an inline predicate 384 (same code each), the weapon test ahead of the two byte tests 393.
+// Left: retail treats 0x24590 as clobbering the XMM registers (zero and 1.0 remade after it, the angle limit reloaded, the
+// conversion constant read from memory), which sets the whole block from the speed fraction to the stick clamps and the
+// pad ahead of the mask loop; BLOCKED-BY 0x24590 (`inline` on its definition, measured as a diagnostic with this body plus the
+// else-arm default: 384 [65], one shift left; it is not kept because lane 12 r109 saw six other callers' counts rise).
+// Then retail's `mov eax, edx` before the 0x100f70 call (the weapon index lives in EDX there), the limit kept in XMM7
+// (retail the first, ours the second), the two 4-byte homes at +0x10/+0x14 (mask and counter the other way round), and
+// the vector copy order after the two 0x11df30 calls.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -654,10 +677,12 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                     real local_15 = *(real *)(local_13 + 0x58) - local_14;
                     real local_16 = 0.0f;
                     if (local_15 > 0.0f)
-                        local_16 = function_185be1((magnitude3d((vector3f *)(local_11 + 0x88)) - local_14) / local_15, 0.0f, 1.0f);
-                    real exponent = *(real *)(local_13 + 0x5c);
-                    if (exponent != 0.0f)
-                        local_16 = (real)pow(local_16, exponent);
+                    {
+                        local_16 = (magnitude3d((vector3f *)(local_11 + 0x88)) - local_14) / local_15;
+                        local_16 = PIN(local_16, 0.0f, 1.0f);
+                    }
+                    if (*(real *)(local_13 + 0x5c) != 0.0f)
+                        local_16 = (real)pow(local_16, *(real *)(local_13 + 0x5c));
                     if (*(real *)(local_13 + 0x44) > 0.0f || *(real *)(local_13 + 0x48) > 0.0f)
                         local_5.field_0[0] = ((*(real *)(local_13 + 0x48) - *(real *)(local_13 + 0x44)) * local_16 + *(real *)(local_13 + 0x44)) * 0.01745329238474369f;
                     if (*(real *)(local_13 + 0x4c) > 0.0f || *(real *)(local_13 + 0x50) > 0.0f)
@@ -678,21 +703,21 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                 else { local_8 /= local_9; local_9 = 1.0f; }
                 local_10 = (real)sqrt(local_9 * local_9 + local_8 * local_8);
             }
-            real local_11 = function_185be1(local_10 * local_2.field_40, -1.0f, 1.0f);
-            real local_12 = function_185be1(local_10 * local_2.field_44, -1.0f, 1.0f);
+            real local_11 = PIN(local_10 * local_2.field_40, -1.0f, 1.0f);
+            real local_12 = PIN(local_10 * local_2.field_44, -1.0f, 1.0f);
             s_185be7 local_13;
             local_13.field_0[0] = function_185b30(*(short *)(local_0 + 0x74), *(real **)(local_0 + 0x78), local_11) * local_5.field_0[0];
             local_13.field_0[1] = function_185b30(*(short *)(local_0 + 0x74), *(real **)(local_0 + 0x78), local_12) * local_5.field_0[1];
             if (fabs(local_11) >= *(real *)(local_0 + 0x48))
             {
-                real local_15 = function_185be1(local_1->field_78 / *(real *)(local_0 + 0x4c), 0.0f, 1.0f);
+                real local_15 = PIN(local_1->field_78 / *(real *)(local_0 + 0x4c), 0.0f, 1.0f);
                 local_13.field_0[0] *= (*(real *)(local_0 + 0x50) - 1.0f) * local_15 + 1.0f;
                 local_1->field_78 += arg_2;
             }
             else local_1->field_78 = 0.0f;
             if (fabs(local_12) >= *(real *)(local_0 + 0x48))
             {
-                real local_15 = function_185be1(local_1->field_7c / *(real *)(local_0 + 0x54), 0.0f, 1.0f);
+                real local_15 = PIN(local_1->field_7c / *(real *)(local_0 + 0x54), 0.0f, 1.0f);
                 local_13.field_0[1] *= (*(real *)(local_0 + 0x58) - 1.0f) * local_15 + 1.0f;
                 local_1->field_7c += arg_2;
             }
@@ -719,10 +744,14 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                 fabs(arg_5->field_0) > 0.0001f || fabs(arg_5->field_4) > 0.0001f))
             {
                 real local_18 = arg_3 / arg_2;
-                real local_19 = function_185be1(*(real *)local_0, 0.0f, 1.0f) * local_15.k;
-                real local_20 = function_185be1(*(real *)(local_0 + 4), 0.0f, 1.0f) * local_15.k;
-                local_16 = function_185be1(local_15.i * local_18, -3.1415927410125732f, 3.1415927410125732f) * local_20 + (1.0f - local_19) * local_13.field_0[0];
-                local_17 = function_185be1(local_15.j * local_18, -1.5707963705062866f, 1.5707963705062866f) * local_20 + (1.0f - local_19) * local_13.field_0[1];
+                real local_19 = 1.0f - PIN(*(real *)local_0, 0.0f, 1.0f) * local_15.k;
+                real local_20 = PIN(*(real *)(local_0 + 4), 0.0f, 1.0f) * local_15.k;
+                real local_21 = local_15.i * local_18;
+                real local_22 = local_15.j * local_18;
+                local_21 = PIN(local_21, -3.1415927410125732f, 3.1415927410125732f);
+                local_22 = PIN(local_22, -1.5707963705062866f, 1.5707963705062866f);
+                local_16 = local_21 * local_20 + local_19 * local_13.field_0[0];
+                local_17 = local_22 * local_20 + local_19 * local_13.field_0[1];
             }
             else
             {
@@ -732,33 +761,37 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             arg_5->field_10 = local_16 * arg_2;
             arg_5->field_14 = local_17 * arg_2;
             *(real *)((byte *)arg_5 + 0x24) = local_2.field_48;
-            if (function_185be3(local_1->field_0))
+            if (local_1->field_0 != NONE)
             {
-                long local_18 = *(long *)(function_185be2(local_1->field_0) + 0x3e4);
-                if (local_18 != NONE)
+                s_object_header_view *header = object_header_get(local_1->field_0);
+                if ((1 << header->type) & 1)
                 {
-                    long local_19 = *(long *)(function_185be2(local_18) + 0xb4);
-                    if (local_19 != NONE)
+                    long local_18 = *(long *)(header->object + 0x3e4);
+                    if (local_18 != NONE)
                     {
-                        s_havok_component *local_20 = (s_havok_component *)(g_51e9b8->data + (local_19 & 0xffff) * 0xa0);
-                        long local_24 = function_0b67a0((s_small_index *)local_20);
-                        if (local_24 != NONE)
+                        long local_19 = *(long *)(function_185be2(local_18) + 0xb4);
+                        if (local_19 != NONE)
                         {
-                            transform4x3f local_21;
-                            local_20->rigid_body_matrix_get(local_24, &local_21);
-                            local_15 = *(vector3f *)((byte *)&local_21 + 4);
-                            if (local_18 == local_1->field_40)
+                            s_havok_component *local_20 = (s_havok_component *)(g_51e9b8->data + (local_19 & 0xffff) * 0xa0);
+                            long local_24 = function_0b67a0((s_small_index *)local_20);
+                            if (local_24 != NONE)
                             {
-                                function_11df30(&local_5.field_8, &local_15);
-                                function_11df30(&local_13.field_8, &local_1->field_34);
-                                arg_5->field_10 += local_5.field_8.i - local_13.field_8.i;
-                                arg_5->field_14 += local_5.field_8.j - local_13.field_8.j;
+                                transform4x3f local_21;
+                                local_20->rigid_body_matrix_get(local_24, &local_21);
+                                local_15 = *(vector3f *)((byte *)&local_21 + 4);
+                                if (local_18 == local_1->field_40)
+                                {
+                                    function_11df30(&local_5.field_8, &local_15);
+                                    function_11df30(&local_13.field_8, &local_1->field_34);
+                                    arg_5->field_10 += local_5.field_8.i - local_13.field_8.i;
+                                    arg_5->field_14 += local_5.field_8.j - local_13.field_8.j;
+                                }
                             }
                         }
+                        local_1->field_34 = local_15;
                     }
-                    local_1->field_34 = local_15;
+                    local_1->field_40 = local_18;
                 }
-                local_1->field_40 = local_18;
             }
         }
         else
@@ -794,7 +827,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             if (local_9 || arg_5->field_4 * arg_5->field_4 + arg_5->field_0 * arg_5->field_0 < 0.25f) local_1->field_88 = 1;
         }
         else if (!local_3[10]) local_1->field_88 = 0;
-        function_185be4(&arg_5->field_18, 1, local_1->field_88 != 0);
+        SET_FLAG(arg_5->field_18, 0, local_1->field_88 != 0);
         bool local_10 = local_3[11] == 1;
         if (local_10 && local_1->field_2e == NONE && arg_4->field_0)
         {
@@ -810,8 +843,8 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             if (((byte *)arg_4->field_0)[6] > 0x7f || ((byte *)arg_4->field_0)[7] > 0x7f) local_10 = false;
             if (local_11 != NONE && !function_100f70(local_11) && local_2.field_44 * local_2.field_44 + local_2.field_40 * local_2.field_40 > 0.64000004529953f) local_10 = false;
         }
-        function_185be4((dword *)&arg_5->field_1c, 4, local_10);
-        function_185be4((dword *)&arg_5->field_1c, 8, local_3[11] != 0);
+        SET_FLAG(arg_5->field_1c, 2, local_10);
+        SET_FLAG(arg_5->field_1c, 3, local_3[11] != 0);
         if (local_2.field_4e)
         {
             arg_5->field_8 = local_2.field_30;
@@ -824,7 +857,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         }
         long local_11 = local_3[local_2.field_4c];
         byte *local_12 = &local_3[local_2.field_4c];
-        if (local_1->field_0 != NONE && function_185be2(local_1->field_0)[0x212] != 0xff && function_185be2(local_1->field_0)[0x213] != 0xff)
+        if (local_1->field_0 != NONE && *(char *)(function_185be2(local_1->field_0) + 0x212) != NONE && *(char *)(function_185be2(local_1->field_0) + 0x213) != NONE)
         {
             *local_12 = 0;
             local_1->field_90 = local_11 > 0;
@@ -834,40 +867,39 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             if (local_11 > 0) { local_11 = 0; *local_12 = 0; }
             else local_1->field_90 = 0;
         }
-        function_185be4(&arg_5->field_18, 0x10000, local_3[7] != 0);
-        function_185be4(&arg_5->field_18, 0x200000, local_11 != 0);
-        function_185be4(&arg_5->field_18, 0x20000, local_11 != 0);
-        if (g_4e6948->state != 2) function_185be4(&arg_5->field_18, 0x20000000, local_3[local_2.field_4d] != 0);
-        function_185be4(&arg_5->field_18, 0x800, local_11 != 0);
-        function_185be4(&arg_5->field_18, 0x4000, local_11 != 0);
-        function_185be4(&arg_5->field_18, 0x4000000, local_3[6] != 0);
-        function_185be4(&arg_5->field_18, 0x80, local_3[12] != 0);
-        function_185be4(&arg_5->field_18, 0x100, local_3[13] != 0);
-        function_185be4(&arg_5->field_18, 4, local_3[5] != 0);
-        function_185be4(&arg_5->field_18, 0x100000, local_3[5] != 0);
-        function_185be4(&arg_5->field_18, 0x2000000, local_3[5] != 0);
+        SET_FLAG(arg_5->field_18, 16, local_3[7] != 0);
+        SET_FLAG(arg_5->field_18, 21, local_11 != 0);
+        SET_FLAG(arg_5->field_18, 17, local_11 != 0);
+        if (g_4e6948->state != 2) SET_FLAG(arg_5->field_18, 29, local_3[local_2.field_4d] != 0);
+        SET_FLAG(arg_5->field_18, 11, local_11 != 0);
+        SET_FLAG(arg_5->field_18, 14, local_11 != 0);
+        SET_FLAG(arg_5->field_18, 26, local_3[6] != 0);
+        SET_FLAG(arg_5->field_18, 7, local_3[12] != 0);
+        SET_FLAG(arg_5->field_18, 8, local_3[13] != 0);
+        SET_FLAG(arg_5->field_18, 2, local_3[5] != 0);
+        SET_FLAG(arg_5->field_18, 20, local_3[5] != 0);
+        SET_FLAG(arg_5->field_18, 25, local_3[5] != 0);
         local_1->field_93 = local_3[0] && ((g_510c50 && ((byte *)g_510c50)[5]) || local_1->field_93);
-        function_185be4(&arg_5->field_18, 2, local_3[0] && !local_1->field_93);
-        function_185be4(&arg_5->field_18, 0x10, local_3[4] != 0);
-        function_185be4(&arg_5->field_18, 0x20, local_3[4] != 0);
-        function_185be4(&arg_5->field_18, 0x40, local_3[7] != 0);
-        function_185be4((dword *)&arg_5->field_1c, 2, local_3[1] == 1);
-        function_185be4((dword *)&arg_5->field_1c, 0x10, local_3[14] != 0);
-        function_185be4((dword *)&arg_5->field_1c, 0x20, local_3[15] != 0);
+        SET_FLAG(arg_5->field_18, 1, local_3[0] && !local_1->field_93);
+        SET_FLAG(arg_5->field_18, 4, local_3[4] != 0);
+        SET_FLAG(arg_5->field_18, 5, local_3[4] != 0);
+        SET_FLAG(arg_5->field_18, 6, local_3[7] != 0);
+        SET_FLAG(arg_5->field_1c, 1, local_3[1] == 1);
+        SET_FLAG(arg_5->field_1c, 4, local_3[14] != 0);
+        SET_FLAG(arg_5->field_1c, 5, local_3[15] != 0);
         SET_FLAG(arg_5->field_20, 8, local_3[14] == 1);
         s_input_state *local_14 = NULL;
         if (g_4e61cc[(short)arg_0]) local_14 = g_4e61b9 ? &g_4e630c : &g_4e61dc[(short)arg_0];
-        if (local_14 && ((byte *)local_14)[0x19]) *(dword *)&arg_5->field_1c |= 0x40;
-        long local_15 = (long)(*(real *)(*(byte **)((byte *)g_4e034c + 0xf4) + 0x7c) * 1000.0f);
+        if (local_14 && ((byte *)local_14)[0x19]) arg_5->field_1c |= 0x40;
+        long local_15 = real_truncate(*(real *)(*(byte **)((byte *)g_4e034c + 0xf4) + 0x7c) * 1000.0f);
         SET_FLAG(arg_5->field_20, 0, local_3[2] > 0);
         SET_FLAG(arg_5->field_20, 1, local_4[2] >= local_15);
-        bool input_3_active = local_3[3] > 0;
-        SET_FLAG(arg_5->field_20, 4, input_3_active);
+        SET_FLAG(arg_5->field_20, 4, local_3[3] > 0);
         SET_FLAG(arg_5->field_20, 5, local_4[3] >= local_15);
-        if (input_3_active) local_1->field_8e = 1;
+        if (local_3[3] > 0) local_1->field_8e = 1;
         else
         {
-            if (local_1->field_8e && !local_1->field_8f) *(dword *)&arg_5->field_1c |= 1;
+            if (local_1->field_8e && !local_1->field_8f) arg_5->field_1c |= 1;
             local_1->field_8e = 0;
             local_1->field_8f = 0;
         }
