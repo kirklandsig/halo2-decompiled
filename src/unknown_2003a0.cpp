@@ -3060,6 +3060,24 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // ahead of the second 0x202e90 call is gone. With the re-test kept (`if (local_4 != NONE)` after the breaks): breaks for
 // the delay and stored exits 50, for the stored exit only 50, for the delay exit only 50, for all three 50 (the reload
 // returns in each). So the reload goes with the follow-up's task re-test block, whatever shape the exits take.
+// m3 lane 1 r120 (fast, control 50): the reload has a located cause. Diagnostics, reverted: the lock test's mask written 2
+// gives retail's whole body but that immediate (score 1, 578 B: `mov eax, ebp` and the loop pad); `push 2` for the follow-up
+// flag together with a threshold default of 2 gives the same (2); either one alone, the latch byte as 2 or the trigger sense
+// mask as 2 keep the reload (51/51/51/61). So the lock test's constant 1 is pooled by value with the `push 1` and the
+// threshold's 1 as one register candidate, and the index register's range is cut where that candidate is live from the first
+// arm on. No spelling separates the lock test's 1 (50 each, same code): a one-bit field of a typed entry view with base type
+// dword, byte, word, bool, long, char or short (`== false` / `== 0` too); `1u`; the flags read dword-, word-, long- or
+// char-wide; `!(bool)(flags & 1)`; byte-typed forms `!(byte)(flags & 1)`, `flags & (byte)1`, `!(char)(flags & 1)`; the existing
+// bit_vector_test(flags, 0); an inline `1 << bit` mask or (flags, bit) test helper. 0x202e90's third parameter as `bool` 50
+// (re-measured; with the threshold default 2 as a diagnostic 51, so a bool-typed `push 1` still pools); the threshold local
+// as `long` 52 (578 B). Left: a form in which the lock test's 1 is not the same value as the two later ones when the
+// register candidates are formed, or one more use of 1 at the else-if arm's level (round 169's probe gave `mov eax, ebp`).
+// Also r120: the threshold's if/else with its arms swapped 55, as the negated ternary 55; the latch as `= 1` and the flag as `1` 50/50.
+// Sentinel spellings (they change which constants pool): the pending test as `(short)pending != NONE` 68; the compute arm's task
+// test, the follow-up's task test or the entry word test as `(short)x != NONE` 50 each; the follow-up event test as
+// `(word)local_2 != (word)NONE` 52 (580 B); the trigger event test as `(word)local_13 != (word)NONE` 44 (580 B, the reload
+// stays); the second half's pending test word-wide against `(word)NONE` 52 (580 B); `word local_4 = NONE` or its reset
+// as `NONE` 50/50; the first four together 50, the two event tests 46 (581 B), with the pending test 48, all nine 48 (582 B).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

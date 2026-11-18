@@ -894,6 +894,24 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // 122/122/122 and with the offset in a for initializer and step 122.
 // NOT kept: the member reads tie and the low-byte mask grows the body by six bytes.
 // Empty-chain offset initialization, receiver reloads and row-i products still differ.
+// m3 lane 1 r120 (fast with 0x175270, 0x175430, 0x173c10, 0x2477b0 and 0x1751d0, all MATCH throughout; control 42). LEAD, not
+// kept (a reference that only renames a local): indexed definitions (`&definitions[index]`, `index++` at the latch) with
+// scale declared first and `vector3f &motion_vector = motion;` passed to the motion rotation: 33 at 1130 B, first +0x52.
+// Every integer difference is then gone (the zero store after the list test, the 1.0 stores, the three reload pairs) and
+// only row i of both rotations is left (28 aligned lines). Other forms: the system and location identity updates as
+// inline members of the value cache 42 (same code); the particle identity update as an inline member 42 (same code);
+// all three on indexed definitions with scale first 113 (1136 B), the first two 113; indexed with scale first 113.
+// Compile-only (whole file through CL /c /FAs reproduces both rotations; rows as the order of the matrix offsets
+// multiplied, l load-first, c copy-first): retail `l12,l0,l24 | l28,l4,l16 | c32,c8,l20` for the position and
+// `l0,l12,l24 | l28,l4,l16 | c32,c8,l20` for the motion, this body `l12,l24,c0 | l28,l4,l16 | c32,c8,l20` for both.
+// About 1900 forms: declarations hoisted to function scope (emitter, particle index, emitter definition, defaults, frame
+// locals, colour, both masks, particle, both copies; 450 subsets) never change the state; on the indexed form dead
+// initialised locals at function scope do (n = 0..12, diagnostic): with the motion reference n = 2..6 gives retail's
+// row i in both rotations (`l12,l0,l24` and `l0,l12,l24`) but rows j and k then multiply forward before up
+// (`l4,l28,l16 | c8,c32,l20`); dead locals in the particle loop or the emitter block, the inline members, the mask at
+// each use or inline, `+=` translation, pointer or reference locals for the position vector, the helper's returned
+// pointer and no-code mentions of the copied components give 20 other states, none retail's. So the row state follows
+// the function's tuple numbering, and retail's is one neither count reaches with the shared helper's text.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

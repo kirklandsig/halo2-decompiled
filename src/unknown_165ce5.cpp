@@ -1379,7 +1379,9 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
-// score 220 (was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// score 188 (was 188): frame 0x30 versus 0x2c (the look values have retail's homes and divisions since 11-18); the unit and
+// mode homes, the weapon-active and zoom homes, the active preset, the movzx flag test and the ESI/EDI save placement remain.
+// Earlier first line (220, was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // Earlier noted 218 (was 218). The full check gave 220 in m3 lane 16 r130.
 // MiniMax C (11-17): score 220 (was 220): no new form, no lower score. The look clamps still share one 1/rate
 // reciprocal where retail divides x / rate and -1.0f / rate and reloads g_510c54 after the yaw store, and retail's
@@ -1878,6 +1880,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // separate divisions (no shared reciprocal) with the multiply's operands in retail's order, and both look springs'
 // rates through the same reference; still open: the frame is 0x30 against retail's 0x2c, the unit and mode
 // homes are swapped and the ESI/EDI saves sit before the unit test.
+// m3 lane 1 r120 (fast with 0x165dc1, 0x166561 and 0x11eed0, all MATCH; control 188 on the 11-18 body, so the older leads
+// were re-measured on it): `active` cleared, then assigned `!busy && animating` under the unit and weapon guard 345 (2200 B);
+// the callback as `index == 0 ? right : left` 188 (same code); the two channel flag bits tested on a long copy of the byte
+// under the update test 375 (2198 B); `active` cleared, then assigned the animation test under the three-term guard 378
+// (2191 B); the first three together 322 (2202 B); the preset pair with the callback 345; the look array in its own block
+// around the clamps and the two look springs 188 (same code, frame still 0x30); the look array declared last or first in
+// the unit block 188/188; `unit` and `mode` declared bare and assigned in the next statements 188 (same code).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
