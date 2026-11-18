@@ -913,8 +913,8 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 191 (was 191): the teams flag is read before the configuration copy and address-index
-// store, and the final team-score lookup expands where retail calls it.
+// score 100 (was 191): the teams flag is read before the configuration copy and address-index
+// store, and the third team-score read expands where retail calls 0x1587f0.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
 // native counter field 191, and branch-local score stores 192.
@@ -931,6 +931,25 @@ static inline long team_score_195ed0(long team)
 // direct or retained pool, and a retained destination each score 191. The same
 // four forms with the destination getter at each access score 732. NOT kept:
 // the getter forms roll the player loop and the flag read stays ahead of the copy.
+// M3 lane 16 r135 (fast, plain confirmed): the clamp as the file's own PIN over team_score_195ed0 191 -> 100
+// (1211 B, aligned 74 -> 67): the third expansion now runs out of inline budget at its team test, which then calls
+// 0x161e60, and the per-rank g_4e9ae8 reload is retail's; retail instead calls 0x1587f0 for the whole third read.
+// The flag order needs the results block at 0x510cb0 as one global (flag +0x12b, player records +0x384, address
+// table +0xdc24): a compile-only screen with the flag and the records as fields of one global puts the flag load
+// after the copy and the 0xff store, as retail; split globals let VC schedule it first (an escaped flag address
+// does not). Also tried (fast, old base 191): the clamp as if/else statements into a long 191 (same code); the
+// score helper's statistics read through 0x162030 223 (1257 B); the third call given `ranking.teams[rank]` 195; the
+// rank loop's team as `short` 240 (1269 B); re-measured: PIN over 0x1587f0 192 (each read inlined, 0x161e60 and
+// 0x162030 called), the shared active-team query 138 (aligned 103). Diagnostic: the file with /arch:SSE 191 (no
+// change: our link inlines 0x1587f0 here and nowhere else, 0x64d70 and 0x19e1c0 call it).
+// On 100: a named statistics pointer in the score helper 100 (same code); the rank counter `short` 222 (1255 B);
+// the rank declared in each `for` 100 (same code); the entry fields written through the table (no entry pointer)
+// 105; the team helper `__forceinline` 322 (1051 B).
+// The team-mode load still precedes the player copy, and the final score call still expands.
+// Statborg across both tests 107; shared mode 214; shared mask 149; statborg/mode 202; engine
+// receiver 202; statborg/mask 160; statborg/mode/mask 178; shared eligibility 165; engine receiver and
+// mask with both mode guards 210/215. NOT kept: the 107 form grows the frame to 0x78. The mask
+// and shared-eligibility gains omit retail guards, and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
@@ -996,8 +1015,7 @@ void function_195ed0(void)
 				s_input_entry *entry = &g_511a74[team];
 
 				entry->unknown01 = ranking.team_ranks[rank] / 2;
-				entry->value = (short)(team_score_195ed0(team) < 0 ? 0 :
-					team_score_195ed0(team) > 0x7fff ? 0x7fff : function_1587f0(team));
+				entry->value = (short)PIN(team_score_195ed0(team), 0, 0x7fff);
 			}
 			for (rank = 0; rank < ranking.player_count; rank++)
 			{

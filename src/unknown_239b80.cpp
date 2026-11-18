@@ -242,6 +242,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // departure flag's byte in an argument home (236), but the flag has to stay a dword to keep the matched caller 0x239d50
 // (a bool flag drops it to 80), so the frame stays 0x18; the one-counter while form (260), the two-continuation form
 // (326) and the pass counter as a short (261) all move the loop shape or the homes away from retail's.
+// score 144 (was 144): earlier 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
+// MiniMax H (11-18): score 144 (was 144): no new form, no lower score; the frame stays 0x18 against retail's
+// 0x14, retail keeps the departure flag as a byte in the dead indices argument home where this build keeps a
+// dword of its own, and retail starts the previous heading at zero before the lowest scan where this build
+// takes it after; the byte flag and the short hull count were measured again and they move the argument homes
+// (236) or the loop shape (260). Seventeen further forms (the flag as a byte, bool, char, short and unsigned
+// char, the hull count as a short and as an int, the hull count as the loop counter, the pass counter as a
+// short) all measure 174 to 264, the compaction's copy as memcpy instead of memmove measures 145, and the
+// permuter found nothing below 144.
 // score 144 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
 // in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
@@ -739,6 +748,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // derive the ordinal at selection in the lowest/candidate/both scans 270/263/279; candidate/both with byte departure
 // 249/297. NOT kept: the lowest-only bound gives frame 0x14 but changes the register allocation at +0x4;
 // every candidate endpoint form regresses and loses the matched caller 0x239d50. The 0x18 frame and hull-count home remain.
+// m3 lane 13 r109 (fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144). Re-measured: a bool departure
+// flag alone 264 (762 B: the count then arrives in EAX, 0x239d50 80). New: the bool flag with the count read once through
+// its address for the classifier call (`short const *const count_home = &count;`, a match-only form) 262 (762 B: the stack
+// convention stays and 0x239d50 matches, the flag takes the indices home as retail, but the frame is 0x10 because the hull
+// count moves into the count's dead home); every count read through that pointer 262 (same code: folded, the count keeps
+// EBX). On the completion-flag body (match-only): bool departure and done flags, `current` at function scope, the positive
+// written-out closure and the count_home call 117 (784 B; frame 0x14 and the flag byte in the indices home as retail; left:
+// count EDI, points EBX, current ESI and the hull count cached in ECX where retail has the count in memory, points ESI,
+// current EDI and the hull count in EBX); that with a short hull count 250 (749 B). Retail never caches the count in a
+// register, even in the candidate scan where EBX is free, so the count is not a register candidate there at all.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1192,6 +1211,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // F396: Complete scalar coordinate-pair equality input, real/double epsilon, bool/byte result, forced/ordinary inline: 129/129/244/244/129/129/244/244.
 // NOT kept: no byte equality; count ECX, prior-side byte and SIMD homes remain. Original complete body and helpers restored.
+// MiniMax G (11-18): no new form, no lower score (129): the count's width is still the first difference and the
+// parameter's declared type is not ours to change; the pre-loop side still stays in a register byte where retail
+// keeps it at F-0xd, the loop's side still takes F-0xd where retail has it at F-0xc, and the zero constant
+// still lands in XMM4 against retail's XMM2. This round's forms: the two sides in a two-element holder (the
+// loop's side takes a home of its own, 149), the count copied into a local for the previous point and the loop
+// test (133), the pre-loop side as a conditional assignment (133) and the entry distance with the x term first
+// (129, the same code); all were restored.
 // M3 lane 15 r60 (fast): the side carried in one variable, the previous side copied from it at the loop top 288 (922 bytes);
 // the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
 // one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
@@ -1262,6 +1288,14 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // and result - 2); inside arm 0x23a91b-0x23a9d9 (mask bit from *point_mask when non-null, else cleared); tail
 // 0x23a9f9-0x23aa65 (NONE -> raw copy, < 3 -> 0, no positive -> 0, no negative -> count and raw copy, *point_mask =
 // mask). The difference left is allocation only: previous side in CL against [esp+0xd], zero in XMM4 against XMM2.
+// M3 lane 1 r118 (fast, the linked build; control 129, aligned 85, register-masked 20): the three plane distances
+// (previous point, loop, fraction numerator) through one new forced-inline distance helper, in either x-product order,
+// or the first two only 129/129/129 (same code); the two outputs as `fraction * dx` / `dy * fraction` in the three other
+// operand-order pairs 129 each (same code: the products are canonicalised in the linked build too); the fraction as an
+// if/else with the clamp inside (retail's shared zero block) 249 (880 B; aligned 49, masked 21), the same with each of
+// the three other output operand-order pairs 249 each (same code). Retail's split (the x output from a copy of the
+// fraction times dx, the y output as dy times the fraction in dy's own register, and `dy` copied before its product
+// with the normal's j) puts dy first in both of its products; no spelling here moves dy's rank. Body unchanged.
 // 463: crossing normal components shared by denominator and numerator, before/after deltas
 // and in x/y or y/x order, 263 each; with named numerator products 270 each. NOT kept:
 // longer crossing code leaves the count load and prior-side home different.

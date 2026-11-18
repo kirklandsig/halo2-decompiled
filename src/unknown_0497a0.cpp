@@ -488,6 +488,9 @@
 // address 536; named short-wave angle 577; named three-factor modulation 578; joint
 // special-flag mask 625. NOT kept: the frame stays short, and neither wave expression
 // reaches retail's rounded-wave homes.
+// MiniMax A (11-18): no new form, no lower score (536); what still differs is the frame (0x54 against retail's 0x60, twelve
+// bytes short) and the first XMM rotation (ours moves the wave through xmm3 into xmm1, retail through xmm1 into xmm5); the
+// between-update forms that reach retail's frame and length score higher, so the body stands.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1299,6 +1302,15 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // did not keep it for the score). Not kept: case 4's view through the existing vector3d_from_points3d 351 (same code),
 // with the direction through it too 443 (2580 bytes; retail 2596): no behaviour change, and the helper is new to this
 // file. 0x42c50, 0x42b20, 0x43720, 0x43740 and 0xbad50 still match (fast).
+// M3 lane 11 r115 (fast with 0x42c50, 0x42b20, 0x43740, 0x43720, all MATCH; control 351, aligned unmatched
+// exact/stack-masked/register-masked [133/109/30]): retail forms the point's position pointer inside each arm of case 4
+// (after the first direction read when there is a previous point, ahead of it otherwise) where ours hoists it above the
+// test. Case 4's direction through the existing vector3d_from_points3d in both arms 487 (2580 bytes) [197/197/50]; case
+// 4's neighbour lookup declared at the top of its else arm, as cases 0 and 1/2 declare theirs, 240 (2592 bytes)
+// [122/98/23] (round 88's statement order on the present body; a moved declaration that reads memory, match-only, so
+// not kept: build/r115/lead-42cf0.patch in the m3-lane11 worktree); the pixel in a named local stored to the first
+// vertex and then the outer one (retail's store order) 352 [132/108/29]; both 238 (2592 bytes) [121/97/22]; case 4's
+// no-previous arm written first 358 [150/166/46]. Body unchanged.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

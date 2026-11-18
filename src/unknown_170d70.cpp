@@ -187,25 +187,29 @@ vector3f *function_170c00(vector3f const *first_forward, vector3f const *first_u
 	return matrix4x3_rotation_between(&first, &second, out);
 }
 
-__declspec(noinline) void function_170bb0(real *out, real const *second, real const *first);
+__declspec(noinline) void function_170bb0(real const *second, real const *first, real *out);
 
+/* Retail's one caller (0x16fe90) forms the output address first, then first, then second (0x16feb0, 0x16feb6,
+   0x16feb9): right to left over (second, first, out). The output is walked through its own cursor; with the
+   parameter itself stepped, this order moves the three incoming registers (round 191). */
 // @retail 0x170bb0
-void function_170bb0(real *out, real const *second, real const *first)
+void function_170bb0(real const *second, real const *first, real *out)
 {
+	real *difference = out;
 	long channel_index = 0;
 
 	do
 	{
-		*out++ = *first++ - *second++;
+		*difference++ = *first++ - *second++;
 	} while (++channel_index < 10);
 	for (; channel_index < 11; channel_index++)
 	{
 		/* the subtracted state's basis goes first */
 		function_170c00((vector3f const *)second, (vector3f const *)(second + 3),
-			(vector3f const *)first, (vector3f const *)(first + 3), (vector3f *)out);
+			(vector3f const *)first, (vector3f const *)(first + 3), (vector3f *)difference);
 		second += 6;
 		first += 6;
-		out += 3;
+		difference += 3;
 	}
 }
 
@@ -272,6 +276,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
 // product in a local (180) or the tests split into bool locals (123). Permuter (25 min on r622): best 63, from the
 // two changes kept here plus spelling-only rewrites; the count as unsigned 72 alone.
+// Round 575: time and group still trade stack slots. NOT kept: time cursor in the for step 143; time-range
+// walk with derived ordinal 422; short channel stride 78; channel stride at each advance 127; exact group
+// termination 65; group while loop 64; final rotation group first 341; shared basis dot product 151.
+// The time cursor and group ordinal still spill in the opposite order. Their latch and the cross products also differ.
+// Tried time-group index name 64, ordinal before channel setup 83, time cursor before current 141, time cursor before constant 129,
+// indexed time address 88, shared copy width 329, self-dot length tests 64, accepted-orientation return 64.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -754,8 +764,9 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 	if (cluster_index != NONE)
 	{
 		dword visible[16];
-		function_16de20(cluster_index, (s_16e150_bits const *)g_4e0348, visible);
-		for (long i = 0; i < g_4e0348->list_count; ++i)
+		s_match_globals const *bits = g_4e0348;
+		function_16de20(cluster_index, (s_16e150_bits const *)bits, visible);
+		for (long i = 0; i < bits->list_count; ++i)
 		{
 			if ((visible[i >> 5] & (1 << (i & 31))) && collection->cluster_count < 128)
 			{
@@ -809,6 +820,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Portal sentinel value 129. Group count before head 129.
 // The slot still uses EBP and the volume index EBX. The loop-break result grows to 442 bytes and changes
 // the prologue. The matched caller and projection callee stay exact throughout.
+// Separate mapped and selected slots 152; existing cluster address before slot assignment 151;
+// order subscript from count 129; mapped value from count 129; chained map/order assignment 129;
+// new cluster address before map/order stores 129; separate slots with chained stores 152;
+// count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
+// The opening EBX save and later BP volume index are still exchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1035,7 +1051,7 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 346 (was 346). Logic walked block by block against retail: every call, constant and field offset agrees.
+// score 346 (was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
 // 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
@@ -1047,6 +1063,15 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // in retail, ours loads all three first.
 // Tried (no gain, all 356-383): sk/sj/si locals before or after the squares (357-383), ratio/original/vertical
 // statements moved (360-361), deviation as float sum (367), per-term (double)(a*a) (372), double locals (419).
+// The first unity load and original-axis squares keep their opening registers. The frame still agrees.
+// Shared cross 346; staged cross 350; unconditional input vector 370; input scalars 413;
+// staged output scalars 465; complete output vector 396; native three-axis matrix 346; reciprocal-bound ternary 346.
+// NOT kept: the four alias-free transforms also demote the matched view initializer in preview.
+// Unity remains in XMM3, while retail uses XMM5 and carries the squares through the tangent.
+// Squared-axis vector 387; squared axis in matrix diagonal 361; shared weighted k 376;
+// weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
+// vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
+// NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1123,7 +1148,9 @@ struct s_polygon_context_173910
 short function_120850(vector3f const *v);
 bool function_23a220(point2f const *point, short count, point2f const *points, real epsilon);
 
-// score 69 (was 126): logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
+// score 3 (was 69): the side test uses EAX instead of AL, and the final call sets up the two
+// argument addresses in reverse order.
+// Earlier at 69: logic equals retail (plane from the polygon's plane index, axis = function_120850, projection
 // of the context origin onto the plane, the two axis indices from g_440b94[axis * 2 + (plane[axis] > 0)], the 2d copy
 // of every vertex, point-in-polygon with 0.0001f); no behaviour difference found. Retail makes the 0/1 an int
 // (mov 1 / xor), tests it at once (test al, al) and builds the index with setne later; that and the early
@@ -1136,28 +1163,37 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
 // a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
 // the plane declared first are 69.
+// Round 575: the axis and side still occupy the wrong registers across projection. NOT kept:
+// projection index before origin 128 or after distance 104; side as row bit 117; default-zero side 121;
+// shared point projection 136; vertex base before the loop 156; query point initializer 69;
+// three-coordinate projection loop 69.
+// Tried comparison widened directly 69, unsigned-short side 69, normalized side local 120, early copy bound 122,
+// byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
+// byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
+// normalized long with origin record 3, normalized signed byte with origin record 40, normalized bool with origin record 40.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
 	point2f points[128];
 	plane3f const *plane = &context->geometry->planes[polygon->plane_index];
 	short axis = function_120850(&plane->n);
-	short positive = plane->n.n[axis] > 0.0f ? 1 : 0;
-	point3f const *origin = &context->origin->position;
-	real distance = 0.0f - plane_distance_to_point(plane, origin);
+	long positive = plane->n.n[axis] > 0.0f ? 1 : 0;
+	bool use_positive_side = positive != 0;
+	s_polygon_context_173910::s_origin const *origin = context->origin;
+	real distance = 0.0f - plane_distance_to_point(plane, &origin->position);
 	point3f projected;
-	projected.x = plane->n.i * distance + origin->x;
-	projected.y = distance * plane->n.j + origin->y;
-	projected.z = plane->n.k * distance + origin->z;
+	projected.x = plane->n.i * distance + origin->position.x;
+	projected.y = distance * plane->n.j + origin->position.y;
+	projected.z = plane->n.k * distance + origin->position.z;
 	point2f point;
-	point.x = projected.n[g_440b94[axis * 2 + (positive != 0)][0]];
-	point.y = projected.n[g_440b94[axis * 2 + (positive != 0)][1]];
+	point.x = projected.n[g_440b94[axis * 2 + use_positive_side][0]];
+	point.y = projected.n[g_440b94[axis * 2 + use_positive_side][1]];
 	for (long i = 0; i < polygon->count; ++i)
 	{
 		point2f *destination = &points[i];
 		point3f const *vertex = &polygon->points[i];
-		destination->x = vertex->n[g_440b94[axis * 2 + (positive != 0)][0]];
-		destination->y = vertex->n[g_440b94[axis * 2 + (positive != 0)][1]];
+		destination->x = vertex->n[g_440b94[axis * 2 + use_positive_side][0]];
+		destination->y = vertex->n[g_440b94[axis * 2 + use_positive_side][1]];
 	}
 	return function_23a220(&point, (short)polygon->count, points, 0.0001f) != false;
 }
@@ -1268,6 +1304,14 @@ struct s_point_pool_173520
 // if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
 // Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
 // not kept.
+// Round 575: pool publication and state-test scheduling still differ. NOT kept: state predicate before
+// metadata 101; shared reverse predicate 121; forward source index 988; signed byte direction 98;
+// double clamp result 96; direct bounds member 161; typed inside view 117; point-value corners 212.
+// The pool increment and state-test schedule, stride reload, x87 clamp, and bounds expansion still differ.
+// NOT kept: capturing the state moves the projection branches. The explicit float clamp grows the body.
+// Tried state snapshot after reservation 172, returned byte for traversal 180, scoped bounds alias 96, named point stride 96,
+// signed remaining-count loop 934, explicit float clamp outcomes 117, explicit minimum selection 96, library box copy 96,
+// explicit double clamp outcomes 96, direct cache pool members 188.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1424,6 +1468,11 @@ struct s_pool_view_172840
 // store, and the copy and bit set reuse the same destination base as at retail 0x172a9b–0x172aae. All 36
 // checked functions preserve their status, with no score rise elsewhere. The flag homes and false-return
 // tail still differ.
+// Independent pool/projection assignments with direct queue failure or success return 221/221;
+// conditional return 226; pool/projection else-if with direct queue failure 215; carried result with
+// queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
+// with projection before queue or first-write initialization 221/221; four flag names reordered 205.
+// NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1654,6 +1703,11 @@ struct s_camera_reference_171830
 // point difference 286; signed cluster ordinal retained 284; shared rear-displacement scale
 // 284; combined reference admission 284; no-displacement early exit 311; signed winning
 // side 282. NOT kept: signed winning side gains two and shortens to 1213 bytes.
+// Shared plane distance 284; clear-side-first separate success arms 252; plane-first split 284;
+// plane-first helper 284; shared scale for up, side or both 284/284/283; shared sample endpoint
+// setter 284; signed reference 281; named plane distance 285. NOT kept: the 252 form puts the
+// clear-side store before the plane arm, away from retail's branch order. The frame and point
+// convention remain different; the 281 form also moves away from retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -1790,11 +1844,12 @@ PRIVATE __forceinline void follow_matrix_point(transform4x3f const *matrix, poin
 	real z = point->z;
 	real y = point->y;
 	real x = point->x;
-	if (matrix->scale != 1.0f)
+	real scale = matrix->scale;
+	if (scale != 1.0f)
 	{
-		x = matrix->scale * x;
-		y = matrix->scale * y;
-		z = matrix->scale * z;
+		x = scale * x;
+		y = scale * y;
+		z = scale * z;
 	}
 	point->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
 	point->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
@@ -1817,7 +1872,7 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 336 (was 346; 464 before that, fast): same behaviour as retail. Walked statement by statement against retail
+// score 325 (was 336): same behaviour as retail. Walked statement by statement against retail
 // (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
 // order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
 // The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
@@ -1847,6 +1902,14 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // real direction_x/y locals (346), the direction array (320, above).
 // Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
 // stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
+// The point transform now reads its scale once. The state and collision-point registers still differ at entry.
+// Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
+// named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
+// cached vector-transform scale 397; signed-word location cluster 336.
+// The camera state remains in EBP and the collision point argument still uses EBX.
+// Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
+// initial placement clamps on all three coordinates 336; projected-point aggregate 429;
+// in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

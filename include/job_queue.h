@@ -141,6 +141,6 @@ struct s_job_node
 	s_job_node *next;
 };
 
-long async_task_add_work(async_task_work_function callback, long parameters_size, void *parameters, long priority, bool *done);
+long async_task_add_work(async_task_work_function callback, long parameters_size, void *parameters, long priority, bool volatile *done);
 
 #endif

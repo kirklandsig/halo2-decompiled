@@ -345,6 +345,17 @@ void function_1d56f0(s_havok_component *component)
 // (822 B); the count step as `local_5 += local_4 ? -1 : 1` 125 (829 B); the per-step height change as
 // `local_4 ? -arg_4 : arg_4` 93 (819 B, but a negate where retail multiplies by -1.0f/1.0f). Still BLOCKED-BY
 // 0x1d0cf0 for the tail (retail passes it the transform in EAX, the component in EBX and the index in ECX).
+// M3 lane 3 r258 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10/0x1d0ee0/0x1d56f0/0xe0c70/0x1d3fc0/0xe1c40 and the 0x1d0cf0
+// callees; control 77 with 0x1d0cf0 65 and 0x1d0c20 38): 0x1d0cf0's copy through the existing hkTransform::set (four
+// movaps pairs as retail 0x1d0cfc-0x1d0d26) gives this function 73 (820 bytes), 0x1d0cf0 90 (231 bytes) and 0x1d0c20 40;
+// on it 0x1d0cf0 takes the transform in EAX and the index in ECX as retail (`mov esi, ecx`), and only the component
+// still arrives on the stack (`push ebx; mov ebx, [ebp + 8]`). That form with the parameters declared in five other
+// orders, (transform, component, index), (component, index, transform), (component, transform, index),
+// (index, transform, component), (transform, index, component), definition, declaration and both calls together:
+// 73 / 90 / 40 each, the same code, so the declared order does not choose the component's register. The link-time walk
+// model (round 195's scripts on this baseline) has 0x1d0cf0 free to take a custom convention, reached through
+// 0x1d1b60 > 0x1d0c20 > 0x1d0cf0, with 0x1d1260 and 0x1d1540 at the default one. Nothing kept (0x1d0cf0 and 0x1d0c20
+// rise). Still BLOCKED-BY 0x1d0cf0 (the component's EBX).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

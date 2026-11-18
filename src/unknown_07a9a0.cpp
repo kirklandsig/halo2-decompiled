@@ -1043,6 +1043,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// score 871 (was 964): The frame is 0xd0 versus 0xb4. The opening variant lookup expands and the upper-capacity
+// selector remains a call.
 // MiniMax I (11-17): no new form, no lower score (964): re-measured the baseline; retail's session arrives in EAX
 // with a 0xb4 frame against our 0xd4, and that ingress is fixed by the callers in the other files, and the opening
 // 0x192e60 and the capacity test are inlined or called the other way round here (both callees in other files), so
@@ -1052,6 +1054,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
+// Earlier: 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // score 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Frame 0xd0 versus retail 0xb4, with an expanded opening variant lookup
 // and a capacity selector call. The dword histogram trials reduce the frame to 0xb0.
@@ -1525,6 +1528,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Both histogram passes with a group-size pointer and signed remaining count 871 kept (plain). Identity
 // remaining count/end pointer 942/941; all-group/eligible-party word passes 947/937; all-group/eligible-
 // party/both dword passes 969/997/936. NOT kept: 941, 937 and 936 each gain fewer than eight.
+// Round 418: Outer source-ID/source-identity/destination-identity cursors and their pairs
+// 877/902/871/900/870/873, all three 873, all with dword histogram 918. NOT kept: the one-point lead leaves the
+// entry unchanged, and the native-width table allocates 0xb0 and shortens the body.
 // Round 605. The 0xd0 frame still exceeds 0xb4 and the entry variant lookup still expands. Per-group total,
 // rated-count and average pointers 871/871/878. All three 852 (NOT kept: only the combination gains and retail
 // advances the counters at a shared stride). Player group, rating and identity cursors 916/931/902. Machine ID
@@ -1541,6 +1547,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Separate machine-validation bytes shorten the body to 2704 bytes. Initializing the result from admission
 // grows it to 2952 bytes and changes caller 0x73530 from matched to 8 in preview. The other forms tie or
 // regress. The opening call and the ID/histogram frame layout still differ.
+// The separate histogram keeps the frame at 0xd0, and the opening variant lookup still expands.
+// Group range ends for all/eligible passes 886/886; skip other groups 871;
+// per-group player-count snapshot 957; spread from count before last update 907;
+// conditional first accepted size 871; counters cleared before ID copy 871;
+// two-field session ID copy 867; admitted rating before flags 910; one team setup gate 908.
+// NOT kept: the two-field ID copy gains four and shortens the body to 2748 bytes.
+// Admitted player count for availability or also output count 947/908; mode before the minimum or both capacity tests 883/883.
+// Early mode with carried count 927/899; named capacity bounds with carried count 908/927.
+// NOT kept: frame and opening lookup still differ, and every form scores higher.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

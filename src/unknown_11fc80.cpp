@@ -241,10 +241,7 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 
 	out[a] = point[0];
 	out[b] = point[1];
-	if (fabs(plane[axis]) < k_real_epsilon)
-		out[axis] = 0.f;
-	else
-		out[axis] = function_120791(plane, point, a, b, axis).field_0;
+	out[axis] = fabs(plane[axis]) < k_real_epsilon ? 0.f : function_120791(plane, point, a, b, axis).field_0;
 	return out;
 }
 

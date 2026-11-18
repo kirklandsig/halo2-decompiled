@@ -175,6 +175,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 44; the search record declared first in the function 12 (same code); the scratch buffer fetched before the search record's
 // setup 249 (978 bytes); the 0x1ac610 short output array scoped to its call 12 (same code). Re-measured by mistake: the
 // equal-arm flag test on a fresh actor lookup 61 (round 150). Body unchanged.
+// M3 lane 12 r139 (`--fast 0x1af160 0x1e1f20`, control 12): fresh actor lookups to give the actor fewer uses, none folding
+// back (calls sit between): the saved reference copy 295 (990 bytes), the first test's +0x3c flag 297 (994 bytes), its
+// unknown227 306 (1002 bytes), the first two together 306; the node looked up again after the first 0x25d690 call, its first
+// lookup inline in that call's argument, 311 (1003 bytes). Body unchanged.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

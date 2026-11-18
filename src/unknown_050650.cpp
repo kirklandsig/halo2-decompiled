@@ -924,6 +924,16 @@ struct s_collision_result_buffer_1697c0
 // shared rotation 289. NOT kept: the 1423-byte forms at 217/226/228 require
 // one-use trig results. The helper form grows and raises its other user's score
 // from 23 to 245. The 217 form recovers the axis, result byte and magnitude homes.
+// Deferred clear publication 374; one normalized candidate 437, selected vector
+// pointer 474, separate selection arms 516; deferred store through candidate 340
+// or best direction 348; normalize best direction after loop 446; deferred clear
+// store with separate fallback 358. NOT kept: all raise the score and change the
+// matched caller; the frame-bottom magnitude/draw/trig home remains.
+// The initial pitch-axis slots and the shared magnitude, random and sine transfer word still differ.
+// Planar magnitude before/after axis initialization 328/328; fallback with planar length 339;
+// direct scaled-axis setter 309; planar normalization with field stores/setter 341/357;
+// fallback-first planar normalization 407; planar length from initialized axis 302. NOT kept:
+// the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -2176,6 +2186,10 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-18): no new form, no lower score (442): the entry block's register roles still differ - retail keeps
+// the actor index in ESI, the slot offset in EAX, adds it to the base and spills it at esp+0x30, where this build
+// colours the registers differently - and 0x1fdd90 is still expanded here where retail calls it out of line (its
+// definition is in another file): BLOCKED-BY 0x1fdd90.
 // MiniMax E (11-15): no new form, no lower score (442): the call boundaries agree with retail's except that 0x1fdd90 is expanded here where retail calls it out of line, and its definition is in another file. BLOCKED-BY 0x1fdd90.
 // MiniMax C (11-15): no new form, no lower score (442 plain): the frame is still 0xd0 against retail's 0xc8 and the
 // cached animation words still have other homes, and this link still inlines 0x1fdd90 where retail calls it, which
