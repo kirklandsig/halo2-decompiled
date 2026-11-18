@@ -813,6 +813,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // retail's build inlines pack_color4f from that file while this file's front end expands its own copy, so the
 // frame is still 0xa8 against retail's 0xac and the first-edge Y, half-width, cursor and colour homes still
 // differ; the u step and the V end still take 4-byte homes where retail spills them to the 8-byte ones.
+// MiniMax A (11-18): no new form tried this round, no lower score (351): the frame is still 0xa8 against retail's
+// 0xac, so the u step and the V end still take four-byte homes among the channel slots where retail spills them to
+// the eight-byte homes at the top of the frame, and the first-edge Y, the half-width, the cursor and the colour
+// homes differ with them. The helper this body calls at 0x131e50 has its declaration fixed in another file, which
+// this lane may not change: BLOCKED-BY 0x131e50.
 // score 351 (was 233): earlier 250; frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax C (11-11): no new form, no lower score (233); the frame is still 0xa8 against retail's 0xac, and the u
 // step and the V end still take 4-byte homes among the channel slots where retail spills them to the 8-byte homes

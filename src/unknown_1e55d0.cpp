@@ -75,6 +75,11 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // runs two bytes longer than retail's 1164; retail keeps the move pointer in EBX and the input pointer in EDI
 // where this build keeps them the other way round, and that trade is settled by the case-3 callee 0x1ec690's
 // stub convention in src/stubs/bipeds.cpp: BLOCKED-BY 0x1ec690.
+// MiniMax H (11-18): no new form, no lower score (319): retail keeps the EAX argument in EBX and the third argument
+// in EDI (`mov ebx, eax` then `mov edi, dword ptr [ebp + 0xc]`), this build keeps the third in EBX and the EAX one
+// in EDI, and that trade is settled by the case-3 callee 0x1ec690's stub convention in src/stubs/bipeds.cpp, which
+// this lane may not edit (BLOCKED-BY 0x1ec690); the six alias orders, the aligned capsule local and the case orders
+// were already measured by earlier rounds at 319 each, so the body stands.
 // MiniMax I (11-17, run 103): no new form, no lower score (319): re-measured the baseline (1176 bytes against retail's
 // 1164) and the frame still agrees at 0x94; the output pointer's and the input pointer's registers still trade with
 // each other against retail, and that trade is settled by the 0x1ec690 stub's convention in src/stubs/bipeds.cpp:

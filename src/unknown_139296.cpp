@@ -1370,6 +1370,10 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // its offset zeroed inside the guard 118 (the inner test threads away and the zero is kept, as for the later loops);
 // the current form with the offset step in the for header 1, with offset and count in one declaration 1 (both the
 // same code).
+// M3 lane 3 r260 (fast with 0x13a532, 0x1393f3; control 1, SSS re-measured 118 at 375 B): on SSS the four masks in one
+// declaration 118, the item output declared ahead of the masks 118, the success flag after the definition pointer 118,
+// loop 1's count declared bare at function scope 118; S S G (loop 3 as a `> 0` guard around a nonzero-count for) 44
+// (368 B: loops 1 and 2 exactly retail's, loop 3 retail's plus its inner `test eax, eax; je`).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

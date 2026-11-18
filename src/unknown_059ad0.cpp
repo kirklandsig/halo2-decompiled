@@ -4244,6 +4244,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// score 305 (was 305): frame 0xd8 and the length agree; the three flag bytes' homes are a rotation from retail's,
+// retail reads the accepted byte back at every exit, and the timeout call lacks retail's owner spill (BLOCKED-BY
+// 0x769a0). The rounds' notes follow in the order they were written.
 // MiniMax C (11-16): no new form, no lower score (305): the frame and the length agree, but the three boolean homes
 // stay rotated against retail's (retail: better +9, same +0xa, result +0xb) and retail's call to the matched 0x769a0
 // passes three arguments - the observer on the stack (push eax), the session's value10 in EDX (dead at the callee) and
@@ -4259,7 +4262,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // MiniMax G (11-18): no new form, no lower score (305): the frame 0xd8 and the length agree, but the three boolean stack homes are still a
 // rotation from retail's (retail: better +9, same +0xa, result +0xb) and the timeout spill needs 0x769a0's unread owner parameter, whose
 // definition lives in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
-// score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
+// Earlier 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
 // Earlier 305 (was 310): the invalid-state exits and the missing-sender exit return the result directly
@@ -4456,7 +4459,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the boolean homes stay a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the
 // identity byte at +0x9 against retail's +0xa) and the two peer bytes are zeroed at +0x11/+0x13 where retail
 // zeroes its pair at +0x11/+0x12.
-// score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305): the frame and the body length agree with
+// Earlier 305 (was 305): MiniMax D (11-17): no new form, no lower score (305): the frame and the body length agree with
 // retail's, but the three boolean homes stay a rotation from retail's (this build's acceptance byte at +0xa against
 // retail's +0xb, its identity byte at +0x9 against retail's +0xa, and its third byte at +0xb against retail's +0x9),
 // retail reads the acceptance byte back where this build folds it to a constant, and this build zeroes its pair of peer
@@ -4466,6 +4469,13 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // true;` set before the pending/failed bit block 337 (1232 B); `if (!same && !better) goto disconnected; ... goto done;`
 // 305; `bool better = false, same = false;` 305. The acknowledgement as a forceinline helper at both sites re-measured 506
 // (round 30's form: the inline_depth(0) region keeps it a call). Still BLOCKED-BY 0x769a0 for the timeout spill.
+// M3 lane 13 r110 (fast with 0x5e3f0, which matched in each; control 305): the three flags as members of one local
+// aggregate (better, same, accepted; the identity test reusing `same`) 305, with all three cleared at entry 305, with
+// the members in the other order 305; the three as one local array in either order 305 and 305 (all the same code:
+// members and constant-index elements are scalar-replaced). Reading: retail's flag bytes are contiguous (+9, +0xa,
+// +0xb) and are stored and read back from memory at every exit with no constant propagated, which no plain local,
+// aggregate member or array element gives here; their addresses must escape (out-parameters of a helper that retail
+// expands inline), and this body cannot expand a helper inside its inline_depth(0) region.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
