@@ -3078,6 +3078,9 @@ real magnitude3d(vector3f const *v);
 // inline 195, with staged current bound 274; both reciprocals defined before either normalized vector
 // 170. The raw length still shares the clamped slot and the dot keeps a promoted copy in the restored
 // body.
+// Shared clamp interval 170; separate first lower-bound read for current/target/both 170/170/170;
+// preset ceiling and selected fresh in-range read for current/target/both 185/215/222; both with
+// shared interval 222. NOT kept: ties or regressions; raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -4075,6 +4078,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
 // copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
 // view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
+// Paired projection aggregate, paired assignments, indexed projection and projection cursors:
+// 486/486/510/537; with the shared velocity setter 513/513/517/537. NOT kept: the setter
+// reduces the frame on direct calls but grows the difference and moves away from retail length.
+// Returned projection copies and the independent velocity reloads remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -5037,6 +5044,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
 // before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
 // the keep bar, so the body stands.
+// Signed radius interval, rectangular footprint, four immutable offsets and an indexed transform loop:
+// scalar alpha 416/250/400/471; four-channel color 384/384/404/475. NOT kept: all regress.
+// The frame and the positive-radius, negative-radius and scaled-zero spill homes remain.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
