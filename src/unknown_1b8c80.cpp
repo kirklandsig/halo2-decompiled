@@ -352,6 +352,17 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // bytes); the seat-index field pointer with 0xc8200 nested under the 0x1b8d80 test and a block-local unit index 3
 // (reload EAX as retail, but the order is reload, unit, seat, object where retail has reload, seat, object, unit).
 // Restored.
+// Round 117 (m3 lane 11, fast with 0x1b8eb0/0x11b0c0/0x11ade0/0xc8200/0x1b8d80/0xc8f60/0x1df560, all matched each time): a
+// `long const &` bound to the seat's object index in the innermost block and passed to 0xc8200 3 (same code); a `short
+// const &` bound to the seat index there 3 (same code); an `s_object_seat const &` bound to seats[i] there for both
+// arguments 73 (380 bytes, the block-scoped pointer's code); a loop-top seat pointer with its address taken (`(void)&seat;`)
+// for the object argument 3 (same code); that pointer read through a `s_object_seat *const *` at the call 3 (same code).
+// Diagnostics: with `last_object_index` (a plain stack operand) as the object argument the setup loads seat, object, unit,
+// last to first; with the definition-flags pointer declared after the object block (round 54's 84 form) the seat address is
+// first formed in EAX at the loop top and the 0xc8200 setup is retail's four instructions exactly. So the reload returns
+// to the register the address was formed in, and from EAX the arguments load last to first; retail forms the address in
+// ECX (EAX holds the scaled index there) and still reloads it into EAX, as if the stored address and the reloaded
+// pointer were two values. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -846,6 +857,20 @@ extern "C" void _ReadWriteBarrier(void);
 // actor lookup or after the barrier 6/6 (same code), without the barrier 44 (208 bytes); a flags byte read after
 // the barrier and tested in the NONE block 6 (forwarded to its use), without the barrier 44; the state as the slot's
 // data block minus 0xc, no barrier, 44 (folds back to the slot).
+// Round 117 (m3 lane 11, fast; a compile-only build of the file still reproduces this function): `switch
+// (actor->unknown26c) { case NONE: ... }` for the outer test, no barrier, 44 (208 bytes); an early exit for a NULL state
+// ahead of the busy test, no barrier 60 (219 bytes: the slot loads in the entry block, the base moves to ESI and the
+// test stays), with the barrier 56 (217); the third parameter read as the type's element (as 0x1ba3f0 does), unused, no
+// barrier 44; the slot walked as a byte cursor (`cursor[0x22]`, `cursor += 0x34` before the point copy), no barrier 44,
+// with the barrier 6 (same code); the busy test through a `long *` to the 0x26c field, no barrier 44. Screened
+// compile-only (each the no-barrier code): `register` on the state, the actor or both; a `goto` to the final store for a
+// busy actor; the state defined again in an else arm or under `if (list)`; the slot held in a by-value one-pointer
+// aggregate parameter. Diagnostics (reverted): a store of the slot pointer itself into the actor's 0x424 field in the
+// entry block gives retail's first eleven instructions exactly (42, 213 bytes, first difference +0x25: the slot loads
+// right after the data base, the 0x26c compare stays in memory, the base stays in EDX); a store of it into 0x450, a NULL
+// test stored as a bool, or a two-use memory load there keep the load in the entry block but move the base to ESI or
+// pull the 0x26c load into EDX. Reading: retail's entry needs a use of the slot pointer's own value in the entry block (a
+// dereference sinks to its use); no code-free form of such a use is known.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
