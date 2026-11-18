@@ -4527,6 +4527,10 @@ bool __stdcall function_2b278e(long controller_index)
 // The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
 // Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
 // native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
+// Shared unsigned/short dialog mask 208/208, with the first or both virtual
+// queries 210/210. Conditional dialog calls with Boolean/existing membership
+// 199/54. Early confirmation with direct/short masks 201/202. The controller
+// reference is still absent after the membership query.
 // The incoming controller reference and the two post-membership index reloads still differ.
 // Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
 // @retail 0x2b24ff

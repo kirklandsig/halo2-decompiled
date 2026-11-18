@@ -176,6 +176,12 @@ __forceinline long portal_path_gain(real distance, real range)
 // build/r111/held-0x18dc90.patch (the r110 patch with the aggregate-returning pin helper) the fmul schedule is retail's
 // at both sites: harness 244 positional / 17 aligned at 1364 B, fast 250 (the r110 patch 249, aligned 23). Left: the
 // cluster pointer in EBX and the widened portal index in EBP, and the padding that follows from it.
+// Keep the table reloads and starting cluster in EBP together on the 0x428 frame.
+// Path-list ordinal before seed 357; separate seed and search lookup 365; seed
+// validation before bitmap clear 296; walk count snapshot 364; link cursor 355;
+// sound comparison before portal flags 322; nearest distance after path-list
+// lookup 293; signed admission index through range and bitmap 317.
+// NOT kept: 293 gains three and moves the first difference earlier.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

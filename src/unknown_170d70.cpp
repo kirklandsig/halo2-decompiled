@@ -282,6 +282,12 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // The time cursor and group ordinal still spill in the opposite order. Their latch and the cross products also differ.
 // Tried time-group index name 64, ordinal before channel setup 83, time cursor before current 141, time cursor before constant 129,
 // indexed time address 88, shared copy width 329, self-dot length tests 64, accepted-orientation return 64.
+// The time cursor and group ordinal still trade spill homes. Writable time cursor 125, read-only cursor after
+// ordinal 129, read-only channel cursors 125, cached coefficient width 475, separate coefficient-width cursor 329,
+// target advanced first 78, shared signed stride with target first 157, sized time-array reference 103,
+// interpolation arm first 64, inner interpolation scope 64, writable cursor with basis dot 125, with shared cross
+// products 131 or with inline normalization 123. NOT kept: the explicit cursor recovers the channel loop, but the
+// orientation tail grows the body to 1413 bytes.
 // @retail 0x170630
 void function_170630(long player_index)
 {
@@ -1177,6 +1183,11 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // Tried side ternary 3, side branches 135, side-bit mask 46, side equality 8, byte conversion 4,
 // query before projected workspace 3, named predicate 5, named call count 5, normalization after distance 126.
 // NOT kept: the byte conversion recovers the test but reverses the x product operands.
+// The AL side test and the final call address order remain. Low-byte mask 13, complementary side predicate 123,
+// signed-byte normalization 4, byte side with scalar-first x product 4, staged normal-first x product 4,
+// origin-first x sum 4, complete point initializer 4, selected axis-table row 92, shared query address 3,
+// staged distance-first x product 4.
+// NOT kept: byte normalization recovers the AL test but exchanges the x product inputs.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
@@ -1490,6 +1501,11 @@ struct s_pool_view_172840
 // Native queue index, named point index or earlier bounds pointer 55 each.
 // NOT kept: widening with independent tests restores the flag and spill homes at 870 bytes. Portal store first reaches
 // 19 at 868 bytes, with the portal and cluster stores reversed from retail.
+// The result and flag homes differ, and the widened cluster must stay live through the ordered entry stores. Short
+// field plus separate extension 152, early predecessor store 60, key after both identifiers 31, rectangle memcpy
+// 55, narrow predecessor local 55, widen after both identifiers 152, entry pointer before count 60, clipped count
+// first 55, common bounds destination 55, key before predecessor 53. NOT kept: the 31 form publishes the cluster
+// before the key. The 60 forms move the link or reservation sequence and the 53 and 55 forms grow to 870 bytes.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

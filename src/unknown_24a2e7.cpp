@@ -231,6 +231,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // aggregate 84. What is left on 39: ours keeps i * 0x248 in EBX across the calls (i itself in ECX in the loop), retail
 // keeps i in EBX and multiplies again for the terminator and the plain arm. The aggregate is a grouping form
 // (match-only); build/r119/lead-0x24a691-39.cpp.
+// Remaining count with a separate ordinal 80, with indexed clear 78, with
+// a selected entry 95, and with both 69. Wide result with direct/indexed
+// clear 67/84. Shared entry lookup 131. Clamped signed range 74.
+// The countdown and clamped range can reserve 0x28 but the added slot
+// still does not carry the entry base across the string calls.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

@@ -238,6 +238,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // needs the head, stage and pass elements bound by reference and is kept only with an exact match, so the plain-pointer
 // body stands.
 // Earlier at 117 (from 117): The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
+// Earlier 117 (was 117): The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
 // M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
@@ -736,6 +737,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // where retail reuses EDX, and the table is not re-read after the 0x137bd0 path as retail does); that with the +0xd8
 // flags read just before 0x173ba0 154 (0x224d90 36); that pointer for every lookup with the four cache zeros together
 // after the material lookup 150; the pointer for the head and the stage-table lookup only 151.
+// Existing model and fallback render-tag types singly or together with the
+// short ordinal 117 each. Typed shared tag lookup 152, with both model types
+// 152, with the model field used directly 152, with typed tag arrays 152,
+// and with both shader lookups shared 152. The full-width fallback moves
+// the table load ahead of the frame. The stage and pass addressing still fuses.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -400,6 +400,11 @@ void player_action_initialize(s_player_action *arg_0);
 // register value gives unit-first, a field read index-first), a reference-bound unit (the load moves to the loop's
 // head) or a derived pointer (an extra add): none gives retail's out-of-line copy and its inline site together.
 // BLOCKED-BY 0xcbec0 stands.
+// Held-state transitions store-first/toggle-first 119/121; held-first
+// test 151; release or new press store-first/toggle-first 157/151;
+// shared action mask 114; angle unit reference 164; named inclination inputs 114.
+// NOT kept: the held-first latch reaches 1497/1515 bytes but scores 151.
+// The release arm and output/angle schedule still differ.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

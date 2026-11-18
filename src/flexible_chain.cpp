@@ -777,6 +777,11 @@ void __stdcall function_1160c0(real dt)
 // (1373 B); the rows written `position + offset` 144 (same code); the angle call and the rotation in their own `{}` block
 // 144 (same code); the scale written into the vector3f_add_scaled call 144 (same code); the rest-offset copy after the angle
 // call 180 (1375 B).
+// Conditional segment pointers from one base 291; ordinal minus terminal test 285;
+// terminal pointer relative to block end 304; segment/axis/offset names 144;
+// recurring point and rotation names 144; shared in-place displacement add 214;
+// conditional default axis pointer 304; default axis pointer assigned after normalization 294.
+// The segment still uses EDI/ECX and +0x20 against EDX and +0x14.
 // The widened addressing ordinal leaves the segment spill at +0x20 and the low rotation slots differ.
 // Shared node ordinal with direct count, captured count, terminal decrement, captured count plus pointer advance, and decrement plus advance 144/146/147/146/147.
 // Using the widened ordinal at the anchor test as well, with direct count, captured count plus advance, and decrement plus advance 283/283/170.
