@@ -1075,6 +1075,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Matrix returned by value 471 (initializer loses its match); shared alias-safe transform 361; staged basis transform 368.
 // Axis-square diagonal accumulators 346; staged diagonal 363; separate scaled cosine terms 363.
 // Original direction copied by memcpy 346; separate transform source pointer 383. Unity still starts in XMM3.
+// Shared sine-axis scale after or before cosine 360/358. Cosine-complement scale 331.
+// Cross terms staged per pair 366. Grouped common builder for the rotated axis 351,
+// with shared sine contributions 516. Rescaled original forward 349, with shared point difference 395.
+// NOT kept: cosine-complement scaling holds the axis components live where retail reads them again.
+// The retail second rotation scales j before multiplying by i. Preserving that grouping still differs.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1495,6 +1500,10 @@ struct s_pool_view_172840
 // Native queue index, named point index or earlier bounds pointer 55 each.
 // NOT kept: widening with independent tests restores the flag and spill homes at 870 bytes. Portal store first reaches
 // 19 at 868 bytes, with the portal and cluster stores reversed from retail.
+// Independent failure stores with widened publication and reused polygon, entry, or both clip bounds 55/55/55.
+// Clipped end pointer 124. Shared clipped count 115. Shared clipped points 54. Parent bitset base 203.
+// Signed allocated entry index 55. NOT kept: shared count removes a retail reload, while the shared point
+// base and the 55 forms grow the body. The sentinel producer and publication schedule still differ.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1899,7 +1908,7 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 325 (was 336): same behaviour as retail. Walked statement by statement against retail
+// score 295 (was 325): same behaviour as retail. Walked statement by statement against retail
 // (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
 // order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
 // The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
@@ -1945,6 +1954,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
 // The state remains in EBP with the point argument in EBX.
 // Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
+// Input point memcpy 325. Shared point setter 518. Followed-point copy 399.
+// Sweep/projection snapshot 406. Shared sweep address 325. View-axis memcpy 325.
+// Sign-extended cluster after the change check 295 (kept). Separate count-load guard 295.
+// The state still uses EBP and the collision point still uses EBX.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
@@ -2017,9 +2030,12 @@ void __stdcall function_170fd0(long user_index)
 	function_11bed0(&location, &state->view.position);
 	if (location.cluster_index != NONE)
 	{
-		if (location.cluster_index != state->view.location.cluster_index && location.cluster_index >= 0 &&
-			location.cluster_index < *(long *)((byte *)g_4e0348 + 0x9c))
-			function_3f500(location.cluster_index);
+		if (location.cluster_index != state->view.location.cluster_index)
+		{
+			long new_cluster = location.cluster_index;
+			if (new_cluster >= 0 && new_cluster < *(long *)((byte *)g_4e0348 + 0x9c))
+				function_3f500(new_cluster);
+		}
 		state->view.location = location;
 	}
 	long player_index = NONE;
