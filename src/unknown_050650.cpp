@@ -2072,6 +2072,11 @@ struct s_actor_looking_structure_view
 // spelling) 140 (928 B; 0x296e60 293 fast, where fast reads 391 for its 299); sine and cosine of the angle passed
 // straight to the in-place helper 147 (930 B). Same code (23): the helper's dot written j, i, k with the axis j first;
 // `fraction` declared beside the best pair and set at the loop top. Restored.
+// M3 lane 15 r100 (fast with 0x296e60/0x2980d0/0x297660; control 23, 0x296e60 270): the wrapper calling include/
+// axis_rotation.h's shared in-place rotation (the vector's k read into a local) 245 (893 B; 0x296e60 339); the in-place
+// helper taking the vector and the axis by reference 23 (same code); the axis by value 210 (0x297660 fast 4); the helper
+// returning the vector pointer 23 (same code); each cross term scaled by the sine where it is computed 153 (925 B), which
+// lowers 0x296e60 to 199 fast (a lead for that function; not kept, it raises this one).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
