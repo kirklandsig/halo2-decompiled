@@ -741,6 +741,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // with the voice index advanced after both stores 2 (re-measure: only the two stores swap, `inc esi` stays right after
 // `inc edi`); channel and 0e as one chained NONE store (0e first) 3; `short type; for (type = 0; ...)` 3; a `byte` type
 // counter 7 (`xor dl, dl`); the voice index declared before the system reload 3.
+// Round 185 (m3 lane 8, fast; control 3): the per-type voice counts declared as a short array member (no
+// pointer cast at the sum and the bound) 3; all ten stores through a reference bound to the voice element 3; the
+// voice index advanced after all ten stores 3, after the second store 3; the inner loop as a while with the counter
+// step at its end 3 (`inc esi` stays right after `inc edi` in every one).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
