@@ -1591,6 +1591,12 @@ real function_50650(real cosine);
 // actor pool and entry data separate 333. NOT kept because phase-specific object lookups gain only
 // three points and leave the two-byte excess and first difference in place. The other forms tie or
 // regress.
+// The index-scale lead and actor/object register exchange still differ.
+// point difference in both approach paths 133; point difference and magnitude in both approach paths 117;
+// shared point difference with separate minimum selection 297; shared point difference and magnitude 297;
+// typed actor and point differences in each branch 133; typed actor and shared point difference 297;
+// one override-speed read 122; typed actor and point difference with magnitude in each branch 117.
+// NOT kept: separate approach paths with the shared magnitude gain only three points and leave the receiver split.
 // @retail 0x1f9e70
 real function_1f9e70(long actor_index, long object_index, point2f const *position,
     vector2f const *path_direction, vector2f const *facing, vector2f const *desired,

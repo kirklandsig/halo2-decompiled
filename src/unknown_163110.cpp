@@ -616,8 +616,6 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
-// score 115 (was 115; m3 lane 16 r130 at the end): coefficient XMM roles, classification operands and projection staging still differ.
-// Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
 // forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
@@ -1048,6 +1046,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // advanced at the inner loop's tail 249 (1867 B); `total` declared ahead of segment/segment_count 115 (aligned 71). Lane
 // 16 r72's 19 form rebuilt on current main 19 (aligned 22; match-only); on it the classification and distance j terms
 // point-first 19 (same code), the denominator staged i, k, j 33, `total += 2` ahead of `culled = false` 19 (same code).
+// Common plane loop for normals and offsets 389, normals only 397, offsets only 303;
+// nested component loop for normals 455, pointer walk 472, vector setter 418, near
+// adjustment before common normal loop 396, nested loops with offsets 436. The x
+// coefficient/zero roles remain. NOT kept: common orientation disturbs the earlier
+// bound and margin setup, even in the four variants at retail length.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

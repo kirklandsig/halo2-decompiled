@@ -1913,6 +1913,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // (same code); positive nesting with the two NONE stores as else arms 170 (471 B). Retail's one `xor eax, eax` at entry is
 // still the capacity-fail return (no second epilogue), which is what pushes the mask load to ECX, kept to EBX and the bit
 // to EBP; every form here rematerialises that zero.
+// The entry membership load still takes EAX and the capacity-failure edge has its own epilogue.
+// header debit after full-size admission 142; header-inclusive capacity 169; one-entry headroom budget 183;
+// writable span end 202; last writable entry start 140; entry pointer distance for scan and mask 201;
+// pointer distance in both scans 268; pending-recipient word reused after store 198.
+// The opening capacity, traversal and recipient loads were restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4113,6 +4118,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the constant's type does not keep retail's immediate), consumed declared before the clamp 154 (479 B), the route at
 // function scope 164 (same code), one `long result = NONE` exit with `goto done` for the failures and `result =
 // consumed` after the loop 158 (488 B, retail's length; member still EBP).
+// The build loads data into EBP. Retail keeps the channel there, walks the packet in EDI and spills the member.
+// indexed entry-index name 139; cursor with local-member name 164; cursor with packet-index name 164;
+// cursor with four named slot roles 164; forwarding mask comparison 181;
+// forwarding mask comparison with cursor 168; packet-kind clamp 182; packet-kind clamp with cursor 188.
+// NOT kept: the cursor with recipient-set comparison recovers EBP but drops the member slot and shortens the body.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

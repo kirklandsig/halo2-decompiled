@@ -5984,6 +5984,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // complete producers with immutable biped receiver: 79/79/79/79/79/79/79/79.
 // NOT kept: first-rotation spill/operand and final-cross reload gaps remain; original body restored.
 // MiniMax R (11-17): no new form, no lower score (79): the frame is 0x20 against retail's 0x24, and this build pushes ebx before it masks the character index where retail masks it first.
+// Existing vector-axis rotation at forward/up/both 143/143/144; existing scalar-axis
+// rotation 229/229/229; vector forward and scalar up 231, reverse 229. NOT kept:
+// the vector-axis forms add eleven or twelve bytes, and the scalar-axis forms
+// also disturb the normalized-axis setup. The first rotation spill still differs.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

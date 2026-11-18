@@ -1438,6 +1438,11 @@ PRIVATE inline long score_string_list_1608e0()
 // vertical cursor and advance 698; direct horizontal cursor 675; direct coordinate pair 689;
 // aggregate cursor 698; title edges from cursor 698; early title bounds 689;
 // caption from title top 689. NOT kept: best gain four, with the frame still 0x798.
+// Team gap shared with row advance 706, branch-selected 713, with guarded advance 706;
+// shared team presence 706, with height accumulation 711; shared displayed count and gap
+// 704; separate section heights 699, with shared gap 706. The presence forms recover
+// the 0x79c frame with the viewer still in EDI. NOT kept: all eight variants add
+// nine bytes and raise the score.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

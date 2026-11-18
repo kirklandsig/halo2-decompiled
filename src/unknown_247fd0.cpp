@@ -832,6 +832,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // with collision in the allocation arm 334/334. First-draw workspace and probe collision 334.
 // Post-gate workspace and probe collision 334. Allocated workspace and motion collision 334.
 // Settings declared after the gate 334. NOT kept: folded address and flag/settings homes remain.
+// Retained child count 334, delayed descriptor update 345, both in for/while 348/348;
+// inline refresh with retained count 371, delayed update 338, both in for/while
+// 341/341. NOT kept: delayed inline refresh recovers the gate's +0x1b slot, while the
+// address remains folded, the handle/settings homes move and the body grows.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
