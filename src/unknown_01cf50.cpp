@@ -4166,11 +4166,6 @@ bool g_55e6bc;
 // MiniMax R (11-17): no new form, no lower score (17): writing every product with the constant operand first does not move the bytes, so MSVC canonicalises the multiply's operands and keeps the row-varying one in the register where retail keeps the other; the divisor's reload and the call's setup order still differ.
 // MiniMax S (11-17): no new form, no lower score (17): the far plane in a local of its own is hoisted to the function entry (18), the near and far planes each in a local used once score 10 (a match-only form, not kept), the two planes in locals with the far one first also score 18, and the depth-clip factor in a local of its own scores 129; what still differs is that retail loads the far plane into xmm2 from before the near-plane multiply while this build loads it after the near store, and that retail loads the fixed factor of the middle product of three of the four columns into the register while this build loads the row-relative one.
 // MiniMax C (11-17): no new form, no lower score (17): the far clip plane is still loaded into xmm1 after the near store where retail loads it into xmm2 before the near multiply, and three of the four middle products still load the row-relative factor into the register where retail loads the fixed one; the near and far planes each read into a local used once measure 10 but are a match-only form, and the products' operand order does not move the bytes.
-// MiniMax I (11-17): no new form, no lower score (17): retail still loads the far clip plane into xmm2 from before the
-// near-plane multiply where this build loads it after the near store, and retail still loads the fixed factor of the middle
-// product of three of the four columns into the register where this build loads the row-relative factor; the two planes in
-// one-use locals score 10 but that form is kept only with a byte match, and a toy compile shows MSVC canonicalises the
-// multiply's operands, so the three products are not reachable from the source order.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -4360,10 +4355,6 @@ bool function_14600()
 // MiniMax C (11-16): have.
 // MiniMax R (11-17): no new form, no lower score (32): the XDK inline still hoists its flag byte into al, which takes the width difference into ax where retail keeps it in dx, and retail's four shader programs still come from tables this project does not have.
 // MiniMax S (11-17): no new form, no lower score (32): the XDK inline still hoists its flag byte into al, which takes the width difference into ax where retail keeps it in dx, and retail's four shader programs still come from tables this project does not have.
-// MiniMax I (11-17): no new form, no lower score (32): the XDK's D3DDevice_SetVertexShaderConstant inline still hoists
-// its flag byte into al, which takes the width difference into dx where retail keeps it in ax and the width quotient into
-// xmm0 where retail divides into xmm2, and retail's four shader programs still come from tables this project does not
-// have; the inline is in an XDK header this lane may not edit.
 // @retail 0x1eb00
 void function_1eb00()
 {
