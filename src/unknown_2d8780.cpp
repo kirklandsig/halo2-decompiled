@@ -46,6 +46,12 @@ void __cdecl function_2d7460(reporter_2ff210 *);
 void __cdecl function_2d73f0(error_handler_2d97d0 *);
 void __cdecl initialize_registered_services_2d7ca0();
 
+// The error handler's destructor is the implicit one: the compiler emits it,
+// and the deleting form, in this file, which constructs the handler. It
+// releases the silenced ids, then the location counts.
+// @retail 0x2d84e0 deleting error_handler_2d8030
+// @retail 0x2d8510 destructor error_handler_2d8030
+
 // @retail 0x2d8780
 int __cdecl function_2d8780()
 {

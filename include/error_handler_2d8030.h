@@ -62,7 +62,8 @@ struct id_values_2d8410
 	{
 		if ((capacity_and_flags & 0x80000000) == 0)
 		{
-			g_memory_2d88a0->release_block(data, (capacity_and_flags & 0x7fffffff) * sizeof(id_value_2d8410), 0x12);
+			id_value_2d8410 *owned = data;
+			g_memory_2d88a0->release_block(owned, (capacity_and_flags & 0x7fffffff) * sizeof(id_value_2d8410), 0x12);
 		}
 	}
 
@@ -95,7 +96,6 @@ public:
 	location_counts_2d8280 counts;
 	id_values_2d8410 silenced;
 
-	virtual ~error_handler_2d8030();
 	// reports at three levels, unless silenced
 	virtual void report_2d8030(char const *title, long id, char const *message, char const *file, long line);
 	virtual void report_2d82e0(char const *title, long id, char const *message, char const *file, long line);
