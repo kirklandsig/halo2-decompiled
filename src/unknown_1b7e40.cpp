@@ -112,6 +112,13 @@ bool function_25d9b0(long prop_index);
 // priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits
 // before the fallback block; the branch-shaped spellings swap the actor and node registers.
 // MiniMax S (11-16): no new form, no lower score (49); the busy test's two returns are still if-converted into a mask select where retail branches to its own priority epilogue, and splitting the two exits with a goto reaches retail's exit shape but moves the actor into ebp and the node into ebx, which measures 65.
+// score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
+// M3 lane 11 r113 (fast with the file's functions and callees, faithful 49; aligned 9: the busy select, the zero exit's
+// `xor ax, ax` and the success block's place): the busy test joined to the && chain with `return priority` 65 (aligned 69:
+// no select, but actor/node swap to EBP/EBX and the success return stays inline ahead of the fallback); on it the decline
+// passed the invitation index local 65, the fallback through actor->prop_index 65, the participant priority read once
+// after the found/acquired arms 105 (560 B), the busy test through a fresh actor lookup 213 (610 B); on the body the
+// decline with the invitation index local 49 (same code).
 // MiniMax I (11-17): the busy call's result branches to the priority epilogue now, and the conditions' failure has a
 // zero return of its own; retail holds the priority in SI and the view in EDI where this build uses DI and ESI, retail's
 // zero exit is a 32-bit `xor eax, eax`, and retail compares the slot's field in memory. The fallback's failures

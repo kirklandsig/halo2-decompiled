@@ -47,6 +47,11 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
+// still expanded here where retail calls it out of line; that expansion boundary is settled in
+// src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes and the colouring behind it
+// stay as they are. The permuter found no better form: an annealed search over this body (300 s) lowered nothing,
+// best 268 against a baseline of 268.
 // score 298 (was 298): m3 lane 9 r134 (fast unless noted; the score line below moved to the top of this one note):
 // `inline` on 0x279740's own definition (src/unknown_279740.cpp) 418 plain and fast (2215 bytes: both releases then
 // expand the range check and 0x11bed0 still expands, so the expansion is not a per-caller budget); the loop counter

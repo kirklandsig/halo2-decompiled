@@ -165,6 +165,11 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax G (11-18): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX (the getter rewritten with an early return, and with the table read before the
+// null result, both measure the same 117), and case 4's parent still sits in ECX where retail holds it in ESI:
+// BLOCKED-BY 0xd0590's parameter order (src/unit_object_type.cpp). An annealed permutation search over this
+// body (300 s, seed 98) lowered nothing: best 117 against a baseline of 117.
 // score 117 (was 117): m3 lane 9 r134 (fast with 0x1e83c0, which kept its match; the stacked score lines below merged
 // into this one note). The 117 is scratch rotation: the inlined getter (ours table EAX/result ECX, retail ECX/EAX), case
 // 4's parent (ours ECX, retail ESI, BLOCKED-BY 0xd0590's parameter order) and the rotations after it. The file's getter
