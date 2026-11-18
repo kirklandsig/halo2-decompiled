@@ -4476,7 +4476,8 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56):
+// score 54 (was 56): retail keeps the controller reference and reloads its index after the membership call.
+// Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
 // function_1a334a. Our build reuses the index loaded before player_slot_get_identity: LTCG here
@@ -4484,6 +4485,9 @@ bool __stdcall function_2b278e(long controller_index)
 // registers exactly), so the cause is outside this function. Tried: bool member (199: 8 bytes
 // shorter, though closer by align.py), no controller_index local (199), long volatile
 // controller_index (188). Case 2's count = 0 first: 56 -> 54.
+// Const index 54, index reassignment after membership 54, named initial controller pointer 54,
+// post-call controller object reference 181 at retail length, shared word flag mask 200,
+// conditional membership result 204, named admission test 54, per-dialog word flag masks 54.
 // With a boolean membership result, early identity failure, affirmative break, choice first, XUID member
 // address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
 // bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
@@ -5727,13 +5731,27 @@ bool function_19a203();
 /* Retail tail-calls this separate update body from the list tick. */
 PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_selected_list *list);
 
-// score 97 (was 97): The retail frame agrees, but the friend-query outputs and later
+// score 89 (was 97): The retail frame agrees, but the friend-query outputs and later
 // boolean predicates use different byte slots.
 // origin predicate scoped through join eligibility 97; request result scoped through
 // add-member eligibility 97; regular-player predicate scoped through membership
 // actions 97; friend-query outputs scoped through membership actions 97; independent
 // origin and request predicate scopes 97; origin predicate as a byte 97; request
 // result as a byte 97; regular-player predicate as a byte 97.
+// Cancellation eligibility via conditional expression 89 or branch assignments
+// 89. Joinability
+// branches 430; inverted join exclusions 97; other-user predicate 448; title
+// eligibility branches 433; joint mute action branches 325; add-member query
+// branches 299; removal eligibility branches 92.
+// NOT kept: the removal form gains five and the other alternatives tie or regress.
+// Exclusive join branches 92; shared join permission 365; friend-action branches
+// by roster state 388 or addition gate 381; add/pending branches by roster state
+// 381 or admission 86; shared removal gate 360; joined title and joinability 95.
+// NOT kept: the admission form gains three; the title-state output slot still differs.
+// Round 456: one member result for change and removal 358, shared roster-mode predicate 351, shared rank
+// and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
+// friend result in removal test 320, reused removal result in kick test 269, membership statuses
+// assigned from tests 312, friend-query result declarations in spill order 97.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
@@ -5781,7 +5799,8 @@ PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
         bool offer = !has_player && !self && ((list->value3a0 == 4 && in_session) || (list->value3a0 != 3 && invite));
         bool promote = host && !self && (flags & 0x100);
         bool add_friend = !listed_friend && !self;
-        bool cancel_friend = listed_friend && (flags & 0x20) && (list->value3a0 == 1 || list->value3a0 == 3);
+        bool cancel_friend = listed_friend && (flags & 0x20) ?
+            (list->value3a0 == 1 || list->value3a0 == 3) : false;
         bool remove_friend = listed_friend && !(flags & 0x30) && list->value3a0 == 1;
         long rank = *(long *)(local_status.data + 0x1c);
         bool add_member = request_valid && !is_player && !self && rank >= 1 && list->value3a0 != 4 && list->value3a0 != 2;

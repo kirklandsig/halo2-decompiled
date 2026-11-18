@@ -1066,7 +1066,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // (all sixty-four operand spellings of it compile to the same code), and the general arm's k row still ends in XMM2
 // where retail's ends in XMM0, so the first arm's out.k store is not shared with it and the tail shift remains.
 // MiniMax I (11-17): no new form, no lower score (234): the entry block still extracts the damping bit into ECX where retail uses EDX, and the two cross-product terms that involve up.k keep the other side in the register where retail keeps up.k (commuting the shared cross helper's six products leaves the code, and the file's nine matched functions, unchanged), and the general arm's k row still ends in XMM2 where retail's ends in XMM0, so the first arm's out.k store is not shared with it; the body is unchanged.
-// score 234 (was 234): m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// score 234 (was 234): Damping still uses ECX for the first extraction. The vector homes and vertical output tail differ.
+// m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
+// frame 0x30 agrees. Damping allocation, delta homes and vertical store sharing differ.
+// Earlier m3 lane 8 r166 and m3 lane 1 r102 (347 -> 234) at the end; round 95 m3 lane 11 near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end; before r723 358; retail inlines the existing magnitude3d (0x24590) for both lengths: its out-of-line
 // MiniMax G (11-12): the flag order flying, direct, damping, gravity reaches 343 (the damping bit then lands in ECX where
 // retail uses EDX), the direct arm's product sides and its speed load, the crosses' operand sides and the general arm's
 // history block are unchanged; a four-point gain is below the eight-point floor, so the body is restored.
@@ -1512,6 +1515,15 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // flying, direct, damping, gravity 228 (3050 B, first difference +0x31: the damping bit then takes EDX as retail; under the
 // bar, a declaration order, not kept). On the 469 form (re-measured 469): the direct arm's `limited` renamed `bounded`
 // 469 (identical listing: names do not place the delta/limited slots, retail delta +0xc, limited +0x14, ours the reverse).
+// one vertical store across all motion arms 545;
+// all-arm vertical store with vector sum 419;
+// shared disabled/general vertical store 627;
+// direct-first shared vertical store 630;
+// shared store with earlier disabled vertical value 597;
+// shared disabled/general store with vector sum 322;
+// all-arm vertical store with earlier disabled vertical value 547;
+// direct-first shared store with vector sum 622;
+// Original body restored.
 // P599: Damping ECX/EDX, gravity-spill order and the reversed raw/bounded homes remain.
 // planar selected pointer by branch 321.
 // planar selected pointer by conditional 572.
@@ -1522,6 +1534,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // spatial selected whole value 610.
 // spatial component selection 491.
 // NOT kept: All eight selection forms raised the score. Both original workspaces and fallback copies are restored.
+// N408: Separate gravity delta or selected gravity delta 486/486. Current vertical speed accumulated
+// after those two forms 495/495. In the general/direct/both branches 486/485/241.
+// Gravity branch owns the accumulated vertical output 558. NOT kept: all regress.
+// First and general arms still use separate vertical stores.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

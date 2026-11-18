@@ -401,16 +401,6 @@ void c_xbox_live_message_list::v20(c_class_1a2c81 *item, long unused)
 bool function_19acc6(XUID const *xuid);
 bool online_title_is_this_title(DWORD title_id);
 
-// score 173 (was 173): Retail outlines the lower-priority flag branches and shares
-// the item12 clear after classification.
-// flag-10 fallback branch written first 173; flag-11 fallback branch written first
-// 173; flag-12 fallback branch written first 173; all three fallback branches written
-// first 173; default-class filter after classification 173; default item set before
-// its optional-item filter 173; defer session negation to the matching class 184;
-// positive same-title predicate in both item selections 193; default item derived
-// from recognition result 168 (NOT kept: form requires a byte match); last optional-
-// item flag assigned after exclusion tests 166 (NOT kept: form requires a byte
-// match).
 // @retail 0x2c6b65
 void c_xbox_live_message_list::set_message(s_online_message_view *message)
 {
@@ -432,7 +422,6 @@ void c_xbox_live_message_list::set_message(s_online_message_view *message)
 		bool not_in_session = !function_19acc6((XUID const *)&message->xuid);
 		bool other_title;
 
-		item12 = false;
 		if (TEST_FIELD_BIT(this->message->flag_bits.flag10))
 		{
 			item2 = true;
@@ -459,8 +448,8 @@ void c_xbox_live_message_list::set_message(s_online_message_view *message)
 			{
 				item11 = true;
 			}
-			item12 = true;
 		}
+		item12 = !item0 && !item7 && !item3;
 		other_title = !online_title_is_this_title(this->message->title_id);
 		if (item0)
 			list_item_add(this, 0);
@@ -1604,6 +1593,10 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // Conditional list index with description refresh 51; guarded assignment, explicit fallback and memcpy
 // index with description refresh 69 each; one-word memset for both buffers 55 and title only 50; copy the
 // empty wide string 15; fetch the title string id before clearing 71.
+// Round 456: guarded title index in nested definition scope 69, guarded title index with shared refresh
+// exit 69, definition declared in guard with title index 69, index reassigned before description 69,
+// shared buffer scoped to valid index 71, title text receiver named at lookup 69, title index with
+// dereferenced buffer clears 69, guarded index reused on description-only path 93.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -1693,12 +1686,16 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 	memcpy(settings, &g_54e5d0.settings, sizeof(settings));
 }
 
-// score 2 (was 2): the base-call argument push and this-pointer move are
+// score 2 (was 2): the event push and ECX receiver setup are reversed before the matched base call.
+// Earlier: the base-call argument push and this-pointer move are
 // reversed; the base handler already matches. Retry, 20 reduced variants:
 // flat/nested ifs and do exits 5; one shared call/return 26; direct returns,
 // this/base casts, event local/reference, initialized bool, guarded parameter
 // switch and saved event fields 2; long result 11; outer switch/early type
 // return 7; copy loop 26; memmove 27; changed-first guard 16. Original kept.
+// Copy-only forwarding 35, default-button forwarding 2, conditional button selector 27,
+// button equalities 9, typed settings assignment 2, non-button guard/shared result 2,
+// non-button switch default 2, named short-circuit cancellation 9.
 // inherited handler qualified through immediate base 2; base call inside the changed-
 // settings branch 29; button guard with base call inside the changed-settings branch
 // 29; copy sequenced in the changed-settings return 23; restore result assigned by
@@ -2197,7 +2194,10 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 	delegate_register(&item_handlers, &handler);
 }
 
-// score 7 (was 7):
+// score 7 (was 7): retail clears ESI before the lookup-result comparison and uses that zero for field_c.
+// Early null return 7, typed pointer test 7, success-path request value initialization 62,
+// function-scope value initialization 64, callback local 49, separate request-mode test 54,
+// split selector dispatch 45, selector read after setup 58, shared word flag setter 14.
 // Retail clears ESI before comparing the pool result, then uses it in the parameter setup. Ours tests EAX
 // first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
 // tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
@@ -3094,6 +3094,19 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // bytes against retail's 81. Pool-first and chained sentinel writes 29 each, NOT kept: one-point gains
 // only. Chosen datum after loop 31; use the iterator's result for loop and selection 56; named lookup
 // definition and pool read ahead of the guard 30 each; mismatch continue and hit return 33.
+// Round 456: iterator declared before saved ID 30, pool supplied by for initializer 30, absolute index
+// reset by for initializer 29 (NOT kept: gain below the retention threshold), success declared in while
+// condition 30, const current entry at lookup 30, named entry map ID at lookup 30, const saved ID and
+// qualified base selection 30, continue on mismatch and break on selection 33.
+// Round 459: last map compared at both direct reads 30, named validity of saved map before iteration 30,
+// iterator success carried by for loop 30, loop condition saves the next result before mismatch 33, pool
+// read between guard and sentinel writes 30, map definition through a read-only reference 30, selection
+// through named inherited list pointer 30, loop skips mismatched definitions and publishes current datum
+// 27 (NOT kept: gain of three with prologue still differing), selected datum named only at the hit 30.
+// Round 462 void selection return 30, common exit 30, selected definition/entry after the scan
+// 30/30, sentinels before the guard 31, empty invalid arm 30, signed int snapshot 30, unsigned
+// one-based sentinel test 9 (NOT kept: 82 bytes and LEA/TEST in place of the native EAX compare
+// and EBX copy). Complemented sentinel test 32. The opening 0x10 frame and body were restored.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
@@ -3693,9 +3706,14 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
-// score 9 (was 9): only the EAX/EDX roles in the `1 << controller_index` mask and the
+// score 9 (was 9): the screen setup builds the mask in EDX. Retail uses EAX and loads the controller through ECX.
+// Earlier: only the EAX/EDX roles in the `1 << controller_index` mask and the
 // zero store differ. A named controller_mask local keeps the same code.
 // Permuter: 295 tries in 600 s, no lower form.
+// Shared word flag setter after/before the clear 9/12, shifted word 35,
+// controller object reference 9, clear after setup 16, callback local 125,
+// shared ordinary-edit mode 116, mask through the request field 118.
+// only the EAX/EDX roles in the `1 << controller_index` mask and the
 // aggregate initialization of screen parameters 184; byte-zero initialization of
 // screen parameters 173; only field_c zeroed with memset 168; controller flags
 // initialized in the request field 111; field_c memset followed by compound short

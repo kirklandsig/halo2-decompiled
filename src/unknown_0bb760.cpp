@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "object_iterator.h"
+#include "object_tag_definitions.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -533,7 +534,7 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 132 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
+// score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
@@ -677,17 +678,31 @@ void function_3dd10(long object_index, bool force);
 // volatile weight with a `<` scan gives retail's jle/jl exits and 1034 bytes but swaps the weight/mask homes
 // ([esp+0x70]/[esp+0x10]) 102, with the inverse in the found block 145; declaration orders of the four scan locals
 // 102-104/146-147; volatile last 131, eligible 248, j 259, last+eligible 283. Best match-only recipe: 102, not kept.
+// Typed tint and model access 132; explicit variant outcomes/named predicate/direct conditional 227/227/227;
+// separate invalid cases/nested conditional 231/231; separate blend seed with conditional/explicit outcomes 227/227.
+// The typed fields retain the same code. The other forms move the saved registers and lengthen the body.
+// Output/delta registers and the remainder store relative to the byte comparison still differ.
+// Post-blend typed model variants 132, with the native object byte 132. Single checked model handle
+// 146, with the object byte 146. Native variant block 132, with checked handle 146.
+// Typed lookup under nested guards 132. Checked lookup with entry reference 147.
+// NOT kept: the rounded result still stores before the byte comparison on the later read forms.
+// Late variant with single-precision blend remainder 144, both remainders 129, blend absolute
+// value and remainder 129, both absolute values and remainders 129. Object position members
+// with original variant read 123, late read 132, late read and single-precision blend remainder 144,
+// late read and both single-precision absolute values and remainders 129. Both remainder overloads
+// recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
+// signed scan exits and fallback unity reload still differ.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
 
     byte *object = (byte *)((s_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+    s_object_definition const *definition = (s_object_definition const *)g_4e3b44[*(long *)object & 0xffff].bytes;
     color3f *output = (color3f *)(object + *(short *)(object + 0x126));
     long count = (long)((dword)(long)*(short *)(object + 0x124) / 12) / 2;
     for (long i = 0; i < count; ++i)
     {
-        s_colour_choices_ab *entry = &(*(s_colour_choices_ab **)(definition + 0xb0))[i];
+        s_colour_choices_ab const *entry = &((s_colour_choices_ab const *)definition->tint_sets.address)[i];
         if (color_mask & (1 << i))
             output[i] = colors[i];
         else
@@ -707,9 +722,9 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 char variant_index = *(char *)(object + 0xb1);
                 real blend = (real)fmod((double)seed, 1.0);
 
-                if (variant_index != NONE && *(long *)(definition + 0x38) != NONE)
+                if (variant_index != NONE && definition->model_tag_index != NONE)
                 {
-                    byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+                    byte *model = g_4e3b44[definition->model_tag_index & 0xffff].bytes;
                     variant = *(long *)(*(byte **)(model + 0x54) + variant_index * 0x38);
                 }
 
