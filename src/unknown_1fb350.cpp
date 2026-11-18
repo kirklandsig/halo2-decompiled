@@ -330,6 +330,9 @@ extern "C" void _ReadWriteBarrier(void);
 // retail also packs the two 16-bit halves into EDI where this build packs them into EBX and keeps the element pointer
 // in EBP where this build keeps it in ECX; the length is 473 against retail's 473; the form that reaches retail's
 // frame needs the iterator step written out by hand, which the rules bar.
+// MiniMax A (11-18): no new form, no lower score (122): a separate pool local (the second stack home retail shows) with
+// the iterator's data still set from the global gives 163, the same form with the datum index copied into a local gives 163,
+// and the shared step without __forceinline gives the same code, so the pool stays in EDI and the frame stays 0xc.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
 // the scan (high water snapshot in ESI) and from a second stack copy for the element, and keeps the datum
 // index in EDI; ours forwards the pool into EDI for both.

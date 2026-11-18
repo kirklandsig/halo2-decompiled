@@ -1436,6 +1436,8 @@ long function_1fa7f0(void);
 // home sits eight bytes off, the three homes the body uses are at +0x54/+0x58/+0x5c against retail's +0x64/+0x68/+0x6c and
 // the two byte homes are at +0x12/+0x13 against retail's +0xe/+0xf, and the first difference is the frame size itself.
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
+// MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
+// and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
 // score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
