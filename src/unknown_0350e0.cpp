@@ -380,6 +380,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // scaled add 381, scaled add into the squares 342, late scaled add 347, late separate scale and sum
 // 426, parallel cross and diagonal scaling 413, late scaled add with scaled cross products 339.
 // NOT kept: the closest extent still moves the prologue away from the retail frame.
+// Round 630: caller square vector 344, caller square scalars 342, square vector with builder-owned
+// angle 344, square scalars with builder-owned angle 341, diagonal initialized to squares 344,
+// caller-completed diagonal 361, caller squares and complements 362, caller squares and sine axis 371.
+// The axis-register assignment and early square spills remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2488,6 +2492,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // Round 623: interpolate then scale size 492, compound size interpolation 492; opacity named and
 // clamped 563, compound opacity 563, ordered opacity clamp 563, both compound interpolations 563;
 // opacity gate before size 491, size gate before opacity 492. NOT kept: the one-point lead is below the keep threshold.
+// Round 630: typed draw entry 492, typed draw tag 496, both typed views 496,
+// context slot bitfields 492, both views and slot bitfields 496, typed scale pair 543,
+// snapshot of entry flags 504, snapshot of entry count 568.
+// The separate draw point and original output homes remain unresolved.
 // Round 422: Scaled point then translated 492; named displacement products with field/aggregate stores 492/492;
 // displacement vector with field/aggregate/scoped field stores 492/492/492;
 // named final coordinates 492; displacement vector and point setter 492.
@@ -5226,6 +5234,11 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // one UV and depth binding table 501, automatic UV table with completed depths 618.
 // With the four-channel color 640/493/505/605. NOT kept: both scalar-alpha table forms with explicit depth
 // owners reach frame 0xe0, but all eight forms shorten and raise the score.
+// Round 630: origin first in the vector sum 231, chained first diagonal 403, axes rotation
+// plus matrix and collision translations 681, with four-channel color 225/385/687, respectively.
+// The two diagonal Y values from X 403, or 385 with four-channel color.
+// NOT kept: the 225 form gains six and lengthens to 1826. The 385 forms have the 0xe0 frame
+// and retail length but the radius still spills at +0xc instead of +8.
 // Round 422: Explicit depth on corners 0 and 3, scalar alpha/four-channel color: in-place depth 231/225,
 // conditional depth bias 231/225, separate rotated displacement 390/372,
 // aggregate rotated displacement 390/372.

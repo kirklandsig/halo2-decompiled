@@ -130,6 +130,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // integer sort scratch 296, aggregate validity clear 368, shared destination sound index 355,
 // shared seed sound index 367, long packed link 317, sort validity before ordinal 299.
 // The entry still uses EBX for the starting cluster and spills both table bases.
+// Round 630: unsigned packed link 296, named endpoint 296, high-bit endpoint selection 358,
+// signed seed index with fresh bitmap read 361, distance accumulator 296, scoped path walk 296,
+// nested closest-distance admission 296, ordered range rejection guards 296.
+// The starting-cluster register and both table-base reloads still differ.
 // The starting cluster still occupies EBX, and both table bases are kept across the portal loop.
 // Shared bitmap setter/range test/order-output tests/all operations 296/317/296/317.
 // Seed-and-walk cluster scope 298; early closest distance 296; signed starting sound at the
