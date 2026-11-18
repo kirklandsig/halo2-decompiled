@@ -2904,6 +2904,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax B (11-18): no new form, no lower score (389): retail opens with one four-byte slot (`push ecx`) and takes the table entry into ebp, where this build reserves eight bytes and keeps the weapon index in ebp with the weapon in edi, and retail's dispatch is one comparison tree rooted at 0x10000573 that branches `jle` and holds the two activity names as ordinary cases, where this build tests the two names before the switch and branches `jg`; the single switch with both activity names as cases measures 412.
 // MiniMax I (11-17, run 103): no new form, no lower score (389): retail still opens with one four-byte slot and a
 // comparison tree rooted at 0x10000573 that branches jle, while this build reserves eight bytes and tests the two
 // activity names before the switch, whose tree then branches jg; the single-switch form with both activity names as
@@ -3594,6 +3595,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax B (11-18): no new form, no lower score (643 in the fast check, 607 in the plain one): retail keeps the weapon index in ebx, the barrel offset in edi and the definition spilled to [esp+0x14], where this build keeps the barrel offset in ebx, the definition in edi and the weapon index in a stack slot, so the prologue and every later home differ; dropping the volatile on the unit index measures 657.
 // MiniMax I (11-17, run 103): no new form, no lower score (607 plain, 643 fast): retail still keeps the weapon index in
 // EBX and the barrel index in EDI and reads the first argument after its first push, where this build keeps the barrel
 // index in EBX, the definition in EDI and reads the argument before the pushes; the frame still agrees at 0x1c60.
