@@ -3275,6 +3275,9 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax B (11-18): no new form, no lower score (190): the conversion scan written as a while loop with the count in
+// its condition measures 198, and the permuter's annealed run (900 s) over this body finds nothing below 190, so the
+// conversion entry keeps its null test and the destination weapon stays in edi where retail holds it in ebp.
 // MiniMax I (11-17, run 103): no new form, no lower score (190): retail still holds the destination weapon in EBP and
 // stores the acquired flag with setg, where this build holds the destination in EDI and stores the not-acquired flag
 // with setle, and the conversion scan still needs its entry tested for null; the entry kept by its index measures 194
