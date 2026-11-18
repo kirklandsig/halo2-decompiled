@@ -863,6 +863,12 @@ real function_30bf0(vector3f *vector);
 // DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
 // before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
 // NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
+// M3 lane 3 r259 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the clip amount declared at function
+// scope ahead of the result 84 (same code); the seat basis (both crosses and the normalise) through a new forced-inline
+// helper with a local copy of the world-up pointer 88 at 1308 B (the first cross's i product flips the wrong way), with no
+// local 86 (1310 B), with a forward-pointer local 146 (1315 B), world-up and forward locals 92 (1308 B), a side-vector
+// local for the second cross 92 (1308 B), world-up and side locals 88 (1308 B); as plain `inline` it stays out of line
+// (408, diagnostic). None moves the result/clip/range homes.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

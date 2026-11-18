@@ -1214,6 +1214,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // shared rotation pointer 439; shared point or vector position 395/395; named signed
 // plane distance 411; with a shared direction 411. The direction preload and zero
 // home remain. Restored the original executable body.
+// M3 lane 3 r259 (fast with 0x16c6f0/0x13cb40/0x23d090, all MATCH; control 126): the timer as an if/else statement 152
+// (1700 B); the plane length as `length_sq3f(&camera->point.left)` 478 (1720 B); the three world-basis stores of cases 1
+// and 2 through one shared inline helper 582 (1576 B); the plane length through the existing `basis_dot_xzy` (i, k, j)
+// 151 at 1696 B (it hoists left.i into XMM1 and sums in XMM0); diagnostic, both plane dots summed j, k, i through a
+// local copy of path.cpp's `dot3f_jki` 394 (1700 B; left.k still hoisted). Left as before: the plane length's k preload
+// and its XMM0 sum, so every later zero takes XMM1 (retail XMM0).
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
