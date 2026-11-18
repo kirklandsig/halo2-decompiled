@@ -174,9 +174,9 @@ __forceinline __m128 inverse_sqrt_single_2de1b0(__m128 const &value)
 __forceinline __m128 interpolate_2de1b0(__m128 const &a, __m128 const &b, float fraction)
 {
 	__m128 const scale = _mm_set_ps1(fraction);
-	__m128 const rest = _mm_sub_ps(*(__m128 const *)g_412420, scale);
+	__m128 first = _mm_sub_ps(*(__m128 const *)g_412420, scale);
+	first = _mm_mul_ps(first, a);
 	__m128 const second = _mm_mul_ps(scale, b);
-	__m128 const first = _mm_mul_ps(rest, a);
 	return _mm_add_ps(first, second);
 }
 
@@ -190,7 +190,12 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 2 (was 12): the vector constructor's body is visible here
+// MATCH (was 2): the blend's first product reuses its weight's variable
+// (`first = 1 - scale; first *= a`), so `first` is one variable with six
+// references; it is then given its register before `start`, and the entry point
+// takes the same register as `first`, which retail spills after the dot product's
+// multiply.
+// Before, 2 (was 12): the vector constructor's body is visible here
 // (include/unknown_1c58f0.h), so the compiler knows its call leaves the ones vector
 // alone and keeps one load of it across the call, reloaded in the side blend as
 // retail does; the blend multiplies the scale by `b` and adds the two products
