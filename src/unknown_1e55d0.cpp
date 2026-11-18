@@ -67,6 +67,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax I (11-17, run 103): no new form, no lower score (319): re-measured the baseline (1176 bytes against retail's
+// 1164) and the frame still agrees at 0x94; the output pointer's and the input pointer's registers still trade with
+// each other against retail, and that trade is settled by the 0x1ec690 stub's convention in src/stubs/bipeds.cpp:
+// BLOCKED-BY 0x1ec690.
 // MiniMax S (11-16): score 319 (was 319): no new form; the aligned 0x94 frame still agrees, but retail takes its
 // first argument in EAX and keeps the move pointer in EBX and the input pointer in EDI, while this build takes all
 // three arguments on the stack and keeps the move pointer in EDI and the input pointer in EBX; the swap is settled

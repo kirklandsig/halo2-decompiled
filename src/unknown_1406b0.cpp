@@ -902,6 +902,13 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // compare; the same initialised then bound 9, at helper scope 9, under a guard 9, as a guarded do/while 9, named so it
 // sorts first or last 9/9; with the count and bitmap also bound by reference 10, either alone 9/10; the bitmap word
 // bound 75 (199 bytes); the index bound 14. Retail's own 0x16bc00 gives count EDI, bitmap ESI, mask EBX.
+// Round 107 (m3 lane 14, fast with 0x13eeb0, 0x140900 and 0x16b840, which matched in each). Diagnostics with the scan
+// written out in a private forced-inline step (not keepable without a match), the mask bound by reference throughout:
+// as `bit = 1 << (index & 0x1f);` 9; initialised then bound 9; the count read into a local 9; the bitmap into a local 10;
+// both 10; both locals also bound by reference 10; the bitmap local alone bound by reference 10; the count and bitmap
+// as references to their fields 9; the two locals bound by reference with the mask unbound 16 (the font back in EBX).
+// Whenever the mask is a named, reference-bound variable it outranks the bitmap and the count (mask ESI, bitmap EDI,
+// count EBX, font EBP); unbound it is coloured after the font. Retail's order (bitmap, count, mask, font) sits between.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

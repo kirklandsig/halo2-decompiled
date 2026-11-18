@@ -1787,6 +1787,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (0x3db00 lost) / 580 / 579; the 571 and 574 forms with lane 5 r182's statement order (length, lightmap copy, normal copy,
 // bias local added in place, square after the direction1 negate, lightmap pin first) 586 / 587 (2206 B, 0x3db00 lost).
 // Lead: `0 < count` with (type, query, block) is the first form giving retail's whole entry convention on main's order.
+// The scan result still spills and the incoming block/query registers are exchanged.
+// Publish and read length 562, read published length after the primary direction 583, publish and read before normal copy 560.
+// Ordinal sentinel scan 573, count predicate updated with selected entry 561, empty scan early false 540,
+// selected/missing completion assignments 572, missing/selected completion assignments 589.
+// NOT kept: the count-predicate form reaches the retail frame but grows to 2194 bytes. Late readback and both
+// completion assignments lose a matched caller.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1863,6 +1869,9 @@ real g_467484 = 15.0f;
 real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
+// MiniMax R (11-17): no new form, no lower score (378): the normalize's k product with the inverse first measures 372, the same as
+// the squared length summed as (k, i, j), both under the keep bar; the frame is still 0x4c against retail's 0x40 and retail still
+// clears the mobile flag byte in the entry block where this build clears it after the first branch, so the body is as it was.
 // MiniMax I (11-17): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears the mobile flag byte in the entry block where this build clears it after the first branch, the four query components still reach the x87 stack in the other order and the three colour scales still multiply in the other order; the normalize's squared length summed as (k, i, j) measures 372, six points and under the keep bar, and the flag as a test-set measures 362 but is kept only with a byte match, so the body is as it was.
 // MiniMax S (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes still sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the 0xd37f0 call still hands its block and query over in the other order; that callee's body is in another file this lane may not edit: BLOCKED-BY 0xd37f0.
 // MiniMax E (11-16): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, the normal copy and the limited, rotation and colour homes sit in other slots, the four query components still reach the x87 stack in the other order, retail still leaves one more value on the stack after the square root, and the three components are still stored in the other order.
@@ -2424,7 +2433,8 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // logic agrees (offsets, constants, condition directions, call arguments, result values and the final colour
 // stores all match), but the status, mesh, colour and sample homes still sit in other stack slots and the
 // selective helper expansion still differs.
-// score 542 (was 542; earlier 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// score 542 (was 542): frame 0x90 agrees. The status, mesh, color and sample homes and selective helper expansion differ.
+// Earlier score 555.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the
 // final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
@@ -2707,9 +2717,16 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // MiniMax G (11-14): no new form, no lower score (542): re-measured in the batch; the frame agrees at 0x90, but the
 // status, mesh, colour and sample homes still sit 0xc bytes below retail's, and the second arm's 0x13da30 lookup
 // still expands here where retail calls it.
+// MiniMax R (11-17): no new form tried, no lower score (542): the result long still sits at +0x30 where retail keeps it at
+// +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30 lookup still expands here where retail calls
+// it; that body lives in another file this lane may not edit.
 // MiniMax I (11-17): no new form, no lower score (542): re-measured in the batch; the result long still sits at
 // +0x30 where retail keeps it at +0x24 and the float copy at +0x2c against +0x20, and the second arm's 0x13da30
 // lookup still expands here where retail calls it (that body lives in another file).
+// Typed bitmap entry 542, per-branch typed entry 542, separate bitmap table and index join 760,
+// entry reference 543, typed entry with named material index 543, named part-array base 543,
+// typed colour group and bitmap entry 542, typed entry with signed short/byte locals 735.
+// NOT kept: no qualifying score gain. Status/part and mesh still use +0x30/+0x2c instead of +0x24/+0x20.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

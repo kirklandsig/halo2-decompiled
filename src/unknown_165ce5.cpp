@@ -1379,13 +1379,15 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
-// score 220 (was 220; earlier noted 218 (was 218), the full check gives 220; m3 lane 16 r130 at the end): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// score 220 (was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier noted 218 (was 218). The full check gave 220 in m3 lane 16 r130.
 // MiniMax C (11-17): score 220 (was 220): no new form, no lower score. The look clamps still share one 1/rate
 // reciprocal where retail divides x / rate and -1.0f / rate and reloads g_510c54 after the yaw store, and retail's
 // look homes are -0x2c/-0x28 in a 0x2c frame against ours' -0xc/-0x8 in a 0x28 frame; the s_view_angles aggregate
 // (216), the rate hoisted into a local (541) and the cast-spelled divisor (220) were measured and dropped.
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
+// score 220 (was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
@@ -1845,6 +1847,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // two out pointers 220; the look values as const references bound to the clamps in a block with their two spring
 // calls 220; the user flags read and set in place without the flags local 220 (same code); zoom, no_zoom and no_scope
 // declared where computed 220 (same code). The reciprocal stays shared and the look values keep the spring_a/b slots.
+// Round 563. The frame is 0x28 against 0x2c, and the two look divisions still share a reciprocal. in-place
+// lower then upper saturation 222, in-place upper then lower saturation 223, upper default with ordered lower
+// and interior assignments 223, lower default with ordered upper and interior assignments 223, lower default
+// and a conditional upper selection 487, upper default and a conditional lower selection 487, lower-limited
+// rates followed by upper selections 486, upper-limited rates followed by lower selections 487.
+// Round 401 tested paired look clamps with lower-first/upper-first branch defaults and upper/lower preset bounds, strict then inclusive: 219/220/223/223/221/222/224/224.
+// The one-point lead is below the threshold. The 0x28 frame, shared reciprocal and reused spring homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
