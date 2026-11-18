@@ -861,6 +861,10 @@ struct s_1f8a70_actor
 // Shared destination publication for modes 4/6, 5/6 and 4/5/6: 433/363/428. Shared writers for modes
 // 2/4 and 3/5: 384/390, both writers 402. One writer for 2-5 or 2-6: 446/538. The dispatch and
 // failure-result reload still differ.
+// MiniMax S (11-17): fast build on r852: duplicating the route switch into an if/else pair scored 747 (1900 B, MSVC does not
+// tail-merge the two bodies) and the permuter's 3 tries stayed at 182; retail lays the route check as case 5's fall-through
+// with cases 6-7 jumping back to it and the route==0 block jumping back to one shared switch dispatch, and the goto
+// restructure scored 316, so the shared dispatch needs a source form not found here.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

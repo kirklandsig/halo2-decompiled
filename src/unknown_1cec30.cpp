@@ -933,6 +933,7 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax S (11-17): no new form, no lower score (65): the frame is 0x84 against retail's 0x88, the index and the component arrive on the stack where retail keeps them in ecx and ebx, and the entry copy is a block copy where retail stores the four members separately; the component's home is decided across the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files.
 // MiniMax A (11-12): no new form, no lower score (65); the component still arrives on the stack
 // where retail hands it over in EBX, so the frame is 0x84 against retail's 0x88 and the transform
 // copy is still a rep movsd where retail uses four movaps; the component's home is decided across

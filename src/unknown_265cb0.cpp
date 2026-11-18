@@ -2654,6 +2654,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Observed object and both handles 163. NOT kept: the five-point gain at 163 is below the eight-point cutoff.
 // Actor lookup delayed 595, both lookups delayed 592, shared separation 379. Iterator SIB, player searches
 // and direction residence still differ.
+// MiniMax S (11-17): fast build on r852: the permuter's 2 tries and the source order of the inlined 0x26be00 both stay at 168;
+// the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
+// reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
+// further down allocates the table base and the index to different registers.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

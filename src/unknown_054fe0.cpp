@@ -1702,6 +1702,7 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax S (11-17): no new form, no lower score (339): the frame is 0xa9c against retail's 0xaa8, the session pointer and the state word take ebx and ecx where retail keeps them in ecx and edx, and retail writes the output's state with a conditional move that needs the SSE architecture flag this file's flags do not set.
 // MiniMax B (11-14): no new form, no lower score (339): retail's conditional move for the state store is still out of
 // reach - it needs the SSE architecture flag this file's flags do not set, and the flags stay as they are - and the
 // frame stays 0xa9c against retail's 0xaa8, so the type, membership and member-index homes keep their different
