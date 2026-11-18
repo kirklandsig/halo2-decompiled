@@ -3379,6 +3379,9 @@ s_cached_input_list g_5234e8[4];
 // MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
 // MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
 // MiniMax C (11-16): rounds used; nothing of this file's own moved it.
+// Output cursor distance at admission, ordered or exact endpoint, and remaining capacity with final cursor distance:
+// 194/157/157/141. The same with a once-read input list: 205/153/153/145.
+// NOT kept: all disturb the matched caller. The last form recovers frame 0xa0 but grows to 567 bytes.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {

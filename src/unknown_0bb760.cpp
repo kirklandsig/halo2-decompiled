@@ -691,6 +691,10 @@ void function_3dd10(long object_index, bool force);
 // late read and both single-precision absolute values and remainders 129. Both remainder overloads
 // recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
 // signed scan exits and fallback unity reload still differ.
+// Output/delta saved registers and blend publication still differ, followed by the signed scan and fallback one load.
+// Separate indexed second bank, advancing second bank, fixed-distance first bank cursor, and paired bank cursors:
+// 296/167/290/293. Variant byte after the blend remainder on the same four bank forms: 300/162/293/296.
+// NOT kept: none recovers both retail output registers and the spill order.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
