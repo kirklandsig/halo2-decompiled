@@ -1258,6 +1258,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // and result - 2); inside arm 0x23a91b-0x23a9d9 (mask bit from *point_mask when non-null, else cleared); tail
 // 0x23a9f9-0x23aa65 (NONE -> raw copy, < 3 -> 0, no positive -> 0, no negative -> count and raw copy, *point_mask =
 // mask). The difference left is allocation only: previous side in CL against [esp+0xd], zero in XMM4 against XMM2.
+// 463: crossing normal components shared by denominator and numerator, before/after deltas
+// and in x/y or y/x order, 263 each; with named numerator products 270 each. NOT kept:
+// longer crossing code leaves the count load and prior-side home different.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

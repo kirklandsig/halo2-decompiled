@@ -2090,6 +2090,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // +8; the lead that reaches 177 (case 3's offsets ahead of the perpendicular) needs the shared helper 0x2e9e0
 // reworked against a callee that clobbers XMM7, and that helper is not in this lane's queue, so the pair stays
 // as it is.
+// Frame 0x14 versus 0x18 and the independent angle result slot still differ. Case-one component stores into
+// the reference 214, scalar reference 201, scoped const reference 180; scalar offsets in case three 179
+// and case four 257, scalar negation in case two 257, all scalar references 201, complete fixed-axis copies 366.
+// NOT kept: 179 and 180 restore the frame and length but raise the caller from 492 to 572.
 // Result zero used for projection admission 193; named scaled angle 193; entry double scale 167, with
 // named scaled angle 167 (NOT kept: qword spill and 0x20 frame against 0x18); zero projections for
 // default cases 194; split case-1 reference 220; case-3 Z first on the original projection order 182
@@ -3802,6 +3806,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state
 // with the homes swapped); the natural spellings of the two homes (the declaration orders, the names and the
 // index and the found flag first) are listed above and measure the same, so the body stands.
+// Admission count and state roles still exchange EDX and EBP, and the ordinal homes differ. Scoped entry-array
+// base in paired scan 375, fallback 317, creation removal 375, duplicate removal 317, both admission scans 367,
+// creation through both sorts 317, admission through creation 370. One-past creation tail pointer 350.
 // Retained-boundary cursor through the paired, fallback, creation and first-sort phases scored
 // 422/440/479/479 with the paired flag and 425/451/485/485 with cursor equality.
 // N404: Creation-pass admission in either loop-test order 351/417, conditional empty start 244,
