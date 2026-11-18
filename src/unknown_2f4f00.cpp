@@ -614,11 +614,17 @@ __forceinline bool closest_contact_2f4f00(void const *a, void const *b, void con
 	return false;
 }
 
+inline bool is_negative_2f4f00(float value)
+{
+	double const wide = value;
+	return (float)wide < 0.0f;
+}
+
 // the pair passed to the collector when either contact overlaps
 __forceinline void report_pair_2f4f00(candidate_2f4f00 const *contacts, void const *a, void const *b, void *collector)
 {
 	// Either contact can admit the pair.
-	if (contacts[0].point(3) < 0.0f || contacts[1].point(3) < 0.0f)
+	if (is_negative_2f4f00(contacts[0].point(3)) || contacts[1].point(3) < 0.0f)
 	{
 		((pair_collector_2f4f00 *)collector)->add_pair(a, b);
 	}
@@ -678,34 +684,43 @@ void __cdecl function_2f5960(void const *a, void const *b, void const *input, vo
 	timer_add_2ebc80("Et");
 }
 
-// The first transformed-end store still exchanges its address registers
-// in the SIB encoding; the effective address and all other instructions agree.
+// the overlap query both entry points share: the contacts found with the
+// given triangle weights, and the pair reported when either overlaps
+__forceinline void report_overlap_2f4f00(void const *a, void const *b, void const *input, weights_308c20 const *weights, void *collector)
+{
+	candidate_2f4f00 contacts[3];
+	capsule_triangle_2f4f00(a, b, input, weights, 0, contacts);
+	report_pair_2f4f00(contacts, a, b, collector);
+}
+
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights kept in the object
-// Review cleanup score 299: removed the unmatched pair-distance volatile reads.
+// Matched (was 299/293 for the pair): the first sentinel test is read through
+// is_negative_2f4f00 and the second is a plain comparison; the contact buffer, the
+// capsule-triangle call and the report sit in report_overlap_2f4f00, called with the
+// capsule side named once.
 // @retail 0x2f63d0
 void class_2f63d0::function_2f63d0(void const *a, void const *b, void const *input, void *collector)
 {
 	timer_add_2ebc80("TtCapsuleTriangle");
-	candidate_2f4f00 contacts[3];
-	capsule_triangle_2f4f00(a, b, input, &((triangle_agent_2f4f00 const *)this)->weights, 0, contacts);
-	report_pair_2f4f00(contacts, a, b, collector);
+	body_2f4f00 const *capsule_side = (body_2f4f00 const *)a;
+	report_overlap_2f4f00(capsule_side, b, input, &((triangle_agent_2f4f00 const *)this)->weights, collector);
 	timer_add_2ebc80("Et");
 }
 
-// The first transformed-end store still exchanges its address registers
-// in the SIB encoding; the effective address and all other instructions agree.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights worked out here
-// Review cleanup score 293: removed the unmatched pair-distance volatile reads.
+// Matched (was 299/293 for the pair): the first sentinel test is read through
+// is_negative_2f4f00 and the second is a plain comparison; the contact buffer, the
+// capsule-triangle call and the report sit in report_overlap_2f4f00, called with the
+// capsule side named once.
 // @retail 0x2f6db0
 void __cdecl function_2f6db0(void const *a, void const *b, void const *input, void *collector)
 {
 	timer_add_2ebc80("TtCapsuleTriangle");
 	triangle_measures_308a50 measures;
 	function_308a50(((body_2f4f00 const *)b)->shape->points, &measures);
-	candidate_2f4f00 contacts[3];
-	capsule_triangle_2f4f00(a, b, input, (weights_308c20 const *)&measures, 0, contacts);
-	report_pair_2f4f00(contacts, a, b, collector);
+	body_2f4f00 const *capsule_side = (body_2f4f00 const *)a;
+	report_overlap_2f4f00(capsule_side, b, input, (weights_308c20 const *)&measures, collector);
 	timer_add_2ebc80("Et");
 }
