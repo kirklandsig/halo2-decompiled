@@ -4511,6 +4511,9 @@ bool __stdcall function_2b278e(long controller_index)
 // or an identity-only controller view 199/197. Each pair forms masks at their
 // dialog calls or in the corresponding arm. The original reference and index
 // stack home are still missing.
+// The controller reference and initial index spill still differ. End the identity object before
+// presentation, carrying the raw kind, kind predicate, combined decision or confirmation decision:
+// 199/54 for each with Boolean/existing qualified membership. NOT kept: no gain or reload recovery.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

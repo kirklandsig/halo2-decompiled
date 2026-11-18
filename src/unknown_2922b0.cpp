@@ -624,6 +624,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope
 // with for count 558; staged hit distance 563; query writes hit flag 559; collision displacement inner
 // scope 566. NOT kept: the scored forms tied or regressed.
+// The success byte and input/hit homes remain displaced. Hold the vertical/lateral/both
+// corrections in scalars 660/645/706, with axis-specific publication 690. Whole correction snapshot
+// with per-axis or conditional whole-vector publication 660/709. Opposing pairs collected
+// together or published separately 706/687. NOT kept: delayed output differs from the per-hit
+// retail stores, and the entry homes remain different.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

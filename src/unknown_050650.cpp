@@ -502,8 +502,10 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 299 (was 299): Earlier 303. Frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
-// frame 0xa8 agrees; ours is 10 bytes longer (1433 against 1423). Frame map (F = esp
+// score 270 (was 299): Frame 0xa8 agrees. The pitch-axis, result-byte and initial magnitude homes
+// now agree. First +0x31 selects XMM1 for zero instead of XMM2. Random-integer/trigonometric
+// transfer and collision argument scheduling still differ. 1431 bytes against retail's 1423.
+// Earlier at 299: 1433 bytes, first +0x19. Frame map before the ray scale change (F = esp
 // after `sub esp, 0xa8`): retail F+0 one transfer slot {magnitude, random integer, pitch sine, yaw cosine},
 // F+4 candidate, F+0x10 attempt, F+0x14 axis, F+0x23 result, F+0x30 {pitch cosine, yaw sine}, F+0x38 yaw
 // range, F+0x3c pitch range; ours F+0 candidate, F+0xc attempt, F+0x10 axis, F+0x1f result, F+0x20
@@ -920,6 +922,10 @@ struct s_collision_result_buffer_1697c0
 // shared rotation 289. NOT kept: the 1423-byte forms at 217/226/228 require
 // one-use trig results. The helper form grows and raises its other user's score
 // from 23 to 245. The 217 form recovers the axis, result byte and magnitude homes.
+// Ray lifetime ending at the call, hit-record lifetime ending at the fraction, both,
+// obstruction-first branch, its scoped ray, its fraction storage and its continue: seven 299s.
+// The existing scale helper for the collision ray scores 270 alone and with the obstruction-first branch.
+// The scale-only form is retained after the plain check.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -941,7 +947,8 @@ PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, boo
 		actor_looking_rotate(&candidate, g_4687b0, yaw);
 		if (test_collision)
 		{
-			vector3f ray = { candidate.i * 3.f, candidate.j * 3.f, candidate.k * 3.f };
+			vector3f ray;
+			vector3f_scale(&candidate, 3.f, &ray);
 			s_collision_result_buffer_1697c0 collision;
 			collision.result.unknown24 = NONE;
 			clear = !function_1697c0(0x10800001, origin, &ray, NONE, NONE, &collision.result);

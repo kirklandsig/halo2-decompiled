@@ -655,6 +655,11 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // loop-scoped next sector with and without shared cutoff 202/244; positive endpoint state with and without
 // shared cutoff 203/245. NOT kept: shared cutoff still tests hit and next sector at the shared exit and
 // shortens from 1593 to 1588 bytes. Accepted crossing processed after the edge scan 483.
+// Counting at the outer-loop boundary leaves the return and first-edge byte homes exchanged.
+// Post-scan increment and outer for increment 231/231, for-owned count 270; zero-based visit
+// number before iterator setup or at sector entry 364/198; loop-carried previous sector
+// after the scan or in the for increment 384/384; history with post-scan count 362.
+// NOT kept: the lower scores shorten the body further, and the entry-count form changes the prologue.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
