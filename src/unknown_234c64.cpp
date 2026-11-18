@@ -266,132 +266,10 @@ void c_window_channel::v9()
 	dispose();
 }
 
-// score 3 (was 3): after the call to 0x149f49, retail recomputes the
-// request's address (lea eax, [ebp - 0x20]); ours uses mov eax, ecx. The
-// callee leaves ecx unchanged, and retail's 0x2358c3 in this file reuses it
-// after the same call. One tested link-order change left the score unchanged.
-// Other locals, address forms and control flow scored 3 or worse; the 600 s
-// permutation run found no improvement.
-// Round 419: callback from the completed request, derived/base request storage,
-// native multi-use request pointer and direct callback-result subsets 4/25/4/25
-// and 4/25/4/25. All regress; original callback observation and body restored.
-// A twice-used callback snapshot, with both request types and both result
-// declaration orders, scored 29 in all eight forms (79/78 bytes).
-// Round 26 (lane 10): a header inline method on s_screen_request calling 0x149f49 on `this`,
-// used by v9 and v10, matched both; not kept (an inline twin of an existing function used only
-// where it helps). Request at function scope 13; `request.type = 0` after the call 12.
-// Round 78: type-field callback address 3; shared request pointer/reference 3/3;
-// message-cast callback 3; result before builder/at function scope 3/3; type-field
-// builder and callback 3; shared message pointer 3. Original body restored.
-// Round 7 (m3 lane 2): every other caller of 0x149f49 that uses its request afterwards reuses ECX
-// (they call the local request's own load field). The request at function scope 13; type cleared after
-// the builder call 12; builder through a forced-inline helper's parameter 3; type cleared before the
-// request's declaration 5; `screen` declared first and assigned later 3.
-// Round 206: pending-record pointer/reference bound at entry/in branch 3/3/3/3;
-// complete pending-record snapshot with live callback 47, with retained callback 47,
-// at entry 47, after type clear 43. Snapshots add a 0x40 frame; original restored.
-// Round 208: builder mask unsigned 3 (caller loss); native message timeout; native message pointer
-// 3; value construction 3; one-element request array 3; one-element message array 3; local names 3;
-// native result declared early 3; immutable result 3. All bodies and declarations restored; the
-// request-address reload remains.
-// Round 321: Native message storage with admission scope/early screen/zero-store boundary subsets: 3/3/3/3/5/5/5/5.
-// Round 321: The address reload still differs; original derived request, callback and virtual dispatch restored.
-// Round 56: inline definition 3; array-decay id 3; user-mask/channel/window locals 3/3/3;
-// explicit pending receiver 3; explicit callback dereference 3; explicit setter receiver 3.
-// Round 43 (lane 10): plain parameters local with its own field_c store 3; the builder given the
-// first member's address 3; one base pointer for the callback and setter (callback result passed
-// directly) 25; early return with the request at function scope 13, declared after the test 3.
-// Round 152: the load result passed straight to set_next 25 (vtable read before the load call); a
-// value-initialised request 3; `screen` at function scope with the id array decayed 3; base
-// parameters storage with field_c cleared first, as the other callers do, 3; the load procedure read
-// into a local before the type clear 3. Every retail caller of 0x149f49 whose next instruction uses the
-// built request copies ECX (they call the local's own load); v10, which calls the member's load
-// (`call [esi + 0x2c]`), forms it again. Lead only: matched 0x2354aa also forms a request address
-// (its id, a different expression from the builder's argument) right after the call.
-// Round 31 (lane 17, fast): type cleared after the load call 15; base parameters storage with field_c
-// cleared after the builder 13; the member load read into a local after the builder 5; `screen`
-// declared NULL ahead of the request 3; the user flags passed as short 3.
-// Round 133: inline/forceinline builder declarations 3/3 (v9, set_next and 0x2358c3 stay matched);
-// base cast at builder/callback/callback and setter 3/3/3; base dereference at callback/builder 3/3;
-// direct construction from a temporary 3. All steering casts and declarations restored without a match.
-// Round 147 (lane 5, fast): the message through `(s_message *)(void *)&new_request` 3; another steering
-// form 3; the callback called as `(*request.load)(&new_request)` 3; the channel's request
-// through a reference for every read and the type clear 3; every member access through `this->` 3.
-// Every retail caller that uses the request right after the builder copies ECX; v10 alone forms it again.
-// Round 54 (lane 2, fast): an empty `do { } while (false)` after the builder 3, after the load 3; the builder
-// call or the load call inside its own `do { } while (false)` 3/3; the builder in its own block 3 (a block
-// boundary does not stop the ECX copy). An inline constructor taking the builder's arguments was not tried: it
-// is the same one-caller wrapper as round 26's method.
-// Round 77 (lane 10, fast): a two-use parameters pointer after the builder for the load and set_next 3; the
-// request constructor forced inline 3; the builder through a forced-inline helper taking the request by
-// reference 3 (diagnostic: a reference parameter folds back like a pointer one); a two-use load-procedure
-// local after the type clear 29 (79 bytes), at the top of the block 29.
-// Round 156 (lane 5, fast): the builder's message pointer named before the type clear 3; a base-type reference
-// to the new request for the load and set_next 3; `screen` as a const pointer 3; the id as `&request.id[0]` 3;
-// base parameters storage with field_c cleared after the type clear 5. The builder is a leaf, so v10 can't be
-// compiled ahead of it in LTCG's walk; the reload is not a walk-order effect.
-// Round 174 (m3 lane 4; one-file LTCG harness of this file with screen_parameters.cpp and the ballast, exact at 3): the
-// builder's arguments read into named locals as v9 does 3 (fast 3); the constant on the left of the type test 3; the
-// message as `(s_message *)(&new_request + 0)` 3; the load through `this->request.load` 3. Mechanism (diagnostic, not
-// keepable): building through an inline method's `this` (the round 26 form) gives 0 in the harness, a forced-inline
-// free helper taking the request pointer gives 3; VC copy-propagates a pointer parameter back to `&new_request` (so ECX
-// is reused after the call) but not an inlined method's `this`. BLOCKED by the no-wrapper rule unless an existing
-// member function of the request turns up whose body calls the builder on `this`.
-// Round 100 (m3 lane 9, fast; diagnostics, all restored): HELD lead, build/r100/held-23531c.patch (needs the held
-// files' owners). The builder as a member function of the parameters type (`new_request.function_149f49(0, ...)`, the
-// same bytes for 0x149f49) gives retail's `lea` here: MATCH, v9 and 0x2354aa stay matched, but matched 0x2358c3 then
-// re-forms its address too (3). 0x2358c3 comes back with its load call through an inline member of the parameters type
-// (`return load(this);`): all five MATCH; with a two-use pointer local there, MATCH; with base-type storage there, 3.
-// The inline load member with the free builder: 3 here and 0x2358c3 lost. Not applied: the builder has about 110 calls
-// in 28 files (some held), and every caller that uses its request right after the call needs the member load form.
-// Round 156 (m3 lane 8, fast): the builder given the first member's address 3 and the id as the decayed array 3
-// (repeats), the address through the second member minus one 22 (81 bytes); the callback through the local's own
-// load 4; an inline constructor taking the builder's arguments and building on `this` 30 (71 bytes: the field_c store
-// becomes dead before the builder and the pushes reorder); the builder's type argument as the just-cleared
-// `request.type` 3; the type test through a `word` local 3 (both the same code).
-// Round 86 (m3 lane 14, fast): an early return with `screen` declared bare and the id array decayed 3; a base-type
-// parameters pointer for the builder's argument 3; the callback given the first member's address 3; the builder's
-// arguments read into named locals ahead of the type clear 3; the request zeroed by memset before the builder 33 (82
-// bytes). No existing member of the request, parameters or channel type calls 0x149f49 on `this`, so round 100's
-// member-builder lead stays HELD.
-// Round 174 (m3 lane 6, fast, with 0x2358c3 and 0x2354aa, which stay matched): the new request built in raw
-// storage with placement new and its pointer used throughout 3; the load given the request through a base-type
-// reference cast 3; the builder given the request through its base type 3; the load given the address of the
-// new request's first member 3; the request copy-initialised from a default one 3 (all the same code).
-// Round 177 (m3 lane 6, fast with 0x2358c3, 0x2354aa, 0x2352d3): the load given `static_cast<s_screen_parameters *>(&new_request)` 3;
-// that cast for set_next too 3; the type cleared before the declaration with the load result passed straight to set_next 24
-// (76 bytes); the user flags as `(word)` 3; re-measured, the load through the new request's own field 4.
-// BLOCKED-BY 0x149f49: every address of the local is one value, copied from ECX after a free-function builder.
-// Round 201 (m3 lane 4; this note's one-file harness, still exact at 3): the load given a base-type static_cast reference
-// 3; one base-type parameters pointer for builder, load and set_next 3; re-measured: `screen` declared bare first 3, the
-// type clear ahead of the request's declaration 5, the member load read into a local after the builder 5. Round 100's
-// member-builder lead still needs edits in held or avoided files (41 of the 110 builder calls), so it stays HELD.
-// Round 248 (m3 lane 3, fast with v9, 0x2354aa and 0x2358c3, which stay matched): `screen` declared first with the type
-// cleared after the builder 12; the load result straight to set_next with the type cleared after the builder 23; an early
-// return with the type cleared after the builder 12; the pending request read through a const reference for the
-// builder's arguments and the load 10; the new request declared ahead of the type test with the load result straight to
-// set_next 28. Still BLOCKED-BY 0x149f49 (round 100's member-builder lead).
-// Round 188 (m3 lane 5, fast with the file's 54 functions, which stay matched; ours `mov eax, ecx` after the builder,
-// retail `lea eax, [ebp - 0x20]`): the new request declared at function scope ahead of the plain type test 13; the load
-// given the request through the builder's message type 3; the load and set_next in their own block after the builder 3;
-// every channel access through a named copy of `this` 3; the load procedure argument read as the field's raw dword 3. The
-// member-builder lead still needs 43 of the 110 builder calls changed in the held 0x2b10a3 files, so it stays HELD.
-// Round 93 (m3 lane 15, fast with v9, 0x2354aa and 0x2358c3, which stay matched): a non-const reference to the pending
-// request for the test, the clear, the builder's arguments and the load 3; that with an early return 3; a const pointer to
-// the new request for the load and set_next 3; that pointer bound before the type clear and used for the builder too, with
-// the load result passed straight to set_next 25 (76 bytes); the load procedure read into a local at the function's top,
-// used for the builder's argument and the call, 28 (79 bytes). Still HELD on round 100's member-builder lead.
-// Round 103 (m3 lane 13, fast with v9, 0x2354aa and 0x2358c3, which stay matched): v10 moved below 0x2358c3 in the file
-// (source order) 3; a base-type reference to the pending request for the clear, the builder's arguments (its type as the
-// cleared field) and the load 3; one same-type reference to the new request for the builder, the load and set_next 3; the
-// type cleared before the declaration with a base-type reference for all three uses 5; re-measured by mistake, the load
-// result straight to set_next 25 (round 152); an early return with the clear first and the load result straight to set_next
-// 24 (76 bytes). Still HELD on round 100's member-builder lead (BLOCKED-BY 0x149f49's free-function form).
-// M3 lane 15 r96 (fast with v9, 0x2354aa and 0x2358c3, which stay matched): v10 placed above v9 in the file 3; the builder's
-// message argument through a typed cast 3; the id as the cast array and the load procedure through a typed cast 3; an
-// early return with the type clear ahead of the declaration and the load result passed straight to set_next 24 (76 bytes);
-// the builder's user flags, a, b and load procedure read into named locals after the type clear 3. Still HELD on round 100's
-// member-builder lead (BLOCKED-BY 0x149f49's free-function form).
+// Matched with the new request built through its own `build` member (unknown_234c64.h): after the builder retail
+// forms the request's address again (`lea eax, [ebp - 0x20]`), where a caller that hands `&request` to the free
+// builder and then calls the local's own load (0x2358c3) copies ECX. An inlined member's `this` stays apart from the
+// later `&new_request`, which gives that second `lea`; with the free builder called here the address is one value.
 // @retail 0x23531c
 void c_window_channel::v10()
 {
@@ -399,7 +277,7 @@ void c_window_channel::v10()
 	{
 		s_screen_request new_request;
 		request.type = 0;
-		function_149f49((s_message *)&new_request, 0, (dword *)&request.id, request.user_flags, request.a, request.b, (long)request.load);
+		new_request.build(0, (dword *)&request.id, request.user_flags, request.a, request.b, (long)request.load);
 		c_class_1473c9 *screen = request.load(&new_request);
 		set_next(screen, &new_request);
 	}
