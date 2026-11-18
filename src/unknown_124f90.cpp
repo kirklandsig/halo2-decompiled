@@ -731,6 +731,12 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // lost); the inner loop as a guarded do-while ending `while (++i < count)` 3; the type byte as `(byte)(type & 0xff)` 3;
 // the voice as `voice = g_4e6378; voice += voice_index++;` 3. Re-measured: the type stored first 2 (`inc esi` still
 // right after `inc edi`, so the store order does not move it).
+// Round 97 (m3 lane 2, fast): a redundant `if (0 < count)` guard around the inner for 65 (560 bytes, the guard stays a
+// test); `register` on the voice index 3; the initializer chain's result in a named bool tested after 76 (533 bytes);
+// the first two stores through a reference bound to the voice element 3; the stores from unknown0a on as a forceinline
+// member of the voice aggregate 3 (same code; 0x128500/0x128700/0x128920 unchanged); the voice as a const reference bound
+// to the pointer temporary 11 (both increments sink below the stores), the same temporary used for only the first store,
+// the first two or the stores from unknown0a on 11 each (any such temporary changes the store schedule of the whole body).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -4107,6 +4113,13 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // range in case 0 78; the range in case 0 with its 0x219310 use through a trivial forced-inline accessor 78. On the 6
 // form (re-measured 6): the absolute index named at the loop top for the start test, the pointer and the increment
 // 174 (572 bytes); the increment's search and datum both through the global with `sounds` assigned first 29 (563 bytes).
+// Round 97 (m3 lane 2, fast; the range in case 0 re-measured 78): on it, a redundant `if (sound_index != NONE)` guard
+// around the for 78; the two range uses through a reference bound to the range inside the flag-false arm 31 (559 bytes,
+// the address sunk below the class-flag call again); the definition re-derived with sound_definition_get in case 0 137
+// (572 bytes); flag4 read into a bool ahead of the definition lookup 78; the loop step through a forceinline helper
+// shaped like 0x16bbc0 (start/index/result, the pool global passed so its load follows the ternary) 78. Retail's loop
+// end reads as 0x16bbc0 inlined, but that function sits in an /Ob1 file our LTCG does not inline from. The range as a
+// const reference bound to the pointer temporary in case 0 78.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
