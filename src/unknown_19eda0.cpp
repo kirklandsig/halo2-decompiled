@@ -394,6 +394,11 @@ real g_47ff94 = 1.5f;
 // stack where retail passes it in a register (that callee's argument order is set in another file); reading the
 // current vertex through a pointer local gives retail's frame but scores 331 on its own, and the 1.5 factor still
 // comes from a literal where retail reads its own writable .data float.
+// MiniMax H (11-18): no new form, no lower score (322): the frame is still 0x34 against retail's 0x30, so every stack
+// offset in the body is four out, and retail's body is 23 bytes longer than ours; the forms that reach retail's frame
+// score worse (the current vertex through a pointer local 331, the carried predecessor pointer 348), and the
+// 0x4b2d0 call still takes the variant on the stack where retail passes it in a register: BLOCKED-BY 0x4b2d0,
+// whose argument order is set in another file, and by 0x1ccb0 and 0x1cd90.
 // score 322 (was 370): Frame 0x34 versus 0x30, with the material and render-state call transport still different.
 // Carried predecessor ordinal, one-based ordinal, or explicit wrap 328/323/335. Carried predecessor pointer 348 at frame 0x30.
 // Joint ordinal selection 325. Two edge pointers 332. Shared current vertex and carried predecessor 328.

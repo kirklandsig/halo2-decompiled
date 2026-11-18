@@ -946,6 +946,10 @@ static __forceinline long real_to_long(real value);
 // the result byte away (508); the body keeps its float chain, where retail evaluates the dot product in a
 // different order. The permuter's best variant only moves 0.5f into a local (381, a gain of one under the keep
 // bar, and a local holding only a constant), so the body stands.
+// MiniMax H (11-18): no new form, no lower score (382): the velocity block's orders are retail's (the rate first and
+// then the prediction, the dot in the k, j, i order with the length after the sum, and the half applied last), so
+// what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
+// in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
 // prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
 // wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset
