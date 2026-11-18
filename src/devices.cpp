@@ -2078,6 +2078,9 @@ bool function_0b6760(s_index_pair const *pair);
 // MiniMax S (11-15): no new form, no lower score (250): the saved definition's volatile, the tick rate read straight from the global and the == 0 byte test are the standing body; the one shape that reaches retail's block order (58 at retail's 1495 bytes) needs the tick rate read into a local once just before the 0x11eed0 call, a one-use local, so it is not kept and the body stands.
 // MiniMax E (11-16): no new form, no lower score (250): the frame is retail's 0x20 and the state test matches; the index and index * 12 stay in EDI/ESI where retail uses other registers.
 // MiniMax B (11-18): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes the entry pointer in edi where retail takes esi, and the 0x11eed0 call still passes its float arguments in the other order; the one shape that reaches retail's block order needs a one-use tick-rate local, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (250): the frame 0x20 and the state test are retail's; the index and index * 12 sit in
+// EDI/ESI where retail has ESI/EBX, the result byte is returned in DL where retail keeps it on the stack, and the definition pointer is
+// re-read; the one-use tick-rate local that reaches retail's block order (58) stays match-only, so the body stands.
 // score 250 (was 250): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI where retail has
 // ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads (match-only leads at 58 and 69 below).
 // MiniMax H (11-12): no new form, no lower score (250): the acceleration and the speed each written as one product added into a running value measure 359, and the same form without the volatile measures 382, so the body stands.
