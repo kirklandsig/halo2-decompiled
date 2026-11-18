@@ -44,6 +44,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // magnitude), the working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has
 // [esp+0x48]..[esp+0x38], and site 1's planar normalize still keeps its own zero path where retail uses the
 // shared helper in include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
+// MiniMax B (11-18): no new form, no lower score (286): the magnitude and the settings pointer still take each other's frame homes (ours [esp+0x10] and [esp+0x14] against retail [esp+0x14] and [esp+0x10]), the unit pointer still sits at [esp+0x24] where retail has [esp+0x1c], the three working vectors are still a rotation off retail's, and site 1's planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper in include/unknown_11cc90.h: BLOCKED-BY 0x2b400.
 // score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the

@@ -893,6 +893,10 @@ struct s_1f8a70_actor
 // Case 7 library point/full/both copies 182/182/182; with node before radius 360/360/360.
 // Typed copy sources with node before radius 303/321. Full-target arm first 181; with node first 360.
 // NOT kept: the one-point gain leaves the exit span and body extent unchanged.
+// DH406: Guarded route branches in orders 012/021/102/120/201/210 score 325/327/318/448/323/317. Order
+// 012 with an explicit unsupported fallback 448; route 2 then nonzero then zero 323. NOT kept: every
+// form regresses. The dispatch still needs to follow mode five, and the failure result still lacks the
+// native stack reload.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

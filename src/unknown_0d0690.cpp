@@ -1808,6 +1808,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // selected/missing completion assignments 572, missing/selected completion assignments 589.
 // NOT kept: the count-predicate form reaches the retail frame but grows to 2194 bytes. Late readback and both
 // completion assignments lose a matched caller.
+// Primary clamp-only/full-output scope 529/529; reflected clamp-only/full-output
+// scope 529/529; joined and separate output scopes 529/529; scoped curve outputs
+// with separate luminances 530; with the normal scope ending at its final copy 530.
+// The 0x2c frame and selection spill remain.
 // Round 422: Sole-exit missing-selection branch, success after/before the record stores: guarded index 573/547,
 // one-test index 586/586, consumed-count cursor 568/565, end cursor 578/577.
 // The selected result and incoming register homes still differ.

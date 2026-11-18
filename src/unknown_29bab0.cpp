@@ -651,6 +651,15 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // position lookup, after normalization, or on the no-settings path 487/771/790/804.
 // With a named query result 487/771/790/804. NOT kept: the entry form restores the
 // position's +0x80 home, but changes the separate query destination and gains only two.
+// The position and path workspaces remain exchanged. The normalizer's squares also run in a different order.
+// Tried position and normalized input scoped before the final latch 489;
+// spatial inputs scoped through the final latch 489; position and correction scoped before the final latch 489;
+// normalized input scoped through the final latch 489;
+// path query as a direct alternative to the bypass branch 489;
+// direct path branch with position scoped before the final latch 489;
+// direct path branch with correction scoped through the final latch 489;
+// direct path branch with normalized input scoped before the final latch 489.
+// NOT kept: All eight tie at the original length, with the same first differing stack slot.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
