@@ -2072,6 +2072,11 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // update as one `else if` chain 703 (same code); `team` declared where it is computed 703 (same code), with the delay expression
 // as well 703; the identity-change copy from the local identity instead of the session record 777. Body unchanged; the slot
 // helper's cmovne still needs the SSE flag.
+// m3 lane 13 r109 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703):
+// the slot helper returning `arg_0 ? arg_0 : NULL` 782 (2894 B: the null test is threaded away, still no cmovne), as
+// `if (!arg_0) return NULL; return arg_0;` 748; the read poll's failure test as `state != 0 && state != 1` 753; the delay
+// as one condition (`(busy session) || g_50c460 > 3 ? 300000 : 2000`) 757; the state advance `? 2 : 5` as an if/else 703
+// (same code). Body unchanged; the slot test's cmovne still needs the SSE flag.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

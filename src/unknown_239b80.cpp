@@ -242,7 +242,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // departure flag's byte in an argument home (236), but the flag has to stay a dword to keep the matched caller 0x239d50
 // (a bool flag drops it to 80), so the frame stays 0x18; the one-counter while form (260), the two-continuation form
 // (326) and the pass counter as a short (261) all move the loop shape or the homes away from retail's.
-// score 144 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
+// score 144 (was 144): earlier 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
 // in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
 // passed to the difference helper first, and the compaction runs through memmove; the frame is still 0x18 against
@@ -739,6 +739,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // derive the ordinal at selection in the lowest/candidate/both scans 270/263/279; candidate/both with byte departure
 // 249/297. NOT kept: the lowest-only bound gives frame 0x14 but changes the register allocation at +0x4;
 // every candidate endpoint form regresses and loses the matched caller 0x239d50. The 0x18 frame and hull-count home remain.
+// m3 lane 13 r109 (fast with 0x239d50 and 0x239b80, both MATCH unless noted; control 144). Re-measured: a bool departure
+// flag alone 264 (762 B: the count then arrives in EAX, 0x239d50 80). New: the bool flag with the count read once through
+// its address for the classifier call (`short const *const count_home = &count;`, a match-only form) 262 (762 B: the stack
+// convention stays and 0x239d50 matches, the flag takes the indices home as retail, but the frame is 0x10 because the hull
+// count moves into the count's dead home); every count read through that pointer 262 (same code: folded, the count keeps
+// EBX). On the completion-flag body (match-only): bool departure and done flags, `current` at function scope, the positive
+// written-out closure and the count_home call 117 (784 B; frame 0x14 and the flag byte in the indices home as retail; left:
+// count EDI, points EBX, current ESI and the hull count cached in ECX where retail has the count in memory, points ESI,
+// current EDI and the hull count in EBX); that with a short hull count 250 (749 B). Retail never caches the count in a
+// register, even in the candidate scan where EBX is free, so the count is not a register candidate there at all.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
