@@ -4,94 +4,37 @@
 #include "lane_a_motion_leaves.h"
 #include <math.h>
 
-static __forceinline lane_b_contact_point *append_contact_point_31be80(
-	lane_b_contact_constraint_prefix::point_array &points)
-{
-	long index = points.size;
-	long count = index + 1;
-	long capacity = points.capacity_and_flags & 0x7fffffff;
-	if (capacity < count)
-	{
-		capacity *= 2;
-		function_2d9160(&points, count >= capacity ? count : capacity, sizeof(lane_b_contact_point));
-	}
-	points.size = count;
-	return points.data + index;
-}
-
-static __forceinline lane_b_contact_property *insert_contact_property_31be80(
-	array_2d91d0 *array, long index)
-{
-	long moving = array->size - index;
-	long count = array->size + 1;
-	long capacity = array->capacity_and_flags & 0x7fffffff;
-	if (capacity < count)
-	{
-		capacity *= 2;
-		function_2d9160(array, count >= capacity ? count : capacity, sizeof(lane_b_contact_property));
-	}
-	lane_b_contact_property const *source = (lane_b_contact_property *)array->data + index;
-	lane_b_contact_property *destination = (lane_b_contact_property *)array->data + index + 1;
-	for (long i = moving - 1; i >= 0; --i)
-		destination[i] = source[i];
-	array->size = count;
-	return (lane_b_contact_property *)array->data + index;
-}
-
-// @retail 0x31be80
-long lane_b_contact_constraint_prefix::add(lane_b_contact_point **point,
-	lane_b_contact_property **property)
-{
-	lane_b_constraint_sizes sizes;
-	sizes.term_bytes = 0;
-	sizes.op_bytes = 0;
-	sizes.results = 0;
-	sizes.total = property_count * 0x30 + 0xb0;
-	if (property_count == 1)
-	{
-		sizes.op_bytes = 4;
-		sizes.term_bytes = 0x20;
-		sizes.results = 1;
-	}
-	sizes.op_bytes += 4;
-	sizes.term_bytes += 0x30;
-	++sizes.results;
-	owner->add(this, &sizes);
-	solver_data.flags |= 6;
-	long index = points.size;
-	lane_b_contact_point *added_point = append_contact_point_31be80(points);
-	lane_b_contact_property *added_property = insert_contact_property_31be80(
-		(array_2d91d0 *)&properties, index);
-	added_property->impulse = 0;
-	added_property->bias = 0;
-	added_property->flags = 0;
-	if (index > 0 && added_property[-1].flags == 0)
-		added_property->flags = 1;
-	*point = added_point;
-	*property = added_property;
-	return ids.allocate((unsigned char)index);
-}
-
 struct s_1d1541 { void *function_30d2b0(void *); };
 void __cdecl function_318320(listener_world_318320 *, event_315d20 *);
 void __cdecl function_315d20(listener_world_315d20 *, event_315d20 *);
 
-struct contact_added_318c10 : event_315d20
+struct contact_added_318c10
 {
+	unsigned short id;
+	class_318e60 *manager;
+	lane_a_contact_body const *first;
+	lane_a_contact_body const *second;
+	void *world;
 	lane_b_contact_point *point;
 	lane_b_contact_property *properties;
 	float speed;
 	long rejected;
 };
 
-static __forceinline lane_a_contact_body const *contact_root_318c10(lane_a_contact_body const *body)
+struct contact_body_318c10
 {
-	lane_a_contact_body const *parent;
-	memcpy(&parent, (unsigned char const *)body + 0xc, sizeof(parent));
-	while (parent)
+	unsigned char unknown0[0xc];
+	contact_body_318c10 const *parent;
+	unsigned char unknown10[0x10];
+	lane_a_contact_entity *entity;
+};
+
+static __forceinline contact_body_318c10 const *contact_root_318c10(lane_a_contact_body const *start)
+{
+	contact_body_318c10 const *body = (contact_body_318c10 const *)start;
+	if (body->parent)
 	{
-		body = parent;
-		memcpy(&parent, (unsigned char const *)body + 0xc, sizeof(parent));
+		do body = body->parent; while (body->parent);
 	}
 	return body;
 }
@@ -109,6 +52,27 @@ static __forceinline float &contact_property_318c10(lane_b_contact_property *pro
 	return *(float *)((unsigned char *)property + offset);
 }
 
+static __forceinline void copy_contact_point_318c10(lane_b_contact_point *to, lane_b_contact_point const *from)
+{
+	float separation = from->position.m128_f32[3];
+	to->position = from->position;
+	to->normal = from->normal;
+	to->position.m128_f32[3] = separation;
+}
+
+// the same motion pointer read in place (the second body's, in the mass sum)
+static __forceinline class_3193c0 *contact_motion_direct_318c10(lane_a_contact_entity const *entity)
+{
+	return *(class_3193c0 *const *)((unsigned char const *)entity + 0x3c);
+}
+
+// score 30 (was 179): 0x31be80 is in its own file (src/unknown_31be80.cpp), the
+// event is a plain record filled field by field in retail's store order (id,
+// rejected, first, then manager and second after the point copy), the root walk
+// tests the parent before looping, the point copy is a helper, and the second
+// body's motion is read in place. Left: retail schedules the id, second and
+// rejected stores inside the first square-root statement and the first store
+// inside the second; the second motion pointer goes to edx (ours edi).
 // @retail 0x318c10
 unsigned short class_318e60::add(lane_a_contact_body const *first,
 	lane_a_contact_body const *second, void const *input, lane_b_contact_point const *point)
@@ -133,25 +97,21 @@ unsigned short class_318e60::add(lane_a_contact_body const *first,
 	float const *material_a = (float const *)((unsigned char const *)contact_root_318c10(first)->entity + 0x48);
 	float const *material_b = (float const *)((unsigned char const *)contact_root_318c10(second)->entity + 0x48);
 	contact_property_318c10(property, 8) = sqrtf(material_b[1] * material_a[1]);
-	contact_property_318c10(property, 12) = sqrtf(material_b[2] * material_a[2]);
-	float separation = point->position.m128_f32[3];
-	added_point->position = point->position;
-	added_point->normal = point->normal;
-	added_point->position.m128_f32[3] = separation;
 	contact_added_318c10 event;
-	unsigned short event_id = (unsigned short)id;
-	class_318e60 *manager = this;
-	memcpy(event.unknown0, &event_id, 2);
-	memcpy(event.unknown0 + 4, &manager, 4);
-	memcpy(event.unknown0 + 8, &first, 4);
-	memcpy(event.unknown0 + 12, &second, 4);
+	event.id = (unsigned short)id;
+	event.rejected = 0;
+	contact_property_318c10(property, 12) = sqrtf(material_b[2] * material_a[2]);
+	lane_a_contact_body const *const &first_body = first;
+	event.first = first_body;
+	copy_contact_point_318c10(added_point, point);
+	event.manager = this;
+	event.second = second;
 	event.point = added_point;
 	event.properties = property;
 	event.speed = speed;
-	event.rejected = 0;
-	function_318320((listener_world_318320 *)world, &event);
-	if (entity_a->listeners_60.size) function_315d20(entity_a, &event);
-	if (entity_b->listeners_60.size) function_315d20(entity_b, &event);
+	function_318320((listener_world_318320 *)world, (event_315d20 *)&event);
+	if (entity_a->listeners_60.size) function_315d20(entity_a, (event_315d20 *)&event);
+	if (entity_b->listeners_60.size) function_315d20(entity_b, (event_315d20 *)&event);
 	if (event.rejected == 1)
 	{
 		remove((unsigned short)id);
@@ -161,8 +121,8 @@ unsigned short class_318e60::add(lane_a_contact_body const *first,
 	float bias = contact_property_318c10(property, 12) * time_scale * speed * 1.3f;
 	property->bias = bias;
 	contact_property_318c10(property, 20) = bias + point->position.m128_f32[3];
-	float inverse = 1.0f / (contact_motion_318c10(entity_b)->field_20.m128_f32[3]
-		+ contact_motion_318c10(entity_a)->field_20.m128_f32[3] + 1.0e-10f);
+	float inverse = 1.0f / (contact_motion_318c10(entity_a)->field_20.m128_f32[3]
+		+ contact_motion_direct_318c10(entity_b)->field_20.m128_f32[3] + 1.0e-10f);
 	property->impulse = inverse * (contact_property_318c10(property, 12) + 1.0f) * speed * 0.2f;
 	return (unsigned short)id;
 }
