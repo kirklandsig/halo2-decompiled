@@ -810,6 +810,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // with the base and the index in one operand where retail
 // adds the index to the base first and reads the byte from it into a second register, the gate flag's home is at +0x1f
 // here against retail's +0x1b, and the effect definition's home is at +0x18 here against retail's +0x1c.
+// Spatial workspace alone or with collision after the effect gate 334/334. Workspace alone or
+// with collision in the allocation arm 334/334. First-draw workspace and probe collision 334.
+// Post-gate workspace and probe collision 334. Allocated workspace and motion collision 334.
+// Settings declared after the gate 334. NOT kept: folded address and flag/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -3550,6 +3550,9 @@ static inline short sound_voice_find_available_channel(char type)
 // 0x129741, 0x129754, the set at 0x129763, the clear from the re-read channel at 0x129783) agree with the source.
 // The three exits give true at the entry (0x129618), false through BL (0x129717-0x129727) and true after the commit
 // (0x129785), as the source's result. What is left is only the result byte's place and the block layout listed above.
+// Assigned-channel bypass with separate, nested, compound or named buffer checks, each with
+// direct or cleanup-scoped rejection return: eight 135s. NOT kept: eight-byte frame recovered,
+// but entry AL, pre-call failure in BL and the shared failure return still differ.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

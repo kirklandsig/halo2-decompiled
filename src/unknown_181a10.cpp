@@ -532,7 +532,8 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 238 (was 238): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// score 238 (was 238): frame 0x40 versus 0x44. The second node and shape share the wrong stack slot.
+// Retail keeps origin y/z in reused slots and has two unused dwords below the plane.
 // Earlier at 238 in round 95. See the m3 lane 11, lane 2 r79 and lane 8 r164 forms below.
 // frame 0x40 versus 0x44, with a different second-node slot.
 // Retail reuses the origin y/z slots and leaves two dwords below the plane unused.
@@ -994,6 +995,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // pointers 310/310, immutable returns 310, both with existing normal setter 305.
 // NOT kept: frame 0x44 and 1243 bytes recover in several forms but every score regresses.
 // Root classifier and output homes remain. Original collector restored.
+// Packed-contact shape reference 327. Material before shape or after data 327/327.
+// Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
+// Separate material-arm shape references 327. Shared receiver and early short material 328.
+// NOT kept: the 0x44 frame form still spills the nodes to different slots and raises the score.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

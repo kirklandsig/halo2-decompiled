@@ -865,6 +865,10 @@ struct s_1f8a70_actor
 // tail-merge the two bodies) and the permuter's 3 tries stayed at 182; retail lays the route check as case 5's fall-through
 // with cases 6-7 jumping back to it and the route==0 block jumping back to one shared switch dispatch, and the goto
 // restructure scored 316, so the shared dispatch needs a source form not found here.
+// Filtered zero route 182; conditional zero-route choice 182; branch-owned route 384; separate
+// zero/nonzero value choices 384; range-first normalization 309; separate radius/node outcomes 403;
+// compound invalid-route test 299; nested route choice 384. NOT kept: dispatch adjacency and
+// the failure result reload remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
