@@ -163,6 +163,12 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 
 // score 192 (was 192): frame 0x84 against retail's 0x90, the ray loads and the origin and edge homes; BLOCKED-BY 0x23a220
 // (its definition and its count parameter's width are in another lane's file). One note, the rounds' entries below.
+// MiniMax H (11-18): no new form, no lower score (192): walking retail's body against this build again, the frame
+// stays 0x84 against retail's 0x90 - retail loads the ray's six components and the shape's vertices up front and forms
+// the direction and the two edge vectors in xmm registers (the ray start's three components stay in xmm3-xmm5), while
+// this build forms each difference and spills it to a stack home - and the polygon count is still pushed as a word
+// here and as a dword in retail, which the short count's type (declared outside this lane's files) forbids:
+// BLOCKED-BY 0x23a220; the earlier permuter runs over this body (34 tries) found nothing below the baseline.
 // MiniMax R run 92 (11-17): no new form, no lower score (192): the permuter's 34 annealed tries over the reduced image
 // found nothing below its 187 baseline there, and the frame is still 0x84 against retail's 0x90 with the origin's x
 // and y and the edge vectors in stack homes; the point-in-polygon query still needs the points before the point:

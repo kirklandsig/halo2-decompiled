@@ -47,6 +47,12 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // below the bar); all restored.
 // score 440 (was 528): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
 // Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
+// MiniMax H (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the early
+// homes keep their order (ours the reference at 0x18, the flag bytes at 0xb and 0x13, the index offset at 0x20 and
+// the score at 0x24; retail the reference at 0xc, the flag bytes at 0xe and 0xf, the offset at 0x1c and the score at
+// 0x20), so the gap is not one local's size: dropping the one-use distance_squared local changes no home and no
+// frame (the value stays in an xmm register), and the two call sites still differ (retail calls 0x2600a0 in the sorted
+// loop and inlines 0x262a30's owner lookup, this build does the opposite); the body stands.
 // MiniMax I (11-17): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and this build
 // cannot pack the two flag bytes into one home, so every home sits four bytes above retail's (the reference at 0x18 where
 // retail has 0xc) and the tail's length follows from that; the two call sites still differ (retail calls 0x2600a0 in the
