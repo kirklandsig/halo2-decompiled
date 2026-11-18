@@ -1589,6 +1589,13 @@ bool function_108530(long device_index, long name)
 // bounds 138; duration admission after endpoint pins 136; double duration magnitude before endpoint
 // pins 121; early duration magnitude with cruise field 145. NOT kept because the forms tie or raise the
 // score. The early float decisions also increase the extent.
+// M3 lane 16 r135 (fast, callers 31/13 throughout, every form ret 0x18): ours also stores each clamped time back to
+// its slot; the difference is that ours caches the ramp-down time in XMM1 after its zero clamp and compares the
+// minimum against that register, where retail stores the zero only to the slot and compares the slot. The half times
+// named before the cruise time 121; the deceleration test as `0.0f < ramp_down_time` 121; the cruise time as
+// `duration - ramp_up_time - ramp_down_time` 123; remaining/position/delta/distance declared at the function top 121;
+// the ramp-down minimum as `ramp_down_time < remaining ? ...` 121. Diagnostic (reverted at once): `(void)&ramp_down_time;`
+// 121 (same code: the dead address folds away).
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

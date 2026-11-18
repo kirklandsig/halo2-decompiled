@@ -1246,6 +1246,9 @@ void function_2118c0(void)
 // M3 lane 8 r182 (fast): `long row = b; row <<= 3;` 10 (same code); `unsigned long row = (unsigned short)b << 3` 10 (same
 // code); a `long` band counter with `b << 3` 134; the three knot-row pointers declared after p1 and out 10 (same code);
 // `long row = b * 8` with the knot rows packed `row | w` 164 (786 B).
+// M3 lane 16 r135 (fast with 0x212100): the knot indices `word const` 10; the three knot-row pointers to const 10;
+// the band loop closed `while (++b < 3)` 10; `long const row` 10; the knot indices assigned without the `(word)` casts 10
+// (all the same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

@@ -707,6 +707,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // `long const &` straight into the pass element 8; the pass definition's tag data named before its +0x20 read 8;
 // local_11 declared ahead of local_10 and assigned after it 8; local_11 through the tag-data and material-index accessors
 // 8 (all the same code); the four cache zeros grouped ahead of local_10 60 (first +0x50).
+// M3 lane 16 r135 (fast, 0x2243c0 and 0x224d90 matched each time; base 117): the group test read through the table
+// at each compare (no instance pointer) 165 (first +0xe); the two arms swapped with the tests negated 117 (same code);
+// the first cache zero moved between local_10 and local_11 117 (same code); the other three zeros moved there instead
+// 150; the tag data named before its +0x5c read 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
