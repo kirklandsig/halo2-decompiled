@@ -589,21 +589,12 @@ void __stdcall function_215e60(long file_index)
 
 extern long g_55c154;
 long function_217590(long memory_unit);
-bool function_216d70(char *path, const char *directory, long type);
+bool function_216d70(const char *directory, char *path, long type);
 s_type_acf665 *file_ref_create(s_type_acf665 *file, bool replace, const char *name);
 bool saved_game_file_write_save_image(long type, s_saved_game_file_location *location);
 long saved_game_file_type_size_in_blocks(long type);
 bool saved_game_storage_has_free_blocks(long blocks);
 
-// score 2 (was 16): only the order of 0x216d70's two register arguments differs: retail forms the path in ecx before
-// the directory name in eax, ours the other way round. Kept (m3 lane 8 r182): both name buffers as s_saved_game_name
-// filled through its fill() (moved to saved_game_storage.h from unknown_216b60.cpp; matched 0x215f40 and 0x216120 use
-// it), so the delete name's address is formed again after 0x216da0 as in retail (16 -> 2; the delete name alone 2).
-// Tried on that: the directory argument as local_0.location.name or &location.name[0], the path as &path[0] (2 each),
-// location.type for the type 131. HELD (needs the owner's OK): 0x216d70 taking (directory, path, type), its
-// definition in unknown_216400.cpp and the call in unknown_2161d0.cpp changed with it (both files held by another lane
-// this round), matches 0x215c00 in a fast build (build/r182/held-215c00.patch), but 0x2164c0, which inlines 0x216d70,
-// goes 20 -> 141 there (its path buffer and location swap stack slots).
 // @retail 0x215c00
 long function_215c00(long type, wchar_t const *display_name)
 {
@@ -639,7 +630,7 @@ long function_215c00(long type, wchar_t const *display_name)
                     location.language = (char)index;
                     strncpy(location.name, directory, sizeof(location.name));
                     location.name[sizeof(location.name) - 1] = 0;
-                    function_216d70(path, location.name, type);
+                    function_216d70(location.name, path, type);
                     struct
                     {
                         dword signature;

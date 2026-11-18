@@ -87,9 +87,9 @@ bool saved_game_file_read_synchronous(long file_index, void *buffer, long size, 
     s_saved_game_file_task task;
     if (function_2173d0(file_index, display_name, buffer, size, &task))
     {
-        if (!*(volatile bool *)&task.done)
+        if (!task.done)
         {
-            while (!*(volatile bool *)&task.done)
+            while (!task.done)
             {
                 SwitchToThread();
                 function_125d60();
