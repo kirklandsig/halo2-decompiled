@@ -1414,6 +1414,9 @@ PRIVATE inline long score_string_list_1608e0()
 // 679, height before x with one-read scroll 717, joined scroll reused for y 727, early height with
 // scroll reused for y 730. NOT kept: the best two-point reduction leaves the four-byte frame gap and
 // falls below the keep bar.
+// DH401: Fade divisor initialized before flags, viewport, height or clamp.
+// Existing qualifier 701/699/700/700, ordinary const 715/724/725/725.
+// All keep the 0x798 frame. The ordinary divisor shortens the body.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

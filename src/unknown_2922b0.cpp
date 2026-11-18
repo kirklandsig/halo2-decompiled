@@ -612,6 +612,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // The three with the shared scale helper 608/579/603.
 // Reuse the side axis or both with the staged cross 599/600.
 // NOT kept: The success byte stays at +0x13 and the body shortens. The separate projection workspaces are restored.
+// DH401: Separate measured and clipped clearance. For explicit arms and measured
+// default, direct fraction with minimum after/before hit stores 564/665
+// and 564/665, named fraction 554/587 and 554/587.
+// NOT kept: minimum first gives the native success slot but regresses. The
+// best reduction is four points and leaves the success slot unchanged.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

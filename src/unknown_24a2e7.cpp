@@ -200,6 +200,9 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Nested guard with plain-name copy input 66, also with last append result 66.
 // Early append result with named suffix 90. NOT kept: nested guards reserve
 // 0x28 and gain one. The slot holds the result. The entry base stays in a register.
+// DH401: One return with the empty name assigned on exhaustion. Indexed for/while
+// and cursor for/while, formatted arm first 83/83/83/83,
+// plain arm first 83/83/83/83. The EBP-8 base spill is absent.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

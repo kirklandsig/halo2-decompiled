@@ -1198,6 +1198,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // squared length as the zero arm or factor default 378/378; conditional
 // factor at the scaled add 126; distance before the test or length 411/411;
 // complete plane aggregate 440. Direction-j preload and zero home remain.
+// DH401: Existing staged dot for length, plane offset, point distance,
+// offset/length, length/distance, offset/distance and all three, then
+// direction first for length: 151/400/126/399/151/400/399/405.
+// NOT kept: the revised accumulation order requires a match.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
