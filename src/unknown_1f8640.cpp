@@ -890,6 +890,9 @@ struct s_1f8a70_actor
 // the final test inverted with the failing arm first, each arm assigning the result 304 (1640 B). Re-measured: one
 // `result = route_found;` ahead of the final test 317 (1676 B). Ours returns the failure through BL (`xor bl, bl` after
 // 0x1f8750, shared with the first exit); retail stores false to the +0x12 byte before the call and reloads it after.
+// Case 7 library point/full/both copies 182/182/182; with node before radius 360/360/360.
+// Typed copy sources with node before radius 303/321. Full-target arm first 181; with node first 360.
+// NOT kept: the one-point gain leaves the exit span and body extent unchanged.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
