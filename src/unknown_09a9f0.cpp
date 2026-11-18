@@ -226,6 +226,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax H (11-18): no new form, no lower score (49): the outcome byte is still split between BL and AL where retail
+// keeps it in BL from before the creation call, retail's EBP window around the header test is still missing, and the
+// header and the object are still read through one shared address where retail looks the header up twice.
 // score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
