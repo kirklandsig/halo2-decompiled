@@ -431,6 +431,11 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax H (11-18): no new form, no lower score (412): the frame stays 0xa4 against retail's 0xa0 and the early
+// homes keep their order (ours the actor base at 0x18, the flag byte at 0x17 and the constant 1 at 0x1c, where retail
+// has the index at 0x28, the actor base at 0x20, the constant 1 at 0x1c and the flag byte at 0x13, since retail saves
+// four registers and this build three), and the actor index still comes from the stack where retail takes it in EAX;
+// a 300-second permuter run (21 tries) left the baseline at 409 differing instructions in both images; the body stands.
 // MiniMax R (11-14): no new form, no lower score (412): retail's entry is `sub esp, 0xa0; push ebx; mov ebx, eax`
 // with the actor index arriving in EAX, where ours reserves 0xa4 and reads the argument from the stack; the request
 // convention is fixed by the callee 0x2641c0, whose noinline declaration is in src/unknown_265cb0.cpp, another lane's
@@ -735,6 +740,19 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // retail's second `cmp esi, -1` at 0x26316c 412 (the compiler folds the second test); both reverted but the fix. No new
 // include, helper or double. Checked with the file's callers/callees (0x1e34e0 25, 0x264b50 91 as before; the rest
 // MATCH).
+// M3 lane 3 r258 (fast with 0x1e34e0, 0x263210, 0x264b50 and the 0x2641c0 family; control 412, aligned 218): the three
+// flags with their address taken (`(void)&flag` each, or the outer one read through a pointer local) 412 / 412 (same
+// code, the compiler sees through it). The walk through the existing 0x26be00/0x26be30 re-measured 442 at 1616 bytes with
+// the frame 0x9c (aligned 198: the flags then sit in retail's stack bytes 0x11-0x13 and the iterator at 0x14/0x18); on
+// it a short prior state 442 (aligned 196, the word store at the loop top as retail), the iterator's index read at each
+// use 442 (same code), `sample = true; update = true;` 442 (aligned 195, retail's store order 0x11 then 0x12), a plain
+// long maximum 442 (aligned 212). On the walk form the node index takes EBX and the actor index EDI, retail the reverse
+// (0x2683f0, 0x1e2150 and 0x25ac00 read the actor from EBX, so ours reloads EBX from the stack argument before each).
+// Diagnostic, reverted at once (a volatile view of the iterator): the index read from memory at every use 449 (1640
+// bytes, frame 0xa0), and the actor index is still a stack argument loaded into EDI, so the index's register is not what
+// keeps the argument on the stack. Left: the EAX convention, the slot offset saved at entry ([esp+0x28], which the
+// inlined 0x2641c0 reuses) and the walk. BLOCKED-BY 0x2641c0's inline (its noinline declaration is in another lane's
+// file this round).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

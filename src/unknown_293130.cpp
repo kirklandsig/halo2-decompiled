@@ -372,6 +372,41 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // then matches and all 24 left are the rotation (dot j, k, i; retail i, k, j; v.j/v.k in each other's registers), the same
 // 24 as in the 30 form. On that lead: the cross terms before the dot 53; the angle passed straight 35; the true flag stored
 // before the two false ones 27. Restored.
+// Round 110 (m3 lane 14; "screen" = this file compiled alone under link-time code generation and linked with its callees'
+// real objects, whose control listing is the build's; screen counts are aligned rows against retail; "fast" = the fast
+// check): the last cause is the function's count of live local symbols, not any spelling of the rotation. Counted: named
+// locals with an initializer (dead ones too), the locals of inlined helpers, helper parameters bound to an expression.
+// Not counted: bare declarations, parameters bound to a variable, extra statements, empty blocks, where a local is declared.
+// Diagnostic, not keepable (dead locals): round 162's lead (the +0x18 pair as a two-short member with an inline reset and
+// loop 2 on loop 1's counter, 24 fast) plus 13, 14 or 15 dead initialised locals anywhere in the function is retail's code
+// byte for byte (fast MATCH with 13). On that lead by dead-local count (screen): 0-3 24, 4-7 54, 8-12 23, 13-15 0, 16-19 23,
+// 20-35 24, 36-44 54, 45-47 45 (not periodic). Without the pair member 13-15 dead locals leave only the four tail rows (4);
+// with the counters unshared, loops 1 and 3 shared, loops 2 and 3 shared or all three shared no count 0-31 matches (41/39/66/60
+// at best). One-use names add one each (a loop's element pointer, the creature definition pointer); a position pointer for
+// the x, y and z stores takes four away, the fraction folded into its product one, the rows as one expression each twelve.
+// So the rows as one expression each + a `point3f *` to the record's position for its four stores + the fraction folded
+// into the threshold product + the pair member + loop 2 on loop 1's counter needs 30 or 31 dead locals (fast MATCH with 30)
+// and 23 with none: one or two symbols too many, and no code-neutral removal was found. Tried on it (screen, none matching
+// with no dead locals): the pair through a pointer local or a two-short view pointer 23/23; the position as a reference, a
+// const pointer or declared after the record setup 23 each; x and y only through the pointer 23 (needs 28-30); the z arms
+// as one conditional store 54; the total scaled in place by the fraction 38-63; function_x82e52f or slot_random for the
+// fraction 49/49, with a named fraction 23/47; object_get() or a named object for the member lookup 23/23; the helper
+// turning about the global up axis itself 76, with an axis local 41; the axis or the vector by reference 23/23; the dot
+// written out 47; the rotation as a member of the creation record 45, with a vector pointer local 24; cross terms inside
+// the rows 90; the vector snapshot as one aggregate local 119; the cross terms in one aggregate local 71; the projection
+// written in each row 123; the dot before the names 42; sine and cosine declared after the names 23. On the lead with the
+// current helper: function_x84d9e8 (include/axis_rotation.h) with sine/cosine as caller locals or arguments 31-57 (no dead
+// count 0-69 matches); 0x1eb8a0's helper shape 49 (41 at best) and a helper through cross3f 69 (54 at best; none 0-69); __FILE__/__LINE__ at
+// the draws 54 (45 at 13-15); slot_random_range for the four draws 19 at best; a creature index local 111; a source
+// centre pointer 39; a perch count local 44; the angle passed straight 33 (10 at 13-15).
+// M3 lane 4 r211 (fast with 0x2936b0 0x259d0 0xb7930; control 30): the existing basis_dot_xzy (vector_products.h, i then
+// k then j, staged) for the projection's dot, (axis, vector) 99 and (vector, axis) 99 (the same code, 1405 bytes): LEAD,
+// the dot then sums i, k, j with the i product as the accumulator and v.k/v.j in retail's XMM1/XMM2, but every a.k
+// product turns copy-first (`movaps x, v; mulss x, [a.k]`) where retail loads a.k first, so the positional count rises.
+// On it: the three cross terms ahead of the dot 74 (1409 bytes, then a.j loads first too); the components named
+// i, k, j 99 (same code); the cross terms through cross3f(vector, axis) into a local 162 (1420 bytes). Retail's sides:
+// a.i and a.k products load the axis field, a.j products read it from memory; dot3f gives that split, the staged dot
+// does not.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

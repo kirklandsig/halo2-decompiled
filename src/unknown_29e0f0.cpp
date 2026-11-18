@@ -620,6 +620,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // update orders or advancing either index in a for update, 419 each. Initialize
 // the point at the start of each pass on those forms, 430 each. NOT kept:
 // the selected-index slots and native validator setup remain, and length falls.
+// M3 lane 12 r139 (`--fast 0x29e0f0 0x29e730`, control 382): a redundant `if (0 < count)` guard around the outer group loop
+// 382 (same code), around the group search loop 420 (1576 bytes); the link element bound by reference 382 (same code); the
+// group table pointer bound by reference to its field 443 (1579 bytes); the per-pass found flag declared at the group scope
+// and cleared each pass 382 (same code). Body unchanged.
 // Fixed start with a short/long output point 402/392, with a preselected step 410/417,
 // and with an increment/decrement branch 400/398. Saved short start with the original
 // cursor 386, or with a preselected word step 387. The selected homes still differ;
@@ -642,6 +646,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 396; signed-step loop guard 396; limit after cursor advance 418; distinct
 // forward and backward guards 382. NOT kept: the 380 form gains two and leaves
 // the selected-index homes unchanged. Original complete body restored.
+// Conditional visited-group rejection 382; nearest-point admission 415; grouped-link scan
+// 445; pass cutoff 399; point-walk admission 411; candidate-record admission 413;
+// distance before validation 417; selected output eligibility 394.
+// NOT kept: the three selected-index homes stay displaced, including in the tied group form.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

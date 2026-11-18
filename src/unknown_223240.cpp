@@ -57,22 +57,11 @@ bool function_68290(void);
 void main_time_wait_for_vblank(void);
 void function_13f10(long, long);
 
-PRIVATE __forceinline s_223240 *function_2232a1(s_223240 *arg_0)
-{
-	arg_0->field_4 = NONE;
-	arg_0->field_8 = NONE;
-	arg_0->field_b0 = g_485a8a.a;
-	arg_0->field_b8 = g_485a8a.b;
-	arg_0->field_0 = 1;
-	function_2f800((s_2f800_view *)arg_0->field_80, 0, 0, 0);
-	memcpy(arg_0->field_c, arg_0->field_80, 0x74);
-	return arg_0;
-}
-
 // @retail 0x2232a0
 void function_2232a0(void)
 {
-	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
+	function_223080(1, NONE, NONE, (s_223080 *)&g_47f0f8[0], 0, 0, 0);
+	function_2c8a0((byte const *)&g_47f0f8[0]);
 }
 
 // score 47 (was 79): Terminal stores still materialize the record base early, and 0x2b5d0's stub uses EDX for the count.
@@ -383,6 +372,16 @@ void function_2232a0(void)
 // entry 47, player count from total 157, both counts from returned record
 // position 158, typed optional view pointer 47, role names 47. Terminal
 // field addressing and the stub's count register still differ.
+// M3 lane 15 r97 (fast, plain confirmed; 0x223240, 0x2232a0 and 0x223080 matched throughout): the terminal record is the
+// existing 0x223080 called with constant arguments (1, NONE, NONE, the record, no source), which the compiler inlines here
+// and in 0x2232a0 as retail does (the same six stores, the delayed type store, the 0x2f800 defaults and the copy); the
+// hand-written copy of that path (the former function_2232a1) is removed from both callers: same code, 47, kept. Retail's
+// six folded stores followed by `lea` need the record pointer to stay unforwarded after them. One record pointer assigned
+// in the loop and again for the terminal call 47 (same code); the six stores in index form in the callers with a pointer
+// helper for the rest 56 (all nine uses fold; a diagnostic); the terminal index written `local_2 + 1` 183, that with the
+// count argument written out too 120, as `local_0 + 1` 182; the unused count and layout arguments as the loop's 47 (same
+// code). Left: the fold-then-form of the record base, and the 0x2b5d0 stub's count register (BLOCKED-BY 0x2b5d0, whose
+// activation still waits on 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90 and 0x143600, all unmatched today).
 // @retail 0x2234e0
 void function_2234e0(void)
 {
@@ -435,7 +434,7 @@ void function_2234e0(void)
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
 	}
-	function_2232a1(&g_47f0f8[view_count]);
+	function_223080(1, NONE, NONE, (s_223080 *)&g_47f0f8[view_count], 0, 0, 0);
 	function_2b5d0(3, view_count, local_2, local_3, &g_47f0f8[1]);
 }
 

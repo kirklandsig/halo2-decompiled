@@ -2,6 +2,86 @@
 
 The newest entry comes first.
 
+## 2026-11-18: 10707 functions match
+
+```
+matched 10707 of 11326 game functions (2085013 of 2786206 bytes, 74.83%)
+matched 1432 of 1436 Havok functions (279803 of 290362 bytes, 96.36%)
+```
+
+3 new matches, none lost:
+- @kirklandsig's #1352: `0xd1a30`, `0x1697c0` and `0x1fc4b0` match.
+
+## 2026-11-18: 10704 functions match
+
+```
+matched 10704 of 11326 game functions (2081659 of 2786206 bytes, 74.71%)
+matched 1432 of 1436 Havok functions (279803 of 290362 bytes, 96.36%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1350: `0x31be80` match.
+
+## 2026-11-18: 10704 functions match
+
+```
+matched 10704 of 11326 game functions (2081659 of 2786206 bytes, 74.71%)
+matched 1431 of 1436 Havok functions (279426 of 290362 bytes, 96.23%)
+```
+
+7 new matches, none lost:
+- Machine 3's batch 296 (#1348): `0xdd990`, `0x14f040`, `0x1897c0`, `0x1edd00`, `0x21d110`, `0x23531c` and `0x261510` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1431 of 1436 Havok functions (279426 of 290362 bytes, 96.23%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1347: `0x2dc220` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1430 of 1436 Havok functions (276302 of 290362 bytes, 95.16%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1345: `0x318a90` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1429 of 1436 Havok functions (276047 of 290362 bytes, 95.07%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1328, #1343: `0x2de1b0` and `0x2e3370` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
+0 new matches, none lost:
+- @andrewnakas's #1341: closer scores and notes, no new match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
+13 new matches, none lost:
+- Machine 3's batch 295 (#1340): `0x5e3f0`, `0x7a1c0`, `0x938e0`, `0xb9b90`, `0x133390`, `0x1509e0`, `0x16fe90`, `0x175a80`, `0x1ff360`, `0x215c00`, `0x2162b0`, `0x2ad480` and `0x2c5897` match.
+
 ## 2026-11-18: 10685 functions match
 
 ```

@@ -2056,6 +2056,23 @@ void function_27dd10(void)
 // in the walk's for 6 (0x281b60 6, 0x285750 4, 0x288570 2, 0x289580 5). Diagnostics (semantics changed): the empty
 // group's step or the group end's `+ 8` as 9 or 7, the bit test as `& 3`: the pair stays reversed in both functions.
 // Also the interpolation's three frame-state restores in reverse order 14 (0x281b60 14, 0x285750 12, 0x288570 19).
+// M3 lane 5 r198 (fast over all 78 functions of the file, 0x281b60 alongside; control 2/2 with 76 matched): the three
+// channel counters reached as members just past the settings global (they follow it in memory), in the walk's
+// increments and the wrapper's resets (diagnostic) 2 (0x281b60 2, 0x285750 17, 0x289580 78); only the increments or only
+// the resets that way 387 (0x281b60 4, 0x285750 21, 0x28aaa0 4); the output pointer as such a member in the walk 2
+// (0x281b60 2, 0x285750 17, 0x289580 203, 0x28aaa0 279); the blend-1 rotation through a new inline wrapper taking the
+// two orientations and the weight by reference 2; the blend-2 rotation through such a wrapper 2 (0x281b60 2; both the
+// same code everywhere); the blend-2 translation and scale through new inline (destination, source) helpers 2 (0x281b60
+// 2, 0x285750 33, 0x289580 78). Diagnostics: 1 to 4 unused inline helper definitions ahead of function_288573, empty or
+// with pointer parameters, change nothing in the file; each blend method's arm of function_288573 emptied in turn leaves
+// the pair as it is in the function that does not use that arm (0x281b60 2 without the blend-1, 3 or 4 arm, this
+// function 2 without the blend-2, 3 or 4 arm), while matched walk users change with arms they do not use (0x289580 78
+// without the blend-1 or blend-3 arm, 0x285750 33 and 0x28aaa0 92 without the blend-2 arm). So the pair does not follow
+// the folded arms or the counters' symbols; helper calls added in any arm move the other walk users first.
+// M3 lane 8 r183 (fast with 0x281b60 and the five matched walk users): in function_288572 the count read through a
+// no-code forceinline accessor at the group clamp 2 (0x281b60 2, 0x288570 120), at the outer loop bound 2 (0x288570 120);
+// the bit test through the accessor 2; the group end declared in the inner for's init 2; the blend frame state copied in
+// reverse order before the second decode 11 (0x281b60 11, 0x285750 9, 0x288570 9; the pair unchanged). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2201,6 +2218,12 @@ void function_2818e0(void)
 // M3 lane 13 r106 (the shared-walk trials listed above 0x27dff0): counter step helper 2; empty-group arms swapped 352;
 // chained counter resets 2; the node index zeroed in the wrapper 6; the frame-state restores reversed 14; constant-change
 // diagnostics leave the pair reversed.
+// M3 lane 5 r198 (the shared-helper trials listed above 0x27dff0): the counters as members past the settings global 2,
+// only the increments or only the resets 4; the output pointer as such a member 2; the blend-2 rotation through a new
+// inline wrapper 2; the blend-2 translation and scale through new inline helpers 2; without the blend-1, 3 or 4 arm of
+// function_288573 2 (diagnostic). All restored.
+// M3 lane 8 r183 (the shared-walk trials listed above 0x27dff0): count accessor at the clamp 2, at the loop bound 2;
+// bit test through the accessor 2; group end in the inner for's init 2; frame state copied in reverse order 11. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

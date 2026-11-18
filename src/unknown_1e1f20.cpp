@@ -626,6 +626,11 @@ void swarm_leader_detach(long actor_index);
 // compiles to the same bytes as the && form, and the permuter's best variant (300 s, two tries, 205 differing
 // instructions on the reduced image against a baseline of 219) only reaches it through a constant local and a bool
 // flag set by one test, both banned, so the body stands.
+// MiniMax A (11-18): no new form tried this round, no lower score (236): the head still loads the actor pool into
+// EAX where retail loads it into ECX and keeps the scaled index in EBX where retail keeps it in EAX, and this build
+// still spills the actor pointer to a stack slot retail holds in EBP; the body is also still 22 bytes short of
+// retail's 980 because retail expands 0x26ed40 into it, and that helper's body lives in src/unknown_26e370.cpp,
+// which this lane may not edit: BLOCKED-BY 0x26ed40.
 // score 236 (was 236): actor pool register, displacement spill and invitation countdown still differ.
 // Earlier: no new form and no lower score; the prologue still loads the actor pool into ECX and
 // keeps the scaled index in EAX where retail loads the pool into EAX and keeps the index in EBX, and the body
@@ -903,6 +908,20 @@ void swarm_leader_detach(long actor_index);
 // loads the record pool pointer into ECX and this build loads it into EAX, and the body is still 22 bytes
 // short of retail's 980 because retail expands 0x26ed40 into it; BLOCKED-BY 0x26ed40
 // (src/unknown_26e370.cpp), which this lane may not edit.
+// M3 lane 5 r197 (fast with 0x1e0160, 0x26ed40, both MATCH throughout; aligned exact / register-masked counts in
+// brackets, base [106/69]; all restored). Diagnostic, reverted at once (a hand copy of an existing helper is not keepable):
+// a file-local forceinline twin of joint_decline (actor re-derived, participant index read at each store) called from
+// `for (short i = 0; i < 4; i++) if (actor->memory[i].type != NONE)` 301 at 1006 B [75/48]: the head then takes retail's
+// registers (pool ECX, offset EAX and spilled to +0x10) and the memory walk is retail's (cursor EBX, byte offset EDX,
+// countdown in a stack slot); left with it: frame 0x24 against 0x20 with the actor pointer spilled (ours uses EBP inside
+// the prop walk), the raw `value` push, retail's prop walk (pool re-read after the 0x1e2150 callback, its two record
+// lookups) and the definition bit's byte in the dead index slot. On the twin: the prop record re-derived from the pool at
+// both reads 325 (1022 B) [84/72], that with the iterator compared against the cached actor 284 (990 B) [77/64]; those
+// two without the twin 274. The 0x258600 call replaced by an undefined extern (no register summary) 240: not the cause
+// (the opaque call takes no argument, so the index leaves EDI). The definition-bit test through a new forceinline helper
+// with a false-then-set result 216 (966 B; the byte lands in the dead index slot as retail, the same code as the flag
+// form reverted on 11-15, a match-only form), through a helper returning the direct expression 236 (same code). Still
+// BLOCKED-BY 0x26ed40: retail expands it here and its file's inline setting keeps it a call in this build.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

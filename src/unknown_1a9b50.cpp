@@ -413,6 +413,9 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
+// entry test) drops 32 bytes and measures 440, and the actor-first body with that return measures 393 (listed), so the
+// actor's table entry stays in ebx and the settings pointer in esi where retail holds the actor in ebp and the slot in esi.
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Earlier at 375 (was 375).
@@ -774,6 +777,21 @@ extern point2f *g_468778;
 // EBX); on it the slot parameter typed as the view 393 (same code); the final result set by `if (...) result = true;`
 // 380; the actor declared first and assigned after the settings call 375 (same code); the prop lookup first in its block
 // (ahead of the clock and the threshold) 380.
+// Round 193 (m3 lane 6, fast with the file's functions and 0x265d30, 16 MATCH each time, 0x1aab50 at its own 382; control
+// 375, aligned 263, register-masked 102). Reading: retail gives up arg_0's EDI inside the facing block (EDI holds the
+// view, then the facing pointer, then 0xe6900's argument) and reloads it from the parameter's home at 0x1aa666 on those
+// paths only; the prop takes EBX between the calls that take arg_0 there, and the settings never hold a register. Ours
+// colours the long-lived values in the order they are first set (arg_0, settings, actor, slot on the 375 body; arg_0,
+// actor, settings, slot with the actor first), so the prop, set last, is the one left in memory. Re-measured: actor first
+// with `if (!settings || f13 || f14 || f2d) return false;` and the final expression returned 393 (aligned 266, masked
+// 104). New, on the 375 body / on that 393 form: arg_0 read once through its own address at the tail for the three
+// tail calls 375/393 (same code: the read is forwarded); read through its address at each of the three 375/393; a
+// volatile read of it at each of the three 417 (1562 bytes)/392 (aligned 330, masked 117: arg_0 keeps EBX at entry).
+// Diagnostics, restored: the settings pointer volatile 419 (1561 bytes), on the 393 form 402 (arg_0 EBX, actor EDI
+// and spilled, slot EBP, prop ESI with a copy in arg_1's home); on the 393 form a volatile read of arg_0 at the three
+// calls that take it in EBX (0x1e4f90, 0x1a9d80, 0x1a9e00) 392 (all four pushes at entry and the prop in EBX as retail,
+// but the actor EDI and spilled, settings ESI, slot EBP; masked 114); both of those together 404 (1562 bytes: arg_0
+// ESI). Neither the settings' register nor arg_0's EBX preference alone is what separates the two colourings.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -943,6 +961,10 @@ static __forceinline long real_to_long(real value);
 // the result byte away (508); the body keeps its float chain, where retail evaluates the dot product in a
 // different order. The permuter's best variant only moves 0.5f into a local (381, a gain of one under the keep
 // bar, and a local holding only a constant), so the body stands.
+// MiniMax H (11-18): no new form, no lower score (382): the velocity block's orders are retail's (the rate first and
+// then the prediction, the dot in the k, j, i order with the length after the sum, and the half applied last), so
+// what still differs is the false exit's place, the facing pointer that retail forms late through the view pointer
+// in EAX, and the view helper retail keeps out of line (0x25d740, in another file): BLOCKED-BY 0x25d740.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
 // prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
 // wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset
@@ -1273,6 +1295,17 @@ static __forceinline long real_to_long(real value);
 // MiniMax I (11-17): no new form, no lower score (382): the rejection path still ends at a copy of the final exit
 // at the end of the function instead of retail's own epilogue between the inner test's arms, and the helper retail
 // keeps out of line is still expanded here; an early exit for the three flags folds the result byte away and reads 508.
+// m3 lane 9 r136 (fast with 0x1a9ec0, 0x1aa0d0, 0x25d740, 0x25d690, 0x25d9b0, 0x1a9d80, 0x1a9e00, 0x1e4f90, 0x1e2030,
+// 0x1f4280, 0xe6900, 0x30bf0, 0x2b400; control 382, aligned rows 155; body unchanged). Retail calls 0x25d740 here with no
+// node test ahead of it (0x1aacb3: the two getters called one after the other) and reads the facing through the view
+// pointer in EAX, forming a pointer to it only later (`lea esi, [eax + 0x2c]`); retail expands 0x25d740 in 36 functions and
+// calls it from 24. The rejection written first (`if (f13 || f14 || f2d) local_2 = false; else { ... }`) 382 (same code);
+// the result preset false with `return local_2;` at the rejection 508 (frame 0x54); the view getter guarded by the node
+// (diagnostic: retail has no such test) 487 (frame 0x54); 0x25d740's body through the existing tracking_get 382 (same
+// code here and in its other users); 0x25d740 as two ternaries 382 here but its users move (0x1ae820 111, 0x1b57f0 129,
+// 0x1b7e40 91, restored); the facing read through the view at every use, no pointer local, 517 (1945 bytes); the pointer
+// declared where retail first forms it, ahead of the facing test on the predicted offset, 516 (1944 bytes). Still
+// BLOCKED-BY 0x25d740's expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

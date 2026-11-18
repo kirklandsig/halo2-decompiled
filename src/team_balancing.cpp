@@ -618,6 +618,8 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // MiniMax C (11-14): no new form, no lower score (34): the player-count roles are decided in retail's only caller, which is held
 // in another file, so the body here stands; the frame agrees and every store, test and call agrees with retail.
 // MiniMax I (11-15): no new form, no lower score (34): the player count is tested in EDX here and in EAX in retail, and the copy, the fill, the call setup and the final clamp all follow from that one register, which retail's only caller fixes.
+// MiniMax G (11-18): no new form, no lower score (34): the player count is still tested in EDX here and in EAX in retail,
+// and that one register decides the copy, the fill, the call setup and the final clamp; retail's only caller fixes it.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the
@@ -959,6 +961,17 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // M405: First/last extra slot seeded, then loop/standard fill/counted fill/scalar copy from it.
 // Scores 80/61/61/80/80/74/61/80. NOT kept: ties or regressions; original body restored.
 // MiniMax A (11-17): no new form tried this round, no lower score (34): the two counts still swap roles (this build tests edx and keeps the running count in eax where retail tests eax and keeps it in edx); both arrive in those registers from the caller 0x7e210, whose body lives in src/unknown_07a9a0.cpp, which this lane may not edit. BLOCKED-BY 0x7e210.
+// M3 lane 4 r213 (fast with 0x91e30, MATCH each run, and the caller 0x7e210; control 34, difflib-aligned 23 exact / 2
+// masked). Nothing kept. The parameters as (extra_count, party_indices, player_count) with the caller's declaration and
+// call changed together re-measured 35: only the sum's `lea` operands turn round, the player count still arrives in EDX
+// and the extra count in EAX, so in this build the incoming registers follow the parameter, not its position. On that
+// order: the sum written extra first 35 (same code); the fill as a `while` from `i = player_count` 35 (same code); the
+// fill through a pointer walk 64 (199 bytes); the fill continuing the first loop's index 70; the fill counted from
+// zero to `total - player_count` 52 (192 bytes), to `extra_count` 62. (Diagnostic, reverted) the fill made a
+// non-constant store so no `rep stosd` is formed, on either parameter order, 76 with the player count still in EDX:
+// the fill's EAX is not what keeps the player count out of EAX. Still BLOCKED-BY 0x7e210 (src/unknown_07a9a0.cpp):
+// retail's call loads the player count into EAX after the pushes and copies the loop's count to EDX last; ours loads
+// the player count into EDX between the pushes and copies the count to EAX last.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

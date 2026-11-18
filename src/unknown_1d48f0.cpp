@@ -49,6 +49,12 @@ const dword g_455978[81] = {
 };
 // MiniMax G (11-18): no new form, no lower score (298): the first difference is still at +0x21 and 0x11bed0 is
 // still expanded here where retail calls it out of line; that expansion boundary is settled in
+// src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes (ours [esp+0x2c]/[esp+0x3c]
+// against retail's [esp+0x30]/[esp+0x40]) and the colouring behind it stay as they are. Retail's direction block
+// (0x1d4c70-0x1d4d78) keeps the table entry's three floats and divides once, ours keeps two and divides twice;
+// the vector3f local for it measures 369, the magnitude2d restructures 312 and 331 and the operand swap 298 (same
+// code), so none of them is the form. The permuter found no better form either: an annealed search over this body
+// (600 s, 71 tries) lowered nothing, best 268 against a baseline of 298.
 // src/unknown_11bed0.cpp, which this lane may not edit, so the optional-state homes and the colouring behind it
 // stay as they are. The permuter found no better form: an annealed search over this body (300 s) lowered nothing,
 // best 268 against a baseline of 268.
@@ -349,6 +355,21 @@ const dword g_455978[81] = {
 // first difference also puts retail's zero register before the load of the first bound and our version
 // after it, and our build still reads a different global and calls a different function at the first
 // dispatch point.
+// m3 lane 9 r136 (fast with 0x11bed0, 0x11be90, 0x14a280, 0x279740, 0xc5460, 0x21a100, 0x168f40, 0x1d43d0; control 298,
+// aligned rows 205; body unchanged). Retail expands the range check at two sites in the whole image (here and 0x1d01c0;
+// 59 functions call 0x279740, 14 of them twice or more with no expanded copy) and calls 0x11bed0 from all 41 of its
+// callers; ours expands 0x11bed0 here and in 0x21a100 only. Diagnostics on 0x11bed0's own body (src/unknown_11bed0.cpp),
+// none kept: it sits just under the link-time expansion limit, so one extra branch with a store, three arithmetic
+// statements or one more call in it keep it out of line at both sites (this function then 278 at 2049 bytes, and 0x14a280
+// keeps its match), while ten repeated stores, a one-line accessor for the collision tree and a guarded accessor do not.
+// Spellings of 0x11bed0 that leave its bytes alone, all still expanded here (298): both arms through the existing
+// function_11be90 (0x11bed0 still matches); the else arm through it with a file-local clearing helper; `inline` on
+// function_11be90's definition with either; a pointer local for the leaf table. Spellings that change its bytes: the leaf
+// as a ternary or preset to NONE then one function_11be90 call (0x11bed0 35/38, this 277/271), the level index read once
+// into a short local (0x11bed0 5, this 297), a short cluster local (0x11bed0 1), a leaf element pointer (0x11bed0 25, this
+// 295). One compiler-setting diagnostic: without the inline restriction on src/unknown_279740.cpp both releases expand the
+// range check (418 at 2215 bytes, as `inline` on its definition did), so that file's flags are not the lever either.
+// Still BLOCKED-BY 0x11bed0: the original has slightly more in it than ours when the expansion is decided.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

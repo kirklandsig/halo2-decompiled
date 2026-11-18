@@ -187,25 +187,29 @@ vector3f *function_170c00(vector3f const *first_forward, vector3f const *first_u
 	return matrix4x3_rotation_between(&first, &second, out);
 }
 
-__declspec(noinline) void function_170bb0(real *out, real const *second, real const *first);
+__declspec(noinline) void function_170bb0(real const *second, real const *first, real *out);
 
+/* Retail's one caller (0x16fe90) forms the output address first, then first, then second (0x16feb0, 0x16feb6,
+   0x16feb9): right to left over (second, first, out). The output is walked through its own cursor; with the
+   parameter itself stepped, this order moves the three incoming registers (round 191). */
 // @retail 0x170bb0
-void function_170bb0(real *out, real const *second, real const *first)
+void function_170bb0(real const *second, real const *first, real *out)
 {
+	real *difference = out;
 	long channel_index = 0;
 
 	do
 	{
-		*out++ = *first++ - *second++;
+		*difference++ = *first++ - *second++;
 	} while (++channel_index < 10);
 	for (; channel_index < 11; channel_index++)
 	{
 		/* the subtracted state's basis goes first */
 		function_170c00((vector3f const *)second, (vector3f const *)(second + 3),
-			(vector3f const *)first, (vector3f const *)(first + 3), (vector3f *)out);
+			(vector3f const *)first, (vector3f const *)(first + 3), (vector3f *)difference);
 		second += 6;
 		first += 6;
-		out += 3;
+		difference += 3;
 	}
 }
 
@@ -272,6 +276,9 @@ PRIVATE inline bool motion_near_zero_170630(real value)
 // and the cross product change (141); `real one = 1.0f` for the length tests (72, same bytes); the dot
 // product in a local (180) or the tests split into bool locals (123). Permuter (25 min on r622): best 63, from the
 // two changes kept here plus spelling-only rewrites; the count as unsigned 72 alone.
+// Round 575: time and group still trade stack slots. NOT kept: time cursor in the for step 143; time-range
+// walk with derived ordinal 422; short channel stride 78; channel stride at each advance 127; exact group
+// termination 65; group while loop 64; final rotation group first 341; shared basis dot product 151.
 // The time cursor and group ordinal still spill in the opposite order. Their latch and the cross products also differ.
 // Tried time-group index name 64, ordinal before channel setup 83, time cursor before current 141, time cursor before constant 129,
 // indexed time address 88, shared copy width 329, self-dot length tests 64, accepted-orientation return 64.
@@ -808,6 +815,16 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // `cluster` local 159/162, for(;;) 149, count as long 160, unsigned short or `cluster_count++` 142, volume_index/entry
 // declared outside the loop, head pointer, next-index local (no change). A probe store using cluster_slot in the loop
 // flips ebx/ebp (131), so the pick is a use-count tie; probe not kept.
+// Eligible-volume scope 129. Admitted volume postincrement 129. Nullable cluster record 159.
+// Capacity checked on map miss 159. Loop-break result 130. Typed camera stride 129.
+// Portal sentinel value 129. Group count before head 129.
+// The slot still uses EBP and the volume index EBX. The loop-break result grows to 442 bytes and changes
+// the prologue. The matched caller and projection callee stay exact throughout.
+// Separate mapped and selected slots 152; existing cluster address before slot assignment 151;
+// order subscript from count 129; mapped value from count 129; chained map/order assignment 129;
+// new cluster address before map/order stores 129; separate slots with chained stores 152;
+// count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
+// The opening EBX save and later BP volume index are still exchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1034,7 +1051,7 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 346 (was 346). Logic walked block by block against retail: every call, constant and field offset agrees.
+// score 346 (was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
 // 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
@@ -1046,6 +1063,18 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // in retail, ours loads all three first.
 // Tried (no gain, all 356-383): sk/sj/si locals before or after the squares (357-383), ratio/original/vertical
 // statements moved (360-361), deviation as float sum (367), per-term (double)(a*a) (372), double locals (419).
+// The first unity load and original-axis squares keep their opening registers. The frame still agrees.
+// Shared cross 346; staged cross 350; unconditional input vector 370; input scalars 413;
+// staged output scalars 465; complete output vector 396; native three-axis matrix 346; reciprocal-bound ternary 346.
+// NOT kept: the four alias-free transforms also demote the matched view initializer in preview.
+// Unity remains in XMM3, while retail uses XMM5 and carries the squares through the tangent.
+// Squared-axis vector 387; squared axis in matrix diagonal 361; shared weighted k 376;
+// weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
+// vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
+// NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
+// Matrix returned by value 471 (initializer loses its match); shared alias-safe transform 361; staged basis transform 368.
+// Axis-square diagonal accumulators 346; staged diagonal 363; separate scaled cosine terms 363.
+// Original direction copied by memcpy 346; separate transform source pointer 383. Unity still starts in XMM3.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1137,6 +1166,10 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // Permuter (25 min on r622): best 58, only with a (char) cast of the count passed to 0x23a220; retail reads it as
 // a zero-extended word (0x173ac5) and (char) would turn a count of 128 negative, so it isn't kept. A (word) cast and
 // the plane declared first are 69.
+// Round 575: the axis and side still occupy the wrong registers across projection. NOT kept:
+// projection index before origin 128 or after distance 104; side as row bit 117; default-zero side 121;
+// shared point projection 136; vertex base before the loop 156; query point initializer 69;
+// three-coordinate projection loop 69.
 // Tried comparison widened directly 69, unsigned-short side 69, normalized side local 120, early copy bound 122,
 // byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
 // byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
@@ -1278,6 +1311,9 @@ struct s_point_pool_173520
 // if-statement clamp (111), float constant (114), (double) cast on the false arm (96); `index = step + index` (123).
 // Permuter (25 min on r622): best 58, from temporaries plus a memcpy size read through a char (a behaviour change);
 // not kept.
+// Round 575: pool publication and state-test scheduling still differ. NOT kept: state predicate before
+// metadata 101; shared reverse predicate 121; forward source index 988; signed byte direction 98;
+// double clamp result 96; direct bounds member 161; typed inside view 117; point-value corners 212.
 // The pool increment and state-test schedule, stride reload, x87 clamp, and bounds expansion still differ.
 // NOT kept: capturing the state moves the projection branches. The explicit float clamp grows the body.
 // Tried state snapshot after reservation 172, returned byte for traversal 180, scoped bounds alias 96, named point stride 96,
@@ -1406,7 +1442,7 @@ struct s_pool_view_172840
 
 #define POINT_STORAGE_172840(pool) (&((s_pool_view_172840 *)(pool))->storage)
 
-// score 205 (was 221): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
+// score 134 (was 205): The entry now saves ESI and initializes AL at retail length. The flag stack homes and false-return tail still differ.
 // Earlier comparison at 221.
 // the block-by-block walk against retail 0x172840-0x172ba1 found no behaviour difference
 // (ring-buffer pop and wrap, cluster/portal loop, the four skip tests, both rectangle tests, the pool/point limits,
@@ -1432,6 +1468,28 @@ struct s_pool_view_172840
 // change.
 // single result from the three failure tests 205;
 // Plain check: 205.
+// Chained failure-byte initialization after the result 205.
+// Chained failure-byte initialization before the result 205. Positive polygon path 143.
+// Separate exclusion masks 205. State-specific cluster tests 205. Separate pool capacity guards 210.
+// Positive pool capacity branch 205. Queue failure first 205.
+// Positive polygon with signed cluster result (NOT kept, 873 bytes) 149.
+// Positive polygon with shared bit-array base 134.
+// Plain confirmation gives 134 at 868 bytes. The null-projection branch now reaches its own late failure
+// store, and the copy and bit set reuse the same destination base as at retail 0x172a9b–0x172aae. All 36
+// checked functions preserve their status, with no score rise elsewhere. The flag homes and false-return
+// tail still differ.
+// Independent pool/projection assignments with direct queue failure or success return 221/221;
+// conditional return 226; pool/projection else-if with direct queue failure 215; carried result with
+// queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
+// with projection before queue or first-write initialization 221/221; four flag names reordered 205.
+// NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
+// Queue return first 246; boolean AND result 208; positive pool, projection or queue predicate 236 each.
+// Three independent assignments 152; combined geometry failures 150; geometry within queue branch 148.
+// Two geometry assignments and direct queue return 243. Widened cluster at publication 86 with the chain, 55 with independent tests.
+// Chained sentinels 55/57; native portal width 239; portal ID local 55; widen at branch join 55.
+// Native queue index, named point index or earlier bounds pointer 55 each.
+// NOT kept: widening with independent tests restores the flag and spill homes at 870 bytes. Portal store first reaches
+// 19 at 868 bytes, with the portal and cluster stores reversed from retail.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1455,69 +1513,70 @@ bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists
 		{
 			long portal_index = cluster->portals[portal];
 			s_projected_polygon_173520 *polygon = function_173520(portal_index, cache);
-			if (!polygon)
+			if (polygon)
 			{
-				projection_full = true;
-				continue;
-			}
-			dword bit = 1 << (portal_index & 31);
-			long word_index = portal_index >> 5;
-			if (((dword *)entry->unknown2c)[word_index] & bit)
-				continue;
-			if (!(((dword *)g_4f93a4)[word_index] & bit))
-				continue;
-			if ((polygon->state == 1 && (polygon->field_0 & 2)) ||
-				(polygon->state == 2 && (polygon->field_0 & 0x10)))
-				continue;
-			if (!((polygon->state == 1 && polygon->field_6 == (short)cluster_index) ||
-				(polygon->state == 2 && polygon->field_8 == (short)cluster_index) ||
-				(polygon->state == 3 && function_173350(pool, (short)index, (short)portal_index) == NONE)))
-				continue;
-			box2f const *polygon_bounds = &polygon->bounds;
-			s_rect4 const *entry_rect = &entry->rect;
-			if (!(polygon_bounds->x1 >= entry_rect->x0 && entry_rect->x1 >= polygon_bounds->x0 &&
-				polygon_bounds->y1 >= entry_rect->y0 && entry_rect->y1 >= polygon_bounds->y0))
-				continue;
-			long new_index = pool->count;
-			if (new_index == 256 || 5120 - storage->used < 64)
-			{
-				pool_full = true;
-				continue;
-			}
-			++pool->count;
-			s_pool_entry *next = &pool->entries[(short)new_index];
-			point2f *allocated = &storage->points[storage->used];
-			storage->used += 64;
-			next->data = (real *)allocated;
-			if ((byte)function_173380((s_polygon_clip_173380 *)&polygon->bounds,
-				(s_polygon_clip_173380 *)&entry->rect, (s_polygon_clip_173380 *)&next->rect))
-			{
-				short other_cluster = polygon->field_6;
-				if (other_cluster == (short)cluster_index)
-					other_cluster = polygon->field_8;
-				next->next = (short)index;
-				next->key = key;
-				next->value08 = other_cluster;
-				next->unknown06 = (short)portal_index;
-				next->unknown28 = NONE;
-				next->unknown0a = NONE;
-				next->rect = *(s_rect4 *)g_4687dc;
-				next->unknown24 = polygon->distance;
-				memcpy(next->unknown2c, entry->unknown2c, sizeof(next->unknown2c));
-				((dword *)next->unknown2c)[word_index] |= bit;
-				storage->used = ((point2f *)next->data - storage->points) + next->count;
-				function_11f5f0((box2f *)&next->rect, (point2f *)next->data, next->count);
-				function_173b00(lists, other_cluster, (short)new_index);
-				if ((queue->index + 1) % 256 != queue->unknown00)
-					function_173b60(queue, (short)new_index);
+				dword bit = 1 << (portal_index & 31);
+				long word_index = portal_index >> 5;
+				if (((dword *)entry->unknown2c)[word_index] & bit)
+					continue;
+				if (!(((dword *)g_4f93a4)[word_index] & bit))
+					continue;
+				if ((polygon->state == 1 && (polygon->field_0 & 2)) ||
+					(polygon->state == 2 && (polygon->field_0 & 0x10)))
+					continue;
+				if (!((polygon->state == 1 && polygon->field_6 == (short)cluster_index) ||
+					(polygon->state == 2 && polygon->field_8 == (short)cluster_index) ||
+					(polygon->state == 3 && function_173350(pool, (short)index, (short)portal_index) == NONE)))
+					continue;
+				box2f const *polygon_bounds = &polygon->bounds;
+				s_rect4 const *entry_rect = &entry->rect;
+				if (!(polygon_bounds->x1 >= entry_rect->x0 && entry_rect->x1 >= polygon_bounds->x0 &&
+					polygon_bounds->y1 >= entry_rect->y0 && entry_rect->y1 >= polygon_bounds->y0))
+					continue;
+				long new_index = pool->count;
+				if (new_index == 256 || 5120 - storage->used < 64)
+				{
+					pool_full = true;
+					continue;
+				}
+				++pool->count;
+				s_pool_entry *next = &pool->entries[(short)new_index];
+				point2f *allocated = &storage->points[storage->used];
+				storage->used += 64;
+				next->data = (real *)allocated;
+				if ((byte)function_173380((s_polygon_clip_173380 *)&polygon->bounds,
+					(s_polygon_clip_173380 *)&entry->rect, (s_polygon_clip_173380 *)&next->rect))
+				{
+					short other_cluster = polygon->field_6;
+					if (other_cluster == (short)cluster_index)
+						other_cluster = polygon->field_8;
+					next->next = (short)index;
+					next->key = key;
+					next->value08 = other_cluster;
+					next->unknown06 = (short)portal_index;
+					next->unknown28 = NONE;
+					next->unknown0a = NONE;
+					next->rect = *(s_rect4 *)g_4687dc;
+					next->unknown24 = polygon->distance;
+					dword *portal_bits = (dword *)next->unknown2c;
+					memcpy(portal_bits, entry->unknown2c, sizeof(next->unknown2c));
+					portal_bits[word_index] |= bit;
+					storage->used = ((point2f *)next->data - storage->points) + next->count;
+					function_11f5f0((box2f *)&next->rect, (point2f *)next->data, next->count);
+					function_173b00(lists, other_cluster, (short)new_index);
+					if ((queue->index + 1) % 256 != queue->unknown00)
+						function_173b60(queue, (short)new_index);
+					else
+						queue_full = true;
+				}
 				else
-					queue_full = true;
+				{
+					storage->used = (point2f *)next->data - storage->points;
+					--pool->count;
+				}
 			}
 			else
-			{
-				storage->used = (point2f *)next->data - storage->points;
-				--pool->count;
-			}
+				projection_full = true;
 		}
 	}
 	if (pool_full)
@@ -1635,7 +1694,7 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 284 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 284 (was 266): Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
 // calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
@@ -1650,6 +1709,27 @@ struct s_camera_reference_171830
 // is probably not fixable before 0x171d00 matches. 0x171d00 now matches (#987), which took this from 266 to 284.
 // Permuter (25 min on r622): 26 below its own baseline, only with a float term truncated through an int and a
 // volatile pointer (a behaviour change); not kept.
+// Joint endpoint and direction 301. Shared preferred-side comparison 300. Boolean direction 281.
+// Signed endpoint branch 324. Explicit lower-fraction fallback 284. Sample material after target 284.
+// Refinement material after direction 286. Both material initializations at trace inputs 286.
+// The joint endpoint, shared comparison and signed-endpoint forms recover the 0xb8 frame, but leave the
+// point in EBX and shorten the body to 1197, 1204 and 1181 bytes. NOT kept: the Boolean direction gains
+// three points and grows to 1224 bytes. All four reduced controls retain their opening scores.
+// The 0xbc frame and point register still differ. Sample/retained-ray names 284; separately
+// declared short while ordinal 284; sampled hit fraction read once 284; shared refinement
+// point difference 286; signed cluster ordinal retained 284; shared rear-displacement scale
+// 284; combined reference admission 284; no-displacement early exit 311; signed winning
+// side 282. NOT kept: signed winning side gains two and shortens to 1213 bytes.
+// Shared plane distance 284; clear-side-first separate success arms 252; plane-first split 284;
+// plane-first helper 284; shared scale for up, side or both 284/284/283; shared sample endpoint
+// setter 284; signed reference 281; named plane distance 285. NOT kept: the 252 form puts the
+// clear-side store before the plane arm, away from retail's branch order. The frame and point
+// convention remain different; the 281 form also moves away from retail length.
+// Fraction guard for the retained pointer 300, copied displacement 298, long/short/Boolean axis 291/302/292,
+// winning sample and derived sign 296, indexed refinement 318, shared sampling and result fraction 292. NOT kept:
+// all regress. The Boolean axis recovers frame 0xb8, but the point stays in EBX.
+// Indexed refinement passes the point in EDI and lowers the caller to 298, with the larger 0xc0 frame in this
+// function.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -1786,11 +1866,12 @@ PRIVATE __forceinline void follow_matrix_point(transform4x3f const *matrix, poin
 	real z = point->z;
 	real y = point->y;
 	real x = point->x;
-	if (matrix->scale != 1.0f)
+	real scale = matrix->scale;
+	if (scale != 1.0f)
 	{
-		x = matrix->scale * x;
-		y = matrix->scale * y;
-		z = matrix->scale * z;
+		x = scale * x;
+		y = scale * y;
+		z = scale * z;
 	}
 	point->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
 	point->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
@@ -1813,7 +1894,7 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 336 (was 346; 464 before that, fast): same behaviour as retail. Walked statement by statement against retail
+// score 325 (was 336): same behaviour as retail. Walked statement by statement against retail
 // (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
 // order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
 // The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
@@ -1843,6 +1924,22 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // real direction_x/y locals (346), the direction array (320, above).
 // Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
 // stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
+// The point transform now reads its scale once. The state and collision-point registers still differ at entry.
+// Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
+// named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
+// cached vector-transform scale 397; signed-word location cluster 336.
+// The 0x20 frame agrees. The collision callee still takes the point in EBX, displacing the state to EBP.
+// in-place point helper 709; three in-place vector helpers 1110; direct transform fields 325; direct
+// collision fields 325; local-player lookup helper 325; camera point rename 325; direct initial basis
+// copies 402; horizontal vector initializer 325. NOT kept: The existing transform calls stay out of line
+// and shorten the body. The direct initial view copies also shorten it. The other forms tie at the retail
+// extent.
+// The camera state remains in EBP and the collision point argument still uses EBX.
+// Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
+// initial placement clamps on all three coordinates 336; projected-point aggregate 429;
+// in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
+// The state remains in EBP with the point argument in EBX.
+// Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

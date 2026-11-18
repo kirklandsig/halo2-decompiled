@@ -1738,6 +1738,9 @@ struct s_summary_player_sort_entry
 // line does not set it, and retail inlines 0x5a680 where this build calls it, so the membership pointer and the
 // member index never get retail's frame homes.
 // MiniMax C (11-17): no new form, no lower score (339, was 339): the frame is still 0xa9c against retail's 0xaa8, and the type, membership and member-index homes and the saved registers still differ.
+// MiniMax G (11-18): no new form, no lower score (339): the frame stays 0xa9c against retail's 0xaa8, and the type, membership and
+// member-index homes and the saved registers still differ; retail's conditional move for the output state (cmovne at 0x64fac) needs
+// /arch:SSE, which this file's @flags line does not set, and retail inlines 0x5a680 where this build calls it.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // M3 lane 8 r165 (fast; the score is positional behind the 12-byte prologue gap): the id copied with memcpy 339 (same
 // code); the variant pointer declared first 339 (same code); the full-session arm's player count read once into a
@@ -1865,6 +1868,12 @@ struct s_summary_player_sort_entry
 // cursor 374, map defaults on query failure 357, map stores selected by query success 398.
 // NOT kept: the source cursor adds one frame word and reaches 1292 bytes, but raises the score.
 // Failure-path map defaults reach 1291 bytes and raise the score. The type and membership homes remain.
+// M3 lane 7 r179 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160, all MATCH each time; control 339, aligned 203). On retail's two
+// pointer homes (the type pointer at +0x18 and the membership at +0x4c stay in the frame there): the type pointer made nullable
+// on the state (`state ? &session->value18 : NULL`, tested and read through) 394 (1323 bytes, frame still 0xa9c); the type
+// pointer as the output of a small getter taking its address 339 (same code: it folds); the membership pointer the same way
+// for the name 339 (same code); the membership and member index from 0x5a680 (NULL, &member_index) for the name and identity
+// 353 (called, as listed); that with the nullable type pointer 392. Neither pointer gains a home in any form. Body unchanged.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

@@ -483,6 +483,25 @@ static inline real interpolate_linear(real a, real b, real t)
 // lands after the timing setup, the in-range jump is still threaded), cleared first in the animating branch 19;
 // restart and dispose in one declaration 1 (same code); the boundary restart as `restart |= ...` 184, as `type == 0
 // ? (bit 1 || bit 2) : false` 1 (same code).
+// Round 212 (m3 lane 4; compile-only harness of the file, which reproduces the skip, then fast): the in-range miss lands on
+// the restart test, with every other instruction unchanged in the harness, when the join test compares restart to a value
+// that folds to false only later: `restart != (dispose && type == 0)`, `restart != (frame != frame)`, or with no per-pass
+// disposal reset `dispose || restart` (also with the reset moved to the end of the pass); plain `restart || dispose`,
+// `dispose || restart` with the reset, `restart != dispose`, `restart && !dispose`, `!!`, `^ 0`, `& 0xff` and `? true :
+// false` keep the skip. In the real build every such form is 87 (659 bytes): breaking the thread hands EBX to the flags
+// word (hoisted, reloaded at the latch) and the zero moves to EAX; on `restart != (dispose && type == 0)`: the flag-8 test
+// on the field 87, the flags read from the field throughout 207 (657), a flags local per boundary block 207 (next time
+// takes EBX, frame 0xc), a per-pass flags local 87, a long flags local 215 (655), the boundary restart as if/else 87, the
+// inactive arm on the field 87; the no-reset `dispose || restart` 87, with the reset at the pass end 87. Lead: retail's
+// source breaks the thread and still keeps the zero (the per-pass disposal clear) in EBX, so something else lowers the
+// flags word's and next time's weights there.
+// Round 185 (m3 lane 8, fast; compile-only screen of the file for the skip): no per-pass disposal reset with
+// `dispose || restart` at the join and the flags read from the field in the loop 207 (frame 0xc, next time in EBX,
+// no zero register: the per-pass reset is what gives EBX its zero); restart in the loop test (`!restart && time >=
+// next_time`) with the frame store and timing updates under `if (!restart)` 122 (652 bytes; the screen keeps the
+// skip); restart typed byte 1 (char, byte and long all keep the skip in the screen); the loop test as `next_time
+// <= time` 5; the three restart expressions through a forceinline predicate taking the type and the flags 1 (same
+// code). Screen only, skip kept: `else if` for the flag-8 store after the restart break.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

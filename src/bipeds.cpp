@@ -505,6 +505,10 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax B (11-18): no new form, no lower score (118): the reset dispatch 0xe5930 still expands at this call site
+// (413 bytes against retail's 343) where retail keeps the call out of line, and the caller's declarations do not
+// keep it out of line either; retail's 0x1f0 test shifts the dword before its bit test where the field is a byte
+// here, so the test folds to a byte test: BLOCKED-BY 0xe5930 (src/unknown_0e57e0.cpp).
 // MiniMax I (11-16): no new form, no lower score (118): the first difference is the definition's flags read - retail loads the
 // dword and shifts it (mov eax, [edx+0x1f0]; shr eax, 1; test al, 1) where this build tests the byte bit in
 // place, and retail's flag update is the memory form (or byte ptr [edi+0x348], 8) where this build does it in
@@ -543,6 +547,9 @@ void function_e5930(long unit_index);
 // MiniMax S (11-15): no new form, no lower score (118): the reset dispatch 0xe5930 still expands here where retail keeps the call, and retail's 0x1f0 test shifts the dword where the field is a byte here, so the test folds to a byte test: BLOCKED-BY 0xe5930.
 // MiniMax E (11-16): no new form, no lower score (118): retail's flag store lands in another order and 0xe5930's body is still expanded in place.
 // MiniMax C (11-17): no new form, no lower score (118, was 118): the reset dispatch 0xe5930 still expands at this call site (413 bytes against retail's 343) where retail keeps the call out of line, and retail's 0x1f0 test shifts the dword before its bit test where the field is a byte here, so the test folds to a byte test: BLOCKED-BY 0xe5930 (src/unknown_0e57e0.cpp).
+// MiniMax A (11-18): no new form, no lower score (118): the reset dispatch 0xe5930 is still expanded at this call
+// site (413 bytes against retail's 343) where retail keeps the call out of line, and retail's 0x1f0 test shifts the
+// dword before its bit test where the field is a byte here, so the test folds to a byte test: BLOCKED-BY 0xe5930.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
@@ -722,6 +729,10 @@ struct s_biped_flags_10a_view
 	word bit7 : 1;
 };
 
+// MiniMax B (11-18): no new form, no lower score (222): the frame 0x16c agrees; retail still computes the state
+// pointer at the top of the body and spills it where this build reads it at its one use, the 0x111650 call still
+// takes its names in EAX where retail pushes both arguments (that callee's declaration is in another file) and the
+// type-0 bit is still read as `and al, 4` where retail shifts first: BLOCKED-BY 0x111650.
 // MiniMax I (11-16): no new form, no lower score (222): the first difference is a four byte stack slot (this build's index copy
 // sits at +0x20, retail's at +0x24) and the early return after the first call, which this build places out
 // of line where retail continues in place.
@@ -747,6 +758,10 @@ struct s_biped_flags_10a_view
 // MiniMax S (11-15): no new form, no lower score (222): retail computes the state pointer at the head and spills it, so the head is 25 bytes short, the 0x111650 call takes its names in EAX where retail pushes both arguments, and the type-0 bit is read as `and al, 4` where retail does `shr al, 2; and al, 1`: BLOCKED-BY 0x111650.
 // MiniMax E (11-16): no new form, no lower score (222): retail computes the state pointer at the top and spills it at +0x20, while this build reads it at the use and keeps the index at +0x24.
 // MiniMax C (11-17): no new form, no lower score (222, was 222): the frame agrees (0x16c), but retail computes the state pointer at the top of the body and spills it where this build reads it at its one use (the head is 25 bytes short), the 0x111650 call takes its names in EAX where retail pushes both arguments (ret 8 in retail), and the type-0 bit is read as `and al, 4` where retail shifts first: BLOCKED-BY 0x111650 (src/unknown_10f1e0.cpp).
+// MiniMax A (11-18): no new form, no lower score (222): the frame agrees (0x16c), but retail computes the state
+// pointer at the top of the body and spills it where this build reads it at its one use (the head is 25 bytes short),
+// the 0x111650 call takes its names in EAX where retail pushes both arguments (ret 8 in retail), and the type-0 bit is
+// read as `and al, 4` where retail shifts first: BLOCKED-BY 0x111650 (src/unknown_10f1e0.cpp).
 // score 222 (was 224; 241; 280 before round 48): frame 0x16c agrees; retail computes the state pointer at the top and spills it (ours reads it at
 // its one use, so the head is 25 bytes short), the 0x111650 call takes names in EAX where retail pushes both
 // arguments (BLOCKED-BY 0x111650, unmatched, ret 8 in retail), and the type-0 bit is read as `and al, 4` (retail
@@ -1033,240 +1048,8 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
-// score 10 (was 10): what still differs: the crouch sum loads the biped's crouch and adds the spilled change (retail
-// loads the change and adds the field), case 5 stores unknown35c before the surface flag test (retail tests first),
-// case 4 stores 0x364 before reading entry+0xc for 0x354 (retail reads it first). Notes below, oldest last.
-// MiniMax S (11-09): 0xdd990 at 10 (was 17): every +0x348 flag write goes through the existing word_flags_set.
-// Not kept (coordinator 11-09): case 5's surface flag array in a one-use pointer, so the flag test keeps its own
-// register instead of taking the index's (9; a one-use pointer is match-only).
-// Still differs in three places: the crouch sum loads the biped's own crouch and adds the spilled change (retail
-// loads the change and adds the field), case 5 still stores unknown35c before the surface flag test (retail tests
-// first), and case 4's stores are ordered differently.
-// MiniMax S (11-09): no new form, no lower score (17); still differs in four places: the crouch sum loads the
-// biped's own crouch into the register and adds the spilled change (retail loads the change and adds the field),
-// the crouch store sits after the flags clear (retail before it), case 5 stores unknown35c before the surface flag
-// test (retail tests the flag first) and the 0x10 flag or is scheduled after the three unknown380 loads (retail
-// before them); case 4's stores are ordered differently as well.
-// MiniMax S (11-08): 0xdd990 at 17 (was 42): the case 4 lookup's address is carried in one pointer value, used by
-// both the initialize call and the 0x1efd80 call, the same spelling 0x14a8e0 uses; retail keeps that address in a
-// register and our build rematerialised it, which cost the two extra bytes. The length now agrees with retail's 1481.
-// Still differs: the crouch sum loads the field first (retail loads the spilled crouch change), the crouch store sits
-// after the flags clear (retail before it), case 5 stores unknown35c before the surface flag test, case 4's stores are
-// ordered differently and the 0x10 or is scheduled after the unknown380 loads.
-// MiniMax R (11-06): no new form, no lower score (42); the flag store still sits after the three loads and the crouch add still folds the field instead of the spilled operand; the crouch sum's two operands the other way round changes no code at all, and the flag clear ahead of the crouch store gives 49.
-// Earlier note (at 42 then): Frame 0xb8 agrees; lookup-address rematerialization adds two bytes;
-// crouch operands and contact/flag publication schedules remain.
-// Earlier: walked against retail block by block (calls, argument order, offsets, constants, conditions,
-// case bodies): the only behaviour difference was the final flags bit-7 clear, which retail also runs when the
-// biped has no havok component (0xddf46 is the NONE branch's target, 0xdd9bf); it is now outside the if.
-// What still differs: crouch sum loads the biped's crouch first (retail 0xddb25 loads crouch_change first; swapping
-// operands, `crouch_change += ...` unchanged) and the crouch store comes after the flags `and` (retail before it,
-// 0xddb4b/0xddb53; moving the `and` first 52); case 5 stores unknown35c before testing the surface flag (retail
-// tests first, 0xddcc8-0xddcd0; a flag local 218, storing it after the if 197); case 4 holds the lookup's address
-// in a lea instead of esi (0xddd8e, a holder pointer local unchanged) and orders the unknown364/edi reload
-// differently (0xdddbd-0xdddc3); `or byte [0x349], 0x10` is scheduled after the unknown380 loads (retail 0xddeda).
-// Fixed here: `bool physics` (long 291 -> bool 253), the permutation byte masked at its use (253 -> 47),
-// unsigned key (47 -> 46), `PIN(contact...) == contact` (46 -> 45), i, k, j square sum (45 -> 42), word flag masks.
-// Earlier rounds (350 and up): word flags, shared velocity norm, unsigned key, full-width physics result, case
-// order (the compiler lays the cases out itself: 1/5/4 and 5/4/1 give the same bytes), clamp admission, owned crouch.
-// Round 46 (lane 14, fast): retail inlines 0xb77d0 here (the velocity block). That block as a call to function_b77d0 498
-// (stays a call; the crouch sum then loads crouch_change first as retail); with a __forceinline declaration 498
-// (not honoured; 0xb77d0's file is /Ob1); 0xb77d0 defined `inline` 44 (inlined, the square sum back to i/j/k and the
-// crouch order back; 0x2056e0 stops matching). crouch_change named crouch_delta 42, change 42,
-// z_crouch_change 42; the sum named `crouch` before the PIN 42.
-// Round 118: the crouch sum in a named local under PIN 42 and with an if/else clamp 42 (both identical code);
-// case 5 `found = true` first 42; case 4's surface pointer passed straight to the flag test 42; the lookup declared
-// with the contact block's locals 42. Diagnostic (not keepable, a pointer to a whole local): an `s_lookup *` local
-// used for both the initialize call and 0x1efd80 gives retail's esi reuse (`mov edx, esi`) and length, 42 -> 17
-// (1481 bytes; left: the crouch sum/store order, case 5's 0x35c store, case 4's store order, the 0x10 or); 0x14a8e0
-// shows the same reuse, so the lead is a source form in which both calls take one pointer value.
-// Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
-// lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
-// address rematerialization and crouch/surface/store scheduling remain.
-// P267: word flag writers (the existing word_flags_set) with case 5's 0x35c store in both arms of the
-// surface test / case 4's contact (0x354) stored before the position (0x364) / native decoded widths,
-// subsets 1/2/4/3/5/6/7: 32/30/211/27/225/213/225; all without the writers 229. Not kept (coordinator):
-// retail stores 0x35c once, between the flag test and its branch (0xddcd0), so the both-arms form is a
-// duplicated store, and retail stores 0x364 before 0x354 (0xdddbd, 0xdddc7), the source's present order,
-// so the case 4 swap is a score-picked order. The writers alone stayed under the keep bar in earlier rounds.
-// F321: complementary contact-discovery state in bool/byte/word/long storage,
-// then each with lookup/surface tests owning that state: 42/42/42/42/200/200/170/168.
-// Original executable body restored; lookup receiver retention and store scheduling remain.
-// M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
-// M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
-// Lookup aggregate initialization at lookup/case/admission/object phases 186/217/204/204;
-// CRT clears at those phases 182/213/199/199. Shared word-bit publication for crouch,
-// contact, other and all flag groups 39/38/42/35; seven-count lead above 30 rejected.
-// N317: Current-crouch bounded state direct/successive 42/42; shared word flags
-// 35/35; branch-owned instance/contact-first publication 27/27; actual shared lookup
-// receiver 2/2 at 1481 bytes. Incoming field capture and receiver alias are exact-only;
-// the two crouch-add operands still reverse. Earlier uninitialized delta declarations
-// before object/gate/component/root, original/offset names, 2 each (eight forms).
-// Common real lookup/getter record declarations 42, joint publication 27; all other
-// lookup-user scores unchanged. Original body and all supporting declarations restored.
-// Round 369: complete squared-speed expression and three-product staging, each
-// crossed with shared word flag publication and outer velocity workspace ownership:
-// 45/45/38/38/45/45/38/38. Four-point best above 30 rejected; original predicate,
-// declarations, flag stores and complete body restored. Lookup and crouch schedules remain.
-// N323: Upper-first complete crouch sum: ternary/direct-field branches/mutable else-if/successive bounds, each without/with shared word flags: 47/40/295/295/47/40/47/40. Original complete body restored; lookup receiver rematerialization and crouch/contact schedules remain.
-// F340: Last-consumer scopes for root/input/height, seven subsets, then all with
-// a role-named contact lookup: 42/42/42/42/42/42/42/42. Original complete body restored;
-// frame 0xb8 agrees; receiver rematerialization and crouch/contact schedules remain.
-// Lane 1 round 62: the existing word_flags_set for every +0x348 write 35 (7 points, under the gate); with a crouch
-// field pointer (read and store) 35, the pointer alone 39 (store before the `and` as retail); with case 4's 0x354
-// store ahead of 0x364 30 (score-picked, retail stores 0x364 first); case 5 without the bsp local 198, also without
-// the definition local 198, the surface flag in a long local 194. Crouch operands, compile-only (they reproduce the
-// listing): field pointer, staged `+=`, a capture, an if/else clamp, the sum through an inline pin or add, the sum
-// assigned back to crouch_change: field first in all. The velocity block's conditional call is what flips it: the
-// block ending in an unconditional call loads crouch_change first, any `if` around 0xb7360 loads the field first.
-// P293: Owning word-flag crouch/contact/other publications, seven subsets then direct final
-// response-bit production: 42/42/42/42/42/42/42/71. Original complete body and helpers restored; no
-// qualifying gain.
-// Y551: Sole final flag-clear/return ownership at complete component/activity/ground
-// admissions, seven subsets then all with entry lookup storage: 42 each. Original
-// nested callback body restored; lookup rematerialization and crouch/contact schedules remain.
-// M338: Complete actual activity admission in bool/byte/short/long, positive/complementary channels:
-// 42/42/42/42/42/42/42/42. Original body restored; lookup receiver and crouch/contact schedules remain.
-// Nonmatching single-consumer truth carriers restored.
-// N348: Packed index/surface/kind extraction before key admission, subsets 1/2/4/3/5/6/7:
-// 79/51/42/245/79/51/245; all with short kind 245. Original decoder scopes and full
-// body restored; lookup receiver retention and crouch/contact scheduling remain.
-// F355: Complete velocity-threshold positive/complementary truth ownership in bool/byte/short/long:
-// 42/42/42/42/42/42/42/42. NOT kept: no gain; original body restored.
-// J246: Coordinated table-getter inline contract with native word flags,
-// actual crouch field receiver and entry lookup storage: 42/35/39/35/42/35/39/35;
-// coordinated initializer inline contract alone 42. All helper users unchanged.
-// NOT kept: seven-point flag gain is below the gate; field receiver misses.
-// Original body/contracts restored; lookup address and crouch/contact schedules remain.
-// P322: Actual lookup initialization result bool/byte/short/long at consumer
-// then lookup-scope declarations: 42 each. NOT kept: one-use result misses equality;
-// lookup receiver rematerialization and crouch/contact schedules remain. Full body restored.
-// DL259: Native contact key/surface/fallback-geometry field subsets 1/2/4/3/5/6/7:
-// 42 each; real shared lookup/getter prefix base with implicit conversion 42.
-// Original record views, declarations and complete body restored; lookup receiver
-// retention and crouch/contact schedules remain.
-// M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
-// subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
-// transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
-// Y590: Complete switch-default discovery ownership, found/missing channels in
-// bool/byte/short/long storage: 42 each. NOT kept: no receiver-retention or
-// contact-schedule gain; original complete body restored.
-// P340: Recent-component height output, exhaustive/conditional real/double, immutable real/double and
-// explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
-// height observation, branch and full body restored. Lookup rematerialization and crouch/contact
-// publication schedules remain.
-// P346: Complete query/decoder contact admission, valid/invalid bool/byte/short/long results:
-// 42/42/42/42/42/42/42/42. NOT kept: no native lookup retention or equality; original callback restored.
-// M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
-// 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
-// lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
-// J256: Sparse contact-kind exclusive comparisons in six orders, named kind and independent tests:
-// 260/135/260/110/139/136/261/276. NOT kept: all sparse dispatch forms regress from 42; lookup address rematerialization persists and the independent tests also grow the frame
-// Original executable source restored; native frame and allocation gaps remain.
-// Lane 15 round 58 (fast): shared lookup receiver alone 17; with it the speed test as one expression in all six term
-// orders 20/20/19/19/20/19 (orders with j first emit i,j,k, the others j,i,k; none emits retail's i,k,j), through
-// length_sq3f/dot3f 20/19, the crouch field read at entry 374; the velocity block as a call to an inlined 0xb77d0
-// (diagnostic) 19, the crouch pair unchanged; length_sq3f without the receiver 45; receiver plus word_flags_set for
-// every +0x348 write 10 (the crouch store and the 0x10 or become retail's); that with case 5's surface array named
-// with the case's other pointers 9, a typed surface element 9, the crouch operands swapped 9. Left at 9: the crouch
-// operand pair, case 5's 0x35c store ahead of the test, case 4's store order.
-// Round 70 (m3 lane 14, fast): 0xb77d0's file is now plain /O2, but the velocity block as a call to it stays out of line,
-// with a plain or a force-inline declaration 498/498. The lookup receiver re-measured 17; with word_flags_set for every
-// +0x348 write 10; plus case 4's 0x354 store ahead of 0x364 5 (diagnostic, the receiver is not keepable). Without the
-// receiver: case 4's swap 37, with word_flags_set 30 (not kept: the P267 order ruling; lead: retail loads entry+0xc
-// between the 0x360 and 0x364 stores, 0xdddc3). Case 5 with a one-use flag ahead of the 0x35c store 210, with 0x35c
-// stored after the if 192 (1489 bytes; compile-only gives the test before the store but sinks it to the join).
-// Compile-only (it reproduces the crouch pair): the add loads crouch_change first only when the outer
-// `if (function_dd8e0(...))` is removed (not just the inner velocity `if`); a bool or goto for that test, a scoped
-// height_change, the block as an inline helper (with an early return), a copy or helper parameter for crouch_change,
-// a named sum, `+=`, an if/else clamp, the compare reversed and the speed as one expression all keep ours.
-// Lane 1 round 79 (fast): every +0x348 write through the s_biped_flags_348 bitfields 42 (same code); with the bit-0
-// result as `field_0 = result.flags & 1` 71; case 4's entry+0xc surface named for its test and store 147 (1481 bytes);
-// `physics` declared at its assignment 42; `velocity.k = velocity.k - height_change` 42.
-// P383: Complete fallback-owner admission in bool/char/signed-char/byte/short/word/long/dword:
-// 42/42/42/42/42/42/42/42. NOT kept: no native lookup-receiver retention or equality; original direct
-// admission and whole body restored.
-// Round 81 (m3 lane 1, fast): case 5's surface flag in a bool ahead of the 0x35c store 210 (1487 bytes); case 5's
-// 0x35c store in both arms of the flag test 7; that with case 4's 0x354 store ahead of 0x364 2 (only the crouch-add
-// operand pair left; both forms are exact-only, so not kept). On that 2: the velocity push (0xb7740, 0x1c4b00, the speed
-// test and its three calls) as a force-inline helper 2, the whole height-change block as a force-inline helper 2, the
-// velocity declared at the component scope 2, the speed sum declared with the block's locals 2, the summed crouch in a
-// block local 2. Retail inlines 0xb77d0 here while its 16 other retail callers keep it out of line, so it cannot be
-// made inline; the crouch pair is the blocker. More probes on the 2-form: no clamp (diagnostic) still field first;
-// `crouch_change * 1.0f` 2; crouch_change declared last in the block 2, or at function scope before the biped 2; a
-// helper shaped like 0xb77d0 (NULL angular argument and its `||` test, one-expression sums) 4 (the sum comes out i, j, k).
-// Round 87 (m3 lane 1, fast; the 2-form, case 5's 0x35c store in both arms plus case 4's 0x354 store ahead of 0x364, re-measured 2:
-// only the crouch-add pair left). Retail evidence for both parts: retail reads entry+0xc after the 0x35c/0x360 stores but before
-// the 0x364 store, and reads the surface flag before the 0x35c store; a load cannot move across a store that may alias it (stores
-// to the biped may reorder among themselves), so retail's source reads them in that order. On the 2-form: the velocity block as a
-// call to 0xb77d0 with that function's parameter-address read removed 502 (still a call, so the read does not keep it out of line;
-// 0xb77d0 itself 56); 0xb77d0 defined `inline` 4 (re-measure of round 46 on this base: inlined, the speed sum comes out i, j, k
-// and the crouch add keeps the field first; 0x2056e0 434); object_get in place of every BIPED_GET 2 (same code). Compile-only map
-// of the crouch add (it reproduces the pair): retail's order comes only when the dd8e0 block holds a float operation followed by a
-// call and no nested test (`velocity.k -= height_change` then any call, or either test removed: change first; both tests, with
-// int, float or speed conditions: field first; the block removed, empty, ba1d0 alone or calls without the float operation: field
-// first); the first block, e30c0 and the code after the crouch store do not move it. An inline copy of 0xb77d0's body (inline or
-// forceinline, with or without the parameter-address read, the sum written out in all six orders, length_sq3f or dot3f) keeps the
-// field first and sums i, j, k where retail's inlined copy sums i, k, j: retail's inlined velocity block is not what our compiler
-// makes of that body. Diagnostics on the call form: with the havok test removed 500, with both tests removed 478: 0xb77d0 stays
-// out of line wherever the call stands, so our link never inlines it by itself (retail inlines it here and not at 0x2056e0's
-// top-level call; `inline` inlines it at both): 0xb77d0's file is /Ob1 again (its @flags line). Diagnostic, not keepable (a flags
-// change): that /Ob1 dropped with the call form 5, inlined by the link itself as retail, but the sum is still i, j, k, the crouch add
-// field first and one `mov eax, esi` differs (0x2056e0 inlines it too, 544). Permuter on the 2-form (600 s, fast, anneal): 14 tries, none below 2.
-// The inner test's first call, 0xb9b90, is an unmatched body (contributor code), a possible factor in that block's allocation.
-// No untried natural spelling of the add is left.
-// M3 lane 13 r85 (fast; the compile-only harness gives the same field-first add for each): the crouch change as a `real const`
-// 10, as a const reference to the call's result 10; the speed test as `0.0001f < speed_squared` 10, as
-// `!(speed_squared <= 0.0001f)` 292 (1485 bytes); the crouch field read into a local before the sum 10.
-// M3 lane 13 r88 (fast). The 2-form (case 5's 0x35c store in both arms, case 4's 0x354 store ahead of 0x364) re-measured 2, the
-// crouch-add pair alone; on it: 1-8 dead initialised locals at the top 2 each (the pair never moves: no symbol-count lever here);
-// 1-8 extern declarations or 1, 3, 8 prototypes ahead of the function 2 each; the crouch change's address stored to a global
-// (diagnostic) still field first (388, the frame shifts); the two changes as one two-element array 4; the height change declared
-// ahead of the crouch change 2; the sum assigned back to the crouch change and then pinned 2. The velocity push as a plain static
-// function of (object, velocity) 504 (1361 bytes: it stays a call); as a plain static function shaped like 0xb77d0 (object, linear,
-// angular, called with a NULL angular part) the link expands it by itself, 4 (the sum comes out i, j, k and the crouch add field
-// first, as with 0xb77d0 itself expanded); in that function length_sq3f, dot3f, a `moving` flag set by two tests or the terms
-// written k, j, i give the same code, 4 each, and 1-8 dead locals in the caller 4 each. So neither the sum's term order nor the
-// crouch pair follows a spelling of that body or a symbol count; retail's copy of 0xb77d0 here is still not reproduced.
-// M3 lane 14 r93 (diagnostics only, no new natural form run; base 10). Compile-only map of the crouch add (the screen gives
-// the field-first pair): with the inner test kept, the change loads first only when a float computed before an unconditional
-// call is tested after it (the speed sum, then 0xb9b90, then `if (speed)` around the other two calls), or when only the last
-// call (0xbba20) stays conditional; the test around all three calls, around 0xb9b90 alone, an if/else around two of them, a
-// call after the test, a bool flag tested after the block, an int or a float spilled across a call and tested, and the
-// speed declared at the block's top all keep the field first. One-expression sums always put the component written last
-// (k after `k -= height_change`) last and order the other two by the written order (j first gives i, j; else j, i), so
-// retail's i, k, j has no one-expression form here; the same sum through a `vector3f const *` to the velocity (also with the
-// body's NULL angular pointer and its `||` test) always comes out i, j, k. Link-inlined 0xb77d0 (diagnostic: its /Ob1 and
-// its parameter-address read both dropped, the block as a call): 13, the sum i, j, k, the add field first and one
-// `mov eax, esi` for retail's `mov edi, esi` before 0xe4680 (0x2056e0 544). So retail's inlined copy is still not
-// reproduced by that body under link inlining either.
-// M3 lane 11 r104 (fast): the speed-sum local declared at the top of the dd8e0 block and assigned after the pushes 10; the
-// crouch sum in a function-scope local then PIN 10; `velocity.k = -height_change + velocity.k` 10; the clamp as an if/else
-// on a block-scoped sum 10 (all the same code); height_change given 0.0f before the dd8e0 call 361 (1490 bytes). Diagnostic,
-// value-wrong: the 0xb9b90 call dropped from the speed test leaves the crouch add field first (289), so that unmatched
-// callee's register summary is not what flips the pair.
-// M3 lane 7 r167 (compile-only screen of the generated unit, which reproduces the crouch pair; fast where noted): a
-// crouch local declared with the block's locals, assigned the sum and then pinned 10 (fast); the clamp through PIN_126660,
-// the speed test as one unnamed `i*i + k*k + j*j` sum, crouch_change declared uninitialised at function scope, the speed
-// sum as one `real const`: field first each. Diagnostics (not keepable): a `volatile` change, or any second use of the
-// change in the join block (a `> 5.0f` test, `* 2.0f`), loads the change first as retail; a second use right after
-// 0xe30c0 does not.
-// M3 lane 14 r101 (fast with 0xdd8e0/0xdd7d0/0xb77d0; all on the 2-form, re-measured 2: only the crouch pair): `velocity.k +=
-// -height_change` 2; height_change declared just ahead of the dd8e0 test 2; the pushes and the speed sum through a `vector3f
-// const *` to the velocity 2; the dd8e0 result in a bool tested after 2; the crouch read through a fresh BIPED_GET at the add
-// (diagnostic) 410 (1504 B, the lookup is redone). Re-measured: the two changes as a two-element array 4 (the crouch pair stays
-// field first; the physics byte moves), so the change's memory residence is not what orders the pair.
-// M3 lane 13 r101 (fast; base 10, the 2-form re-measured 2, only the crouch pair): on the 2-form, the damage block (0xd6660 to
-// 0xd7b80 under the game-mode test) as a forceinline helper taking the biped index 2; the change declared uninitialised as the
-// block's first local and assigned at its call 2; the clamp as a block-local sum with two plain ifs (`< 0`, then `> 1`) 2; the
-// three wake calls (0xb9b90, 0xb7360, 0xbba20) as a forceinline helper 2; case 5 written flagged arm first (only the 0x35c
-// store) with all five stores in the other arm 2 (the same exact case 5 code as the both-arms form). The pair stays field first.
-// M3 lane 8 r181 (fast; base 10): a no-code read of the crouch field at the top 10; a no-code read of the change just
-// ahead of the sum 10; case 4's `found = true` ahead of its five stores 10; the sum in a named local with a nested
-// ternary clamp 10; the sum through a reference bound to the change (`real &crouch = crouch_change; crouch += field`)
-// 10 (all the same crouch pair). Diagnostic: the dd8e0 test inverted with an empty first arm 10. Retail inlines
-// 0xb77d0 here; its file (/Ob1, src/unknown_0b7740.cpp) is held by another lane this round, so the inlined-copy lead
-// was not re-run.
+// retail reads the ground surface flag before storing the instance index (the store sits in both arms of
+// the test and is hoisted above the branch) and reads the contact's surface before storing the position.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1305,9 +1088,8 @@ void __stdcall function_dd990(long arg_159e6d)
 			function_b7740(arg_159e6d, &velocity, NULL, false);
 			function_1c4b00(arg_159e6d, &velocity, NULL, 1);
 			/* retail sums i, k, j in that order (0xddad7-0xddaf7) */
-			real speed_squared = velocity.i * velocity.i;
+			real speed_squared = velocity.i * velocity.i + velocity.k * velocity.k;
 
-			speed_squared += velocity.k * velocity.k;
 			speed_squared += velocity.j * velocity.j;
 			if (speed_squared > 0.0001f)
 			{
@@ -1370,13 +1152,17 @@ void __stdcall function_dd990(long arg_159e6d)
 							byte *definition = *(byte **)(structure + 0x13c) + *(short *)(instance + 0x34) * 0xc8;
 							byte *bsp = *(byte **)(*(byte **)(definition + 0xb4) + 0xc);
 
-							biped->unknown35c = index;
 							if (!BIPED_SURFACE_FLAG(bsp, surface))
 							{
+								biped->unknown35c = index;
 								biped->unknown354 = surface;
 								biped->unknown360 = NONE;
 								biped->unknown364 = NONE;
 								biped->unknown358 = NONE;
+							}
+							else
+							{
+								biped->unknown35c = index;
 							}
 							found = true;
 							break;
@@ -1403,8 +1189,8 @@ void __stdcall function_dd990(long arg_159e6d)
 									{
 										biped->unknown35c = NONE;
 										biped->unknown360 = object_index;
-										biped->unknown364 = position;
 										biped->unknown354 = *(long *)(entry + 0xc);
+										biped->unknown364 = position;
 										biped->unknown358 = NONE;
 										found = true;
 									}
@@ -1611,7 +1397,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
 // the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
 // facing homes stay four bytes out of retail's, so the body stands.
-// score 175 (was 183): Definition/material/point slots, entry scheduling and the walking preload still differ.
+// score 175 (was 183): The 0xfc frame and extent agree. The constant loads early, and the definition, material and point homes differ.
+// Earlier score 175 (was 183): Definition/material/point slots, entry scheduling and the walking preload still differ.
 // Earlier 183 (was 203): m3 lane 4 r208 (plain; every function of this file checked). KEPT 203 -> 185: the alternate
 // facing through the existing function_cb7e0(arg, &facing) (retail expands 0xcb7e0 there; the copy itself is the same
 // code, the gain is case 6's inlined 0xe5d50 dot products, which take retail's XMM registers; listed below as "same
@@ -1999,6 +1786,16 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // shared control read 183, explicit case returns 183, named component squares 183,
 // typed mode member 183. On 175, staged walking rate and height adjustment 175/175.
 // NOT kept beyond the planar accumulator. The movement view grows the frame and body.
+// M421: Material assigned on both paths 675, fallback first 675, local at selection 675, complete conditional initializer 675;
+// common unit scale 175; unsigned material address 175; separate shape address/displacement 583; material address then displacement 175.
+// NOT kept: removing the entry material initialization shrinks the frame and body. The definition and material slots still differ.
+// physics member used throughout 654; biped fields through tag section 193; unit flags and boost through
+// tag section 193; walking settings before rate call 154; linear velocity through motion receiver 193;
+// animation names and tail state have distinct receivers 175; movement member with motion receiver 654;
+// unit and biped tag sections 193; walking rate then attenuation 607; walking attenuation then rate 618.
+// NOT kept: the 154 form restores the definition slot and preloads the walking settings as retail does,
+// but it uses one-use settings and rate locals without a byte match. Separate assignments to speed_scale
+// regress. The original body was restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2957,6 +2754,10 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax B (11-18): no new form, no lower score (63): retail tests the +0x3aa byte in place and reads it again
+// sign-extended at the call, where this build sign-extends it into a long before the test; both spellings measure
+// 82 in the fifteen-address image, so the body is as it was, and retail's count still travels in EAX to 0x1d5120,
+// whose declaration lives in another file: BLOCKED-BY 0x1d5120.
 // MiniMax I (11-16): no new form, no lower score (63): the first difference is the extra `push ebp` - retail keeps the
 // havok component's base in EAX and never touches EBP, this build puts it in EBP; the byte at +0x3aa is
 // widened at the read (movsx) where retail tests it in place and re-reads it for the call's count, and the
@@ -2969,6 +2770,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // MiniMax I (11-14): no new form, no lower score (63): retail still tests the +0x3aa byte in place where this build sign-extends it into a long, and retail clears +0x349 with a byte read-modify-write where this build hoists 0x9fff into a register and does word clears (the struct has no byte field at +0x349); the settling count still travels to 0x1d5120 as a stack argument, whose declaration lives in another file.
 // MiniMax S (11-15): no new form, no lower score (63): the extra EBP for the early Havok base, the settling count's trip through the stack to 0x1d5120 (whose declaration lives in another file) and the hoisted 0x9fff word clears against retail's byte read-modify-write at +0x349 remain.
 // MiniMax E (11-16): no new form, no lower score (63): clearing +0x349 through a byte field of the flags word (retail's `and byte ptr [esi + 0x349], 0x9f`) measures 94 (263 bytes); the count still travels to 0x1d5120, whose declaration lives in another file.
+// MiniMax A (11-18): no new form, no lower score (63): retail's call to 0x1d5120 takes the settling count in eax with
+// six stack arguments and writes its result through a byte pointer, where this build passes seven stack arguments and a
+// long out-parameter; that callee's declaration lives in src/unknown_1d5120.cpp, which this lane may not edit:
+// BLOCKED-BY 0x1d5120.
 // score 63 (was 63): extra EBP (the Havok base loaded early), count transport and the hoisted 0x9fff flag clears differ.
 // MiniMax H (11-12): no new form, no lower score (63): byte-typed flag bitfields (103), a byte view of +0x349 clearing through the high byte (103), the count read again at the call through BIPED_GET (76) or in place (87) and the char body with a short selection (76) all measure worse; the extra EBP, the widened count test and the hoisted 0x9fff word clears remain.
 // MiniMax G (11-12): no new form, no lower score (63): nothing new this round; the extra EBP (the Havok base loaded early), the
@@ -3600,6 +3405,11 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax B (11-18): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c (retail's
+// dead flag byte before the 0xe16b0 call needs a local whose address is taken, a form this lane may not use),
+// the +0x34b state byte is still zero-extended where retail sign extends it (the signed view measures 361, under
+// the keep bar) and the 0xe16b0 call still passes the biped index on the stack where retail passes it in a
+// register, which that callee's declaration decides.
 // MiniMax I (11-16): no new form, no lower score (324): this build's frame is four bytes smaller than retail's (0x48 against
 // 0x4c), the switch's byte at +0x34b is read unsigned where retail sign extends it (a `(char)` cast on the
 // switch measures 323, under the bar), and the call to 0xe16b0 passes the biped index on the stack where
@@ -3617,6 +3427,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // MiniMax S (11-15): no new form, no lower score (324): the frame is 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call needs a local whose address is taken, a form this lane may not use), and the +0x34b state byte is zero-extended where retail sign-extends it.
 // MiniMax E (11-16): no new form, no lower score (324): the frame is 0x48 against retail's 0x4c, which needs a dead flag byte kept before the 0xe16b0 call.
 // MiniMax C (11-17): no new form, no lower score (324, was 324): the frame is 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, the HELD contributor form below), the +0x34b state byte is zero-extended where retail keeps it scalar, and the centre and result homes still differ.
+// MiniMax A (11-18): no new form, no lower score (324): the frame is still 0x48 against retail's 0x4c, which needs
+// retail's dead flag byte kept before the 0xe16b0 call - a local whose address is taken, a form this lane may not use -
+// and the +0x34b state byte is still zero-extended where retail sign-extends it (the signed field measures 323, one
+// point, under the keep bar).
 // score 324 (was 362): frame 0x48 against retail's 0x4c (retail's dead flag byte before the 0xe16b0 call, a HELD
 // contributor form below), the +0x34b state byte zero-extended, scalar, centre and result homes. Round 85 (m3 lane 13) at
 // the end of this note; the earlier first lines are kept below as "Earlier first line".
@@ -4155,6 +3969,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
+// score 548 (was 548): The 0x78 frame agrees. The changed byte is at +0x12 versus +0x11, then the flight
+// threshold uses +0x14 versus +0x18 and the vector schedules differ.
 // MiniMax E (11-17): no new form, no lower score (548): the frame is still 0x7c against retail's 0x78, and the definition's row pointer is still taken into ebx where retail takes it into ebp and pushes ebp as well, so the definition, biped and state homes sit four bytes apart and the flight call's arguments stay one register out.
 // MiniMax R (11-16): no new form, no lower score (548 in the full image, 612 in the reduced one): our frame is 0x7c against retail's 0x78; retail masks the tag index before its saves and keeps index * 12 in EBP with the definition in ECX, where this build masks it after the first push, keeps the index in EBX and brings the definition back in EBP; holding the mode's special flag as a byte instead of a long gives 656.
 // MiniMax C (11-15): no new form, no lower score (548): the prologue still differs - retail computes the pool offset in ebp (pushing ebp before the shift) and keeps it there, while this build computes it in ebx and pushes ebp later, and this build masks the object index after the pushes where retail masks it before, so the first field load and every call argument after it stay one register out.
@@ -4162,6 +3978,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // MiniMax D (11-15): no new form, no lower score (548): the flag byte still sits at [esp+0x12] where retail keeps
 // it at [esp+0x11], the flight scalar still has a home of its own that is not retail's, and the body is 2738 bytes
 // against retail's 2712, so the two cold exits land in a different place in the body.
+// Earlier: round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// MiniMax B (11-18): no new form, no lower score (612 measured, main's note says 548): the prologue's pool offset is still computed in EBX where retail keeps it in EBP, the flag byte still sits at [esp+0x12] against retail's [esp+0x11], and the body is 2743 bytes against retail's 2712, so the cold exits land elsewhere; the frame 0x78 and the flight-call homes are unchanged.
 // score 548 (was 548): round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // round 101 (m3 lane 12) and r73 notes are at the end of this note. Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // MiniMax B (11-14): no new form, no lower score (548); the prologue already differs - retail computes the pool offset in EBP
@@ -4410,6 +4228,19 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // hand owner with short slot after aim query 573.
 // NOT kept: The two shared-hand forms lower the reduced score but grow to 2748 and 2749 bytes against 2712
 // in retail. Both retain the reduced 0x7c frame. The short slot alone regresses.
+// The changed byte and flight threshold still use different stack homes.
+// Flight settings pointer before/after threshold 620/614, reference before/after 620/614.
+// Typed tag section confined to flight, pointer/reference 608/608. Shared across movement,
+// pointer/reference 596/596. NOT kept: the shared pointer reaches retail length but scores
+// 588 in the full image against 548 at opening.
+// Round 418: Single entry mode byte 607; reuse changed as the gate 590; compare initializer 592; initializer
+// through the gate 625; explicit mode-result arms 628; same arms through the gate 628; nested mode gate 607;
+// nested gate with walking-only state 615. NOT kept: the 590 form retains the reduced frame excess and retests
+// the result, and the 592 form stores the result with setne and repeats the mode comparison.
+// Direct returns for aim/look/both 614/614/614. Combined mode rejection alone/with aim/with look/with
+// both 614/614/614/614. Separate target and mode guards with both query guards 599 (reduced control 614,
+// full 548). NOT kept: it places the changed-result epilogue before the queries and reverses the mode
+// branch.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4673,6 +4504,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // second property at 0x60 against 0x88, the travel limit at 0x5c against 0x84 and the placed pivot at 0x50 against 0x88),
 // the pivot select still takes EAX and ESI where retail takes ECX and EDI, and the body is 1924 bytes against retail's
 // 1937 because retail keeps the travel test as a byte flag.
+// score 336 (was 356): The 0x12c frame agrees. The origin and body matrix start at 0x44 and 0x60 here, and at 0x40 and 0x50 in retail. The travel test and later pivot homes still differ.
+// Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
+// MiniMax B (11-18): no new form, no lower score (336): the frame 0x12c and retail's 1937-byte length still agree, but the matrix home (0x60 against retail's 0x50), the origin (0x44/0x48/0x4c against 0x40/0x44/0x48) and the pivot select's register pair (EAX/ESI against ECX/EDI) are still ours; no new spelling of the homes was found this run.
 // score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
@@ -4994,6 +4828,17 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // NOT kept: shared stores shorten the body and raise the score. Independent root coordinate reads tie. The body
 // matrix and origin retain their baseline slots.
 // MiniMax R (11-17): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and a permuter run over the body (15 tries, 326 s) found nothing below the baseline.
+// The matrix, placed-point and property homes shift together although the 0x12c frame agrees.
+// Terminal pivot: scalar-snapshot helper 384, copied then rotated in place 393,
+// selected pivot in place 376 or through the scalar helper 345. Shared final difference
+// 336 or with scalar helper 384. Rotating into the matrix position then subtracting
+// directly or through the shared difference 335/335. NOT kept: one-point gain above 30.
+// origin in actual point query record 353; placement in actual point query record 362; both point
+// queries with their records 373; origin address from existing point setter 336; placement address from
+// existing point setter 336; both point addresses from existing setters 336; result lifetime starts
+// after body matrix query 339; target copy initialized at travel test 336. NOT kept: one complete query
+// record grows the frame to 0x148, and two grow it to 0x164. Setter returns and initializer changes tie
+// or regress. The original body was restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5322,6 +5167,10 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax B (11-18): no new form, no lower score (91): the reset-mode dispatch 0xe5930 still expands at this
+// straight-line call site where retail keeps the call (113 bytes against retail's 61), and retail takes the index
+// from ESI where this build takes it from the argument register; the callee's own file (src/unknown_0e57e0.cpp)
+// is not this lane's, and a new noinline declaration is not allowed: BLOCKED-BY 0xe5930.
 // MiniMax I (11-16): no new form, no lower score (91): the first difference is the incoming convention - retail takes the biped
 // index in ESI and keeps it there, this build takes it in EAX and moves it to EBX for the calls; the callers
 // that set the convention are in files this lane may not edit.
@@ -5358,6 +5207,9 @@ void function_e4300(long arg_159e6d)
 // MiniMax S (11-15): no new form, no lower score (91): the reset dispatch 0xe5930 still expands at this straight-line call site where retail keeps the call (113 bytes against 61), and retail takes the index from ESI where this build takes it from the argument register: BLOCKED-BY 0xe5930.
 // MiniMax E (11-16): no new form, no lower score (91): the reset-mode dispatch is expanded here where retail calls it out of line, giving 113 bytes against retail's 61.
 // MiniMax C (11-17): no new form, no lower score (91, was 91): the reset-mode dispatch 0xe5930 still expands here (113 bytes against retail's 61) where retail calls it out of line: BLOCKED-BY 0xe5930 (src/unknown_0e57e0.cpp).
+// MiniMax A (11-18): no new form, no lower score (91): the reset dispatch 0xe5930 is still expanded at this call site
+// (113 bytes against retail's 61) where retail keeps the call out of line, and the helper's own file
+// (src/unknown_0e57e0.cpp) is not this lane's, so the boundary cannot be recovered here: BLOCKED-BY 0xe5930.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
@@ -5678,6 +5530,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// score 79 (was 79): The 0x24 frame agrees. The first rotation spills the cosine complement and reads forward x
+// before the axis copy; the final cross has the same memory-operand difference for forward y.
 // MiniMax I (11-16): no new form, no lower score (79): the first difference is at +0x107, inside the inlined rotation helper,
 // whose file this lane may not edit; retail keeps the first product alive in xmm1 across the block where
 // this build spills it to [esp+0x10].
@@ -5688,7 +5542,8 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // MiniMax S (11-15): no new form, no lower score (79): the first difference is still inside the shared rotation helper, whose body lives in src/unknown_1eb8a0.cpp and is not this lane's file, and the operand orders the earlier rounds measured still sit at or above the body, so the body stands.
 // MiniMax E (11-16): no new form, no lower score (79): the first rotation and the staged cross product load their operands in another order (retail copies the axis first).
 // MiniMax C (11-17): no new form, no lower score (79, was 79): the frame agrees (0x24) and the first difference is still at +0x107, inside the shared rotation helper (rotate_direction), whose own file this lane may not edit; retail keeps the first product in xmm1 alive across the block where this build spills it to [esp+0x10] and reloads it later, and the body is seven bytes longer than retail's.
-// score 79 (was 79): first rotation and staged cross product operands (load-first where retail copies the axis
+// score 79 (was 79): The first expanded rotation spills its cosine complement early, and the final cross reloads forward j.
+// Earlier: first rotation and staged cross product operands (load-first where retail copies the axis
 // register), 894 against 887 bytes. Round 112 (m3 lane 12) note at the end.
 // MiniMax G (11-13): no new form, no lower score (79): the diff re-read this round finds the same first difference, inside the shared rotation helper whose own file this lane may not edit, and the operand orders listed above still measure at or above the body, so the body stands.
 // MiniMax B (11-13): no new form, no lower score (79): the frame agrees (0x24) and the first difference is at +0x107, where retail sums the cross product's terms in the register before the multiply while this build spills the factor first; the body is seven bytes longer than retail's.
@@ -5984,6 +5839,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // complete producers with immutable biped receiver: 79/79/79/79/79/79/79/79.
 // NOT kept: first-rotation spill/operand and final-cross reload gaps remain; original body restored.
 // MiniMax R (11-17): no new form, no lower score (79): the frame is 0x20 against retail's 0x24, and this build pushes ebx before it masks the character index where retail masks it first.
+// Existing vector-axis rotation at forward/up/both 143/143/144; existing scalar-axis
+// rotation 229/229/229; vector forward and scalar up 231, reverse 229. NOT kept:
+// the vector-axis forms add eleven or twelve bytes, and the scalar-axis forms
+// also disturb the normalized-axis setup. The first rotation spill still differs.
+// Component construction for axis/up/fallback 217/216/162. Axis and up 230.
+// Axis with fallback 300. Up with fallback 297. All component constructions 310.
+// Both fallback value records before publication 99.
+// NOT kept: every form regresses and no rotation operand is recovered.
+// Round 418: Default forward/up/both through memcpy 79/79/79, through the shared vector setter 87/83/94, both
+// full copies with a nonzero-length return 79/94. The first rotation and final cross stay unchanged.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

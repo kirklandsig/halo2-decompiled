@@ -129,6 +129,19 @@ bool function_1946f0(s_bitstream *stream)
 // an early value-numbered data read does not reorder the in-block loads); `short byte_index` 47 (143 bytes, a movsx);
 // a force-inline clear helper taking (data, size, saved) with the stream's data and size passed in 37 (the inlined data
 // parameter is loaded early into EBX, not propagated to its uses); the index through a `long &` bound to a plain local 2.
+// M3 lane 5 r198 (fast): the masked byte's address named before the bound test with the division written at the address
+// 23 (140 bytes: the data load moves above the test and the index is added into it); the bound test as a comparison of
+// the byte's address with the buffer's end 53 (142 bytes); the bit offset named first with the index as
+// `(saved - bit_offset) / 8` 60 (146 bytes); the data through a new file-local inline accessor at both addresses 2 (same
+// code); both addresses as integer sums written index first 2 (same code). Compile-only screens (exact here, build/r198
+// b1-b7.py): in every form the base of each LEA is the operand loaded last (the data), also with the data as a global
+// (`[data + index + 1]`); only a data value held in a register before the index is defined (a parameter, an early local)
+// gives retail's index base, and then it is not reloaded. Diagnostic (compiler settings, not kept): favour-size and
+// minimum-size builds keep the data as the base too, so the order is not a speed heuristic.
+// Round 118 (m3 lane 10, fast): the masked byte and the clear start as `byte_index + stream->data` sums 2; a named
+// `long bit_index = saved % 8;` for the mask 2; the pop as `checkpoint_count--;` then the read 2; the mode and position
+// tests nested 2; unknown2c stored first, then the index, then `unknown30++` 15. Both LEAs stay data-first in every
+// 140-byte form.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

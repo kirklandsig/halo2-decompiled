@@ -1203,6 +1203,12 @@ PRIVATE inline s_unit_action_grenade *unit_action_grenade_get(s_unit_action_unit
 // code). Diagnostic (value-wrong, reverted): the result made unknown on the notice path (a `result = true` under an
 // impossible unit test) with the notice ending in `return result;` 261 (974 B): that return still merges with the exit,
 // which still follows the notice, so a separate unfolded return alone does not give retail's layout.
+// M3 lane 2 r100 (fast): with every declaration hoisted (no inner block), the immediate throw and the notice both moved
+// after `return result;` behind labels and ending in `goto done;` 19 (same code); the same with the notice before the
+// immediate throw 19; with `done:` after both moved blocks 19; with the notice's animate test as its own `goto done`
+// 19; the grenade test as two separate `goto notice` tests 176 (the notice then stays in place after the count test,
+// as for one test). Matched 0xed710 in this file has retail's shape (an `||`-entered block laid out after the shared
+// exit) because its `if` is the last statement before the return; here the exit is not chained after the success path.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -2413,6 +2419,15 @@ __forceinline char unit_action_round(real value)
 // index in EDI and compares the sign-extended hand index in sixteen bits against the -1 it holds in EBX, where this
 // build keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
 // scores 297 and the sentinel declared ahead of it 298, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (234): the pool global still sits in this build's registers against
+// retail's EBP, the 0x212 field is still compared as a byte against retail's sign-extended short, and the 0x1e and 0x1d
+// tag constants still land in EBX and EBP the other way round.
+// MiniMax H (11-18): no new form, no lower score (234): retail still loads the pool global into EBP with the unit index
+// in EDI and compares the sign-extended hand index in sixteen bits against the -1 it keeps in EBX, where this build
+// keeps the pool in EDI, the index in EAX and compares the byte against an immediate; a short local for the index
+// reproduces retail's 16-bit load (297) and comparing that short against the sentinel variable (298) still folds the
+// compare back to an immediate and rotates the pool, the actions and the sentinel, so both were restored and the body
+// stands.
 // score 234 (was 234): MiniMax I (11-16, round 2): no new form, no lower score: the pool global, the type and the
 // NONE carrier still sit in this build's registers against retail's EBP, EBX and EBX, and the 0x212 field is still
 // compared as a byte against retail's sign-extended short; the 105 and 107 forms in the notes below need the four
@@ -2635,6 +2650,19 @@ __forceinline char unit_action_round(real value)
 // load into EBP and NONE in EBX (ours EDI/EBP, the getter compares an immediate), and the result byte that retail stores 0/1 and
 // reads at its one exit); that with an unused `bool *success = &result;` 305, with `*success = true;` as the success store 305
 // (both fold); that with the four returns as `goto done` 357 (1142 B).
+// M3 lane 1 r118 (fast with 0xe9ed0/0xea090/0xe9780/0xe99a0/0xe7900/0xe8420, all matched throughout; control 234, aligned
+// 141, register-masked 51): a goto-free single exit with the shared tail written at the end of both arms (the switch
+// leaving the name NONE, `if (name != NONE)` round the play block, `if (animation)` round the ticks) 552 (1408 B: the
+// two tails are not merged); the same exit as `do { ... } while (false)` with two breaks 536 (1384 B), and with
+// first_person_name declared first, the short-slot hand getter, TEST_FIELD_BIT on the 0x1b test and the fallback switch
+// 549 (1363 B). Re-measured round 187's four-`goto done` form with those four 107 (1188 B, aligned 68, masked 12); on it:
+// result declared before is_biped 107 (the two byte stores swap, the homes stay), result declared first 362 (1140 B),
+// is_biped declared after type 107 (same homes), is_biped ahead of the weapon getter 353 (1151 B), first_person_name
+// after actions 107 (same code). Left on 107, by the aligned listing: the pool in EDI for EBP with the offset in EBX for
+// EDI and NONE in EBP for EBX (retail loads the pool right after `push ebp`, and its NONE register serves `cmp ax, bx`
+// and the weapon default store where ours compares and stores immediates), type EBX for EBP, the two bytes' homes,
+// `current` in EAX for ESI, the 0x1c8 read ahead of retail's `jb`, the lunge divide from a register for retail's
+// memory operand, and EAX/ECX swapped in the last lookup. Body unchanged.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4419,6 +4447,11 @@ extern vector3f *g_4687bc;
 // sinks to the store, in AX, as the material built after the lookup, re-measured 10). Ours stores the material at once
 // because it holds it in DX, which the pool's data load needs; retail holds it in CX until `mov ecx, esi`, so the late
 // store follows from the register alone.
+// M3 lane 2 r100 (fast with 0xb67a0, 0x188180 and 0x1eb020): the node-count test read as
+// `component->rigid_bodies.data[index].node_count` before the element pointer is formed (0x1cf520's fix) 12, the same
+// through the array's operator[] 12 (both form the element address first, `lea eax, [ecx + edx]`); the havok-flag and
+// component-index tests as nested ifs 8 (same code); the rigid-body index as `short` (0xb67a0's return type) 25 (1099
+// B, word compare); the material copy-initialised from `c_type_47f957(g_54e898)` 8 (same code).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

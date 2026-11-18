@@ -1821,11 +1821,50 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Write completion from resize/count tests 157; conditional write completion/close outcome/handle first 165/165/168;
 // scoped query with conditional completion/close/handle first 165/165/168; scoped query with count zero 33.
 // Removing the failed-resize count store shrinks the frame to 0x1140. The 0x1144 form keeps the slots exchanged.
+// M3 lane 16 r134 (fast with 0x213800, matched throughout; control 33): the size local given another name 33 (same code: the
+// size and write-count homes do not follow names); the close as a file-local inline (open test, close, wait, invalidate) called
+// on the not-resized path and after a short write 179 (994 B, not merged); the write count declared in the resized block with
+// `bool written = false;` and `written = bytes_written == 0x800;` 98 (930 B: the count/size homes and the not-resized jump to the
+// close test become retail's; left a sete/test join, the write's handle order and the header-read branch). Match-only chain on
+// it: `if (bytes_written == 0x800) written = true;` 83; plus round 53's `else if (cache_file_header_read(index))` with
+// `valid = true` 7 (left: the write's handle load order and the checksum register); plus a handle copy at the top of the resized
+// block for the write 114 (917 B, the close loses its `mov ecx, eax` copy); plus a handle copy for the size query, or for the
+// resize, or both, 6 each (the listed rotation: resize handle EAX for ECX, header address ECX for EDX, close copy EDX for ECX);
+// on that 6: `remove_later = false;` first 8, `expected_size != size` 7, both 9; trivial inline accessors for the resize handle,
+// the header buffer and the close handle, all seven combinations, 6 each (transparent); one handle copy for query, resize and
+// write 170 (914 B).
 // resize outcome assigned from byte count 112; resize outcome cleared on short write 165; resize
 // outcome short circuit with count 188; resize outcome accumulates write success 165; assigned outcome
 // with positive header read 165; cleared outcome with positive header read 172; short circuit outcome
 // with positive header read 188; accumulated outcome with positive header read 172. NOT kept because
 // reusing the resize result regresses the score and changes the frame.
+// Unsigned query/write/both differences 166/101/164. Expected-first query/write/both
+// 164/119/163; direct tests of both differences 164/163. All retain the frame and
+// extent but leave the query and transfer homes exchanged.
+// The query and write homes, close join, and write/checksum registers still differ.
+// Scoped write failure or success 98/98; scoped query equality 33; mismatch-scope
+// header extent 33; nested close guard 33; full header-range outcomes 103; direct
+// checksum outcome 41; named checksum words 33; scoped close and header outcomes
+// 111; expected size before or after the query wait 279/276. NOT kept: the scoped
+// write count recovers the slots but adds a result test and regresses the score.
+// M3 lane 11 r117 (fast, 0x213970 alone; control 33, aligned 19, register-masked 10). Re-measured on this body: the
+// header read as `else if (cache_file_header_read(index))` with `valid = true` 103 (932 B); the write success as a
+// bool set by its own test 83; both 7 (aligned 6: the write call's handle/flags order and the checksum register);
+// both with `written = bytes_written == 0x800` 111. On the 7 form, s_file_handle locals at the size query (q), resize
+// (r), write (w) and close (c) calls, all sixteen sets: none 7, c 119, w 114, wc 114, r 122, rc 122, rw 6, rwc 118,
+// q 122, qc 122, qw 6, qwc 118, qr 10, qrc 122, qrw 6, qrwc 118 (the 114 of w + c has one difference left, the close
+// call pushing EAX where retail copies it to ECX first, 917 B). New on the 7 form with the write local: the close
+// handle read into a local ahead of the close test and used by the test and the call 168 (946 B: the write flag gets
+// a frame byte and the load moves above the test, still no copy); the close nested under `if (!written)` with the
+// handle read into a local there for the test and the call 114 (the w + c code); the same with a raw handle local tested
+// and the argument built by member assignment 114 (same code); the tests nested with the direct argument 114 (the w
+// code). Diagnostics (reverted): a constructor on s_file_handle does not build (job_queue.h overlays the task
+// records, which hold one); the arguments as temporaries of a file-local type derived from it with a converting
+// constructor, at all four calls 118, at write and close 114, at close 119, at write 114 (each the code of the same
+// set of named locals: a constructed temporary takes no scratch-rotation step either). Reading: only an unnamed
+// `*handle` argument takes the step that leaves the close call its `mov ecx, eax`; retail has the write call's
+// handle loaded first as such an unnamed argument (EAX, the flags zero then ECX) and one more step before the
+// checksum compare.
 // @retail 0x213970
 void function_213970(void)
 {

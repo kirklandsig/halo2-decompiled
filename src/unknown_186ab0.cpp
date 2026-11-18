@@ -189,6 +189,9 @@ void player_action_initialize(s_player_action *arg_0);
 // retail's sign extension (mov al / test al against retail's movsx ax / test ax, ax), the selection comparison still
 // has its operands the other way round (cmp ax, cx against retail's cmp cx, ax), and the inlined count read still has
 // retail's index operands the other way round, which is set in src/unit_object_type.cpp.
+// MiniMax A (11-18): no new form, no lower score (114): the inlined 0xcbec0 count read still keeps our [edx + edi]
+// against retail's [edi + edx] and that callee's file is not this lane's; the selection comparison's operand order and
+// the counted byte's sign extension still differ, so the body stands.
 // score 114 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
@@ -381,6 +384,22 @@ void player_action_initialize(s_player_action *arg_0);
 // 0x186f56) 136; + one object pointer in the angle block (0x186f88) 143 (commit 03893fe0f); count + pointer 163, +
 // stores 157; latch spellings 150/147/149/145; three sqrt respellings (0x186fbc fld st(2), 0x186fbe fmulp st(3))
 // unchanged. Left: tail load order, cold arm, [edx + edi].
+// M3 lane 3 r258 (fast with every callee listed; control 114): the nested latch on this body, `if (flags & 0x40) { if
+// (!field_92) { field_91 = !field_91; field_92 = true; } } else field_92 = false;` with the 0x60 and 0x4630200 masks
+// apart, 143 (1499 bytes, aligned 38 against 41: the release arm stays inline behind a jmp where retail has it after the
+// return). Round 27's form rebuilt on today's file still scores 1 at 1515 bytes; on it: an explicit `field_2c == NONE ||`
+// ahead of the first 0xcdff0 call 1 (same code); the unit index in a local from the 0xcfe40 call through the cycle call
+// (the span retail keeps it in EDI) 1 (same code); that local from the first count test on 1 (same code); the grenade
+// type in a short local for the second test and the cycle call 371 (1535 bytes). Compile-only probe of the inlined cycle
+// (one file, the helper forced inline and also emitted out of line; it reproduces both of our copies): with the unit a
+// named local set at the top, the count read is index-first in both copies whatever the caller passes (field read,
+// register value, early or late index local, variable direction), with one to six earlier inline calls or shared
+// subexpressions in the caller, with the lookup through an inline function (six spellings), a const or const-pointer
+// unit, a nested member, byte-pointer arithmetic in four orders, or a long index. Unit-first comes only from a lookup
+// hoisted out of the loop (it then lands after the NONE normalization, and the order follows the argument's form: a
+// register value gives unit-first, a field read index-first), a reference-bound unit (the load moves to the loop's
+// head) or a derived pointer (an extra add): none gives retail's out-of-line copy and its inline site together.
+// BLOCKED-BY 0xcbec0 stands.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

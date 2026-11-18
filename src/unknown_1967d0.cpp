@@ -913,8 +913,8 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 191 (was 191): the teams flag is read before the configuration copy and address-index
-// store, and the final team-score lookup expands where retail calls it.
+// score 100 (was 191): the teams flag is read before the configuration copy and address-index
+// store, and the third team-score read expands where retail calls 0x1587f0.
 // Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
 // entry 314, combined team guard 333, team read before flag 309, record reference 191,
 // native counter field 191, and branch-local score stores 192.
@@ -922,12 +922,49 @@ static inline long team_score_195ed0(long team)
 // existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
 // test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
 // kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
+// Configuration memmove 720; existing input-device view with memcpy/memmove 191/720;
+// native ranking record 191; ranked-team/team-rank/player/player-rank pointer walks 223/243/209/195.
+// The flag read still leads the copy in the tied forms, and the final score query still expands.
 // P608: Empty-slot continue, while-tail/lookup/skip, do-while-tail/latch/skip and terminal
 // inequality: 191/320/886/886/902/902/902/716. NOT kept: tied flag schedule or lost unrolling.
 // Round 416: Shared absolute-slot lookup with a machine-player or byte view,
 // direct or retained pool, and a retained destination each score 191. The same
 // four forms with the destination getter at each access score 732. NOT kept:
 // the getter forms roll the player loop and the flag read stays ahead of the copy.
+// M3 lane 16 r135 (fast, plain confirmed): the clamp as the file's own PIN over team_score_195ed0 191 -> 100
+// (1211 B, aligned 74 -> 67): the third expansion now runs out of inline budget at its team test, which then calls
+// 0x161e60, and the per-rank g_4e9ae8 reload is retail's; retail instead calls 0x1587f0 for the whole third read.
+// The flag order needs the results block at 0x510cb0 as one global (flag +0x12b, player records +0x384, address
+// table +0xdc24): a compile-only screen with the flag and the records as fields of one global puts the flag load
+// after the copy and the 0xff store, as retail; split globals let VC schedule it first (an escaped flag address
+// does not). Also tried (fast, old base 191): the clamp as if/else statements into a long 191 (same code); the
+// score helper's statistics read through 0x162030 223 (1257 B); the third call given `ranking.teams[rank]` 195; the
+// rank loop's team as `short` 240 (1269 B); re-measured: PIN over 0x1587f0 192 (each read inlined, 0x161e60 and
+// 0x162030 called), the shared active-team query 138 (aligned 103). Diagnostic: the file with /arch:SSE 191 (no
+// change: our link inlines 0x1587f0 here and nowhere else, 0x64d70 and 0x19e1c0 call it).
+// On 100: a named statistics pointer in the score helper 100 (same code); the rank counter `short` 222 (1255 B);
+// the rank declared in each `for` 100 (same code); the entry fields written through the table (no entry pointer)
+// 105; the team helper `__forceinline` 322 (1051 B).
+// The team-mode load still precedes the player copy, and the final score call still expands.
+// Statborg across both tests 107; shared mode 214; shared mask 149; statborg/mode 202; engine
+// receiver 202; statborg/mask 160; statborg/mode/mask 178; shared eligibility 165; engine receiver and
+// mask with both mode guards 210/215. NOT kept: the 107 form grows the frame to 0x78. The mask
+// and shared-eligibility gains omit retail guards, and the final score call still expands.
+// M3 lane 10 r120 (fast; control 100): the flag order was tested with the globals joined. One object for the whole
+// range (0x510ca0 to 0x51e984: the kept bytes, the record's head, the players' entries, the teams' entries, the
+// counters, the samples and the addresses as fields, the old names as macros) 76 here (each unrolled pass reads the
+// teams flag after the copy and the 0xff store, as retail), but matched 0x196470 goes to 158: its second player loop
+// then tests the NONE index on the entry pointer (`cmp eax, <entries - 0xa4>`), where retail keeps a separate
+// index * 0xa4 counter in a stack slot for that test, which our compiler does only while that address lies below the
+// start of the entries' own global. So retail's players' entries are not in an object that starts at or below
+// 0x510fa0, and the flag (0x510ddb) cannot share their object: not kept. The head alone as one object (0x510cb0 to
+// 0x511000, its address already taken here) 100 (same code; 0x196470 and the 44 other users stay matched). On that
+// head object: the record pointer formed from the head's address (`&g_510cb0 + 0x384 + index * 0xa4`, diagnostic) 333
+// (aligned 58: the flag after the copy as retail, but the first loop then keeps the flag in BL); the record pointer
+// through a `long` cast of input_device(0) 100 (same code). Diagnostic on main's globals: the flag read as
+// `*((byte *)&g_511000 - 0x225)` 373 (the flag after the copy, the address not folded). Third score read: the two
+// clamp tests through the file's inline copy and the value through the existing 0x1587f0 191 (1237 B: the link
+// inlines 0x1587f0 there and calls 0x161e60 and 0x162030 from it). build/r120/storage-lead holds the head-only header.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
@@ -993,8 +1030,7 @@ void function_195ed0(void)
 				s_input_entry *entry = &g_511a74[team];
 
 				entry->unknown01 = ranking.team_ranks[rank] / 2;
-				entry->value = (short)(team_score_195ed0(team) < 0 ? 0 :
-					team_score_195ed0(team) > 0x7fff ? 0x7fff : function_1587f0(team));
+				entry->value = (short)PIN(team_score_195ed0(team), 0, 0x7fff);
 			}
 			for (rank = 0; rank < ranking.player_count; rank++)
 			{

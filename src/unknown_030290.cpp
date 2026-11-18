@@ -565,6 +565,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // branches, captured origin updates, a complete point or component conditionals
 // 255/307/263/307. Explicit expansion repeats those four scores.
 // NOT kept: the transform still needs the native X/Z and inverse allocation.
+// M3 lane 13 r108 (fast with 0x30bf0): transform_point as a plain static function (this /Ob1 file keeps it out of line)
+// 728 (465 B); the inverse defaults in one declaration 195 (same code); declared after the three parameter defaults 202
+// (974 B, frame 0x30), after the displaced sums 204 (974 B); the orthographic factors as `fa = fb = 1.f;` 195. Lead, not a
+// source form: retail's frame keeps ta and tb as memory points in name order (b, ta, tb, as address-taken locals sort),
+// which a link-time inline of an out-of-line point transform such as 0x142570 (the same row code) would give; its /Ob1
+// file keeps it a call in our build (a file-flag decision).
 // M3 lane 3 r257 (fast; control 195, aligned differences exact / stack-offset-masked / fully masked 80 / 61 / 34). The
 // positional 195 hides two separate causes. (1) The tail: with the factor copies after the perspective test (the
 // orthographic arm setting the inverses to 1, then `fa = inv_a; fb = inv_b;`, the listed direct-inverse form) the tail is
@@ -579,6 +585,26 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // helper's depth snapshot first 197 (973 B). Diagnostics, reverted: the reverse retransform removed 480 (704 B: the
 // second transform then keeps x in the sum's register but moves y); a twin copy of the helper for the second, the
 // third, or both later transforms 195 each (same code: the three inline copies do not share register choices).
+// Round 416: The displaced-point transform spills X and Z and reserves 0x30 bytes, compared with one spill
+// and a 0x2c frame in retail. That extra stack word displaces both inverse defaults. matched vector
+// transform with direct translation into its output 211; matched vector transform with shared addition into
+// its output 211; matched vector transform to a rotation local and direct translation 212; matched vector
+// transform to a rotation local and shared translation 218; matched vector transform with direct translation
+// into its output with deferred factor copies 234; matched vector transform with shared addition into its
+// output with deferred factor copies 234; matched vector transform to a rotation local and direct
+// translation with deferred factor copies 235; matched vector transform to a rotation local and shared
+// translation with deferred factor copies 235. NOT kept: Reusing the existing vector transform and applying
+// the translation separately shortens the body to 958 or 959 bytes but leaves an incorrect frame and raises
+// the score. Deferring the factor copies raises it further. The opening transform and body are restored.
+// m3 lane 1 r120 (fast with 0x30bf0 and 0x30710, both MATCH; control 195). Reading: in the second transform retail keeps the
+// displaced x and y in the registers their sums were built in (XMM7, XMM6) as the transform's own x and y, loads z through
+// XMM0 into XMM4 and gives only z a memory home (the dead scale slot) although XMM5 is free there; ours gives the transform's
+// x, y, z XMM4, XMM6, XMM7, so x is moved and both x and z get homes (the extra frame word). A sum's register follows its
+// first operand's base (the displacement's XMM7, the origin's XMM6), hence round 63's parameter-order lead. Tried: no-code
+// mentions `(void)ta.z;` or `(void)tb.z;` after the two transforms 195/195 (same code); `(void)tb.x; (void)tb.y;` 263 (991 B);
+// `(void)ta.x; (void)ta.y;` 251 (988 B); the direct-inverse form re-measured 207 (974 B), with `(void)tb.z;` 207, with the
+// displacement reference for the sums 205. Compile-only (the stream agrees with the real build but two lines): mentions of the
+// displaced point's or the retransform point's components, before or after their sums, in every ordered subset, change nothing.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

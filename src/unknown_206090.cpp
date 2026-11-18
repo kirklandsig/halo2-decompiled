@@ -139,7 +139,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1375 (was 1375): The 0x5d0 frame, component and velocity homes and contact indexing still differ from retail.
+// Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -692,6 +693,29 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // conditional world choice 1396, branch-selected world 1394, ray scoped to admitted query 1440, shared ray scale
 // 1371, typed object with conditional world 1396. NOT kept: the shared ray scale gains four points while adding 21
 // bytes. The frame is still 0x5d0.
+// M3 lane 4 r213 (fast = plain 1375 here; aligned = difflib-aligned differing instructions exact / registers and
+// slots masked, control 981 / 585). Lead: retail's contact loop keeps its counter in memory and forms the contact, the
+// definition row and the query row with `imul` each pass; (diagnostic only) letting the counter's address reach an
+// opaque call on a never-taken path gives exactly that (1666, 6512 bytes, aligned 952 / 548), and with lane 11's
+// copy-free forms (magnitude read in place, cross3f at both torque crosses, the contact velocity formed in place) the
+// body is 6278 bytes against retail's 6238 with the diagnostic's own ~15 bytes in it (1438, frame 0x580, 933 / 535);
+// with the copy-free magnitude alone 1393 (6278 bytes, 938 / 545). So the snapshot copies stand in for the bytes the
+// unreduced indexing costs, and what keeps the counter out of a register in retail is the open question (no `lea` of
+// its slot in retail; an inlined out-parameter does not do it, see 0x1608e0's note). Source forms: lane 11's three
+// forms re-measured 1626 (5980 bytes, frame 0x588, 945 / 549); a contact pointer local at the top of the pass 1422
+// (6211 bytes, 957 / 589); that on the copy-free forms 1650 (5948 bytes, 959 / 567); with one function-scope counter
+// for the first two loops as well 1649 (955 / 562). All three keep the stepped pointers (one `imul` in the listing
+// against retail's three). Body unchanged.
+// score 1375 (was 1375):
+// The extra 0x44 frame bytes, escaped velocity and component homes, and indexed contact loop remain.
+// Independent slip/tangent lengths use a default then tangent 1447, complete branch results
+// with direct or selected tangent 1455/1455, and a common predicate with selected or direct
+// tangent 1388/1455. Selected-pointer test 1389, choice before coefficients 1453,
+// slip branch first 1455. Every form retained the 0x5d0 frame.
+// Query scope 1375. Ray scope 1374. Velocity scope 1394. Typed query scope 1375.
+// Descriptive workspace names 1375. Query and ray scopes 1374.
+// Velocity scope with typed query 1394, with workspace names 1394.
+// NOT kept: ray scope gains one point and all forms retain the larger frame.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

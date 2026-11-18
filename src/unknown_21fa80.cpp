@@ -73,11 +73,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
-// MiniMax C (11-17): score 534 (was 534): no new form, no lower score. The frame stays 0x22c against retail's
+// score 534 (was 534): MiniMax C (11-17): no new form, no lower score. The frame stays 0x22c against retail's
 // 0x224, retail keeps the stream pointer in EBX and the gain bits in EBP where ours keeps them the other way
 // round, and the changed/direct/mode locals sit at -0x13/-0x1b/-0x1c against retail's -0xf/-0xe/-0x10; retail's
 // body was built without /Op, which the file's flags rule out.
-// score 534 (was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
+// Earlier note (534, was 544): retail expands exp and log10 inline as x87 (f2xm1/fscale, fldlg2/fyl2x) where this
 // /Op file still calls the CRT for them, and this build's frame is 0x22c against retail's 0x224.
 // MiniMax R (11-16): the level's square root taken in double, as retail's inline fsqrt keeps the extended
 // precision before the float store, lowers the full-build score by ten; exp and log10 stay library calls.
@@ -428,6 +428,22 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // fabs difference goes through a float store and reload, where retail expands all of them inline on the x87 stack with
 // no rounding stores (0x21fc9f-0x21fd20, 0x21fdb9-0x21fe37): retail's body was built without /Op. BLOCKED by the file's
 // @flags (the user's decision).
+// m3 lane 14 r109, /Op trial (allowed for this round only; @flags restored, no form kept): the file without /Op 723 fast
+// (1728 B, frame 0x194: the gain block's mix-bin settings and voice properties share slots with the send block's, where
+// retail keeps them apart). On it: the level fields of the input and send records and the cached stream levels typed as
+// the header's decibel value (every level copy becomes retail's integer moves), the bit pin taking and returning that
+// value and applied again to the send level (retail's second pin, `comiss xmm3, xmm0; movss [esp+0x10], xmm0` and the
+// tail-duplicated level stores), log10 through the float overload (retail's fmul by a float 20), the four levels copied
+// by one memcpy (retail's `lea edx, [edi+0x38]` and integer moves) and the voice sends as the case-1-into-case-0 switch:
+// 714 fast (1730 B); with the gain block's voice properties and settings declared at function scope 699 fast (frame
+// 0x224 as retail); with the 0 dB volume built as `s_decibels(0ul)` 693 fast and 693 plain (1746 B, 0x21f8a0 matched).
+// Still different without /Op: every flag test stores its bool to the [esp+0xe] byte (the volatile-bool shape, about
+// 40 bytes), the gain difference is an SSE subss bounced to x87 (ours fld/fsub), the three field differences are
+// `fld stored; fld input; fsub st(1); fabs; fstp st(1)` (ours `fld input; fsub [stored]`; two-argument inline helpers,
+// a decibel subtraction operator, double casts and fabsf give the same), the two single fields go through a movss copy
+// (ours fld), stream/gain sit in EBP/EBX against retail's EBX/EBP, the -64 constant is hoisted into xmm3 from the top,
+// and retail's dead {0, pairs} pair before the stream's mix-bin call is missing. The same reworked forms with /Op 542
+// fast (control 534).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

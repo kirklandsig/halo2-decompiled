@@ -8,6 +8,7 @@
 #include "user_interface_lists.h"
 #include "unknown_19b516.h"
 #include "unknown_234c64.h"
+#include "unknown_120d80.h"
 
 // @flags /O1 /Oi /Gr
 
@@ -1597,6 +1598,19 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // exit 69, definition declared in guard with title index 69, index reassigned before description 69,
 // shared buffer scoped to valid index 71, title text receiver named at lookup 69, title index with
 // dereferenced buffer clears 69, guarded index reused on description-only path 93.
+// Round 140 (m3 lane 12, fast; control 15): LEAD, the cause of the reload. Any form that reads the list index ahead of
+// the buffer clear gives retail's `mov eax, [ebx + 0xc]; cmp eax, -1` with EAX reused by the first call, so retail
+// evaluates the call's arguments before the clear: a new inline helper (index, id, buffer) that clears and calls 74
+// (203 B), with the buffer first 74, forced inline 74; the index named ahead of the clear in both arms 70 (201 B), in the
+// title arm only 69, with the buffer declared inside the outer test 71, index and id both named in both arms 74; the index
+// assigned inside the outer test (diagnostic) 69. In each of them the title pointer takes ESI, `this` moves to EDI with a
+// stack home and the zero register is gone (`and word ptr`, `test`), where retail keeps `this` in ESI, zero in EDI and
+// spills title/description. Two block-scoped buffers as in 0x2c7c56 71.
+// String-list field reference 15; saved title index with child declaration or name changes 69 each;
+// admitted definition reference 69; buffer clear at list admission with reset after title 16;
+// shared validity at both widget tests 78, title tested first 94; shared or block-local output cursor 69 each.
+// NOT kept: title buffer clear before list admission 6, before the title test 4, before the list
+// load 8; retail clears it only after both guards. All three keep the native extent.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -1706,6 +1720,35 @@ c_screen_45d2b8::c_screen_45d2b8(long screen_id, long a, long b, word user_flags
 // unsigned button selector 2; early forwarding of unhandled events 9;
 // changed tested after event type 28; common qualified forwarding 28.
 // NOT kept: the best forms leave the final event push and receiver setup reversed.
+// Round 211 (m3 lane 4, fast): the one-call forms keep retail's push-then-receiver order, but with the button
+// switch the switch value takes EAX, the event EDX and `this` EBX (push/pop ebx, 64 bytes): the plain
+// `if (type == 5) { switch (param) ... break; } return base` 28, an outer switch on the type 28, the button
+// in a named long 28, the member typed as the profile settings with an aggregate assignment 28; the flat
+// `type == 5 && (param == 1 || param == 13) && changed` 7 (retail's registers, receiver order and tail, only
+// the button test is `cmp 1`/`cmp 0xd` where retail has the switch's `dec`/`sub 0xc`).
+// Round 193 (m3 lane 6; compile-only screen of this file, exact for this body; aligned instruction counts, the body
+// below = 2 and the one-call if/switch form = 12). Reading: with one base call the switch value (five references: the
+// load, `dec`, `sub`) outranks the event and `this` (four each) and takes EAX, pushing `this` to EBX; with two written
+// calls the event and `this` have five each and get retail's EAX/EDX, but the two identical call blocks are joined
+// before code generation and that joined block sets ECX ahead of the push. With two different callees (diagnostic) each
+// block has retail's `push eax; mov ecx, edx; call`, and so has each call of the form whose changed arm holds its own
+// call (4, 28 rows: its ESI/EDI restores follow the call, so the tails stay apart). Matched sibling 0x2c7ec0 has the
+// one-call form's EAX switch value in retail too, so this function's source differs from it in more than the copy.
+// One-call forms at 12: the copy through an inline member (with or without the changed test), through an inline
+// (settings) function, through one taking the controller index too; the base call through an inline member or an
+// inline (screen, event) function; qualified by the menu base; `sizeof(settings)` for the count; a `default: break;`;
+// the cases 13, 1; `if (!changed) break;`; a `do { } while (false)` for the type test; the selector as `param - 1`
+// with cases 0 and 12, as short, as byte, as dword, as a named or const long; the event bound by const reference; the
+// type and button in locals; `switch` on the type too; a `this` copy. Others: the two cases with their own bodies 14;
+// the button through an inline switch predicate 12, the event through one 12; the changed test outermost 19; the
+// button switch outermost 14; a flag set by the switch and tested after 8; `param + 1` with cases 2 and 14 14; a copy
+// of the event 24; a `goto` past the switch 15. Two-call forms at 2 (same code as the body): direct returns in the case
+// and at the end; a type mismatch returning first; `if (!changed) return base;` in the case; a `default:` returning;
+// either or both calls through the inline member or the inline function; an `__assume` ahead of or after the case's
+// call, or ahead of the last call. Three calls (one per case) 18; the case's call compared `!= false` 7, as `? true :
+// false` 6. Diagnostics, restored: a member store from the event's controller index after the switch gives retail's
+// registers and order with one call (3 extra rows); the same store ahead of the type test 18, inside the type test 9,
+// inside the case 11; a dead result store ahead of the case's call 2.
 // @retail 0x2c87fe
 bool c_screen_45d2b8::v10(s_widget_event *event)
 {
@@ -2202,6 +2245,14 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 // first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
 // tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
 // clear before selector 14 each.
+// Round 140 (m3 lane 12, fast; control 7): the lookup tested `!= NULL` 7; the field_c clear ahead of the index read 7; the
+// parameter block declared at function scope 7; the lookup result in a named byte pointer tested plainly 7; the index as
+// `short const` 7 (all the same code: the compare stays `test eax, eax` and the zero register starts at the field_c store).
+// Matched siblings that get retail's zero-register compare (0x2c51a2, 0x2c7b7d, 0x2c7f7f, 0x265680) use the zero again in
+// the same block or the null arm; here the null arm is the plain exit.
+// Common optional callback result 49; selector from one full item read 23; selector before lookup 22;
+// carried open decision 65; default first in ascending or descending case order 7 each;
+// named selected callback at invocation 7; callback table 73; alternate mode assigned after dispatch 50.
 // @retail 0x2c8719
 void c_controller_settings_edit_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -3031,8 +3082,6 @@ struct s_map_definition
 	long bitmap_tag_index;
 };
 
-/* the map chosen last */
-long g_51098c;
 
 // @retail 0x2c9928
 c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
@@ -3078,7 +3127,9 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // @retail 0x2bb3a2 destructor c_custom_game_maps_list
 
 /* selects the map chosen last (v1 reaches it by a tail jump) */
-// score 30 (was 29): The 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
+// score 30 (was 30):
+// ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
+// The 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
 // Ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
@@ -3107,14 +3158,37 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // 30/30, sentinels before the guard 31, empty invalid arm 30, signed int snapshot 30, unsigned
 // one-based sentinel test 9 (NOT kept: 82 bytes and LEA/TEST in place of the native EAX compare
 // and EBX copy). Complemented sentinel test 32. The opening 0x10 frame and body were restored.
+// Round 211 (m3 lane 4, fast): the saved id is the preferences' +0x16c field at 0x51098c (0x19a6f2 stores it
+// there), so the separate global was dropped and the field read directly: 30 (same code, kept as a value fix).
+// On the field: the second read after the iterator stores 30, the test on the field with the copy inside the
+// block 30, the field read at the test and the loop compare 30, the copy first with the test on the field 30
+// (all the same direct EBX load).
 // Round 624: iterator pool stored before/after the map capture 27/27; three iterator fields initialized
 // before/after the capture 29/29; direct guard with snapshot after all setup or before the pool write
 // 30/30; guard-scope snapshot transferred into the scan 30; derived receiver reference 30. NOT kept:
 // all remain one byte short of retail. The pool-first variants gain three at most without the EAX handoff.
+// Round 193 (m3 lane 6, fast with 0x2c9a58, which matched in each). A byte scan of retail finds this sequence (a global
+// loaded into EAX, `cmp eax, -1`, `mov ebx, eax`, `je`) in no other function; after a call retail has the copy first
+// (`mov r, eax; cmp r, -1`, 199 sites) and the compare first only where an inlined helper's own result local sits in EAX
+// (7 sites, 0x11a570's family). Diagnostic: the id fetched by an out-of-line file-local getter gives 3 (81 bytes, every
+// row retail's but the 5-byte call where retail has the 5-byte load, and the copy before the compare), so retail's id
+// reaches EBX the way a call result does. Same code as the body (30): `long const &` bound to a cast of the field or to
+// an inline getter's result; a plain inline getter; the id in a one-member local aggregate, in a one-element array,
+// copied out of the field as a one-member aggregate, returned by value as one from an inline getter (read whole or by
+// member), copied out with memcpy; tested through an inline `long const *` predicate; read through a `long const *`
+// to the field at both uses; the loop compare through an inline `(long const &, long const &)` equality; a code-free
+// `__assume` after the load, between a first local and its copy, at the top of the block, or on the preferences'
+// ready flag ahead of the load. Diagnostics, restored: a volatile read of the field 30 (same EBX load); one or two extra
+// member stores through `this` 30/34 (87/94 bytes: `this`'s use count does not move its home ahead of the load); the
+// body as a file-local function of the list returning nothing 30, returning the id 27 (82 bytes: `mov eax, ebx` at the
+// exit, so an ignored result is not dropped at link time), returning `id != NONE` 38 (88 bytes); the load written as
+// inline assembly 32 (85 bytes, `this` then arrives in ECX and the caller 0x2c9a58 stops matching). Also the same code
+// (30): the id held in the map_id member of a local map entry, of a local map definition, of a local two-long
+// aggregate (assigned alone, or both members initialised), or in the second element of a two-long array.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {
-	long map_id = g_51098c;
+	long map_id = global_preferences_globals.current.unknown16c;
 
 	if (map_id != NONE)
 	{
@@ -3710,19 +3784,6 @@ void c_game_engine_variant_category_list::v20(c_class_1a2c81 *widget, long index
 	function_24c75c(this, widget, table, 0, 7);
 }
 
-// score 9 (was 9): the screen setup builds the mask in EDX. Retail uses EAX and loads the controller through ECX.
-// Earlier: only the EAX/EDX roles in the `1 << controller_index` mask and the
-// zero store differ. A named controller_mask local keeps the same code.
-// Permuter: 295 tries in 600 s, no lower form.
-// Shared word flag setter after/before the clear 9/12, shifted word 35,
-// controller object reference 9, clear after setup 16, callback local 125,
-// shared ordinary-edit mode 116, mask through the request field 118.
-// only the EAX/EDX roles in the `1 << controller_index` mask and the
-// aggregate initialization of screen parameters 184; byte-zero initialization of
-// screen parameters 173; only field_c zeroed with memset 168; controller flags
-// initialized in the request field 111; field_c memset followed by compound short
-// mask shift 169; missing datum returns before the create partition 9; screen path
-// before the create path 178; named create result with nested file tests 138.
 // @retail 0x2c5897
 void c_game_engine_variant_category_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -3782,7 +3843,8 @@ void c_game_engine_variant_category_list::handle_item(s_controller_reference **c
 			s_screen_parameters parameters;
 
 			parameters.field_c = 0;
-			function_149f49((s_message *)&parameters, 0, 0, 1 << (*controller)->controller_index, 5, 4, 0);
+			long const &controller_mask = 1 << (*controller)->controller_index;
+			function_149f49((s_message *)&parameters, 0, 0, controller_mask, 5, 4, 0);
 			switch (type)
 			{
 			case 0:

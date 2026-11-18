@@ -310,7 +310,7 @@ bool network_observer_get_bandwidth(s_network_observer *observer, long *value4e0
 }
 
 // @retail 0x769a0
-bool network_observer_channel_timed_out(s_network_observer *observer, long channel_index)
+bool network_observer_channel_timed_out(s_network_observer *observer, long owner, long channel_index)
 {
 	s_network_observer *const *local_0 = &observer;
 	s_network_observer_channel *channel = &(*local_0)->channels[channel_index];
@@ -740,7 +740,10 @@ void network_samples_reset(s_network_samples *samples);
 
 static inline void observer_statistics_reset(s_network_statistics *statistics);
 
-// score 170 (was 170): the logic walk found no difference (state/close-reason dispatch, flag handling, the reset stores and
+// score 170 (was 170). Lead not kept (AC579, register steering without a match): one observer snapshot local read for the
+// dispatch plus a reload of the volatile parameter before the registration loop reaches 134 at retail length (plain
+// confirmed); the first save and register allocation still differ (observer in ESI where retail uses EDI).
+// At 170, the logic walk found no difference (state/close-reason dispatch, flag handling, the reset stores and
 // the -1.0f at 0x45dbcc all agree). What differs is the calling convention: retail takes channel_index in ebx and observer
 // on the stack, loaded once into edi (0x76ffc); without the volatile ours takes observer in ebx and channel_index on the
 // stack (score 177, and the callers 0x78880 0x76a40 0x75da0 stop matching), with it observer is reloaded from the stack at
@@ -749,6 +752,11 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // (208), owner pointers walked in both loops (177 / 208). The volatile stays only because the callers need the convention.
 // Permuter (25 min on r663): 38 below its own baseline, only with network_observer_channel_forget_address's last two
 // arguments swapped (a behaviour change); not kept.
+// Dispatch and two explicit owner cursors 135; dispatch-only snapshot 239; invalidation cursor only 226;
+// active-channel snapshot through invalidation 211; indexed invalidation and registration cursor 133.
+// Native state or connection-index local 170; conditional connection pointer 293; two separately named snapshots 134.
+// Unqualified argument with owner cursors 176 (caller losses); entry connection initialization 137;
+// one observer snapshot with a registration reload and indexed owners 134 (retail length, plain confirmed).
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -1340,14 +1348,18 @@ static __forceinline long observer_round(real value)
 	return real_to_long(value);
 }
 
-// score 7 (was 7): the only real difference (the call targets and trailing
-// int3 are artifacts of the reduced image) is the last clamp: retail forms
+// score 7 (was 7): the differing instructions are in the last clamp. The checker also
+// lists relocated calls and trailing padding while the function differs. Retail forms
 // lea ecx, [ebp + 1]; imul ecx, eax and loads the minimum burst afterwards;
 // ours loads the minimum into ecx first, then inc ebp; imul eax, ebp. Swapping
 // the multiply operands, folding intervals + 1 into the product, or reading
 // the minimum inline all give 7; reversing the max direction gives 9.
 // Permuter (25 min on r660): best 5, only with config fields read as short where they are long (a behaviour
 // change); not kept.
+// Round 422: elapsed interval count 50; reuse the burst floor local 7; rounded floor
+// conditionals 7; cap selected in the call argument 36; configuration at the last
+// floor 7, configuration local per phase 86; two caps then their maximum 59;
+// named updated penalty 37. The product still lands in EAX.
 // @retail 0x79850
 void function_79850(s_network_observer *observer, long index)
 {
@@ -1595,59 +1607,37 @@ void function_7a160(s_network_observer *observer, long index)
 
 long function_79560(s_network_observer *observer, long index);
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
-
-// score 41: the logic is retail's (every compare, constant and field offset walked). Still differs: retail's last
-// return reads a register (mov esi,1 before the test of `acceptable`, mov eax,esi after the 0x7a160 call) and keeps
-// the early `return 1` as its own block; ours folds the 1 and merges both returns (214 vs 196 bytes). The slot is
-// retail's lea esi,[eax+ebx]; ours is mov/imul/add in esi. Tried (all 41 unless noted): `bool result`, `result`
-// declared first and returned early, if/else with result = 1 in each arm, `if (acceptable) return 1;` then the
-// call, a do/while with break, the whole body inside `if (elapsed >= limit)` (41; with result = 2/0 assigned: 69),
-// result = 2/0/1 assigned in an else-if chain (62), per-field observer->channels[index].x (91), the slot as
-// &channels[index] minus offsetof(channels) (41), the slot after the 0x79560 call (88).
-// Permuter (25 min on r663): nothing lower.
-// b13I (11-17) walk against retail, fast build on r846: every compare, constant, field offset and callee argument
-// matches retail. The 18 missing bytes are the epilogue block at 0x7a28b (return 1, kept apart), `mov esi,1` at 0x7a271
-// and `mov eax,esi` at 0x7a284. Retail returns 1 (0x7a28b), 2 (0x7a25b) and 0 (0x7a269) as literal epilogues but
-// returns esi for the tail, so that value is not a folded constant. A result with a second, different reaching
-// definition stays in a register, but then `return 0` merges into it. Tried, new (score, bytes): uchar/short/__int64
-// result (41, 196); result in a __forceinline helper built under optimize("g", off) (41, 196); `acceptable || (call,
-// 1)` (41, 196); `result = acceptable`, then 1 after the call (28, 203: set-then-override); result = 0/1 in if/else or
-// `result = 1` then `result = 0` (63, 214); body inside `if (elapsed >= limit) {..} return 1;` with `result = 0` (32,
-// 215: layout as retail's 0x7a28b, but result in ebp and 0 merged); `test ? 0 : 1` then `if (!result) return 0;`, and a
-// `bool improved` form (41); optimize("g", off) around the function (134).
 // @retail 0x7a1c0
 long function_7a1c0(s_network_observer *observer, long index)
 {
-	struct s_channel_view
-	{
-		byte prefix[0xa8];
-		s_observer_bandwidth_channel channel;
-	};
-	s_channel_view *slot = (s_channel_view *)((byte *)observer + index * sizeof(s_network_observer_channel));
+	long result;
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
 	long started = observer->value4f38;
-	_ReadWriteBarrier();
-	if (observer_time_get() - started < *(long *)((byte *)observer->configuration + 0x1a0))
-		return 1;
-	long received = function_79560(observer, index);
-	long tolerance;
-	if (!slot->channel.has_callback)
-		tolerance = *(long *)((byte *)observer->configuration + 0x1d4);
+	long elapsed = observer_time_get() - started;
+	if (elapsed >= *(long *)((byte *)observer->configuration + 0x1a0))
+	{
+		long received = function_79560(observer, index);
+		long tolerance;
+		if (!observer->channels[index].has_callback)
+			tolerance = *(long *)((byte *)observer->configuration + 0x1d4);
+		else
+			tolerance = *(long *)((byte *)observer->configuration + 0x1d8);
+		bool acceptable = observer->channels[index].smoothed_delay - observer->channels[index].smoothed_interval <= observer->channels[index].baseline_delay + tolerance;
+		if (observer->channels[index].smoothed_delay > channel->probe_delay + tolerance)
+			result = 2;
+		else if (received > channel->probe_received_rate && acceptable)
+			result = 0;
+		else
+		{
+			result = 1;
+			if (!acceptable)
+				function_7a160(observer, index);
+		}
+	}
 	else
-		tolerance = *(long *)((byte *)observer->configuration + 0x1d8);
-	bool acceptable = slot->channel.smoothed_delay - slot->channel.smoothed_interval <= slot->channel.baseline_delay + tolerance;
-	if (slot->channel.smoothed_delay > slot->channel.probe_delay + tolerance)
-		return 2;
-	if (received > slot->channel.probe_received_rate && acceptable)
-		return 0;
-	long result = 1;
-	if (!acceptable)
-		function_7a160(observer, index);
+		result = 1;
 	return result;
 }
-
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x79560
 long function_79560(s_network_observer *observer, long index)
@@ -2355,6 +2345,10 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 // with the ternary first 93 (the flag gets AL, but the 0x140 load sinks to the join); if/else with the whole sum in
 // each arm 245; `budget = rate; if (flag) budget = value4e28; budget += value140;` 251; the flag read first into a
 // bool 2 (same code). The same pragma dropped from function_779f1 and function_779f4 as well: 2 (same code).
+// Direct enable-field reads 142 in a reduced image (unchanged control 272).
+// Branch additions 211; chosen base before adjustment 212; increment and base locals 146; inverted selector 142;
+// default prior budget 285; clear-flag base with adjustment 212; shared configuration view 211.
+// NOT kept: the reduced variants do not recover the full-image frame slots and flag register.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2774,6 +2768,9 @@ void network_observer_update(s_network_observer *observer)
 // the usual htonl macro spellings, splitting into lo/hi locals in either order
 // and a separate mid = ip & 0xff00 all compile to the same 2.
 // Permuter (25 min on r660): nothing below 2.
+// Separate input and host address 2; store back to copied address 10; staged octet pairs 2;
+// two 16-bit halves 79; shifts distributed by octet 2; typed octet fields 89;
+// shared middle mask 70; swap word lanes then bytes 63.
 // @retail 0x78900
 void network_observer_recreate_connections(s_network_observer *observer)
 {

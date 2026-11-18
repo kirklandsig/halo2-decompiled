@@ -62,7 +62,7 @@ union s_180d85
 real function_30bf0(vector3f *arg_0);
 void *function_439d0(long arg_0);
 bool __stdcall function_d47d0(s_cluster_query const *arg_0, color3f *arg_1);
-color3f *function_131c20(color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3, color3f *arg_4);
+color3f *function_131c20(color3f *arg_4, color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3);
 dword __cdecl pack_color3f(color3f const *arg_0);
 long function_17cfa0(long first_index, long definition_index, short cluster_index, short decal_type, bool permanent);
 void __stdcall function_180b60(s_cluster_query const *arg_0, real arg_1, long arg_2);
@@ -107,6 +107,19 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax H (11-18): no new form, no lower score (93): retail's transform rows compute the up product first and keep
+// each product's first operand in the destination register, where this build computes the left product first with the
+// two operands the other way round; spelling the three products in the opposite order compiles to the same bytes, and
+// giving each product a named local and summing them shortens the body by 16 bytes and scores 235. What still differs:
+// the entry guard's registers (ours loads the strip record into ecx after the pushes, retail into eax before them), the
+// count loop's sign extension where retail zero-extends the word, the swapped count sum and vertex cursor slots, and the
+// 0x17cfa0 call setup (that callee's own body is in another file).
+// MiniMax H (11-18): no new form, no lower score (93): the length agrees (2683 bytes against 2683) and what still
+// differs is the entry guard's registers (ours loads the strip record into ecx after the saves, retail into eax
+// before them), the count loop's extension (ours sign-extends the word into the counter, retail zero-extends it
+// and counts down), the accumulator's slot (0x10 here, 0x14 in retail) and the 0x17cfa0 call setup. The count's
+// extension cannot be changed here without a width cast on the compare or a copy of the field in a local of its
+// own, which the rules drop: BLOCKED-BY 0x17cfa0, whose body is in another file.
 // MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
 // argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
 // still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
@@ -315,6 +328,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // 305 (2663 bytes); the test written `1.0f != scale` 98; the four locals in one declaration 93 (same code). Retail's
 // copies keep each product in its spelled operand order (`up.i * z` loaded, `y * left.i` copied, `left.j * y` loaded);
 // ours commutes those three whatever the spelling. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// m3 lane 14 r108 (fast with 0x17cfa0 105, 0x13d370 201, 0x439d0 5, 0x180b60 MATCH; control 93, 63 aligned rows by sequence alignment with
+// addresses masked): the short count-loop index re-measured 102 (aligned 81; first difference moves from +0xa to +0x29: retail's prologue and
+// count loop, then the three field sums load the lower field first, the count sum and vertex counter keep the opposite slots, the 0x13d370 and
+// 0x17cfa0 setups rotate EAX/ECX/EDX and the loop pad is `mov edi, edi` for retail's nop). New on it: one short index declared ahead of the count
+// loop and shared with the strip loop 292 (2667 B, aligned 117); shared with the vertex loop instead 292 (2667 B, aligned 117); the short index
+// declared first in the block 102 (same code); the short count loop as a `while` 102 (same code); a pointer cursor over the strip lengths with a
+// short countdown 603 (2663 B, aligned 110). The short index is retail's by its prologue and loop, but nothing found turns the field sums back.
 // P604: Forward strip-length cursor with long/short/word ordinals, long/short remaining
 // counts, the cursor bound before normalization, and checked-count reuse with a short
 // ordinal/remaining count: 583/285/660/583/603/637/284/604. NOT kept: the entry load stays late and
@@ -388,7 +408,7 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
                     *(short *)(local_7 + 0x2a) = (short)local_4;
                     *(long *)(local_7 + 0x2c) = arg_2;
                     if (!arg_6->field_0) arg_6->field_8 = function_180d82();
-                    function_131c20((color3f *)(local_2 + 0x1c), (color3f *)(local_2 + 0x28), ((dword)local_2[0] >> 1) & 3, arg_6->field_8, &local_11.field_0);
+                    function_131c20(&local_11.field_0, (color3f *)(local_2 + 0x1c), (color3f *)(local_2 + 0x28), ((dword)local_2[0] >> 1) & 3, arg_6->field_8);
                     *(dword *)(local_7 + 0x24) = pack_color3f(&local_11.field_0);
                     local_7[0x27] = 0xff;
                     short local_13 = 0;

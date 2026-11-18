@@ -1246,6 +1246,9 @@ void function_2118c0(void)
 // M3 lane 8 r182 (fast): `long row = b; row <<= 3;` 10 (same code); `unsigned long row = (unsigned short)b << 3` 10 (same
 // code); a `long` band counter with `b << 3` 134; the three knot-row pointers declared after p1 and out 10 (same code);
 // `long row = b * 8` with the knot rows packed `row | w` 164 (786 B).
+// M3 lane 16 r135 (fast with 0x212100): the knot indices `word const` 10; the three knot-row pointers to const 10;
+// the band loop closed `while (++b < 3)` 10; `long const row` 10; the knot indices assigned without the `(word)` casts 10
+// (all the same code).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2745,6 +2748,21 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // declared at function scope and assigned after the helper 3 (same code); a three-scalar sum helper taking the differences
 // as call arguments, parameters z, x, y 19 (arguments evaluate right to left: retail's y-first schedule, y XMM1 and z XMM3,
 // the listed y, x, z statement order), parameters y, x, z 3 (evaluation z, x, y: the body's code).
+// M3 lane 7 r177 (fast; control 3): the helper's y difference written in its sum term (no dy local) 3 (same code); the
+// helper with no locals, a staged z, y, x sum of repeated differences 14; the helper's z difference as a load and a later
+// `-=` (z only) 420 (1944 B); cases 8 and 9 placed before cases 6 and 7 (probe) 90 (layout moves, schedule unchanged);
+// the outer x, y, z bound as `real const &` 32.
+// M3 lane 10 r120 (fast with 0x20bbb0, 0x20c2f0 and 0xb9dd0, all matched; control 3): what differs is one instruction's
+// place. The block after the second lookup is [z load][y load, y subtract][selector][z subtract][x pair] here and
+// [y load, y subtract][z load][selector][z subtract][x pair] in retail, so retail's y pair sits ahead of a block that
+// starts at the z load, as if a block boundary that emits no code followed it (0x107ed0 and 0x1253d0 show the same).
+// Diagnostic (compile-only, reverted at once): the outer y assigned the same difference in both arms of an if/else ahead
+// of the helper gives retail's registers (z XMM1, x XMM2, y XMM3) with the y pair first. Trials: the outer y as a load
+// then `-=` ahead of the helper, x and z after it, 410 (1944 B); that y between x and z after the helper 411; the
+// helper's dy as a load then `-=` (y only, declared last) 411; the helper's dy loaded first and subtracted last 411; the
+// helper's dy as a load then `-=` declared first 414. Screens (compile-only, the real block's code): the helper's six
+// difference orders (the y pair leads exactly when y is created before z, and the registers follow creation order);
+// dy declared first and assigned last (same code).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

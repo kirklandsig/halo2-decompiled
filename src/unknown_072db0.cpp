@@ -2072,6 +2072,32 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // update as one `else if` chain 703 (same code); `team` declared where it is computed 703 (same code), with the delay expression
 // as well 703; the identity-change copy from the local identity instead of the session record 777. Body unchanged; the slot
 // helper's cmovne still needs the SSE flag.
+// m3 lane 13 r109 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703):
+// the slot helper returning `arg_0 ? arg_0 : NULL` 782 (2894 B: the null test is threaded away, still no cmovne), as
+// `if (!arg_0) return NULL; return arg_0;` 748; the read poll's failure test as `state != 0 && state != 1` 753; the delay
+// as one condition (`(busy session) || g_50c460 > 3 ? 300000 : 2000`) 757; the state advance `? 2 : 5` as an if/else 703
+// (same code). Body unchanged; the slot test's cmovne still needs the SSE flag.
+// Typed owner publication 703, also with typed team-key copy 703; combined/independent rejection bits 802/717.
+// Property slices by index with literal/recorded count 714/714; pointer slices 754/754.
+// NOT kept: the indexed slices reach retail length but grow the frame from 0xc0 to 0xc8.
+// M3 lane 16 r136 (fast with 0x641a0/0x8df50/0x749b0/0x75790/0x192e60/0x647a0/0x647d0/0x18fd94, all MATCH; control 703 at
+// 2910 B, aligned 500). Two forms retail's listing shows, each 16 bytes shorter: `failed = true` in the incomplete arm in
+// place of the `failed || received != 6` line, after the state update 731 (2894 B, aligned 497), ahead of it 734, with
+// `received != 6` tested first 737; the request builder's free space as named locals tested `> 0` and passed on 711 (2894 B,
+// aligned 477). Together 696 / 698 / 697 (2878 B, aligned 474 / 486 / 470): a gain of 7, one short of the keep bar, not
+// kept. On the 696 form: the last read time in a named local 716 (aligned 468), in both the read and the write test 716;
+// only the write test 696 (same code); a shared forceinline elapsed-time helper at both tests 705, at the write test 698
+// (on the plain body 746); the delay as an if/else chain 696 (same code), as `> 3 ? 300000 : 2000` 693 (retail's setle
+// and `add 0x7d0`, but an arm swap, so not a gain); `added < 4` first 709; properties_used declared first 696 (same code);
+// `now` read first 717; the space test nested 696 (same code); only the record space named 696; only the property space
+// named 705; the request state as an if/else or as `!= 1 ? 5 : 2` 696 (same code); the retry arm's `else if (state == 5)`
+// as a plain else 698; the property value as `= 0; if (type)` 700; the write poll as `state == 0 || state == 1` 696 (same
+// code); the read submission's two `> 0` tests nested 696 (same code). Checked, not a form: retail's hopper checks behind
+// 0x1934f0 take their argument in ESI, ECX and EAX, so they were built with link-time code generation; a non-LTCG flag
+// on their file would not explain why retail reloads memory after those calls.
+// Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
+// With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
+// NOT kept: the one-point gains leave the exit span and width unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

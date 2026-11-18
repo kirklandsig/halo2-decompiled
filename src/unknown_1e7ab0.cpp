@@ -83,6 +83,7 @@ inline s_entry_420 *entry_420_get(long index)
 	return result;
 }
 
+long function_14de70(long local_player_index);
 bool function_1e69d0(s_time_entry *entries, long type, long age_limit);
 bool function_1e7a10(long player, long index);
 long function_1e7a60(long player, long index);
@@ -165,6 +166,14 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
 // MiniMax G (11-18): no new form, no lower score (117): the entry lookup still loads the table global into EAX
+// where retail loads it into ECX (six more getter spellings - the table read before the null result, the pointer
+// add, the count in a local, nested ifs, the count cast and a long return - all measure the same 117), and case 4's
+// parent still sits in ECX where retail holds it in ESI; the definition pointer (ours EDX, retail EAX) and the
+// seat-flag temporaries (ours EDX for both shifts, retail EDX then ECX) follow from that one rotation. The
+// parent's register is not settled by the callee's argument order: retail's 0xd0590 reads the iterator from ECX
+// and the object index from EDX, and retail's call site here sets ECX to the iterator and EDX to the parent, which
+// is what this source already does. An annealed permutation search over this body (300 s, seed 98) lowered
+// nothing: best 117 against a baseline of 117.
 // where retail loads it into ECX (the getter rewritten with an early return, and with the table read before the
 // null result, both measure the same 117), and case 4's parent still sits in ECX where retail holds it in ESI:
 // BLOCKED-BY 0xd0590's parameter order (src/unit_object_type.cpp). An annealed permutation search over this
@@ -506,14 +515,26 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // parent-unit expression do not move it).
 // M405: Typed seat array; iterator exhaustion via while/for, each with direct/sampled seat; single exit with typed/raw seats; copied child flags.
 // Scores 117/484/484/484/484/117/117/117. Typed seat-array field confirmed in a plain check at the same score. Other forms restored.
+// m3 lane 9 r136 (fast with 0x1e83c0, 0x1e8d50, 0xd0590, 0xd05c0, 0x1e6bd0, 0x14de70, 0x1e8eb0, 0x1e7a10, 0x1e7a60, 0xcbd50,
+// control 117, aligned rows 57; 0x1e83c0 matched each time). Kept: the player index through the existing function_14de70
+// in place of its body written out here (117, same code, fast and plain). The entry through the existing function_1e8d50
+// 165 (2312 bytes; aligned 72): the head is then retail's through the switch, and what is left is case 4 and the
+// rotations after it; with function_14de70 as well 165. HELD (needs the owner's OK), re-measured on this body:
+// 0xd0590's parameters as (object_index, iterator) everywhere 110 (aligned 52; 0xd0590, 0xd05c0, 0xdb210 and 0x1e83c0
+// still match, 0xda110 stays 420); the full diff is build/r136/held-0x1e7ab0.patch and the code is back to main. On the
+// held order with function_1e8d50 for the entry 156 (aligned 67, 2312 bytes): everything up to case 4's definition pointer
+// is then retail's, and the first difference is that pointer's register (retail loads it over the index in EAX, ours takes
+// EDX), which turns the seat-flag temporaries (retail EDX then ECX) and the child loop's product (retail EDX, flags EAX).
+// On that: no definition local 156, a named definition index 156, the definition through a one-line tag accessor 156
+// (same code each); the parent's seat flags through the indexed array without the seat pointer 424 (2308 bytes, aligned
+// 45, but the flags load folds the `add` retail keeps).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
  s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
  byte *data = (byte *)state;
  bool result = false;
- long player_index = NONE;
- if (local_index != NONE) player_index = g_4e8c20->entries[local_index];
+ long player_index = function_14de70(local_index);
  s_entry_420 *entry = entry_420_get(type);
  if (player_index != NONE && entry &&
   (!(*((byte *)entry + 0x10) & 1) || g_4e6948->state != 2))
