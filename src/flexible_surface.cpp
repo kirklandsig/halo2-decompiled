@@ -831,6 +831,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
 // the table entry whole or by components. Whole-entry forms reach 880 bytes
 // with the 0x1c frame. Direction read order and the frame still differ.
+// Unit-range generator 154, directly in the angle 203; integral sample converted in the
+// angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
+// shared draw value or separate const samples 130/130. NOT kept: sample and rotation
+// homes remain different and none lowers the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

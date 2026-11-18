@@ -1120,6 +1120,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Both captured with saved flags 88. Single exit from the found path with saved/in-place flags 35/89.
 // Initial send to single exit 89. Complete eligibility with in-place update 89.
 // NOT kept: the in-place update loses the native opening allocation.
+// Separate query and resend types: early snapshot 81, conditional return 111, late
+// assignment 35, nested query/count guards 81. With an in-place flag update 93/129/91/93.
+// NOT kept: the result split ties or changes the entry and loses the native oldest reuse.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

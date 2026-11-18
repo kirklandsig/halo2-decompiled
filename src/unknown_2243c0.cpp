@@ -715,6 +715,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Typed root/stage/pass arrays singly, in pairs, and together 117 each.
 // All typed arrays with full-width fallback mask 152. NOT kept: element addressing
 // still fuses, and the full-width fallback moves the tag table out of EDI.
+// The fallback still zero-extends DX into EAX, and the stage/pass reads remain fused.
+// Group/fallback table receiver 117, with full-width mask 152; shader/pass/material table
+// receiver 117; separate receivers 117, with full-width fallback mask 152.
+// Shader index selected in the arms, selected absolute index, typed fields, and selected index
+// with a shared shader table each 133.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

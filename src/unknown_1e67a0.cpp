@@ -1199,6 +1199,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // side crosses through cross3f_staged 112 (1389 B). A private rotate reading only the vector's j and k into locals first
 // (diagnostic, to test whether those two ranking ahead of the axis gives retail's copy-first products) 118 (1393 B: the four
 // products stay axis-first, v.j/v.k swap XMM5/XMM6). Body unchanged.
+// Shared up-field pointer 148, shared forward-field pointer 165, both field pointers
+// or references 150/150, both at sampling or entry 150/376, pointer or reference
+// fields with staged crosses 148/148. NOT kept: native rotation multiplicands
+// and final direction copies remain different.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

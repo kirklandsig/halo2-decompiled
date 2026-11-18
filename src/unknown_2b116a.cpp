@@ -4521,6 +4521,9 @@ bool __stdcall function_2b278e(long controller_index)
 // explicit window and channel 187. Both virtual queries explicit with the inherited long result 201.
 // The controller reference and the initial index still need their separate retail homes in the opening body.
 // Independent membership ID value 204. NOT kept: one-use field copy requires a match.
+// The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
+// Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
+// native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

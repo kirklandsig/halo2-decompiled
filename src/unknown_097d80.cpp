@@ -575,6 +575,10 @@ struct c_aggregate : c_child
 // the count declared bare at the collection loop body's top and zeroed in the gate 42; on this body (last measured on the
 // 45 one) the query output declared at the cleanup's inner loop top 31, the cleanup bounded by starts[3] 31, one
 // function-scope index for the collection and dispatch loops 31 (frame 0x8024 in each). Still BLOCKED by the build flag.
+// Callback count as dispatch or cleanup countdown 102/78, both 94, both with
+// final-boundary cleanup 94; total countdown 31, with independent dispatch 93
+// or escaped dispatch 102; independent dispatch with escaped cleanup 96.
+// NOT kept: cleanup-count reuse recovers frame 0x8020 but moves the call and spill homes.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

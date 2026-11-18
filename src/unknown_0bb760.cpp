@@ -1014,6 +1014,9 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // Retail still spills the input after admitting the count and keeps the output in EBX.
 // Paired stored values ascending/descending 185/155, byte extent ascending/descending 173/173.
 // With a native tint record byte offset 192/128/173/173. The descending pair forms reach retail length.
+// The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
+// Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
+// read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
