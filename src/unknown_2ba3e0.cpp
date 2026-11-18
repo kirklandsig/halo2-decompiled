@@ -830,6 +830,8 @@ real g_55e618;
 // result 179. In all four the three products come first with a copy of the normal component as the destination
 // (retail copies the dot, interleaves the tangent rows and multiplies the k row in place), so the perpendicular gets
 // no home and the frame is 0x118: a reference-bound temporary behaves as a named local here. Body unchanged.
+// DH397: Existing i/k/j dot with velocity snapshot, field pointer or direct field, using grouped rows, interleaved rows or the scale helper 103/211/103/194/195/194/200/201.
+// NOT kept: The snapshot with grouped rows or the scale helper scores 103 at the original frame and length. The field forms change the frame and regress. None recovers the retail sweep, collision and reflection spill homes. The original body is restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

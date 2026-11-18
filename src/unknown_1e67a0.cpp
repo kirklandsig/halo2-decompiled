@@ -1181,6 +1181,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 236 (1382 B), both 394 (1423 B); a `vector3f const *axis = &state->up;` for the rotation only 144 (1397 B). Reading of
 // the listing: in the rotation, retail keeps every product with axis.j or axis.k text-ordered (vector copy, axis from
 // memory) while ours loads axis.j/axis.k first; the axis.i products and those with vector.i agree in both.
+// DH397: Each cross consumed with its side dot, shared or separate storage and three alignment-test placements, then the staged shared cross 229/234/220/229/216/228/236/219.
+// NOT kept: Sequentially consuming each cross changes the matching frame and shortens the body well past retail. The separate workspace with the alignment result after both sides is closest at 216. Rotation products, side dots and output scheduling remain. The original body is restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

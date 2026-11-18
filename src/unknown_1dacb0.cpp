@@ -1090,7 +1090,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // frame size agrees; the home given to the dead parameter decides every offset after it.
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
-// score 828 (was 828; m3 lane 8 r164 and r166 at the end): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// Earlier lane 8 rounds 164 and 166 are recorded near the end of this note.
 // m3 lane 3 r250 (fast with 0x1dd560/0x1dd9d0, control 828; masked = registers and stack offsets masked, aligned):
 // ours homes iterator_mode in found_mode's argument slot where retail homes the per-pass candidate there. The candidate
 // dropped with `result = named ? named->animation_id : c_type_709360();` 978; the same as if/else 977 (retail's 2825 B,
@@ -1416,6 +1417,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // declared at the iterate call inside the loop. Re-measured: the early `return c_type_709360();` with the result in
 // the block 988 (2825 B, as listed). Retail returns through separate epilogues (early NONE class, no result, loop end)
 // and loads the second request's mode into EBP once where ours reads iterator_mode's home at each kind.
+// DH397: Resolved mode/class/type stored in expired iterator key fields, seven subsets at the second request, then all three before the first 828/828/828/828/828/828/828/828.
+// NOT kept: All eight forms tie at 828. Reusing the iterator keys does not recover the class and NONE registers, the identifier and resolved-output homes, or the later persistent zero. The original body is restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
