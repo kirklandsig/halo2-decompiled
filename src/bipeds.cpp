@@ -1611,7 +1611,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // MiniMax C (11-16): no kept form: our 1.0f is materialised at the top of the prologue where retail loads it after
 // the tag lookup, which shifts the whole listing by one instruction, and the definition, material, position and
 // facing homes stay four bytes out of retail's, so the body stands.
-// score 175 (was 183): Definition/material/point slots, entry scheduling and the walking preload still differ.
+// score 175 (was 183): The 0xfc frame and extent agree. The constant loads early, and the definition, material and point homes differ.
+// Earlier score 175 (was 183): Definition/material/point slots, entry scheduling and the walking preload still differ.
 // Earlier 183 (was 203): m3 lane 4 r208 (plain; every function of this file checked). KEPT 203 -> 185: the alternate
 // facing through the existing function_cb7e0(arg, &facing) (retail expands 0xcb7e0 there; the copy itself is the same
 // code, the gain is case 6's inlined 0xe5d50 dot products, which take retail's XMM registers; listed below as "same
@@ -2002,6 +2003,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // M421: Material assigned on both paths 675, fallback first 675, local at selection 675, complete conditional initializer 675;
 // common unit scale 175; unsigned material address 175; separate shape address/displacement 583; material address then displacement 175.
 // NOT kept: removing the entry material initialization shrinks the frame and body. The definition and material slots still differ.
+// physics member used throughout 654; biped fields through tag section 193; unit flags and boost through
+// tag section 193; walking settings before rate call 154; linear velocity through motion receiver 193;
+// animation names and tail state have distinct receivers 175; movement member with motion receiver 654;
+// unit and biped tag sections 193; walking rate then attenuation 607; walking attenuation then rate 618.
+// NOT kept: the 154 form restores the definition slot and preloads the walking settings as retail does,
+// but it uses one-use settings and rate locals without a byte match. Separate assignments to speed_scale
+// regress. The original body was restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4691,7 +4699,8 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // second property at 0x60 against 0x88, the travel limit at 0x5c against 0x84 and the placed pivot at 0x50 against 0x88),
 // the pivot select still takes EAX and ESI where retail takes ECX and EDI, and the body is 1924 bytes against retail's
 // 1937 because retail keeps the travel test as a byte flag.
-// score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
+// score 336 (was 356): The 0x12c frame agrees. The origin and body matrix start at 0x44 and 0x60 here, and at 0x40 and 0x50 in retail. The travel test and later pivot homes still differ.
+// Earlier score 336 (was 356): origin, first property/distance, matrix, second property/limit and placed homes in another order
 // (round 196 of m3 lane 4: the world-pivot group and target also swap, see its note at the end)
 // (retail 0x40/0x4c/0x50/0x84/0x88, ours 0x44/0x40/0x60/0x5c/0x50), the pivot select and the materialized travel test.
 // Round 85 (m3 lane 13) at the end; the earlier first lines are kept below as "Earlier first line".
@@ -5017,6 +5026,12 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // selected pivot in place 376 or through the scalar helper 345. Shared final difference
 // 336 or with scalar helper 384. Rotating into the matrix position then subtracting
 // directly or through the shared difference 335/335. NOT kept: one-point gain above 30.
+// origin in actual point query record 353; placement in actual point query record 362; both point
+// queries with their records 373; origin address from existing point setter 336; placement address from
+// existing point setter 336; both point addresses from existing setters 336; result lifetime starts
+// after body matrix query 339; target copy initialized at travel test 336. NOT kept: one complete query
+// record grows the frame to 0x148, and two grow it to 0x164. Setter returns and initializer changes tie
+// or regress. The original body was restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

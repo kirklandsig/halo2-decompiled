@@ -1885,6 +1885,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // instead of +0x1c/+0x20, +0x14 and +0x54. The direction's products also used the opposite order.
 // Earlier: no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
 // score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
+// The 0x3c frame, entry argument roles and initial direction homes agree. The first
+// difference is XMM2 versus retail XMM1 for zero. The radius then occupies XMM7 versus XMM5, and the build
+// threads the type-zero center around the addition and side test that retail shares with type one.
+// Earlier score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
 // +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
 // +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
 // xmm1 and multiplies the direction's y first where retail multiplies the x first.
@@ -2072,6 +2076,13 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // switch literal zero 284, ordinary origin 299, single exit 254, shared Y translation 299.
 // The existing difference helper scores 239 in the original dispatch and 284 in the switch.
 // The matching entry and frame still diverge at the XMM2 zero and unsupported-type exit.
+// shared type zero point offset output 239; shared both type point offset output 239; shared both type point
+// offset value 360; shared point offset output for center and side 239; shared point offset value for center
+// and side 389; shared scaled direction for centers 399; shared scaled direction for centers and side 458;
+// shared scaled direction for type zero and side 407. NOT kept: the shared output-pointer forms keep the
+// original score and extent. Returning the point or materializing a scaled direction lengthens the body and
+// increases the score. The native zero, radius and center-join allocation is unresolved. The opening
+// executable source is restored.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

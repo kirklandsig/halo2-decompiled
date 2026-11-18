@@ -537,6 +537,10 @@ void function_3dd10(long object_index, bool force);
 // score 123 (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
 // and the variant byte is read before the second remainder. The first scan's `!=` exits
 // differ from retail's signed `<` loop (unrolled by 4 in every
+// The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
+// displacement. The build holds the early variant byte across the second fmod in BL and swaps the output and
+// delta saved registers. Retail compares the byte in CL after the call and then stores the rounded blend.
+// Earlier score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
@@ -708,6 +712,13 @@ void function_3dd10(long object_index, bool force);
 // 249, tint entry on fallback only 144, first-bank cursor with indexed second bank 283,
 // rounded blend at selection 198, const tint/choice references 123, shift supplied mask 179.
 // Output/delta saved registers, blend publication and the signed weight-scan exits still differ.
+// round blend after model lookup 159; round blend when choice is found 191; round blend at selection entry
+// 182; variant presence before blend rounding 214; model variant presence before blend rounding 222; round
+// blend after nested model lookup 159; conditional variant key before blend rounding 123; separate blend
+// seed and round after model lookup 160. NOT kept: rounding after lookup recovers the output/delta saved
+// registers and CL comparison, but puts the blend store after the entire lookup and shortens to 1019 bytes.
+// The conditional key ties 123 at 1035 bytes and puts the blend in a different slot. The signed scan exits
+// remain different. The opening executable source is restored.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {

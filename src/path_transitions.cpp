@@ -1036,6 +1036,16 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Admit then carry corner ordinals into paired vertex lookup. Second 219, third 219, second and third as
 // words or longs 220/220, first edge 317, second edge 220, first three 323, last three 247. The paired
 // middle words leave root and actor entry allocation unchanged.
+// Round 416: Retail saves the pathfinding root in EBX and loads the actor into EAX before dispatch. The
+// actor-first signature, ordered corners and position-first case five reproduce that entry through +0x27.
+// shared scaled point addition on the early-root form 283; shared scaled differences on the early-root form
+// 280; named surface kind before the result on the early-root form 291; named surface kind after the result
+// on the early-root form 291; named radius diameter on the early-root form 283; const actor input on the
+// early-root form 283; read-only saved surface record on the early-root form 283; case five actor comparison
+// assigned before either vertex read on the early-root form 283. NOT kept: All eight variants are 1284 bytes
+// and regress from 218. Paired differences give the lowest trial score, 280. The first-edge projection and
+// radius multiplication still use different SIMD operands. The opening body, caller and declaration are
+// restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
