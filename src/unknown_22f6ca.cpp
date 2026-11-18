@@ -207,6 +207,18 @@ void function_22fba9(c_class_1473c9 *screen)
 // 23; accessor and setter together in the model loop 23; the model call and animation read through a `c_class_1473c9 *&`
 // bound to the screen 23; the model bound to a `c_class_1a2c81 *&` over a plain local 23; `i = 0; if (i < count)` guarding the
 // model loop 23, the text loop 23 (the guard folds away; it moves neither the resets nor the EAX copy).
+// M3 lane 5 r198 (fast; control 23): the model loop on its own counter zeroed at its declaration with no reset in the
+// `for`: declared at the function's top 150 (423 bytes), at the pane block's top 145, just before the text loop 74 (the
+// counter then lives in memory across the earlier loops); `(short)i` at the text helper's call 53 (419 bytes); one widget
+// pointer shared by the five loops and initialised NULL at the top 23; the flag declared false at the top, after or
+// before the counter, and set in the pane block 23/23 (all three the same code). Diagnostics: a constant zero stored to
+// a global after the model loop 31 (423 bytes: the model's reset stays `and`, the copy stays); the model loop deleted
+// 131 (the text loop, then last, keeps `mov`); the model loop moved ahead of the text loop 158 (the model's reset is
+// still the `and`), so in our build the `and` goes with the model loop wherever it stands, not with the last loop; a
+// copy of the text loop after the model loop 108 and the text loop given a value0a store 57 (in both the model moves
+// to ESI and the screen is reloaded from its home, no direct read); the model loop without its value0a store 54.
+// Reading: `mov [slot], reg` is the zero shared with the counter's own register, `and [slot], reg` a literal zero the
+// peephole pass rewrote; retail shares it in the model loop and not in the text loop.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

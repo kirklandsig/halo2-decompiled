@@ -229,6 +229,18 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // positioned arm first under `attached || positioned` 96 (same code); the request test as `!(attached || positioned)` 96;
 // the polarity flipped (`detached = object_index == NONE`) 98 (525 bytes); the named test for the request and started tests
 // instead 151 (547 bytes).
+// M3 lane 5 r198 (plain; every form without the reference, object reads plain, control 116): the object index's address
+// passed to an ignored trailing pointer parameter of 0x189340 (diagnostic; its other callers pass NULL) 116, the same
+// code: the dropped argument leaves the parameter in a register, so an unread pointer does not keep it in memory;
+// 0x109220 (this function is its only retail caller) declared (tag, sound, object) 116 and (tag, object, sound) 116, the
+// same code with 0x109220 still matching (its parameter order does not move the contest); `inline` on 0x109220's
+// definition 116 and on 0x1892a0's 116 (both stay out of line, same code). Reading of the plain listing: the tag index
+// and the object index can each only take EBP (ESI, EDI and EBX are the register arguments of 0x1892a0, 0x189340 and
+// 0xb8d30 while both are live), so whichever ranks first takes it and the other is read from its home in pieces; with
+// rounds 80 and 137 the object ranks first at 7 uses against the tag's 8 and second at 6 against 8 or 7 against 9. The
+// fourth and fifth arguments are a pair of decibel values the callers pass by value (0x2a9e60 builds them); a by-value
+// aggregate holding the object index with them would keep it in memory, not tried: the declaration in
+// include/unknown_29f5b0.h and the calls in src/unknown_29f5b0.cpp belong to another lane this round.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
