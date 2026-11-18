@@ -512,6 +512,11 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax H (11-18): no new form, no lower score (348): the bytes agree with retail's through +0x1de, and the first
+// difference is still inside the expansion of the existing graph_resources_request, where retail forms the request's
+// graph with `add ebx, 0x34` and reloads the graph into EBP lazily while this build keeps the graph in EBX and
+// graph+0x34 in EBP; that helper's body is in src/unknown_1dacb0.cpp, so its register roles are not this file's to
+// make.
 // MiniMax R (11-17): no new form, no lower score (348): the first difference is still inside the inlined
 // request expansion, whose helper is src/unknown_1dacb0.cpp's and not this file's, so no form of this body
 // moves the score; the body stands.

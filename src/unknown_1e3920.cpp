@@ -1905,6 +1905,14 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax H (11-18): no new form, no lower score (251): the pool and seed globals still take retail's registers the
+// other way round (retail holds the pool in EDI and reloads the seed into EBX), the two-weapon index is still
+// strength-reduced into a cursor and a countdown where retail keeps a 32-bit index in the frame's slot at +0x14 and
+// reads the pair at +0x1c, retail re-derives the unit from the pool for each of the two slot queries where this build
+// keeps one unit pointer, and retail gives the grenade options pointer a frame home that the random draw then reuses
+// where this build keeps it in a register; the 0x259a0 call is opaque to this build because src/unknown_0259a0.cpp is
+// built /GL-, which is another lane's file; the permuter (--fast, 300 s, 18 tries) reached 246, a five-point gain that
+// is under the keep bar, and its variant swaps 0xc6f80's arguments and adds a constant-only local.
 // MiniMax R run 92 (11-17): no new form, no lower score (251): the pool global is still re-read after each lookup
 // where retail holds it in EDI across them, and the actor and options still take the other two registers (ours:
 // actor EDI, options ESI; retail: actor ESI, options EBP); the random-state load still rides across the opaque call

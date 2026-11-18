@@ -825,6 +825,16 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `if` with a body at the traversal's end gives retail's pair order (207 with its own lines), one between the loops does
 // not (202), as round 71 found. 0x26f3f0 (unmatched) writes ECX and EDX and makes calls in both builds, so its LTCG
 // clobber summary is not the cause. Body unchanged.
+// MiniMax H (11-18): no new form, no lower score (286): retail's frame is 0xe4 with the state in ebx and nine stack
+// words, ours 0xe8 with one local word more: the link output goes through a pointer that advances by eight (ours)
+// where retail indexes the array with the count (0x270e7f-0x270e96). A link count of 16 bits gives retail's frame,
+// its 16-bit compare and index (0x270e3f, 0x270e86) and retail's length, but scores 359; copying the two
+// layout-identical views as one assignment gives retail's indexed copy, but scores 361. Still differs: retail
+// materialises the node address with a lea before the depth load (0x270db1) where this build folds the whole
+// displacement into one load; retail keeps the link-flag byte in memory (0x270e79, 0x270eb8, 0x270f61) where this
+// build holds it in a register; retail zeroes the step count at the loop entry (0x270e16) where this build zeroes it
+// in the prologue; retail reloads the previous node at the loop head (0x270e07, 0x270e22) where this build reloads it
+// in the body. Original body restored.
 // MiniMax S (11-16): no new form, no lower score (286): retail carries state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links), where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and a pointer to the node and a named node pointer compile the same way. Changing the parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax C (11-16): no new form, no lower score (286): retail still carries the state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail's parameter order differs and changing a parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax I (11-17): no new form, no lower score (286): retail carries the state in EBX through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and changing the parameter order is a form the rules forbid.

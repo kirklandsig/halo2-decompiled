@@ -107,6 +107,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
     arg_1->z = local_4 + arg_0->position.z;
 }
 
+// MiniMax H (11-18): no new form, no lower score (93): retail's transform rows compute the up product first and keep
+// each product's first operand in the destination register, where this build computes the left product first with the
+// two operands the other way round; spelling the three products in the opposite order compiles to the same bytes, and
+// giving each product a named local and summing them shortens the body by 16 bytes and scores 235. What still differs:
+// the entry guard's registers (ours loads the strip record into ecx after the pushes, retail into eax before them), the
+// count loop's sign extension where retail zero-extends the word, the swapped count sum and vertex cursor slots, and the
+// 0x17cfa0 call setup (that callee's own body is in another file).
 // MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
 // argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
 // still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
