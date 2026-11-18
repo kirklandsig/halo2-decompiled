@@ -759,8 +759,8 @@ struct s_visibility_bsp
 	s_visible_instance *instances;
 };
 
-short function_2cbf0(long arg_1, short arg_2, dword arg_3,
-    long arg_4, dword arg_5, long arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
+short function_2cbf0(long arg_1, dword arg_3,
+    long arg_4, dword arg_5, long arg_6, short arg_2, long arg_7, byte *arg_8, short arg_9, byte arg_10,
     void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
     bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
     real arg_21, word arg_22, point3f const *arg_23, real arg_24);
@@ -796,6 +796,15 @@ short function_2cbf0(long arg_1, short arg_2, dword arg_3,
 // which is what cost 0x133f70 its match). The instance sixth to tenth (after category, material, object, mask or
 // mode) gives the same bytes in all four; eleventh or later 13 to 25 here, 0x2cbf0 300 and both other callers lost
 // (36 to 49). Patch: build/r119/held-133390.patch (lane 1's worktree). Code left as on main.
+// MATCH (2026-11-18): 0x2cbf0 declares instance after category, so its register arguments load ecx before edx as in
+// retail. Forms kept, each on retail evidence: (a) the cluster index is a plain long in esi (0x1333b8) and its
+// (short) cast is a register movsx at 0x1333d7, before the bounds loads (the byte load stays at 0x13344b); the old
+// `long const &` re-read a word. (b) The extent follows the file's 0x134390 idiom (centre and corner point3f through
+// real_point3d_set, vector3f through vector3d_from_points3d); retail reads +0x60/+0x68 a second time for the corner
+// (0x1333f8, 0x1333fd). Its sum is retail's tree (x*x + y*y) + z*z (fld 0x13341d, 0x13342f, 0x133451), which compiles
+// only when written k, j, i; length_sq3f compiles (z*z + x*x) + y*y (34), i, j, k gives 33. (c) The plane sum is
+// retail's tree ((z*g38 + x*g20) + y*g2c) + g44 (0x133455-0x13347b) only when written y, x, z; z, x, y compiles ((y +
+// x) + z), a last-bit rounding difference (12).
 // @retail 0x133390
 void function_133390(s_bit_vector_pool const *arg_1)
 {
@@ -823,7 +832,7 @@ void function_133390(s_bit_vector_pool const *arg_1)
 		if (!(local_11 > 0.1f))
 			local_11 = 0.1f;
 		real local_12 = (g_4b9ed0 / local_11) * local_10 * 2.0f;
-		function_2cbf0(local_4, NONE, local_3 | 0x40, NONE, NONE, 0, 0, NULL,
+		function_2cbf0(local_4, local_3 | 0x40, NONE, NONE, 0, NONE, 0, NULL,
 			local_13, 0xff, NULL, NONE, local_12, NONE, NONE, false, false,
 			false, 0.0f, 0.0f, 0.0f, 0, g_468788, 0.0f);
 		local_1 = arg_1->lists[0];
@@ -867,7 +876,7 @@ void __stdcall function_133520(s_bit_vector_pool *arg_1)
 			local_6 |= 1;
 		if (local_11 > 0)
 		{
-			function_2cbf0(0, local_4, local_6 | 0x1008, NONE, 0xffffffff, 0,
+			function_2cbf0(0, local_6 | 0x1008, NONE, 0xffffffff, 0, local_4,
 				0, NULL, local_8, local_11, local_5, NONE, local_9, NONE, NONE,
 				false, false, false, 0.0f, 0.0f, 0.0f, 0, local_12, local_5->radius);
 		}
