@@ -11770,7 +11770,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 002dc150,49,third:havok,speed,a16 pad,,,,src/unknown_2dc150.cpp,matched
 002dc190,40,third:havok,speed,a16 pad,,,002dc1c0,src/unknown_2dc1c0.cpp,matched
 002dc1c0,92,third:havok,speed,a16 pad,,,,src/unknown_2dc1c0.cpp,matched
-002dc220,3124,third:havok,speed,a16 pad ebp,,,002d9000 002d9060 002d91d0 002dc220 002ff210 002ff570,src/unknown_2dc220.cpp,todo
+002dc220,3124,third:havok,speed,a16 pad ebp,,,002d9000 002d9060 002d91d0 002dc220 002ff210 002ff570,src/unknown_2dc220.cpp,matched
 002dce60,2768,third:havok,speed,a16 pad ebp,,,002d9000 002d9060 002d91d0 002dce60 002ff210 002ff570,src/unknown_2dc220.cpp,matched
 002dd930,672,third:havok,unknown,a16 ebp,,,002dc220,src/unknown_2dd930.cpp,matched
 002ddbd0,195,third:havok,unknown,a16 ebp,,,002dce60,src/unknown_2dd930.cpp,matched
