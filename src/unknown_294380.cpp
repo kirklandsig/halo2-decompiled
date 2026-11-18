@@ -288,6 +288,14 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // on the iterator's flock pointer (`local_21 != (s_flock_object *)local_2`) 252; the walk iterator brace-initialised from the
 // record's head 252 (all four identical code: declaration order does not move the object/nearest or record/sum spill
 // pairs); the walk guarded by the head as well (`field_34 > 0 && head != NONE`) 721 (3731 B). Body unchanged.
+// m3 lane 13 r109 (fast screens, which carry the "builds differently" caveat (control 280 fast, 252 plain); plain for the one
+// that changed code in the right place): the object lookup declared ahead of the record lookup 813 fast (3736 B); the nearest
+// distance declared ahead of the centroid sum 280 fast and the post-walk vector declared before the walk 280 fast (both the
+// same code); the inline steering helper's second dot written vector-first (`dot3f(arg_1, &previous)`) 455 plain (3712 B,
+// 462 fast): it gives retail's `mulss xmm3, [ebx + 0x28]` at the first call site (the i product taking the vector's register
+// as destination ahead of the j and k products), but not at the second (after 0x294050), and the rest shifts; both dots
+// vector-first 462 fast (the first dot's code does not change). Lead: retail's second dot at both sites multiplies the
+// vector's i register in place before the other products; ours loads the stored i and multiplies after the first add.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

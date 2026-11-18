@@ -577,6 +577,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
 // existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
 // code). Body unchanged.
+// MiniMax B (11-18): score 920 (was 920): no new form, no lower score (920 plain, 926 fast). The permutation
+// search over the body (300 s, one job, the full image because the reduced image misleads here) made two tries and
+// never beat its baseline of 910 differing instructions; read from the listing again: retail takes the actor's unit
+// field with the pool's data base and the scaled index kept apart ([edx + esi + 0x18] against our folded address),
+// holds the actor pointer in edx instead of the volatile home at +0x14, zeroes the cells at 0x40, 0x48, 0x58, 0x60
+// and 0x24 and packs its four bools at 0x11, 0x13 and 0x21 where ours spends 0x13, 0x1b and 0x22, so the frame is
+// still 0x2cb4 against retail's 0x2cac and the body is 3718 bytes against 3731.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1440,6 +1447,8 @@ long function_1fa7f0(void);
 // home sits eight bytes off, the three homes the body uses are at +0x54/+0x58/+0x5c against retail's +0x64/+0x68/+0x6c and
 // the two byte homes are at +0x12/+0x13 against retail's +0xe/+0xf, and the first difference is the frame size itself.
 // MiniMax E (11-16): no new form, no lower score (400): the permuter's best variant (900 s, one job) measured 392 but adds volatile locals, a do-while respelling, a hand-written length_sq3f, a one-use flag and a reordered call, so it was reverted; the frame is still 0x114 against retail's 0x10c, where retail keeps the entry zero and the edge in EBX and reads the count from the stack at each compare.
+// MiniMax A (11-18): no new form, no lower score (400): the frame is still 0x114 against retail's 0x10c, so the entry zero
+// and the edge sit in stack slots where retail keeps them in EBX and BL, and the count is still read from the stack.
 // score 400 (was 400): frame 0x114 against retail's 0x10c; retail keeps the zero in EBX at the head, the count
 // argument in SI then in memory, the edge in EBX and the step pointer in a slot, where ours keeps the zero in EDX,
 // the count in BX, the step pointer in EDI and the edge in a stack slot (stacked score lines below merged here).
@@ -1993,6 +2002,11 @@ long function_1fa7f0(void);
 // const reference 400 (same code); the typed scan as a `for (end = index; end < count; ++end)` loop 636 (1911 B); the
 // emitted type and link as two ternaries 521 (1795 B); type and link stored before next in the typed branch 400 (same
 // code); the emit's point written field by field instead of real_point3d_set 436 (1761 B). Body unchanged.
+// Forward result after condition or break 475/475, bound as presence 482,
+// next sentinel after forward scan 478, step pointer with short ordinal 419,
+// pointer range 520, next as forward cursor 502, next sentinel across both
+// phases 461. NOT kept: 419 reaches retail length with the larger frame and
+// the selected edge still in a slot.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

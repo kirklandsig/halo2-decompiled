@@ -2181,6 +2181,11 @@ void function_269250(long clump_index, long actor_index);
 // writing the clump index to a caller local on both paths 132 (the original allocation returns: the clump-index write on
 // every step is what costs the pool its register); in-arm with the selection copied before the after-loop calls 126 (same
 // code). Body unchanged.
+// MiniMax A (11-18): no new form, no lower score (87; 89 on this build's reduced image); what still differs is that retail
+// hoists the walk's pool into EBX, keeps the selection on the stack and compares the two scores on the x87 stack, while ours
+// keeps the pool in memory, the selection in EDI and compares with comiss; the in-arm compare (126) and the selection taken
+// from the walk's datum index (128) each score worse alone, and the two walk helpers are shared with four matched functions,
+// so they stay as they are.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
