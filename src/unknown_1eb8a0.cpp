@@ -666,6 +666,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // activation start 603, activation target fallback 603, both activation points
 // 678, tick-scaled output 603, settling workspace 603, and activation direction
 // fallback 603. The sampled-velocity register remains displaced.
+// Sampled velocity still loses EBX to the supplied direction. Initial/capped/output
+// ramp scopes, every nonempty combination 603; all scopes with distinct tick and step
+// result names 603. The frame, clock and instruction listing stay the same.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
