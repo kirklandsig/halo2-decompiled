@@ -43,11 +43,13 @@ struct pair_30ed40
 // second's
 inline bool pair_less_30ed40(pair_30ed40 const *a, pair_30ed40 const *b)
 {
-	if (a->first->id < b->first->id)
+	unsigned long const id = a->first->id;
+	pair_body_30ed40 const *const other = b->first;
+	if (id < other->id)
 	{
 		return true;
 	}
-	if (a->first->id == b->first->id)
+	if (id == other->id)
 	{
 		return a->second->id < b->second->id;
 	}
@@ -64,7 +66,12 @@ ELEMENTS_2D91D0(pairs_30ed40, pair_30ed40);
 // the pairs of `destination` and `source` merged in order into
 // `destination`; a pair both hold is kept once, and its agent in `source`
 // told through its slots
-// score 197 (was 197): the frame is four bytes bigger here than in retail, so
+// score 172 (was 197): the ordering helper names the first body's id and the other
+// pair's first body, each used twice. Left: retail compares the id against memory
+// twice and reloads for the second test where ours merges both into one compare,
+// and retail keeps the source count in ebp without a stack slot (ours spills it,
+// which is the frame's extra four bytes).
+// Before, 197 (was 197): the frame is four bytes bigger here than in retail, so
 // the locals sit at other offsets, and the counter is kept in another register.
 // Review cleanup score 196: removed unsupported volatile/one-use tuning;
 // the prior scored trials above remain available for future matching work.
