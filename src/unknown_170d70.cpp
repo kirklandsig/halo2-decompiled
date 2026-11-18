@@ -1030,7 +1030,7 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 	out->k = (in->j * m->m21 + in->k * m->m22) + in->i * m->m20;
 }
 
-// score 346 (was 346). Logic walked block by block against retail: every call, constant and field offset agrees.
+// score 346 (was 346): Logic walked block by block against retail: every call, constant and field offset agrees.
 // The sums' grouping differs: retail adds the rotation terms in a different order in each of the four
 // rotations (first-axis forward 0x171f17, first-axis up 0x171fb2, second-axis forward 0x17219e, second-axis up
 // 0x172233). For i it uses ((i,k),j) / ((k,j),i) / ((k,j),i) / ((i,k),j), for j ((k,j),i) / ((i,k),j) / ((k,j),i) /
@@ -1042,6 +1042,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // in retail, ours loads all three first.
 // Tried (no gain, all 356-383): sk/sj/si locals before or after the squares (357-383), ratio/original/vertical
 // statements moved (360-361), deviation as float sum (367), per-term (double)(a*a) (372), double locals (419).
+// Unity remains in XMM3, while retail uses XMM5 and carries the squares through the tangent.
+// Squared-axis vector 387; squared axis in matrix diagonal 361; shared weighted k 376;
+// weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
+// vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
+// NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1820,6 +1825,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // real direction_x/y locals (346), the direction array (320, above).
 // Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
 // stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
+// The camera state remains in EBP and the collision point argument still uses EBX.
+// Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
+// initial placement clamps on all three coordinates 336; projected-point aggregate 429;
+// in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

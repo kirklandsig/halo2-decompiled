@@ -1534,6 +1534,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // source 936; scoped ids with native width and shared count 936; native histogram bucket addresses
 // 936; native buckets with shared group count 936. NOT kept because the equal-width controls tie and
 // the dword forms shorten the body and raise its score.
+// The separate histogram keeps the frame at 0xd0, and the opening variant lookup still expands.
+// Group range ends for all/eligible passes 886/886; skip other groups 871;
+// per-group player-count snapshot 957; spread from count before last update 907;
+// conditional first accepted size 871; counters cleared before ID copy 871;
+// two-field session ID copy 867; admitted rating before flags 910; one team setup gate 908.
+// NOT kept: the two-field ID copy gains four and shortens the body to 2748 bytes.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

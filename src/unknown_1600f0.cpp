@@ -1438,6 +1438,10 @@ PRIVATE inline long score_string_list_1608e0()
 // vertical cursor and advance 698; direct horizontal cursor 675; direct coordinate pair 689;
 // aggregate cursor 698; title edges from cursor 698; early title bounds 689;
 // caption from title top 689. NOT kept: best gain four, with the frame still 0x798.
+// The frame still lacks the separate origin word, and the viewer remains in EDI.
+// Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
+// reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
+// independent score visibility for name/caption 687, with explicit caption-width branches 687.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

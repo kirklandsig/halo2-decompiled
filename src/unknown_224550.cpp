@@ -674,6 +674,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P608: Current-frame weight shared from frame admission, enabled blend, explicit disabled arm
 // or deferred blend into both pivots and both downstream pairs, aspects or inverse extents:
 // 398/416/416/405/397/367/357/396. NOT kept: every form regresses and changes frame layout.
+// The tint, UV homes and the 0x60 frame agree. The fixed-arm jump and blend register still differ.
+// Geometry origin in output before extents 158; projected centers before encodes 322; center point 322;
+// interpolated pivot point 342; secondary encode after projection 196; interval assigned per case 170;
+// conditional primary aspects 227; conditional secondary aspect updates 221.
+// NOT kept: the geometry-origin form gains four and leaves the blend spill.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
