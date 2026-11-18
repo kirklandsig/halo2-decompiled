@@ -165,6 +165,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // forceinline setter 4; the call's result held in a bool and discarded after the store 4; the clear through a
 // forceinline helper taking the mask by reference 4; the clear through a reference bound to the mask 4 (all the same
 // code, the clear still EDX).
+// Round 212 (m3 lane 4, fast with 0x143c0, which matched in each): the floor helper `static` (PRIVATE is empty, so it had
+// external linkage) 4; the loop under a redundant `if (remaining)` guard 4; the call's tag through a trivial forceinline
+// accessor 4; `register` on the scanned index 4, on the bitmap 4 (all the same code); re-measured: round 97's forceinline
+// level setter after the call 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

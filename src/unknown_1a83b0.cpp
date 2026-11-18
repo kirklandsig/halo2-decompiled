@@ -633,6 +633,14 @@ s_1a8a10 g_4453c0[] =
 // Round 210 (m3 lane 4, fast; control 17): the switch writing the rotated point through a reference-bound local 91, that
 // reference also read by both sums 91 (j still folded); a reference bound to the facing copy for the sums 17 (same code);
 // each product cast to real inside both sums 17, with retail's term orders (i*y and j*y first) 17 (same code).
+// Round 212 (m3 lane 4, fast with 0x1a8c30 0x1f5390 0x1f57a0 0x1f57f0, all matched in each; control 17). Reading: retail's
+// forward sum multiplies the copy of i (xmm6) and consumes j's register in place, and its left sum consumes i in place and
+// reloads j, as if the forward products came first in the IL while the left sum is scheduled first. Combined leads: the
+// copy's j assigned after the left sum, both sums in retail's term orders, with the identifier/index/score initialisation
+// order 15 (the j re-read appears and the first difference moves to +0xb9; the left sum still multiplies a copy of i),
+// that with the stores [3], [1], [2], [0] 17, with index-order stores 16, with the left sum's i read from the actor 25;
+// the forward sum first in retail's term orders with that initialisation order 32; the same with the left sum's i and j
+// read from the actor 116 (548 bytes). All restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
