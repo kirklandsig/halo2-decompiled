@@ -182,6 +182,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // sound comparison before portal flags 322; nearest distance after path-list
 // lookup 293; signed admission index through range and bitmap 317.
 // NOT kept: 293 gains three and moves the first difference earlier.
+// Portal-table, destination-table, both, or seed-through-destination table references 296 each;
+// packed link base or address 296; path ordinal advanced at the link read 367;
+// starting-cluster and decoded portal names 296. NOT kept: the starting cluster and both
+// live BSP table bases retain their opening allocations.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

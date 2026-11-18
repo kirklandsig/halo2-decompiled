@@ -1090,6 +1090,10 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Matrix returned by value 471 (initializer loses its match); shared alias-safe transform 361; staged basis transform 368.
 // Axis-square diagonal accumulators 346; staged diagonal 363; separate scaled cosine terms 363.
 // Original direction copied by memcpy 346; separate transform source pointer 383. Unity still starts in XMM3.
+// Forced alias-safe transform 346; descriptive axis-square names 346; pair-local sine products 376;
+// retained rotated-forward address 350; staged dot 346; staged double squares or interleaved deltas
+// and squares 349 each; double deviation vector 392. NOT kept: the first unity register remains
+// different, and the new deviation forms shorten the function away from retail.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1347,6 +1351,10 @@ struct s_point_pool_173520
 // Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
 // start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
 // traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.
+// State field reference 99; typed source cluster pair, flags, or both 96 each;
+// shared ordered inside cap or per-vertex minimum 96 each; clipped-count for loop 96;
+// clipped-count while loop 932. NOT kept: the while loop unrolls, and the other forms
+// leave the pool commit, stride spill and x87 cap sequence unresolved.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1977,6 +1985,11 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // conditional entry distance 413. The collision point still occupies EBX.
 // The state remains in EBP with the point argument in EBX.
 // Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
+// The state remains in EBP and the collision point still arrives in EBX.
+// Output point address before calibration, after follow, at first store, or by reference 382 each;
+// calibrated view through location 459; horizontal subvector 337; follow matrix reference 325;
+// distinct focus point 459. NOT kept: the address forms keep the collision register conflict,
+// and the distinct focus point shortens the body by 93 bytes.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

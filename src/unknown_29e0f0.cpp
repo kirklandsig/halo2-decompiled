@@ -641,6 +641,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // 399; indexed count from inclusive span 413; endpoint in loop condition 395; short validator result for
 // pass 420; boolean validator result for pass 385; validator comparison for pass 420. NOT kept: all
 // forms scored above the opening body.
+// Nested accepted-direction limits 431; conditional endpoint comparison 380;
+// pass-owned cursor 453; selected endpoint limit 434; signed-step endpoint test
+// 396; signed-step loop guard 396; limit after cursor advance 418; distinct
+// forward and backward guards 382. NOT kept: the 380 form gains two and leaves
+// the selected-index homes unchanged. Original complete body restored.
 // Conditional visited-group rejection 382; nearest-point admission 415; grouped-link scan
 // 445; pass cutoff 399; point-walk admission 411; candidate-record admission 413;
 // distance before validation 417; selected output eligibility 394.
