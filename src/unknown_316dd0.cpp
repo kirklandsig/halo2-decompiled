@@ -184,6 +184,23 @@ inline bool sorts_before_316dd0(record_316dd0 const *record, handle_pair_316dd0 
 	return record->b->id < pair->b->id;
 }
 
+// whether a pair in the list holds the same two objects
+inline bool same_objects_316dd0(record_316dd0 const *record, handle_pair_316dd0 const *pair)
+{
+	return record->a->id == pair->a->id && record->b->id == pair->b->id;
+}
+
+// copies a pair of the list
+inline void copy_316dd0(record_316dd0 &to, record_316dd0 const &from)
+{
+	to = from;
+}
+
+inline handler_316dd0 handler_for_316dd0(tables_316dd0 const *tables, long first, long second)
+{
+	return tables->handlers[first][second];
+}
+
 class merger_316dd0
 {
 public:
@@ -224,16 +241,21 @@ public:
 // parameter rename 2. Callback forms discarded without an exact match.
 // Review cleanup score 71: removed unsupported volatile/one-use tuning;
 // the prior scored trials above remain available for future matching work.
+// Matched (was 2): the duplicate check is same_objects_316dd0 (the list's id first in both
+// compares), the old pairs are copied by copy_316dd0 (references), and the fixed island is named;
+// the helper alone gives 8, and it needs two such code-neutral changes together to load the
+// pair's object before the list's.
+// Before, 2 (was 71): the handler is fetched through handler_for_316dd0 before the call.
 // @retail 0x316dd0
 void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 {
 	while (cursor < end && sorts_before_316dd0(cursor, pair))
 	{
-		*out = *cursor;
+		copy_316dd0(*out, *cursor);
 		out++;
 		cursor++;
 	}
-	if (skip_existing != 0 && cursor != end && pair->a->id == cursor->a->id && cursor->b->id == pair->b->id)
+	if (skip_existing != 0 && cursor != end && same_objects_316dd0(cursor, pair))
 	{
 		return;
 	}
@@ -246,8 +268,9 @@ void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 	entity_316dd0 *second = b->entity;
 	if (first->island != second->island)
 	{
+		island_316dd0 *const fixed_island = (island_316dd0 *)((char *)this - 0x1c);
 		// the island that is not the fixed one, which holds this object
-		island_316dd0 *island = first->island == (island_316dd0 *)((char *)this - 0x1c) ? second->island : first->island;
+		island_316dd0 *island = first->island == fixed_island ? second->island : first->island;
 		if (island->index != -1 && !island->field_29)
 		{
 			((hkWorld *)world)->function_30ccd0((c_havok_body_group *)island);
@@ -267,7 +290,7 @@ void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 	tables_316dd0 *tables = dispatch->tables;
 	long const first_shape = a->shape->type();
 	long const second_shape = b->shape->type();
-	agent_316dd0 *agent = tables->handlers[first_shape][second_shape](a, b, dispatch, info);
+	agent_316dd0 *agent = handler_for_316dd0(tables, first_shape, second_shape)(a, b, dispatch, info);
 	record->agent = agent;
 	if (agent != 0 && agent->field_8 != 0)
 	{
