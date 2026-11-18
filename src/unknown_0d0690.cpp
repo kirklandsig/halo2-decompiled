@@ -313,6 +313,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // point idiom 121; the scenario's sky block read through the shared tag-array and tag-reference types in the sky helper 131
 // (the sky lookup's registers swap; the add stays load-first). Diagnostic: the blend through a forceinline (result, a, b, t)
 // wrapper over 0x131c20 253 (878 B: LTCG then inlines 0x131c20's body). Body unchanged.
+// M3 lane 16 r134 (fast; base 30; colour first re-measured 121): on colour first, the angles as named `real yaw`/`real pitch`
+// locals 159 (821 B: the post-call add goes in place and the first-light copy is retail's, but the x87 block then loads each
+// angle once where retail reloads both fields); the same as `real const &` references 121 (folded back, same code); the record
+// direction stored field by field 134 (838 B); the light pointer declared ahead of the loop 121; the first-light strength read
+// as `((real *)(entry + 4))[3]` 121 (same code). Screen (24 combinations of the index local, the hit local, the blend in the
+// call, the sky helper's count local, three declaration orders and the open test written in the if): best 121, none in place.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

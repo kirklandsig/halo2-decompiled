@@ -722,6 +722,12 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // M3 lane 8 r182 (fast): the failure stores chained `entry->valid = entry->active = false;` 8 (same code); the dot's up
 // input through the `up` local 14; the scale's and the dot's forward input through the `forward` local 18, the scale's
 // alone 14; cross3f_staged through the three axis locals 12.
+// M3 lane 16 r135 (fast with 0xb7060, which matched in each; base 8; a compile-only /O2 /arch:SSE /Gr screen agrees
+// on each): the last normalize as `return (void)function_30bf0(left);` 8, the valid flag read into a named `bool valid`
+// after the active store and tested 14, the component test as an empty then-arm with the body in its else 8, the valid
+// test inverted with an empty then-arm 8, the not-valid path as a goto to a label ahead of the success return 8 (all
+// keep our tail). Screen only: the listed bool return reproduces retail's tail (the pops before the failure stores),
+// with `mov al, 1` at the join and `xor al, al` before `pop ebx`; a label at the join does not keep the empty block.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
