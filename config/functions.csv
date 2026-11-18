@@ -12957,7 +12957,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0031bd90,94,third:havok,speed,a16 pad,,,,src/lane_b_constraint_leaves.cpp,matched
 0031bdf0,40,third:havok,speed,a16 pad,,,0031f620,src/lane_b_contact_constraint.cpp,matched
 0031be20,87,third:havok,speed,a16 pad,,,002d91d0,src/lane_b_constraint_leaves.cpp,matched
-0031be80,377,third:havok,speed,a16 pad,,,002d9160 0031be20,src/unknown_31be80.cpp,todo
+0031be80,377,third:havok,speed,a16 pad,,,002d9160 0031be20,src/unknown_31be80.cpp,matched
 0031c000,178,third:havok,speed,a16 pad,,,,src/unknown_319110.cpp,matched
 0031c0c0,8,third:havok,speed,a16 pad,,,0031c0d0,src/unknown_319110.cpp,matched
 0031c0d0,40,third:havok,speed,a16 pad,,,00315510,src/unknown_319110.cpp,matched
