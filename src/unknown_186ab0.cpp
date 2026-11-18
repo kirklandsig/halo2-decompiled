@@ -150,6 +150,7 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax A (11-18): no new form, no lower score (114): the remaining difference is the inlined 0xcbec0 count read [edx + edi] against retail's [edi + edx], with the tail load order and the cold arm still differing: BLOCKED-BY 0xcbec0 (src/unit_object_type.cpp).
 // MiniMax E (11-17): no new form, no lower score (134): the frame agrees; the counted byte is still read without retail's sign extension, the selection comparison still has its operands the other way round, and the inlined count read keeps our [edx + edi] against retail's [edi + edx], which the count helper's body fixes in src/unit_object_type.cpp; the permuter's 22 variants over this body found nothing below the kept form. BLOCKED-BY 0xcbec0.
 // MiniMax C (11-15): no new form, no lower score (134): the body stands as found.
 // MiniMax D (11-14), NOT kept (a 1-point gain, under the 8-point bar): score 133 (was 134): the selection comparison now reads the record's field 212 first

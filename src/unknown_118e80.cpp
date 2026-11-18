@@ -220,6 +220,7 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax A (11-18): no new form, no lower score (218): the 0x1faf80 exit written as an if/else around the rest of the body measures 216 on the reduced image (a gain of two, under the keep bar) and the frame stays 0x78 against retail's 0x6c: BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp).
 // MiniMax S (11-16): no new form, no lower score (241): the frame is still 0x78 against retail's 0x6c and the call to 0x1faf80 still takes the 0x148 and 0x13c addresses by adding to ebp where retail leas them, so the tail's registers differ; reading the speed scale at each use instead of once measures 250 in this build, and the block-scope form that gives retail's 0x6c frame needs 0x11f0d0's double local and its double parameter, whose body is in src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
 // MiniMax E (11-16): no new form, no lower score (218): BLOCKED-BY 0x11f0d0 (src/unknown_11eed0.cpp) - that callee's named double local and double parameter give this function its 8-byte stack parity under LTCG, so the frame stays 0x78 against retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
 // MiniMax E (11-15): no form kept, the body is the original one again; the reduced image (--fast, one
@@ -1173,6 +1174,8 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
 // spills the result to a stack byte of its own and reloads the containing dword where this build keeps it in al.
 // Before, 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
+// MiniMax A (11-18): no new form, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al, and that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files: BLOCKED-BY 0x1c4b00.
+// score 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // from the 0x119bc0 result on: retail keeps it in its own stack cell [esp+0x14] (shared with the rounding temporary),
 // pushes that dword, and every later scratch register follows; ours stores it in the move output's byte member and
 // zero-extends it, one scratch step ahead from there on. A bool local for it (long force) 90 (1034 bytes: the tail
