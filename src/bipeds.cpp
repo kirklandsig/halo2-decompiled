@@ -4410,6 +4410,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // hand owner with short slot after aim query 573.
 // NOT kept: The two shared-hand forms lower the reduced score but grow to 2748 and 2749 bytes against 2712
 // in retail. Both retain the reduced 0x7c frame. The short slot alone regresses.
+// The changed byte and flight threshold still use different stack homes.
+// Flight settings pointer before/after threshold 620/614, reference before/after 620/614.
+// Typed tag section confined to flight, pointer/reference 608/608. Shared across movement,
+// pointer/reference 596/596. NOT kept: the shared pointer reaches retail length but scores
+// 588 in the full image against 548 at opening.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4994,6 +4999,11 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // NOT kept: shared stores shorten the body and raise the score. Independent root coordinate reads tie. The body
 // matrix and origin retain their baseline slots.
 // MiniMax R (11-17): no new form, no lower score (336): the first difference is the stack home of the native matrix (this build's [esp+0x60] against retail's [esp+0x50]), and a permuter run over the body (15 tries, 326 s) found nothing below the baseline.
+// The matrix, placed-point and property homes shift together although the 0x12c frame agrees.
+// Terminal pivot: scalar-snapshot helper 384, copied then rotated in place 393,
+// selected pivot in place 376 or through the scalar helper 345. Shared final difference
+// 336 or with scalar helper 384. Rotating into the matrix position then subtracting
+// directly or through the shared difference 335/335. NOT kept: one-point gain above 30.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

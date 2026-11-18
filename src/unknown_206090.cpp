@@ -686,6 +686,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // conditional world choice 1396, branch-selected world 1394, ray scoped to admitted query 1440, shared ray scale
 // 1371, typed object with conditional world 1396. NOT kept: the shared ray scale gains four points while adding 21
 // bytes. The frame is still 0x5d0.
+// score 1375 (was 1375):
+// The extra 0x44 frame bytes, escaped velocity and component homes, and indexed contact loop remain.
+// Independent slip/tangent lengths use a default then tangent 1447, complete branch results
+// with direct or selected tangent 1455/1455, and a common predicate with selected or direct
+// tangent 1388/1455. Selected-pointer test 1389, choice before coefficients 1453,
+// slip branch first 1455. Every form retained the 0x5d0 frame.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

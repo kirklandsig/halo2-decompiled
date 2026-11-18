@@ -998,6 +998,9 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // channel 117/117; out-of-range stores only, low then high 116/116 or high then
 // low 116/116. Each pair uses an ordinary or fixed current pointer. The input
 // spill and the current pointer's register through the blend call still differ.
+// Retail still spills the input after admitting the count and keeps the output in EBX.
+// Paired stored values ascending/descending 185/155, byte extent ascending/descending 173/173.
+// With a native tint record byte offset 192/128/173/173. The descending pair forms reach retail length.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
