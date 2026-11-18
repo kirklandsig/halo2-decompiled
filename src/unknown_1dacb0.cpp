@@ -1857,6 +1857,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 828/828/828/828/828/828. Mode alone or all three defaulted after iterator setup: 828/826.
 // NOT kept: two points fall below the keep threshold. The early class/NONE registers and
 // the result and candidate homes still differ at the original frame and length.
+// M3 lane 13 r108 (fast with 0x1db170, 0x1dc790, 0x1dc8c0, 0x1dd560, 0x1dd9d0, 0x2963f0, 0x1236f0 and the twelve matched
+// callers, all matched each time; aligned 580, register-masked 74): the loop as `while (result.index == NONE)` with the
+// call and the break inside 828; the per-pass lookup through a file-local inline id getter taking the sorted block (as
+// 0x1dc790's per-type helper) 828; the outputs declared type, class, mode 828; the outputs declared bare and set by one
+// chained NONE assignment 828; the found mode copied into a local before the requests and that local passed 828 (all the
+// same code). Diagnostic (reverted at once): with the second resource request removed the three outputs sit together in
+// mode, class, type order and the result takes found_mode's dead home, so the request's mode reads are what put the found
+// mode there. Retail copies the found mode into EBP once for that request (the inlined argument kept as its own value),
+// where ours reads the output's home at every use even through an explicit copy (propagated), so retail treats the
+// output as possibly changed by the request's calls.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

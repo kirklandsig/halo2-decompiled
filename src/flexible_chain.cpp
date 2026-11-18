@@ -8,6 +8,7 @@
 #include "unknown_211060.h"
 #include "vector_products.h"
 #include "normalize3d.h"
+#include "axis_rotation.h"
 #include <math.h>
 
 // Layouts follow the pool and tag accesses in the retail callback group.
@@ -234,7 +235,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
-// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 144 (was 171): earlier 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
@@ -757,6 +758,17 @@ void __stdcall function_1160c0(real dt)
 // Round 415. target-owned blend 329, shared in-place target scale/add 323, indexed target-owned blend 332,
 // weighted correction point 234, shared unit-scale displacement 278, scalar target with in-place blend 329,
 // indexed velocity displacement 193, target blend with shared velocity difference 332.
+// m3 lane 13 r109 (fast with 0x116750, 0x116010 and 0x1160c0, all MATCH; plain confirmed): kept 171 -> 144 (1371 B): the
+// rotation of the rest offset through the shared axis rotation of include/axis_rotation.h (the inline 0x2551f0 and 0x117dd0
+// use, given sin and cos of the angle) with `predicted = offset + position` per row, and the axis as cross3f(&vertical,
+// &direction, &axis) (the vertical declared ahead of it). Every call now sits at retail's instruction index and the axis
+// block is retail's but for its home (+0x14 for retail's +0x18); left: the segment base in EDI/ECX for retail's EDX, the
+// 4-byte cell shared by the segment, the scale and the sine at +0x20 above the axis (retail +0x14 below it), and the
+// rotation's schedule (retail loads axis k, offset j, offset k, axis j, axis i and finishes cross_j and cross_k before the
+// rows). Measured: the shared rotation alone, axis written out as before, 216; sine and cosine named ahead of the call 169
+// (1373 B); the rows written `position + offset` 144 (same code); the angle call and the rotation in their own `{}` block
+// 144 (same code); the scale written into the vector3f_add_scaled call 144 (same code); the rest-offset copy after the angle
+// call 180 (1375 B).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
@@ -795,18 +807,17 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 				position.z = (1.f - stiffness) * target.z + predicted.z * stiffness;
 				vector3d_from_points3d(&previous, &position, &direction);
 			}
-			vector3f axis = { direction.k * 0.f - direction.j, direction.i - direction.k * 0.f, direction.j * 0.f - direction.i * 0.f };
+			vector3f vertical = { 0.f, 0.f, 1.f };
+			vector3f axis;
+			cross3f(&vertical, &direction, &axis);
 			if (normalize3d(&axis) == 0.f)
 				axis = *g_4687ac;
 			vector3f offset = segment->rest_offset;
-			vector3f vertical = { 0.f, 0.f, 1.f };
 			real angle = function_11ce20(&vertical, &direction);
-			real sine = (real)sin(angle);
-			real cosine = (real)cos(angle);
-			real along = dot3f(&axis, &offset) * (1.f - cosine);
-			predicted.x = (along * axis.i + cosine * offset.i) - (axis.k * offset.j - axis.j * offset.k) * sine + position.x;
-			predicted.y = (along * axis.j + cosine * offset.j) - (axis.i * offset.k - axis.k * offset.i) * sine + position.y;
-			predicted.z = (axis.k * along + cosine * offset.k) - (axis.j * offset.i - axis.i * offset.j) * sine + position.z;
+			function_x84d9e8(&offset, &axis, (real)sin(angle), (real)cos(angle));
+			predicted.x = offset.i + position.x;
+			predicted.y = offset.j + position.y;
+			predicted.z = offset.k + position.z;
 			node->velocity.i = (position.x - node->position.x) * inverse_dt;
 			node->velocity.j = (position.y - node->position.y) * inverse_dt;
 			node->velocity.k = (position.z - node->position.z) * inverse_dt;
