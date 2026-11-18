@@ -1554,6 +1554,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Indexed rejection by combined/nested tests 529/529, with a single flags read 530/530.
 // Counted entry cursor with either rejection test 541/541, with a single flags read 578/578.
 // The cursor forms reach frame 0x28 but leave the result spill and shorten the body.
+// MiniMax G (11-18): no new form, no lower score (529): this build's frame is 0x2c against retail's 0x28 and the
+// selected result still spills; retail's own parameter order is (type, query, block), with the block in EAX and the
+// query in EDX, and this lane may not change the parameter order, so the lead that needs it stays blocked.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
