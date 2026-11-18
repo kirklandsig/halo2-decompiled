@@ -300,6 +300,8 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// score 192 (was 192): frame 0x84 against retail's 0x90, the ray loads and the origin and edge homes; BLOCKED-BY 0x23a220
+// (its definition and its count parameter's width are in another lane's file). One note, the rounds' entries below.
 // MiniMax C (11-16): no new form, no lower score (192): the call to the matched 0x23a220 already gives the point in
 // EBX and the points in EDX as retail does, so the parameter order is no longer the blocker; what is left is retail
 // pushing the count as a dword (push edx, the count it already holds) where ours truncates it to a word first (xor
@@ -313,7 +315,7 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // query still has to have the points before the point, which is the helper 0x23a220's argument order - the polygon
 // count's 32-bit type is declared short in src/unknown_239b80.cpp and in the headers this lane may not edit:
 // BLOCKED-BY 0x23a220 and those declarations.
-// score 192 (was 192): no new form and no lower score; the frame is still 0x84 against retail's 0x90 with the
+// An earlier round (192): no new form and no lower score; the frame is still 0x84 against retail's 0x90 with the
 // origin's x and y and the edge vectors in stack homes, and the point-in-polygon query still needs the points
 // before the point: BLOCKED-BY 0x23a220 (src/unknown_239b80.cpp).
 // MiniMax B (11-14): no new form, no lower score (192): retail computes the ray direction first from the ray pointer and keeps the start's three components in xmm3-xmm5 while it forms the two edge vectors and the cross product in registers (frame 0x90), where ours forms each difference and spills it to a stack home (frame 0x84); the point-in-polygon query still needs the points before the point: BLOCKED-BY 0x23a220.
@@ -335,7 +337,7 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // forms each difference and spills it; the point-in-polygon query still needs the points before the point
 // (BLOCKED-BY 0x23a220), and the permuter's 40 tries over the reduced image found nothing below the 187
 // baseline.
-// score 192 (was 192): this round: no new form and no lower score; the frame is still 0x84 against
+// A later round (192): no new form and no lower score; the frame is still 0x84 against
 // retail's 0x90 with the origin's x and y and the edge vectors in stack homes, and the point-in-polygon
 // query still needs the points before the point, which only the definition in another lane's file fixes.
 // MiniMax I (11-09): no new form, no lower score (192); the aligned view shows retail loading the ray's and the
@@ -581,6 +583,13 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // result + 0x10 untouched). All of it agrees in field, direction, constant and rounding. Only the known non-behaviour
 // deltas remain: frame 0x84 against 0x90, the dead second movsx at 0x1ee182, the count pushed as a dword at 0x1ee2c7,
 // retail's store of plane.d at 0x1ee0b5.
+// M3 lane 7 r176 (fast with 0x23a220, 0x120850, 0x173910, 0x184440 and the file's functions; control 192; 0x23a220's
+// definition is still in another lane's file, so no parameter swap): the result normal as one aggregate copy 275 (1019 B);
+// the positive flag as a long 251; the normalize through the out-of-line 0x30bf0 287 (968 B, it stays a call); both dot3f
+// calls with their operands exchanged 192 (same code); the offset taken from the shape's first vertex in place of the origin
+// copy 259 (991 B); the found flag declared after the normalize 260. Retail loads the ray's start and end into registers
+// once, subtracts there and stores the start copy from the same registers (frame 0x90): the value-argument setter form for
+// both points, which needs a one-use end copy and so stays with the BLOCKED-BY 0x23a220 chain above.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
