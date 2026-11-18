@@ -4201,6 +4201,13 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Separate projection input and scaled ordinates, scaling/identity arm first, whole point input,
 // or whole scaled point output, with field reads/one scale sample: 530/518, 515/505,
 // 576/552, 530/510. Frame 0x5c except whole input 0x7c; velocity reloads still differ.
+// The two x87 lengths still need independent stored-velocity loads, and the projection outputs contribute
+// to the 0x60 frame. sampled placement scale 497; shared scaled horizontal input 524; separate placement
+// scale arms 485; velocity cursor 485; complete screen offset point 504; typed screen offset fields 486;
+// maximum field reload through shared address 508; velocity end bound 495. NOT kept: The explicit placement
+// inputs and independent velocity cursor both reach the retail extent at 485. The former enlarges the frame
+// to 0x64 and the latter keeps 0x60. Their one-point gains fall below the threshold. The other forms tie or
+// regress.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

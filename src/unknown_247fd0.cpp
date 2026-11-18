@@ -827,6 +827,12 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // with collision in the allocation arm 334/334. First-draw workspace and probe collision 334.
 // Post-gate workspace and probe collision 334. Allocated workspace and motion collision 334.
 // Settings declared after the gate 334. NOT kept: folded address and flag/settings homes remain.
+// The effect address still folds into the gate load and the gate and definition use different stack slots
+// from retail. unsigned-word effect slot 349; gate byte stride 334; both typed strides 350; both unsigned-
+// word slots 365; cache entry before mask clear 346; signed placement mode 334; collision miss first 334;
+// child duration default first 334. NOT kept: The gate-only typed stride and the three consumer-branch
+// forms tie at the retail extent. The word slot and two-lookup forms regress. The matched-neighbour cache
+// order also regresses when applied here.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -1829,6 +1829,12 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
 // named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
 // cached vector-transform scale 397; signed-word location cluster 336.
+// The 0x20 frame agrees. The collision callee still takes the point in EBX, displacing the state to EBP.
+// in-place point helper 709; three in-place vector helpers 1110; direct transform fields 325; direct
+// collision fields 325; local-player lookup helper 325; camera point rename 325; direct initial basis
+// copies 402; horizontal vector initializer 325. NOT kept: The existing transform calls stay out of line
+// and shorten the body. The direct initial view copies also shorten it. The other forms tie at the retail
+// extent.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
