@@ -796,6 +796,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 463: text measurer left/top/both as short 184/181/182; with byte timer 206/203/205.
 // View scoped to the end of the message rows, mutable/read-only 115/115. NOT kept: shorter
 // coordinate forms and tied scoped forms leave the view, predicate and coordinate homes different.
+// Status rectangle 115; row draw/measurement/both 172/115/172; banner draw/measurement 115/115.
+// All phase-owned rectangles 162; with byte timer 208. NOT kept: ties or regressions against the 115 preview control; no native view or left-coordinate repair.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

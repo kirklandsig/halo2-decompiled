@@ -1207,6 +1207,9 @@ real normalize2d(point2f *v);
 // (0x1f82c5, 0x1f8336); retry speed shares the force slot (0x1f82f6 `fstp [esp+0x6c]`). Our build reads the same slot.
 // Constants checked: 1.25f (0x45dc88), 0.03f (0x4508f8), 1.2f (0x45dce8). Offsets, call tuples and the force/fast and
 // scan logic agree statement by statement; no other logic difference found. Callers 0x1be8f0, 0x1f7c70 still MATCH.
+// One evolving attempt speed or reused query speed 135/135; with late chosen-speed default 207/204.
+// Direct request return on those four forms 182/182/208/205.
+// NOT kept: neither lifetime recovers DL, and direct returns shorten the body.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
