@@ -210,6 +210,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // their own block scope 14; the last corner's y read back from the corner before it 14 (forwarded); descriptive names
 // for the pulse and the half extents 14 (all five the same code: the advance product keeps XMM4, the half-height copy
 // XMM3, so the pick is not a name tie).
+// Round 210 (m3 lane 4, fast with the bounds record through a one-use pointer, re-measured 12 with only the XMM3/XMM4
+// pair left): the half height computed before the half width 24 (its copy goes straight to XMM3, the advance keeps XMM4);
+// the first x step as `x = advance + x` 12 and both steps' products commuted 12 (same code); every corner's y stored
+// before the x values 86 (846 bytes); the corners stored in [0], [3], [1], [2] order 16. All restored to the body
+// without the pointer.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

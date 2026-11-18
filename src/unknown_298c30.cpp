@@ -491,10 +491,25 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // bounds 398; wide near comparison with distant-arm rounding 384, with wide numerator 384; wide
 // quotient and dot with bounded real results 353. Near cosine still stays on x87 and the candidate
 // ordinal is still a byte.
+// Table-driven fixed turns, real paired angles with component/point stores 481/505,
+// real separate tables 491/510, double paired angles 592/610, double separate tables
+// 578/591. NOT kept: length shrinks by at least 98 bytes and the unity register still differs.
 // Complete central-angle selection using the endpoint ordinal or its existing
 // positive-endpoint Boolean: four-way assignments 305/314, initial angle with
 // quadrant adjustments 307/322, endpoint-first conditional initializer 305/314,
 // facing-first conditional initializer 322/319. Unity remains in XMM1.
+// Lane N round 411 (fast control 305).
+// Shared displacement input 396.
+// Sum from displacement copy 438.
+// Componentwise displacement use 419.
+// Shared input before object 368 (NOT kept: matched caller rose to 2 in the reduced image).
+// Named facing projection 305.
+// Projections before endpoints 379 (NOT kept: entry repaired through +0x9e but body score and extent regressed).
+// Angle pair then wrap 304 (NOT kept: one-point gain without a match).
+// Far endpoint workspace 368.
+// Facing before endpoints 333.
+// Facing between endpoints 336.
+// Facing after first coordinate 332.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1110,6 +1125,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Negative arm first at initial offset 876, pivot 569, sweep 775, initial and pivot 876, initial and
 // sweep 872, pivot and sweep 775, all three 872; distinct branch-local reverse radii 732 at 3349
 // bytes. XMM5 still retains the radius from entry and retail reloads at the branches.
+// Round 620: radius remains live from entry in XMM5; pivot and side trace homes are displaced.
+// Typed pivot 569; shared facing dot 617, arc dot 569, both 718, both with planar vector 718;
+// wide arc dot 616, guarded wide clamp 616, and wide arc with shared facing dot 626.
+// Lateral distance z/y/x sum 569, y/z and z/y subtotals 569/569, named real
+// subtotals 569/569, named squares 569, wide subtotal 573, wide differences 573.
+// NOT kept: no exact x87 or radius-load recovery; pivot and trace homes still differ.
 // DH398: One point or vector for the reverse trace direction and sweep point,
 // each alone, with forward direction reuse, with local cosine, and with both 719/777/719/777, 719/777/719/777.
 // NOT kept: All forms regress. The radius still loads before actor indexing and the side trace homes still differ. The separate geometry workspaces are restored.

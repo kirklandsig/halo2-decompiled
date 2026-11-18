@@ -457,6 +457,31 @@
 // weighted tables, split wave records and weighted wave records 635/635/704/625;
 // short separate/weighted tables 753/708; separate scale then add with tables or
 // weighted records 791/705. NOT kept: no exact rounded-wave or cross schedule.
+// M3 lane 3 r257 (fast; control 536 = baseline, aligned differences exact / stack-offset-masked / fully masked 420 / 367 /
+// 104; a compile-only screen of 234 helper spellings, 0.7 s each, picked the forms). Lead, NOT kept (the score rises):
+// the two wave values from a forceinline helper `(point3f const *point, vector3f *wave)` called with the camera global,
+// which stores the plain sine first, names `real phase = point->x * 8.2f;` and the three factors as reals (sin x, cos
+// 7.8y, cos 7.75y, in that order), stores the mixed wave, and writes a third component `phase * sine * cosine_a +
+// cosine_b` through a copy of the output pointer that the caller never reads: 629 (2606 B) with the first cross through
+// cross3f_staged, 628 (2607 B) with cross3f; the frame is retail's 0x60 and the whole x87 sequence is retail's
+// instruction for instruction in the real build (8.2x first, sin x, cos 7.8y, cos 7.75y, `fxch st(3); fsin; fmul st(1);
+// fmul st(2); fadd st(3)`, a dword 0.5, the three late pops), aligned 376 / 347 / 86. The third component must use the
+// phase as well as the three factors, the factors and the phase must be reals (doubles give a qword 0.5 or popping
+// multiplies), and the write must go through the pointer copy (through the parameter, or as three `real *` outputs, the
+// dead write goes early and the sequence is lost). Left on it: retail's wave values are two 4-byte cells at +0x18 and
+// +0x1c (ours the helper's vector at +0x40), the first cross's i lands in w's slot at +0x4c, v2's k and i (ours j and k)
+// are loaded ahead of the special test, and the registers of the perspective rows differ. Other forms: the helper with
+// the third component written through the parameter 631 (2607 B); with three `real *` outputs 659 (2585 B), staged cross
+// 658; named double factors with the pointer copy 635 (2605 B), staged 636 (the factors pop late but the phase is
+// evaluated last); the dead store ahead of the mixed wave with unnamed factors 621 (2622 B: retail's length and frame,
+// but the factors are saved with `fst` and the sequence is not retail's), with a double phase 631; a real phase with
+// double or real factors and a three-factor third component 636/636, with the dead store first 636/636. On the 629 form:
+// the first cross written into w and reused 626 (staged) / 626 (plain), both crosses staged 629, the wave vector
+// declared ahead of the cross vector 629.
+// Opposing cross products shared as three retained terms, component-by-component,
+// paired terms, or separate product families 638/649/646/640. Moving the short
+// wave before those forms gives the same four scores. NOT kept: every form
+// shortens the body and leaves the frame and rounded-wave homes different.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

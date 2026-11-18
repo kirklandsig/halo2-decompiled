@@ -848,11 +848,18 @@ real function_30bf0(vector3f *vector);
 // forward.k and world-up.j * forward.i (retail loads the up component first, 0x263b57 and 0x263b7d) and in the
 // second's side.j * forward.k and side.i * forward.k (retail copies the register first, 0x263bd2 and 0x263bf7);
 // the second cross's two are the 2 extra bytes. Best match-only recipe: none (84).
+// Select original or clipped point by pointer/value, or select the displacement
+// by pointer/value: 345/322/301/283; with the shared point setter 337/331/301/282.
+// NOT kept: none recovers the native clip/distance home. The closest score grows
+// to 1334 bytes and keeps the first result-store mismatch.
 // The clip output still shares the lowest slot with the seat counter, and the result stays one word above retail's.
 // Two-sided clip if/else 97, upper-first nested select 192, inclusive endpoint saturation 189. Signed seat
 // countdown with postincremented input 187, indexed count with postincremented input 185. Primary fallback
 // first with selected 3/2 tier 84, four-way result select 153, explicit zero in the primary fallback 153.
 // NOT kept: the two-sided clip and cursor forms reach 1308 bytes but keep the wrong result home and raise the score.
+// Seat record reference 90, value copy 150, named vehicle/seat/both 84/84/86;
+// record reference, value copy and paired fields with a scan-wide world-up pointer 149/203/144.
+// NOT kept: the result and projection/count homes remain unresolved.
 // DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
 // before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
 // NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
@@ -2121,7 +2128,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
+// score 168 (was 168): The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// One decoded actor slot for both lookups, long/word with the iterator helper 168/695 and with the typed actor accessor 168/695.
+// Named clear destination, with the typed head read, and with typed summary fields 168/168/168. Chained selections 170.
+// Earlier 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
 // The players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
@@ -2653,6 +2663,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // still takes ECX); the first normalize through the header's inline normalize3d 405 (2954 B), the relative one 507 (2967 B);
 // approach and facing in two declarations 168 (same code); the player pointer as `if (index == NONE) player = NULL; else
 // player = &...;` 374.
+// Round 620: the inlined iterator load still exchanges base and index. Typed proximity fields 168;
+// typed winning level and view influence 168; one view influence read 409; typed proximity with retained
+// other object 163 (NOT kept: five-point gain above 30), plus one view influence read 404;
+// absent view rejected first 589; direct proximity predicates 621, with retained other object 616.
 // Named primary/other/both reference handles 168/168/168, proximity assigned from both 587.
 // Observed object and both handles 163. NOT kept: the five-point gain at 163 is below the eight-point cutoff.
 // Actor lookup delayed 595, both lookups delayed 592, shared separation 379. Iterator SIB, player searches
@@ -2664,6 +2678,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // DH398: Normalized direction snapshot after its call, distance guard, contact lookup,
 // or relative construction, as a vector or three scalars 429/429/429/429, 168/168/168/168.
 // NOT kept: Vector copies enlarge the frame to 0x8c. The scalar snapshots reproduce the baseline, including the iterator SIB and the direction reloads. The original direction consumers are restored.
+// The first difference reverses the base and index in the inlined iterator load. Both builds have a 0x80
+// frame. The player scans retain different registers even when they share the table and datum index in
+// source. shared datum index for both searches 168; shared player table for both searches 168; shared
+// player table and datum index 168; first scan selects player pointer 378; player selected from first
+// scan bound 375; slot selected from second scan bound 370; both searches select from scan bound 189;
+// player pointer selected after first scan 374. NOT kept: the retention threshold was not met.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

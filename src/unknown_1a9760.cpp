@@ -263,6 +263,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // M3 lane 14 r107 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): the square sum spelled
 // `(k*k + i*i) + j*j` 10, `j*j + (k*k + i*i)` 10 (the x87 order changes), `(i*i + k*k) + j*j` 4 (same code); the row
 // loop tested `component != 3` 238 (962 B, not unrolled); a short component counter 243 (960 B, not unrolled).
+// M3 lane 11 r114 (fast): each row bound by reference (`real &row = local_3.n[component]`, the sum then `-=` the offset)
+// 195 (1001 bytes); an `unsigned char` component counter 243 (960 bytes, not unrolled); the flag through a `bool &` bound
+// to its field 4; the half step as `0.5f * velocity` in the loop 4; a `register` component counter 4 (the 4s the same code).
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

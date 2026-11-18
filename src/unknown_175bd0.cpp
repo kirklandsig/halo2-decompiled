@@ -2247,6 +2247,13 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // colour initializers with a native tag index at lookup 184; paired location cursor and short cluster test
 // inputs 140; paired colour initializers in a distinct post-location scope 184. NOT kept: paired early colour
 // reads introduce a 0x48 frame and 20 extra bytes over retail.
+// M3 lane 16 r133 (fast with 0x178eb0/0x179020/0x178bc0, matched throughout; control 128): the spawn stores as scale,
+// location index, unknown 128 (same code); colours B then A read at the top of the colour block with `multiplied()` in the
+// call 178 (572 B, frame 0x44: colour B in EBX, the system kept in EDI to the colour call, tinted spilled to the effect
+// argument's home, colour A to the dead `unknown` home and the cursor to frame+0, where retail keeps tinted in BL, colour
+// B in EDI, drops the system after the type query and reloads it from its home, the cursor in the effect home and colour
+// A at frame+0); on it the colour locals renamed to sort after the cursor 178 (same code: names do not move these homes),
+// tinted declared ahead of the colours 178 (same code), the system bound by reference for the colour call 178 (same code).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3764,6 +3771,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // system and particle location 88; word slots at all three datum lookups 100; both entry slots acquired before
 // the pool lookups, plus the word location slot 100. NOT kept: the gains shorten the body past retail length.
 // The system-slot forms also demote the matched update caller.
+// M3 lane 16 r133 (fast with 0x176f60, matched unless given; control 93): the mode read per call re-measured 108
+// (0x176f60 25: both indices then arrive in registers, effect EAX, system ECX, `ret`); that with the effect index read once
+// through its own address 127 (352 B, effect index back on the stack but the system index in ECX, frame 0x50; 0x176f60
+// 18); an early `return next_index;` for an empty definition 97 (334 B); the cached mode read first in the block 94; the
+// effect-location pointer declared first 93 (same code); the cached mode as `short` 93 (same code).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

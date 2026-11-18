@@ -692,6 +692,9 @@ void function_3dd10(long object_index, bool force);
 // late read and both single-precision absolute values and remainders 129. Both remainder overloads
 // recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
 // signed scan exits and fallback unity reload still differ.
+// Round 415. last eligible choice address 219, last address with signed bound 635, last address and weight cursor
+// 229, last address with signed bound and weight cursor 576, last address and selection cursor 216, last address
+// with both cursors 229, last address and const indexed choices 219, last address with early ineligible skip 219.
 // Output/delta saved registers and blend publication still differ, followed by the signed scan and fallback one load.
 // Separate indexed second bank, advancing second bank, fixed-distance first bank cursor, and paired bank cursors:
 // 296/167/290/293. Variant byte after the blend remainder on the same four bank forms: 300/162/293/296.
@@ -981,6 +984,16 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
 // reshuffles both cursor homes and raises every score. The input spill and the destination register at the
 // blend call still differ.
+// P603. Blend name bound at the guard 89, scale name bound at the guard 111, both names bound 111,
+// indexed blend guard before the record pointer 137, indexed blend name with admitted record 135,
+// both indexed names with admitted blend record 152, all indexed blend metadata 152, both names with
+// the blend sample before the call arguments 111. NOT kept: the blend record still takes the source
+// register, and the forms that get to the retail guard increase the total differences.
+// Round 416: Walking input byte cursor with derived/separate output 89/106; byte
+// offset with derived/separate output 150/164. Independent remaining count on those
+// forms 83/103/151/162. NOT kept: the 83 form reaches 580 bytes and first +0x6a
+// but gains only six. Retail still spills the input after admission and keeps the
+// destination in EBX across the blend call.
 // Clamp with a result assigned on each edge 89/89; one sampled value per
 // channel 117/117; out-of-range stores only, low then high 116/116 or high then
 // low 116/116. Each pair uses an ordinary or fixed current pointer. The input

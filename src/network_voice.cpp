@@ -2053,6 +2053,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // the function from 85 to 64; the three tests read only globals and have no side effects, so their order does not
 // change the result, and 0x54890, 0x53a20 and 0x53bb0 stay matched. Still differs: retail keeps the second port
 // flag query inline (the getter, the shift and the availability tests at the end of the loop body) where this build
+// calls the out-of-line copy, so the body is 12 bytes shorter than retail's. Re-measured this round at 64 with the
+// same three differences; the session getters 0x59670/0x596a0 live in another file and `inline` on 0x53bb0 costs
+// the matched callers 0x54890 and 0x53a20, so the body stands: BLOCKED-BY 0x59670/0x596a0 and 0x53bb0.
 // calls the out-of-line copy, so the body is 12 bytes shorter than retail's.
 // MiniMax R (11-16): no new form, no lower score (85): retail loads both ready bytes before the first test and keeps the second in DL, while this build reloads it for the mode test and takes the mode in EAX; the remote mask rides in EDX here and in ESI there, and the flags held in locals are re-read from the globals at every use (96 to 104).
 // MiniMax C (11-15): no new form, no lower score (85): the availability bytes are still read into locals for the muted test and the mode helpers are still parameterised on them, so the second byte still loads lazily inside the muted test where retail loads both before it and keeps the remote mask in esi.

@@ -203,6 +203,15 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // DH401: One return with the empty name assigned on exhaustion. Indexed for/while
 // and cursor for/while, formatted arm first 83/83/83/83,
 // plain arm first 83/83/83/83. The EBP-8 base spill is absent.
+// Round 624: writable result with indexed/direct terminator 84/67; const result through copy
+// and appends with indexed terminator 84; publish at first append and terminate by index 70; publish before
+// indexed terminator 84; wide-character suffix with original/indexed/result output 67/84/84. All hold
+// the entry base in a register and reserve 0x24.
+// Comparison-bound search with a shared exhaustion return 56; with an explicit cursor 56;
+// guarded end pointer with live ordinal 74; counted comparison before formatting 59;
+// skip mismatches with indexed terminator 84; formatted arm breaks 84; fixed-array
+// destination 84; selected name then result 84. NOT kept: the 56 forms recover length
+// but retain 46 differing instructions, no base spill and no final ordinal multiply.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {

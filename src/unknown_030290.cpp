@@ -565,6 +565,20 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // branches, captured origin updates, a complete point or component conditionals
 // 255/307/263/307. Explicit expansion repeats those four scores.
 // NOT kept: the transform still needs the native X/Z and inverse allocation.
+// M3 lane 3 r257 (fast; control 195, aligned differences exact / stack-offset-masked / fully masked 80 / 61 / 34). The
+// positional 195 hides two separate causes. (1) The tail: with the factor copies after the perspective test (the
+// orthographic arm setting the inverses to 1, then `fa = inv_a; fb = inv_b;`, the listed direct-inverse form) the tail is
+// retail's: the second inverse as a register value with its default reloaded on its own edge, and the orthographic block
+// laid out between them: 207 (974 B, aligned 57 / 33 / 21); only fb deferred 209 (977 B, 76 / 52 / 22), only fa 225
+// (992 B, 62 / 38 / 26). (2) What is left on that form is the second transform alone: retail keeps the displaced x and y
+// in the registers their sums were built in (XMM7, XMM6) and brings z back through XMM0 into XMM4 with one spill, ours
+// moves x to XMM4 and y to XMM6 and spills x and z (the extra frame slot). On the 207 form the displaced sums written
+// xzy 205, yxz 206, yzx 201, zxy 204, zyx 201 (968-971 B, aligned 54-56). On this body: the displaced depth named
+// first and stored last 195 (same code); the helper scaling the depth from the point's field 238 (974 B); the helper's
+// scale read once into a local 252 (983 B); the displaced point built after the origin transform 270 (re-measure); the
+// helper's depth snapshot first 197 (973 B). Diagnostics, reverted: the reverse retransform removed 480 (704 B: the
+// second transform then keeps x in the sum's register but moves y); a twin copy of the helper for the second, the
+// third, or both later transforms 195 each (same code: the three inline copies do not share register choices).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

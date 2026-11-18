@@ -1192,6 +1192,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // small-turn exit tie at 114. The shared forward and axis values, point setter, aggregate input
 // and angle-first setup all regress. The axis-memory rotation products, oriented side products
 // and forward-copy scheduling still differ.
+// m3 lane 5 r196 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114): the rotation through the existing header
+// rotate function_x84d9e8 (include/axis_rotation.h: the vector's k read into a local first, the dot written out) 111 (1393 B:
+// the rotation's four axis-first products are unchanged, the turn block's first cross lines move; 3 points, under the bar);
+// on it lane 1's single-store lead 111, the moved-away flag preset false and set in its test 108 (1391 B, a flag form), the
+// side crosses through cross3f_staged 112 (1389 B). A private rotate reading only the vector's j and k into locals first
+// (diagnostic, to test whether those two ranking ahead of the axis gives retail's copy-first products) 118 (1393 B: the four
+// products stay axis-first, v.j/v.k swap XMM5/XMM6). Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

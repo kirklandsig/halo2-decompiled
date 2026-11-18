@@ -1213,6 +1213,18 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // index. On it: `nearest` and `opposite` as a two-long array 654 (same code, frame 0x18); `if (0 < count)` around scan 1 635
 // (2039 B); `nearest` through a reference 654 (same code); scan 1 in an inline helper returning the index 1130 (1572 B, the scans
 // are no longer unrolled); dot3f with its arguments swapped 654 (same code).
+// Round 622: inclusive nearest cursor 590; inclusive indexed nearest 614; opposite ordinal with cursor 792;
+// indexed opposite result 727; shared inclusive bound with cursors 770; shared inclusive bound with indices 699;
+// cursor searches with ordinal exclusion 779; index searches with ordinal exclusion 684.
+// All eight inclusive-bound forms regress. Each inclusive opposite scan shortens the body by at least 130 bytes.
+// Two indexed scans with ordinal exclusion get a 0x1c frame and retain four-wide strides at 1992 bytes. The
+// baseline query register, vector homes and 0x18 frame remain.
+// Round 625: typed sample-position copies at nearest/anchor/opposite and nearest+anchor/
+// nearest+opposite/anchor+opposite/all 742/589/701/781/873/729/900; nearest copy through the
+// squared-distance helper 892. Existing sample record for active BSP count 547.
+// Opposite distance with current bound as conditional/default/explicit fallback 605/645/605.
+// NOT kept: the native copies expand the extent or remove the four-wide scan, and the
+// candidate-result forms add work to the rejected projection path. The 0x18 frame remains.
 // Fraction inside opposite-ordinal/resolved-pointer admission; lower-then-upper tests
 // 560/568, upper-then-lower 561/562, partial-before-endpoint 560/569,
 // shared selected-endpoint copy 673/672. Frame stays 0x18.

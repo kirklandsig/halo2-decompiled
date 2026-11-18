@@ -90,6 +90,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
+// M3 lane 11 r113 (fast with 0x28dab0/0x256bd0/0x259d0, all MATCH; control 173): own `{}` blocks (slot sharing) around
+// the flag-2 arm's axis cross and rotation 173, around the creation tail 173, around the flag-4 arm's transform 173, around
+// the heading copy plus rotation 173, axis and tail blocks together 173 (all the same code; the frame stays 0x11c).
 // MiniMax E (11-10): no new form, no lower score (173); both sides run the same operations, but the frame is 0x11c here and 0x118 there, and the products are held in different registers, so the same work is scheduled differently and lands at other frame offsets.
 // MiniMax S (11-06): the permuter's 42 rewrites all score 173 or worse on the reduced image; no new form, no lower score.
 // MiniMax D (11-09), not kept by the coordinator: the struct's trailing bytes cut to 0xc0 gives a 0x118 frame and 161, but local_0 is the 0xc4-byte creation data function_b7930 fills (s_damage_object_creation in damage.cpp ends with unknownc0), so a shorter local lets b7930 write past it.

@@ -4492,11 +4492,20 @@ bool __stdcall function_2b278e(long controller_index)
 // address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
 // bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
 // index rather than re-reading it for the dialogs.
+// Dialog masks before/after the context calls 188/192, per-arm controller object 181, shared short
+// mask 200, membership-initialized decision 192, membership-first test 55, type tested before
+// membership 54, initial controller and short masks 54, named identity field 54, copied post-query
+// controller index 54, Boolean membership with retail-order dialog operands 199.
+// NOT kept: Boolean membership with context call before both mask reads 28 at 655 bytes. It recovers
+// the index spill and reloads by changing the observed evaluation order.
 // Double-pointer selection view 199; reference to the current controller pointer
 // 199; per-dialog short mask 195 (Boolean membership 197); membership tested
 // before identity type 201, in the condition 201, or held as nonmember 191;
 // per-dialog controller index 199. NOT kept: the original controller reference
 // and post-call index reloads are still missing.
+// Round 416: Case orders 3/2/1/0, 3/0/2/1, 0/3/2/1 and 0/2/3/1 each score 54.
+// Orders 3/1/2/0, 3/0/1/2, 0/3/1/2 and 0/1/2/3 each score 127. NOT kept: case
+// reordering still leaves the original index in ESI and omits the dialog reloads.
 // Scope the initial index to the identity calls, using one numeric snapshot
 // 199/197, a reference to the index field 205/206, both direct reads 199/197,
 // or an identity-only controller view 199/197. Each pair forms masks at their
@@ -5753,6 +5762,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // by roster state 388 or addition gate 381; add/pending branches by roster state
 // 381 or admission 86; shared removal gate 360; joined title and joinability 95.
 // NOT kept: the admission form gains three; the title-state output slot still differs.
+// Request as preliminary add permission 106; staged join admission 89; selection origin as
+// preliminary join permission 100; valid-session protection conditional 389; invitation
+// branch 369; offer branch 340; staged roster removal 89; staged title permission 89.
+// NOT kept: ties or regressions. The title-state byte address still differs.
 // Round 456: one member result for change and removal 358, shared roster-mode predicate 351, shared rank
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
