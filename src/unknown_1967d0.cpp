@@ -922,6 +922,9 @@ static inline long team_score_195ed0(long team)
 // existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
 // test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
 // kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
+// Configuration memmove 720; existing input-device view with memcpy/memmove 191/720;
+// native ranking record 191; ranked-team/team-rank/player/player-rank pointer walks 223/243/209/195.
+// The flag read still leads the copy in the tied forms, and the final score query still expands.
 // P608: Empty-slot continue, while-tail/lookup/skip, do-while-tail/latch/skip and terminal
 // inequality: 191/320/886/886/902/902/902/716. NOT kept: tied flag schedule or lost unrolling.
 // Round 416: Shared absolute-slot lookup with a machine-player or byte view,
@@ -942,6 +945,11 @@ static inline long team_score_195ed0(long team)
 // On 100: a named statistics pointer in the score helper 100 (same code); the rank counter `short` 222 (1255 B);
 // the rank declared in each `for` 100 (same code); the entry fields written through the table (no entry pointer)
 // 105; the team helper `__forceinline` 322 (1051 B).
+// The team-mode load still precedes the player copy, and the final score call still expands.
+// Statborg across both tests 107; shared mode 214; shared mask 149; statborg/mode 202; engine
+// receiver 202; statborg/mask 160; statborg/mode/mask 178; shared eligibility 165; engine receiver and
+// mask with both mode guards 210/215. NOT kept: the 107 form grows the frame to 0x78. The mask
+// and shared-eligibility gains omit retail guards, and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

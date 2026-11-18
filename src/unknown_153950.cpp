@@ -834,6 +834,13 @@ struct s_player_axes_153d10
 // form of forward 2, the i row's up.k through the array form 2 (all the same code: the array reads fold before the
 // operands are ordered); this product written forward first in the text 2 (same code: the compiler orders the two
 // operands itself, so the text order of this product never reaches the code).
+// m3 lane 14 r109 (fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): forward.i named once for its two cross
+// products, ahead of the cross 113 (1297 B: the named leaf takes a register) and between the i and j rows 111 (1297 B);
+// the cross as a `real[3]` 2 and delta as a `real[3]` 2 (both the same code); the up dot's k leaf read through the axes
+// view (the rest through the up pointer) 20 (the k row and both i-row second products now load up first, this product
+// unchanged); the forward dot's i leaf through the axes view 24 (every product loads up first but this one); one leaf
+// through the axes view: the forward dot's k 26, its j 13, the up dot's j 19, its i 10 (each flips forward.k's two
+// products or all six; up.k against forward.i never moves alone).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

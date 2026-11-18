@@ -168,8 +168,11 @@ void function_188d60(void)
 
 #pragma function(_ReadWriteBarrier)
 
+/* inline: retail's one caller (0x18cbc0, two sites) treats this call as clobbering ECX and xmm0 (it keeps its object in
+   EBX and re-zeroes xmm0 after each call), which this build reproduces only with the definition marked inline; the function
+   itself stays out of line and byte-identical either way (round 191) */
 // @retail 0x188790
-short function_188790(real angle)
+inline short function_188790(real angle)
 {
 	real clamped = angle < 0.0f ? 0.0f : (angle > 3.1415927f ? 3.1415927f : angle);
 

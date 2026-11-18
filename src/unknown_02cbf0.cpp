@@ -379,8 +379,8 @@ static __forceinline long floor_to_long_inline(real value)
 // retail does but costs 81 (scheduling changes everywhere). Lead: retail's tree is (cat | flags) | old, ours
 // (cat | old) | flags; only the global-array read of the old word reaches it (11, `lea` entry, second word flips).
 // @retail 0x2cbf0
-short function_2cbf0(long geometry, short instance, dword flags,
-    long tag, dword key, long category, long material, byte *object, short mask, byte mode,
+short function_2cbf0(long geometry, dword flags,
+    long tag, dword key, long category, short instance, long material, byte *object, short mask, byte mode,
     void *context, long object_index, real intensity, long group, long group_type,
     bool outside, bool whole, bool first_component, real first_opacity,
     real second_opacity, real depth, word level, point3f const *position, real radius)
