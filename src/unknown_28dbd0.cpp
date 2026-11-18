@@ -541,6 +541,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // projection then sine and weighted cross, cross then sine before cosine.
 // Shared cross 207/232/227/208, staged cross 207/232/227/208.
 // Weighting the cross before cosine restores the 0x118 frame.
+// Shared weighted-term adds 233, separate subtotal 227, shared scaled add at cross/projection/both
+// 233/204/254. Early sine on cross/projection/both 230/252/253. The shared additions can shorten the
+// frame to 0x110 or 0x114 but leave the request and transform displaced.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

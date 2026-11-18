@@ -126,6 +126,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // confirmed). Bitmap clear before cluster 312. Closest distance after seed 308. Search and sort scopes 296.
 // Early scratch 311. Named ordinals 311. Bounded output count 311. Shared output element 311. Explicit gain
 // arms 302 (NOT kept: frame 0x434). Search scope 311. Sort scope with gain arms 302 (NOT kept: frame 0x430).
+// Portal/destination record references, separately and together, 296/296/296. Workspace before starting-
+// cluster lookup 296, early path-list lookup 358, packed-entry reference 341, nested flag and sound
+// gates 296, destination lookup inside the flag gate 328. The early list and late destination forms
+// recover EBP at entry, with diffs at +0x28 and higher scores.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

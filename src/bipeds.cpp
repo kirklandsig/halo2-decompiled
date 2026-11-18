@@ -4410,6 +4410,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // hand owner with short slot after aim query 573.
 // NOT kept: The two shared-hand forms lower the reduced score but grow to 2748 and 2749 bytes against 2712
 // in retail. Both retain the reduced 0x7c frame. The short slot alone regresses.
+// Direct returns for aim/look/both 614/614/614. Combined mode rejection alone/with aim/with look/with
+// both 614/614/614/614. Separate target and mode guards with both query guards 599 (reduced control 614,
+// full 548). NOT kept: it places the changed-result epilogue before the queries and reverses the mode
+// branch.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
