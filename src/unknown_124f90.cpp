@@ -1337,7 +1337,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 87 (was 94): MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
+// score 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
+// Earlier: MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
 // by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
 // local used for the inverse and for the 0.001f test measures 101, and the one-use local form in the notes below (87)
 // is a seven-point gain under the bar; the rest is the XMM colours and the fade-out load order. Body unchanged.
@@ -1702,6 +1703,10 @@ long function_2197f0(real gain);
 // is written `fade-out * ((elapsed - hold) * inverse)` (94, kept); and retail's clamp value is a true divss (0x1270ea)
 // where our build used inverse * time: the `fade_in` local feeding the inverse brings that back, 87 (684 bytes; a
 // one-use copy of a field, so this is the part to drop if only the 94 form is wanted).
+// Completed fraction assignments in the composite/initial/current attacks: 94/89/93;
+// composite+initial/composite+current/initial+current/all 159/99/95/159;
+// all with the previous release as complete if/else 159. Elapsed/reciprocal XMM
+// roles, the first separate gain load and the late release join still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4504,7 +4509,6 @@ struct s_128ca0
 // and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
 // widened (see r136 at the end of this note).
 // Earlier at 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
-// score 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
 // permutation-gain byte and the gain bits trade EAX/EDX, the field_c store sits one slot late); the synchronisation byte is
 // widened (`xor edx, edx` ... `and edx, 0x7f`, retail byte ops), and the tail's flag tests, next-chunk test and stream store differ
 // (see r114 below). Earlier: the pitch result and the argument held swapped stack homes and the pitch bounds pair address was
@@ -4514,7 +4518,6 @@ struct s_128ca0
 // decibels_pin (168) and a long pin copy (171) regress; the permuter (30 tries, annealed) found no
 // better form.
 // Earlier at 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
-// score 158 (fast build; was 167 on r727, 222 before MiniMax H): the pitch result and the argument hold swapped stack homes, the pitch bounds
 // pair address is formed differently, and the two clamp joins in the tail differ. See the b6U walk below.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
@@ -4742,6 +4745,9 @@ struct s_128ca0
 // retail's, 0x12a420's copy included, aligned 34). (2) Both pin sums: the permutation-gain byte and the gain bits trade EAX/EDX,
 // and the field_c store sits behind the next statement's loads, which leaves the tail's scratch registers one step off.
 // (3) The synchronisation byte is widened.
+// The sum and clamp shared by both submissions, taking permutation byte, permutation record,
+// converted permutation gain, or permutation byte with decoded gain, each returning the bits
+// or writing the packet: 122/122/122/122/122/122/122/122. Pin registers and store order unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
