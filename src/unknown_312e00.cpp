@@ -9,44 +9,41 @@ static __forceinline __m128 scale_joint_axis(float factor, __m128 const &axis)
 }
 
 // The unordered case follows retail into normalization, as does equality.
-// Remaining byte differences are the reciprocal temporaries' stack locations.
+// Matched: each error is computed before the axis is scaled, which places the
+// reciprocal temporaries in retail's stack cells.
 // @retail 0x312e00
 void lane_a_ragdoll::build_swing_limits(__m128 const &twist, __m128 const &cone, __m128 const &plane,
 	lane_a_solver_input const *input, lane_a_solver_output *output) const
 {
-	struct scalar_workspace
-	{
-		float norm;
-		float cone_error;
-		float plane_error;
-	} scalars;
 	{
 		__m128 axis = joint_cross(twist, cone);
-		_mm_store_ss(&scalars.norm, joint_sum_three(_mm_mul_ps(axis, axis)));
-		if (!(scalars.norm < 1.1920928955078125e-7f))
+		float norm;
+		_mm_store_ss(&norm, joint_sum_three(_mm_mul_ps(axis, axis)));
+		if (!(norm < 1.1920928955078125e-7f))
 		{
-			float inverse = 1.0f / sqrtf(scalars.norm);
 			solver_angular_range_31f000 range;
-			_mm_store_ss(&scalars.cone_error, joint_sum_three(_mm_mul_ps(twist, cone)));
-			range.error = scalars.cone_error;
+			float error;
+			_mm_store_ss(&error, joint_sum_three(_mm_mul_ps(twist, cone)));
+			range.axis = scale_joint_axis(1.0f / sqrtf(norm), axis);
+			range.error = error;
 			range.minimum = cone_limit;
 			range.maximum = 100.0f;
-			range.axis = scale_joint_axis(inverse, axis);
 			build_angular_range_31f000(&range, (solver_pair_31e7b0 const *)input, (solver_output_31e7b0 *)output);
 		}
 	}
 	{
 		__m128 axis = joint_cross(twist, plane);
-		_mm_store_ss(&scalars.norm, joint_sum_three(_mm_mul_ps(axis, axis)));
-		if (!(scalars.norm < 1.1920928955078125e-7f))
+		float norm;
+		_mm_store_ss(&norm, joint_sum_three(_mm_mul_ps(axis, axis)));
+		if (!(norm < 1.1920928955078125e-7f))
 		{
-			float inverse = 1.0f / sqrtf(scalars.norm);
 			solver_angular_range_31f000 range;
-			_mm_store_ss(&scalars.plane_error, joint_sum_three(_mm_mul_ps(twist, plane)));
-			range.error = scalars.plane_error;
+			float error;
+			_mm_store_ss(&error, joint_sum_three(_mm_mul_ps(twist, plane)));
+			range.axis = scale_joint_axis(1.0f / sqrtf(norm), axis);
+			range.error = error;
 			range.minimum = plane_low;
 			range.maximum = plane_high;
-			range.axis = scale_joint_axis(inverse, axis);
 			build_angular_range_31f000(&range, (solver_pair_31e7b0 const *)input, (solver_output_31e7b0 *)output);
 		}
 	}
