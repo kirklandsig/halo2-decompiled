@@ -43,30 +43,45 @@ struct pair_30ed40
 // second's
 inline bool pair_less_30ed40(pair_30ed40 const *a, pair_30ed40 const *b)
 {
-	unsigned long const id = a->first->id;
+	pair_body_30ed40 const *const mine = a->first;
 	pair_body_30ed40 const *const other = b->first;
-	if (id < other->id)
+	if (mine->id < other->id)
 	{
 		return true;
 	}
-	if (id == other->id)
+	if (a->first->id == b->first->id)
 	{
 		return a->second->id < b->second->id;
 	}
 	return false;
 }
 
+// whether two pairs hold the same bodies
+inline bool pair_same_30ed40(pair_30ed40 const &a, pair_30ed40 const &b)
+{
+	return a.first->id == b.first->id && a.second->id == b.second->id;
+}
+
 ELEMENTS_2D91D0(pairs_30ed40, pair_30ed40);
+
+// the number of pairs of an array
+inline long size_30ed40(pairs_30ed40 const &pairs)
+{
+	return pairs.size;
+}
 
 // the pairs of `destination` and `source` merged in order into
 // `destination`; a pair both hold is kept once, and its agent in `source`
 // told through its slots
-// The remaining differences concern the comparison loads, cursor registers,
-// and the resulting stack frame; the merge and callback order follow retail.
-// the pairs of `destination` and `source` merged in order into
-// `destination`; a pair both hold is kept once, and its agent in `source`
-// told through its slots
-// score 172 (was 197): the ordering helper names the first body's id and the other
+// score 151 (was 170): every array size is read through a const-reference
+// accessor (as through a size getter), which gives retail's register compares
+// at the loop bounds and the copy's count in edx; the ordering helper reads
+// the first ids again for its equality test and the equality of both bodies
+// is a helper on the two elements; the read and copy cursors start before the
+// destination is resized. Left: retail shares one register between the zero
+// constant and the read cursor, keeps the copy cursor in memory with the
+// source in ebx, and the cursors' stack slots.
+// Before, 172 (was 197): the ordering helper names the first body's id and the other
 // pair's first body, each used twice. Left: retail compares the id against memory
 // twice and reloads for the second test where ours merges both into one compare,
 // and retail keeps the source count in ebp without a stack slot (ours spills it,
@@ -78,19 +93,19 @@ ELEMENTS_2D91D0(pairs_30ed40, pair_30ed40);
 // @retail 0x30ed40
 static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 const *source)
 {
-	vectors_30d9a0 copy_storage(destination->size);
+	vectors_30d9a0 copy_storage(size_30ed40(*destination));
 	pairs_30ed40 *copy = (pairs_30ed40 *)&copy_storage;
-	copy->resize(destination->size);
-	for (int i = 0; i < destination->size; i++)
+	copy->resize(size_30ed40(*destination));
+	for (int i = 0; i < size_30ed40(*destination); i++)
 	{
 		copy->data[i] = destination->data[i];
 	}
-	destination->resize(destination->size + source->size);
 	int from_source = 0;
 	int copy_cursor = 0;
+	destination->resize(size_30ed40(*destination) + size_30ed40(*source));
 	int to = 0;
 	int both = 0;
-	while (copy_cursor < copy->size && from_source < source->size)
+	while (copy_cursor < size_30ed40(*copy) && from_source < size_30ed40(*source))
 	{
 		pair_30ed40 const *b = &source->data[from_source];
 		pair_30ed40 const *a = &copy->data[copy_cursor];
@@ -100,7 +115,7 @@ static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 cons
 			copy_cursor++;
 			to++;
 		}
-		else if (a->first->id == b->first->id && a->second->id == b->second->id)
+		else if (pair_same_30ed40(copy->data[copy_cursor], source->data[from_source]))
 		{
 			pair_agent_30ed40 *agent = b->agent;
 			pair_agent_30ed40 *second = agent->second;
@@ -116,17 +131,17 @@ static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 cons
 			to++;
 		}
 	}
-	destination->resize(copy->size - both + source->size);
-	if (copy_cursor == copy->size)
+	destination->resize(size_30ed40(*copy) - both + size_30ed40(*source));
+	if (copy_cursor == size_30ed40(*copy))
 	{
-		for (; from_source < source->size; from_source++, to++)
+		for (; from_source < size_30ed40(*source); from_source++, to++)
 		{
 			destination->data[to] = source->data[from_source];
 		}
 	}
 	else
 	{
-		for (; copy_cursor < copy->size; copy_cursor++, to++)
+		for (; copy_cursor < size_30ed40(*copy); copy_cursor++, to++)
 		{
 			destination->data[to] = copy->data[copy_cursor];
 		}
