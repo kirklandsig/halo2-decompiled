@@ -764,6 +764,12 @@ void function_1537f0(s_profile_record *record);
 // the per-entry body (record, view, `entry->` links, flags) as a force-inline helper 49 (plain inline stays out of line, 67
 // bytes). Diagnostic: the head stores moved after the loop with the links through `entry` 72: NONE is still hoisted into EBP,
 // so the hoist is the loop's own four link stores, not their constant shared with the heads.
+// M3 lane 4 r209 (fast with 0x7f8b0 and 0x1537f0, both matched each time; control 18): the whole record (identity and
+// source) zeroed by one memset in place of the identity memset 39; the links through `entry` in retail's store order
+// with the first link bound through a `short &` 46; the links through `entry` in retail's order with the record declared
+// once at function scope 49; the links through `entry` in retail's order stored after the flags/word clear 49.
+// Re-measured: the four `entry->` link statements in retail's order 49 (NONE hoisted into EBP, the record's two
+// forwarded zero words merged in EBX); the link pointer's four stores in retail's order 18 (base +0x5e).
 // @retail 0x7f930
 void function_7f930(void)
 {

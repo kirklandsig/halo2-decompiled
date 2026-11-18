@@ -222,6 +222,13 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // description flag tested as `spatialization && (spatialization->flags & 7)` (one more spatialization use; diagnostic)
 // 131 (540 bytes; the object keeps EBP); the description declared at the slot block's scope 116; the request arm in a
 // forceinline helper taking the tag, scale, label and slot 116.
+// M3 lane 12 r137 (plain; no reference, every object read plain): the request test and the description test through one
+// named `attached` test 96 (523 bytes: from the 0x18d5b0 call on, the code is retail's, the late object loaded into EBX,
+// copied to ESI for 0x189340 and compared `cmp ebx, -1`; the only extra code is the bool's `setne al; test al, al`, and the
+// description test becomes `test al, al`), so one object compare fewer is all retail's allocation needs; the same with the
+// positioned arm first under `attached || positioned` 96 (same code); the request test as `!(attached || positioned)` 96;
+// the polarity flipped (`detached = object_index == NONE`) 98 (525 bytes); the named test for the request and started tests
+// instead 151 (547 bytes).
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

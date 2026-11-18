@@ -14,23 +14,26 @@ static __forceinline unsigned long modifier_scale_bits(float const &value)
 }
 
 static __forceinline void install_mass_scales(contact_modifier_view_315340 *contact,
-	unsigned long a, unsigned long const &b)
+	unsigned long const &a, unsigned long const &b)
 {
 	// Retail copies integer words through the scalar parameters' home slots.
-	// Keep those reads explicit without sending NaN payloads through x87.
-	*(unsigned long *)&contact->value.scale_a = *(unsigned long const *)&a;
+	// The compiler copies a float read from memory as a word, so nothing goes
+	// through x87.
+	contact->value.scale_a = *(float const *)&a;
 	lane_b_constraint_sizes sizes;
 	sizes.total = 0;
 	sizes.term_bytes = 0;
 	sizes.results = 0;
-	*(unsigned long *)&contact->scale_b = *(unsigned long const *)&b;
+	contact->scale_b = *(float const *)&b;
 	sizes.op_bytes = 0x88;
 	contact->owner->add((lane_b_contact_constraint_prefix *)contact, &sizes);
 	contact->table = g_480770;
 }
 
-// Score 15 (was 38): scalar home-slot copies and store scheduling still differ.
-// Review cleanup score 51: unmatched volatile/goto tuning removed.
+// Matched (was 11): both words reach the helper by reference, and the other-body arm
+// reads the first scale before the second as the matching arm does (b, then a). The
+// two stores of `a` then end both arms alike and merge after the join, in the dead
+// manager argument home, and `b` keeps the frame cell.
 // @retail 0x315340
 void __cdecl function_315340(void *manager, hkEntity *first, hkEntity *second, float scale_first, float scale_second)
 {
@@ -45,8 +48,8 @@ void __cdecl function_315340(void *manager, hkEntity *first, hkEntity *second, f
 		}
 		else
 		{
-			a = modifier_scale_bits(scale_second);
 			b = modifier_scale_bits(scale_first);
+			a = modifier_scale_bits(scale_second);
 		}
 		install_mass_scales(contact, a, b);
 	}
