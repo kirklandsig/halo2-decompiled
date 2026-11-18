@@ -22,7 +22,9 @@ void class_312430::function_312430(description_312430 *description) const
 
 // Capture the pair and destination before either store: the first write can
 // alias the array header. Retail uses the same destination for both words.
-// score 17 (was 17): source/output registers and the second output reload;
+// Matched: each pair is copied field by field into a local and then assigned whole,
+// which gives retail's address-then-read pattern for the second field.
+// Before, 17 (was 17): source/output registers and the second output reload;
 // long index 26; pair assignment direct 51/51, all reads first 51/51,
 // by value 37/37, const element value 26; pair local/expression 17/17,
 // scalar snapshots 27, element references 26; two-use pair 17, with
@@ -43,10 +45,10 @@ void class_312430::function_3124c0(description_312430 const *description)
 	pairs.resize(description->pairs.size);
 	for (int i = 0; i < description->pairs.size; i++)
 	{
-		pair_312430 saved = description->pairs[i];
-		pair_312430 &item = pairs[i];
-		item.field_0 = saved.field_0;
-		item.field_4 = saved.field_4;
+		pair_312430 saved;
+		saved.field_0 = description->pairs[i].field_0;
+		saved.field_4 = description->pairs[i].field_4;
+		pairs[i] = saved;
 	}
 }
 

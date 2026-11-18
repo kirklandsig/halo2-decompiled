@@ -14,6 +14,32 @@ unsigned char g_480c60;
 long __cdecl function_3724f0();
 void __cdecl function_2d97d0(char const *message);
 
+static __forceinline char const *find_dash_31c7d0(char const *text)
+{
+	while (*text != '-')
+	{
+		if (!*text) return 0;
+		++text;
+	}
+	return text;
+}
+
+static __forceinline unsigned long decode_31c7d0(char const *last)
+{
+	return ((unsigned long)(*last - 'A') << 28)
+		| ((unsigned long)(last[-1] - 'A') << 24)
+		| ((unsigned long)(last[-2] - 'A') << 20)
+		| ((unsigned long)(last[-3] - 'A') << 16)
+		| ((unsigned long)(last[-4] - 'A') << 12)
+		| ((unsigned long)(last[-5] - 'A') << 8)
+		| ((unsigned long)(last[-6] - 'A') << 4)
+		| (unsigned long)(last[-7] - 'A');
+}
+
+// Matched: both dash scans go through one inline finder, the label is compared by
+// index up to the separator, and the eight digits are read by an inline decoder
+// indexing back from the last one (the order the byte loads come out in follows the
+// base the offsets are taken from, not the order the terms are written in).
 // @retail 0x31c7d0
 void __cdecl function_31c7d0()
 {
@@ -25,36 +51,20 @@ void __cdecl function_31c7d0()
 		return;
 	}
 	long now = function_3724f0();
-	char const *separator = g_46fbf0;
-	while (*separator != '-')
+	char const *separator = find_dash_31c7d0(g_46fbf0);
+	if (!separator) { function_2d97d0(g_415460); return; }
+	char const *label = separator + 1;
+	separator = find_dash_31c7d0(label);
+	if (!separator) { function_2d97d0(g_415460); return; }
+	for (long i = 0; label + i != separator; i++)
 	{
-		if (!*separator) { function_2d97d0(g_415460); return; }
-		++separator;
-	}
-	char const *label = ++separator;
-	while (*separator != '-')
-	{
-		if (!*separator) { function_2d97d0(g_415460); return; }
-		++separator;
-	}
-	long expected_offset = (unsigned long)g_415444 - (unsigned long)label;
-	while (label != separator)
-	{
-		if (!*label || !label[expected_offset] || *label != label[expected_offset])
+		if (!label[i] || !g_415444[i] || label[i] != g_415444[i])
 		{
 			function_2d97d0(g_415460);
 			return;
 		}
-		++label;
 	}
-	unsigned long encoded = ((unsigned long)(separator[4] - 'A') << 12)
-		| ((unsigned long)(separator[3] - 'A') << 8)
-		| ((unsigned long)(separator[7] - 'A') << 24)
-		| ((unsigned long)(separator[2] - 'A') << 4)
-		| ((unsigned long)(separator[6] - 'A') << 20)
-		| ((unsigned long)(separator[5] - 'A') << 16)
-		| ((unsigned long)(separator[8] - 'A') << 28)
-		| (unsigned long)(separator[1] - 'A');
+	unsigned long encoded = decode_31c7d0(separator + 8);
 	long expires = (long)(encoded ^ g_415440);
 	expires -= expires % 86400;
 	if (expires > now && (long)((unsigned long)expires - (unsigned long)now) < 15552000L)
