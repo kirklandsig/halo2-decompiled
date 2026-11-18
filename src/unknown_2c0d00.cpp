@@ -573,6 +573,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // start both false and set each on success 926; strict threshold first for both results 925.
 // NOT kept: the four-point reduced gain (926 to 922) shortens the body to 3702/3731 bytes
 // and retains frame 0x2cb4. The straight flag's dword-sized slot and actor and unit homes remain.
+// M3 lane 8 r184 (fast with 0x2c3550/0x29c860, both matched; fast control 926, plain 920): self_unit declared after the actor
+// pointer 926 (same code); `location` declared at the function top 926 (same code); the previous-direction dot through the
+// existing dot3f 932 (3707 B); self_unit set by a ternary on unit[0xaa] 929 (3722 B); object_indices declared first 926 (same
+// code). Body unchanged.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1985,6 +1989,10 @@ long function_1fa7f0(void);
 // two-side loop with in-place flip 461, retry inversion 449. Edge after the
 // forward scan 476, with the flipping loop 470. Separate fallback increment 400.
 // NOT kept: alternate orientation forms recover frame 0x10c and still regress.
+// M3 lane 8 r184 (fast with 0x270930/0x2c2a70/0x2c3030/0x2c2740/0x2c2910, all matched; control 400): the step bound by a
+// const reference 400 (same code); the typed scan as a `for (end = index; end < count; ++end)` loop 636 (1911 B); the
+// emitted type and link as two ternaries 521 (1795 B); type and link stored before next in the typed branch 400 (same
+// code); the emit's point written field by field instead of real_point3d_set 436 (1761 B). Body unchanged.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
