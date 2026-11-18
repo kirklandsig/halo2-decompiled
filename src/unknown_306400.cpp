@@ -184,7 +184,13 @@ public:
 
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
-// score 91 (was 101): the three sums of each edge group are accumulated by
+// score 56 (was 91): each face test and each edge group has its own `reach`
+// vector (the second face test's and the edge groups' declared in their blocks).
+// They still share one stack slot, but as five variables the slot is created
+// after the edges' slot, and the frame's slots now sit where retail has them.
+// Left: scheduling only (second extents loaded before the first face stores,
+// the lengths and zero stores in each edge group, the second group's edge store).
+// Before, 91 (was 101): the three sums of each edge group are accumulated by
 // statements, product by product, instead of being written as arguments of
 // `reach.set`: a sum written as one expression is reordered by the compiler, a sum
 // built by `+=` keeps the source order, and all nine sums now add their products
@@ -221,8 +227,8 @@ public:
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {
-	__m128 const parallel_separation = _mm_set_ss(-1e17f);
 	__m128 const parallel_limit = _mm_set_ss(999.99994f);
+	__m128 const parallel_separation = _mm_set_ss(-1e17f);
 	int separated;
 	__m128 const mask = *(__m128 const *)g_455940;
 	__m128 a[3];
@@ -231,25 +237,26 @@ answer_306580 class_306580::function_306580()
 	a[2] = _mm_and_ps(axes[2], mask);
 
 	// the first box's faces
-	vector_306580 reach;
+	vector_306580 first_reach;
 	{
 		__m128 const second = second_extents;
 		__m128 const z = _mm_mul_ps(a[2], _mm_shuffle_ps(second, second, 0xaa));
 		__m128 const y = _mm_mul_ps(a[1], _mm_shuffle_ps(second, second, 0x55));
 		__m128 const x = _mm_mul_ps(a[0], _mm_shuffle_ps(second, second, 0x00));
 		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), first_extents);
-		reach.value = _mm_sub_ps(_mm_and_ps(second_centre, *(__m128 const *)g_455940), span);
+		first_reach.value = _mm_sub_ps(_mm_and_ps(second_centre, *(__m128 const *)g_455940), span);
 	}
 	float const limit = tolerance;
-	exceeds_306580(&reach.value, &limit, &separated);
+	exceeds_306580(&first_reach.value, &limit, &separated);
 	if (separated)
 	{
 		return answer_306580(false);
 	}
-	store3_306580(&reach.value, first_faces);
+	store3_306580(&first_reach.value, first_faces);
 
 	// the second box's faces
 	{
+		vector_306580 reach;
 		__m128 const t0 = _mm_shuffle_ps(a[0], a[1], 0x44);
 		__m128 const t2 = _mm_shuffle_ps(a[0], a[1], 0xee);
 		__m128 const t1 = _mm_shuffle_ps(a[2], a[2], 0x44);
@@ -263,13 +270,13 @@ answer_306580 class_306580::function_306580()
 		__m128 const x = _mm_mul_ps(row_0, _mm_shuffle_ps(first, first, 0x00));
 		__m128 const span = _mm_add_ps(_mm_add_ps(_mm_add_ps(x, y), z), second_extents);
 		reach.value = _mm_sub_ps(_mm_and_ps(first_centre, *(__m128 const *)g_455940), span);
+		exceeds_306580(&reach.value, &limit, &separated);
+		if (separated)
+		{
+			return answer_306580(false);
+		}
+		store3_306580(&reach.value, second_faces);
 	}
-	exceeds_306580(&reach.value, &limit, &separated);
-	if (separated)
-	{
-		return answer_306580(false);
-	}
-	store3_306580(&reach.value, second_faces);
 
 	// the edges: the squares of each row of the axes, for the lengths of
 	// the cross products
@@ -287,6 +294,7 @@ answer_306580 class_306580::function_306580()
 	{
 		__m128 edge;
 		__m128 lengths;
+		vector_306580 reach;
 		((box_305b30 const *)this)->function_305b30(&edge, 1, 2);
 		lengths = _mm_add_ps(squares_z.value, squares_y.value);
 		float x = a[0].m128_f32[2] * first_extents.m128_f32[1];
@@ -319,6 +327,7 @@ answer_306580 class_306580::function_306580()
 	{
 		__m128 edge;
 		__m128 lengths;
+		vector_306580 reach;
 		((box_305b30 const *)this)->function_305b30(&edge, 2, 0);
 		lengths = _mm_add_ps(squares_z.value, squares_x.value);
 		float x = a[1].m128_f32[1] * second_extents.m128_f32[2];
@@ -351,6 +360,7 @@ answer_306580 class_306580::function_306580()
 	{
 		__m128 edge;
 		__m128 lengths;
+		vector_306580 reach;
 		((box_305b30 const *)this)->function_305b30(&edge, 0, 1);
 		lengths = _mm_add_ps(squares_y.value, squares_x.value);
 		float x = a[1].m128_f32[2] * second_extents.m128_f32[2];
