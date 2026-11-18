@@ -52,6 +52,8 @@ void lane_a_ragdoll::build_swing_limits(__m128 const &twist, __m128 const &cone,
 	}
 }
 
+// Matched: in the twist range the cross product is held through a reference and the
+// sine is computed before the cosine.
 // @retail 0x312fe0
 void lane_a_ragdoll::build(lane_a_solver_input const *input, lane_a_solver_output *output)
 {
@@ -69,10 +71,11 @@ void lane_a_ragdoll::build(lane_a_solver_input const *input, lane_a_solver_outpu
 		__m128 axis = joint_normalize(_mm_add_ps(world_b[2], world_a[2]));
 		__m128 perpendicular = joint_cross(axis, world_b[1]);
 		__m128 reference = joint_cross(perpendicular, axis);
+		__m128 &along = reference;
 		range.minimum = twist_low;
 		range.maximum = twist_high;
-		float cosine = joint_dot(reference, world_a[1]);
 		float sine = joint_dot(perpendicular, world_a[1]);
+		float cosine = joint_dot(along, world_a[1]);
 		range.error = approximate_angle_3725e0(sine, cosine);
 		range.axis = axis;
 		build_angular_range_31f000(&range, (solver_pair_31e7b0 const *)input, (solver_output_31e7b0 *)output);
