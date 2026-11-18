@@ -1183,6 +1183,7 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// score 38 (was 38): The transform setter receives stack arguments where retail uses registers, including EBX for the component.
 // MiniMax A (11-12): no new form, no lower score (38); every difference is still the frame (0x50
 // against retail's 0x5c) and the callee's convention, which hands the component over in ebx where
 // this build pushes it; retail's own arguments here are the matrix in EAX, the index in ECX and the
@@ -1219,10 +1220,10 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // movaps; every difference is the frame (0x50 against retail's 0x5c) and the callee's convention, which hands the
 // component over in ebx where this build pushes it, and that choice belongs to 0x1d0cf0's own body: BLOCKED-BY
 // 0x1d0cf0.
-// score 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
+// Earlier 38 (was 38): MiniMax R (11-15): no new form, no lower score; the body is otherwise retail's instruction for
 // instruction, and the frame (0x50 against retail's 0x5c) and the component's travel (on the stack where retail keeps
 // it in EBX) follow 0x1d0cf0's convention, which is set across the call cycle in other files: BLOCKED-BY 0x1d0cf0.
-// score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
+// Earlier 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
 // 64/61/84; rotation workspace/initialized workspace/initialized transform with workspace 78/106/107;
@@ -1242,6 +1243,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
 // Permuter (25 min on #1044 round 2, about 650 variants): only a volatile transform pointer with a
 // (short) index argument gave 34; not kept (volatile without a match, and the cast narrows the index).
+// Scalar then intrinsic transform aggregates, direct/separate rotation/separate translation/both separate: 51/65/70/114/70/113/112/162.
+// NOT kept: all eight regress. Direct construction omits the retail translation scratch, separate aggregate values move the frame away, and the component call transport remains.
+// Original executable body restored.
 // MiniMax D (11-17): no new form, no lower score (38): the wrapper is still retail's two calls in the same
 // order, and every remaining difference is the one 0x1d0cf0 has, because this function only passes the
 // index and the component on to it; the memberwise copy form of the callee (38 -> 40) was worse and was
@@ -2688,6 +2692,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // normalizer alone (175), the velocity's components copied into three scalars (359, which also moved
 // the earlier normal loop's registers) and the three final products in named locals (91, same code)
 // were all worse or no better and were restored.
+// P594: Native aggregate normal/velocity/both initialization, direct normal/sample/both
+// fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
+// NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
+// Early velocity j/k loads, speed-product residence and property-zero EDI remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

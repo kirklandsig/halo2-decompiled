@@ -1067,6 +1067,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // result test `local_51 > local_36 || local_35 == NONE` 574; the final bound as `1.0f` 608 (3326 B; retail compares
 // against a double, `fld qword`). The three-term sums here (the obstacle bounds, both distance helpers, the sweep
 // rotation rows) already round as retail's.
+// MiniMax D (11-17): no new form, no lower score (569): this build still allocates the radius to XMM5 at the entry and
+// keeps it for the whole body, where retail loads it from its home in each block; the earlier rounds' forms (a named
+// radius copy, the negated radius, the helper as plain inline, the sweep scales named before their products, the swapped
+// trace names, the radius read through its own address) all rebuild the same code, and the reload follows from retail's
+// link-time compile treating 0x2108a0/0x210770 as clobbering the XMM registers, which no source form here reproduces.
+// The frame is still 0xa0 against retail's 0x94, so the three trace results' homes (+0xd0 and +0xf4) sit 12 bytes off.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
