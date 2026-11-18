@@ -4503,6 +4503,9 @@ bool __stdcall function_2b278e(long controller_index)
 // before identity type 201, in the condition 201, or held as nonmember 191;
 // per-dialog controller index 199. NOT kept: the original controller reference
 // and post-call index reloads are still missing.
+// Round 416: Case orders 3/2/1/0, 3/0/2/1, 0/3/2/1 and 0/2/3/1 each score 54.
+// Orders 3/1/2/0, 3/0/1/2, 0/3/1/2 and 0/1/2/3 each score 127. NOT kept: case
+// reordering still leaves the original index in ESI and omits the dialog reloads.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

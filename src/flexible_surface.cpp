@@ -820,6 +820,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // forced inline 130, both component sets captured 163. NOT kept: forced inline ties; the
 // other forms break the other caller's match. The i/k capture and scaled cross restore
 // frame 0x20 at 880 bytes but leave the initial random-state load order and raise the score.
+// Round 416: Angle initialized from the sample, first weighting or both weightings,
+// with grouped or separate scale updates, and a named doubly weighted fraction
+// all scored 130. The 0x1c frame and initial sample slot still differ.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

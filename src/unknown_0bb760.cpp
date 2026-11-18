@@ -977,6 +977,11 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
 // reshuffles both cursor homes and raises every score. The input spill and the destination register at the
 // blend call still differ.
+// Round 416: Walking input byte cursor with derived/separate output 89/106; byte
+// offset with derived/separate output 150/164. Independent remaining count on those
+// forms 83/103/151/162. NOT kept: the 83 form reaches 580 bytes and first +0x6a
+// but gains only six. Retail still spills the input after admission and keeps the
+// destination in EBX across the blend call.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

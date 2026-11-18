@@ -922,6 +922,10 @@ static inline long team_score_195ed0(long team)
 // existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
 // test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
 // kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
+// Round 416: Shared absolute-slot lookup with a machine-player or byte view,
+// direct or retained pool, and a retained destination each score 191. The same
+// four forms with the destination getter at each access score 732. NOT kept:
+// the getter forms roll the player loop and the flag read stays ahead of the copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
