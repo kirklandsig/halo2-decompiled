@@ -2861,6 +2861,12 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // MiniMax R (11-15): no new form, no lower score (17): the sound set index is still sign-extended where
 // retail copies the dword and 0x219070 is still called with two arguments where retail passes one; both are
 // fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
+// MiniMax A (11-18): no new form kept, no lower score (17): the sound set index is still sign-extended
+// (`movsx ebp, ax`) where retail copies the dword (`mov ebp, eax`), and 0x219070 is still called with two
+// arguments where retail passes one and returns a word shorter. Calling 0x218f50 through a __fastcall function
+// pointer measures 91 and calling 0x219070 through a __stdcall one measures 31, both worse than 17, so both were
+// reverted and the body stands. Both declarations live in other files, so neither can be changed from here:
+// BLOCKED-BY 0x218f50 and 0x219070.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
 // MiniMax G (11-18): no new form, no lower score (17): the sound set index is still sign-extended (movsx ebp, ax) where
@@ -5100,6 +5106,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // forms tried for the frame and the three helpers are in the notes below and none of them lowered the score.
 // MiniMax D (11-15): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8, and 0x16f3a0,
 // 0x1420f0 and 0x11c120 still have to stay out of line, which their noinline declarations in other files decide.
+// MiniMax A (11-18): no new form tried this round, no lower score (535): the frame is still 0x130 against retail's
+// 0xe8, and 0x16f3a0, 0x1420f0 and 0x11c120 still have to stay out of line; their noinline declarations live in
+// other files: BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
 // MiniMax G (11-18): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
