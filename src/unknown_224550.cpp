@@ -697,6 +697,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // secondary or both pairs 162/162/162; blend initialized in each arm 497.
 // NOT kept: the 1936-byte form changes the frame and raises the score.
 // Blend still spills through the bitmap aspect block.
+// Tried secondary vertical span early 167; late horizontal reciprocal 296; late vertical reciprocal 290; both
+// reciprocals late 323; primary horizontal span and inverse together 222; primary vertical span and inverse
+// together 222; late secondary horizontal span and inverse 313; late secondary vertical span and inverse 319.
+// NOT kept: Both late reciprocals restore the animated blend register but grow the frame and body. The other span
+// schedules also raise the score.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

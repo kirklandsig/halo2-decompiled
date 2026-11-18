@@ -2020,6 +2020,9 @@ long function_1fa7f0(void);
 // arms 400/400; fixed limit by equality 400.
 // NOT kept: the combined form restores 0x10c and the opening radius home
 // but scores 418 at 1737/1746 bytes.
+// Native point pointer/reference 400/400; native source record with point pointer/reference 400/400.
+// Shared source/emitted/both coordinate indices 400/488/488; stored type at emission 403;
+// shared terminal input ordinal 469. The 0x10c frame and selected edge register still differ.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

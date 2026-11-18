@@ -831,6 +831,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // new cluster address before map/order stores 129; separate slots with chained stores 152;
 // count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
 // The opening EBX save and later BP volume index are still exchanged.
+// Tried early camera key 123; early key and camera 123; early camera with key at call 128; input entry reference
+// 129; entry and volume references 129; entry reference with early key 123; selected cluster and allocated volume
+// names 129; allocated cluster and candidate volume names 129.
+// NOT kept: The early-key forms gain six at 427 bytes and leave the register exchange. The address-only form gains
+// one.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1330,6 +1335,11 @@ struct s_point_pool_173520
 // Tried state snapshot after reservation 172, returned byte for traversal 180, scoped bounds alias 96, named point stride 96,
 // signed remaining-count loop 934, explicit float clamp outcomes 117, explicit minimum selection 96, library box copy 96,
 // explicit double clamp outcomes 96, direct cache pool members 188.
+// Tried clipped vertex reference 96; shared depth 109; whole projected point 184; destination element reference
+// 96; distance published after advance 96; late distance with destination reference 96; late distance with whole
+// projected point 184; early signed distance 125.
+// NOT kept: The references and delayed publication fold to the opening code. Whole-point assignment grows the
+// frame, and the depth forms raise the score.
 // Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
 // start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
 // traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.

@@ -789,6 +789,11 @@ void __stdcall function_1160c0(real dt)
 // terminal-node identity 306, both node identities 305. Position-derived ordinal for root 300, terminal test 307,
 // full segment selection 292, and root plus segment selection 295. NOT kept: the address-based tests regress and
 // change the loop comparison.
+// The segment still needs EDX and +0x14. Conditional attachment point by value/address/interior first
+// 304/304/304, segment reference with named ordinal 144, terminal-predicate subtraction 285,
+// conditional segment addresses against the interior bound 304, preceding-ordinal loop bound 294,
+// shared prediction add 204, predicted z after the node update 157.
+// NOT kept: the retail-length forms still raise the score and leave the segment and rotation homes different.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
