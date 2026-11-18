@@ -1442,6 +1442,10 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
+// esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
+// pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the
+// callee's declaration order (object index first) is fixed by four other files.
 // MiniMax D (11-16): no new form, no lower score (120): this round read the retail diff against ours again and the
 // remaining delta is the prologue and the two pointers: retail masks and scales the actor index into EDX before it
 // pushes and forms the actor with `lea edi, [edx + esi]` (actor in EDI, object in ESI) where this build loads the pool
@@ -1577,6 +1581,10 @@ real function_50650(real cosine);
 // object in edi, so the prologue is two bytes longer and every later row pairs with the wrong row; the offset-first
 // expression, the scaled offset in a local of its own and the actor getter all compile to the same code, and the
 // velocity's j preload belongs to the shared normalizer in include/unknown_11cc90.h, which this lane may not edit.
+// Round 605. The 0x1c frame agrees. The early actor pool load and reversed actor/object registers remain.
+// Shared following-point difference 128. Object-header getter 120. Named turn span 122. Following radius read
+// once 266. Angle clamped before complement 120. Distinct scale minimum names 120. Positive-gap ternary 120.
+// Checked following-object index 120.
 // actor pool read after settings 333; actor getter after settings 333; early actor offset deferred
 // pool read 333; early actor slot deferred indexed pool read 333; object receiver loaded after
 // settings 120; object receiver in each use phase 117; early offset with receivers after settings 333;
@@ -1851,7 +1859,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // +0x1c/+0x20, the length in the dead argument slot at +0x54 and the flag byte later; the products after that are
 // coloured xmm2/xmm5/xmm6/xmm7 against retail's xmm1/xmm3/xmm4/xmm6/xmm7, and the length is 1182 against retail's
 // 1173.
-// score 239 (was 238): no new form and no lower score; retail keeps the direction at +0x1c/+0x20, the radius at
+// score 239 (was 238): retail keeps the direction at +0x1c/+0x20, the radius at
 // +0x14 and the normalizer's length in the dead argument slot at +0x54, where this build keeps the direction at
 // +0x28/+0x2c, the radius at +0x20 and the length at +0x14; it also zeroes in xmm2 where retail zeroes in
 // xmm1 and multiplies the direction's y first where retail multiplies the x first.
@@ -1888,7 +1896,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // only with a byte match, so the body stands; the permuter's 23 tries over the reduced image
 // (with --allow-mismatch, since the reduced score 254 differs from the full 231) found nothing below the
 // baseline either.
-// score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
+// Earlier score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),
 // shares the left type-0 arm's `+ target.y` and flag re-test with the type-1 arm (ours threads that arm),
 // spills the lateral term to the type slot, and puts radius/desired, then direction, below the
@@ -2026,6 +2034,11 @@ PRIVATE inline real movement_normalize2d(point2f *v)
 // where retail compares the float with comiss at 0x1f9de5 before its fld qword 1.0 at 0x1f9df0, so the written-out
 // clamp is retail's form), `MIN(cosine, 1.0f)` 264; without the volatile origin read 273 at 1173 bytes. 0x29a190
 // stays MATCH and 0x29cbb0 378.
+// Round 625: direction before result and radius 264; radius then direction then result 239;
+// direction between result and radius 264, with direct initialization 260. Named squared length 239,
+// float square root 240, separate squared components 240, small-length early exit 240.
+// Single return with in-place sign 255, conditional sign assignment 275, explicit sign arms 275.
+// Restored. The XMM zero and radius allocation and separate invalid-type epilogue remain.
 // @retail 0x1f99d0
 real function_1f99d0(long actor_index, long object_index, short type, point2f const *target,
     point2f const *origin, point2f const *facing, s_obstacle_list const *obstacles)

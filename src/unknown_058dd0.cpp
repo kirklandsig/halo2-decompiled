@@ -881,6 +881,9 @@ void c_session_client::function_06dbc0()
 // with explicit cases 0, 1, 9 and a default 47; split 7/8 with an empty equal-id arm and the call in the
 // else 47. Compile-only: the memcmp replaced by an external call puts this in esi (retail allocates this
 // and id as if live across something that clobbers eax/ecx/edx, but the repe cmpsd here does not).
+// 463: direct two-word identity comparison in address order, reversed, both tests, and XOR/OR
+// 50/50/65/50; with separate states 7 and 8, 50/50/62/50. NOT kept: all regress and
+// replace the retail intrinsic sequence; receiver and ID register homes remain different.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

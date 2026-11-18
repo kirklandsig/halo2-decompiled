@@ -834,6 +834,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // swap's update base through a forced-inline identity accessor 28; its index through a forced-inline `++*count - 1`
 // accessor 28; for the occupied key, `collection` bound by reference (`s_type_c67652 *&`) at the key copy 28 (all the
 // same code).
+// M3 lane 11 r114 (fast with 0x84e90, which matched in each): on the swap order (collection, player, update, other) at
+// definition, declaration and call (re-measured 32): the occupied key through a `players` array pointer taken in the
+// occupied block 30 (re-measured; the last record's reads agree), that pointer taken at the loop top 280 (1088 bytes),
+// right after the slot search 27 (it sinks to the key; the key sum is (offset + cursor) + (collection + 4) where retail
+// adds (collection + offset) first, so only the occupied block's head differs), after the machine pointer 320 (1089
+// bytes); a 600 s annealing permuter run on the 30 form (seed 114, 84 tries) none below 30. Restored to main's order.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

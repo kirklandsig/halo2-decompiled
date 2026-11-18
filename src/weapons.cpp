@@ -3065,6 +3065,9 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // less-or-equal side, and the SDK's compiler builds the same tree for the same 27 values with jg to the greater side for
 // every order of the case labels (ascending, descending and a random order all give the same tree in a standalone
 // compile), so the difference in the tree's shape does not come from the order of the case labels.
+// Round 605. The frame remains eight bytes versus retail's four. Timed barrel read before stale test 409, or
+// fresh-shot case exit 409. Cached heat threshold 406. Named overheat difference 389. Named signed tens
+// quotient 389. Raw and classified progress defaults 401 each. Shared flag-property cases 414.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3600,7 +3603,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // MiniMax R (11-10): no new form, no lower score; the unit index without the volatile scores 657, with the volatile and the NONE at the declaration 637 and without the volatile and the NONE at the declaration 640, so the kept form stays the best.
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
-// score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// score 607 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
 // 0x1c60; weapon/barrel and scalar homes remain.
@@ -3695,6 +3698,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // spilled to [esp+0x14], while this build gives ebx the barrel's offset, edi the definition and esp+0x14 the weapon; the
 // barrel itself is reached as the weapon's base plus the index scaled by 0x34 in retail, and the direct barrel uses this
 // lane measured worse, so the body stands.
+// Round 605. The full build still uses 0x1c64, compared with 0x1c60 in retail. Reduced control 643. Default
+// holder before the inventory test 637. Shared absolute slot 643. Read-only weapon, barrel and both definition
+// views 643 each. Declared definition flags 643. Named barrel scale store 643. Weapon item bitfield 636. NOT
+// kept: the holder default and item bitfield each gain fewer than eight in the preview.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {

@@ -155,6 +155,11 @@ union s_6ec80
 // 88 (r101's registers, the counter's zero misplaced); the scoped mask with the mask tested ahead of the machine word 225;
 // the scoped mask with the 0x49c8 getter's result in a local stored and tested 225. A compile-only screen shows why `for`
 // costs bytes: the 16-trip `for` is unrolled four times, the do loop is not.
+// M3 lane 8 r182 (fast; base 5): on round 101's form (mask scoped, counter zeroed just before the guard, 88 re-measured):
+// the counter's zero beside the two block pointers' NULLs 243, beside the two flags at the top 271 (997 B), the counter
+// and the guard inside a block of their own 88 (same code: the frame still reshuffles), an `int` counter 88; with the
+// mask as now, the counter declared before the guard and zeroed inside it 5 (same code). ESI is not used as a zero
+// after the guard, so the mask's zero is simply where it is written.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

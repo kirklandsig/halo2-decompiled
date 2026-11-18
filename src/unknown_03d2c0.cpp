@@ -421,6 +421,23 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // result, shared result before cursor, separate successful choice, or immutable
 // first index with separate choice 106/106/169/168. The for walk repeats these.
 // NOT kept: cache-hit bypass, trailing ESI return and native length still differ.
+// M3 lane 3 r257 (fast with 0x3db00, 0x3dd10 and 0x3d2c0, all MATCH in every trial; control 77). Reading of retail's
+// blocks: the allocation and walk paths are the single-return form's (the walk's test jumps to a trailing copy of the
+// only return, `mov eax, esi`; `initialize = true`; a second, unfolded `cmp esi, -1` to the main epilogue), and the
+// second test survives although the cache-hit path does not join it. Ours keeps that test only while the hit path joins
+// it, and drops it as soon as the hit path is threaded away: on a single-predecessor chain the earlier test's knowledge
+// reaches it, at a join of the allocation and walk paths it is merged from both. Tried: the single-return form
+// re-measured 85 (504 B); with the tail guarded by `!initialize || result != NONE` 98 (494 B: second test gone, the
+// flag in a stack byte); one variable for the cached and returned index on it 129 (504 B: stored at its read, the
+// hit path still joins the test); `cache_index = result;` closing the walk with both later tests on cache_index 141
+// (518 B: the hit path carries the index in EAX and the result in EDX to the join), with only the flag test on it 85,
+// only the tail test on it 141, the copy after the walk block 99 (491 B); `long result = cache_index;` at the
+// declaration with no hit arm 105 (504 B: stored at the declaration), with the walk copy and both tests on
+// cache_index 154 (518 B); the tail guarded by `initialize || result != NONE` 99 (491 B); a second flag set in the
+// hit arm guarding the tail (`cached || result != NONE`) on the single-return form 99 (491 B), with the flag set in
+// each arm of the allocation test 100 (491 B; both drop the second test), those arms with the plain tail 85.
+// Diagnostic, reverted at once: the result made memory-resident through a volatile pointer to it, on the
+// single-return form 159, on this body 152 (the hit path still joins the test).
 // Separate cache-hit and replacement results, with initialization after the join
 // or inside the miss, early or common exhaustion, and hit predicate or stale
 // handle reset: 186/155/192/134/186/134/177/164. NOT kept: none retains the

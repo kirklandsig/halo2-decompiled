@@ -587,6 +587,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // (all same code but the second); the ticks bound as `long const &` to the clock field 77 (read after the 0x18 call):
 // diagnostic, the prologue then is retail's (`push ebp` first, NONE in EBP, EBX pushed late) but the result takes EDI and
 // the pointer EBX, so with a ticks value across the call retail ranks ticks, result, pointer and ours ticks, pointer, result.
+// Round 98 (m3 lane 2, fast with 0x110ab0 and 0x1ae440; control 15): references that are not folded back: the rate
+// bound as `real const &` beside the ticks read 15, after the 0x18 product 15, with the ticks through the existing
+// getter function_146650 15; the ticks and the rate both as const references 77 (the ticks read after the 0x18 call);
+// the game-time globals bound as a `const &` 91 (415 bytes, the named-pointer code).
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {
