@@ -205,6 +205,11 @@ public:
 // Ordinary split tail 327; offsets after pointer step 652; partial predicates
 // 773; value width tests 456; inner value switch 553; paired sum parts 327;
 // named mask inputs 327; upward plane count 922. All restored.
+// MATCH (was 3): the other side's upper corner is assembled through references
+// (high bytes shifted in place, the low byte a separate named value declared
+// first): one more named value in that arm makes second_offset outrank
+// first_offset, which moves the fixed_point/bound reloads of the first side's
+// three-byte bound into retail's order.
 // @retail 0x2dc220
 void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, fixed_point_2dc220 const *fixed_point)
 {
@@ -304,7 +309,16 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 			if (bound >= 0x29)
 			{
 				other[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				other[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				// the upper corner is assembled in place: high bytes first, the low byte added last
+				long low_byte;
+				long &low = low_byte;
+				long high_bytes = q[4];
+				long &upper = high_bytes;
+				upper <<= 8;
+				upper += q[5];
+				upper <<= 8;
+				low = q[6];
+				other[1].m128_f32[bound - 0x29] = (float)(upper + low) * scale;
 				second_offset += 7;
 			}
 			else
