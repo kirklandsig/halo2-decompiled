@@ -682,6 +682,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: removing individual magnitude input copies reduces the frame to 0x5c0, pairs reach 0x5b8, and
 // replacing all three direct roots reaches 0x5a8 at 6070 bytes. Every preview regresses and the magnitude
 // grouping requires equality.
+// The frame remains 0x5d0 against 0x58c. Component and velocity homes and contact indexing differ.
+// Slip in impact buffer 1447. Save slip before in-place force normalization 1517.
+// Direct tangential velocity 1373. Direct projected forward 1445. Both projections 1403.
+// Both with slip in impact buffer 1559. Both with in-place normalization 1508.
+// Direct tangential with slip in impact buffer 1454. Direct forward with in-place normalization 1547.
+// NOT kept: the direct tangential form gains two points. The smaller frames shorten the body.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

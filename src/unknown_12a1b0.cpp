@@ -3062,7 +3062,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // retail masks it with 1 after the pushes, and the saved-register order, the record homes, the energy loop's
 // padding and the track and state ownership still differ; the form that reads `alternate` inside the definition
 // guard measures 615 and is not kept.
-// MiniMax S (11-16): score 597 (was 597): no new form; the length 2518 agrees but the track loop's registers
+// MiniMax S (11-16): no new form; the length 2518 agrees but the track loop's registers
 // still differ - retail holds the state in EBX, the NONE state in ESI and the track in EBP, while this build
 // holds NONE in EBX, the index in ESI and the track definition in EBP - and the entry's flag mask and the gains
 // clear still use this build's forms.
@@ -3374,14 +3374,20 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // two points and seven bytes short); conditional request stores 611; all
 // conditional stores 609; joined request stores 661; three-bit write 675.
 // Entry flags still occupy BL, and the record and track homes differ.
-// score 597 (was 597): MiniMax D (11-17): no new form, no lower score (597 plain, 694 on the reduced image): the track
+// MiniMax D (11-17): no new form, no lower score (597 plain, 694 on the reduced image): the track
 // loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp with the index and the
 // track definition in memory, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the
 // start arm's constant 1 still does not sit in ebx, the alternate compares still turn into int neg/sbb where retail
 // compares bytes, and the forms the earlier rounds list (the old-end fade's looping bit through the existing 0xbfe40
 // setter, the alternate inside the definition guard, one source pointer for every source use) measure 590 or more.
-// @retail 0x21a250
+// The request byte still occupies BL before the saved registers.
+// Alternate from explicit branches 597; normal-track complement 731; independent
+// resume request 735; conditional state selection 597; shared low-three request bits
+// 733; mask for both closing bit tests 623; four decision names 597; decision and
+// track-mode names 597. Normal-track carrier with separate resume gates 768.
+// NOT kept: the shared request mask raises the score and demotes a caller in the preview.
 // MiniMax C (11-17): no new form, no lower score (597): the track loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the creation compare order, the source copied from edx to esi, the energy loop's padding and the start arm's shared tail also differ, and the earlier rounds' forms of these score 590 or more.
+// @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
 {

@@ -139,7 +139,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // score 607 (was 607): frame 0x4820, clears and metadata cursor agree; first +0x15f spans the loop; provider/NONE, palette/record and zero/SIMD homes differ.
 // MiniMax S (11-16): no new form, no lower score (607): the palette slot is still sign-extended and read as a word where retail reads the byte unsigned at each use, and the 0x130f60 result still stays in EAX where retail moves it to EDX and keeps NONE in EAX; the native byte palette measures 611 and the signed short 616 in this build, and that register home is set by the clamp in the three-scalar helper in this file, whose other callers keep their own match.
 // Earlier at 607: MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
-// Earlier score 607 (was 607): MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
+// Earlier MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // Earlier 607 (was 607), MiniMax I (11-16, round 2): no new form, no lower score: the first differing row is the stack
 // probe's call target for the 0x4820 frame, whose address belongs to this build and cannot match; the palette slot's
 // sign extension and the helper differences in the notes below are unchanged. Body unchanged.
@@ -696,6 +696,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // or nested bounds 721/721; required entry count 608; conditional record inside table guard 607;
 // fresh lookup before previous record 607; signed-byte slot with separate guards 700.
 // NOT kept: the shared record test and provider/NONE, palette/record and SIMD homes still differ.
+// The provider result stays in EAX and the palette, record and SIMD homes differ.
+// Joined palette/tag dispatch with separate lookup, missing-palette tag assignment and conditional
+// tag 1087/1085/1085 with a short slot, and 1083/1081/1081 with a signed byte.
+// Joined dispatch with a shared presence decision 1089; one sparse-table receiver 1085.
+// NOT kept: the common dispatch adds over 300 bytes and moves the first difference into the clear prefix.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

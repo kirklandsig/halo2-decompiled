@@ -126,6 +126,11 @@ __forceinline long portal_path_gain(real distance, real range)
 // confirmed). Bitmap clear before cluster 312. Closest distance after seed 308. Search and sort scopes 296.
 // Early scratch 311. Named ordinals 311. Bounded output count 311. Shared output element 311. Explicit gain
 // arms 302 (NOT kept: frame 0x434). Search scope 311. Sort scope with gain arms 302 (NOT kept: frame 0x430).
+// The starting cluster still occupies EBX, and both table bases are kept across the portal loop.
+// Shared bitmap setter/range test/order-output tests/all operations 296/317/296/317.
+// Seed-and-walk cluster scope 298; early closest distance 296; signed starting sound at the
+// closest test 296; signed destination through range/bitmap 317, with shared test 317.
+// Closest distance, valid bitmap and starting distance names 296/296/296.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
