@@ -750,6 +750,14 @@ static inline bool teams_enabled_19e1c0()
 // AC571: Teams predicate as unsigned byte/plain byte/word/long 390/390/409/410, and each with ordinary
 // returned count 691. NOT kept: the word predicate reaches frame 0x204 at 1437 bytes but replaces the
 // retail predicate spill with a word compare and misses the token preload. Ordinary results merge name tails.
+// The token preload and 0x204 frame with separate name lengths and clamps remain unresolved.
+// ordinary result and early player-name returns 691;
+// ordinary result and returns through cause-team name 691; ordinary result and early name returns 691;
+// ordinary result and returns through cause-team score 665;
+// existing result and early player-name returns 390;
+// existing result and returns through cause-team name 390; existing result and early name returns 390;
+// existing result and returns through cause-team score 390.
+// NOT kept: the ordinary result reaches frame 0x204 but moves farther from retail's length and merges the name tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

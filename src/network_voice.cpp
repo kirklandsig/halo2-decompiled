@@ -1906,6 +1906,11 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // capacity debit ahead of the player tests 176 (472 B; 0x56380 2); the capacity test as `entry_size <= capacity` 60 (same
 // code); the player bit typed `word` 139 (445 B; 0x56380 13); the success length assigned after the two header stores
 // 164 (462 B). Re-measured: `include_mask ? 13 : 11` 147 (461 B: setne lands in CL and the size still moves to EBP).
+// The entry membership load still takes EAX and the capacity-failure edge has its own epilogue.
+// header debit after full-size admission 142; header-inclusive capacity 169; one-entry headroom budget 183;
+// writable span end 202; last writable entry start 140; entry pointer distance for scan and mask 201;
+// pointer distance in both scans 268; pending-recipient word reused after store 198.
+// The opening capacity, traversal and recipient loads were restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -4086,6 +4091,11 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // loop 166 (494 B: the clamp's count takes EBP instead); the cursor, consumed and size advances in the order cursor,
 // consumed, size 167. Body unchanged.
 // MiniMax C (11-17): no new form, no lower score (139): retail still takes the channel in ebp from the entry and spills the member, where this build keeps the member in ebp and the channel in a register; the member's life across the three calls is what wins it ebp here, and clearing the bit before the talker call measures 161, so the body stands.
+// The build loads data into EBP. Retail keeps the channel there, walks the packet in EDI and spills the member.
+// indexed entry-index name 139; cursor with local-member name 164; cursor with packet-index name 164;
+// cursor with four named slot roles 164; forwarding mask comparison 181;
+// forwarding mask comparison with cursor 168; packet-kind clamp 182; packet-kind clamp with cursor 188.
+// NOT kept: the cursor with recipient-set comparison recovers EBP but drops the member slot and shortens the body.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

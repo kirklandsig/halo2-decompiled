@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 126; m3 lane 16 r130 at the end): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // MiniMax C (11-17): score 126 (was 126): no new form, no lower score. The case-2 plane length still preloads the
 // left vector's k component into XMM1 where retail preloads its j, and the length's accumulator stays in XMM0 where
 // retail keeps it in XMM1, so the zero that follows stays in XMM1 against retail's XMM0; the swapped dot arguments
@@ -1214,6 +1214,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // shared rotation pointer 439; shared point or vector position 395/395; named signed
 // plane distance 411; with a shared direction 411. The direction preload and zero
 // home remain. Restored the original executable body.
+// The direction-j preload and resulting length/zero allocation remain.
+// normal by component assignment 435; basis dot for plane constant 400; basis dot for length 151;
+// basis dots for constant and length 399; basis dot for signed distance 189;
+// basis dots for all three projection products 412; component assignment and basis dot for length 439;
+// basis dots for constant and signed distance 412.
+// NOT kept: the basis length changes the preload to i and retains the length and zero registers. The other component and basis forms regress.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
