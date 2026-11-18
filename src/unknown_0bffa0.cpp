@@ -1330,6 +1330,16 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // m3 lane 1 r115: no form run. Checked against this note: retail's left normalize reloads each component from memory after
 // the length test (0x30bf0's code, whose declaration on main is noinline; its private copy was the same code as normalize3d,
 // m3 lane 2 r79), and the projection rows, sums, store orders and helper forms are all listed above.
+// m3 lane 5 r195 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0, all matched; control 290, aligned 273, register-masked
+// 122): the two listed leads together, to see whether they add up. The helper's scale statements as vk, vj, vi (r168's
+// 281, re-measured 281 at 2840 bytes) is not a real gain: its aligned count rises to 303 (masked 167). With `entry`
+// declared before `bounds`, the cone arm's `entry = entries;` ahead of its clear and the cone bounds stored after the
+// points as x0, y0, x1, y1 on top: 279 at 2840 bytes (aligned 278, masked 151: still worse aligned than the kept body);
+// that with the projection storing y first 289 (aligned 288); that with the rows computed up, left, forward 313 (aligned
+// 269, masked 137); that with a `0 < *count` guard around the loop 605 (2816 bytes, first difference +0x0). None kept:
+// the positional gains ride on retail's length only. Diagnostic: light_projection_point_ab's parameters as (point,
+// matrix, result) and as (result, matrix, point) at the definition and its five calls 290 each (same code: the helper's
+// own symbol order does not move the rows). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

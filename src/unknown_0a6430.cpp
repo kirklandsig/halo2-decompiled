@@ -13,7 +13,7 @@ void function_dc0a0(long index);
 void function_b7680(long index, real scale, real seconds);
 void function_bf830(long index, real shield, short value);
 void function_bf890(long index, byte const *states);
-void function_dbc80(long index, short first, short second);
+void __stdcall function_dbc80(long index, short first, short second);
 void function_ba690(long object_index, long *state_count, byte **states, long *a, long *b);
 
 PRIVATE byte *update_object_0a6430(long index)

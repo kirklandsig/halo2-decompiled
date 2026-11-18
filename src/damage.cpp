@@ -427,6 +427,10 @@ void function_d0620(s_object_child_iterator *iterator, long object_index);
 void function_b7360(long object_index);
 void __stdcall function_b8540(long a);
 void function_b8b70(long object_index);
+/* function_dbc80 stays declared ahead of function_dbfb0: link-time code generation walks 0xd6800's callees in
+   this order, and 0x1c4040, 0x146bf0 and 0x1c51c0 match only with it (see 0x1c4040's comment). __stdcall is
+   retail's convention for it: every caller pushes the three arguments and it returns with `ret 0xc` */
+void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b);
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c);
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator);
@@ -438,7 +442,6 @@ void function_ba690(long object_index, long *state_count, byte **states, long *a
 void function_a8360(long object_index, long region_index, long permutation_index, long a);
 void __stdcall function_d7b80(s_type_1e6529 *data, long object_index, short node_index, short unknown0c, short region_entry_index,
 	vector3f const *unknown14);
-void function_dbc80(long object_index, short section_mask_a, short section_mask_b);
 struct s_damage_report;
 void function_d9640(s_damage_report const *report, long object_index);
 void __stdcall function_e6460(long object_index);
@@ -5262,7 +5265,14 @@ struct s_damage_object_creation
 	long unknownc0;
 };
 
-// score 146 (was 146): Frame 0x13e0 agrees; 799/808 bytes, first +0xa delays pool/tag loads and
+// score 178 (was 146): m3 lane 5 r195 declared it `__stdcall`, retail's own convention (every caller pushes the three
+// arguments, `ret 0xc` at 0xdbfa5): the callee order that matches 0x1c4040, 0x146bf0 and 0x1c51c0 builds 0xd7b80 ahead of
+// this function, which without the keyword hands it ECX/EDX (243) and loses 0xd6800 and 0xd8a40. The positional count
+// rises at the same 799 bytes, but the top is now retail's (pool and tag loads ahead of the register saves, the datum
+// offset kept in EAX): first difference +0x58 (was +0xa), aligned count 49 (was 71), register-masked 21 (was 35).
+// Left: the section count's register (ours EDI, retail EAX), one extra zero store at [esp + 0x14] ahead of the states
+// call (it shifts everything after it by one instruction), the piece/search entry and the final lookups.
+// Earlier at 146 (was 146): Frame 0x13e0 agrees; 799/808 bytes, first +0xa delays pool/tag loads and
 // retains the datum offset; detached-mask initialization, piece/search entry and final lookups differ.
 // Earlier header detail: 156 before MiniMax A (11-14), 174 before r69; frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // MiniMax G (11-14): no new form, no lower score (156): the mask's zero store, the piece loop's guard order, the
@@ -5492,7 +5502,7 @@ struct s_damage_object_creation
 // code). Diagnostic: one to three dead initialised locals on the for/break lead 221/222 each, so the flip is not a
 // symbol-count phase. Every search with retail's for/break shape hands the mask a register (frame 0x13dc).
 // @retail 0xdbc80
-void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
+void __stdcall function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
 	s_object_definition *object_definition = (s_object_definition *)g_4e3b44[object->tag_index & 0xffff].bytes;
