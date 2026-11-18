@@ -816,6 +816,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // forced inline 130, both component sets captured 163. NOT kept: forced inline ties; the
 // other forms break the other caller's match. The i/k capture and scaled cross restore
 // frame 0x20 at 880 bytes but leave the initial random-state load order and raise the score.
+// Separate bounded axis ordinal and named trig values: sine before the
+// draw, cosine before or after sampling 152/158 and 152/158; sine after the
+// draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
+// the table entry whole or by components. Whole-entry forms reach 880 bytes
+// with the 0x1c frame. Direction read order and the frame still differ.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

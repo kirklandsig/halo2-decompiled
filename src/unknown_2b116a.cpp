@@ -4497,6 +4497,11 @@ bool __stdcall function_2b278e(long controller_index)
 // before identity type 201, in the condition 201, or held as nonmember 191;
 // per-dialog controller index 199. NOT kept: the original controller reference
 // and post-call index reloads are still missing.
+// Scope the initial index to the identity calls, using one numeric snapshot
+// 199/197, a reference to the index field 205/206, both direct reads 199/197,
+// or an identity-only controller view 199/197. Each pair forms masks at their
+// dialog calls or in the corresponding arm. The original reference and index
+// stack home are still missing.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

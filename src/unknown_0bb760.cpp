@@ -981,6 +981,10 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
 // reshuffles both cursor homes and raises every score. The input spill and the destination register at the
 // blend call still differ.
+// Clamp with a result assigned on each edge 89/89; one sampled value per
+// channel 117/117; out-of-range stores only, low then high 116/116 or high then
+// low 116/116. Each pair uses an ordinary or fixed current pointer. The input
+// spill and the current pointer's register through the blend call still differ.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

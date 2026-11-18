@@ -491,6 +491,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // bounds 398; wide near comparison with distant-arm rounding 384, with wide numerator 384; wide
 // quotient and dot with bounded real results 353. Near cosine still stays on x87 and the candidate
 // ordinal is still a byte.
+// Complete central-angle selection using the endpoint ordinal or its existing
+// positive-endpoint Boolean: four-way assignments 305/314, initial angle with
+// quadrant adjustments 307/322, endpoint-first conditional initializer 305/314,
+// facing-first conditional initializer 322/319. Unity remains in XMM1.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
