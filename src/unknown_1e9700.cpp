@@ -75,6 +75,19 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax G (11-18): score 76 (was 106): the enable byte is read once into a bool local before the counter store (the
+// maximum's test and the clamp's test then share one value) and the clamp's limits are taken as the table's own
+// `word` type; what still differs is that retail reloads the enable byte after the counter store (into CL, and again
+// into DL in the team block) where this build holds the local's value across that store (the reload needs the enable
+// byte and the counters to be one object: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp), retail keeps the
+// old maximum in ECX and the counter in AX and reads the fifteen-bit value with `xor eax, eax; mov ax, [mem]` where
+// this build keeps the maximum in EAX and zero-extends the word, retail increments `word ptr [eax + edx + 0x16]` before
+// it forms the row pointer, and retail's clamp store is the four-instruction bitfield idiom through the counter's
+// address (a one-use pointer, kept only with a match); this round's other forms: the flag local as a byte (106), the
+// flag compared with `!= 0` at each use (103), the local in one of the two tests only (103 each), the local also in
+// the team block (97), the maximum's `&&` form (101), the team maximum's `&&` form (102), the clamp as a ternary (96),
+// the counter through a pointer (86), the flat `all[index * 0x1b5 + 12]` indexing (76, the same) and the increment
+// through the statistics address before the row pointer (85, where the prologue's kind and player homes swap).
 // MiniMax I (11-17, run 103): no new form, no lower score (106): retail still keeps the old maximum in ECX and reads the
 // fifteen-bit counter with the sixteen-bit idiom (xor eax, eax; mov ax, [mem]) where this build keeps the maximum in
 // EAX and zero-extends the word; a short old maximum measures 106 and the nested enable test 111, and the enable byte's
@@ -254,14 +267,15 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 	function_1e9ce0(player_index, 7, statistics, 2, 1, true);
 	function_196e60(index, 0, kind, 1);
 	if ((code & 0xc0) == 0x40) function_196e60(index, 6, kind, 1);
+	bool enabled = g_510ca0 != 0;
 	long old_maximum = NONE;
-	if (g_510ca0) old_maximum = index != NONE ? g_511bf4.groups[index][12].value : NONE;
+	if (enabled) old_maximum = index != NONE ? g_511bf4.groups[index][12].value : NONE;
 	byte *row = (byte *)statistics + index * 0x1c;
 	short consecutive = ++*(short *)(row + 0x16);
-	if ((short)old_maximum < consecutive && g_510ca0 && !g_510ca1 && index != NONE)
+	if ((short)old_maximum < consecutive && enabled && !g_510ca1 && index != NONE)
 	{
-		long minimum = g_46ddc0[12].minimum;
-		long maximum = g_46ddc0[12].maximum;
+		word minimum = g_46ddc0[12].minimum;
+		word maximum = g_46ddc0[12].maximum;
 		long value = consecutive;
 		if (value < minimum) value = minimum;
 		else if (value > maximum) value = maximum;
