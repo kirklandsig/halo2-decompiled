@@ -782,6 +782,18 @@ struct s_physical_block_iterator
 // result declared first 389 (first difference +0x1d). On main: case 0 as `better = time < best.time; if (!better &&
 // time == best.time) better = pages < best.pages;` 244 (1193 B); case 0 with the candidate's time named once 201 (same
 // code). Body unchanged.
+// M3 lane 4 r213 (fast with 0x13d320 and the file's six other functions, all MATCH each run; control 201, difflib-aligned
+// 87 exact / 56 masked). Nothing kept. Lane 9 r109's lead rebuilt on today's base: 93 at 1213 bytes, first difference
+// +0x338, aligned 36 / 14 (everything before the deletion walk is retail's). On it, each the same code (93): the overlap
+// test through a forceinline helper taking the four values by value (block first, candidate first, with a result
+// variable, with the parameters declared the other way round). Readings: the matched sibling 0x13d950 gets retail's
+// walk from the same inline iterator (pool data in EBX, the salt read as `[index * size + data]` ahead of the pointer
+// add), so the iterator's source is right and the walk's swap is this function's allocation: ours loads best.offset
+// and the page count into EDI/EBX at the top of the found path, ahead of the salt read, so the data base goes to ECX
+// and the add comes first; retail loads them after. (Diagnostic, reverted) the best candidate's address passed to an
+// indirect call on a never-taken path, at its declaration 396 / on main 390, just before the walk 197 (1232 bytes):
+// best.previous is then re-read after the allocation where retail keeps it in ESI across that call, so the candidate
+// does not escape in retail and the lead's early loads are not an escape difference.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
