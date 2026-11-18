@@ -604,6 +604,9 @@ extern "C" void _ReadWriteBarrier(void);
 // without it 150 (473 bytes, frame 0x14 and the first difference at +0xe: the pool is homed once at F+0 where retail
 // homes it at F+0 and F+8; aligned 16); the iterator set from the global, barrier kept, 162; the pool local only for
 // the iterator, release through the global, 162; the release through iterator.data 166 (463 bytes). Body unchanged.
+// 463: four-field iterator with shared current-datum setter and either index scan. A local or
+// field index with the iterator pool scores 152, and with an entry pool scores 149. NOT kept:
+// the entry pool gives frame 0x14 at retail length, but one pool store and the register split differ.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
