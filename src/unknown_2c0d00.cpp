@@ -587,6 +587,12 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // The excess frame word pair and the actor/unit and priority/query homes remain.
 // Actor publication after unit lookup, confidence tests, self-unit test, and settings, each with opening then ordinary unit index: 902/877, 922/932, 902/935, 924/924 reduced.
 // NOT kept: 902 and 877 shorten the body to 3702 or 3708 against retail 3731, and the matched caller scores 1 in those previews.
+// Typed object fields with a long/signed-byte category snapshot 920/949; category read
+// at each use 936, with switch dispatch 947, with the typed selected unit 936.
+// Direct category with ordinary actor/index/both 945/937/968; cached category with ordinary
+// actor 974; direct category with conditional ordinary actor initialization 944.
+// NOT kept: the 945, 968 and 944 forms recover frame 0x2cac but shorten the body and
+// still carry the incoming actor and unit in different registers.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

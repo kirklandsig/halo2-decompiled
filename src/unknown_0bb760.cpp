@@ -848,7 +848,8 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 
-// score 89 (was 91): retail keeps the destination pointer in EBX and
+// score 171 (was 91): the flag mask and success share BL, and the input spills early.
+// The earlier allocation was different.
 // retail keeps the destination pointer in EBX and the source pointer only in its stack
 // slot; ours keeps the destination in EDI (the 0x131c20 result register). Round 147's plain-loop forms are
 // at the end of this note.
@@ -1028,6 +1029,13 @@ color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dw
 // The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
 // Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
 // read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
+// The destination now stays in EBX. Retail tests the flag with an immediate and spills the
+// input after positive-count admission. Signed extent result with a guard 173, with late
+// input 183; eligibility refined by extent 176, with an explicit guard and late input 177.
+// Signed/nonzero extent as the final result 138/138. NOT kept: both move success to the
+// return and put the destination in EBP. Separate false exits 191; empty-bank shared exit
+// or positive-count-owned result 150/150; shared exit with late input 196. NOT kept: the
+// 150 forms recover the immediate test but still spill the input early and shrink to 576 bytes.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

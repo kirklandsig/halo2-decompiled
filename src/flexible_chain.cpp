@@ -784,6 +784,12 @@ void __stdcall function_1160c0(real dt)
 // terminal-node identity 306, both node identities 305. Position-derived ordinal for root 300, terminal test 307,
 // full segment selection 292, and root plus segment selection 295. NOT kept: the address-based tests regress and
 // change the loop comparison.
+// The segment address still uses EDI/ECX and spills at +0x20 rather than EDX and +0x14.
+// Direct displacement reused as the scaled-add target 162, scaled then added in place 238,
+// scaled into a separate vector before addition 238. Shared point difference followed by
+// those three target forms 273/270/223. Native vector target 144, with direction used for
+// the unclamped displacement 298. NOT kept: the separate vector target ties, and forms
+// that shorten the target workspace change the frame from retail's 0xa4.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

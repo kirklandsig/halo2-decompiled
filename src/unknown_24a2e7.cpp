@@ -231,6 +231,12 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // aggregate 84. What is left on 39: ours keeps i * 0x248 in EBX across the calls (i itself in ECX in the loop), retail
 // keeps i in EBX and multiplies again for the terminator and the plain arm. The aggregate is a grouping form
 // (match-only); build/r119/lead-0x24a691-39.cpp.
+// The 0x28 frame, EBP-8 base spill and indexed clear return with the item pointer/count
+// record. Common plain-name fallthrough 52, selected suffix 39; mismatch continue 52/39;
+// direct found exits 71; explicit cursor with indexed fallback 52, while cursor 52,
+// cursor and selected suffix 39; shared suffix source 39, final append's result 73.
+// NOT kept: the grouping form requires a match. At 39, ECX carries the ordinal in the
+// search, then EBX carries its scaled offset through the appends.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
