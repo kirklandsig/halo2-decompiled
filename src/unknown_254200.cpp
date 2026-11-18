@@ -234,6 +234,10 @@ void function_254200(void)
 // Round 98 (m3 lane 2, single-address fast, control 4): descriptive names, to test a name-hash tie: the point copy
 // and size as center/size 4; the three bitmap pointers as first/second/bitmap 4; the dimension locals as height/width
 // 4; all seven together 4; the five parameters named 4 (all the same code: the reload pair does not follow names).
+// M3 lane 15 r98 (single-address fast, control 4): the doubled size as a two-component point used x for x and y for y
+// 136 (1113 B); the four edges computed into a four-real array ahead of the calls 173; the depth pair from a two-real local
+// array 4 (same code); the first vertex's corner in a point copy updated in place (x -= size, y += size) and reused 206
+// (1114 B); two corner points (low, high) computed ahead of the calls 173. The constant and y + size still reload in our order.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {

@@ -1341,7 +1341,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
+// score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // Earlier: MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
 // by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
 // local used for the inverse and for the 0.001f test measures 101, and the one-use local form in the notes below (87)
@@ -1717,6 +1717,11 @@ long function_2197f0(real gain);
 // composite+initial/composite+current/initial+current/all 159/99/95/159;
 // all with the previous release as complete if/else 159. Elapsed/reciprocal XMM
 // roles, the first separate gain load and the late release join still differ.
+// M3 lane 15 r98 (fast with 0x221810 and 0x1251e0, both MATCH; control 87, LCS-aligned 46): for the arm-3/arm-4 join (ours
+// carries the gain in XMM0 into arm 4, retail re-reads its home there): arm 4's sum as `gain +=` 87, arms 3 and 4 as `+=` 87,
+// the three interpolated arms as `+=` 87 (all the same code: the join still carries XMM0); every sum as `+=` 100 (678 B: the
+// hold arm then reads the ducking gain directly where retail copies it through the stack for the by-value operand); arm 4's
+// sum written interpolation first 115.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3579,6 +3584,14 @@ static inline short sound_voice_find_available_channel(char type)
 // driver assigns buffer 123; both arms assign buffer 122; result from both tests 135; byte from both
 // tests 177; result guards cleanup 135; cleanup at common exit 135; failure from missing channel or
 // buffer 134. NOT kept: all forms scored above the opening body.
+// M3 lane 15 r98 (fast with 0x129100, 0x127320, 0x12a5d0, 0x21de90, all MATCH; control 96): lane 5 r178's match-only form
+// (build/r178/held-1295e0-form15.txt in that lane's tree) rebuilt as found: 108 at 430 B (aligned 7: the search helper here
+// takes a char, so the type byte is loaded and then sign-extended); with the file-local search helper taking `long type`
+// 15 (aligned 4, as before: `mov al, bl` sunk below three pops in the failure tail, the channel store one slot late and
+// the commit's two pops at its end, because the early exits share the commit's epilogue). On the char rebuild (same code
+// as it, 108, each): the early exit as `goto done;` to a label at the return; the commit arm ending `goto done;`; the
+// commit arm first with the failure arm (and its label) second. The early test nested with its own `return result;` 135
+// (431 B).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4529,7 +4542,7 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 122 (was 130): the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
+// score 122 (was 122): the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
 // and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
 // widened (see r136 at the end of this note).
 // Earlier at 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
@@ -4777,6 +4790,11 @@ struct s_128ca0
 // The sum and clamp shared by both submissions, taking permutation byte, permutation record,
 // converted permutation gain, or permutation byte with decoded gain, each returning the bits
 // or writing the packet: 122/122/122/122/122/122/122/122. Pin registers and store order unchanged.
+// M3 lane 15 r98 (fast with 0x1293f0, 0x12a810, 0x1251e0, 0x125e60, 0x12a420, 0x12a9d0, all MATCH; control 122, LCS-aligned
+// 49): the synchronisation value as a char 189 (1054 B, aligned 78: the byte ops at the store are retail's, but the scratch
+// registers from the voice lookup on rotate); as a char defaulted to NONE and overridden 189 (same code); the first flag3
+// test with its two other conditions nested inside it 122 (same code); the second flag3 test as `(flags >> 3) & 1` 122 (same
+// code: the word load is still shared with the flag6 store); that plus the stream bit through the existing 0x12a420 123.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

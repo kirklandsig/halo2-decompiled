@@ -916,6 +916,15 @@ byte g_55e708;
 // 0xc34f4); the opacity reloads into ECX (0xc3568). Tried on the current form, none moves it: if/else with the
 // first-person count assigned inside its test 38; `+ 0` on the fallback result 38; a named long fallback copy also
 // tested in the clamp 146 (623 bytes).
+// M3 lane 15 r97 (fast with the same list; aligned = LCS count in brackets, base 38 [18]): read by alignment, the count
+// lives only in its home (+0x14) in retail: each arm stores it there, the fallback's sign-extended result lands in EDX
+// (EAX had carried the pushed object index) and is copied to EAX for the clamp test, and from there the loop's and the
+// single-marker arm's scratch picks follow. A long raw count copied into a separate count 113 [6] (every line from the
+// clamp on is then retail's; left are the first-person arm's missing home store, the fallback's EDX and copy, and a
+// second home at +0x18), the same with a short raw count 115 [8], both counts short with a conditional 115; the two
+// counts joined by a conditional expression or an if/else assignment 106 [24] each; the first-person count assigned
+// inside its test with the fallback in the else 38 (same code); the clamp through a pointer to the count 38 (same
+// code), through an inline helper taking that pointer 123 (591 B, stays a call).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {

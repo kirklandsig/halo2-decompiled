@@ -843,6 +843,17 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // width differences, not observable: retail compares, indexes and stores link_count as 16 bits (0x270e3f, 0x270e86,
 // 0x2712e8) while incrementing a dword (0x270e96), and its vertex words are widened then compared with -1
 // (0x27109b, 0x2710ac: never equal), as the body already does.
+// M3 lane 15 r97 (fast with the file's 16 functions, 0x210a30, 0x2104b0, 0x26f3f0, 0x30bf0, 0x210850, 0x2c2060; base 286, LCS-aligned
+// 134): lane 11 r71's flag form applied to the current file from its saved patch is 2 again (aligned 1: only
+// `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back edge). On that 2, looking for the block
+// retail has and ours lacks: the cross-link step (the two stores and the 0x26f3f0 call) as an inline helper called from
+// the 1/6/5 arm and from the type-2 arm when its surface test passes, the plain type-2 stores in the else 353 (1388
+// bytes: the two copies merge, but the frame is 0xe8 and the traversal's homes move); a step pointer for the cross-link
+// arm 263 (1368 B), for the type-2 arm 230 (aligned 10), for both 264, for the current step's two stores 299 (1372 B);
+// the edge projection block as an inline helper taking the edge pointer 601 (stays a call), the edge index 610,
+// force-inlined 332 (1391 B) and 398 (1423 B, loses 0x270930). Plain, in the full image, the flag form is 2 as well.
+// The same kind of adjacent reload pair in 0x24cf66 (another file, no shared callee) swapped this round when a helper
+// was removed from src/unknown_223240.cpp, so such pairs follow whole-image state as well as this body. Body unchanged.
 // Carried start node with pointer or indexed predecessor, pointer-tested for update, and index-tested carried node:
 // 343/385/343/374 with long link count, 387/372/387/315 with short link count.
 // NOT kept: pointer-tested predecessor omits the retail predecessor-index check and shortens the body.
