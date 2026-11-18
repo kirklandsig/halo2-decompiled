@@ -207,6 +207,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // declared after the table 72 (1181 bytes) both keep the result at 0x18; the clusters parameter walked 305 (1174 B: the
 // cursor then lives in the parameter's own home, where retail copies it to a frame slot); a walking cluster pointer
 // declared ahead of the result 68 (the clusters parameter then goes in a register, `ret 4`).
+// Round 138 (m3 lane 12, fast; both builds end `ret 8`; control 11): a redundant `if (0 < size)` guard around the blend's
+// inner loop 11 (same code), around the accumulation pass over the samples 32; the output section (previous-index store,
+// copy, blend, increment) in its own block 11 (same code); the cluster array through a local copy of the parameter for
+// both accesses 30; the cluster loop index typed `short` 304 (1173 B).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

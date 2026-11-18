@@ -116,10 +116,16 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 311 (was 371): Frame 0x42c versus 0x428; the starting-cluster register and BSP table lifetimes differ.
+// score 296 (was 311): The 0x428 frame agrees. The starting-cluster register, table loads, validity words
+// and sort scratch offset differ.
+// Before the sort scope, the frame was 0x42c.
 // Tried: const portal 371; const views 371; endpoint mask before shift 371; const portal and mask 371; shared
 // seed array index with separate bit read 373; validity memset 311 kept (plain); path ordinal in while 371;
 // index test before closest distance 371.
+// Round 605. The sort scratch scoped to its call scores 296 and restores the four 64-entry array offsets (plain
+// confirmed). Bitmap clear before cluster 312. Closest distance after seed 308. Search and sort scopes 296.
+// Early scratch 311. Named ordinals 311. Bounded output count 311. Shared output element 311. Explicit gain
+// arms 302 (NOT kept: frame 0x434). Search scope 311. Sort scope with gain arms 302 (NOT kept: frame 0x430).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -181,8 +187,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 		if (!(valid[i >> 5] & (1 << (i & 31))))
 			distances[i] = FLT_MAX;
 	}
-	real scratch;
-	sort_4byte(&scratch, order, bsp->sound_count, (t_portal_path_compare)function_18ae50, distances);
+	{
+		real scratch;
+		sort_4byte(&scratch, order, bsp->sound_count, (t_portal_path_compare)function_18ae50, distances);
+	}
 	if (count)
 		*count = 0;
 	long limit = bsp->sound_count < 64 ? bsp->sound_count : 64;
@@ -220,6 +228,14 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
 // before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
+// AC571: Combined rejecting guard / combined accepting guard / same-environment guard within the open-portal
+// block / eligible path inside the flag guard 368/368/368/354. Signed endpoint test 373, with a short cluster
+// index 354 at retail length. One destination index through the cap with fresh publication 333, and a separate
+// read at the cap 354. NOT kept: 333 shortens to 1347 and retains frame 0x430; the mixed reads do not match.
+// The short cluster form reaches frame 0x42c. Both BSP table reloads and the 0x428 frame still differ.
+// Path ordinal, destination ordinal, path list and minimum named separately and together 354 each.
+// Uninitialized arrays before the valid bits, minimum between the bits and arrays, or bit clear
+// before the initial cluster lookup 354 each. The 0x430 frame and cached table bases remain.
 // Round 623: narrow destination before flags 374, in nested gates 374; unsigned packed link and
 // cluster before flags 373; one destination environment after distance calls 363; rejecting range gates
 // 354, selected distance 354, comparison selected by the validity bit 356; one starting environment 326.

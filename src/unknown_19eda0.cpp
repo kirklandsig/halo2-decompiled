@@ -389,13 +389,18 @@ PRIVATE inline long polygon_round_19f(real value)
    at 0x47ff94; only 0x19f680 reads it) */
 real g_47ff94 = 1.5f;
 
+// score 322 (was 370): Frame 0x34 versus 0x30, with the material and render-state call transport still different.
+// Carried predecessor ordinal, one-based ordinal, or explicit wrap 328/323/335. Carried predecessor pointer 348 at frame 0x30.
+// Joint ordinal selection 325. Two edge pointers 332. Shared current vertex and carried predecessor 328.
+// Post-submission predecessor from the current ordinal 324, and as a separate fallback branch 324.
+// NOT kept: early predecessor 236 at retail length grows the frame to 0x38 and moves its computation before vertex submission.
 // MiniMax E (11-17): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5 factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0 still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not edit.
 // MiniMax R (11-15): no new form, no lower score (370): the frame is still 0x34 against retail's 0x30, retail's 1.5
 // factor still comes from a writable .data float at 0x47ff94 that this lane may not add, and the call to 0x4b2d0
 // still takes its tag, group and variant in EDX, ECX and EAX from src/unknown_01cf50.cpp, which this lane may not
 // edit.
 // MiniMax S (11-16): no new form, no lower score (370); retail's 1.5 factor still comes from its writable .data float at 0x47ff94 and the 0x4b2d0 call still takes its three arguments in another lane's order.
-// score 322 (was 370): frame 0x34 against retail's 0x30 (the loop's step counter has a stack home), the 0x4b2d0 call still takes
+// Earlier 322 (was 370): frame 0x34 against retail's 0x30 (the loop's step counter has a stack home), the 0x4b2d0 call still takes
 // three stack arguments (held change, see the note above 0x4b2d0), and retail expands 0x1ccb0(59) and 0x1cd90 here; see r136 at
 // the end of this note.
 // Earlier at 370 (was 370): no new form and no lower score; the body is unchanged. Retail still reads its 1.5
