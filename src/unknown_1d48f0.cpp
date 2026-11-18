@@ -349,6 +349,21 @@ const dword g_455978[81] = {
 // first difference also puts retail's zero register before the load of the first bound and our version
 // after it, and our build still reads a different global and calls a different function at the first
 // dispatch point.
+// m3 lane 9 r136 (fast with 0x11bed0, 0x11be90, 0x14a280, 0x279740, 0xc5460, 0x21a100, 0x168f40, 0x1d43d0; control 298,
+// aligned rows 205; body unchanged). Retail expands the range check at two sites in the whole image (here and 0x1d01c0;
+// 59 functions call 0x279740, 14 of them twice or more with no expanded copy) and calls 0x11bed0 from all 41 of its
+// callers; ours expands 0x11bed0 here and in 0x21a100 only. Diagnostics on 0x11bed0's own body (src/unknown_11bed0.cpp),
+// none kept: it sits just under the link-time expansion limit, so one extra branch with a store, three arithmetic
+// statements or one more call in it keep it out of line at both sites (this function then 278 at 2049 bytes, and 0x14a280
+// keeps its match), while ten repeated stores, a one-line accessor for the collision tree and a guarded accessor do not.
+// Spellings of 0x11bed0 that leave its bytes alone, all still expanded here (298): both arms through the existing
+// function_11be90 (0x11bed0 still matches); the else arm through it with a file-local clearing helper; `inline` on
+// function_11be90's definition with either; a pointer local for the leaf table. Spellings that change its bytes: the leaf
+// as a ternary or preset to NONE then one function_11be90 call (0x11bed0 35/38, this 277/271), the level index read once
+// into a short local (0x11bed0 5, this 297), a short cluster local (0x11bed0 1), a leaf element pointer (0x11bed0 25, this
+// 295). One compiler-setting diagnostic: without the inline restriction on src/unknown_279740.cpp both releases expand the
+// range check (418 at 2215 bytes, as `inline` on its definition did), so that file's flags are not the lever either.
+// Still BLOCKED-BY 0x11bed0: the original has slightly more in it than ours when the expansion is decided.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

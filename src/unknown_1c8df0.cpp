@@ -295,6 +295,10 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // grids of side-vector order or helper, spacing literal or named, product and sum operand orders and row orders (224),
 // declaration places of the top locals, hit, the two points, spacing and the clear flag (144), and named product or
 // centre leaves (205): none folds the x row.
+// M3 lane 6 r192 (compile-only, which reproduces the row): the side vector from a difference vector of the two points
+// (`i = -d.j; j = d.i`), the two mode-1 points declared negative first, the centre bound to `point3f const &` for the row,
+// the scaled x offset named and then added, the minus row as `+ -(product)`: the x row still loads the centre first; the
+// side x component copied into a local for the row changes the block (the z centre loads first), still no fold.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

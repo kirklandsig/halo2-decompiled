@@ -874,6 +874,10 @@ struct s_1f8a70_actor
 // each storing node first or radius first, 360/212/360/212. Native order
 // through the case frame 392, earlier snapshots before point stores 372.
 // NOT kept: all raise the score. Route dispatch and the late false reload remain.
+// Paired direct modes 372, paired reference modes 383, both pairs 182.
+// Mode-six movement-bit early break 408, with direct/reference/both pairs
+// 372/383/408, or with explicit source-node branches 414.
+// NOT kept: the dispatch join and failure-result reload remain.
 // Filtered zero route 182; conditional zero-route choice 182; branch-owned route 384; separate
 // zero/nonzero value choices 384; range-first normalization 309; separate radius/node outcomes 403;
 // compound invalid-route test 299; nested route choice 384. NOT kept: dispatch adjacency and

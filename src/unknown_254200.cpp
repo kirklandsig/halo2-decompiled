@@ -234,6 +234,10 @@ void function_254200(void)
 // Round 98 (m3 lane 2, single-address fast, control 4): descriptive names, to test a name-hash tie: the point copy
 // and size as center/size 4; the three bitmap pointers as first/second/bitmap 4; the dimension locals as height/width
 // 4; all seven together 4; the five parameters named 4 (all the same code: the reload pair does not follow names).
+// M3 lane 15 r98 (single-address fast, control 4): the doubled size as a two-component point used x for x and y for y
+// 136 (1113 B); the four edges computed into a four-real array ahead of the calls 173; the depth pair from a two-real local
+// array 4 (same code); the first vertex's corner in a point copy updated in place (x -= size, y += size) and reused 206
+// (1114 B); two corner points (low, high) computed ahead of the calls 173. The constant and y + size still reload in our order.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -570,6 +574,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // not enter the reload order); the first two texture calls in the free device-call form 467 (2157 B, out of line).
 // Retail reloads the lower coordinate (defined at the first texture call) before the constant (first vertex), i.e. in
 // the order the values are first computed, as in 0x254490; ours reverses both pairs.
+// M3 lane 12 r139 (single-address fast, control 2): each SDK call of the body switched alone between the C and the
+// class-member form (29 C sites to the member form 2 each, same code; the first quad's Begin and first two texture
+// calls to the C form 446/369/375); the first block's eleven texture-stage calls through the existing wrapper 0x224f0
+// 465 (2236 bytes); the colour bound by a `color3f const &` 2 (same code). Diagnostics: the first quad's inline-depth
+// start moved one call later 2; an unreferenced float function added to the file leaves 2 and 0x254490's 4.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

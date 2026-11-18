@@ -2077,6 +2077,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // `if (!arg_0) return NULL; return arg_0;` 748; the read poll's failure test as `state != 0 && state != 1` 753; the delay
 // as one condition (`(busy session) || g_50c460 > 3 ? 300000 : 2000`) 757; the state advance `? 2 : 5` as an if/else 703
 // (same code). Body unchanged; the slot test's cmovne still needs the SSE flag.
+// Typed owner publication 703, also with typed team-key copy 703; combined/independent rejection bits 802/717.
+// Property slices by index with literal/recorded count 714/714; pointer slices 754/754.
+// NOT kept: the indexed slices reach retail length but grow the frame from 0xc0 to 0xc8.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

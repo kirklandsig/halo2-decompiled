@@ -2,6 +2,7 @@
 #include "frame_storage.h"
 #include "globals.h"
 #include "vector_products.h"
+#include "normalize3d.h"
 #include <xtl.h>
 #include <math.h>
 #include <stddef.h>
@@ -336,6 +337,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // diagonal and squared in place 478; with named cosine corrections 476. Sine terms in the addition
 // or subtraction output fields 437/437; with squares in the diagonal fields 539/539.
 // NOT kept: each form shrinks the 0x6c frame to 0x60 or 0x54 and shortens the body.
+// M3 lane 16 r134 (fast, control 219): kept, the row scaling through the existing vector3f_scale (normalize3d.h) 219 (the
+// same code; it replaces that helper's body written out). Tried: sine and cosine passed to the rotation helper as `real const &`
+// 219 (same code); the axis passed by const reference 485 (1724 B); sine and cosine declared in two statements 219 (same code);
+// the three sine products through vector3f_scale 440 (1768 B).
 // M3 lane 3 r257 (fast; control 219, aligned differences exact / stack-offset-masked / fully masked 137 / 133 / 87).
 // Reading: the kept statement order of the rotation helper is the best of round 35's 40 random orders, not retail's;
 // retail's first copy runs k^2 (spilled at once), k*s, i^2, j*s, s*i, forward.i, ij, ... with the cosine read from its
@@ -377,9 +382,9 @@ void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache 
 		break;
 	default: __assume(0);
 	}
-	rotation.forward.i*=scale_i; rotation.forward.j*=scale_i; rotation.forward.k*=scale_i;
-	rotation.left.i*=scale_j; rotation.left.j*=scale_j; rotation.left.k*=scale_j;
-	rotation.up.i*=scale_k; rotation.up.j*=scale_k; rotation.up.k*=scale_k;
+	vector3f_scale(&rotation.forward,scale_i,&rotation.forward);
+	vector3f_scale(&rotation.left,scale_j,&rotation.left);
+	vector3f_scale(&rotation.up,scale_k,&rotation.up);
 	switch(definition->orientation)
 	{
 	case 0:

@@ -1441,6 +1441,17 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // trivial forceinline accessor in the NONE test 828 (diagnostic, same code); the iterator stored mode, step, entries,
 // type, class, graph 828 (code moves, same count). The first difference is the scratch pair at entry: retail loads
 // weapon_class into EDX and NONE into ECX, ours the reverse, so retail materialises NONE again for the outputs.
+// M3 lane 8 r184 (fast over the file's 38 markers; control 828, 0x1dbc80 828, the rest matched): an `inheritance_count > 0`
+// guard around graph_resources_request's inheritance loop 828 (0x1dc8c0 lost, 542); graph_type_resources_request's loops each
+// with their own `for (long i = 0; ...)` 828 (same code); the inheritance index set by `i = 0;` after the kinds request 828
+// (same code); the iterator set up graph, step, entries, then mode/class/type 828 (same code); the three outputs set by one
+// chained assignment before the iterator setup 828 (same code). Body unchanged.
+// MiniMax B (11-18): score 828 (was 828): no new form, no lower score. Read from the listing again: retail keeps the
+// result at F+0xc, the three resolved outputs at F+0/+4/+8, the iterator from F+0x10 and the per-pass candidate in
+// found_mode's dead home F+0x44, so the output homes do not follow the caller's declaration order (the six orders all
+// compile alike) nor the callee's write order (graph_weapon_type_iterate, in src/unknown_2963f0.cpp, writes mode, class
+// and type in that order); the first difference is still the NONE compare, where retail keeps the compared argument in
+// EDX and the computed -1 in ECX and ours the reverse.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

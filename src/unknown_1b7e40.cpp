@@ -69,6 +69,30 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// score 28 (was 38): m3 lane 9 r136 (fast with the file and 0x25d690/0x25d740/0x25d810/0x25d9b0/0x26ed40/0x26f060/
+// 0x26f0c0/0xba1d0, faithful 38; aligned rows 12 -> 7). Kept: the evaluation as `if (priority <= 0) return 0;`, the
+// lookups, then one test returning the priority and a final `return 0`, with the node's distance read once into a
+// local for both range tests. That gives retail's fallback (no priority zeroing, its failures to the zero exit),
+// priority in SI, view in EDI, actor EBX/node EBP, and returns 0 for a non-positive priority as retail does (`jle` to
+// the zero exit; the old body returned the priority itself). Left: retail re-reads the distance for the second range
+// test (ours compares the register), and the two exits sit the other way round: retail `je` to a last `mov ax, si`
+// epilogue with a 32-bit `xor eax, eax` exit in line, ours `jne` to a last `xor ax, ax` exit.
+// Without the distance local every two-exit form compiles to one code, 65 (actor/node in EBP/EBX, exits as above):
+// `if (TESTS && !busy) return priority;` then `priority = 0; return priority;` 65; the failure test first with
+// `return 0` or `priority = 0; return priority;` and a gate else 65/65; `goto done` with a zero return before the label
+// 65/65, with the busy test nested 65; the early `priority <= 0` return with the failure test 65, as `!(priority > 0)` 65.
+// On that 65 code: a slot-owner pointer local 65; no invitation-index local 65; an invitation element pointer 170 (579
+// bytes); the declined index from the local 65; node from a ternary 165; priority declared first 65; the joint's target
+// in a local 130 (551 bytes); length_sq3f 65; the view getter called directly 65; velocity declared first 65; the top
+// test or the fallback lookup through actor->prop_index 65/65, both 218 (608 bytes); one priority read after the loop's
+// if 105 (560 bytes), with the distance local 104.
+// Other tails: single exit with `priority = 0` on every failure 76 (542 bytes: one shared return), with the busy test
+// nested 76, as `goto done` 76; a short result zeroed at its declaration 91 (554); the kept body plus a gate else
+// zeroing the priority 61; both `return 0`s as `priority = 0; return priority;` with a gate else 49 (aligned 8: the
+// busy test is a select again), without the gate else 38 (same code); `return 0` in all three 49; the early return
+// with the busy test in its own `if` 49 (select). With the distance local: single exit 49 (540 bytes); a per-arm short
+// result 26 (553 bytes: retail's `xor eax, eax`, but `mov eax, esi` for the priority; two points, not kept); the old
+// body 42. No form found puts the zero exit in line after the busy test without the select.
 // MiniMax E (11-17): no new form, no lower score (49): the busy call's two returns are still if-converted into a mask select (neg al; sbb eax, eax; not eax; and eax, esi) where retail tests the flag and branches to its own priority epilogue, and this build's shared zero exit still sits after the priority block where retail's sits before the fallback block; the inverted test measures 49 and a single result exit 163 in the full build.
 // MiniMax H (11-14): no new form, no lower score (49): retail's shared zero exit sits at +0x1de,
 // between the evaluation region and the fallback block, and the priority path ends in an epilogue of
@@ -101,6 +125,14 @@ bool function_25d9b0(long prop_index);
 // returning 0 directly (no priority zeroing) give retail's SI and EDI homes for the priority and the view but swap the
 // actor and the node (65), the guard-return fallback measures 65 as well, the joint's target read hoisted into a local
 // measures 121 at retail's length, and the permuter's three rewrites in 300 s found nothing below the baseline.
+// Earlier (38, was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
+// MiniMax G (11-18): no new form, no lower score (38): the busy test branches to the priority epilogue like retail and the block order
+// matches, but the priority is held in DI where retail holds SI (the view in ESI against retail's EDI), the shared zero exit zeroes 16
+// bits (`xor ax,ax`) where retail zeroes 32 (`xor eax,eax`), and the fallback reads the slot's field with an unfolded compare where
+// retail folds it (`cmp dword ptr [ebx+0x7c],-1`); the gate's failure returning 0 gives retail's actor, node, priority and view homes and
+// the folded compare (49) but if-converts the busy test into a mask select, the fallback's failures returning 0 or the priority swap the
+// actor and the node (65), the first iterator call separated from the loop merges the two exits and grows the body (109), `return false`
+// and a long zero leave the zero exit's width alone (38), and the permuter found nothing below the baseline.
 // score 38 (was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
 // zero exit's width and the fallback's memory compare still differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
@@ -421,24 +453,17 @@ short __stdcall function_1b7e40(long actor_index)
 			priority = 3;
 	}
 evaluate:
-	if (priority > 0)
-	{
-		s_type_5cfb45 *state = function_25d690((s_prop_datum *)node);
-		s_prop_view_fields *view = prop_node_view(node);
-		vector3f velocity;
-		function_ba1d0(node->object_index, &velocity, NULL);
-		if (node->unknown28 > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
-			view->unknown54 < 0.31 && node->unknown28 <= 15.0f && !state->unknown64)
-		{
-			if (function_25d9b0(actor->prop_index))
-				return 0;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	return priority;
+	if (priority <= 0)
+		return 0;
+	s_type_5cfb45 *state = function_25d690((s_prop_datum *)node);
+	s_prop_view_fields *view = prop_node_view(node);
+	vector3f velocity;
+	function_ba1d0(node->object_index, &velocity, NULL);
+	real distance = node->unknown28;
+	if (distance > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
+		view->unknown54 < 0.31 && distance <= 15.0f && !state->unknown64 && !function_25d9b0(actor->prop_index))
+		return priority;
+	return 0;
 }
 
 /* the slot's status: 0x10 when the prop node's distance is under 0.8; continue (g_46fbe8)

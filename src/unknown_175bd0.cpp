@@ -1883,6 +1883,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 }
 
 // MiniMax I (11-15): no new form kept: reading colour B into a local ahead of the spawn stores measures 187 (was 128), so the body stands.
+// MiniMax G (11-18): no new form, no lower score (128): the frame is still 0x40 against retail's 0x44 with colour A packed
+// into the dead argument home, the particle system is still kept in EDI where retail uses ESI, and the zone block still
+// takes its zone byte from the cluster field.
 // score 128 (was 128): The frame is still 0x40 versus retail 0x44, and the early color-A spill and ESI system are missing.
 // frame 0x40 versus 0x44 (colour A packed into the dead `unknown` home), the system kept in EDI
 // through the type queries where retail reloads it from its home for the colour call (so colour B misses EDI), and the
@@ -2254,6 +2257,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // B in EDI, drops the system after the type query and reloads it from its home, the cursor in the effect home and colour
 // A at frame+0); on it the colour locals renamed to sort after the cursor 178 (same code: names do not move these homes),
 // tinted declared ahead of the colours 178 (same code), the system bound by reference for the colour call 178 (same code).
+// M421: Body-advanced for/while 128/128, mode field reference 128, traversal settings reference 128.
+// Early colors with while body/for body/for step 184/184/376, forced-inline zone predicate with for step 128.
+// NOT kept: early colors lengthen the body. The forced inline restores both zone expansions at the opening score.
+// The color A slot and system register still differ.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3385,6 +3392,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 }
 
 // MiniMax I (11-15): no new form kept: the block-scope order (the particle cursor, the cached mode as a long, colour B, colour A) measures 91 (was 93), under the keep bar, and the mode read after the colour call measures 118, so the body stands.
+// MiniMax G (11-18): no new form, no lower score (93): the frame is still 0x4c against retail's 0x54, the system and the
+// next index still take EDI and ESI the other way round, and the definition still has no spill for the per-call mode reads.
 // score 93 (was 93): The frame is 0x4c versus retail 0x54. The system and successor registers are exchanged, and the definition has no spill for per-call mode reads.
 // the system takes EDI and the next index ESI where retail has ESI and EDI (colour B and the type
 // object rotate with them), the frame is 0x4c against 0x54 and the location mode is cached where retail spills the
@@ -3778,6 +3787,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // through its own address 127 (352 B, effect index back on the stack but the system index in ECX, frame 0x50; 0x176f60
 // 18); an early `return next_index;` for an empty definition 97 (334 B); the cached mode read first in the block 94; the
 // effect-location pointer declared first 93 (same code); the cached mode as `short` 93 (same code).
+// M421: Bound mode field, cached for-step/while-body, live for-step/while-body, bound for-step/while-body,
+// and live for-body 108/93/93/108/108/108/108/108. NOT kept: the live reads recover frame 0x54 but move the effect
+// index from the stack into a register and lose the matched update caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

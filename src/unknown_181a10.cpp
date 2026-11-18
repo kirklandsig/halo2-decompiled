@@ -1004,10 +1004,21 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // optional unsigned adjustment set by branch or conditional 328/315. Same
 // forms indexing with the validated clamp result 339/339/353/342.
 // NOT kept: the frame and second-node spill remain. The distinct forms grow the body.
+// Chained entity-index defaults 237; role names for entity indices/coefficients/both
+// 238/238/238, with chained defaults 237/237/237. Separate named coefficients 238.
+// NOT kept: the one-point gain leaves frame 0x40 and the second-node slot unchanged.
 // Packed-contact shape reference 327. Material before shape or after data 327/327.
 // Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
 // Separate material-arm shape references 327. Shared receiver and early short material 328.
 // NOT kept: the 0x44 frame form still spills the nodes to different slots and raises the score.
+// M3 lane 10 r119 (fast with the file; control 238), all in the 1..16 classifier: the data read through a `long const *`
+// view 238 (same code: the loads still merge); `1 > value ? 1 : (16 < value ? 16 : value)` 238 (same code); `value > 16
+// ? 16 : value` then `if (limited < 1) limited = 1;` 238; `1 > value ? 1 : value` then `16 < limited ? 16 : limited`
+// 238; `limited = 1; if (!(limited > value)) { limited = 16; if (!(limited < value)) limited = value; }` 320 at retail's
+// 1243 B (the bounds then sit in ECX as retail's `mov ecx, 1` / `mov ecx, 0x10`, but the compare is `cmp eax, ecx` on a
+// copy of the zero test's load where retail reloads the data into EDX and compares `cmp ecx, edx`). Reading: matched
+// 0x1c5400 and 0x1d4880 compile the same test with immediate compares and one load, so retail's three loads here go with
+// the bounds-in-register form (the zero test's ECX is taken by the bound, so the data is reloaded, not copied).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

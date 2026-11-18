@@ -831,6 +831,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
 // the table entry whole or by components. Whole-entry forms reach 880 bytes
 // with the 0x1c frame. Direction read order and the frame still differ.
+// Unit-range generator 154, directly in the angle 203; integral sample converted in the
+// angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
+// shared draw value or separate const samples 130/130. NOT kept: sample and rotation
+// homes remain different and none lowers the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -962,6 +966,10 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // MiniMax C (11-01): no new form, no lower score.
 // MiniMax S (11-15): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
 // MiniMax E (11-16): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 and passes the first argument to 0x4b2d0 in ECX; both callees sit outside this lane's files.
+// MiniMax B (11-18): no new form, no lower score (322): retail still inlines 0x1ccb0 and 0x1cd90 where this build calls them (both sit in src/unknown_01cf50.cpp, not this lane's file) and still passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against our three stack arguments, so the frame, the attribute scans, the side loop and the outer vertex calls stand.
+// MiniMax G (11-18): no new form, no lower score (322): retail inlines 0x1ccb0 and 0x1cd90 where this build calls them out of line and
+// passes 0x4b2d0's variant, group and tag in EAX, ECX and EDX against this build's three stack arguments; both callees sit in files this
+// lane may not edit, so the frame 0x2c, the attribute scans, the side loop and the outer vertex calls stand as they are.
 // score 322 (was 322): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
 // 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
 // tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.

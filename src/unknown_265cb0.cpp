@@ -857,12 +857,22 @@ real function_30bf0(vector3f *vector);
 // countdown with postincremented input 187, indexed count with postincremented input 185. Primary fallback
 // first with selected 3/2 tier 84, four-way result select 153, explicit zero in the primary fallback 153.
 // NOT kept: the two-sided clip and cursor forms reach 1308 bytes but keep the wrong result home and raise the score.
+// M3 lane 7 r177 (fast with 0x263740/0x25c9d0/0x26d370/0x263d70, all MATCH; control 84, aligned 57): a redundant
+// `if (0 < count)` guard around the seat loop 148 (1315 B); the seat element copied into a local for the occupant lookup
+// 150 (the frame moves); the seat element bound as a const reference 90 (1308 B, aligned 70); the occupant's forward
+// bound as `vector3f const &` 84 (same code); the second probe's outputs and maxima in their own block 84 (same code).
 // Seat record reference 90, value copy 150, named vehicle/seat/both 84/84/86;
 // record reference, value copy and paired fields with a scan-wide world-up pointer 149/203/144.
 // NOT kept: the result and projection/count homes remain unresolved.
 // DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
 // before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
 // NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
+// M3 lane 3 r259 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the clip amount declared at function
+// scope ahead of the result 84 (same code); the seat basis (both crosses and the normalise) through a new forced-inline
+// helper with a local copy of the world-up pointer 88 at 1308 B (the first cross's i product flips the wrong way), with no
+// local 86 (1310 B), with a forward-pointer local 146 (1315 B), world-up and forward locals 92 (1308 B), a side-vector
+// local for the second cross 92 (1308 B), world-up and side locals 88 (1308 B); as plain `inline` it stays out of line
+// (408, diagnostic). None moves the result/clip/range homes.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2675,6 +2685,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
 // reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
 // further down allocates the table base and the index to different registers.
+// M3 lane 7 r177 (fast with 0x25d810/0x26be00/0x25d740/0x26be30/0x2662f0/0x266540, all MATCH; control 168, aligned
+// 107): the slot search's counter long 169; 0x26be00 in the array-index form 168 (same code); the score through a
+// reference-bound local 168 (same code); the decay read into a named short before its store 168 (same code); the
+// relative vector ahead of the velocity copy 266 (695 instructions, aligned 122).
 // DH398: Normalized direction snapshot after its call, distance guard, contact lookup,
 // or relative construction, as a vector or three scalars 429/429/429/429, 168/168/168/168.
 // NOT kept: Vector copies enlarge the frame to 0x8c. The scalar snapshots reproduce the baseline, including the iterator SIB and the direction reloads. The original direction consumers are restored.
