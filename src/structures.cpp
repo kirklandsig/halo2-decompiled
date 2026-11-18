@@ -485,7 +485,7 @@ struct s_16e1b0_list
 
 void function_16e1b0(long value, s_16e1b0_list const *list, long *unknown, long *range_index, long *offset);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
-bool function_11e800(point3f const *a, point3f const *b, point3f const *c, point3f const *p, real *u, real *v);
+bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v);
 
 static inline bool structure_section_get_vertex(s_structure_section const *section, long index, point3f *point)
 {
@@ -829,7 +829,7 @@ bool structure_get_lightmap_triangle(s_structure_collision_result const *collisi
 			{
 				valid = valid && structure_section_get_vertex(section, indices[vertex], &vertices[vertex]);
 			}
-			if (valid && function_11e800(&vertices[0], &vertices[1], &vertices[2], &point, &triangle->u, &triangle->v))
+			if (valid && function_11e800(&point, &vertices[0], &vertices[1], &vertices[2], &triangle->u, &triangle->v))
 			{
 				triangle->part_offset = part_offset;
 				triangle->lightmap_part_index = reference->part_index;
@@ -1099,7 +1099,7 @@ bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 					bounds, &vertices[vertex], &vertex_node);
 				++vertex;
 			} while (vertex < 3);
-			if (function_11e800(&vertices[0], &vertices[1], &vertices[2], &point, &triangle->u, &triangle->v))
+			if (function_11e800(&point, &vertices[0], &vertices[1], &vertices[2], &triangle->u, &triangle->v))
 			{
 				triangle->unknown18 = NONE;
 				*(long *)((byte *)triangle + 8) = COLLISION_OBJECT_14A8E0;
