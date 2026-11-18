@@ -266,6 +266,16 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // M3 lane 11 r114 (fast): each row bound by reference (`real &row = local_3.n[component]`, the sum then `-=` the offset)
 // 195 (1001 bytes); an `unsigned char` component counter 243 (960 bytes, not unrolled); the flag through a `bool &` bound
 // to its field 4; the half step as `0.5f * velocity` in the loop 4; a `register` component counter 4 (the 4s the same code).
+// M3 lane 11 r116 (fast with 0x30bf0/0x1f5110/0x1e4290/0x25d700, all matched each time): a `real const half = 0.5f`
+// named ahead of the flag store and used in the row loop 4; the origin component read into a const local at the top of
+// the loop body 4; the origin through a `point3f const *` named after the flag store 4 (all the same code); each row in
+// two statements (the half-stepped position stored, then `-=` the origin) 195 (1001 bytes); the square sum with each
+// product in double (`(double)j * j + ((double)i * i + (double)k * k)`) 214 (1006 bytes); the direction copied through a
+// named `vector3f const *` to its field 196 (1001 bytes). Reading of the listing: in retail every dependent x87 pair
+// (fmul -> faddp, faddp -> faddp, faddp -> fsqrt) has three other instructions between its two halves, the flag store
+// being one of the three in the first pair; ours has three, two, three, and the build without the flag store two, three,
+// three. So the store is counted as a filler for the first pair in both builds, and ours then issues the second faddp a
+// slot early: the store's slot is charged to the row stream only.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

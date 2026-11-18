@@ -34,7 +34,18 @@ const char *saved_game_type_get_storage_name(long type);
 char *function_122810(char *path, const char *suffix);
 bool saved_game_file_read_begin(void *buffer, dword size, bool non_roamable, s_saved_game_file_task *task, const char *path);
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task);
-bool function_216d70(char *path, const char *directory, long type);
+bool function_216d70(const char *directory, char *path, long type);
+
+/* a saved game file's path, built from its directory and type */
+struct s_saved_game_path_2162b0
+{
+	char text[0x100];
+
+	bool build(const char *directory, long type)
+	{
+		return function_216d70(directory, text, type);
+	}
+};
 
 // @retail 0x2161d0
 bool function_2161d0(long file_index, void *buffer, long size)
@@ -44,9 +55,9 @@ bool function_2161d0(long file_index, void *buffer, long size)
 
 	if (function_2162b0(file_index, buffer, size, &task))
 	{
-		if (!*(volatile bool *)&task.done)
+		if (!task.done)
 		{
-			while (!*(volatile bool *)&task.done)
+			while (!task.done)
 			{
 				SwitchToThread();
 				function_125d60();
@@ -59,143 +70,6 @@ bool function_2161d0(long file_index, void *buffer, long size)
 	return result;
 }
 
-// score 10 (was 10): local path address retained after append and cached ESI-pop timing remain;
-// tried type at use 40f; type after copy 40f; cached result first 20f; completion bool order 11f;
-// cached progress first 13f; location guard nested 10f; result in each path 10f; completion from success 11f;
-// complete location object 10f.
-// path address reuse and cached-completion pop order differ;
-// bounded copy 10; append result local/expression 27/27;
-// bounded copy plus append result 27/27; location result 53;
-// copy result with original/returned read path 85/85.
-// Cached direct return 89; function-scope files 17; late path pointer 10;
-// append/copy first-element forms 10/10; result after done 19; state before done 12;
-// shared location type 10.
-// Unsigned copy size 10; profile pointer local 10; result between the task stores 10; index before the
-// cache pointer 10; done flag stored last 13. Retail 0x121570 keeps esi across 0x122810, so the reload
-// after it here is not a property of the callee.
-// Round 85: retail 0x216da0/0x216e50 also recompute the buffer address after an ESI-argument callee
-// (0x217a80); a `do {} while (false)` join after the append 10; path built in an inline helper
-// returning the path 10; result set inside `if (read)` 34; chained done/success assignment 11;
-// a volatile done store (diagnostic only, reverted) 10.
-// Short/long/byte/signed-char completion 96/93/110/110; done/success result chains 19/10;
-// bounded-index statements 10, with long completion 93; size guard first 75; shared upper bound 104.
-// Round 88: the path built through the existing copy/terminate/append helper shape 10; separate
-// location and path locals 19 (frame 0x140: retail keeps 4 bytes between them); a named path
-// pointer 10; result read back from the task 10; the build as an inline member of the record 10.
-// Round 10: separate location and plain path array locals 19 (the reuse stays: mov edx, esi); the
-// append through an inline member of the record 10; through a static inline function 10; a path pointer
-// for the append only 10; the storage name in its own local first 10. (Matched 0x216da0 recomputes after
-// an inlined member's call; here that form keeps the reuse.)
-// Round 102: a const cache pointer 10; a const path pointer 10; a multi-use location pointer 10; a location
-// reference 10; the location pointer/reference each with a path pointer 10/10; a const type 10; const cached
-// indices 10. Every form compiles to the baseline's code.
-// Round 134 (fast): the path built by calling the existing 0x216d70 (copy, terminate, append; LTCG inlines
-// it here as retail does) 10, kept in place of its body written out, with its type argument named first 10;
-// the profile copied from the bounded index 110 (309 bytes); result set before the task stores 20; progress
-// stored first 13; state first 12; succeeded first 11.
-// Round 138: if on the path helper's bool 10; `&&` of helper and read 23 (290 bytes); cache pointer before the bit
-// test 17; inverted first test 10; separate result assignment 10.
-// Round 53 (m3 lane 15, fast): the read's path as `&local_0.field_44[0]` 10; the index and size tests nested
-// 10; the size test first 75 (291 bytes, re-measured); the profile copied from `&...profile` 10; the location
-// record declared at function scope 10; the read's result returned directly from the else arm 102 (271 bytes;
-// 0x2161d0 33). Retail's other callers of 0x122810 (0x2164c0, 0x216f80, 0x2ad020) do not reuse the string
-// register after it either, but none passes the path again before other code.
-// Round 115: explicit cached exit 10; branch-local cache pointer 10; helper result in result/named bool 10/10;
-// separate read result 10; named cached predicate 10; result before the copy 46; result from done 10.
-// NOT kept: no gain; the one-use result forms were exact-only and the original body is restored.
-// Round 65 (m3 lane 14, fast): a built flag read after a join 10 (same code, threaded early); an inline path helper with its own bool
-// result 68 (257 bytes, not inlined); `if (!helper) {}` around the build 10; empty tests between the build and the read 10/10; the read's
-// path as `(const char *)&local + 0x44` 10; `succeeded` as byte 10 (0x2161d0 18, lost); `state` as dword 10; `progress` through a long
-// field 10. `done` as byte or char does not compile (the async call takes bool *). Retail evidence: 0x121570's third append reloads with
-// `lea esi` only after a real join, while its second keeps ESI, so retail's `lea edx` needs a join these forms fold away.
-// Round 95 (m3 lane 16, fast): the record's two clears as its constructor (retail's location record type has that
-// constructor) 10; task stores done/state/succeeded/progress 12, done/succeeded/progress/state 12, done/progress/succeeded/state 13
-// (the stores keep source order, `pop esi` is always hoisted); the shared location type re-measured 10. Diagnostics: the path in
-// its own two-field local 10; a `_ReadWriteBarrier()` between the build and the read 10 (the reuse is register tracking, not a memory
-// CSE: what unifies the inlined helper's path register with the read's address is still open); the cached index as `short` 117
-// (309 bytes).
-// Round 158 (fast, 0x2161d0 checked): 0x122810 made an out-of-line member of a 256-character string (diagnostic, its
-// definition and 0x216d70's call changed) 10, `mov edx, esi` stays; the build arm setting `result = true` with the read
-// under a later `if (result)` 10 (threaded early); the location arm as a forceinline helper 90 (0x2161d0 33); the location
-// and path local as a named file-scope record 10, with the read as its inline member 10; result set before the task stores
-// re-measured 20; permuter 600 s (35 tries) none better.
-// Round 84 (m3 lane 11, fast): 0x216800's `long count = table->count;` local for the bound 17; the cache through the
-// header's storage-cache type (builtin file count, data, sizeof bound) 10; the task's four stores through an inline
-// finishing helper 10; the cache through the existing saved_game_storage_get_cache() with an entry pointer 10 (all
-// same code but the first); the bounds as `index >= 0 && index < files->count` 87 (294 bytes); re-measured, the cache
-// entry's data through a pointer local 10. A retail scan of matched
-// functions with `rep movs; pop edi; <store>; pop esi` against `pop edi; pop esi; <store>` (0x614a0 against 0x616e0,
-// 0x216800 against 0x1a6bf0): the store sits between the pops when its only later constraint is the frame release
-// (`add esp`), and after both pops when it feeds a longer chain; here the stores go through EBP, which `pop ebp`
-// follows, so the open question is what in retail lets the done store issue before `pop esi`.
-// Round 172 (m3 lane 6, fast with 0x2161d0, which stays matched): the bit test as `file_index & 0x200000` 91 (as
-// `(file_index >> 21) & 1` without the bool cast, the same code); the path build under an else arm that returns false,
-// the read after it 31 (the tracker still gives `mov edx, esi`; the inverted early return compiles the same); the path
-// cleared before the name 13; `index == bounded_index` 11; the cached arm's task stores before the copy 21. Same code:
-// the read as the arm of a ternary on the path helper's
-// result; the location call given the whole record. Of the 10, 8 follow from the 2-byte `mov edx, esi` (the four
-// jumps to the failure block, the read's call and the padding shift by 2); the pop order is the other 2.
-// Round 98 (m3 lane 10, fast with 0x2161d0, 0x216d70, 0x122810, 0x2acd60, 0x216800, 0x121570, which all stay matched): `inline`
-// on 0x216d70's definition 10 and on 0x122810's 10 (same code); `result = helper && read` 20, the helper as the last term of
-// the condition 10, `helper ? read : false` 10, the whole arm as one `&&` chain 50 (none gives the `lea`); the location and
-// the path as plain separate locals (the location type 0x44 bytes) in place of the record that grouped them with a pad field
-// 10, the same code, kept; a 0x40 location with a 0x104 path 14. Diagnostics, reverted: a real join (a test of a global)
-// after the path helper gives retail's `lea edx, [esp + 0x50]`, a plain store there keeps `mov edx, esi`, so the reuse is a
-// block-local register tracker and retail has a block boundary after the append call that leaves no code; the `done` and
-// `succeeded` stores both volatile give retail's `pop edi; store; pop esi` exactly (8; `done` alone 10; a join after the
-// `done` store 68): retail's task type has those flags volatile, as main's stores of `succeeded` and `unknown1` in the
-// 0x2acd60 family (through casts) also show. HELD (needs a ruling on volatile in a shared type): with done, unknown1 and
-// succeeded declared volatile where the task type is declared, main's six volatile casts on them and 0x2acd60's one-use
-// pointer removed, every function of the nine files that use the type reads as before (fast and plain) and this one is 8:
-// build/r98/held-2162b0-task-flags.patch. Not applied here.
-// Round 163 (m3 lane 8, fast with 0x2161d0, which stays matched): `__assume(task != NULL)` between the path build and
-// the read 10, `__assume(path[0xff] == 0)` there 10 (neither leaves a block boundary: `mov edx, esi` stays); the path
-// declared before the location record 10 (same layout); `__assume(task != NULL)` ahead of the cached arm's stores 10
-// (`pop esi` still first); `result = helper && read(..., &path[0])` 23 (290 bytes). Retail's 0x216da0 recomputes its
-// buffer after 0x217a80 because that callee takes and changes ESI; 0x122810 keeps ESI, so the cause here is still a
-// block boundary with no code.
-// Also round 163: the path declared inside the read block and cleared there 102 (296 bytes; 0x2161d0 33); the record's
-// two clears as `display_name[0] = name[0] = 0` 10 (same code).
-// Round 94 (m3 lane 13, fast with 0x2161d0, which stays matched): the location failure as an early `return false` ahead
-// of the build 31; both arms returning directly with no result local (the cached `return true`, the read returned, a
-// final `return false`) 10 (same code); the cache pointer loaded at the top and tested in place of the global 17; the
-// path helper's bool as a third term of the location test with the read in its body 10; the cache global read at each
-// use, no pointer local 10. (Retail calls 0x216d70 out of line in 0x215c00 and inlines it only here.)
-// Round 98 (m3 lane 14, fast with 0x2161d0, which stays matched): the read through an inline helper taking the path as
-// a parameter 10 (same code), `__forceinline` 10, with the location record and path at function scope 10; the build and
-// the read in one inline helper taking the path and the record 72 fast (the builder's unit is outside the reduced
-// image); the path built by a forceinline wrapper returning the path, passed to the read, plain 10 (same code). Retail
-// recomputes the path at every use inside the inlined build (strncpy push, terminator, append), and 0x122810 never
-// writes ESI, so the reuse is the code generator's own choice here.
-// Round 130 (m3 lane 12; plain where marked): the language test moved into a forceinline path builder that returns
-// false early and else builds and returns true (`&& builder(&location, path)`), plain 10 (the join folds: same code);
-// the build and the read in one forceinline helper taking the record and the path, plain 10 (same code; the note had
-// only its reduced-image 72); the bit test through TEST_FIELD_BIT 10; the location type read into a named local for
-// the build 10; the bounded index as an if/else-if chain 10 (all same code). Diagnostic (reverted at once): speed
-// preference off around the function 143 (229 bytes; 0x2161d0 31), it reshapes the whole function.
-// Round 111 (m3 lane 1, fast with 0x2161d0, which stays matched): a pointer local to the done flag, taken before the copy 10
-// or just before its store 10 (`pop esi` still first); pointers to done and succeeded 10 (both stores now rise above `pop
-// esi`, where retail lifts only done); pointers to done, succeeded and state 13 (all three rise above `pop edi`); the location
-// and path at function scope with a `built` flag set after the path build and the read under `if (built)` after the whole
-// if/else 10 (threaded and merged: `mov edx, esi` stays). So separate store bases give the stores an alias chain that lifts
-// them, but no split leaves done alone; the path reuse (8 of the 10) is untouched by any of these.
-// Round 102 (m3 lane 13, fast with 0x2161d0, which stays matched): the read's path in a `char const *` taken before
-// the build 10; the build given `&path[0]`, `&location.name[0]` 10; progress stored before state 12 (the stores follow
-// source order); the location test inverted with an empty first arm 10; a multi-use `char *path` over the buffer for
-// the clear, the build and the read 10 (all but the third the same code). 0x2160b0, the path helper of the matched
-// 0x2174b0, has no language test, so it is not the builder inlined here.
-// Round 116 (m3 lane 1, fast with 0x2161d0, 0x216d70, 0x122810, which stay matched): 0x216d70's body moved into this
-// file ahead of this function (diagnostic, so it inlines in the same unit) 10 (same code: `mov edx, esi` stays); the
-// build given `path` through a `char *const &` 10; the read's path through a trivial inline accessor 10; the build's
-// name and type through a `const &` to the location record 10 (all same code). Retail 0x122810 preserves ESI (it
-// returns the string from ESI), so retail's `lea edx` still needs a block boundary after the append call.
-// M3 lane 10 r117 (fast with 0x2161d0, 0x216d70, 0x122810, 0x2acd60, 0x216800, which stay matched): retail 0x121570
-// keeps `esi = name` across an append, a strncpy call and a split, and recomputes `lea esi` only after a join, so retail's
-// `lea edx` needs a branch target right after the append. A forceinline bool helper doing the language test and the
-// build, joined by `&&` after 0x216800, 10 (same code); one doing 0x216800, the test and the build (0x2160b0's shape) 10;
-// `result = found && language != -1; if (result) { build; read }` 53; the builder's bool in `built`, `result = built &&
-// read(...)` 23 (290 bytes); the path in a two-member union, built through one member and read through the other, 10
-// (same code: the tracker follows addresses, not names). With 0x216d70 outside the reduced image the helpers read 72.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
@@ -219,14 +93,14 @@ bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file
 	else
 	{
 		s_profile_file_location location;
-		char path[0x100];
+		s_saved_game_path_2162b0 path;
 		location.name[0] = 0;
 		location.display_name[0] = 0;
-		path[0] = 0;
+		path.text[0] = 0;
 		if (function_216800(file_index, &location) && location.language != -1)
 		{
-			function_216d70(path, location.name, location.type);
-			result = saved_game_file_read_begin(buffer, size, false, task, path);
+			path.build(location.name, location.type);
+			result = saved_game_file_read_begin(buffer, size, false, task, path.text);
 		}
 	}
 	return result;

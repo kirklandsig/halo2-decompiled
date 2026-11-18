@@ -181,6 +181,11 @@ __forceinline bool function_184448(long arg_0)
     return true;
 }
 
+// MiniMax H (11-18): no new form, no lower score (965): the frame is still 0x11d4 against retail's 0x11cc, and the
+// record and surface records still sit in each other's stack homes where retail keeps the record pointer at +0x98 and
+// the surface list at +0xe0/+0xe4 from the start; dropping the two cached axis indices gives retail's frame and
+// retail's length but scores 976, because the first difference moves later and the homes stay different; the 0x48e70
+// call, whose body is in another machine's file, still decides the register rotation.
 // MiniMax E (11-11): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc and the two
 // cached short axis locals are what costs the eight bytes - the form that drops them matches retail's frame and
 // length but scores 976 because the first difference moves earlier, so the 965 body stays.
@@ -406,6 +411,17 @@ __forceinline bool function_184448(long arg_0)
 // carries the start surface in edi where this build carries it in esi; the earlier rounds' form that does reach
 // retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter
 // and width forms of those rounds score 965 or worse.
+// M3 lane 15 r97 (fast with the callers 0x9cca0/0x184250 and the callees, all matched throughout; LCS-aligned count in
+// brackets, base 965 [549]): retail never gives the record or the surface a callee-saved register (the record is read from
+// +0x98 at both transforms, the surface is reloaded into ECX at the top of each face and its edge and vertex arrays are
+// fetched just before the vertex loop), where ours hoists both loads above the face loop into EDI/EBX. The selection through
+// an inline helper with two output pointers 965 [552] (4573 B; the indirection is removed and both stay in registers); the
+// face array in a per-face local used for the face and the neighbour test 965 [551] (same head); the edge and vertex arrays
+// in locals before the vertex loop 984 [551] (4573 B), with the face-array local 978 [545]; the worklist cursor declared
+// before the world-bounds loop with the loop as a while 958 [548] (retail's `xor eax, eax` before the six bounds stores and
+// its entry-then-count stores; a moved declaration, so match-only), the same with the count assigned before the entry 958
+// (same code); that with the lookup as one `&&` test and the table pointer declared first 955 [543] (the table load then
+// sits above the tests where retail loads it after them), with the table global written at both uses 971 [542].
 // MiniMax C (11-17): no new form, no lower score (965): retail's stack reserve is 0x11cc against our 0x11d4, so the worklist array and every later slot sit at a different offset, and the scene and geometry homes are rotated (retail carries the surface pointer in edi and the surface list in ecx, where this build carries them in esi and ebx); the earlier rounds' form that does reach retail's frame (the axes read at each use with full-width vertex counters) scores 976, and the endpoint, counter and width forms of those rounds score 965 or worse.
 // 463: shared two-axis projection at vertices/samples/both 1034/1056/1033, or with long
 // vertex traversal 1037/1083/1037. Both with Boolean orientation 1037, direct table

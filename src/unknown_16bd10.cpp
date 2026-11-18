@@ -727,7 +727,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 126 (was 126; m3 lane 16 r130 at the end): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
+// score 126 (was 126): 1696 bytes and frame 0x48 agree; first +0x49 is the switch span, then direction-k versus j preload and length/zero homes differ.
 // MiniMax C (11-17): score 126 (was 126): no new form, no lower score. The case-2 plane length still preloads the
 // left vector's k component into XMM1 where retail preloads its j, and the length's accumulator stays in XMM0 where
 // retail keeps it in XMM1, so the zero that follows stays in XMM1 against retail's XMM0; the swapped dot arguments
@@ -1206,6 +1206,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // squared length as the zero arm or factor default 378/378; conditional
 // factor at the scaled add 126; distance before the test or length 411/411;
 // complete plane aggregate 440. Direction-j preload and zero home remain.
+// DH401: Existing staged dot for length, plane offset, point distance,
+// offset/length, length/distance, offset/distance and all three, then
+// direction first for length: 151/400/126/399/151/400/399/405.
+// NOT kept: the revised accumulation order requires a match.
 // Round 624: transform reference/pointer through both point subcases 461/461; projection-case
 // reference/pointer 473/473; rotation subobject reference 438; transform and point-state references 461;
 // transform pointer with staged scale 461; staged signed distance, quotient and factor 126. The direction-j
@@ -1220,6 +1224,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // 151 at 1696 B (it hoists left.i into XMM1 and sums in XMM0); diagnostic, both plane dots summed j, k, i through a
 // local copy of path.cpp's `dot3f_jki` 394 (1700 B; left.k still hoisted). Left as before: the plane length's k preload
 // and its XMM0 sum, so every later zero takes XMM1 (retail XMM0).
+// The direction-j preload and resulting length/zero allocation remain.
+// normal by component assignment 435; basis dot for plane constant 400; basis dot for length 151;
+// basis dots for constant and length 399; basis dot for signed distance 189;
+// basis dots for all three projection products 412; component assignment and basis dot for length 439;
+// basis dots for constant and signed distance 412.
+// NOT kept: the basis length changes the preload to i and retains the length and zero registers. The other component and basis forms regress.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

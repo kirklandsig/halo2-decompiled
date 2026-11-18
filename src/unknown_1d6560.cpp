@@ -100,6 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax B (11-18): no new form, no lower score (96): the type is still read in both kind routes where retail reads it once at the entry; the single-read form reaches 68 only with a one-use local and a score-picked declaration order, and the one-use-free form (98) demotes the matched caller 0x1d5bf0, so the read stays as it is.
 // score 96 (was 96): unchanged in round 252; left: retail reads the type once at the entry with the header data
 // loaded first, which every keepable form here either repeats in both branches or pays for with the caller's register
 // pair (see Round 252 below).
@@ -488,6 +489,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // shift of the same three values), and the owner chain through ESI where retail uses EBP. On this body: `long result`
 // declared first 96, the object index typed dword 96 (both same code); the main switch's type and case 0's object
 // through one header element pointer 91 at 256 B (caller 146).
+// M3 lane 7 r177 (fast with the file and the caller 0x1d5bf0, all MATCH; control 96): the rigid body bound by reference
+// 96 (same code); the two flag selections as ternaries 98 (272 B); case 11 as one nested ternary 96 (same code); `long
+// result` declared first 96 (same code); case 0 through the header array with the component's index 96 (same code).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

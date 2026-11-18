@@ -186,6 +186,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // the three allocations with `result = NULL` first in the arm 79 (282), that with the result copy after the three
 // allocations 79 (282); the frame reference and the result copy both after them 68 (280, re-measured); no result local,
 // `return NULL` in the arm and `return arguments` at the end 90 (277). Re-measured: `result = NULL` first in the arm 83.
+// M3 lane 6 r192 (fast with 0x2099f0; volatile-free forms): the result copy as `&arguments[0]` 95 (266 bytes), through
+// `(long *)(void *)arguments` 95 (266), `&arguments[0]` with `result = NULL` first in the arm 83 (277); the allocator
+// `__forceinline` with null first 83, with the volatile home 12 (same code); both pool getters `__forceinline` with null
+// first 83. Re-measured: `result = NULL` first in the arm 83.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

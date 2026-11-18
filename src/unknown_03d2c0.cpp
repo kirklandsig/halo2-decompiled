@@ -442,6 +442,17 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // or inside the miss, early or common exhaustion, and hit predicate or stale
 // handle reset: 186/155/192/134/186/134/177/164. NOT kept: none retains the
 // native hit bypass and trailing ESI return. Shared selected result restored.
+// m3 lane 13 r109 (fast with 0x3db00 and 0x3dd10, both MATCH; control 77). On round 99's single-return form (no walk return,
+// `if (result != NONE) initialize = true;` after the walk; re-measured 85, 504 B; match-only): the allocation arm first with
+// the found arm as the else 85; the state count and buffer declared at the top 85; the oldest age declared at function scope
+// 85 (all three the same code); the object's cache index stored before the four state copies 103 (520 B, frame 8: the tail
+// then reloads the result after 0x3dd10 and the walk's NONE exit gets its own trailing `mov eax, esi` epilogue, as retail,
+// but the object pointer no longer needs its frame slot); the init block closed by its own `return result;` 71 (518 B,
+// retail's length: the init path then returns the result from ESI and the others from the frame, the reverse of retail,
+// and the found path still enters the merge test with the result in EAX); on main that return alone 79 (508 B), with the
+// merge test `!initialize || result != NONE` too 82 (520 B). Lead: in the single-return form the tail keeps the result in
+// ESI across 0x3dd10 because the walk's NONE edge brings it there; retail reloads it from the frame after the call.
+// MiniMax A (11-18): no new form, no lower score (77); the merge test moved out of the walk block (79), into the flag block (78), the merge test alone (152) and the record pointer in the flag block (176) all score worse, so the body stands; what still differs is that our compiler folds the redundant compare retail kept and the join copies the index in a register where retail reloads it from its stack slot.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

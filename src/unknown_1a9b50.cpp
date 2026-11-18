@@ -413,6 +413,9 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax B (11-18): no new form, no lower score (375): the direct final return (true in the tail, false after the
+// entry test) drops 32 bytes and measures 440, and the actor-first body with that return measures 393 (listed), so the
+// actor's table entry stays in ebx and the settings pointer in esi where retail holds the actor in ebp and the slot in esi.
 // MiniMax S (11-16): no new form, no lower score (375); the actor looked up before the settings call measures 413 and the result byte replaced by the returned expression measures 425; retail holds the actor in ebp across the settings call and the settings pointer in memory, ours the actor in ebx and the settings in esi.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Earlier at 375 (was 375).
@@ -1273,6 +1276,17 @@ static __forceinline long real_to_long(real value);
 // MiniMax I (11-17): no new form, no lower score (382): the rejection path still ends at a copy of the final exit
 // at the end of the function instead of retail's own epilogue between the inner test's arms, and the helper retail
 // keeps out of line is still expanded here; an early exit for the three flags folds the result byte away and reads 508.
+// m3 lane 9 r136 (fast with 0x1a9ec0, 0x1aa0d0, 0x25d740, 0x25d690, 0x25d9b0, 0x1a9d80, 0x1a9e00, 0x1e4f90, 0x1e2030,
+// 0x1f4280, 0xe6900, 0x30bf0, 0x2b400; control 382, aligned rows 155; body unchanged). Retail calls 0x25d740 here with no
+// node test ahead of it (0x1aacb3: the two getters called one after the other) and reads the facing through the view
+// pointer in EAX, forming a pointer to it only later (`lea esi, [eax + 0x2c]`); retail expands 0x25d740 in 36 functions and
+// calls it from 24. The rejection written first (`if (f13 || f14 || f2d) local_2 = false; else { ... }`) 382 (same code);
+// the result preset false with `return local_2;` at the rejection 508 (frame 0x54); the view getter guarded by the node
+// (diagnostic: retail has no such test) 487 (frame 0x54); 0x25d740's body through the existing tracking_get 382 (same
+// code here and in its other users); 0x25d740 as two ternaries 382 here but its users move (0x1ae820 111, 0x1b57f0 129,
+// 0x1b7e40 91, restored); the facing read through the view at every use, no pointer local, 517 (1945 bytes); the pointer
+// declared where retail first forms it, ahead of the facing test on the predicted offset, 516 (1944 bytes). Still
+// BLOCKED-BY 0x25d740's expansion at this site.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
