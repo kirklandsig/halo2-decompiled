@@ -532,7 +532,8 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 238 (was 238): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// score 238 (was 238): 238 in round 95's baseline, m3 lane 11 note near the end, m3 lane 2 r79 and m3 lane 8 r164 at the end. frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // Earlier at 238 in round 95. See the m3 lane 11, lane 2 r79 and lane 8 r164 forms below.
 // frame 0x40 versus 0x44, with a different second-node slot.
 // Retail reuses the origin y/z slots and leaves two dwords below the plane unused.
@@ -981,6 +982,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (1287 B, other code); the same pin returning by value 238 (same code as the body). Reading: retail's `mov edx,
 // [eax+8]` after the zero test, its constants in the result register and the unfolded `mov ecx, edx; cmp ecx, edx`
 // say the clamp read the data through a form the first test's read was not merged with; a reference return is not it.
+// Shifted upper value, split words, packed fields into longs and direct packed fields:
+// 238/311/238/316; with material declared before plane processing 238/311/238/316.
+// NOT kept: ties or regressions; the frame, second-node home and classifier reads still differ.
 // AC564: Component property scan with end pointers < and !=, counted cursor,
 // and indexed element pointer 327/327/339/341. Break with one result in the same
 // forms 347/347/325/326. NOT kept: all raise the score and retain frame 0x40.

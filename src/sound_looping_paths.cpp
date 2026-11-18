@@ -157,7 +157,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 846): unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 846 (was 846): Frame 0x4e0 agrees. The entry zero uses EBP and the target count, primary source and query arrays have different homes.
 // entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
 // unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
@@ -635,6 +635,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // 859/859/858/868. Choice and ordinal after the query or with its output before the call
 // 847/846. Existing count and bitmap chained before the scan or with target count at
 // entry 847/939. EBP remains the entry zero and the count and array homes differ.
+// Round 623: accepted-range cursor throughout, ordinal duplicate scan, ordinal conversion and
+// advance-before-fill 958/989/947/967 with the short query count, 956/958/948/966 with the full
+// query count. NOT kept: the ordinal duplicate scans put zero in ESI but keep other count and query
+// homes and lengthen the body.
+// Round 625: first query cursor over clusters/gains/portals with short count 988/987/945
+// (index cursor recheck 988); indices/clusters/gains/portals with long count 939/939/938/940.
+// Attenuation sampled before the indexed walk with short/long count 847/919.
+// NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
+// count and array homes. Other cursor variants also move the frame away from 0x4e0.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

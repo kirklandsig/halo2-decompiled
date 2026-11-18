@@ -69,6 +69,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// score 334 (was 334): Frame 0x90 agrees. The first axis load uses a different XMM register.
+// The build spills the squares before the cross products.
 // MiniMax S (11-17): no new form, no lower score (334): the body is still 1781 bytes against retail's 1779 and
 // the frame still 0x98 against retail's 0x90; retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with
 // the squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this
@@ -78,7 +80,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // retail's 1779, and the trig prologue still loads the three axis squares into different registers than retail
 // and forms the cross terms before the sine and cosine instead of retail's order, so the body is offset from
 // the start.
-// score 334 (was 334): round 80 at the end of this note (334 was 343). Earlier 343 (was 356): round 103 below.
+// Round 80 at the end of this note (334 was 343). Earlier 343 (was 356): round 103 below.
 // MiniMax I (11-15): no new form, no lower score (334): retail's rotation helper still keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6 and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6 and forms the cross products first; the frame stays 0x98 against retail's 0x90.
 // Earlier 334 (was 343): round 80 at the end of this note. Earlier 343 (was 356): round 103 below.
 // MiniMax C (11-15): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7 with its squares in xmm1, xmm4 and xmm6, and takes the cosine on the x87 stack before the cross terms, while this build keeps the axis in xmm4, xmm5 and xmm6, forms the cross products before the x87 cosine and publishes the nine entries from xmm0, xmm1 and xmm2; the frame stays 0x98 against retail's 0x90.
@@ -362,6 +364,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // AC571: Sine/cosine pairs by const reference, initializer or member assignments, each pair before its
 // builder or both before either 342/343/342/343. By value 364/363/364/363. NOT kept: the pair forms
 // shrink the matching frame to 0x80 through 0x88 and raise the score. The native axis/square/sine homes still differ.
+// Round 623: diagonal complement scaled and added 411, scaled in place and added 377,
+// scaled add 381, scaled add into the squares 342, late scaled add 347, late separate scale and sum
+// 426, parallel cross and diagonal scaling 413, late scaled add with scaled cross products 339.
+// NOT kept: the closest extent still moves the prologue away from the retail frame.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2165,6 +2171,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 real game_time_get_seconds();
 void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
+// score 492 (was 492): Frame 0x90 versus 0x94. The draw point shares the decoded direction's slot.
 // MiniMax S (11-17): no new form, no lower score (492): the body is retail's 2285 bytes but the frame is still
 // 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at
 // +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in
@@ -2172,7 +2179,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // MiniMax R (11-16): no new form, no lower score (496 in this round's nine-address set, 492 in the single-function set): the body is retail's 2285 bytes but the frame is still 0x90 against retail's 0x94, so the first float lands at +0xc where retail puts it at +0x10, the tag comes in at +0x48 where retail has +0x30, and the tag, position, direction, colour, alpha, amount and scale slots stay in another order; no form tried this round moves them.
 // MiniMax C (11-16): no new form, no lower score (492): the frame is still 0x90 against retail's 0x94, so the tag, position, direction, colour, alpha, amount and scale slots stay in another order; tried the context alpha before the time (526), the context alpha declared without its initialiser (492), the visibility after the context alpha and the selected colour at function scope (533, a scope move and so reverted), and none of them moves the slots.
 // MiniMax R (11-16): no new form, no lower score (492): the body is retail's 2285 bytes; the frame is still 0x90 against retail's 0x94, so the ratio, the definition, the source, the scale and the vertex homes sit four bytes below retail's, and the tag, position, direction, colour, alpha, amount and scale slots are in another order. The permuter over this body (600 s, twelve tries) found no form below the baseline.
-// score 492 (was 492): earlier 492 (was 492), 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
+// Earlier 492 (was 492), 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
 // write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
 // direction below position, retail position below direction) and the loop's xmm5/xmm6 constants remain.
@@ -2451,6 +2458,9 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 586/535/529/526. Apply size in place to the scale pair at the same sites 586/527/526/526.
 // NOT kept: the last three in-place forms reach frame 0x94 and 2285 bytes but raise the score and
 // keep the tag/time and addressed output homes displaced. Original body restored.
+// Round 623: interpolate then scale size 492, compound size interpolation 492; opacity named and
+// clamped 563, compound opacity 563, ordered opacity clamp 563, both compound interpolations 563;
+// opacity gate before size 491, size gate before opacity 492. NOT kept: the one-point lead is below the keep threshold.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3125,6 +3135,9 @@ real magnitude3d(vector3f const *v);
 // inline 195, with staged current bound 274; both reciprocals defined before either normalized vector
 // 170. The raw length still shares the clamped slot and the dot keeps a promoted copy in the restored
 // body.
+// Shared clamp interval 170; separate first lower-bound read for current/target/both 170/170/170;
+// preset ceiling and selected fresh in-range read for current/target/both 185/215/222; both with
+// shared interval 222. NOT kept: ties or regressions; raw-length and promoted-dot homes remain.
 // F408: Two-direction magnitude loop 294; magnitude and reciprocal loop 292;
 // original magnitude with scale/point-setting loops 190/190; separate magnitude and
 // normalization loops 297/296; fused magnitude and normalization with the scale helper
@@ -4141,6 +4154,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
 // copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
 // view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
+// Paired projection aggregate, paired assignments, indexed projection and projection cursors:
+// 486/486/510/537; with the shared velocity setter 513/513/517/537. NOT kept: the setter
+// reduces the frame on direct calls but grows the difference and moves away from retail length.
+// Returned projection copies and the independent velocity reloads remain.
 // F408: Velocity setter 513; moved-point setter 561; both 561. Signed screen displacement with
 // the existing point-difference helper 498; in place 500; in place with typed offset 500;
 // signed projection result 530; signed result in place with typed offset 530.
@@ -4986,15 +5003,15 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z += 0.001f;
 }
 
-// score 231 (was 231): see the forms below.
-// MiniMax H (11-06): score 231 (was 231): no new form, no lower score.
+// score 231 (was 231): Frame 0xd0 versus 0xe0. The radius, negative radius and scaled zero occupy other spill slots.
+// MiniMax H (11-06): no new form, no lower score (231).
 // The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
 // (+r,-r), while ours twists the quad as (-r,-r), (+r,-r), (+r,+r), (-r,+r), and the vertex writes follow
 // the same twisted order. Retail also uses a frame of 0xe0 against our 0xd0, with the corner count home at
 // [esp+0xac] against our [esp+0x9c] and the radius home at [esp+8] against our [esp+0xc]. A variant with
 // retail's corner order, the colour aggregate and the helper call reordered reached 225, six short of the
 // keep bar, so the original body is restored.
-// b6R (11-06): score 231 (was 231, fast build): no new form, no lower score; no behaviour difference found.
+// b6R (11-06): no new form or lower preview count (231). No behaviour difference found.
 // Walked retail 0x32ce0-0x333f8 statement by statement against this source: object index masked 0xffff at 0x32cf8 and
 // the object pointer from record +8 (0x32d08); the NONE store at 0x32d0c precedes the opacity test (comiss 0x32cfd,
 // jbe 0x32d16, so opacity > 0.05 and ordered); collision call 0x32d38 with the arguments pushed at 0x32d29-0x32d33;
@@ -5121,6 +5138,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
 // before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
 // the keep bar, so the body stands.
+// Signed radius interval, rectangular footprint, four immutable offsets and an indexed transform loop:
+// scalar alpha 416/250/400/471; four-channel color 384/384/404/475. NOT kept: all regress.
+// The frame and the positive-radius, negative-radius and scaled-zero spill homes remain.
 // F408: In-place offset in destination, shared scratch, initialized array, and scoped points:
 // 385/698/388/698. With the four-channel color: 375/700/383/696.
 // NOT kept: all regress, including native-length forms. Frame and corner scalar homes remain.
@@ -5132,6 +5152,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // and scaled-first with one scale observation. Scalar alpha 403/412/412/411.
 // Four-channel color 369/398/398/397. NOT kept: the color recovers the frame but radius remains
 // at +0xc instead of +8. All eight regress. Original helper and body restored.
+// Round 623: indexed UV table with completed depths 654, separate UV and depth tables 489,
+// one UV and depth binding table 501, automatic UV table with completed depths 618.
+// With the four-channel color 640/493/505/605. NOT kept: both scalar-alpha table forms with explicit depth
+// owners reach frame 0xe0, but all eight forms shorten and raise the score.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
