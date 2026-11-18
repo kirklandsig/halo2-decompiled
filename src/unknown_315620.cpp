@@ -1,4 +1,4 @@
-// @flags /O2 /GL-
+// @flags /O2 /GL- /Op
 #include "contact_modifiers_315340.h"
 
 long __cdecl havok_entity_property_2003_get(hkEntity const *);
@@ -7,14 +7,17 @@ long __cdecl havok_entity_property_2003_get(hkEntity const *);
 // beyond the per-contact linear rows, and the body has the velocity property.
 // Reload the saved scalar for each component and finish the velocity stores
 // before publishing the term pointer, matching the retail access order.
-// Review cleanup score 57: unmatched volatile/goto tuning removed.
+// Matched (was 57): the file is compiled with /Op (0x315740 is in its own file,
+// without it), the body is named before the property lookup, and the four
+// scaled components are stored by a loop.
 // @retail 0x315620
 void contact_sizes_3155f0::build(lane_a_solver_input const *input, lane_a_solver_output *output)
 {
 	s_ops_output_31f5e0 *cursors = (s_ops_output_31f5e0 *)output;
 	unsigned char *start = (unsigned char *)cursors->term;
 	contact_default_31c000::build(input, output);
-	float const *velocity = (float const *)havok_entity_property_2003_get((hkEntity const *)body_a);
+	hkEntity const *body = (hkEntity const *)body_a;
+	float const *velocity = (float const *)havok_entity_property_2003_get(body);
 	if (velocity)
 	{
 		long contact_bytes = points.size * 0x30;
@@ -23,41 +26,8 @@ void contact_sizes_3155f0::build(lane_a_solver_input const *input, lane_a_solver
 			velocity_record_315440 *record = (velocity_record_315440 *)function_320290(
 				(solver_callback_320290)add_velocity_bias_315440, 0x20, input, cursors);
 			float scale = scale_b;
-			record->velocity[0] = scale * velocity[0];
-			record->velocity[1] = scale * velocity[1];
-			record->velocity[2] = scale * velocity[2];
-			record->velocity[3] = scale * velocity[3];
+			for (int i = 0; i < 4; ++i) record->velocity[i] = scale * velocity[i];
 			record->terms = (contact_term_315440 *)(start + contact_bytes);
 		}
 	}
-}
-
-// Save both bodies' inverse masses, build using the requested scales, and
-// restore immediately as well as recording the corresponding solver callbacks.
-// @retail 0x315740
-void contact_sizes_315720::build(lane_a_solver_input const *input, lane_a_solver_output *output)
-{
-	lane_a_accumulator_prefix *a = *(lane_a_accumulator_prefix * const *)input;
-	lane_a_accumulator_prefix *b = ((lane_a_accumulator_prefix * const *)input)[1];
-	s_ops_output_31f5e0 *cursors = (s_ops_output_31f5e0 *)output;
-	function_31f5e0((s_ops_pair_31f5e0 const *)input, cursors);
-	float first_scale = modifier.scale_a, second_scale = scale_b;
-	lane_a_mass_restore *record = (lane_a_mass_restore *)function_320290(
-		(solver_callback_320290)lane_a_scale_masses, 0x30, input, cursors);
-	record->scale_a = first_scale;
-	record->scale_b = second_scale;
-	record->a = a;
-	record->b = b;
-	__declspec(align(16)) float saved[8];
-	for (int i = 0; i < 4; ++i) saved[i] = a->inverse_mass[i];
-	for (int i = 0; i < 4; ++i) saved[i + 4] = b->inverse_mass[i];
-	for (int i = 0; i < 4; ++i) a->inverse_mass[i] = first_scale * a->inverse_mass[i];
-	for (int i = 0; i < 4; ++i) b->inverse_mass[i] = second_scale * b->inverse_mass[i];
-	contact_default_31c000::build(input, output);
-	record = (lane_a_mass_restore *)function_320290((solver_callback_320290)lane_a_restore_masses, 0x30, input, cursors);
-	for (int i = 0; i < 8; ++i) record->saved[i] = saved[i];
-	for (int i = 0; i < 4; ++i) a->inverse_mass[i] = saved[i];
-	for (int i = 0; i < 4; ++i) b->inverse_mass[i] = saved[i + 4];
-	record->b = b;
-	record->a = a;
 }
