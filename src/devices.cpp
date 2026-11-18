@@ -1579,6 +1579,10 @@ bool function_108530(long device_index, long name)
 // ret 0x18, so the clamp's XMM homes differ from the first instruction (this build's first compare is in xmm7,
 // retail's in xmm5); the split between xmm6 and the stack is the callee's own convention, set by the
 // definition that the six float signature may not change, so the body stands.
+// P595: Initial velocity remains stack-passed and ramp down still displaces the retail XMM6 input.
+// guarded position/target/both 121/121/121, successive position/target/both 142/121/142, guarded
+// position with successive target 121, successive position with guarded target 142. NOT kept: the
+// sampled position adds an entry push and moves the extent off retail, while the other forms tie.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

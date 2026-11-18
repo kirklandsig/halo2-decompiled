@@ -628,6 +628,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // P574: Actual audio-layout admission, positive/complementary bool/byte/short/long:
 // 272/272/272/272/272/272/272/272. NOT kept: no exact native frame/status/clock/audio-home
 // recovery; original layout test, arrays, helpers and complete body restored.
+// N408: Shared initialized timestamp reader at start/elapsed/both 278/272/278. Raw start/elapsed/both
+// 283/324/326. Initialized reads with elapsed reduced in place 278. Explicit clock zeros and raw assignments 324.
+// NOT kept: frame stays 0x3c or shrinks to 0x30 against 0x40. The status/clock slot overlap remains.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

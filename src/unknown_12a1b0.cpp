@@ -2399,6 +2399,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the range read through an s_short_bounds member at +2 246 (frame 0x12c, retail's `lea ebx, [..+2]`).
 // MiniMax I (11-17): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 and the
 // native request, range and pitch homes still sit at other offsets.
+// P595: The 0x11c frame, playback/NONE allocation and range/ring homes remain. shared long/dword/word
+// datum ordinal 479/479/470, same three with one latch pool read 380/380/459, branched latch start 480,
+// branched start with separate next-slot conversion 480. Reduced control 479, full baseline 305. NOT
+// kept: the strongest preview regresses to 418 in the plain check and the native frame remains
+// unresolved.
 // score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305 plain, 479 on the reduced image): the frame is
 // still 0x11c against retail's 0x128 and the native request, range and pitch homes still sit at other offsets; the second
 // pitch-range loop still hoists the datum index and the track index into EBX/EBP (one use each) and keeps &sounds[i] in EDI
@@ -3364,6 +3369,11 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // before `scale` 598; `previous` read before `next` and used for the first table index 597. Diagnostics (reverted):
 // `(void)&index;` and a read through `long const *index_reference = &index;` give identical code (the index stays in
 // ESI; the address does not keep it in memory).
+// Invalid definition first 782; state-derived result on unavailable path 779;
+// shifted start request bit 705; conditional alternate store 595 (NOT kept:
+// two points and seven bytes short); conditional request stores 611; all
+// conditional stores 609; joined request stores 661; three-bit write 675.
+// Entry flags still occupy BL, and the record and track homes differ.
 // score 597 (was 597): MiniMax D (11-17): no new form, no lower score (597 plain, 694 on the reduced image): the track
 // loop's registers still differ - retail holds the state in ebx, NONE in esi and the track in ebp with the index and the
 // track definition in memory, while this build holds NONE in ebx, the index in esi and the track definition in ebp; the

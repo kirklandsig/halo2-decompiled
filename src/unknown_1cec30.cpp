@@ -933,6 +933,7 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// MiniMax S (11-17): no new form, no lower score (65): the frame is 0x84 against retail's 0x88, the index and the component arrive on the stack where retail keeps them in ecx and ebx, and the entry copy is a block copy where retail stores the four members separately; the component's home is decided across the 0x1d0cf0 -> 0x1d1260 -> 0x278f00 -> 0xb8540 call cycle, whose bodies are in other files.
 // MiniMax A (11-12): no new form, no lower score (65); the component still arrives on the stack
 // where retail hands it over in EBX, so the frame is 0x84 against retail's 0x88 and the transform
 // copy is still a rep movsd where retail uses four movaps; the component's home is decided across
@@ -1754,6 +1755,10 @@ PRIVATE __forceinline real const &component_time_step()
 // xmm2/xmm3 swap, zero register against the stop temp) and is kept, with `velocity * delta_time` (0x1d235d). New forms,
 // all 43 or worse: the stop temp split into a named tick count 43, the stop test inline 43, magnitude after `target -=
 // position` 53 (with the stop-first test).
+// Per-tick travel first 43; early correction floor 113; shared accelerated
+// candidate 124; both reverse bounds before the branch 142; ratio stored in
+// each arm 143; named power, named power base, nested mass threshold 43 each.
+// The acceleration result and timestep memory operand still differ.
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -2487,7 +2492,8 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them in place, and the i component
 // still ends up in xmm1 where retail keeps it in xmm4; reading the three components into locals ahead of the
 // branch moves the material loop's accumulation order instead (159), so the body stands.
-// score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
+// score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
+// aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all
 // three), the speed products the same way (retail scales j, k in place), and the property value 0 kept
@@ -2684,6 +2690,19 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // P592: Original body/component/output fixed pointer bindings, seven subsets,
 // then complete bindings with fixed speed: eight 91 at 1459/1454. NOT kept: no native
 // early velocity j/k or property-zero recovery; original full body and helpers restored.
+// P594: Native aggregate normal/velocity/both initialization, direct normal/sample/both
+// fallback fields, all four producers, then all through the coordinate view: 416/191/415/402/118/391/412/412.
+// NOT kept: unmatched transfer/home forms; original full body and all helpers restored.
+// Early velocity j/k loads, speed-product residence and property-zero EDI remain.
+// Generic property replacement at first hot zero 159.
+// Generic property replacement at hot vector address 91.
+// Generic property replacement at last hot zero 155.
+// Generic property replacement at first hot zero and hot vector address 159.
+// Generic property replacement at first hot zero and last hot zero 155.
+// Generic property replacement at hot vector address and last hot zero 155.
+// Generic property replacement at first hot zero and hot vector address and last hot zero 155.
+// Generic replacement for all hot writes with one empty property word 163.
+// NOT kept: generic property writes tied for the vector address and regressed for the zero paths; the original body was restored.
 // MiniMax D (11-17): no new form, no lower score (91): the only difference left is the velocity's
 // normalisation, where retail keeps the velocity's j and k in registers across the epsilon branch and
 // multiplies them in place, while ours rebuilds each product from memory and reloads all three in the
