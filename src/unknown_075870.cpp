@@ -1340,14 +1340,18 @@ static __forceinline long observer_round(real value)
 	return real_to_long(value);
 }
 
-// score 7 (was 7): the only real difference (the call targets and trailing
-// int3 are artifacts of the reduced image) is the last clamp: retail forms
+// score 7 (was 7): the differing instructions are in the last clamp. The checker also
+// lists relocated calls and trailing padding while the function differs. Retail forms
 // lea ecx, [ebp + 1]; imul ecx, eax and loads the minimum burst afterwards;
 // ours loads the minimum into ecx first, then inc ebp; imul eax, ebp. Swapping
 // the multiply operands, folding intervals + 1 into the product, or reading
 // the minimum inline all give 7; reversing the max direction gives 9.
 // Permuter (25 min on r660): best 5, only with config fields read as short where they are long (a behaviour
 // change); not kept.
+// Round 422: elapsed interval count 50; reuse the burst floor local 7; rounded floor
+// conditionals 7; cap selected in the call argument 36; configuration at the last
+// floor 7, configuration local per phase 86; two caps then their maximum 59;
+// named updated penalty 37. The product still lands in EAX.
 // @retail 0x79850
 void function_79850(s_network_observer *observer, long index)
 {

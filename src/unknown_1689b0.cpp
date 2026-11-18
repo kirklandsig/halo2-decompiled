@@ -824,41 +824,6 @@ inline bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 	return result;
 }
 
-// score 2 (was 25): left: the two exits right after the last result test (+0x6ad, +0x6bb) jump past the final
-// `mov al, [result]` (AL still holds it) where retail's jump to that reload; every other instruction agrees.
-// Earlier at 25: plane k/j product operands at +0x314, late i/y
-// products and success-result reload differ; single plane k/j snapshots
-// 340/357; start z/y 124/124; movement j 56; plane k+j 390;
-// correction movement i 56; start z+y 157; the found path's `result = true;` dropped 92
-// (retail's single result-reload exit, but the reload is hoisted onto two inner paths);
-// `return true;` there 25; point/vector read directly in the plane distances 124; the k/j
-// plane terms through `instanced_plane->plane` 177 (both k products then load the plane
-// first, as retail; j does not, and the stepping block grows); the j operands swapped 25.
-// Round 57: plane->n products 25; a typed normal pointer for all/k-only/j-only products
-// 25/25/25; normal k/j with plane i 56; direct entry k-only/j-only 25/25; return the existing
-// result from the successful correction branch 24 (one-point gain and 2168 bytes, restored).
-// M3 lane 1 r118 (fast, kept form plain-confirmed; product operand orders screened compile-only by operand role over
-// 3,100 variants, which reproduces the build's orders): kept 25 -> 2: the instanced plane's two distances through the
-// existing plane_distance_to_point(&instanced_plane->plane, point) and dot3f(vector, &instanced_plane->plane.n), with the
-// plane copied from the field (its pointer local gone); `flags` read directly (its address-read local gone); the stepping
-// loop as `collision->t = t > 0.0f ? t : 0.0f;` with collision->t passed on; the found-and-flag test as an early
-// `return result;` (the redundant `result = true;` gone). Steps: the two helpers with dot3f for the normal speed 19, with
-// the early return 18, with the ternary step and the normal speed back as three statements 4, with `flags` direct and no
-// plane pointer 2. The operand order of every product moves when any local is added or removed (one spelling scored 4,
-// 16, 49, 118 and 151 as other locals changed), so a form is only right in its whole setting. Tried: collision->t passed
-// in the old loop 56; helpers through the plane pointer 56 (12 on the 4 form); dot3f(plane, vector) for the instanced
-// plane 50 (6 on the 4 form); dot3f for the normal speed either order on the old body 124/124, on the 2 form's setting
-// 118/118 (the i product is then retail's but both point-along-vector z products flip); the normal speed as one
-// expression in five operand orders 151 each; the three statements with other operand orders 4/4 (same code); the old
-// loop or `t = t > 0.0f ? t : 0.0f;` on the 4 form 49/151; `collision->t -= step;` then a clamp 3 products off in the
-// screen; `behind` written into its test 4 products off; point and vector read directly too 6, point alone 118, vector
-// alone 151, all three direct 155. For the two jumps, on the 2 form: one return with no early exit 79 (2170 B: the result
-// reload is hoisted behind the first two calls of the block), the same with nested ifs 79; `return result;` at the end of
-// the block and after it 2 (same code); `result = true;` kept 5, `return true;` there 5; two separate early ifs 144,
-// `return false;` for the first 144; the step or the surface-bsp choice as conditional expressions 2/2 (same code, 79 on
-// the one-return form); surface_bsp declared at the top 2. Diagnostics (not keepable): the body as a forced-inline helper
-// under a one-line wrapper 571/569/571; result read through its own address or a reference at the returns 2/2/79, at
-// the test 150/150/151 (they fold; the products move). Permuter 600 s, 66 tries, best 2.
 // @retail 0x1697c0
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision)
@@ -1076,26 +1041,26 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 	}
 
 	point_along_vector_1696d0((*point_reference), (*vector_reference), collision->t, &collision->point);
-	if (!result || !(flags & 0x20000000))
+	if (result && (flags & 0x20000000))
 	{
-		return result;
-	}
+		s_bsp3d *surface_bsp;
 
-	s_bsp3d *surface_bsp;
+		if (collision->type != 1)
+		{
+			surface_bsp = (s_bsp3d *)collision_reference_get_data((s_collision_reference const *)collision);
+		}
+		else
+		{
+			surface_bsp = NULL;
+		}
+		if ((collision->end_location.leaf_index == NONE ||
+			function_14a280(g_4e033c, 0, &collision->point) == collision->end_location.leaf_index) &&
+			(!surface_bsp || collision->bsp_surface_reference[0] == NONE ||
+			function_14a280(surface_bsp, 0, &collision->point) == collision->bsp_surface_reference[0]))
+		{
+			goto done;
+		}
 
-	if (collision->type != 1)
-	{
-		surface_bsp = (s_bsp3d *)collision_reference_get_data((s_collision_reference const *)collision);
-	}
-	else
-	{
-		surface_bsp = NULL;
-	}
-	if (collision->end_location.leaf_index != NONE &&
-		function_14a280(g_4e033c, 0, &collision->point) != collision->end_location.leaf_index ||
-		surface_bsp && collision->bsp_surface_reference[0] != NONE &&
-		function_14a280(surface_bsp, 0, &collision->point) != collision->bsp_surface_reference[0])
-	{
 		point_along_vector_1696d0(&collision->point, (vector3f const *)&collision->plane, 0.000244140625f, &collision->point);
 		function_11bed0((s_location *)&collision->end_location, &collision->point);
 		if (collision->end_location.leaf_index == NONE ||
@@ -1127,6 +1092,7 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 		}
 	}
 
+done:
 	return result;
 }
 
