@@ -1669,6 +1669,10 @@ real function_30bf0(vector3f *vector);
 // MiniMax H (11-13): no new form, no lower score (378); the frame is 0x4c against retail's 0x40 and the normal copy and the limited, rotation and colour homes are elsewhere.
 // MiniMax C (11-16): score 378 (was 378): no new form, no lower score; the frame is still 0x4c against retail's
 // 0x40 and the normal copy and the limited, rotation and colour homes are still in other slots.
+// MiniMax H (11-18): no new form, no lower score (378): the frame is still 0x4c against retail's 0x40, retail clears
+// the mobile flag byte in the entry block where this build clears it after the first branch, and the query's four
+// components still reach the x87 stack in the other order; retail's 0xd37f0 takes the block in EAX and the query in
+// EDX where this build has them the other way round, and that callee's parameter order is fixed in a declaration.
 // score 378 (was 378): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier, score 363 (was 364).
@@ -2232,6 +2236,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // logic agrees (offsets, constants, condition directions, call arguments, result values and the final colour
 // stores all match), but the status, mesh, colour and sample homes still sit in other stack slots and the
 // selective helper expansion still differs.
+// MiniMax H (11-18): no new form, no lower score (542): the frame is 0x90 as in retail and the calls and their
+// arguments are in retail's order, but the status, mesh, colour and sample homes still sit in other stack slots and
+// the selective helper expansion still differs.
 // score 542 (was 542): frame 0x90 agrees. The status, mesh, color and sample homes and selective helper expansion differ.
 // Earlier score 555.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
