@@ -3759,6 +3759,13 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // bytes; NOT kept: the loop compiles to a 0x01010101 word-and-byte fill where retail stores three bytes, so the drop is
 // alignment); the host comparison written `(host = session->member_index) != member` 102 [39]; `session->value44 ==
 // member` 102 [39]; `long host;` declared ahead of `state` 101 [38]. Still BLOCKED-BY 0x769a0 (its held file).
+// m3 lane 14 r108: HELD, build/r108/held-0x5e3f0.patch (plain check 06:43Z with 0x769a0, 0x5e7f0, 0x94420, 0x94270, 0x93aa0, 0x938e0): round 65's
+// form re-measured on the current tree, MATCH (433 bytes), 0x769a0 stays MATCH, 0x5e7f0 305 (unchanged, its call passing session->value10
+// unnamed). The patch adds the unread `long owner` parameter to 0x769a0 (definition, header and this file's declaration, both calls) and writes
+// this body with the take flag, the host member-state pointer with its __assume, `long owner = session->value10;` and the two exits. It needs
+// the definition line of 0x769a0 in src/unknown_075870.cpp, another lane's file this round, so the code is back to main. Retail evidence for the
+// parameter: both callers load session+0x10 and store it dead ahead of the call (here 0x5e469/0x5e473; the same spill in 0x5e7f0). No further
+// form was run on this side of the call: with the patch every row agrees, so each remaining difference comes from that one parameter.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
