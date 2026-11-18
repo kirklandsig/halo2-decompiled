@@ -308,6 +308,18 @@ PRIVATE inline byte const *material_parameters(long tag)
 // after the two table loads): the chain index built in two steps through a `long &` binding 5; the chain table base bound
 // to a `word *const &` before the entry word is read 5; the entry/chain/pass statements in a bare block scope 5; the chain
 // index as `second + (**(word **)(state + 0x14) & 0x1ff)` with no packed carrier 5 (all +0x1a7, same code).
+// Round 137 (m3 lane 9, fast with 0x16f60, 0x17000, 0x17170, 0x174d0 and 0x17420, control 5 at +0x19e; aligned = rows that differ once
+// the listings are aligned, 2 on the control): the tables published through a reference, the entries read from the `tables` local, the
+// tables field re-read into a local before the reference entry store and used for the chain and pass bases 29 (972 bytes, aligned 2:
+// every instruction in retail's place, but the re-read is forwarded, `mov ecx, eax` for retail's `mov ecx, [ebp + 0x10]`, so the code is
+// a byte short until the padding); the same with a direct entry store 178; the tables published through a reference with the entry from
+// the local and the kept field reads 178, with a direct entry store as well 176; a direct tables store with the re-read local and the
+// reference entry store 279 (the forwarded value takes ECX from the top). The re-read through an inline accessor method of a state view
+// (diagnostic; the read is still forwarded): into a local before a direct entry store 210 (974 bytes), before the reference entry
+// store 279, after it 178, at each later use with the reference entry store 5 (same code), with direct stores 210. Reading: a field
+// read after a reference store to another field is a real load, after a store to the same field it is forwarded, so no spelling
+// here turns the early re-read into retail's load; retail's reload sits where the allocator starts the second piece of the tables
+// value (as the direct entry store gives), while its `second` load stays at its use (as the reference entry store gives).
 // M3 lane 2 r99 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7, where its listing differs from
 // main's only in that window): the entry stored by a chained assignment into the existing `entry` local, the word read
 // through it, 5 (+0x1a7, the direct form's code); a named `entry_offset = first * 10` shared by both blocks 5 (+0x19e), with

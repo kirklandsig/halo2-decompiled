@@ -540,6 +540,11 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // and EBP here, and the section pointer still takes retail's stack home against this build's EDX.
 // MiniMax I (11-15): no new form, no lower score (172): the frame is retail's 0x58, retail keeps the BSP global in EBX with the section in a stack home while this build keeps the section in EBX and the BSP in EBP, and the range, the plane and the vertex-join homes still differ.
 // MiniMax S (11-15): no new form, no lower score (172): retail holds the BSP global in EBX and keeps the section in its stack home while this build keeps the BSP in EBP and the section in EDX, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in src/unknown_11cb00.cpp): BLOCKED-BY 0x11e800.
+// MiniMax A (11-18): no new form tried this round, no lower score (172): retail still keeps the BSP global in EBX and
+// the section in its stack home where this build keeps the section in EBX and the BSP in EBP, so the prologue's push
+// order and the frame's slot heights differ, and the promoted clone of 0x11e800 still hands its four pointers over in
+// another register order (retail ecx, edx, eax, esi). That callee's body lives in src/unknown_11cb00.cpp, which this
+// lane may not edit: BLOCKED-BY 0x11e800.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,

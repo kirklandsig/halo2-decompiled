@@ -309,6 +309,16 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // `if (!local_8)` block below it 392 (1369 bytes); the has-host arms as `arg_3 = arg_4 = true;` 355 (one point, under the
 // gate); the window size as `(flags & 8) ? 128 : 0` 397 (1369 bytes); the tick interval read before the elapsed count
 // 404; the nesting with the ternary window 419; the nesting with the chained assignment 391. All restored.
+// M3 lane 16 r136 (fast with 0x75910/0x76520/0x765c0/0x77940/0x89030, all MATCH; control 356, aligned 245): HELD (needs the
+// owner's OK; build/r136/held-0x75fc0.patch): 0x75910 written as a bool function returning `owner && owner->active`
+// still matches byte for byte (retail's 32-bit exits) and gives this function retail's `test al, al`, 355; its
+// definition sits in another lane's file this round. The pacing test as `!(interval > 0 && 1 / rate > interval)` 356
+// (aligned 241: retail's two comiss orders), as `0 >= interval || interval >= 1 / rate` 356 (same code); with the bool
+// callee 355 (aligned 240). The two budget picks as if/else statements 356 (same code), in the other order 356 (same
+// code), reading the channel's flag at each pick 438 (1388 bytes, aligned 227: retail's two separate tests, but the
+// flag is then reloaded where retail keeps it in BL), with the pacing form 438 (aligned 223). The has-host arm as
+// `arg_3 = arg_4 = true` 355 (one point, re-measured). The window flags read into a byte local first 356 (same code);
+// the window size as `(flags & 8) ? 128 : 0` 397 (1369 bytes, re-measured).
 // @retail 0x75fc0
 // MiniMax C (11-17): no new form, no lower score (356): retail's prologue is sub esp, 0x34 with the connection in edi, the NONE state in esi and the channel index in ebp, where this build reserves 0x38 and splits the register saves differently, and the timed-out check's result is tested as a byte in retail (test al, al) where this build's callee returns a long; that callee, 0x75910, is defined in another file, so the call's shape cannot be settled here, and dropping the redundant host-state copy reaches retail's frame but scores 416.
 // MiniMax D (11-17): no new form, no lower score (356): the prologue is still sub esp, 0x38 here against retail's 0x34,
