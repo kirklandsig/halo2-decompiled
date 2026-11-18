@@ -1442,6 +1442,10 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax R run 92 (11-17): no new form, no lower score (120): retail still holds the actor in edi and the object in
+// esi and scales the actor index into edx before it loads the pool (lea edi, [edx+esi]) where this build loads the
+// pool first and keeps the actor in esi; the two 1.0f entry stores still come out in the opposite order and the
+// callee's declaration order (object index first) is fixed by four other files.
 // MiniMax D (11-16): no new form, no lower score (120): this round read the retail diff against ours again and the
 // remaining delta is the prologue and the two pointers: retail masks and scales the actor index into EDX before it
 // pushes and forms the actor with `lea edi, [edx + esi]` (actor in EDI, object in ESI) where this build loads the pool
