@@ -729,13 +729,15 @@ void function_16de20(short index, s_16e150_bits const *table, dword *output);
 bool __stdcall function_134950(long a, long b, void const *context);
 void sort_4byte(void *unused, long *elements, unsigned long count, bool (__stdcall *compare)(long, long, void const *), void const *context);
 
-// score 11 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
+// score 9 (was 11): the only differences are the register order of the loop bound reload (ours ecx then eax,
 // retail eax then ecx) and the call to sort_4byte, where retail sets the register argument (`lea ecx,[ebx+0x1770]`)
 // before the last stack push (`push edx` holding &camera) and ours after it. Tried: a local for the context, a local
 // for the count, a local loop counter, none changed it. Permuter (25 min on r621): best 9 (full image 10), only with
 // a volatile store to the cluster's first count; not kept.
+// Round 98 (m3 lane 2, plain): parameters ordered (cluster_index, collection, camera) from the setup at retail's only call
+// (0x13214b sets the collection's ebx before the cluster's eax; caller 0x1320f0 then matches): 9 (same code here).
 // @retail 0x1733e0
-void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera)
+void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, byte const *camera)
 {
 	memcpy(collection->camera, camera, sizeof(collection->camera));
 	collection->active = 1;

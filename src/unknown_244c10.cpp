@@ -6,8 +6,7 @@
 struct s_collision_result_1697c0;
 bool function_1691a0(long arg_0, dword arg_1, dword arg_2, point3f const *arg_3,
 	vector3f const *arg_4, s_collision_result_1697c0 *arg_5);
-extern long g_4e7c1c;
-extern long g_4e7c20[];
+#include "instance_marks_storage.h"
 
 struct s_244c10
 {
