@@ -317,6 +317,10 @@ PRIVATE inline real function_11e5e1(vector3f const *arg_0, vector3f const *arg_1
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
 }
 
+// score 10 (was 28): the delta components are computed i, k, j and the
+// commutative 0x11e5e1 dot product is called as (&delta, &d); both change the
+// SSE register schedule. The residual is the y/z XMM pair (xmm4/xmm5) and the
+// schedule that follows it.
 // @retail 0x11e5e0
 bool function_11e5e0(
 	point3f const *segment_start,
@@ -328,8 +332,8 @@ bool function_11e5e0(
 	real c;
 
 	delta.i = segment_start->x - arg_28f920->x;
-	delta.j = segment_start->y - arg_28f920->y;
 	delta.k = segment_start->z - arg_28f920->z;
+	delta.j = segment_start->y - arg_28f920->y;
 	c = function_11e5e1(&delta, &delta) - radius * radius;
 
 	if (c < 0.f)
@@ -337,7 +341,7 @@ bool function_11e5e0(
 	else
 	{
 		vector3f d = *direction;
-		real b = function_11e5e1(&d, &delta);
+		real b = function_11e5e1(&delta, &d);
 
 		if (b >= 0.f)
 			return false;
