@@ -13,6 +13,10 @@ void function_1fe410(point3f *arg_0, real arg_1);
 static __forceinline long real_to_long(real value);
 
 // MiniMax S (11-17): no new form, no lower score (373): the frame is 0x4c against retail's 0x48, retail holds the third settings pointer in esi from the entry and the random-state pointer in ecx where this build caches the random state in esi and reloads the third input from its stack slot, the flag byte is stored at +0xf where ours is at +0xb, and retail passes the third input's word at +0x7a in ecx where ours passes it in edx; the argument's transport is set by the caller at 0x1fc7e0, in another file.
+// MiniMax G (11-18): no new form, no lower score (373): the frame is still 0x4c against retail's 0x48, this
+// build still keeps the random-state pointer in ESI from the first draw where retail holds the third settings
+// pointer in ESI and the random state in ECX, so the third input is still reloaded from its stack slot; the
+// random-state pointer read through the global instead of through the named local scores 423 and was restored.
 // MiniMax D (11-16): score 373 (was 373), nothing kept: retail's frame is 0x48 and it takes the third settings
 // pointer in esi from the entry, this build has a 0x4c frame and takes the random-state pointer in esi instead,
 // so the third input is reloaded from its stack slot and the state pointer is kept in a register across the
