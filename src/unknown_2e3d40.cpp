@@ -374,10 +374,23 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 	}
 }
 // exchanges two values
-template <class T>
-__forceinline void exchange_2e4660(T &a, T &b)
+__forceinline void exchange_2e4660(endpoint_2e0f80 *&a, endpoint_2e0f80 *&b)
 {
-	T const kept = a;
+	endpoint_2e0f80 *const kept = a;
+	a = b;
+	b = kept;
+}
+
+__forceinline void exchange_2e4660(float &a, float &b)
+{
+	float const kept = a;
+	a = b;
+	b = kept;
+}
+
+__forceinline void exchange_2e4660(unsigned long &a, unsigned long &b)
+{
+	unsigned long const kept = a;
 	a = b;
 	b = kept;
 }
@@ -385,9 +398,9 @@ __forceinline void exchange_2e4660(T &a, T &b)
 // each box the moving box overlaps at the start, then each box whose three
 // intervals it enters on the way, is passed to the collector, until the
 // collector's distance left is passed
-// score 434 (unchanged by the lockstep check, which is positional here: the
-// function is still 16 bytes longer than retail; aligned, 144 -> 76 differing
-// instructions), registers and stack cells only (sem 0). What changed:
+// score 77 (was 434), registers and stack cells only (sem 0). The swaps are
+// plain overloads: as a template the build instantiates them after the unit's
+// `auto_inline(off)`, so they were called instead of inlined (16 bytes longer). What changed:
 // the leading-end loop reads the endpoint's value before advancing the
 // position and re-reads the pointer from it (retail's `&scale` cell in the
 // first quantize and the direction loop's registers follow), and the
