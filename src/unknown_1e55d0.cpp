@@ -71,6 +71,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // still a stub, takes its input in EDI in retail) and never gives the state a register; it lays the non-compound and
 // capsule arms after the epilogue, calls 0x1c4a80 where ours expands it, loads the rate once and tests the 0x20 flag by
 // shift. Round 191's line at the end of this note has the latest forms.
+// MiniMax G (11-18): no new form, no lower score (319): the aligned 0x94 frame still agrees and the body still
+// runs two bytes longer than retail's 1164; retail keeps the move pointer in EBX and the input pointer in EDI
+// where this build keeps them the other way round, and that trade is settled by the case-3 callee 0x1ec690's
+// stub convention in src/stubs/bipeds.cpp: BLOCKED-BY 0x1ec690.
 // MiniMax I (11-17, run 103): no new form, no lower score (319): re-measured the baseline (1176 bytes against retail's
 // 1164) and the frame still agrees at 0x94; the output pointer's and the input pointer's registers still trade with
 // each other against retail, and that trade is settled by the 0x1ec690 stub's convention in src/stubs/bipeds.cpp:

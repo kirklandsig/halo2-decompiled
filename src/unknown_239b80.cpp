@@ -1202,6 +1202,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // F396: Complete scalar coordinate-pair equality input, real/double epsilon, bool/byte result, forced/ordinary inline: 129/129/244/244/129/129/244/244.
 // NOT kept: no byte equality; count ECX, prior-side byte and SIMD homes remain. Original complete body and helpers restored.
+// MiniMax G (11-18): no new form, no lower score (129): the count's width is still the first difference and the
+// parameter's declared type is not ours to change; the pre-loop side still stays in a register byte where retail
+// keeps it at F-0xd, the loop's side still takes F-0xd where retail has it at F-0xc, and the zero constant
+// still lands in XMM4 against retail's XMM2. This round's forms: the two sides in a two-element holder (the
+// loop's side takes a home of its own, 149), the count copied into a local for the previous point and the loop
+// test (133), the pre-loop side as a conditional assignment (133) and the entry distance with the x term first
+// (129, the same code); all were restored.
 // M3 lane 15 r60 (fast): the side carried in one variable, the previous side copied from it at the loop top 288 (922 bytes);
 // the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
 // one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same

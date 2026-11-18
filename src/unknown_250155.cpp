@@ -1362,6 +1362,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax G (11-18): no new form, no lower score (83): the tail fill is still a pointer loop where retail's is a
+// counted store, and every fill form that reproduces retail's counted store moves the index count into EBX and
+// pushes the mode to the stack (95 to 172 across this round's forms); the two count homes stay swapped (ours
+// item_count -8 and index_count -0xc, retail index_count -8 and item_count -0xc), and swapping them needs an
+// initialiser that costs the mode its register (121) or a frame that grows to 0x58; all of this round's forms
+// were restored.
 // MiniMax E (11-17): no new form, no lower score (83): the two count homes stay swapped (ours item_count -8 and
 // index_count -0xc, retail index_count -8 and item_count -0xc) whatever the declaration order, the initialiser or a
 // plain assignment instead of the initialiser; branch two's counted tail fill does give retail's guarded rep stosd

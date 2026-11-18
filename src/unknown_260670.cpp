@@ -40,6 +40,11 @@ long function_1e4a50(long index);
 long function_262a30(s_reference reference);
 real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 
+// MiniMax G (11-18): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and the two
+// flag bytes still take homes eight bytes apart (ours 0xb and 0x13, retail 0x6 and 0x7), so every home above
+// them moves with the frame; the sorted loop still calls 0x2600a0 where retail inlines 0x262a30's owner lookup
+// and the other way round, and the two flags written as bytes still give each its own home (439, one point,
+// below the bar); all restored.
 // score 440 (was 528): The frame and flag homes differ, and the sorted evaluator and owner lookup have opposite inlining decisions.
 // Earlier 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // MiniMax I (11-17): no new form, no lower score (440): the frame stays 0x8a8 against retail's 0x8a0 and this build
