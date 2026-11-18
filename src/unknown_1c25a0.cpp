@@ -1417,6 +1417,7 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
  contact_vector_set(out, (*value)(0), (*value)(1), (*value)(2));
 }
 
+// MiniMax B (11-18): no new form, no lower score (1): the entry guard still compares the count with the zeroed index register where retail tests the count against zero; dropping the volatile mirror folds the guard into retail's test but also loses the index reload after the 0x1d1160 call (126, 858 bytes), and a positive guard, a while, a do-while and the increment in the for clause all merge back into the register compare, so the last byte needs the write through the velocity pointer in 0x1d1160's impulse branch, in another file.
 // score 1 (was 3): retail tests the loop count against zero at entry; ours compares
 // it with the zeroed index register. The member call now matches retail's register setup.
 // Further trials: shared scale helper for both vectors 3; shared scale and output

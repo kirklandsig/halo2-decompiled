@@ -229,6 +229,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // score 49 (was 49): The entry saves EBP instead of EBX for the byte result. The header flag and object reads
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
+// MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
+// score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
 // table's data pointer and recomputes the scaled index between the flag test and the object read; the earlier legal
