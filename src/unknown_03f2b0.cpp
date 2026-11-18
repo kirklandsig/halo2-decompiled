@@ -1333,6 +1333,10 @@ struct s_133f70;
 // globals' addresses, which differ between the two builds, and the layout of the entry test.
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
 
+// score 93 (was 93): The frame agrees, and distance still loads into ECX after the force push. The cache and previous-level homes also differ.
+// Signed-short query count widened across the level store, after count clear, or at loop entry 96/367/367.
+// Native count selection widened before count clear, widened after type, or used directly 367/109/109.
+// Explicit suppressed/admitted long count 110. Zero count with an admitted assignment 354.
 // MiniMax S (11-17): no new form, no lower score (93 on the full image): every difference still sits before the
 // 0x4c190 call - the previous level is still a dword against retail's byte, the distance argument still travels
 // in ecx against retail's eax, and success is still stored after the esi spill against retail's before it; the
@@ -1365,7 +1369,7 @@ struct s_133f70;
 // MiniMax S (11-16): no new form, no lower score (93): the frame 0x33f8 agrees with retail, but the distance staging, the
 // nullable-entry and cache adds and the result homes still differ, and the tail that 0x23690 owns is in another file:
 // BLOCKED-BY 0x23690; the permuter (full-image builds, 900 s, 14 tries) found no variant below 93.
-// score 93 (was 93): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// Earlier 93 (was 93): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
 // round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // MiniMax E (11-10, run 73): no new form, no lower score (93 on the full image, 355 on the reduced one); every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ECX, the header's global loaded first, success stored before the 0x3d4f0 call, the previous level's byte and the 0x4c190 argument order) plus one object load near the end, and the tail stays blocked by 0x23690 in another file.

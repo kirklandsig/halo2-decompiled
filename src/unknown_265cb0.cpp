@@ -2118,7 +2118,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
+// score 168 (was 168): The 0x80 frame agrees. The contact head still has the base and index reversed in its address encoding.
+// One decoded actor slot for both lookups, long/word with the iterator helper 168/695 and with the typed actor accessor 168/695.
+// Named clear destination, with the typed head read, and with typed summary fields 168/168/168. Chained selections 170.
+// Earlier 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
 // The players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
