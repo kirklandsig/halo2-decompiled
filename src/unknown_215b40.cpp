@@ -245,7 +245,8 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 	return result;
 }
 
-// score 114 (was 110): check with 0x2157e0 in the image (it defines g_51ea14;
+// score 114 (was 114): BLOCKED-BY the `/GL-` flag of src/unknown_215880.cpp (see round 141 below);
+// check with 0x2157e0 in the image (it defines g_51ea14;
 // check with 0x2157e0 in the image (it defines g_51ea14;
 // check with 0x2157e0 in the image (it defines g_51ea14;
 // without it the fast check builds differently). The iterator struct gives
@@ -309,6 +310,14 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // table reload stays in the match block; 0x2170e0's handle builder moved to the header with a unit nibble 170 (same code,
 // 0x2170e0 still matched), also in the cached loop 170 (same code); packing from `iterator.index` before an increment at
 // the loop's end 170 (aligned 70); `type == location.type` 170 (same code).
+// (The first line read 114, was 110, before round 261.)
+// M3 lane 3 r261 (fast with 0x2157e0, 0x215880, 0x2163d0, 0x1249f0, 0x13de30 and the five callers, all MATCH;
+// control 114; on the current body, not the iterator chain): the unit loop's test as `count < *capacity && pass <
+// units` 107 (the entry test then reads the capacity word first; retail tests the unit count first, so the gain is
+// elsewhere and under the bar); that with the cached loop's halves swapped as well 139 (576 B); the count declared
+// bare and zeroed in the cache block and in an else 140; the unit count by if/else 114 (same code); the cached
+// generation through saved_game_storage_get_cache() 138; the entry test through that getter 114 (same code). Our
+// build still loads g_51ea14 into EAX at entry with EBP as the zero register, retail into EDX with EBX.
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
