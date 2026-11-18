@@ -5770,6 +5770,9 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
 // assigned from tests 312, friend-query result declarations in spill order 97.
+// Conditional invitation 369; add friend 375; player removal 90; offer by mode 336;
+// feedback by mode 349; promotion 322; friend removal 224; membership change 100.
+// NOT kept: all regress, and the two retail-length forms pass the title-state byte at +0x72 and +0x71.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {
