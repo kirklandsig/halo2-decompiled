@@ -2080,6 +2080,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Typed owner publication 703, also with typed team-key copy 703; combined/independent rejection bits 802/717.
 // Property slices by index with literal/recorded count 714/714; pointer slices 754/754.
 // NOT kept: the indexed slices reach retail length but grow the frame from 0xc0 to 0xc8.
+// Disconnected group cursor with indexed players, ordered bound/nonempty loop/count 702/702/718.
+// With counted players 702/702/718; ordered/equality group bound with a player end 738/738.
+// NOT kept: the one-point gains leave the exit span and width unchanged.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

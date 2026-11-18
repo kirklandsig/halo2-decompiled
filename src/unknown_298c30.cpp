@@ -510,6 +510,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Facing before endpoints 333.
 // Facing between endpoints 336.
 // Facing after first coordinate 332.
+// Unity and radius still exchange XMM1/XMM2. Endpoint writes interleaved x first 309.
+// y first 318.
+// all endpoint products staged 305.
+// products staged per axis 313.
+// indexed signed-radius pair, short with component or point stores 396/416.
+// indexed signed-radius pair, long with component or point stores 393/463.
 // M3 lane 5 r197 (fast with 0x29a190 and 0x298c30, both MATCH unless noted; aligned exact / register-masked counts in
 // brackets, base [257/123]): the candidate count `short` re-measured 469 (1686 B; ours then saves no EBX, takes the facing
 // pointer in EBX, `ret 0x18`, and keeps the outer counter in EDI; 0x29a190 684). Near arm: both trig values as locals with
@@ -534,6 +540,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // width 480, orientation tests reuse the shared endpoint side 364.
 // NOT kept: The wide cosine term grows the body and leaves the first unity load different. The distant-
 // first form with a signed candidate also changes the matched caller convention.
+// Real radial upper bound 365, tangent upper/lower 366/361, lower-first
+// tangent clamp 342. One real quarter turn 360, separate y products 305,
+// near continue 305, complete signed endpoint initializer 305.
+// NOT kept: the real radial bound restores the first unity load but shortens
+// the body by 15 bytes. Near cosine and candidate ordinal homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -1162,6 +1173,8 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH398: One point or vector for the reverse trace direction and sweep point,
 // each alone, with forward direction reuse, with local cosine, and with both 719/777/719/777, 719/777/719/777.
 // NOT kept: All forms regress. The radius still loads before actor indexing and the side trace homes still differ. The separate geometry workspaces are restored.
+// Early radius retention and pivot/trace homes remain. Center formed around the two transforms in shared scope 574/569/575/750.
+// center formed around the two transforms with the sector block-scoped 574/569/575/750.
 // M3 lane 5 r197 (fast with 0x29a190 and 0x298c30, both MATCH throughout; aligned exact / register-masked counts in
 // brackets, base [254/172]; all restored). Scope check: 0x2108a0 has one retail call site (here), and none of 0x210770's 18
 // retail call sites keeps an XMM value live across it. Diagnostic, reverted at once: the 0x2108a0 call replaced by an

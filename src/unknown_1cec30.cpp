@@ -835,6 +835,16 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // but BL again (push ebx, sub esp 0x18, 141 bytes) 48; second body read through havok_component_rigid_body_get 53.
 // Matched 0x1d0dd0 puts the byte in CL because the dead index register is free; here retail's EDX holds the dying
 // base (0x1d0e74 -> 0x1d0e76), and every reloading form of ours treats EDX as busy, so BL is the remaining cause.
+// M3 lane 2 r100 (fast with callers 0x115b10 0x115c70 0x1c4b00 0x1d1b60 0x1ced00; a one-file LTCG harness of this file
+// gives the same code): the slot pointer read at each of its three uses, no body local, 39 (143 B, the third read is
+// reloaded after the activation calls); the getter at each of the three uses 67 (155 B, callers lose); no own-parameter
+// read, slot pointer, body local assigned after the conversion 32 (component in EDX, callers lose); 0x1d09d0's array
+// pointer (`rigid_bodies->data[index]` at the test and after the conversion) 46 (141 B); a by-value conversion helper
+// (harness 37: the vector is copied); a 60-form random harness screen (own-parameter read x early/nested exits x slot
+// pointer/reference/element/array/getter x vector and body-local placement x set()/helper) best is the current form.
+// Diagnostics (harness, reverted): stores through a laundered pointer (float- or pointer-typed) still leave the body
+// load shared (no reload), and the fixed byte read as char or byte stays in BL under a volatile reload, so in our build
+// the vector stores never kill the slot load: retail's reload after them needs a cause other than aliasing.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -3339,6 +3349,11 @@ byte *__fastcall function_30c170(hkWorld *world);
 // 15. Diagnostic: the equal arm without its translation part (wrong code) gives retail's i, j, k, w store
 // order in columns 1 and 2 (column 0 keeps k + xorps first), so the translation temp's zero store -> movaps
 // chain is what pulls the w stores forward in this arm.
+// M3 lane 2 r100 (a one-file LTCG harness of this file with src/unknown_1d77d0.cpp gives the full build's 15 exactly;
+// --fast builds this function differently): `*body_a` stored before the frame_a conversion 261; the equal arm through a
+// const source pointer 15 (same code); the equal arm's output through an `hkTransform &` 15 (same code); the first-node
+// test against the node_a local 265; the child search comparing against the node_a local 309. Retail's column 0 loads
+// k, i, j and stores i, j, k, w; ours loads k, j, i (as the frame_b arm does in both) and stores k, w first.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3519,6 +3534,14 @@ struct s_1cf531
 // first/last 11/11/11/11 (the spill slot ignores names); the friction magnitude renamed magnitude/value/sorting
 // first/last 11/11/11/11 (slot 0x14 unchanged); a separate final impulse vector 101 (frame 0x64), with the copy and
 // corrected in an inner block 100; the subtraction reading the scaled vector with no copy 101 (frame 0x64).
+// M3 lane 2 r100 (a one-file LTCG harness of this file with src/unknown_277b80.cpp, src/unknown_1d8dd0.cpp and
+// src/unknown_183da0.cpp gives the full build's 11 exactly): corrected in place in local_13 re-measured 24 (the store
+// goes to retail's 0x30, but the final product reads local_13 with its own movaps after 0x183dc0, never folded); on
+// that form the final product reading local_13 through a const reference 24, through a const pointer 24, local_13
+// copied with hkVector4's operator= 24; with the by-value finiteness test (as the private copies in
+// src/unknown_0a0190.cpp and src/unknown_14b560.cpp) 22; the by-value test alone re-measured 9; local_7 written
+// through m_quad.m128_f32[0..3] in place of set() 11 (same code), with the by-value test 9. Retail's fold of the
+// final operand marks it as a spill reload of a temp packed into local_13's slot, not a read of local_13.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
