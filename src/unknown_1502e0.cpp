@@ -1527,6 +1527,20 @@ void function_150820(dword *bits, bool local_only)
 // separate lookups recover those three registers but combine the player-address calculation into LEA and
 // score worse. The shared success paths change the extent and regress. The original body was restored.
 // MiniMax A (11-17): no new form tried this round, no lower score (43): a register rotation only (retail keeps the player in esi, the unit index in edx and the hand in edi, this build keeps them in edi, ecx and esi, and the primary byte follows in cl against al); the body, the length (210) and the calls agree.
+// M3 lane 16 r136 (fast with 0x151b80/0xcd7b0/0xa8f80/0xcd4e0/0x14f820; control 43, aligned 64 rows): round 209's lead
+// re-measured 73 (aligned 3: `lea esi, [eax + edx]` for retail's `add eax, edx; mov esi, eax`); the unit test through the
+// getter with the player fetched in the block 18 (212 bytes, aligned 7). New: a unit_index local read through a second
+// getter call ahead of / after the player 71 / 73 (208 bytes); the getter returning through a local, as `&players[index
+// & 0xffff]`, as a byte offset times the record size, or forceinline 43 each (same code); an inline accessor for the
+// player's unit index at every read or at the two late reads 60 (212 bytes), only at the test or only at the lookup 43
+// (same code); the player local as `*const` or pointer to const 43 (same code); the body as a plain-inline helper taking
+// (player, primary), (player, hand), (player index, primary) or (player reference, primary) 251/245/276/251 (the helper
+// stays out of line), forceinline 43 (same code). A 45-form combination screen (the unit index through the player, a
+// `long const *` declared after the player, a second getter call at the lookup, or a reference in the block; the hand
+// before or after the unit or as `primary ? 0 : 1`; a held-slots or weapons pointer; the late arguments through the
+// pointer; modes declared first; the cd4e0 arm as an if): best 73 with aligned 3 (the lead again), nothing lower than
+// 43, no match. Every form that makes the player address a shared temp gets retail's registers with `lea`; every form
+// that keeps it a plain local gets `add`/`mov` with the player/hand and unit-index/slot registers exchanged.
 // Typed and byte base advances, normalized input with getter or typed advance, const indexed player, and unsigned
 // player/object slot remainders all score 43. The typed base advance with independent unit lookup scores 73. NOT
 // kept: it restores the saved-register roles but still folds the player add and move into LEA.
