@@ -2503,6 +2503,11 @@ bool function_0b6760(s_index_pair const *pair);
 // the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off and the body is
 // sixteen bytes short of retail's 1495; the only form under 250 needs a one-use rate local (58/60), a form the coordinator
 // ruled out without a byte match, and dropping the volatile on the definition alone measures 386.
+// MiniMax A (11-18): no new form, no lower score (250): the prologue saves ebp, esi and edi where retail saves ebx, ebp
+// and esi, takes the entry pointer in edi where retail takes esi, and builds the index in esi where retail builds it in
+// ebx, so the body follows one register rotation off and stays sixteen bytes short of retail's 1495; the only form
+// below 250 needs a one-use rate local, which the coordinator ruled out without a byte match, and dropping the volatile
+// on the definition alone measures 386.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

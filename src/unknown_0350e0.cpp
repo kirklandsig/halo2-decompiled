@@ -2150,6 +2150,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // sign at dispatch exit 392, sign at inverse tangent only 206. NOT kept: 177 and 176 recover
 // the result home and length but compute the projection before retail and raise the caller
 // 492 to 572. Other gains shorten the body. The 0x14 frame still lacks the separate result.
+// MiniMax A (11-18): no new form, no lower score (193): the frame is still 0x14 against retail's 0x18, and retail keeps
+// the result in its own slot at +8, set to 0.0f in the prologue, where this build reuses the scale argument's home; the
+// case-one body still differs in its float order and in how retail loads the two components of the 0x4b9dac vector one
+// at a time and copies them through the stack, and restructuring the switch into a fall-through form measures 194.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
