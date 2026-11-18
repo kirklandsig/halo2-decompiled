@@ -3165,6 +3165,9 @@ real magnitude3d(vector3f const *v);
 // Complete raw tangents before/after sine, sine-weighted tangents before cosine
 // or before projection, each with original projection or its dot before cosine:
 // 170/170/170/170/170/170/170/170. Raw length and promoted-dot homes unchanged.
+// Tried current/target/both vector initializers 170/170/170, axis at outer scope 170, rotated initializer 170,
+// named absolute dot 196, tangent with shared/staged cross 186/186, angle after normalizer 246,
+// shared projected scale and sum 183.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

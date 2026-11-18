@@ -1140,6 +1140,9 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
 // byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
 // normalized long with origin record 3, normalized signed byte with origin record 40, normalized bool with origin record 40.
+// Tried side ternary 3, side branches 135, side-bit mask 46, side equality 8, byte conversion 4,
+// query before projected workspace 3, named predicate 5, named call count 5, normalization after distance 126.
+// NOT kept: the byte conversion recovers the test but reverses the x product operands.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
@@ -1258,7 +1261,8 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 96 (was 123): logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
+// score 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
+// Earlier: logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
 // 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
 // copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
 // minimum, the state 3 inside clamp (0.015625 as a double) and the memcpy of the view's points, the four 1/256 inflate
@@ -1278,6 +1282,9 @@ struct s_point_pool_173520
 // Tried state snapshot after reservation 172, returned byte for traversal 180, scoped bounds alias 96, named point stride 96,
 // signed remaining-count loop 934, explicit float clamp outcomes 117, explicit minimum selection 96, library box copy 96,
 // explicit double clamp outcomes 96, direct cache pool members 188.
+// Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
+// start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
+// traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {

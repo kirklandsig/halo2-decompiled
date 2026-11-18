@@ -2119,6 +2119,9 @@ void function_b7360(long object_index);
 // 0x25ab50 writes nothing (0x25a380 in the same file keeps its reference and the scenario pointer in ESI/EBX across the same
 // call, which named locals would also give); a natural form of 0x25ab50 that hides that, with locals at its other callers
 // (0x25a380, 0x1b0f20, 0x1b13b0, 0x1c1080, 0x2773d0), is what would unlock this body. Body unchanged.
+// Tried const actor view 270, const actor reference 270, native state flag and slot fields 270,
+// countdown reference 272, selected payload reference before object call 275, payload reference at publication 272,
+// validation result in the point, movement and equipment cases 270/270/270.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -250,6 +250,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // nearest distance before portal 354, late order array and integer sort scratch 354.
 // NOT kept: both 323 forms keep the count snapshot where retail reloads the count and retain the 0x430 frame.
 // The 352 form gains two. The path table spills and starting-cluster register still differ.
+// Tried flags before endpoint 322, long masked ordinal 351, high-bit predicate 351, short endpoint local 354,
+// packed cursor with live count 354, explicit range cases 354, initial maximum range 365,
+// shared fill and sort count 354, available-first output cap 363. NOT kept: early flags skip retail's
+// pretest endpoint decode and the frame remains larger.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
