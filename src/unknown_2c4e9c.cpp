@@ -3085,6 +3085,8 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 /* selects the map chosen last (v1 reaches it by a tail jump) */
 // score 30 (was 30):
 // ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
+// The 0x10 frame agrees; the saved-map load and compare stay in EBX instead of passing through EAX.
+// Ours is 80 bytes against retail's 81. Retail copies `this` first (mov edi, eax at 0x2c9a7b),
 // loads the global into eax (0x2c9a7d), tests it (cmp eax, -1 at 0x2c9a82) and only then copies it to ebx (mov ebx,
 // eax at 0x2c9a85); ours loads the global straight into ebx and moves `this` into edi after the test. The loop body,
 // the iterator stack slots (ebp-0x10..-4) and the calls to 0x6b380, 0x19c5f0 and 0x24c515 are retail's. The old
@@ -3117,6 +3119,10 @@ c_custom_game_maps_list::c_custom_game_maps_list(word user_flags) :
 // On the field: the second read after the iterator stores 30, the test on the field with the copy inside the
 // block 30, the field read at the test and the loop compare 30, the copy first with the test on the field 30
 // (all the same direct EBX load).
+// Round 624: iterator pool stored before/after the map capture 27/27; three iterator fields initialized
+// before/after the capture 29/29; direct guard with snapshot after all setup or before the pool write
+// 30/30; guard-scope snapshot transferred into the scan 30; derived receiver reference 30. NOT kept:
+// all remain one byte short of retail. The pool-first variants gain three at most without the EAX handoff.
 // @retail 0x2c9a73
 void c_custom_game_maps_list::select_last_map()
 {

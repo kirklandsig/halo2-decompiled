@@ -805,6 +805,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // The i-first velocity spills and correction products still differ. Residuals paired with squares after the tick-scale
 // helper, indexed field 86, indexed local 77, named squares 32, named residuals and squares 32. Tick scaling fused
 // with those four forms 84, 77, 58, 58. The two 32 forms still spill j first. Body restored.
+// m3 lane 5 r196 (fast with 0x1fc660/0x1fc2f0/0x1fc710, all MATCH; control 32): the deltas i, j, k with the squared length
+// written out as `j*j + k*k + i*i` 79, `k*k + j*j + i*i` 79, `j*j + i*i + k*k` 79 (chains i first), `j*j + (k*k + i*i)` 53
+// (chains j first again, but so are the stores); this body's j, i, k deltas with `k*k + j*j + i*i` 32 (same code). Retail
+// stores i before j and still squares j first, which no single written order gives.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

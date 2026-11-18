@@ -181,6 +181,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // `return arguments` at the end 90 (277 bytes; pointer EDX, frame ESI); the two index slots as plain pointers with the
 // result copy after the allocation 95; the result copied in the init block and in an else arm 87 (278 bytes: the frame
 // then loads through the reference, `lea ebx; mov ecx, [ebx]`, as retail's does, but into ECX, with the pointer in EDX).
+// M3 lane 10 r117 (fast with 0x2099f0; volatile-free forms): the allocation stored through a two-member aggregate overlay
+// (void pointer and long pointer) and read through the other member 95 (266 bytes, promoted); the frame reference after
+// the three allocations with `result = NULL` first in the arm 79 (282), that with the result copy after the three
+// allocations 79 (282); the frame reference and the result copy both after them 68 (280, re-measured); no result local,
+// `return NULL` in the arm and `return arguments` at the end 90 (277). Re-measured: `result = NULL` first in the arm 83.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

@@ -1358,6 +1358,11 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // not dropped), in all three loops 166 (393 B); SSS with loop 1's offset stepped and read through a `long &` bound to
 // it 118 (the binding folds); S first with both later loops as a `> 0` guard around a for with offset and count in the
 // header (S K K) 118.
+// Round 138 (m3 lane 12, fast with 0x13a532, 0x1393f3; control 1; round 157's letters): S T T 118 (375 B); S J J 118;
+// S S F 3 (loops 1 and 2 exactly retail's: the guard compares with the zero in EBX and it dies into loop 1's offset;
+// only loop 3's offset is zeroed before its guard); S S J 118; S S T 118. So with a guarded do-while first loop the
+// zero dies after loop 1 when the third loop is the for form (as with round 204's J S F), and is kept when the third
+// loop is S, T or J.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
