@@ -143,22 +143,23 @@ __forceinline void reach_all_2e3d40(char const &flags, long const &owner, rays_2
 		}
 	}
 }
+// the number of boxes
+__forceinline long count_2e3d40(elements_2e1090 const &list)
+{
+	return list.size;
+}
 // each box a segment's end reaches from the start point, by the axes' high
 // nibbles (the low nibbles say which boxes hold the start point, and the
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
-// score 49 (was 436): registers only (sem 0). What changed: the
-// helpers take the box byte and the owner by reference and step a local copy
-// of the collector (no entry guard needed any more); the byte is toggled in
-// place (`bits[id] ^= mask`) and the box is reached through one element
-// pointer; the negative step is added to the position; the next endpoint is
-// stored first and compared through the array; the nibble reset re-reads the
-// flag array and ORs into the masked word; the ray's end is one pointer read
-// twice. Left: the axis cursor's register at the end of the start-position
-// loop (ebx in retail, eax here) and the scratch rotation that starts at the
-// sentinel store (a probe with one more scratch value live across
-// `*next_time = 2.0f` leaves net dist 6).
+// Matched (was 49). What changed: the compare reads the endpoint's value
+// before the walking pointer is advanced and re-read from the position (so
+// the value is a register of its own, as in retail); earlier: the start
+// loop walks the axes with a cursor stepped after the bit, the word count is
+// read through an accessor, the helpers take the box byte and the owner by
+// reference, the byte is toggled in place and the box is reached through one
+// element pointer.
 // @retail 0x2e3d40
 void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660 *collectors, long collector_stride)
 {
@@ -181,10 +182,11 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 		endpoints_2e0f80 const *const from = rays->axes ? rays->axes : axes;
 		char *const bits = flags.data;
 		int bit = 0x11;
-		for (int i = 0; i < 3; i++, bit <<= 1)
+		endpoints_2e0f80 const *axis = from;
+		for (int i = 0; i < 3; bit <<= 1, axis++, i++)
 		{
-			long const size = from[i].size;
-			endpoint_2e0f80 *data = from[i].data;
+			long const size = axis->size;
+			endpoint_2e0f80 *data = axis->data;
 			endpoint_2e0f80 const *const middle = data + (size >> 1);
 			unsigned long const point = start_words[i];
 			endpoint_2e0f80 *p;
@@ -235,7 +237,7 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 	{
 		element_2e1090 const *element = elements.data;
 		unsigned long const *word = (unsigned long const *)flags.data;
-		unsigned long const *const words_end = word + (elements.size >> 2) + 1;
+		unsigned long const *const words_end = word + (count_2e3d40(elements) >> 2) + 1;
 		while (word < words_end)
 		{
 			if (((word[0] + 0x01010101) & 0x08080808) == 0)
@@ -324,7 +326,7 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 			char const mask = (char)(0x10 << axis);
 			for (;;)
 			{
-				endpoint_2e0f80 *const p = position[axis];
+				endpoint_2e0f80 *p = position[axis];
 				unsigned long const id = p->id;
 				unsigned char const reached = bits[id] ^= mask;
 				if (reached >= 0x70)
@@ -344,10 +346,12 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 						}
 					}
 				}
+				unsigned short const value = p->value;
 				position[axis] = (endpoint_2e0f80 *)((char *)p + step[axis]);
-				if (p->value != position[axis]->value)
+				p = position[axis];
+				if (value != p->value)
 				{
-					*next_time = (float)position[axis]->value * inverse.terms[axis] - offset.terms[axis];
+					*next_time = (float)p->value * inverse.terms[axis] - offset.terms[axis];
 					break;
 				}
 			}
@@ -370,10 +374,23 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 	}
 }
 // exchanges two values
-template <class T>
-__forceinline void exchange_2e4660(T &a, T &b)
+__forceinline void exchange_2e4660(endpoint_2e0f80 *&a, endpoint_2e0f80 *&b)
 {
-	T const kept = a;
+	endpoint_2e0f80 *const kept = a;
+	a = b;
+	b = kept;
+}
+
+__forceinline void exchange_2e4660(float &a, float &b)
+{
+	float const kept = a;
+	a = b;
+	b = kept;
+}
+
+__forceinline void exchange_2e4660(unsigned long &a, unsigned long &b)
+{
+	unsigned long const kept = a;
 	a = b;
 	b = kept;
 }
@@ -381,31 +398,29 @@ __forceinline void exchange_2e4660(T &a, T &b)
 // each box the moving box overlaps at the start, then each box whose three
 // intervals it enters on the way, is passed to the collector, until the
 // collector's distance left is passed
-// score 434 (was 463; in aligned terms far closer): the walk now has retail's blocks, the high
-// axis in ebx and the low axis in memory. What changed: the leaving loop is an
-// if/else with `continue` (no rotated copy of its head), the bytes are toggled
-// in place, the box is reached through one element pointer, the start loop
-// reads each axis's size before its data through a cursor copied from a
-// constant pointer, and reach takes the byte and the owner by reference. Left:
-// retail forms `&scale` in the first quantize and keeps it in a 4-byte cell
-// until the direction loop (a pointer stepped by hand reproduces the first
-// 0x96 bytes and the homes of `this` and the corner words, but splits the loop
-// into two cursors), and with it the low cells, the direction loop's registers
-// and the leaving loop's scratch registers.
+// Matched (was 77). The swaps are plain overloads: as a template the build
+// instantiates them after the unit's `auto_inline(off)`, so they were called
+// instead of inlined. Each exit of an end's walk picks its next axis itself:
+// the copies are merged into one in the code, but the stack cells are laid
+// out by how often each is named before that, which puts low_axis, axis and
+// scaled in one cell. Also: the lower corner's words are 16-byte aligned, the
+// magnitude is taken of `scaled`, the start loop steps `bit`, `axis`, then
+// `i`, the trailing end is advanced through a reference to its position, and
+// its blocked case comes first (the order its scratch registers are taken in).
 // @retail 0x2e4660
 void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *collector)
 {
-	unsigned long lower_words[4];
+	vector_2e4660 lower_words;
 	unsigned long upper_words[4];
 	__m128 lower = _mm_sub_ps(ray->from, ray->extent);
 	__m128 upper = _mm_add_ps(ray->from, ray->extent);
 	{
 		corner_words_2e1090 words;
 		quantize_corner_2e1090(lower, lower_offset, scale, *(__m128 const *)g_4125e0, *(__m128 const *)g_4125f0, words);
-		lower_words[0] = words.words[0];
-		lower_words[1] = words.words[1];
-		lower_words[2] = words.words[2];
-		lower_words[3] = words.words[3];
+		lower_words.bits[0] = words.words[0];
+		lower_words.bits[1] = words.words[1];
+		lower_words.bits[2] = words.words[2];
+		lower_words.bits[3] = words.words[3];
 		quantize_corner_2e1090(upper, lower_offset, scale, *(__m128 const *)g_4125e0, *(__m128 const *)g_4125f0, words);
 		upper_words[0] = words.words[0];
 		upper_words[1] = words.words[1];
@@ -424,23 +439,23 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 		char *const bits = flags.data;
 		int bit = 1;
 		endpoints_2e0f80 const *axis = from;
-		for (int i = 0; i < 3; i++, axis++, bit <<= 1)
+		for (int i = 0; i < 3; bit <<= 1, axis++, i++)
 		{
 			long const size = axis->size;
 			endpoint_2e0f80 *data = axis->data;
 			endpoint_2e0f80 *p;
 			endpoint_2e0f80 const *const middle = data + (size >> 1);
-			if (lower_words[i] < middle->value)
+			if (lower_words.bits[i] < middle->value)
 			{
 				endpoint_2e0f80 *const end = data + size - 4;
-				for (p = data + 1; p < end && p[3].value <= lower_words[i]; p += 4)
+				for (p = data + 1; p < end && p[3].value <= lower_words.bits[i]; p += 4)
 				{
 					bits[p[0].id] ^= bit;
 					bits[p[1].id] ^= bit;
 					bits[p[2].id] ^= bit;
 					bits[p[3].id] ^= bit;
 				}
-				for (; p->value <= lower_words[i]; p++)
+				for (; p->value <= lower_words.bits[i]; p++)
 				{
 					bits[p->id] ^= bit;
 				}
@@ -466,7 +481,7 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 					bits[p->id] ^= bit;
 				}
 				high_position[i] = p + 1;
-				for (; p->value > lower_words[i]; p--)
+				for (; p->value > lower_words.bits[i]; p--)
 				{
 					bits[p->id] ^= -(p->value & 1) & bit;
 				}
@@ -479,9 +494,8 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 	float left = 1.0f;
 	{
 		element_2e1090 const *element = elements.data;
-		int const inner_count = elements.size;
 		unsigned long const *word = (unsigned long const *)flags.data;
-		unsigned long const *const words_end = word + (inner_count >> 2) + 1;
+		unsigned long const *const words_end = word + (count_2e3d40(elements) >> 2) + 1;
 		for (; word < words_end; element += 4, word++)
 		{
 			if (((*word + 0x01010101) & 0x08080808) == 0)
@@ -521,7 +535,7 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 				step[i] = -(long)sizeof(endpoint_2e0f80);
 				exchange_2e4660(low_position[i], high_position[i]);
 				exchange_2e4660(lower.m128_f32[i], upper.m128_f32[i]);
-				exchange_2e4660(lower_words[i], upper_words[i]);
+				exchange_2e4660(lower_words.bits[i], upper_words[i]);
 				low_position[i]--;
 				high_position[i]--;
 				low_toggle[i] = 1;
@@ -573,7 +587,7 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 			}
 			for (;;)
 			{
-				endpoint_2e0f80 *const p = high_position[high_axis];
+				endpoint_2e0f80 *p = high_position[high_axis];
 				unsigned long const id = p->id;
 				unsigned char const reached = bits[id] ^= (char)(((p->value & 1) ^ (char)high_toggle[high_axis]) << high_axis);
 				if (reached >= 7)
@@ -581,6 +595,7 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 					if (id == 0)
 					{
 						*high_next = 2.0f;
+						high_axis = earliest_2e4660(high_time);
 						break;
 					}
 					element_2e1090 const *const element = &elements.data[id];
@@ -593,15 +608,16 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 						}
 					}
 				}
-				endpoint_2e0f80 *const next = (endpoint_2e0f80 *)((char *)p + step[high_axis]);
-				high_position[high_axis] = next;
-				if (p->value != next->value)
+				unsigned short const value = p->value;
+				high_position[high_axis] = (endpoint_2e0f80 *)((char *)p + step[high_axis]);
+				p = high_position[high_axis];
+				if (value != p->value)
 				{
-					*high_next = (float)next->value * inverse.terms[high_axis] - high_offset.terms[high_axis];
+					*high_next = (float)p->value * inverse.terms[high_axis] - high_offset.terms[high_axis];
+					high_axis = earliest_2e4660(high_time);
 					break;
 				}
 			}
-			high_axis = earliest_2e4660(high_time);
 		}
 		else
 		{
@@ -610,28 +626,32 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 				break;
 			}
 			char const toggle = (char)low_toggle[low_axis];
+			endpoint_2e0f80 *p;
 			for (;;)
 			{
-				endpoint_2e0f80 *const p = low_position[low_axis];
+				p = low_position[low_axis];
 				unsigned long const id = p->id;
 				unsigned char const left_box = bits[id] ^= (char)(((p->value & 1) ^ toggle) << low_axis);
-				if (left_box <= 8)
-				{
-					endpoint_2e0f80 *const next = (endpoint_2e0f80 *)((char *)p + step[low_axis]);
-					low_position[low_axis] = next;
-					if (p->value == next->value)
-					{
-						continue;
-					}
-					*low_next = (float)next->value * inverse.terms[low_axis] - low_offset.terms[low_axis];
-				}
-				else
+				if (left_box > 8)
 				{
 					*low_next = 2.0f;
+					low_axis = earliest_2e4660(low_time);
+					goto walked_2e4660;
+				}
+				unsigned short const value = p->value;
+				endpoint_2e0f80 *&position = low_position[low_axis];
+				position = (endpoint_2e0f80 *)((char *)p + step[low_axis]);
+				p = position;
+				if (value == p->value)
+				{
+					continue;
 				}
 				break;
 			}
+			*low_next = (float)p->value * inverse.terms[low_axis] - low_offset.terms[low_axis];
 			low_axis = earliest_2e4660(low_time);
+		walked_2e4660:
+			;
 		}
 	}
 }

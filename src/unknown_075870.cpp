@@ -310,7 +310,7 @@ bool network_observer_get_bandwidth(s_network_observer *observer, long *value4e0
 }
 
 // @retail 0x769a0
-bool network_observer_channel_timed_out(s_network_observer *observer, long channel_index)
+bool network_observer_channel_timed_out(s_network_observer *observer, long owner, long channel_index)
 {
 	s_network_observer *const *local_0 = &observer;
 	s_network_observer_channel *channel = &(*local_0)->channels[channel_index];
@@ -1595,59 +1595,37 @@ void function_7a160(s_network_observer *observer, long index)
 
 long function_79560(s_network_observer *observer, long index);
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
-
-// score 41: the logic is retail's (every compare, constant and field offset walked). Still differs: retail's last
-// return reads a register (mov esi,1 before the test of `acceptable`, mov eax,esi after the 0x7a160 call) and keeps
-// the early `return 1` as its own block; ours folds the 1 and merges both returns (214 vs 196 bytes). The slot is
-// retail's lea esi,[eax+ebx]; ours is mov/imul/add in esi. Tried (all 41 unless noted): `bool result`, `result`
-// declared first and returned early, if/else with result = 1 in each arm, `if (acceptable) return 1;` then the
-// call, a do/while with break, the whole body inside `if (elapsed >= limit)` (41; with result = 2/0 assigned: 69),
-// result = 2/0/1 assigned in an else-if chain (62), per-field observer->channels[index].x (91), the slot as
-// &channels[index] minus offsetof(channels) (41), the slot after the 0x79560 call (88).
-// Permuter (25 min on r663): nothing lower.
-// b13I (11-17) walk against retail, fast build on r846: every compare, constant, field offset and callee argument
-// matches retail. The 18 missing bytes are the epilogue block at 0x7a28b (return 1, kept apart), `mov esi,1` at 0x7a271
-// and `mov eax,esi` at 0x7a284. Retail returns 1 (0x7a28b), 2 (0x7a25b) and 0 (0x7a269) as literal epilogues but
-// returns esi for the tail, so that value is not a folded constant. A result with a second, different reaching
-// definition stays in a register, but then `return 0` merges into it. Tried, new (score, bytes): uchar/short/__int64
-// result (41, 196); result in a __forceinline helper built under optimize("g", off) (41, 196); `acceptable || (call,
-// 1)` (41, 196); `result = acceptable`, then 1 after the call (28, 203: set-then-override); result = 0/1 in if/else or
-// `result = 1` then `result = 0` (63, 214); body inside `if (elapsed >= limit) {..} return 1;` with `result = 0` (32,
-// 215: layout as retail's 0x7a28b, but result in ebp and 0 merged); `test ? 0 : 1` then `if (!result) return 0;`, and a
-// `bool improved` form (41); optimize("g", off) around the function (134).
 // @retail 0x7a1c0
 long function_7a1c0(s_network_observer *observer, long index)
 {
-	struct s_channel_view
-	{
-		byte prefix[0xa8];
-		s_observer_bandwidth_channel channel;
-	};
-	s_channel_view *slot = (s_channel_view *)((byte *)observer + index * sizeof(s_network_observer_channel));
+	long result;
+	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
 	long started = observer->value4f38;
-	_ReadWriteBarrier();
-	if (observer_time_get() - started < *(long *)((byte *)observer->configuration + 0x1a0))
-		return 1;
-	long received = function_79560(observer, index);
-	long tolerance;
-	if (!slot->channel.has_callback)
-		tolerance = *(long *)((byte *)observer->configuration + 0x1d4);
+	long elapsed = observer_time_get() - started;
+	if (elapsed >= *(long *)((byte *)observer->configuration + 0x1a0))
+	{
+		long received = function_79560(observer, index);
+		long tolerance;
+		if (!observer->channels[index].has_callback)
+			tolerance = *(long *)((byte *)observer->configuration + 0x1d4);
+		else
+			tolerance = *(long *)((byte *)observer->configuration + 0x1d8);
+		bool acceptable = observer->channels[index].smoothed_delay - observer->channels[index].smoothed_interval <= observer->channels[index].baseline_delay + tolerance;
+		if (observer->channels[index].smoothed_delay > channel->probe_delay + tolerance)
+			result = 2;
+		else if (received > channel->probe_received_rate && acceptable)
+			result = 0;
+		else
+		{
+			result = 1;
+			if (!acceptable)
+				function_7a160(observer, index);
+		}
+	}
 	else
-		tolerance = *(long *)((byte *)observer->configuration + 0x1d8);
-	bool acceptable = slot->channel.smoothed_delay - slot->channel.smoothed_interval <= slot->channel.baseline_delay + tolerance;
-	if (slot->channel.smoothed_delay > slot->channel.probe_delay + tolerance)
-		return 2;
-	if (received > slot->channel.probe_received_rate && acceptable)
-		return 0;
-	long result = 1;
-	if (!acceptable)
-		function_7a160(observer, index);
+		result = 1;
 	return result;
 }
-
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x79560
 long function_79560(s_network_observer *observer, long index)

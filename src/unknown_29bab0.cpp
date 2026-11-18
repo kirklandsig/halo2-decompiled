@@ -71,6 +71,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // Earlier at 489: m3 lane 4 r203 (plain, starting at 679) kept the target point local_14 as a vector3f from the existing
 // Earlier score history (679 before m3 lane 4 r203).
 // Earlier at 489: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// Earlier score 489 (was 489): m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
+// Earlier score 489 (was 489; 679 before m3 lane 4 r203): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
 // Earlier: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
 // vector3f_add (k is dead and stored nowhere): it now shares the 0x1f9760 output vector's 12-byte home as in retail and the
 // frame is retail's 0x88 (first difference +0x2 -> +0x4e). Left: slot homes (local_8 at +0x8c for retail's +0x80 with
@@ -630,6 +632,12 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // snapshot normalized directly 752, with planar target 785, with shared
 // planar input and point difference 776. The position and alternate
 // vector homes remain interchanged in the retained body.
+// Translated target through the point setter 489, point aggregate 669, position
+// copy plus coordinate updates 718, immutable vector aggregate 669, point
+// destination of the vector addition 489, coordinate loop after copying position
+// 733, direct coordinate loop 615, and target scoped to side selection 771. The
+// aggregates reach retail length while the position still uses the other stack
+// home. Original body retained.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

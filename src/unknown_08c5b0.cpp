@@ -228,6 +228,16 @@ static inline long bungienet_user_voice_setting(short kind)
 // A plain read into a reference-bound kind (`short kind; short &result = kind; result = request->kind;`) gives 4, the
 // volatile read's exact code: the reference also keeps the word load out of the compare (not kept: a steering form
 // without a match, but it is the replacement if the volatile read has to go).
+// M3 lane 11 r116 (fast with 0x8c5b0/0x8c660, both matched each time; base 4), all with plain reads (no volatile): an
+// inline controller-voice setter (index, setting) called in each arm, `kind == 1 && available` with the block's
+// setting and the else arm with 1, 69 (130 bytes, the two expansions do not merge); the same as an early return for the
+// failing case 69 (same code); inline member accessors on the request for the result word and the controller index 32
+// (95 bytes, folded compare); a single-exit `succeeded` helper reading the request, the nested selection written in
+// place on that bool 36 (103 bytes: the request then takes ECX, but the bool is built in AL and tested); the result
+// word and the index read through one `short const *` to the result field 32 (95 bytes, folded). Reading: this handler
+// is the definition's received callback (0x81050 calls it for a finished receive; the +0xe word is that message's
+// result, 1 for success), and the matched received callbacks 0x8c790/0x194260 test only `== 1`, so nothing here names
+// a second result value for the other arms that round 104's matching chain needs.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

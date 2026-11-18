@@ -825,6 +825,16 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `if` with a body at the traversal's end gives retail's pair order (207 with its own lines), one between the loops does
 // not (202), as round 71 found. 0x26f3f0 (unmatched) writes ECX and EDX and makes calls in both builds, so its LTCG
 // clobber summary is not the cause. Body unchanged.
+// MiniMax H (11-18): no new form, no lower score (286): retail's frame is 0xe4 with the state in ebx and nine stack
+// words, ours 0xe8 with one local word more: the link output goes through a pointer that advances by eight (ours)
+// where retail indexes the array with the count (0x270e7f-0x270e96). A link count of 16 bits gives retail's frame,
+// its 16-bit compare and index (0x270e3f, 0x270e86) and retail's length, but scores 359; copying the two
+// layout-identical views as one assignment gives retail's indexed copy, but scores 361. Still differs: retail
+// materialises the node address with a lea before the depth load (0x270db1) where this build folds the whole
+// displacement into one load; retail keeps the link-flag byte in memory (0x270e79, 0x270eb8, 0x270f61) where this
+// build holds it in a register; retail zeroes the step count at the loop entry (0x270e16) where this build zeroes it
+// in the prologue; retail reloads the previous node at the loop head (0x270e07, 0x270e22) where this build reloads it
+// in the body. Original body restored.
 // MiniMax S (11-16): no new form, no lower score (286): retail carries state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links), where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and a pointer to the node and a named node pointer compile the same way. Changing the parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax C (11-16): no new form, no lower score (286): retail still carries the state in ebx through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail's parameter order differs and changing a parameter order is a form the rules forbid, so retail's order is reported instead.
 // MiniMax I (11-17): no new form, no lower score (286): retail carries the state in EBX through a custom convention and stacks the other nine as (result, actor_index, node_index, maximum_steps, steps, complete_out, link_count_out, links, maximum_links) where this build passes actor_index first with all ten on the stack, so every parameter home sits in another slot and the frame is 0xe8 against retail's 0xe4; retail also materialises the node address with a lea where this build folds the whole displacement into one load, and changing the parameter order is a form the rules forbid.
@@ -843,6 +853,17 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // width differences, not observable: retail compares, indexes and stores link_count as 16 bits (0x270e3f, 0x270e86,
 // 0x2712e8) while incrementing a dword (0x270e96), and its vertex words are widened then compared with -1
 // (0x27109b, 0x2710ac: never equal), as the body already does.
+// M3 lane 15 r97 (fast with the file's 16 functions, 0x210a30, 0x2104b0, 0x26f3f0, 0x30bf0, 0x210850, 0x2c2060; base 286, LCS-aligned
+// 134): lane 11 r71's flag form applied to the current file from its saved patch is 2 again (aligned 1: only
+// `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back edge). On that 2, looking for the block
+// retail has and ours lacks: the cross-link step (the two stores and the 0x26f3f0 call) as an inline helper called from
+// the 1/6/5 arm and from the type-2 arm when its surface test passes, the plain type-2 stores in the else 353 (1388
+// bytes: the two copies merge, but the frame is 0xe8 and the traversal's homes move); a step pointer for the cross-link
+// arm 263 (1368 B), for the type-2 arm 230 (aligned 10), for both 264, for the current step's two stores 299 (1372 B);
+// the edge projection block as an inline helper taking the edge pointer 601 (stays a call), the edge index 610,
+// force-inlined 332 (1391 B) and 398 (1423 B, loses 0x270930). Plain, in the full image, the flag form is 2 as well.
+// The same kind of adjacent reload pair in 0x24cf66 (another file, no shared callee) swapped this round when a helper
+// was removed from src/unknown_223240.cpp, so such pairs follow whole-image state as well as this body. Body unchanged.
 // Carried start node with pointer or indexed predecessor, pointer-tested for update, and index-tested carried node:
 // 343/385/343/374 with long link count, 387/372/387/315 with short link count.
 // NOT kept: pointer-tested predecessor omits the retail predecessor-index check and shortens the body.

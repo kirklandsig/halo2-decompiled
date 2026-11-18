@@ -1004,6 +1004,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // optional unsigned adjustment set by branch or conditional 328/315. Same
 // forms indexing with the validated clamp result 339/339/353/342.
 // NOT kept: the frame and second-node spill remain. The distinct forms grow the body.
+// Chained entity-index defaults 237; role names for entity indices/coefficients/both
+// 238/238/238, with chained defaults 237/237/237. Separate named coefficients 238.
+// NOT kept: the one-point gain leaves frame 0x40 and the second-node slot unchanged.
 // Packed-contact shape reference 327. Material before shape or after data 327/327.
 // Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
 // Separate material-arm shape references 327. Shared receiver and early short material 328.
