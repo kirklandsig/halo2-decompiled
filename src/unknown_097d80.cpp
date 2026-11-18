@@ -580,6 +580,12 @@ struct c_aggregate : c_child
 // final-boundary cleanup 94; total countdown 31, with independent dispatch 93
 // or escaped dispatch 102; independent dispatch with escaped cleanup 96.
 // NOT kept: cleanup-count reuse recovers frame 0x8020 but moves the call and spill homes.
+// M3 lane 10 r120 (fast with the six file-mates, all still matched). Re-measured: one function-scope output for v5's
+// count and the release query 31 (frame 0x8020; the output at +0x1c, the two spill slots exchanged, and the collection
+// call's zero store and table load scheduled the other way round). New, each on that one-output form: the dispatch gate
+// as nested ifs 31; the dispatch inner loop as a `while` with both bounds named 31; the cleanup bounded by `starts[3]`
+// 31 (same code as the one-output form in all three); the cleanup's outer loop as a `while` taking `&blocks[k++]` 91
+// (380 B); the dispatch inner loop over block pointers 136 (389 B). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

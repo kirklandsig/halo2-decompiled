@@ -1140,6 +1140,31 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // arm's count in ECX then `mov edi, ecx`), while the one sum with header_size on its left (the body position) adds in place;
 // the matched sibling 0x2adb10 adds its signature position in place. Body unchanged.
 // MiniMax A (11-18): no new form, no lower score (34); a forceinline seek helper in the signature case, and in both the signature and body cases, with the compare inside the helper or at the call site, scores 178 and 179, so the plain SetFilePointer compare stays; what still differs is the register rotation (the entry total in EAX against retail's EDX, the hoisted body_size in ESI against ECX, the task pointer in EDX against retail's EAX) and the join copy at retail's 0x2ad911 that ours lacks.
+// M3 lane 10 r120 (fast with 0x2ada70 and 0x2adb10, both MATCH throughout; control 34, difflib-aligned 23 in brackets). The
+// body case's shape in retail (each buffer arm ends with its own `sub ecx, eax`, one `mov edi, ecx` shared by both, the body
+// size in ECX from the dispatch) is what our compiler gives when the size is assigned in one statement after both arms:
+// a `byte *body` local, `remaining` assigned in each arm and `if (body || size > remaining) size = remaining;` after them
+// 161 (689 B) [26]: that arm shape with size EDI and position ESI, but the offset and the remaining count in ECX/EAX the
+// other way round and no dispatch hoist; with the total folded into its conversion 176 [65]; with the listed forceinline
+// seek helper in the signature case as well 156 [20], and the outer test as `body_size > body_offset` 153 [17]. The same
+// shared assignment reading `parameters->body` at each use (no body local), total folded, signature seek helper, 166
+// (698 B) [9]: every body-case register is retail's (offset EAX, body size ECX, size EDI, position ESI); the rows left are
+// the body pointer's second read and test, a size load on the caller-buffer path and the signature sum, so not kept.
+// Also: the remaining count computed once after the arms 157 (692 B) [48]; `remaining` assigned in each arm with `size =
+// remaining` in the caller-buffer arm and one clamp after both arms (as an if, or MIN) 156 [21] (folds back to this body's
+// registers), that clamp without the local 152 (690 B) [19], on this body 161 [27]; a scratch-size local with
+// `MIN(remaining, buffer_size)` plus the folded total and the signature seek helper 156 (691 B) [12], on this body 161 [18];
+// the seek helper in both cases with the folded total 155 (689 B) [30], with the shared assignment 155 [38], in the body
+// case only 176 [59]; the signature position as the file total minus the signature size 34 / 88 (folds, same code as the
+// plain sum on either total form). Re-measured: the folded total with the signature seek helper 28 [17] (also with its
+// argument summed body first). Compile-only (same registers as the real build for these): one function-scope position
+// for both cases, and inline helpers for the remaining count and the body's end, same code as this body.
+// Later the same round: a separate scratch-size local with `MIN(buffer_size, remaining)` (the scratch size first), folded
+// total and signature seek helper, 158 (693 B) [15]: the caller-buffer arm is then retail's `sub ecx, eax; mov edi, ecx`
+// with the body size in ECX, but the scratch size takes EDX and the clamp its own copy; on this body 163 [21], with the
+// folded total alone 181 [63]. Diagnostic (reverted at once): the shared assignment reached by a `break` out of a
+// do/while(false), folded total and seek helper, 153 (689 B) [17]: retail's arm shape again with the offset and the
+// remaining count in ECX/EAX the other way round, as every form whose count is a named local at the join.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
