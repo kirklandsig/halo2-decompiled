@@ -30,9 +30,24 @@ struct workspace_sizes_31c100
 
 static __forceinline class_3193c0 *motion_31c100(void const *entity)
 {
-	class_3193c0 *motion;
-	memcpy(&motion, (char const *)entity + 0x3c, sizeof(motion));
-	return motion;
+	return *(class_3193c0 *const *)((char const *)entity + 0x3c);
+}
+
+// a block of size bytes (rounded up to 16) from the top of the allocator's
+// stack area, or from its overflow allocator when the area is too small
+static __forceinline char *stack_allocate_31c100(long size)
+{
+	memory_2d88a0 *memory = g_memory_2d88a0;
+	long rounded = (size + 15) & ~15;
+	long free = memory->stack_free;
+	if (rounded > free)
+	{
+		return (char *)memory->allocate_stack_overflow(rounded);
+	}
+	char *block = memory->stack_cursor;
+	memory->stack_cursor = block + rounded;
+	memory->stack_free = free - rounded;
+	return block;
 }
 
 // Lay the workspace out from the scratch buffer, moving to blocks from the
@@ -61,7 +76,7 @@ static __forceinline void reserve_workspace_31c100(workspace_sizes_31c100 const 
 			{
 				long spill = 2 * sizes->maximum_term_bytes + terms + sizes->term_bytes - end;
 				long allocation_size = spill + result_bytes + sizes->op_bytes + 4;
-				allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
+				allocated = stack_allocate_31c100(allocation_size);
 				term_limit = end - sizes->maximum_term_bytes;
 				end = allocated + allocation_size;
 				overflow = allocated;
@@ -71,29 +86,25 @@ static __forceinline void reserve_workspace_31c100(workspace_sizes_31c100 const 
 			else
 			{
 				long allocation_size = result_bytes + sizes->op_bytes + 4;
-				allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
+				allocated = stack_allocate_31c100(allocation_size);
 				end = allocated + allocation_size;
 				cursor = allocated;
 			}
 		}
 		long allocation_size = cursor - initial;
-		allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
+		allocated = stack_allocate_31c100(allocation_size);
 		end = allocated + allocation_size;
 		cursor = allocated;
 	}
 }
 
-// score 61 (was 155): the end-of-segment block of the profiling stream is filled through a
-// local copy of the stream cursor, the island range end is the expression itself (one
-// compiler temporary shared by both island loops), the last loop's mode is a float
-// (integrate_output takes a float: copied through integer registers and kept in its stack
-// slot, which leaves ebx for the island end), the solver output only lives in the block
-// around the constraint loop, and each of the three workspace sizes is its own local.
-// Left: retail copies the term limit into a second limit before the constraint loop
-// (needs the motion helper without its memcpy local to keep the first loop, but then the
-// terms reload of the spill branch is not coloured: 2 bytes shorter), the result count
-// is scaled before the scratch buffer is marked active in retail, and register choices
-// at the third allocation and the first loop's range.
+// The workspace is laid out with one cursor that is advanced past each part in turn
+// (bodies, terms, results, operations) and replaced by the block the allocator returns.
+// The allocator reads its free size after rounding the request, as retail does; that
+// order decides which dead register the memory operands of the size arithmetic get.
+// The mode for the last loop is a float argument; the first body's address is saved
+// for the last loop. Left: retail schedules the first body's lea after the fifth row
+// store of the zero motion (ours right after the entry test).
 // @retail 0x31c100
 void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *world_info,
 	void *simulation, void *islands, long island_count, long field_58, long field_5c)
@@ -103,8 +114,8 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	char *allocated = 0;
 	char *overflow = 0;
 	scratch_31c100 *scratch = g_484b38;
-	scratch->active = 1;
 	result_bytes = result_bytes * 4 + 8;
+	scratch->active = 1;
 	char *initial = scratch->data;
 	char *end = initial + g_484b38->size;
 	char *base;
@@ -122,10 +133,11 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	zero->rows[3] = _mm_setzero_ps();
 	zero->rows[4] = _mm_setzero_ps();
 	zero->rows[5] = _mm_setzero_ps();
+	void **entity = (void **)islands;
+	void **entity_end = entity + island_count;
 	zero->rows[6] = _mm_setzero_ps();
 	char *body = base + 0x80;
-	void **entity = (void **)islands;
-	for (; entity < (void **)islands + island_count; ++entity)
+	for (; entity < entity_end; ++entity)
 	{
 		class_3193c0 *motion = motion_31c100(*entity);
 		long offset = body - base;
@@ -133,26 +145,27 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 		body = motion->export_state((long)step_10, (long)world_info, (lane_a_motion_output *)body);
 	}
 	*body = 3;
+	char *limit = term_limit;
 	lane_a_constraint **constraint = (lane_a_constraint **)field_58;
 	lane_a_constraint **constraint_end = constraint + field_5c;
 	{
-		solver_output_31e7b0 output;
-		output.terms = (__m128 *)terms;
-		output.operations = (unsigned long *)operations;
-		for (; constraint < constraint_end; ++constraint)
+	solver_output_31e7b0 output;
+	output.terms = (__m128 *)terms;
+	output.operations = (unsigned long *)operations;
+	for (; constraint < constraint_end; ++constraint)
+	{
+		void **pair = (void **)step_50;
+		class_3193c0 *second = motion_31c100((*constraint)->body_b);
+		pair[0] = base + motion_31c100((*constraint)->body_a)->field_8;
+		pair[1] = base + second->field_8;
+		if ((char *)output.terms >= limit)
 		{
-			void **pair = (void **)step_50;
-			class_3193c0 *second = motion_31c100((*constraint)->body_b);
-			pair[0] = base + motion_31c100((*constraint)->body_a)->field_8;
-			pair[1] = base + second->field_8;
-			if ((char *)output.terms >= term_limit)
-			{
-				output.terms = (__m128 *)overflow;
-				term_limit = (char *)0xffffffff;
-			}
-			(*constraint)->build((lane_a_solver_input *)step_50, (lane_a_solver_output *)&output);
+			output.terms = (__m128 *)overflow;
+			limit = (char *)0xffffffff;
 		}
-		*output.operations = 0x400;
+		(*constraint)->build((lane_a_solver_input *)step_50, (lane_a_solver_output *)&output);
+	}
+	*output.operations = 0x400;
 	}
 	for (long i = 0; i < sizes->result_count; ++i) ((float *)results)[i] = 0;
 	long success = solve_operations_31c940((solver_step_31c940 *)step_20,
@@ -168,7 +181,7 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	{
 		float mode = *(float *)((char *)step_20 + 0x20);
 		body = base + 0x80;
-		for (entity = (void **)islands; entity < (void **)islands + island_count; ++entity)
+		for (entity = (void **)islands; entity < entity_end; ++entity)
 			body = motion_31c100(*entity)->integrate_output((lane_a_motion_step *)step_10,
 				mode, (lane_a_motion_output *)body);
 	}
