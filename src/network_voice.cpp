@@ -3803,6 +3803,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax B (11-18, round 2): no new form, no lower score (139): the rewrite that advances the packet cursor on its
+// own measures 164 at 478 bytes against retail's 488 - the same form lane A measured - so the split stands: retail
+// keeps the channel in ebp from the entry and the cursor in edi, this build keeps the data pointer in ebp and
+// recomputes the cursor from the counter.
 // MiniMax S (11-17): no new form, no lower score (139): retail still takes the channel in ebp from the entry and
 // spills the member to a frame slot, while this build keeps the member in ebp and the data pointer in a register; the
 // cursor's absolute start and the route home are as before, and the permuter over this body found nothing below 139.

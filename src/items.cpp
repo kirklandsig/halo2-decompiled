@@ -1235,6 +1235,11 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
+// MiniMax B (11-18, round 2): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c, so
+// forty bytes of frame are unaccounted for and every stack home sits further out than retail's; the entry flags are
+// still held in registers where retail keeps them in stack bytes, and the forms the earlier rounds tried all grow
+// past retail's 4096 bytes or land below the eight-point gate, while the permuter over the body (one job, --fast,
+// 300 s) tried sixteen forms and its best is the 824 baseline, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (824): the frame is still 0x154 against retail's 0x12c (forty spare
 // bytes below the homes), so every stack home sits further out; retail keeps the two entry flags in stack slots where
 // this build holds them in registers, and the item walk still differs, so no form of the body's locals changes it.
@@ -1761,6 +1766,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax B (11-18, round 2): no new form, no lower score (140): the permuter over this body (17 tries, 301 s) found
+// nothing below the 140, and the one new form - the spin flag's local lifted to the function's scope so that it
+// takes a frame slot of its own - compiles to the same code (140 at 892 bytes, the first difference still at
+// +0x4c), so the body stands; the result byte still sits at [esp+0xe] where retail has [esp+0xf], the release flag
+// is still cleared by a load, an and and a store where retail masks the byte in place, and the impulse helper is
+// still shared here where retail has two inlined copies, and the callee 0xba300's parameter order is fixed in a file
+// this lane may not edit: BLOCKED-BY 0xba300's file.
 // MiniMax B (11-18): no new form, no lower score (140): the frame 0xac agrees with retail's, but the returned byte
 // still sits at +0xe where retail keeps it at +0xf, retail clears the release flag with one byte read-modify-write where
 // this build splits it into a load, an and and a store, and the event and point homes and the location call's setup

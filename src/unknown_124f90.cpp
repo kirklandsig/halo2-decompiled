@@ -1345,6 +1345,16 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax B (11-18, round 2): no new form, no lower score (87): the prologue is instruction for instruction retail's
+// and the first difference is the elapsed time's register (retail XMM3, this build XMM2) with the reciprocal one
+// lower to match (retail XMM2, this build XMM1); the copy of the fade-in time dropped so that the inverse is
+// divided from the field measures 94 at 683 bytes, and with the copy in place the reciprocal's division is still
+// scheduled after the elapsed's subtraction where retail divides first, so the body stands.
+// MiniMax B (11-18): no new form, no lower score (87): retail keeps the elapsed time in XMM3 and its reciprocal in XMM2
+// while this build keeps them in XMM2 and XMM1, and that also fixes the fade-out home (retail multiplies by the
+// register, this build reloads the field from memory); the clamp with the division made eager (`real t = time /
+// ducking->fade_in_time; if (!(1.0f > time * inverse)) t = 1.0f;`) measures 143, a fade-out local 92 and the inverse
+// taken from the field 94, so the body stands.
 // score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // MiniMax G (11-18): no new form, no lower score (87): the elapsed time and its reciprocal still take different registers
 // (XMM2 against retail's XMM3), the first gain load is still separate, and the release-to-attack join still differs.
@@ -3201,6 +3211,10 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax B (11-18): no new form, no lower score (96): retail keeps the outcome in AL (set at the entry, cleared on the
+// failure path with xor bl, bl and moved back) while this build keeps it in a stack byte at [esp+0xf], so the frame
+// is 0xc against retail's 8; the closest form (15) needs a goto into an arm, a redundant store and a moved
+// declaration, and the file-local search helper taking `long type` on its own regresses to 127, so the body stands.
 // score 96 (was 96): MiniMax I (11-16, round 2): no new form, no lower score: our prologue still sets the frame up
 // before reading the voice index and loads two globals ahead of it, where retail reads the index first and keeps the
 // outcome in AL; our frame is 0xc against retail's 8, both with the saved ebx, so one local is spilled that retail
@@ -4748,6 +4762,16 @@ struct s_128ca0
 // homes and pin joins remain. Original endpoint expression and full body restored.
 // N397: Complete native pitch, processed-gain and both submission-gain home identities 222/222/222/222/222/222/222/222.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// MiniMax B (11-18, round 2): no new form, no lower score (122): the first difference is still the swap between EAX
+// and EDX in both pin sums - retail loads the permutation-gain byte into EDX and the gain bits into EAX (the second
+// sum has the byte in EAX and the gain in ECX), and this build has each pair the other way round; the byte's
+// sign-extension, the bits' store to [esp+0xc] and the sum's operand order are retail's, so the swap is the
+// allocator's choice and the body stands.
+// MiniMax B (11-18): no new form, no lower score (122): the first difference is still the swap between EAX and EDX in
+// both pin sums (retail keeps the permutation-gain byte in EDX and the gain bits in EAX, this build the other way
+// round), and the later differences follow from that swap; the byte's sign-extension, the bits' store to [esp+0xc]
+// and the sum's operand order are retail's, so the swap is the allocator's choice and no spelling of the two
+// operands moved it this round.
 // b6U (11-06) statement-by-statement walk against retail (0x128ca0-0x1290be), fast build: no behaviour difference found.
 // Checked: the two memsets and the two stores (0x128cfc-0x128d18, local_3 clear is 4 + 0x2c + 4 + 0x444 bytes);
 // pitch (0x128d1a-0x128d58, upper - lower scaled, plus playback pitch, plus lower); gain sum (0x128d58-0x128d83,
