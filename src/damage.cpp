@@ -615,6 +615,13 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // g_47d8e0 load above the definition store): unknown18 ahead of the +0x22 copy 5; unknown14 after the location stores 7; the
 // owner's team stored first 6; unknown18 after the three 1.0f stores 7; the +0x22 copy ahead of the leaf and cluster stores 6. Each
 // moves only the stores (they follow source order); `or eax, -1` stays right after the g_47d8e0 load.
+// M3 lane 16 r133 (fast with 0xd8cb0, which reproduces the full build): the +0x7c copy as an aggregate of two chars
+// 3 (diagnostic, same code: two-byte aggregates are scalarised); the dword NONE stores as `(dword)NONE` 3 (diagnostic, same
+// code: one constant); the owner's three stores through an owner pointer 3 (same code); the material read into a short
+// local ahead of the definition store 7 (the material then takes EAX, so `or eax, -1` waits for its store and lands after
+// the g_4686c4 load as in retail: the scheduler takes that load before the `or` when both are ready, so only the `or`'s
+// early readiness differs); leaf and cluster as `unknown20 = (short)(unknown1c = NONE)` 3 (same code). Re-measured the
+// +0x7e store beside +0x7c 15 (listed).
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {

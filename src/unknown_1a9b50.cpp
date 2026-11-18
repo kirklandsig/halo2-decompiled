@@ -767,6 +767,13 @@ extern point2f *g_468778;
 // declaration order measures 413 again (the actor pointer then takes edi, is spilled at esp+0x20 and the frame grows
 // to 0x44), the slot between the two lookups measures 413 as well, and the same order with the result declared last
 // measures 426.
+// M3 lane 16 r133 (fast with the file's matched neighbours, 0x265d30 and the callees; control 375): the slot parameter
+// typed as the slot view with no local copy 375 (the same code but for one read's register); re-measured actor first with
+// `if (!settings || f13 || f14 || f2d) return false;` and the direct final return 393 (listed; arg_0 EBX, actor EDI
+// spilled, settings ESI, slot EBP, prop in the slot argument's home, where retail has EDI/EBP/memory/ESI and the prop in
+// EBX); on it the slot parameter typed as the view 393 (same code); the final result set by `if (...) result = true;`
+// 380; the actor declared first and assigned after the settings call 375 (same code); the prop lookup first in its block
+// (ahead of the clock and the threshold) 380.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
