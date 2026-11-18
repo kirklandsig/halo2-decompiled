@@ -2,6 +2,66 @@
 
 The newest entry comes first.
 
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1431 of 1436 Havok functions (279426 of 290362 bytes, 96.23%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1347: `0x2dc220` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1430 of 1436 Havok functions (276302 of 290362 bytes, 95.16%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1345: `0x318a90` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1429 of 1436 Havok functions (276047 of 290362 bytes, 95.07%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1328, #1343: `0x2de1b0` and `0x2e3370` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
+0 new matches, none lost:
+- @andrewnakas's #1341: closer scores and notes, no new match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
+13 new matches, none lost:
+- Machine 3's batch 295 (#1340): `0x5e3f0`, `0x7a1c0`, `0x938e0`, `0xb9b90`, `0x133390`, `0x1509e0`, `0x16fe90`, `0x175a80`, `0x1ff360`, `0x215c00`, `0x2162b0`, `0x2ad480` and `0x2c5897` match.
+
+## 2026-11-18: 10685 functions match
+
+```
+matched 10685 of 11326 game functions (2071632 of 2786206 bytes, 74.35%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1333, #1339: `0x303dd0` and `0x3048a0` match.
+
 ## 2026-11-18: 10685 functions match
 
 ```

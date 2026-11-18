@@ -56,8 +56,8 @@ struct s_133f70
 
 typedef char c_133f70[sizeof(s_133f70) == 0x1e4 ? 1 : -1];
 
-short function_2cbf0(long arg_1, short arg_2, dword arg_3,
-	long arg_4, dword arg_5, long arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
+short function_2cbf0(long arg_1, dword arg_3,
+	long arg_4, dword arg_5, long arg_6, short arg_2, long arg_7, byte *arg_8, short arg_9, byte arg_10,
 	void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
 	bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
 	real arg_21, word arg_22, point3f const *arg_23, real arg_24);
@@ -106,8 +106,8 @@ void function_133f70(s_133f70 const *record, bool arg_2)
 					first = (bool)((entry_flags >> 3) & 1);
 					second = (bool)((entry_flags >> 4) & 1);
 				}
-				function_2cbf0(index, record->field_16a, flags,
-					record->field_5c[i], record->field_4[i], record->field_2c[i], j, record->field_48[i],
+				function_2cbf0(index, flags,
+					record->field_5c[i], record->field_4[i], record->field_2c[i], record->field_16a, j, record->field_48[i],
 					record->field_1be, record->field_1bc, NULL, record->field_1d0, record->field_1b4,
 					record->field_1c0, record->field_1c4, first, second, record->field_1d4,
 					record->field_1d8, record->field_1dc, record->field_1e0,

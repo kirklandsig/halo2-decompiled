@@ -454,6 +454,11 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // file-local forceinline (base, offset) address helper 2; `samples_address += offset` then the cast 8. Re-measured the
 // memcpy'd offset with plain samples 3: the samples load into EDX as retail, but the offset loads first, into the entry's
 // ESI in place, where retail loads it second into the data pointer's dying EDI.
+// m3 lane 14 r109 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): both sum operands copied with memcpy into locals, the
+// pointer sum 9 (the scale moves to EDX, the offset loads into the entry's ESI in place and becomes the add's destination,
+// `add esi, edi`), as an integer sum 9, with the offset local declared ahead of the samples local 9 (same code: the
+// commutative add keeps the offset as its destination whatever the declaration order); the sum named before the set's
+// declaration 2; the scale copied into a local at the call 2 (both the same code).
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {
@@ -663,6 +668,11 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// score 49 (was 184): `inline` on 0x188790's definition (round 191, plain): this body then keeps the object in EBX, re-zeroes
+// xmm0 after each 0x188790 call and has retail's 0x80 frame. Left: the top select (retail forms the address in each arm and
+// loads once, `mov eax, [eax]`), the clear path's `or byte ptr [edi], 2` (ours folds it into a word store), case 0's flag
+// store ahead of the last location store, the audibility byte stored after its arguments, and the marker position copy's
+// scratch registers (retail edx/eax/ecx, ours eax/ecx/edx). Round 191's line at the end of this note has the forms.
 // MiniMax I (11-16): no new form, no lower score (184): spelling the flags aggregate with byte-wide members and
 // byte-wide bitfields (retail tests a byte at offset 4) scores 336 and was restored, the last condition split into two
 // nested tests is 184, and the permuter over the reduced image found nothing below 184; what still differs is the frame,
@@ -683,10 +693,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // `mov eax, 0x444ae0; mov eax, [eax]`), which this build only reaches by taking the address of the shared
 // constant g_444ae0, and the rest of the chain that reaches the lower scores needs the inline contract on
 // 0x188790, whose definition is in src/unknown_1887d0.cpp.
-// score 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
+// Earlier 184 (was 184): MiniMax R (11-15): no new form, no lower score; retail keeps the object in EBX with a 0x80 frame
 // where this build keeps it in ECX with a 0x84 frame, and that follows whether 0x188790 is expanded, which is decided
 // by its definition in src/unknown_1887d0.cpp: BLOCKED-BY that file.
-// score 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
+// Earlier 184 (was 184; earlier 246, 264, 279, 280, 293): the top field as a value ternary (round 170, plain). HELD (needs a
 // ruling): `inline` on 0x188790's definition, 113 alone and 49 with the ternary (build/r170/held-0x18cbc0.patch in the m3-lane6
 // worktree); round 170's line at the end of this note has the forms.
 // MiniMax E (11-10): no new form, no lower score (246); the literal 1 is still pooled in EBX, so the frame stays 0x84 against retail's 0x80 (a byte flag field 324, word bitfields 246 and the flag-0 bitfield test 324 all score the same or worse).
@@ -893,6 +903,28 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // for the shift; retail gives ebx to the object pointer because it treats 0x188790 as clobbering ecx, and that
 // helper's inline-ness is decided in src/unknown_1887d0.cpp, which this lane may not edit. Reading the same bit
 // through TEST_FIELD_BIT(sound->flag0) instead of sound->flags & 1 compiles to the same bytes (184).
+// M3 lane 6 r191 (fast with 0x188790/0x21db80; fast and plain agree on this body, checked at 49 and 20): `inline` on
+// 0x188790's definition kept, 184 -> 49 (plain, 1031 B; main has 83 @retail definitions marked inline, and retail's call
+// sites show the clobber: xmm0 re-zeroed after each call, the object held in EBX). Not kept, on that (match-only forms): the
+// flags cleared by memset 31 (gives retail's `or byte ptr [edi], 2`), plus the listener named ahead of the 0x1000 flag 29,
+// plus the object index named before audible 20 (plain 20, 1029 B). On the 20 chain: the pointer select `*(type == 0 ?
+// &owner : &g_444ae0)` 98 (the head is then retail's, entry scheduling included, but the load lands in EDX and cases 3 and
+// 2 run one scratch register off); that select on the 49/31/29 steps 113/109/107, with the +2 store ahead of it 104; a
+// const datum pointer 20 (same code; 49 on the kept body), with the pointer select 98; the select bound to a const
+// reference 98, a named pointer local 98, a reference to the dereference 98; a one-member aggregate view of the three
+// fields 98, memcpy from the selected address 98, a reference to that view 98; the pointer local set to the field and
+// overwritten when type != 0, and a long holding the address then its target, 330 each (the load is then retail's
+// `mov eax, [eax]`, but the field address moves to EBP and the frame grows); a reference-bound copy of the pointer 98.
+// 0x444ae0 holds 0.0f and sits between float constants: with real-typed operands the value select 49 (movss in both arms,
+// plain 49), the pointer select 98, a const real reference 98. Marker copy: through an inline pointer setter 20, a
+// position accessor 20, both 20, a forward accessor for the compress call 20, a reference setter 20, memcpy 20 (all the
+// same code); the marker name as a conditional expression 28; the 0xb8d30 result named 20; that call through an inline
+// void helper 20; its object through the type-1 accessor 20.
+// The select through inline helpers, on the 20 chain with the const datum pointer (all 98, the same code as the written
+// pointer select, the load still in EDX): a setter taking the value by const reference; an accessor returning a const
+// reference; an accessor returning a pointer; the reference accessor into a by-value setter and into a reference setter;
+// an accessor returning the dereferenced value; a by-value setter given the written dereference; a pointer accessor
+// written with two returns.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

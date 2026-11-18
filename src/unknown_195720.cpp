@@ -138,6 +138,10 @@ bool function_1946f0(s_bitstream *stream)
 // (`[data + index + 1]`); only a data value held in a register before the index is defined (a parameter, an early local)
 // gives retail's index base, and then it is not reloaded. Diagnostic (compiler settings, not kept): favour-size and
 // minimum-size builds keep the data as the base too, so the order is not a speed heuristic.
+// Round 118 (m3 lane 10, fast): the masked byte and the clear start as `byte_index + stream->data` sums 2; a named
+// `long bit_index = saved % 8;` for the mask 2; the pop as `checkpoint_count--;` then the read 2; the mode and position
+// tests nested 2; unknown2c stored first, then the index, then `unknown30++` 15. Both LEAs stay data-first in every
+// 140-byte form.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

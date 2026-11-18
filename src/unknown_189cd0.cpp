@@ -241,6 +241,12 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // fourth and fifth arguments are a pair of decibel values the callers pass by value (0x2a9e60 builds them); a by-value
 // aggregate holding the object index with them would keep it in memory, not tried: the declaration in
 // include/unknown_29f5b0.h and the calls in src/unknown_29f5b0.cpp belong to another lane this round.
+// M3 lane 2 r99 (plain; every form without the reference, object reads plain): `__assume(tag_index != NONE)` at the
+// positioned arm's top (an extra tag use with no code) 152 (535 bytes; tag still EDI, spatialization spilled); the late
+// uses (call, started test, dispatch) through a `long &` binding of the parameter 116 (folds); the request declared at
+// the slot block's scope 116; spatialization assigned in an if/else and positioned after it 154 (541 bytes); positioned
+// held in a char 116. In the plain listing the request arm stores the object's EBP for its NONE field and the dispatch
+// reloads the tag from its home (EDI goes to 0x189340's source); retail never enregisters the object index.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

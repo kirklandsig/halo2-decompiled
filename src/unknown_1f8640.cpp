@@ -874,10 +874,22 @@ struct s_1f8a70_actor
 // each storing node first or radius first, 360/212/360/212. Native order
 // through the case frame 392, earlier snapshots before point stores 372.
 // NOT kept: all raise the score. Route dispatch and the late false reload remain.
+// Paired direct modes 372, paired reference modes 383, both pairs 182.
+// Mode-six movement-bit early break 408, with direct/reference/both pairs
+// 372/383/408, or with explicit source-node branches 414.
+// NOT kept: the dispatch join and failure-result reload remain.
 // Filtered zero route 182; conditional zero-route choice 182; branch-owned route 384; separate
 // zero/nonzero value choices 384; range-first normalization 309; separate radius/node outcomes 403;
 // compound invalid-route test 299; nested route choice 384. NOT kept: dispatch adjacency and
 // the failure result reload remain.
+// m3 lane 13 r109 (fast with 0x1f86a0, 0x1f8750, 0x1f8780, 0x1f8940, 0x1f90f0, 0x1f8510 and 0xe70b0, all MATCH; control
+// 182): the zero-route test as a bitwise `|` of the two comparisons 298 (1652 B, retail's length: both sides are then
+// materialised with setcc, where retail materialises only the node test); the mode switch's `default: goto failed;` placed
+// between case 5 and case 6 182 (same code: the join still follows case 7); `result = route_found;` ahead of the 0x1f8750
+// call in the failing arm 182 (same code); the first exit as `function_1f86a0(actor_index); return false;` 447 (1624 B);
+// the final test inverted with the failing arm first, each arm assigning the result 304 (1640 B). Re-measured: one
+// `result = route_found;` ahead of the final test 317 (1676 B). Ours returns the failure through BL (`xor bl, bl` after
+// 0x1f8750, shared with the first exit); retail stores false to the +0x12 byte before the call and reloads it after.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

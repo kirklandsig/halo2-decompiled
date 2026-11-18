@@ -219,6 +219,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // to ESI and the screen is reloaded from its home, no direct read); the model loop without its value0a store 54.
 // Reading: `mov [slot], reg` is the zero shared with the counter's own register, `and [slot], reg` a literal zero the
 // peephole pass rewrote; retail shares it in the model loop and not in the text loop.
+// M3 lane 2 r99 (fast): `inline` on 0x22fa5b's definition 23 (stays out of line, same code); the model's value0a store
+// written in both arms of the animation test 23; a separate widget local per loop declared at the pane block's top 23;
+// `long i = 0;` above the pane lookup with the first loop also `for (i = 0;` 66, and the first loop `for (i = 0;` under
+// main's `long i = 0;` 66 (both give one zero register, EBX, for the whole function; the model reset becomes `mov`).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

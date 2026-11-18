@@ -472,6 +472,10 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax B (11-18): no new form, no lower score (42): a local copy of the emitter definition for the three property
+// tests measures 125 and a local copy of the emitter flags for the same three tests 181, both above the plain body; the
+// permuter's annealed run (900 s) finds nothing below 39, so row i of both rotations still sums the up product before
+// the forward one and the three post-call reload pairs still restore ebx before esi.
 // MiniMax S (11-17): no new form kept, no lower score (42): the emitter walk as a guarded do-while with the offset's
 // zero store inside it measures 41 on its own and 39 with the scale declared before the multiplier (the form MiniMax
 // R 11-14 and MiniMax A 11-12 measured), under the keep bar, so the body stands; row i of both rotations still sums
@@ -885,6 +889,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // both rotations 45 (1130 B), `point3f const &frame_origin = *origin_result;` for the translation 122 (1136 B), both 122
 // (1134 B); on indexed definitions with scale first (re-measured 113, 1136 B: row i of the position rotation sums
 // (up*z + x*forward) + left*y, retail (left*y + forward*x) + up*z) the same three 112/115/115 (1134/1138/1138 B).
+// Declared link area, definition-array member, or both 42/42/42.
+// Mode as the low byte of its word 122, also with either or both member reads
+// 122/122/122 and with the offset in a for initializer and step 122.
+// NOT kept: the member reads tie and the low-byte mask grows the body by six bytes.
+// Empty-chain offset initialization, receiver reloads and row-i products still differ.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
