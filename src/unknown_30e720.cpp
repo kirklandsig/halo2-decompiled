@@ -262,7 +262,13 @@ static __forceinline island_30e720 *side_island_30e720(side_30e720 *side)
 	return ((linked_30e720 *)address)->body->island;
 }
 
-// score 227 (was 345): the pair list's room comes from a constructor taking the
+// score 198 (was 216): a created island's index is stored through a helper taking
+// it by value; the value is one more candidate in the island-creation block,
+// which lifts the created island above the moved body in the colouring order,
+// so the created island takes ebp and the body ebx as in retail. Left: the
+// opening decrement, the islands.data reload in the empty arm, and the action
+// and link sections' register choices.
+// Before, 227 (was 345): the pair list's room comes from a constructor taking the
 // three counts (links, joins, actions), which loads all three before the sum as
 // retail does, and a link's island is found by stepping a byte pointer back from
 // the side, which gives retail's separate subtraction. Left: the second side's
@@ -287,6 +293,12 @@ static __forceinline island_30e720 *side_island_30e720(side_30e720 *side)
 // action scan snapshots 396; capacity call plus size store 443;
 // group entry reference 456; reverse transfer postdecrements 494;
 // forced owner inline 396. Original body and helper restored.
+// stores a created island's place in the island list
+static __forceinline void set_index_30e720(island_30e720 *island, long index)
+{
+	island->index = index;
+}
+
 // @retail 0x30e720
 void c_311100::function_30e720()
 {
@@ -317,7 +329,7 @@ void c_311100::function_30e720()
 				{
 					island_30e720 *created = (island_30e720 *)new object_3171a0((long)this);
 					append_island_30e720(islands, created);
-					created->index = islands.size - 1;
+					set_index_30e720(created, islands.size - 1);
 					created->field_30 = island->field_30;
 					bodies_30e720 &moved = created->bodies;
 					if ((moved.capacity_and_flags & 0x7fffffff) < groups.data[g].size)
