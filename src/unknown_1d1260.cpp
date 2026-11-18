@@ -40,9 +40,11 @@ extern hkWorld *g_51e9a4;
 extern byte *g_51eca8;
 extern long g_47f050;
 extern s_record_pool *g_51ec00;
+/* function_2266a0 stays declared ahead of function_278f00: link-time code generation walks callees in this
+   order, and 0x1c4040, 0x146bf0 and 0x1c51c0 match only with it (see 0x1c4040's comment) */
+void function_2266a0(long impact_index);
 void function_278f00();
 void __stdcall function_b9b90(long object_index, bool disable);
-void function_2266a0(long impact_index);
 
 PRIVATE __forceinline byte *function_1d1261(long arg_0)
 {

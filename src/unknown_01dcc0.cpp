@@ -323,6 +323,13 @@ long g_55e6c0;
 // moves); the kind stored through a trivial force-inline setter 29 (same code); the packing's height term read from the
 // stored height field 29 (same code: the store is forwarded); the clamp assigned through a reference bound to the
 // element-count field 30; the clamp through a reference-bound copy of the count, set by if / else-if, 166 (497 bytes).
+// Round 210 (m3 lane 4, fast, all on the round-51 signed pitch/packed lead, re-measured 29 at 484 bytes): the clamp's
+// store between the width and height stores 161 (493 bytes); the count stored, then overwritten by `< 0` / `> 4` stores
+// 109 (495: the count still takes EAX and the height EDX with no merged value); the clamp as the runtime library's
+// min(max(count, 0), 4) expansion 150 (495), as `MIN(MAX(count, 0), 4)` with `>` in both 150; width and height stored
+// ahead of the kind store 31, the kind store between them 31 (kind is still loaded and stored first). Diagnostic,
+// reverted: the clamp reading its own volatile copy of the count 46 (the count still takes EAX, so the call's raw-count
+// use does not give it EAX).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
