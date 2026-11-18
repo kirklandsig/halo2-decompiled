@@ -21,7 +21,6 @@ void function_11d790(quaternionf const *arg_0, real *arg_2, vector3f *arg_1);
 void havok_component_rigid_body_angular_velocity_get(s_havok_component *arg_1, long arg_0, vector3f *arg_2);
 void havok_component_rigid_body_linear_velocity_get(s_havok_component *arg_1, long arg_0, vector3f *arg_2);
 real havok_component_rigid_body_mass_get(long arg_0, s_havok_component *arg_1);
-void havok_component_rigid_body_linear_velocity_change(long arg_0, s_havok_component *arg_1, vector3f const *arg_2);
 void havok_component_rigid_body_angular_velocity_set(long arg_0, s_havok_component *arg_1, vector3f const *arg_2);
 real function_1d2280(bool arg_0, bool arg_1, real arg_2, real arg_3, real arg_4, real arg_5, real arg_6, real arg_7, real arg_8, bool arg_9, real *arg_10);
 
@@ -639,7 +638,7 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
     local_2 = true;
    }
    if (local_17) local_25.k += g_510c54->rate * g_51e9c4->unknown0;
-   havok_component_rigid_body_linear_velocity_change(local_15, local_14, &local_25);
+   local_14->rigid_body_linear_velocity_change(local_15, &local_25);
    if (!TEST_FIELD_BIT(local_14->flag1))
    {
     if (local_12->field_c != 0x7000001)

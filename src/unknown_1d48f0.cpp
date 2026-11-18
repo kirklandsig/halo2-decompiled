@@ -47,6 +47,13 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// score 298 (was 298): m3 lane 9 r134 (fast unless noted; the score line below moved to the top of this one note):
+// `inline` on 0x279740's own definition (src/unknown_279740.cpp) 418 plain and fast (2215 bytes: both releases then
+// expand the range check and 0x11bed0 still expands, so the expansion is not a per-caller budget); the loop counter
+// renamed to sort after the exclusion index (diagnostic for the name-ordered cells) 298 (same code); the upper bound
+// set before the lower 315; the padded radius written at each use 508; the bounds loop through
+// `m_quad.m128_f32[i]` in place of the `(real *)&m_quad` cast 298 (same code). Still BLOCKED-BY 0x11bed0's
+// expansion here: with it out of line (earlier diagnostics) the entry and the optional-state homes are retail's.
 // MiniMax H (11-14): no new form, no lower score (298): declaring the result flag before the two
 // optional-state homes, and between them, both measure 400 against the body's 298, so the flag's
 // declaration point is what sets the small homes' packing; the body is unchanged.
@@ -86,7 +93,7 @@ const dword g_455978[81] = {
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.
 // MiniMax E (11-11): no new form, no lower score (298): the aligned frame agrees; the optional bounds/exclusion homes and the selective helper expansion remain, and the helper 0x11bed0 is defined in its own file: BLOCKED-BY 0x11bed0.
 // MiniMax S (11-16): no new form, no lower score (298); retail still inlines 0x279740 at the first release and calls 0x11bed0 out of line, and both are set in files this lane may not edit.
-// score 298 (was 298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
+// Earlier (298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
 // Lane 18 r37 (fast): result flag declared at function entry 400; sample count declared before the FPU
 // setup 529; contact presence declared inside the sample loop 353 (2121 B); result flag declared after the
 // presence 356; exclusion index declared before the bounds volume 298. Ours keeps body/shape in ESI/EDI

@@ -4275,6 +4275,19 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // placement and the register allocation cannot be had together in one form. The reduced image's score depends on
 // the address set: the nine-address set gives 12 at 668 bytes, 0x10ff40 on its own gives 217 at 687 bytes, so
 // every measure here used the nine-address set.
+// b16D (11-17) walk against retail, fast build on r852 (nine-address set, 12 at 668 B, unchanged; 0x1103a0 445 and
+// 0xc98a0 199 unchanged, the six matched callees stay MATCH): walked every statement: the three table reads
+// (0x10ff8f, 0x10ff9a, 0x10ffa5), the 0x7c/hard-ping branches (0x10ffeb, 0x11001b), the soft-ping jae (0x110113),
+// the call arguments, the flag7 set and the *flag stores: all equal retail, so the 12 are only the homes of definition
+// and control (retail +0x20 stored at 0x10ff84, +0x1c at 0x10ffb6; ours +0x1c and +0x20) and the two flag clears
+// (retail 0x10ffba, 0x10ffbf, ahead of the je at 0x10ffc4). Outside pieces: 0xe70b0 already returns by value; the
+// byte read at 0x110056 is the object header's type byte, and a typed field for it is the same code (12, not kept,
+// as Round 209); channel_elapsed_seconds is file-local with this one use. Tried: definition and control through
+// forceinline accessor functions 12 (same code), with the flags cleared early 205 (682 B); the clears before the
+// lookup's branch in five places and every order of control/definition/state at the top 204/205 (682 B: control takes
+// EBX, animation spills); control or definition (or both) declared after the lookup's `if` 156-188, with the clears
+// early 177-198 (the 668 B ones, 191, reach retail's size and clear order but form control after the branch,
+// where retail forms it before 0x10ffc4); animation initialised at the top 182, as a ternary 177; byte flags 36.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

@@ -75,6 +75,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax I (11-17, run 103): no new form, no lower score (106): retail still keeps the old maximum in ECX and reads the
+// fifteen-bit counter with the sixteen-bit idiom (xor eax, eax; mov ax, [mem]) where this build keeps the maximum in
+// EAX and zero-extends the word; a short old maximum measures 106 and the nested enable test 111, and the enable byte's
+// reload and the two maxima's homes stay in include/globals.h and src/unknown_1967d0.cpp: BLOCKED.
 // MiniMax H (11-14): no new form, no lower score (106): this round re-read the diff: the -1 default still lands in EAX where retail holds it in ECX, and the 15-bit counter is still read with movzx where retail clears EAX and loads a word; the two counts' registers come from the callers in another file, so the body's spelling cannot move them.
 // MiniMax G (11-14): no new form, no lower score (106): the enable reload is blocked by src/unknown_1967d0.cpp and the two maximum reads only duplicate 0x196960's body (105).
 // MiniMax E (11-15): no new form, no lower score (106): the old maximum read as a nested if instead of the conditional expression 111 (the maximum stays in EAX against retail's ECX); retail keeps the enable byte in AL and the maximum in ECX, loads the counter's word with `xor eax,eax; mov ax,[...]` against our zero-extended load, increments `word ptr [eax+edx+0x16]` where we compute the row pointer first, and re-reads the enable byte into CL after the counter store where our build keeps it in DL across that store.

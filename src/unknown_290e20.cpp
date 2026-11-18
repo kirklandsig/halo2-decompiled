@@ -552,6 +552,10 @@ struct s_ai_scene_assignment
 // volatile cast (reverted at once, not allowed) 2 at 347 B: the maximum takes ESI with retail's dword load and only the
 // found block's two loads stay swapped. Retail's scorer argument is a plain load of the role's slot that is not counted
 // as a use of the role; no natural form found that gives that.
+// Round 107 (m3 lane 14, fast with 0x291b40, which matched in each): the count bound by reference (`short &count =
+// *assignment_count;` at every use) on the int copy 12 (same code), on the direct maximum 59 (350 bytes); the stores
+// through a reference to the assignment row 12 (same code); the stores ordered name, score, variant, actor 17; actor, name,
+// variant, score 14; re-measured, not counted: the maximum bound by reference on the direct form 59.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
