@@ -485,6 +485,12 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (start EDX for life, walk EDI, the sum `mov eax, string; add eax, edx` where retail adds the string into start's EDI);
 // `start += (long)string` 40 (start ECX for life, the string folded as `add ecx, [esp + 0x14]` where retail loads it
 // into EAX first); a plain string with `start +=` 41 (104 bytes, string ECX -> EBX, the scan byte in AL and two exits).
+// M3 lane 2 r97 (fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time): the count tested first with the source
+// written `start + string` at the call 39 [35], or `(char const *)(start + (long)string)` 39 [35] (the count-first colouring,
+// but the sum lands in the string's EAX, `add eax, edi`, so start stays unmodified and arrives in EDI); the count tested
+// first with `start += (long)string` right after the compare 36 [6] (start EDX for life, the string read folded into the
+// add); the count tested first with `start = (long)string + start` after the clamp 40 [match] (start ECX for life);
+// diagnostic: the natural body with the copy helper written out 28 [6] (same code as the natural body).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -640,6 +640,21 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // magnitude 262; iterator-loop rejection guards 244; conditional hit acceptance 336;
 // shared terminal point addition 244; combined blocked-result exit 493.
 // NOT kept: ties or regressions. Success and first-boundary homes still differ.
+// First-edge and return-byte role names 244/244, return initialization alongside
+// the first blocked store 383, first-edge initialization at sector selection 245,
+// carried endpoint arm first 262, separate location query guard 244. Target
+// selection stored into the return byte 236 (NOT kept: conditional flag and
+// earlier true return materialization than retail). Failed edge test supplies the
+// no-hit result 237 (NOT kept: seven-point gain and wider length gap).
+// Dedicated carried endpoint/distance/both 522/390/537. Iterator first-edge
+// identity alone/with endpoint/with distance/with both 336/279/398/392.
+// Nullable carried endpoint with dedicated distance 348. Success and first-edge
+// stack homes and the common progress/limit finalization still differ.
+// The success and first-edge byte homes and the shared cutoff finalizer still differ. Tried: for-loop edge
+// retrieval 244; continue on rejected edge 244; shared cutoff 202; shared cutoff with rejection continues 202;
+// loop-scoped next sector with and without shared cutoff 202/244; positive endpoint state with and without
+// shared cutoff 203/245. NOT kept: shared cutoff still tests hit and next sector at the shared exit and
+// shortens from 1593 to 1588 bytes. Accepted crossing processed after the edge scan 483.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

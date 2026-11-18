@@ -913,6 +913,9 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // Sole-return rejection at heading normalization, projection, reach, lateral clearance and alignment: 87 each.
 // Ordered rejection pairs for the normalizations and for projection/reach: 87 each. Timing rejection 110 (966 bytes).
 // Unit-argument scratch register and first-length/projection/output homes remain.
+// MiniMax S (11-17): fast build on r852: the request store through a named local scored 107 (was 87) and the permuter's 5 tries
+// stayed at 87; retail's homes are side0 +0x10, {sum, side1} +0x14, {length, adjusted} +0x18, index +0x1c against ours {sum, side0}
+// +0x10, {length, side1} +0x14, index +0x18, adjusted +0x1c, and retail loads the 0x110ab0 argument in EAX where ours uses ECX.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

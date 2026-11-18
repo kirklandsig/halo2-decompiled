@@ -4476,7 +4476,8 @@ bool __stdcall function_2b278e(long controller_index)
 	return true;
 }
 
-// score 54 (was 56):
+// score 54 (was 56): retail keeps the controller reference and reloads its index after the membership call.
+// Earlier: only case 3 differs. Retail keeps controller in esi, spills controller_index
 // only case 3 differs. Retail keeps controller in esi, spills controller_index
 // to [ebp+8] and reads (*controller)->controller_index again for the dialog masks after
 // function_1a334a. Our build reuses the index loaded before player_slot_get_identity: LTCG here
@@ -4484,10 +4485,18 @@ bool __stdcall function_2b278e(long controller_index)
 // registers exactly), so the cause is outside this function. Tried: bool member (199: 8 bytes
 // shorter, though closer by align.py), no controller_index local (199), long volatile
 // controller_index (188). Case 2's count = 0 first: 56 -> 54.
+// Const index 54, index reassignment after membership 54, named initial controller pointer 54,
+// post-call controller object reference 181 at retail length, shared word flag mask 200,
+// conditional membership result 204, named admission test 54, per-dialog word flag masks 54.
 // With a boolean membership result, early identity failure, affirmative break, choice first, XUID member
 // address, one controller pointer, identity-first const index, and memcpy index each scored 199 at 647
 // bytes. Sharing the dialog mask after membership scored 208 at 640 bytes. The compiler kept the initial
 // index rather than re-reading it for the dialogs.
+// Double-pointer selection view 199; reference to the current controller pointer
+// 199; per-dialog short mask 195 (Boolean membership 197); membership tested
+// before identity type 201, in the condition 201, or held as nonmember 191;
+// per-dialog controller index 199. NOT kept: the original controller reference
+// and post-call index reloads are still missing.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5743,6 +5752,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // preliminary join permission 100; valid-session protection conditional 389; invitation
 // branch 369; offer branch 340; staged roster removal 89; staged title permission 89.
 // NOT kept: ties or regressions. The title-state byte address still differs.
+// Round 456: one member result for change and removal 358, shared roster-mode predicate 351, shared rank
+// and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
+// friend result in removal test 320, reused removal result in kick test 269, membership statuses
+// assigned from tests 312, friend-query result declarations in spill order 97.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

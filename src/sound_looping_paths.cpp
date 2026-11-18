@@ -157,7 +157,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 846): entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
+// score 846 (was 846): unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
 // unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
 // MiniMax H (11-12): no new form, no lower score (866): retail still reads the shared global g_44a0b4 from memory fourteen times and keeps it in xmm4 where ours stays in xmm5 for the whole function, the prologue still zeroes a different register than retail (ours ebp, retail esi), and the zeroed count's home still differs (esp+0x24 here, esp+0x88 in retail), so every frame offset after it differs.
@@ -607,10 +608,25 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // around the existing search 850; the first loop's new choice filled through `s_loop_path_choice &choice =
 // choices[choice_count]` with the increment last 925 (3288 B: the reference becomes a strength-reduced pointer, as the listed
 // pointer forms). Body unchanged.
+// The 0x4e0 frame agrees. Entry zero and the query/choice/target stack homes still differ.
+// count as for-loop ordinal 914; count as while-loop bound 913; per-target ordinal publication 930; completed
+// choice count 951;
+// target cursor 961; choice cursor 920; branch-produced ordinal 956; branch-produced completed count 939.
+// NOT kept: all eight target-count forms regress against 846. The two retail-length variants retain the entry
+// zero-register difference.
+// Entry zero stays in EBP in the usual form, with the choice, target and query homes displaced.
+// Complete source/default, default-first, initialized-default and common-predicate gain staging,
+// published before scaling 939/939/936/932 and after scaling 984/984/984/933.
+// NOT kept: all regress. The predicate with publication after scaling keeps 3327 bytes but changes the first load.
 // F408: Shared query-gain and existing-index buffer 846; full-width query 919, choice 967, both 968.
 // With the count also shared: 848/919/970/957 in the same order.
 // NOT kept: full-width choices recover the entry ESI zero but shorten the body and raise the score.
 // The target-count, primary and query-array homes remain.
+// B460: Completed matching-sound search with reloaded index/carried index/while ordinal/pointer range
+// 918/931/918/921, or with one first-choice tag for each scan 918/931/918/921.
+// Sound table held through the scan and matched row reacquired after the distance call,
+// with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
+// Original body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

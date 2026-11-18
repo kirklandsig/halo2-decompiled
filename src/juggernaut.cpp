@@ -258,6 +258,11 @@ void juggernaut_set(long player_index, bool juggernaut)
 // pointer bound by reference to the iterator's field 20; the draw through an inline range helper (lower + random %
 // (upper - lower), called with 0 and count) 20 (all the same code). The compile-only screen does not reproduce
 // this body (without link-time code generation g_510c9c is not hoisted), so trials need the fast check.
+// Round 116 (m3 lane 10, fast with 0x192530, matched throughout): the iterator and the loop in their own block 20; the
+// loop test as `!= false` 20; the iterator's data pointer stored last 27; the globals read through a const view 20;
+// the draw guard as `0 < count` 20; the bit index as `(char)player_index` (as juggernaut_update_teams spells it) 74,
+// as `(char)iterator.index` 74. Retail pushes the count's register at entry and the pointer's only on the path into
+// the loop (shrink-wrapped), as ours does with the pair swapped.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

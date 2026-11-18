@@ -125,6 +125,10 @@ bool function_1946f0(s_bitstream *stream)
 // LEAs need data loads ordered before an index that is still computed once.
 // Then the clear's start as a `byte &` element reference passed by address 2 (same code); with the mask's element
 // reference as well 9 (round 90's mask form).
+// M3 lane 12 r137 (fast): `__assume(stream->data != NULL)` at the mode block's top or just before the index 2/2 (same code;
+// an early value-numbered data read does not reorder the in-block loads); `short byte_index` 47 (143 bytes, a movsx);
+// a force-inline clear helper taking (data, size, saved) with the stream's data and size passed in 37 (the inlined data
+// parameter is loaded early into EBX, not propagated to its uses); the index through a `long &` bound to a plain local 2.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
