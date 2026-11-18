@@ -482,6 +482,12 @@
 // paired terms, or separate product families 638/649/646/640. Moving the short
 // wave before those forms gives the same four scores. NOT kept: every form
 // shortens the body and leaves the frame and rounded-wave homes different.
+// The 0x54 frame and distinct rounded-wave/cross homes still differ. Read-only shape
+// views 536; retained projection mode 669; in-place reciprocal 536; shared negative
+// numerator 537; guard before depth up-vector selection 678; branch-selected normal
+// address 536; named short-wave angle 577; named three-factor modulation 578; joint
+// special-flag mask 625. NOT kept: the frame stays short, and neither wave expression
+// reaches retail's rounded-wave homes.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

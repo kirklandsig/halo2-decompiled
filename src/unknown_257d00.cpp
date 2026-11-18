@@ -2938,6 +2938,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Request bit setter for 0x29/0x48/both 453/445/452. NOT kept: copy forms tie or regress versus the
 // reduced control 474. Setters increase length to 2416-2432/2396 bytes and give different store sequences.
 // MiniMax R (11-17): no new form, no lower score (479): the switch's jump table still lays the case blocks out in the source's order rather than retail's (1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20), so the actor takes edi where retail keeps the state in ebx, and the rounds above record that no case order or arm spelling moves them.
+// The dispatch span, state-bit completion layout and animation copy registers still
+// differ. Shared subtype flags 479; subtype completion from the flag 618; incomplete
+// subtype guard 479; signed tick-reset value 477; shared countdown/facing flags 479;
+// retained selected object 479; facing scalars 627; playback admission guard 479;
+// committed turn flags 475. NOT kept: the tick and turn forms shorten to 2400 bytes,
+// but gain only two and four points and leave the dispatch span different.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

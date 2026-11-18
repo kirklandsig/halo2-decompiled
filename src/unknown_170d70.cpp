@@ -1649,6 +1649,11 @@ struct s_camera_reference_171830
 // The joint endpoint, shared comparison and signed-endpoint forms recover the 0xb8 frame, but leave the
 // point in EBX and shorten the body to 1197, 1204 and 1181 bytes. NOT kept: the Boolean direction gains
 // three points and grows to 1224 bytes. All four reduced controls retain their opening scores.
+// The 0xbc frame and point register still differ. Sample/retained-ray names 284; separately
+// declared short while ordinal 284; sampled hit fraction read once 284; shared refinement
+// point difference 286; signed cluster ordinal retained 284; shared rear-displacement scale
+// 284; combined reference admission 284; no-displacement early exit 311; signed winning
+// side 282. NOT kept: signed winning side gains two and shortens to 1213 bytes.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
