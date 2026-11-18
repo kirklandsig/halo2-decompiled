@@ -689,8 +689,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // NOT kept: the best gain is one point. The provider result and NONE still occupy different
 // registers, and lookup failures still bypass the record test.
 // N404: Shared previous-record/tag index, previous index read once, shared palette/tag payload,
-// and both shared locals 607/607/607/607. The same four with signed-byte palette admission
-// score 700 each. NOT kept: no lower score. The native provider/NONE, palette/record and
+// and both shared locals 607/607/607/607. The same four with signed-byte palette admission score
+// 700 each. NOT kept: no lower score. The native provider/NONE, palette/record and
 // SIMD register assignments still differ.
 // Unsigned palette-byte admission before and after defaults, each with signed char, short, long
 // or signed use-site decoding 604/796/794/604/604/796/794/604. NOT kept: the 604 forms gain three
@@ -700,6 +700,24 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // or nested bounds 721/721; required entry count 608; conditional record inside table guard 607;
 // fresh lookup before previous record 607; signed-byte slot with separate guards 700.
 // NOT kept: the shared record test and provider/NONE, palette/record and SIMD homes still differ.
+// M3 lane 4 r213 (fast with 0x12e5e0/0x130f60/0x131030/0x1317a0, all MATCH each run; control 607, difflib-aligned
+// 354 exact / 118 with registers and slots masked). Nothing kept: every form below is positional-worse.
+// Lane 13's lead (build/r96/lead-12efb0.patch) re-measured on today's base 704 at 3818 bytes, aligned 124 / 15: what
+// is left is the loop head and nine small schedules. Head findings: (1) retail forms the 0x88 source pointer (the
+// EDX argument of 0x1317a0) before the tag test's branch and reads the 0x1c test through it; with the tag read into
+// a local and the pointer declared ahead of `tag != NONE && source[7] > 0` ours does the same and NONE leaves EDX,
+// 676 (3824 bytes, 116 / 20), but ours then keeps no NONE register at all (`cmp cl, 0xff`, immediate stores) where
+// retail copies the 0x130f60 result to EDX and puts NONE in EAX: the EDX pointer is what keeps retail's NONE out of
+// EDX. Pointer declared ahead of both tests 708; the tag local with the pointer inside 704 (same code as the lead).
+// (2) on the lead a char slot local kept to the source-index store keeps the cluster index in EDI across 0x130f60
+// with the base loaded first, as retail (695, 3818 bytes, 124 / 15; slot BL, record ESI); a short slot local 710;
+// with the per-use byte reads the record takes EDI and the index is reloaded. A named cluster index for the lookup
+// and the first test, or for all three tests, 674 (same code as reloading: the build knows 0x130f60 writes nothing).
+// On the 676 form: a long palette index local for the lookup 676, reused for the source index 624 (3840 bytes,
+// first difference +0x2e), the record as a conditional expression 676, with the index local 676; the handled flag
+// before the call 675 or after the three stores 676; the result declared NONE first 676; `NONE != tag` in the
+// else-if 676; the weight store first 676. On the control: the palette byte at each use 666 (3827 bytes, 419 / 117),
+// with the lookup's NULL inside its arm 666 (same code); the lead's lookup written in the arm 715.
 // Retained palette tag, nested/compound 607/714; alternate tag, compound/nested 607/607.
 // Both retained tags, compound/nested 712/606; with signed palette byte 597/699.
 // NOT kept: the 597 gain only occurs in combination, while the provider homes and shared record test still differ.

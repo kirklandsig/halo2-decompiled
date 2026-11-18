@@ -1307,6 +1307,13 @@ bool c_projectile_type::v8(long a, long b)
 // to the end of the file 12 (source position does not order the pair); the entry address written multiply-first 12; the
 // state's two fields as `((real *)d)[0x24]`/`[0x25]` 12; the object's fields as `((real *)object)[0x50]` and
 // `((long const *)object)[0x4f]` 12; the 0x800 test as `(flags & 0x800) == 0x800` 12. Word-read body kept (5).
+// M3 lane 16 r136 (fast with 0xa5e70/0xa02e0/0xa0be0, matched each time; mask control 12), a 60-form combination screen with
+// the full-width mask over field pointers declared next to their bases: the group index as a const reference in the block,
+// a `long const *` declared after the object, a value local or read in place at both uses; the object's power through a
+// `real const *` declared after the object; the state's power through a `real *` declared after the flags; the state's
+// group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
+// in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
+// pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
