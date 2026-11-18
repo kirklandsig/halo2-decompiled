@@ -1263,7 +1263,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
-// score 121 (was 121; m3 lane 16 r130 at the end): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
+// score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
+// initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.
 // MiniMax I (11-16): no new form, no lower score (121): the body is retail's length and the sequence of operations is the same,
 // but the first three float temporaries live in different registers (this build xmm7/xmm2/xmm1 for the
 // duration and the two ramp times, retail xmm5/xmm7/xmm1); the permuter found no spelling that moves them.
@@ -1583,6 +1584,11 @@ bool function_108530(long device_index, long name)
 // guarded position/target/both 121/121/121, successive position/target/both 142/121/142, guarded
 // position with successive target 121, successive position with guarded target 142. NOT kept: the
 // sampled position adds an entry push and moves the extent off retail, while the other forms tie.
+// duration magnitude after floor 138; duration magnitude between ramp bounds 138; duration magnitude
+// after ramp bounds 138; duration magnitude after endpoint pins 121; duration admission after ramp
+// bounds 138; duration admission after endpoint pins 136; double duration magnitude before endpoint
+// pins 121; early duration magnitude with cruise field 145. NOT kept because the forms tie or raise the
+// score. The early float decisions also increase the extent.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -2450,6 +2456,10 @@ bool function_0b6760(s_index_pair const *pair);
 // without a byte match; retail loads the global pointer once and takes the rate from it for both the delay test and the call,
 // a two-use rate local at the outer else top measures 276 and 278, and dropping the volatile on the definition alone measures
 // 380, so the qualifier and the body stay.
+// MiniMax I (11-17): no new form, no lower score (250): the prologue still saves ebx, ebp and esi in the other order and takes
+// the entry pointer in edi where retail takes esi, so the whole body follows one register rotation off and the body is
+// sixteen bytes short of retail's 1495; the only form under 250 needs a one-use rate local (58/60), a form the coordinator
+// ruled out without a byte match, and dropping the volatile on the definition alone measures 386.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

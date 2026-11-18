@@ -1005,6 +1005,10 @@ struct s_bsp3d;
 extern s_bsp3d *g_4e033c;
 long function_14a280(s_bsp3d *bsp, long index, point3f *point);
 
+// score 433 (was 433): Frame 0x18 versus 0x1c, actor displacement and early speed publication differ.
+// Round 415. shared actor displacement with explicit speed result 554, per-branch speed store 551, full-width
+// default copy 551, typed unit choice 554, prop capacity after each visit 539, prop capacity on insert 549, typed
+// group slots 554, typed actor walk 554. The 0x1c frame returns, with the displacement at +0x1c against retail +0x18.
 // @retail 0x261510
 void __stdcall function_261510(long actor_index, s_2605d0_request const *request)
 {

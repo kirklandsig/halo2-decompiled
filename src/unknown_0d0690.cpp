@@ -1787,6 +1787,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // (0x3db00 lost) / 580 / 579; the 571 and 574 forms with lane 5 r182's statement order (length, lightmap copy, normal copy,
 // bias local added in place, square after the direction1 negate, lightmap pin first) 586 / 587 (2206 B, 0x3db00 lost).
 // Lead: `0 < count` with (type, query, block) is the first form giving retail's whole entry convention on main's order.
+// AC570: Both length curves before the color stores, with tested selection,
+// success exit, failure guard or late success, then early attenuation with
+// those results: 539/577/554/569/529/573/553/579. NOT kept: failure guards restore frame and length
+// but still swap block/query and regress. Late success loses 0x3db00.
 // The scan result still spills and the incoming block/query registers are exchanged.
 // Publish and read length 562, read published length after the primary direction 583, publish and read before normal copy 560.
 // Ordinal sentinel scan 573, count predicate updated with selected entry 561, empty scan early false 540,
@@ -2090,6 +2094,10 @@ real function_30bf0(vector3f *vector);
 // test, the 0xd37f0 call (BLOCKED-BY 0xd37f0's body: block EAX, query EDX), the blend's first two products, the rotation's
 // product operand order (retail loads axis i and k first, then the vector, axis j last), each scale applied as computed
 // (colour1 through its address), and the final pins' compare order.
+// Round J264: The frame is still 0x4c against retail 0x40. The mobile store and 0xd37f0 argument registers differ.
+// reflected color through RGB pin 449, reflected destination pinned in place 499, reflected pin with const bounds 449, in-place reflection pin and rotation 522.
+// primary color from secondary 489, type test before magnitude 405, tag table snapshot 395, branch-owned lookup 505.
+// NOT kept: the reflected clamps recover the frame at higher scores. Primary color reuse, early type classification and the table snapshot lose 0x3db00.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

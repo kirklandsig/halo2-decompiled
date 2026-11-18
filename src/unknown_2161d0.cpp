@@ -189,6 +189,13 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // build given `path` through a `char *const &` 10; the read's path through a trivial inline accessor 10; the build's
 // name and type through a `const &` to the location record 10 (all same code). Retail 0x122810 preserves ESI (it
 // returns the string from ESI), so retail's `lea edx` still needs a block boundary after the append call.
+// M3 lane 10 r117 (fast with 0x2161d0, 0x216d70, 0x122810, 0x2acd60, 0x216800, which stay matched): retail 0x121570
+// keeps `esi = name` across an append, a strncpy call and a split, and recomputes `lea esi` only after a join, so retail's
+// `lea edx` needs a branch target right after the append. A forceinline bool helper doing the language test and the
+// build, joined by `&&` after 0x216800, 10 (same code); one doing 0x216800, the test and the build (0x2160b0's shape) 10;
+// `result = found && language != -1; if (result) { build; read }` 53; the builder's bool in `built`, `result = built &&
+// read(...)` 23 (290 bytes); the path in a two-member union, built through one member and read through the other, 10
+// (same code: the tracker follows addresses, not names). With 0x216d70 outside the reduced image the helpers read 72.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

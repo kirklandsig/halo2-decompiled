@@ -569,6 +569,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // `if (0 < count)` ahead of the `for` 159 (494 B); the block's count through a `short const &` bound once and used at all
 // four reads 2 (same code); a `dword` material 2 (same code). The permuter was skipped (the round's full check took about
 // 16 minutes).
+// Round 135 (m3 lane 9, fast): the copy's destination as `g_4ba138 + first` 157 (492 bytes); one block pointer for
+// every block read (guard, copy, count update, loop) 169 (490 bytes); no index local, `first + n` written at each of
+// its six uses 114 (491 bytes); the entry as a const reference (`entry.` reads) 2 (same code); a block reference for
+// the loop's count and entries only 152. The loop's step order (n, cursor, index) is retail's; only the preheader
+// order of the cursor start and first's last read decides whether first shares the cursor's mode home.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
