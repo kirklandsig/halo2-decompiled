@@ -1873,6 +1873,13 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // mode there. Retail copies the found mode into EBP once for that request (the inlined argument kept as its own value),
 // where ours reads the output's home at every use even through an explicit copy (propagated), so retail treats the
 // output as possibly changed by the request's calls.
+// The class and NONE registers, candidate and iterator-output homes, and later zero carrier still differ.
+// Tried direct result with a fresh default on lookup failure 977; default-first direct result branch 977;
+// found-only candidate lifetime 977; default-first branch with a found-only candidate 977;
+// direct result fields and a constructed default 997; direct result value and explicit default fields 1017;
+// direct result and default written by fields 990;
+// default-first result branches with the success test in the named branch 995.
+// NOT kept: All scores rise. The forms at retail length change the frame, and the conditional loop still misplaces the result.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

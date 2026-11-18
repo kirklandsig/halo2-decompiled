@@ -667,6 +667,12 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // endpoint 660, common entering and departing endpoints 648. The after-scan
 // edge reaches retail length with the same byte-slot difference. The original
 // body retains the first-edge and success bytes in the exchanged homes.
+// The success and first-edge bytes still occupy exchanged homes. The two cutoff exits still differ.
+// Tried shared result read at the sole return 566; direct result reads at the existing terminal branches 565;
+// constant return for each distance overrun 434; blocked field return for each distance overrun 559;
+// common clear-distance tail with the result local 335; common clear-distance tail with direct returns 480;
+// terminal blocked branch returns true directly 387; terminal blocked branches return the field directly 386.
+// NOT kept: The merged tail shortens the body and leaves its flag placements. The direct returns move the opening zero register.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
