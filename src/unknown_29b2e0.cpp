@@ -566,6 +566,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // local reassigned for both clamps 173 and the XY vector declared after the second normalization 368 (1712 B); the
 // normalizer with a `result = 0.0f` local declared first, set to the root in the success arm 217 (1718 B). The
 // normalizer's locals renamed (magnitude, inverse) re-measured 176 (listed, same code).
+// Round 401 tested shared planar magnitude from the vector prefix or complete XY value, each direct, before the depth clear, with common length publication, or with shared scaling: 176/396/171/255/178/396/173/254.
+// The common-publication prefix form restores XMM4 and starts differing at +0x84. The root home remains +0x10, and the five-point gain is below the threshold.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -227,7 +227,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // spelling, which hoists the tag table global into ECX before `sub esp` (152), while the `(word)` cast keeps the table in
 // EDI but gives `movzx eax, dx` (117); the mask assigned back to the tag, a masked-tag local and a named element address
 // leave the code unchanged (117) or worse (152). The block chain's argument registers and unfused element loads stand.
-// score 117 (was 117): M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
+// score 117 (was 117): The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
+// M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
 // registers are not a rotation carried from the head); the pass element passed straight into a by-value inline accessor
@@ -672,6 +673,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // the pass-tag lookup through the tag-data accessor too 8 (same code); the pass tag's data bound by reference 36; the pass
 // reference in its own block 8 (same code); the pass tag read through a by-value inline accessor 8 (same code), the pass
 // element passed straight to a by-reference accessor parameter 121 (no dead lea, like by value). Main body unchanged.
+// Typed render-tag reads 117.
+// Typed fallback shader reference 117.
+// Shared tag-group accessor 165.
+// Typed render-tag reads and typed fallback shader reference 117.
+// Typed render-tag reads and shared tag-group accessor 165.
+// Typed fallback shader reference and shared tag-group accessor 165.
+// Typed render-tag reads and typed fallback shader reference and shared tag-group accessor 165.
+// Typed render-tag reads and shared accessors for both group and fallback data 135.
+// NOT kept: the typed field reads tied and the group-accessor forms regressed; the original code was restored.
 // m3 lane 10 r115 (fast with 0x2243c0 and 0x224d90, both matched unless noted; control 117; main's body unchanged). Same
 // code as the body (not trials): one pointer local reused down the head, stage and pass elements, alone or on through the
 // pass and material definitions (five placements; VC splits the reassigned local, so a reused variable is not what gives

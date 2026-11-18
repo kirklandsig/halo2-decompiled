@@ -2637,16 +2637,6 @@ static __forceinline bool function_785f7(const s_type_99af70 *arg_0)
 }
 #pragma optimize("", on)
 
-// score 3 (was 3): retail loads the flags dword (mov eax, dword ptr [eax + 4])
-// and reads the low bit group with movzx ecx, al; ours sign-extends a word
-// (movsx eax, word ptr [eax + 4]) and copies it (mov ecx, eax). A dword flags
-// local fixes those instructions, but then the message pointer goes to ecx
-// instead of eax and the four lea/push argument registers of the
-// function_07ab60 call rotate by one (10): `long`, `dword`, `int`, `const long`
-// and a cast read of message+4 all give 10; `byte` or `char` flags also 10
-// (mov al, byte ptr [ecx + 4]); `unsigned short` stays at 3; declaring the
-// view or flags first, or reading the bit from flags directly, 22 or worse.
-// Permuter (25 min on r660): nothing below 3.
 // @retail 0x785d0
 void __stdcall function_0785d0(void *unknown10, s_type_99af70 const *address, void const *message)
 {
@@ -2662,12 +2652,11 @@ void __stdcall function_0785d0(void *unknown10, s_type_99af70 const *address, vo
 	{
 		if (function_785f7(address))
 			goto local_3;
-		short flags = request[1];
+		dword flags = request[1];
 		if (flags & 0xc0)
 			goto local_3;
-		struct s_flag_view { long sequence; unsigned short low : 1; unsigned short first : 1; unsigned short rest : 14; };
-		s_flag_view const *bits = (s_flag_view const *)message;
-		dword connection_flags = bits->first;
+		dword connection_flags = 0;
+		if (flags & 2) connection_flags |= 1; else connection_flags &= ~1;
 		if (flags & 1) connection_flags |= 2; else connection_flags &= ~2;
 		if (flags & 4) connection_flags |= 4; else connection_flags &= ~4;
 		if (flags & 8) connection_flags |= 8; else connection_flags &= ~8;

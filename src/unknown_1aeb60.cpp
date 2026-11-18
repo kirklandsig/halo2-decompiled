@@ -614,6 +614,17 @@ struct s_1af5c6
 // result field's NONE store ahead of the cluster test 28; the prop node and derived lookups ahead of the actor lookup 34
 // (first +0x6); the result field's NONE store between the mask and the ray vector 27. Still BLOCKED-BY 0x1c8df0's
 // call-site inlining.
+// M3 lane 15 r96 (fast with 0x1af810, 0x1b0400, 0x1b2770, 0x1be120, 0x25f7b0 and 0x1c8df0; diagnostics on the inlining
+// cause, all restored): 0x1c8df0's noinline dropped with the tail as a plain call (no inline or forceinline declaration
+// anywhere) 69 (589 bytes): LTCG then inlines it here and into 0x1b2770 (656, lost), the two callers passing a constant
+// zero mode, and nowhere else; with this body unchanged it still inlines into 0x1b2770, so that decision does not depend on
+// this file. On the inlined call: this function returning `short` (as 0x1af810's `(short)` casts show; its declaration
+// there changed with it, 0x1af810 stays matched) 32 at 584 bytes, with retail's early ignore-index load and the
+// distance-first product, left the frame (0x8c, retail 0x80), the mask temp (EAX, retail ECX), the magnitude's sum order and
+// the distance home; the point copy and the motion buffer in a block 43 (frame 0x80, but the 12-byte copy sorts below the
+// 16-byte NONE/point pair); the NONE cell and source point as separate locals 159 (565 bytes, the NONE folds). 0x1b2770
+// given the existing magnitude3d for its hand-written length still inlines 0x1c8df0 (656). On the kept hand-written body a
+// `short` return type 56 (601 bytes). Still BLOCKED-BY 0x1c8df0's call-site inlining (0x1b2770 must keep it out of line).
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

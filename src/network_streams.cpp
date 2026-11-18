@@ -834,6 +834,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// score 60 (was 60): Retail uses one sequence counter and reloads newest in the index helper.
 // Round 112 (m3 lane 10), NOT kept (coordinator 11-16): 44 needs the loop bound re-read as `m_message_window.newest` in
 // place of the named `newest` local (with the local 117), a re-read replacing a named local, which is kept only with a
 // match. The 44 form (fast, plain-confirmed with the file's 26 matched functions): the shared index
@@ -864,7 +865,7 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // keeps the next sequence in esi and the oldest in ebx) and the count, which retail computes from its own loads of newest
 // and oldest before the bound is loaded.
 // MiniMax E (11-16): no new form, no lower score (60): retail keeps the next sequence in ESI and recomputes the message offset each pass where this build folds it into the counter; the sequence window helpers are shared.
-// score 60 (was 60): round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
+// Round 116 (m3 lane 9, fast with 0x96510, 0x94df0 and 0x94bf0): the flag test as nested ifs 60
 // (same code as the listed `continue` form, so a re-measure). Still only the strength-reduced next - oldest - 1 (next
 // in ECX, the reduced offset in ESI) against retail's per-pass offset with next in ESI. No untried natural form is left.
 // MiniMax H (11-12): no new form, no lower score (60): the offset next - oldest - 1 is still strength-reduced into a second counter in esi where retail keeps the next sequence in esi and recomputes the offset in eax on every pass.
@@ -1067,6 +1068,20 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the window pointer declared at the top (before the send call) for the bound local and the index, the count through
 // the member, 60; the bound compare written `newest > next` 60; a guarded do-while (`if (next < newest) do {...} while
 // (++next < newest);`) on the window-pointer form 60. All the same code: the offset is still strength-reduced.
+// Reference inputs for the existing count, index and head helpers, singly and
+// in all combinations, 60 each. All three with the existing message lookup 89.
+// The reference forms retain the second induction variable. The lookup restores
+// per-pass subtraction but reloads oldest and changes the saved registers.
+// Window references in index/count/first helpers, seven subsets, and all three with the loop
+// limit read at use: 60 each. NOT kept: the latest-sequence load and reduced offset remain.
+// Round 401 tested previous-sequence for loop, successor-before-step for loop, previous-sequence while, successor at both uses, then offset/head-accumulation forms on each scan: 77/113/77/70/60/60/77/77.
+// The per-pass offset and newest reload remain. Original body and index helper restored.
+// One-based displacement with prior head, head-first accumulation, displacement-
+// first accumulation 73/95/73; displacement from first sequence or in-place
+// decrement 60/60; unsigned displacement, prior head or origin 60/73/95.
+// Head-first with shared count/index pointer and cached/member/live bound
+// 118/76/118. NOT kept: the single-cursor forms miss native count reuse or
+// the upper-bound reload. Original index helper restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

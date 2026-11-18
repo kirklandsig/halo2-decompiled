@@ -511,6 +511,12 @@ void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+// score 77 (was 77): m3 lane 9 r134 (fast with 0x1ecf50, 0xe3910, 0xd0080, 0x1e5bb0 and 0x26d570, the other users of
+// rotate_direction, control 77/match/79/58/114/45): rotate_direction's own body in src/unknown_1eb8a0.cpp, not a twin:
+// the cross terms k, j, i first and the dot axis-first 68 (843 bytes) but 0x1ecf50 138 (998 bytes, loses its match),
+// 0xe3910 147, 0xd0080 78, 0x1e5bb0 138, 0x26d570 58; the dot axis-first alone, the projected term first in each
+// sum, and `sine * cross` 77 each (same code everywhere: the order is canonicalised); the existing cross3f for the
+// three cross terms 104 (853 bytes; 0x1ecf50 171). The helper body that helps here costs every other user.
 // MiniMax R (11-14): no new form, no lower score (77): the first difference is at +0xeb, where the two arms of the
 // direction test branch to blocks retail lays out elsewhere; behind them retail expands the rotation where our build
 // calls rotate_direction (src/unknown_1eb8a0.cpp) and normalises through normalize2d_fast (include/unknown_11cc90.h),
@@ -538,7 +544,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // direction copy, and the two helpers that set it are in other files - the normalisation (include/unknown_11cc90.h)
 // multiplies by the reciprocal where retail multiplies the reciprocal into the copy, and the rotation
 // (src/unknown_1eb8a0.cpp) is called out of line here where retail expands it: BLOCKED-BY both.
-// score 77 (was 77): frame 0x20 agrees; retail tests the planar length after the scale products, keeps the
+// Earlier (77): frame 0x20 agrees; retail tests the planar length after the scale products, keeps the
 // test zero in xmm0, multiplies the facing components as registers and stores the velocity directly, while
 // ours zeroes xmm6 above the divide, multiplies x * scale and carries that zero through the inlined turn.
 // Round 28: the existing rotate_vector_170d70 (src/unknown_170d70.cpp) for rotate_direction 130 at retail's 850

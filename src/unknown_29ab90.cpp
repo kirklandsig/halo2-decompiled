@@ -475,6 +475,13 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // Branch-owned direction/query adjustment/weighted motion, seven nonempty subsets, then all with aggregate clamping: 388/519/411/466/401/503/566/566.
 // NOT kept: every form regressed and moved the frame away from 0x64.
 // Original executable body restored.
+// Object record reference 286. Native tag result viewed as settings pointer or record reference
+// in its branch 286/286. With the object reference 286/286. Combined forms with named object,
+// settings and magnitude, then named working/output/adjustment roles 286/286/286.
+// NOT kept: object and settings spills retain their original stack homes.
+// Object/settings spills and the initial vector homes remain. Separate vector declarations in all six
+// orders with original assignments, call-scoped query outputs, and scoped outputs with the
+// published vector declared first: eight at 286.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

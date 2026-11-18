@@ -1152,6 +1152,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // 34 (same code); the body case's file handle in a two-use local (seek and read) on this body 168 (695 B); the task's
 // state store through a trivial inline setter 180 (688 B); the total and its conversion `const` 34 (same code); the
 // task pointer in a local for the state store 180 (688 B).
+// Shared body extent in grouped body-first/signature-first cases 167/125; direct phase field 167;
+// shared extent after body-first/signature-first phase condition 238/234; direct total conversion
+// on the grouped body-first/signature-first and conditional forms 167/125/238.
+// The body-first group gets the entry EDX total and ECX extent, then changes phase layout and seek registers.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

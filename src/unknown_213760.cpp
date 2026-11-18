@@ -1818,6 +1818,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // `file`; the write count declared ahead of the query size in the handle-valid block; the two file-time pointers written
 // in the CompareFileTime call. With the count declared ahead of the size, the close tested as `(!resized ||
 // bytes_written != 0x800)` with no else arm 157 (the listed frame 0x1140 form).
+// Write completion from resize/count tests 157; conditional write completion/close outcome/handle first 165/165/168;
+// scoped query with conditional completion/close/handle first 165/165/168; scoped query with count zero 33.
+// Removing the failed-resize count store shrinks the frame to 0x1140. The 0x1144 form keeps the slots exchanged.
 // @retail 0x213970
 void function_213970(void)
 {
