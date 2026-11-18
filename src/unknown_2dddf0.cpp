@@ -56,6 +56,51 @@ void line_query_2dddf0::function_2dddf0(__m128 const *first_point, __m128 const 
 	*distance_squared = dot3_2dddf0(offset, offset);
 }
 
+// Havok (third-party physics library): the point of a segment closest to a
+// given point.
+#include <xmmintrin.h>
+
+class segment_2ddfc0
+{
+public:
+	void function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out);
+};
+
+// three-term dot product of two vectors
+inline void dot3_2ddfc0(float *result, __m128 const &a, __m128 const &b)
+{
+	__m128 const product = _mm_mul_ps(a, b);
+	_mm_store_ss(result, _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product)));
+}
+
+// out: start when the point projects before it, end when it projects past
+// it, else the projection itself
+// @retail 0x2ddfc0
+void segment_2ddfc0::function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out)
+{
+	__m128 const b = start;
+	__m128 const c = end;
+	__m128 const direction = _mm_sub_ps(c, b);
+	__m128 const product = _mm_mul_ps(direction, _mm_sub_ps(b, point));
+	float along;
+	_mm_store_ss(&along, _mm_add_ss(_mm_shuffle_ps(product, product, 0xaa), _mm_add_ss(_mm_shuffle_ps(product, product, 0x55), product)));
+	float length_squared;
+	dot3_2ddfc0(&length_squared, direction, direction);
+	if ((along = -along) <= 0.0f)
+	{
+		out = b;
+	}
+	else if (along >= length_squared)
+	{
+		out = c;
+	}
+	else
+	{
+		__m128 const single = _mm_set_ss(along / length_squared);
+		out = _mm_add_ps(b, _mm_mul_ps(_mm_shuffle_ps(single, single, 0), direction));
+	}
+}
+
 // @flags /O2 /GL- /GX
 // Havok (third-party physics library): casting a segment against a capsule.
 // A segment starting inside misses; otherwise the closest points of the
@@ -87,13 +132,6 @@ public:
 };
 
 #include "sphere_2deda0.h"
-
-// the point of a segment closest to a point (src/unknown_2ddfc0.cpp)
-class segment_2ddfc0
-{
-public:
-	void function_2ddfc0(__m128 const &point, __m128 const &start, __m128 const &end, __m128 &out) throw();
-};
 
 // a segment cast at an end cap, as the sphere's cast takes it
 struct cap_segment_2de1b0
@@ -157,13 +195,14 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 12 (was 150): the closest-point callee is declared `throw()` (the caller's
-// frame then keeps `closest` at retail's home), the squared distance and the ray
-// are declared before the two end points (retail's four stores before the first
-// query), and the side blend multiplies `b` by the scale and adds the two products
-// second first, which gives the blend retail's seven instructions and length.
-// Left: retail spills `entry` after the dot product's multiply, not before, and in
-// the side blend forms `scale * b` before it loads the ones.
+// score 12 (was 150): the closest-point function 0x2ddfc0 is defined in this file,
+// in address order (the caller's frame then keeps `closest` at retail's home), the
+// squared distance and the ray are declared before the two end points (retail's four
+// stores before the first query), and the side blend multiplies `b` by the scale and
+// adds the two products second first, which gives the blend retail's seven
+// instructions and length. Left: retail spills `entry` after the dot product's
+// multiply, not before, and in the side blend forms `scale * b` before it loads the
+// ones.
 // Before, 150 (was 194): the axis is normalized by the single-value inverse square
 // root helper, the normal is formed before the length is stored, and the start
 // fraction divides the named along value directly.
