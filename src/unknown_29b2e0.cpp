@@ -568,6 +568,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // normalizer's locals renamed (magnitude, inverse) re-measured 176 (listed, same code).
 // Round 401 tested shared planar magnitude from the vector prefix or complete XY value, each direct, before the depth clear, with common length publication, or with shared scaling: 176/396/171/255/178/396/173/254.
 // The common-publication prefix form restores XMM4 and starts differing at +0x84. The root home remains +0x10, and the five-point gain is below the threshold.
+// M3 lane 13 r107 (fast with 0x29b990, 0x11cc90, 0x11ce20, 0x1e5450, all MATCH in each; control 176, difflib-aligned 229, masked
+// 114): the normalizer storing its length before it scales 407 (1720 B); one `limit` local reassigned for the elevation limit
+// and both turn limits 176 (same code); the final pitch as a new local used by the second rotation and the store 203 (1718 B);
+// the final yaw and pitch both as new locals 179 (1711 B, masked 199); the pitch difference as `local_9 = local_11; local_9 -=
+// local_12;` 287 (1721 B). Read from the listing: retail gives its 4-byte homes out in the order roots/acos/yaw (+0xc), first
+// pitch then the first sine (+0x10), cosine (arg_3's home), final pitch (arg_4's home), i.e. the final pitch gets its home
+// after the first rotation's sine and cosine; ours homes the yaw first (+0xc) and the final pitch before the sine and cosine.
+// Body unchanged.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

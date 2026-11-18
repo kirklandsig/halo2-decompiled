@@ -710,8 +710,8 @@ extern short g_4686c4;
 extern short g_47d8e0;
 extern byte *g_4ed280;
 #include "cluster_marks_storage.h"
-long g_4e7c1c;
-bool g_4e7c18;
+#include "instance_marks_storage.h"
+s_instance_marks_storage g_instance_marks_storage;
 extern s_bsp3d *g_4e033c;
 
 static inline long collision_leaf_cluster(long leaf_index)
@@ -1416,7 +1416,6 @@ void __stdcall function_16a280(long object_index, dword flags, point3f const *po
     while (object_index != NONE);
 }
 
-extern long g_4e7c20[1024];
 struct s_shapes;
 struct s_shape_counts
 {
@@ -1585,7 +1584,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 606 (was 606): earlier 610, 637, 640 and 552; frame 0xb964 agrees and the prism cursor now has retail's plane.j anchor; sum/zero homes, axis re-read and early idiv remain.
+// score 580 (was 606): frame 0xb964, plane.j cursor and ESI query zero agree. Sum homes, axis reload and early remainder still differ. Earlier scores 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
 // Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
 // where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
@@ -2036,6 +2035,12 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Inside accumulated with logical or compound AND 654/645. Outside accumulated with logical or compound OR
 // 661/636. A skip of the exterior edge gives the same respective scores.
 // NOT kept: outside logical OR recovers ESI query zero but moves the outer saves and grows to 2940 bytes.
+// One-based successor for/direct while, preceding ordinal, first-vertex cursor: long
+// 579/579/621/605; short 555/555/617/610. NOT kept: plane-dot reassociation or an extra
+// short-width extension, or no qualifying gain. Long successor with shared plane distance
+// 606, named X/Y sum 606, sequential plane sum 580.
+// Keep the one-based long successor and sequential plane sum: ESI query zero and
+// the original plane-dot association agree. The endpoint remainder still comes late.
 // B460: Endpoint array with direct calls and original/early successor 701/641.
 // Paired vertex-index loop with indexed/cursor/separate outputs 607/607/630.
 // Paired vertex-pointer loop with those outputs 538/538/536. NOT kept: one-use vertex
@@ -2067,8 +2072,10 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 		for (long index = 0; index < shapes.counts[2]; ++index)
 		{
 			s_prism *prism = &shapes.prisms[index];
-			real distance = point->x * prism->plane.i + point->y * prism->plane.j +
-				prism->plane.k * point->z - prism->plane.d;
+			real distance = point->x * prism->plane.i;
+			distance += point->y * prism->plane.j;
+			distance += prism->plane.k * point->z;
+			distance -= prism->plane.d;
 			point3f projected;
 			projected.x = (0.0f - distance) * prism->plane.i + point->x;
 			projected.y = prism->plane.j * (0.0f - distance) + point->y;
@@ -2077,12 +2084,12 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 			bool inside = true;
 			long count = prism->point_count > 8 ? 8 : prism->point_count;
 			point3f closest;
-			for (long edge_index = 0; edge_index < count; ++edge_index)
+			for (long next_vertex = 1; next_vertex <= count; ++next_vertex)
 			{
 				point3f first;
 				point3f second;
-				function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[edge_index], prism->axis, prism->side);
-				function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[(edge_index + 1) % prism->point_count], prism->axis, prism->side);
+				function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[next_vertex - 1], prism->axis, prism->side);
+				function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[next_vertex % prism->point_count], prism->axis, prism->side);
 				vector3f relative;
 				relative.i = projected.x - first.x;
 				relative.j = projected.y - first.y;

@@ -1550,6 +1550,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // case 4 after terminal case 18 199.
 // NOT kept: best reduced score 191 against reduced control 196, a five-point gain. It still saves ESI before
 // admission. Full baseline is 143.
+// AC572: Case-18 return expression, terminal conditional void expression,
+// that conditional in primary default, return expressions for 8/24/18,
+// and successful lookups plus terminal 18 all 196 fast. Single retail-order
+// switch with expression returns at 18, 8/18/24, or every handler 218 each.
+// NOT kept: reduced control 196, full 143. The single switch takes 420 bytes
+// and changes the matched caller. Early ESI save and full-only inlining remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
