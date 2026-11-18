@@ -31,8 +31,13 @@ struct pending_2ddbd0
 	long field_14;
 
 	pending_2ddbd0()
-		: field_0(0), field_4(0), field_8(0), field_c(0), field_10(0), field_14(0x10)
 	{
+		field_8 = 0;
+		field_c = 0;
+		field_10 = 0;
+		field_14 = 0x10;
+		field_0 = 0;
+		field_4 = 0;
 	}
 };
 
@@ -129,14 +134,15 @@ public:
 	// the normals' terms' magnitudes
 	planes4_2dd930 magnitudes[8];
 
-	// the groups before `end` moved to the tree's origin with their distances
-	// doubled, and their normals' magnitudes kept alongside
-	__forceinline void finish_groups(tree_2ddbd0 const *tree)
+	// the groups before the first free one moved to the tree's origin with their
+	// distances doubled, and their normals' magnitudes kept alongside
+	__forceinline void finish_groups(planes4_2dd930 *&group, tree_2ddbd0 const *tree)
 	{
-		for (long remaining = group_count; remaining > 0; --remaining)
+		planes4_2dd930 *last_magnitude = &magnitudes[group_count - 1];
+		planes4_2dd930 *&magnitude = last_magnitude;
+		--group;
+		for (; group >= groups; --group, --magnitude)
 		{
-			planes4_2dd930 *group = &groups[remaining-1];
-			planes4_2dd930 *magnitude = &magnitudes[remaining-1];
 			magnitude->x = _mm_and_ps(group->x, *(__m128 const *)abs_mask_2dd930);
 			magnitude->y = _mm_and_ps(group->y, *(__m128 const *)abs_mask_2dd930);
 			magnitude->z = _mm_and_ps(group->z, *(__m128 const *)abs_mask_2dd930);
@@ -146,7 +152,8 @@ public:
 				_mm_mul_ps(group->x, _mm_shuffle_ps(origin, origin, 0x00)),
 				_mm_mul_ps(group->y, _mm_shuffle_ps(origin, origin, 0x55))),
 				_mm_mul_ps(group->z, _mm_shuffle_ps(origin, origin, 0xaa)))));
-			group->d = _mm_add_ps(group->d, group->d);
+			__m128 const &distance = group->d;
+			group->d = _mm_add_ps(distance, group->d);
 		}
 	}
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
@@ -155,41 +162,13 @@ public:
 // collects what the planes touch: the planes moved into the tree's
 // coordinates four at a time (the last group padded with the first of its
 // planes), with their normals' magnitudes alongside
-// The remaining differences are the entry register choices and the SIMD
-// load/store schedule while translating packed groups.
-// collects what the planes touch: the planes moved into the tree's
-// coordinates four at a time (the last group padded with the first of its
-// planes), with their normals' magnitudes alongside
-// score 171 (was 178): entry registers, load order and final-loop layout
-// still differ. Before the SIMD store, indexed arrays reached 672 bytes. Previously,
-// retail computes the groups' magnitudes first and then
-// their distances, reads the distance back from the group before doubling it
-// and loads the query through esi; ours takes the origin's terms first, keeps the
-// distance in a register across the doubling and takes the query in ecx. The
-// loop's registers and the order of its two halves are the whole difference.
-// Further trials: local bit/vector mask 184; intrinsic mask 183; doubling
-// loads 174; distance/magnitude stores and direct origin uses 174; pointer
-// before count and writable mask 174; value/output magnitude helpers 184;
-// mixed distance reads/origin intrinsic 178; consumed group pointer 173;
-// vector planes 166; shared sum 168
-// with a larger frame; finishing arguments 166; minimal iterator 167;
-// early query snapshot 167. Original mask and arithmetic retained.
-// Two explicit loads of the distance for the doubling 166 (not kept: they only force the reloads).
-// Further trials: indexed arrays 178; ordinary inline 348; forced setters
-// 184; aligned inputs 184; plane references 184; descending lanes 379;
-// guarded remainder 278; named products 184; packed lane construction 379;
-// indexed arrays without the unused boundary argument 178.
-// Further trials: reverse end pointers 180; SIMD output stores 171; query
-// object reference 178; translation-only SIMD store 171; packed inputs with
-// that store 171; input countdown 171; finishing optimization disabled 171;
-// local writable mask 171; reverse pointers with the store 174. The single
-// translated-distance SIMD store is retained, at 674/672 bytes.
-// score 171 (was 171): input registers and the SIMD load/store schedule differ.
-// Positive finishing counter with the index derived from it 166 (not kept: a hand-inverted loop); early query reads, cursor-first reads,
-// array-entry references, a shared magnitude helper, first-output ordering
-// and an input-object reference 171; early second output 191;
-// direct index countdown 168; counter with entry references
-// or an earlier origin read 166.
+// Matched (was 166): the groups are finished backwards from the first free one,
+// which the helper takes by reference and steps back in place, beside a pointer
+// to the last magnitudes that is stepped through a reference (so the mask and the
+// tree's origin are read again on every pass and the doubled distance twice);
+// the pending state's constructor stores its last field before its first two
+// fields; the root is taken first, the count after the fixed-point offset and
+// the planes last, just before the loop, which keeps the query in esi.
 // @retail 0x2dd930
 void __cdecl function_2dd930(void *data, s_visibility_plane_query const *query,
 	s_visibility_query_list *second, s_visibility_query_list *first)
@@ -197,17 +176,17 @@ void __cdecl function_2dd930(void *data, s_visibility_plane_query const *query,
 	tree_2ddbd0 const *tree = (tree_2ddbd0 const *)data;
 	class_2dc220 walk;
 	walk.scale = 1.0f / tree->origin.m128_f32[3];
-	walk.second = second;
-	long const count = query->count;
-	plane_2dd930 const *plane = query->planes;
 	void const *root = tree->root;
+	walk.second = second;
 	pending_2ddbd0 pending;
 	fixed_point_2dc220 fixed_point;
 	fixed_point.offset = _mm_setzero_ps();
+	long const count = query->count;
 	planes4_2dd930 *group = walk.groups;
 	walk.group_count = 0;
 	fixed_point.scale = _mm_set_ps1(walk.scale * 16777216.0f);
 	long quads_done = 0;
+	plane_2dd930 const *plane = query->planes;
 	for (; quads_done < (count & ~3); quads_done += 4)
 	{
 		group->set(plane, plane + 1, plane + 2, plane + 3);
@@ -228,41 +207,14 @@ void __cdecl function_2dd930(void *data, s_visibility_plane_query const *query,
 		group++;
 		walk.group_count++;
 	}
-	walk.finish_groups(tree);
+	walk.finish_groups(group, tree);
 	walk.first = first;
 	walk.function_2dc220(&pending, root, &fixed_point);
 }
 
-// The remaining differences are the tree/query register lifetimes and the
-// order of the origin load, pending-state stores, and centre copy.
-// score 33 (was 33): retail reads the tree's origin before the second list,
-// takes the root with a lea before the query is read and keeps the query in
-// eax; ours reads the second list first, adds 0x30 to the tree pointer for
-// the root and keeps the query in ecx. Reading the origin, the root, the
-// query and the first list into locals of their own, early, leaves the code
-// exactly as it was.
-// Further trials: early difference/doubling 42/42; early fourth-list store
-// 42; sphere reference 33; renamed state/position/deltas 33; memcpy centre
-// 33; vector/point view 33; a shared coordinate setter failed to build, then
-// timed out. Original body retained.
-// Further trials: shared scalar/vector origin 60; origin field reference 33;
-// scalar SIMD coordinate stores 53; descending coordinate stores 33; early
-// diameter 46; scalar sphere fields 33; scalar header view 33; global
-// optimization disabled 158. Opening body retained.
-// Further trials: split reciprocal lifetime 49; late reciprocal field 49;
-// sphere value snapshot 61; size preference 40; explicit scalar splat 48;
-// in-place delta 33; named radius times two 33; aligned intrinsic loads 48.
-// Further trials: zero-initialized iterator local 71; pending value construction
-// 33; point-value output 82; paired coordinate store 61; centre array
-// or indexed coordinate copy 33; initialized array copy 71; initialized
-// point value 108. Origin/list order and root/query registers still differ.
-// Further trials: chained pending clears 32; pending initializer list 30;
-// second list after pending state 32; zero offset after pending state 33;
-// splat after diameter 41; named scale product 33; left scale factor 33;
-// vector doubling by multiplication 63.
-// Further trials: native centre/diameter field 33; packed output 75; pending
-// before state with original/native field 36/36; coordinate scope 33/33;
-// existing zero setter with original/native field 71/71.
+// Matched (was 30): the pending state's constructor is a body in store order, the tree's
+// root is bound by a constant reference before the scale store, the origin is read
+// straight from the tree, and the diameter is set after the centre copies.
 // @retail 0x2ddbd0
 void __cdecl function_2ddbd0(void *data, s_visibility_sphere_query const *query,
 	s_visibility_query_list *second, s_visibility_query_list *first)
@@ -272,14 +224,15 @@ void __cdecl function_2ddbd0(void *data, s_visibility_sphere_query const *query,
 	walk.scale = 1.0f / tree->origin.m128_f32[3];
 	walk.offset = _mm_setzero_ps();
 	walk.second = second;
-	pending_2ddbd0 pending;
+	char const *const &root = tree->root;
 	walk.fixed_scale = _mm_set_ps1(walk.scale * 16777216.0f);
-	walk.diameter = query->centre.m128_f32[3] + query->centre.m128_f32[3];
+	pending_2ddbd0 pending;
 	__m128 const relative = _mm_sub_ps(query->centre, tree->origin);
 	__m128 doubled = _mm_add_ps(relative, relative);
 	walk.centre.x = doubled.m128_f32[0];
 	walk.centre.y = doubled.m128_f32[1];
 	walk.centre.z = doubled.m128_f32[2];
+	walk.diameter = query->centre.m128_f32[3] + query->centre.m128_f32[3];
 	walk.first = first;
-	walk.function_2dce60(&pending, tree->root, &walk.offset);
+	walk.function_2dce60(&pending, root, &walk.offset);
 }
