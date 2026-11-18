@@ -15,7 +15,7 @@
 struct s_collision_result_1697c0;
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
-color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
+color3f *function_131c20(color3f *result, color3f const *a, color3f const *b, dword flags, real t);
 dword __cdecl pack_color3f(color3f const *color);
 
 struct s_sky_surface_record
@@ -52,273 +52,8 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 	return value;
 }
 
-// score 30 (was 30): the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
-// the blend registers, the color0 store, the in-place strength add and the sete collision test match.
-// Left: the i == 0 block loads the strength before the colour copy, so the copy advances ebp (retail
-// copies through `lea eax, [ebp + 4]` first), and 0x131c20's `&color` is formed in edi and copied to ecx
-// (retail: ecx, then edi). Round 52 (lane 13, fast): colour first with 1 to 16 unused locals before the
-// light pointer or at entry 121 each (identical: not symbol numbering); colour first with a `continue`
-// out of the i == 0 arm 121; strength first with that `continue` 30; colour first with the light-count
-// test as an early `continue` 121; colour first with a const entry pointer 121; 0x131c20's parameters
-// reordered to (result, b, flags, t, a) everywhere 28 (retail's ecx-then-edi pair: it follows which
-// `&color` argument is evaluated first) but 0x131c20, 0x131d60 and 0xc0c80 stop matching. The in-place
-// add appears whenever the blend block is laid out before the first-light block. Round 96: a colour output pointer for blending and packing 30 (identical);
-// consuming the returned blend pointer 194; colour first with the strength-sum operands reversed 121;
-// the shared three-component setter for that copy 163; an entry-colour pointer for copy and blend 168;
-// the output pointer for both in-place arguments, and also for the copy, 30 each (identical);
-// the entry-colour pointer for the copy alone 168. Original copies and call restored.
-// Round 36 (lane 1, fast; aligned = difflib count over the listing): colour copy
-// first 121 (828 bytes, aligned 5: only the load-first strength add and the edi/ecx pair differ); colour
-// first with the copy field by field 163, `0.0f < power` test 121, add re-read as `((real *)entry)[4]` 121,
-// typed colour entry { color4f color; real strength; } 121, typed light record (yaw/pitch/count/colours)
-// 121, `strength` declared inside the lights branch 139 or at the top of the function 162, without the
-// `index` local / `hit` local / both 121/121/121, `strength` renamed to sort first or last 121/121;
-// `if (i != 0) { if (power > 0) ... } else { copy; strength }` 38 (821 bytes: in-place add and retail's
-// lea copy, but the i == 0 block lands after the blend block); a 600 s permuter run on the colour-first
-// form, best 51 (it moved the strength back first).
-// Round 39 (lane 1): compile-only screens reproduce the add's operand order: any non-local load or float
-// arithmetic ahead of the strength read in the i == 0 arm gives the load-first add, and 200 combinations of
-// declaration order, count/lights locals, entry placement, `0.0f <` test, `strength + power`, `!i`, named
-// ratio and direct sky index, plus 63 mixes of `entry` and re-read entries pointers, all stay load-first.
-// Real build: light count read once 34; lights base local 39; named blend ratio 30; entry read before the
-// entry-count test 37; colour first with the light count local 125.
-// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure, positional/aligned; base 10/16 = full 30):
-// colour copy first 105/5 (828 bytes: the copy is retail's, the strength add loads the entry first into
-// xmm0 and copies back); on it two to four extra used locals, `strength = entry + strength`, `if (!i)`,
-// a const source cast, a nested else-if, the fifth argument as `&color.red`: identical (105/5); strength
-// declared first 108; a named power local in a nested test 84/46; the strength add before the blend
-// call 182. On the strength-first body: the first argument as a const pointer or the fifth as
-// `&color.red` 10/16 (identical): the ecx/edi pair follows the CSE of `&color`, not the spelling.
-// Earlier (52): the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
-// the blend registers and the color0 store match. Left: the strength add loads the entry's strength,
-// adds and copies back where retail adds it to xmm7 in place (its operands flip only when the strength
-// load comes before the color copy in the i == 0 block, which then changes that block), 0x131c20's
-// `&color` formed in edi and copied to ecx (retail: ecx, then edi), and retail's sete collision test.
-// Round 30 (fast): strength first in the i == 0 block 97 (the add goes in place and the length is
-// retail's, but the copy then advances ebp, `add ebp, 4`, since the entry pointer is dead after it;
-// with memcpy for the copy also 97); `visible = hit && no object` 52 (folded); one entry-color
-// pointer for the copy and the call 161 (821 bytes; it takes esi); the blend written in the call 52.
-// Diagnostic: a store through `record` after the call keeps the load-first add, so it is the add's
-// operand order, not a value reused across the call. Screened (compile-only): only a flag set in a
-// test (`visible = false; if (hit) visible = no object;`) gives retail's sete.
-// the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
-// the blend registers, the color0 store, the in-place strength add and the sete collision test match.
-// Left: the i == 0 block loads the strength before the color copy, so the copy reuses ebp (retail copies
-// through `lea eax, [ebp + 4]` first, a byte shorter), and 0x131c20's `&color` is formed in edi and
-// copied to ecx (retail: ecx, then edi). The in-place add appears only when the strength read comes first.
-// Round 27 (lane 11): the open test as `hit ? no object : false` gives retail's sete (alone 121, 828
-// bytes); `hit && no object` or `call && no object` named bools fold it (52/52); with the strength
-// assigned first in the i == 0 block 30 (kept). On it: typed light-entry struct 30; strength declared
-// before direction 33; color declared before direction 36; blend computed in the call 30; const cast on
-// the blend source 30; earlier, a const source pointer local 52 and `(color3f *)&color.red` 52.
-// Compile-only, the explicit sum, `((real *)entry)[4]`, late or early strength declaration, field-wise or
-// pointer color copy and `+=` in the i == 0 block all keep the load-first add with color first.
-// Earlier (52): the strength add loaded the entry's strength, added and copied back where retail adds it
-// to xmm7 in place (its operands flip only when the strength load comes before the color copy in the
-// i == 0 block, which then changes that block), plus the `&color` registers and the sete.
-// Round 38 (lane 9): the contribution through vector3f_assign and the sum through vector3f_add 52
-// (kept: the j/k adds load the contribution as retail, since the contribution's fields are written in
-// an inlined helper; replaces the hand-written double sums). On it: `strength = strength + power` 52;
-// vector3f_add(&contribution, &direction, ...) 52; strength declared first 55; float `+=` and plain
-// contribution-first sums 162/162; double sums 56; strength first in the i == 0 block 97 (821 bytes,
-// strength add in place, color copy changes); a power pointer 52; `if (i != 0)` with the i == 0 block
-// in the else 118 (816 bytes). Compile-only screens, strength order unchanged: direction_from_angles
-// with vector3f_add (contribution-first adds, angles loaded once), the three declaration orders, a
-// typed entry struct, a color pointer, memcpy, a named power local, `0.0f <` test, entry read late.
-// Round 100 (lane 5): j/k sums without the cast 56; no-lights arm first 184; start copied field by
-// field 198; `strength = power + strength` 56; strength updated before the blend call 191; strength
-// declared before direction/color 59; named power local 171.
-// Earlier (93): the frame, the sky/count homes, the trig temporaries, the blend registers and the
-// the frame, the sky/count homes, the trig temporaries and the color0 store match.
-// Left: the j and k direction adds load the direction where retail loads the contribution (the i add
-// matches with the double-typed sum); the entry strength is loaded, added and copied back where retail
-// adds it to the strength in place (`addss xmm7, [ebp + 0x10]`); 0x131c20's `&color` is formed in edi
-// and copied to ecx (retail ecx, then edi); and retail's collision test materialises a sete before its
-// branch. The strength add flips with the i add: every form that gives retail's i add gives the
-// loaded strength, and the earlier 93 form had the strength but not the i add.
-// Round 100 (on the 56 form): j/k sums without the double cast 56 (same code); the no-lights arm
-// first (`count <= 0`) 184 (all three adds as retail, strength still loaded; the arm moves ahead of
-// the loop); the zero-vector start copied field by field 198 (all adds as retail, the copy becomes
-// SSE moves); `strength = power + strength` 56; strength updated before the blend call 191;
-// strength declared first 59; a named power local for the test, divide and add 171.
-// The direction adds follow first-assignment order: retail's form needs direction's fields assigned
-// before the contribution's. Earlier (93 form and before):
-// frame 0x8c and first trig/product sum agree; two x87 add operands, blend address ownership, strength-add destination/copy and collision normalization remain.
-// Earlier: the frame, the sky/count homes, the trig temporaries, the blend registers and the
-// color0 store match. Left: the three x87 direction adds load the direction first where retail adds
-// it as the memory operand, 0x131c20's `&color` is formed in edi and copied to ecx where retail
-// forms it in ecx and then edi, and the collision test's sete. The fast check also leaves two of
-// retail's global references unresolved in the reduced image, so part of this diff may be noise.
-// and the color0 store now match. Left: the three x87 direction adds load the direction first
-// (retail adds it as the memory operand), 0x131c20's `&color` is formed in edi and copied to ecx
-// (retail ecx, then edi), and the collision test's sete.
-// the frame, the sky/count homes, the trig temporaries, the blend registers and the
-// color0 store match. Left: the j and k x87 direction adds load the direction where retail loads the
-// contribution (the adds follow which field is first assigned earlier in source: assigning direction's
-// fields before the loop gives retail's adds), the strength is loaded, added and copied back where
-// retail adds the entry's strength to it in place (it flips with the i add), 0x131c20's `&color` is
-// formed in edi and copied to ecx where retail forms it in ecx and then edi, and the collision test's
-// sete (only a bool set in a test and tested afterwards gives it).
-// Round 99 (lane 6), on the double-cast adds: the cast on the other operand, on the direction, or
-// `+= (double)` 56 each (identical code); contribution as a real[3] 56; existing direction_from_angles
-// for the contribution 167 (the angles are loaded first); `strength = strength + entry` 56;
-// `(double)strength + entry` 210.
-// Earlier (round 93 form):
-// Round 69: `direction.i = contribution.i + direction.i` written out, or contribution declared
-// before direction, 93/93 (identical code: the add operands are reordered); the collision test as
-// an inline/forceinline bool helper (call && no-object) 93/93 (folded); the per-light count test as
-// an early `continue` 93.
-// Lane 8 r64 (93 form = count read at each use, lights pointer in the loop, a contribution vector
-// with double products cast once, the blend through the returning clamp, color0 first): three scalar
-// terms 179/184 (sunk into the adds); terms written into the adds 186; contribution renamed/array/
-// declared first, explicit `a = a + b` or `b + a` adds 95; existing direction_from_angles 171;
-// aggregate initializer 162; adds in k/j/i order 109; color declared before direction 99 (frame
-// slots swap); typed light-entry struct 162; strength spelled `entry + strength` or declared first
-// 162/165 (float products); one bool from an `&&` collision test 95; the flag form gives the sete
-// exactly (aligned 9) but 825 bytes, 160.
-// Earlier at 150: the selector join and esi/edi saves match (the sky lookup helper returns the tag
-// data, NULL by default, so the NONE join is not threaded).
-// Lane 5 r77 on the kept form: count without volatile 191 (804 bytes); light contribution vector
-// with fields read at each use 209 (837 bytes), with a plain count 166, plus the lights pointer
-// read in the loop 161, plus the count read from the field at each use 159 (sky/count homes and the
-// temporaries' homes then match retail; the adds still load the direction first, 4 bytes long),
-// plus color0 stored first 160; direction_from_angles for the contribution 173; pin_real for the
-// blend and colors 161 (same code); a pointer add helper and contribution array/initializer/
-// declaration-order forms keep the direction-first adds (screened); color0 first alone 149.
-// Earlier 213: frame 0x8c agrees; selector/count saves, sentinel join and pending trig/color homes remain.
-// Frame 0x8c agrees; selector/count saves, sentinel join and pending trigonometric/color homes remain.
-// Earlier 213 (was 213): frame 0x8c agrees; selector/count saves, sentinel join
-// and pending trigonometric components differ. Native sky fields 213; native
-// light/value fields 213; both views 213; frame pointer 296; status enum 213.
-// selector complete validation 213; selector result join 213; collision value initialization 238; direct
-// component lifetimes 231; component lifetimes ordinary count 225; native contribution vector 246; size
-// preference 380; float consistency 302.
-// Selector failing-range returns 213; explicit selector context 213; direct collision predicate 213;
-// ordinary while light traversal 213; independent blend bounds 213; constant output first 213.
-// Round 116: Direction initialization only with lights 213; color initialization only with lights 213; both 213; light-table field at each access 213; result from record validity 230. Opening code and inherited count qualifier restored.
-// Round 122: Query-only collision lifetime 230; validated-record collision lifetime 217; byte status
-// 217; strength lifetime inside light branch 211; parallel conditional channel clamps 213.
-// Native contribution aggregate with cached/direct angles 236/235;
-// native direct component fill 235; cached component orders ikj/jik/jki/kij/kji 219/212/221/216/219.
-// Existing scalar color/blend/both 213/213/213; existing color helper and helper plus blend 213/213;
-// entry strength snapshot alone/with scalar clamps/with color helper 225/225/225. All restored.
-// Round 181 complete data-pointer selector, guard returns, full selector, const data, explicit context and definite pointer arms 213/213/213/213/213/213; ordinary inline 256; validated data output 228 (fast); all restored. Frame 0x8c agrees; selector/count saves and pending trigonometric/color homes remain.
-// Native ray/fallback/both component loops with long ordinals 218/217/217; dword 218/217/217;
-// both with short/byte ordinals 244/244. Original body restored; selector and pending homes remain.
-// Round 246: direction seed/color seed/direction publication library-copy combinations,
-// seven at 213; all three plus every whole-color replacement 213. Original copies restored.
-// Round 191: Blend/pack/collision ordinary-inline declarations, singly, all pairs
-// and together, each 213; all three separate noinline declarations 213.
-// Original declarations, count qualification and executable body restored.
-// Round 193: Scenario/data/both/value/data+value/scenario+value/all source pointers
-// read at each use, then all plus light table: 213/192/192/213/231/213/231/247.
-// Data-only plain 192 adds reloads and has a farther aligned sequence; original restored.
-// Round 202: Native direction accumulation with long/dword/short/byte ordinals, direction/contribution/paired cursors, contribution-first indexed adds, complete updated-direction publication and the shared vector setter 106/106/192/192/205/195/171/106/182/93 fast.
-// Original executable source restored. Frame 0x8c agrees; x87 accumulator operand order, blend-address reuse and collision predicate remain.
-// Round 215: native light cursor 224; cursor with const light/value views 224;
-// cursor with positive-light strength lifetime, mutable/const views 223/223;
-// plain count with cursor, const views, scoped strength or both 233 each.
-// Original indexed traversal, strength lifetime and inherited count qualifier restored.
-// Round 360: Complete trig factors, existing contribution setter, returning color-result copy,
-// all pairs and all three 162/162/179/162/180/180/180; original real-narrowed terms
-// in double scalar carriers 186. Original contribution and color ownership restored.
-// Round 183: shared vector add, either input owner, and unit add-scaled in place 93/93/93/93; separate native sum output, plain/scaled and either owner, 188/188/188/188. Original accumulation restored.
-// Round 68 (lane 9, fast): colour first alone is retail's code everywhere except the post-call add (ours
-// reloads the power, adds the strength to it and copies back: 3 instructions, +7 bytes) and the ecx/edi
-// pair; an opaque call (volatile function-pointer diagnostic, reverted) after 0x131c20 or `&color` escaping
-// before the loop does not change that add. Trials:
-// a power value read once with the entry pointer (strength = power in the first-light arm; test, divide
-// and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
-// `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
-// strength declared inside the lights branch 139.
-// Round 85 (m3 lane 9, fast; compile-only screen of the add on the colour-first body): colour first re-measured 121 (828 bytes); strength
-// first with the entry used after the copy (diagnostic) 187: the movss stays first, so the scheduler does not sink it and retail's source
-// order is colour first. Strength read into a local before the copy 30 (same code); pinned_real by value 30 and colour first 121; a typed
-// collision result 30 and colour first 121; colour first with both arm stores in a forceinline pointer helper 121; colour first with a power
-// local for the test and divide 121. Screen, colour first: the add turns strength-first with one added pointer read at offset 0 (point, sky,
-// record, the zero vector) or one store through record before the first-light arm, and a second added read turns it back; a dead read, global
-// reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
-// locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
-// value, pointer or reference strength, a const entry, nested else and `<=` tests.
-// Round 95 (m3 lane 12, fast; colour first alone 121, only the post-call add and the ECX/EDI pair differ): on it, strength
-// declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
-// seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
-// Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
-// Round 96 (m3 lane 16, fast control 30; colour first re-measured 121 at 828 bytes, only the post-call add and the
-// ECX/EDI pair differ): colour first with the power bound through a const reference before the first-light test
-// (assign, test, divide, add) 121, through a const pointer 121; the reference with strength first 134 (829 bytes);
-// no entry local (the light's entry field read at each use) colour first / strength first 178/193 (834 bytes);
-// an entry local per arm, colour first, 178 (831 bytes). Compile-only (no LTCG) keeps the strength on the stack
-// here, so it does not model this add.
-// Round 143 (m3 lane 7, fast): colour first re-measured 121; the blend through a forced-inline in-place
-// wrapper (colour, other colour, ratio) 254, with colour first 299; the constant colour0 store ahead of the
-// loop 214, with colour first 207 (the store stays at the top); colour first with a library copy 121.
-// Round 91 (m3 lane 11, fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI
-// pair differ): retail's latch is `inc ebx` as ours, so the add's only cause is its operand order (ours loads the
-// power as the destination and moves the sum to XMM7). Real trials (the round 85 screen of these was compile-only,
-// which does not model this add): {count, address} block views of the lights and the entries, singly or both,
-// same code on either arm order; the light count in a local 34, colour first 125; the lights array in a local 39,
-// colour first 130; an entry-colour pointer for the copy and the blend call 168, colour first 166; the no-lights
-// fill through vector3f_assign 32, colour first 120; the clamps through pinned_real 66 at 821 bytes (the clamp
-// joins change), colour first 121. Kept: the ray through the existing vector3f_scale (same code on both arm orders;
-// the hand-written ray was its body).
-// Round 111 (m3 lane 16, fast; colour first re-measured 121): a plain-inline in-place blend wrapper (colour, other
-// colour, ratio) 253, colour first 298 (plain too: LTCG then inlines 0x131c20's body); a power local read before the
-// first-light test for the first-arm assignment, the test and the divide, with the add re-reading the field, 158 (824
-// bytes, the load hoists above the branch); colour first with each of the six aggregate copies as memcpy 121 each;
-// with {count, address} pointer locals for the lights, the entries or both 121 each (30 each strength first, same
-// code); with `i++` or `i += 1`, nested entry tests, `if (sky)`, the blend as a repeated-expression PIN macro or the
-// sky helper without its count local 121 each (same code); the result declared before the collision sentinel 123; the
-// sky helper without its scenario local 142, with early returns 223; the post-call add re-reading the entry through
-// the light 154 (the entries pointer is reloaded after the call and the add stays load-first: it is a fresh load, so
-// only the add's operand order differs). Diagnostics on colour first (not source forms): one store through `record`,
-// or one read at offset 0 of `point` or `record`, anywhere ahead of the add in source order (function entry or the
-// first-light arm) gives retail's in-place add at 821 bytes; two of them cancel; reads at +4, +8 or +0x10, and
-// statements after the loop or after either arm's strength assignment, change nothing. The ECX/EDI pair never moved.
-// Round 101 (m3 lane 1, fast): n = 0..7 `long dead_n = n;` placeholders at entry (the symbol-count phase lever) on
-// colour first 121 x8 and on strength first 30 x7, identical code at every n; `vector3f_add(&contribution, &direction,
-// ...)` 30/121 (strength/colour first, same code). Colour first with the contribution's fields assigned directly (no
-// vector3f_assign) 160 (825 bytes): the first-light arm and the post-call `addss xmm7, [ebp+0x10]` are retail's, but
-// all three x87 direction adds load the direction first; strength first so 170. On that body the accumulation through
-// the swapped vector3f_add, as `+=` rows, as `contribution + direction` rows 160/160/160; the no-lights arm first 191.
-// vector3f_assign with `+=` rows, colour/strength first 169/161.
-// Round 183 (m3 lane 6, fast; strength first / colour first): the pitch cosine named once as a double for both
-// products 30/121 (same code); guard returns for the flag, NONE and sky tests 243/251 (838/844 bytes); the sky index
-// as a short local 30/121 (same code); color declared before direction 36/127; a 600 s permuter run on the 30 form
-// (65 tries), none below its baseline.
-// Round 185 (m3 lane 6, fast; colour first re-measured 121, only the post-call add and the ECX/EDI pair differ): colour first
-// with the sky index read once ahead of the flag test 143 (830 bytes, the load moves above the test), with the index assigned
-// inside the test 131 (the sky lookup's registers swap), with the scenario's sky block read through the shared tag-array type
-// in the sky helper 131 (a real build; earlier rounds only screened it compile-only), with the sky index passed straight from
-// the global 121 (same code), with the light entry typed as reals (`entry[4]`, `entry + 1`) 121 (same code).
-// Round 124 (m3 lane 16, fast): colour first with `cos(pitch) * cos(yaw)` 121, `cos(pitch) * sin(yaw)` 183 (833 bytes), both
-// 183, the blend as `strength / (power * (i + 2))` 127, `(2.0f + (real)i)` 121. 0x131c20 declared (result, a, b, flags, t) or
-// (result, a, b, t, flags) at its definition, every declaration and all six calls: 28 here (the ECX/EDI pair is retail's;
-// 0x131c20, 0x131d60, 0xc0c80 stay matched) but 0xbe8e0 89 -> 171 (its loop head shifts), not kept; with colour first 119, only
-// the post-call add left. On that: the collision sentinel stored after `result = 2` 121, at the top of the sky branch 156, before
-// the collision call 177. Diagnostics: a store through `record` at entry or at the top of the sky branch gives the in-place add;
-// a second store into the collision buffer and dead reads of `point` or `record` do not.
-// M3 lane 12 r131 (fast; colour first re-measured 121 at 828 bytes, only the post-call add and the ECX/EDI pair differ): on
-// colour first, declarations direction/strength/colour 124, strength/direction/colour 124, colour/strength/direction 128,
-// strength/colour/direction 128 (the add stays load-first in every order); a const light pointer and entry read 121; the light
-// index declared ahead of the light-count test 121 (both the same code).
-// Round 171 (m3 lane 7, fast with 0x131c20; colour first re-measured 121 at 828 bytes): on colour first, the entry pointer read
-// before the light's entry-count test 131 (829 bytes); the direction seed through vector3f_assign of the zero vector's three
-// components 213 (841, the seed becomes SSE moves); the contribution declared once at the top of the lights branch 121 (same
-// code); a power local named inside the blend arm for the divide and the add (the test still reads the field) 188 (835: the
-// add goes in place, `addss xmm7, [esp + 0x28]`, but the power spills across the call); `strength = strength + power` 121.
-// M3 lane 16 r131 (fast; base 30): colour first re-measured 121 (828 B; only the load-first post-call strength add and the
-// ECX/EDI pair differ). On colour first: a typed light entry {flags, colour, power} 121; the colour seed copied as a point
-// (`*(point3f *)&color.red = *g_468718`, the idiom of that global's other users) 121; the entry colour copied by the same
-// point idiom 121; the scenario's sky block read through the shared tag-array and tag-reference types in the sky helper 131
-// (the sky lookup's registers swap; the add stays load-first). Diagnostic: the blend through a forceinline (result, a, b, t)
-// wrapper over 0x131c20 253 (878 B: LTCG then inlines 0x131c20's body). Body unchanged.
-// M3 lane 16 r134 (fast; base 30; colour first re-measured 121): on colour first, the angles as named `real yaw`/`real pitch`
-// locals 159 (821 B: the post-call add goes in place and the first-light copy is retail's, but the x87 block then loads each
-// angle once where retail reloads both fields); the same as `real const &` references 121 (folded back, same code); the record
-// direction stored field by field 134 (838 B); the light pointer declared ahead of the loop 121; the first-light strength read
-// as `((real *)(entry + 4))[3]` 121 (same code). Screen (24 combinations of the index local, the hit local, the blend in the
-// call, the sky helper's count local, three declaration orders and the open test written in the if): best 121, none in place.
+// Matched with 0x131c20 taking its result first (result, a, b, flags, t): retail forms the `&color` pair in ecx
+// and copies it to edi, which only that order gives; 0x131c20, 0x131d60 and 0xc0c80 stay matched.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -342,21 +77,22 @@ long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_
                     if (*(long *)(light + 0x2c) > 0)
                     {
                         byte *entry = *(byte **)(light + 0x30);
+                        real const *power = (real const *)(entry + 0x10);
                         vector3f contribution;
                         vector3f_assign(&contribution, (real)(cos(*(real *)(light + 0xc)) * cos(*(real *)(light + 0x10))),
                             (real)(sin(*(real *)(light + 0xc)) * cos(*(real *)(light + 0x10))), (real)sin(*(real *)(light + 0x10)));
                         vector3f_add(&direction, &contribution, &direction);
                         if (i == 0)
                         {
-                            strength = *(real *)(entry + 0x10);
                             color = *(color3f *)(entry + 4);
+                            strength = *power;
                         }
-                        else if (*(real *)(entry + 0x10) > 0.0f)
+                        else if (*power > 0.0f)
                         {
-                            real blend = pinned_real(1.0f - strength / *(real *)(entry + 0x10) / ((real)i + 2.0f),
+                            real blend = pinned_real(1.0f - strength / *power / ((real)i + 2.0f),
                                 0.0f, 1.0f);
-                            function_131c20(&color, (color3f *)(entry + 4), 0, blend, &color);
-                            strength += *(real *)(entry + 0x10);
+                            function_131c20(&color, &color, (color3f *)(entry + 4), 0, blend);
+                            strength += *power;
                         }
                     }
                 }
