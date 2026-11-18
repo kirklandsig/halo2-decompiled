@@ -620,6 +620,11 @@ void function_125a90(long value);
 // after the kind arm; retail's block order needs the getter 0x221810 kept out of line (the named class type
 // condition puts the call one test deep and the compiler inlines it), and that getter lives in
 // src/unknown_221490.cpp, which this lane may not edit: BLOCKED-BY 0x221810.
+// MiniMax A (11-17): no new form tried this round, no lower score (36): the record address is still multiplied in place into esi where retail multiplies a copy in eax and forms the address with a lea, and retail's block order needs the getter 0x221810 kept out of line; that getter's body lives in src/unknown_221490.cpp, which this lane may not edit. BLOCKED-BY 0x221810.
+// MiniMax I (11-17): no new form, no lower score (36): the record's address is still multiplied in place into esi where
+// retail multiplies a copy into eax and forms the address with a lea, and the special arm still sits after the kind arm;
+// retail's block order needs the getter 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp,
+// which this lane may not edit: BLOCKED-BY 0x221810.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

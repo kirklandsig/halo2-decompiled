@@ -1363,6 +1363,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // The velocity preload and force byte home still differ. Shared signed slot index 43, low-word slot 283,
 // signed header byte offset 43, unsigned header byte offset 283. The same four with a separate Boolean force
 // result: 90, 287, 90, 287. Narrowed slots move the first difference into the opening lookup. Body restored.
+// MiniMax A (11-17): no new form tried this round, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al; that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files. BLOCKED-BY 0x1c4b00.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

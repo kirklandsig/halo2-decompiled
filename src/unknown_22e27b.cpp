@@ -479,6 +479,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // stored to restart on the latch path (after the break), or an unknown start value, each lands the miss on the test, so
 // the skip needs both the known start and the latch's implied false; retail stores the false start at entry, so its latch
 // must not imply false.
+// Round 210 (m3 lane 4, fast): restart left uninitialised at the top and cleared just before the loop 16 (the clear
+// lands after the timing setup, the in-range jump is still threaded), cleared first in the animating branch 19;
+// restart and dispose in one declaration 1 (same code); the boundary restart as `restart |= ...` 184, as `type == 0
+// ? (bit 1 || bit 2) : false` 1 (same code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

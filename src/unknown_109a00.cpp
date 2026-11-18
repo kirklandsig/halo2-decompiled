@@ -719,6 +719,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // `xorps`). Compile-only (keeps our tail): the valid block as do/while(0)-break, `for (; valid; ) ... break;` and
 // `switch (valid) case true:`. A scan of matched functions with this tail (0xf5ee0, 0x1b89d0, 0x7f8b0) finds it only
 // where each arm of the final test ends in code of its own, so the empty join after the valid block is the cause.
+// M3 lane 8 r182 (fast): the failure stores chained `entry->valid = entry->active = false;` 8 (same code); the dot's up
+// input through the `up` local 14; the scale's and the dot's forward input through the `forward` local 18, the scale's
+// alone 14; cross3f_staged through the three axis locals 12.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

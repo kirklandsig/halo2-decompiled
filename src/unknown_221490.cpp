@@ -1084,6 +1084,12 @@ extern "C" void _ReadWriteBarrier(void);
 // built from their bits through the decibels type adds two register pushes (decibels EDX, every later register retail's);
 // a probe load before the memset or before the call gives every later register retail's and decibels EDX, one after the
 // call only the later ones, so the rotation follows code order and retail's memset zero takes no rotation step.
+// M3 lane 10 r117 (fast; the no-barrier control re-measured 28): the first two volumes through a forceinline setter
+// taking the field's address, no barriers, 28; the first two volumes into locals ahead of the memset and stored after it,
+// no barriers, 185 (680 bytes); decibels bound to `real const &` for the attenuation call, no barriers, 28; the three gains
+// read through a const pointer to the driver's volumes block (0x220fd0's parameter type) 21, without barriers 28.
+// Between the memset and the decibels load every other value is pinned to EAX (the ftol result, lahf), so the zero is the
+// only rotating allocation there.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

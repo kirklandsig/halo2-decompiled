@@ -2950,6 +2950,14 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // first text with range guard 204, paired text indices from the second text with range guard 177. The
 // paired text producer increased the score in all eight forms. The shown-count slot, voice reload and final
 // receiver still differ. The original four-output helper and target body are restored.
+// m3 lane 5 r195 (fast with 0x24fd74/0x2507c3/0x22f042/0x250155/0x22ee47; base 87, aligned 80, register-masked 72). The
+// slot order follows the last loop's spills (retail spills only bitmap_b there, so it takes the first slot; ours spills
+// both bitmaps), so the rotation and the last loop are one cause: retail keeps the screen in its home and gives EBX to
+// bitmap_a. Tried: the function as a member of the lobby screen with `this` unused (the caller pushes the screen and
+// loads no ECX in retail) 87 (same code, the caller 0x24fd74 still matches); a short counter for the last loop 123 (942
+// bytes); the mode read once ahead of the last loop 113 (933); one function-scope mode for the last two loops 323 (933
+// bytes, first difference +0x5, but aligned 66 and masked 56); the last loop's four indices as one array 128 (944).
+// Body unchanged.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
