@@ -94,6 +94,13 @@ bool function_25d9b0(long prop_index);
 // returning 0 directly (no priority zeroing) give retail's SI and EDI homes for the priority and the view but swap the
 // actor and the node (65), the guard-return fallback measures 65 as well, the joint's target read hoisted into a local
 // measures 121 at retail's length, and the permuter's three rewrites in 300 s found nothing below the baseline.
+// MiniMax G (11-18): no new form, no lower score (38): the busy test branches to the priority epilogue like retail and the block order
+// matches, but the priority is held in DI where retail holds SI (the view in ESI against retail's EDI), the shared zero exit zeroes 16
+// bits (`xor ax,ax`) where retail zeroes 32 (`xor eax,eax`), and the fallback reads the slot's field with an unfolded compare where
+// retail folds it (`cmp dword ptr [ebx+0x7c],-1`); the gate's failure returning 0 gives retail's actor, node, priority and view homes and
+// the folded compare (49) but if-converts the busy test into a mask select, the fallback's failures returning 0 or the priority swap the
+// actor and the node (65), the first iterator call separated from the loop merges the two exits and grows the body (109), `return false`
+// and a long zero leave the zero exit's width alone (38), and the permuter found nothing below the baseline.
 // score 38 (was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
 // zero exit's width and the fallback's memory compare still differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49

@@ -4449,6 +4449,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // retail's third argument for the same reason as in 0x5e3f0; that parameter list lives in
 // include/unknown_075870.h and src/unknown_075870.cpp, which this lane may not edit. BLOCKED-BY 0x769a0.
 // MiniMax C (11-17): no new form, no lower score (305, was 305): the frame (0xd8) and the length agree, but the boolean homes are still a rotation from retail's (the acceptance byte at +0xa against retail's +0xb, the identity byte at +0x9 against retail's +0xa), retail still reads the acceptance byte back where this build folds it to a constant, and the same timeout spill as 0x5e3f0 needs 0x769a0, whose definition is in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
+// MiniMax G (11-18): no new form, no lower score (305): the frame 0xd8 and the length agree, but the three boolean stack homes are still a
+// rotation from retail's (retail: better +9, same +0xa, result +0xb) and the timeout spill needs 0x769a0's unread owner parameter, whose
+// definition lives in src/unknown_075870.cpp: BLOCKED-BY 0x769a0.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
