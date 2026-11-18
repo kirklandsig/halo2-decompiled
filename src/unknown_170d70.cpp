@@ -1755,6 +1755,9 @@ struct s_camera_reference_171830
 // setter 284; signed reference 281; named plane distance 285. NOT kept: the 252 form puts the
 // clear-side store before the plane arm, away from retail's branch order. The frame and point
 // convention remain different; the 281 form also moves away from retail length.
+// The 0xbc frame and point in EBX remain. Location, rear-depth, offset preparation and
+// location-plus-depth scopes 284/284/284/284. In-place side-cross offset 284, with
+// location scope 284, with depth scope 284, and with both scopes 284.
 // Fraction guard for the retained pointer 300, copied displacement 298, long/short/Boolean axis 291/302/292,
 // winning sample and derived sign 296, indexed refinement 318, shared sampling and result fraction 292. NOT kept:
 // all regress. The Boolean axis recovers frame 0xb8, but the point stays in EBX.
