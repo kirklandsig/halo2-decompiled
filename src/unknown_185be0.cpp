@@ -131,7 +131,7 @@ union s_185be7
     vector2f field_8;
 };
 
-// score 396 (was 590): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
+// score 396 (was 396): Frame 0xe0, the head and the flag block agree. The XMM state after 0x24590, one register copy before 0x100f70 and two stack homes differ.
 // MiniMax E (11-17): no new form, no lower score (590): the body is still two bytes over retail's 3777, the control global is still carried in ebx from the entry block where retail reads it into ecx a second time at the flag test after the magnitude and pow calls, and the only spelling seen to reproduce that reload takes the global's address, which this lane may not do.
 // MiniMax E (11-14): no new form, no lower score (590): the length is still two bytes over retail's 3777 (the
 // `xor bl, bl` of the bit-4 flag block, where retail branches straight to the clear arm), and the flag chain on
@@ -640,6 +640,19 @@ union s_185be7
 // Then retail's `mov eax, edx` before the 0x100f70 call (the weapon index lives in EDX there), the limit kept in XMM7
 // (retail the first, ours the second), the two 4-byte homes at +0x10/+0x14 (mask and counter the other way round), and
 // the vector copy order after the two 0x11df30 calls.
+// M3 lane 15 r98 (fast, 0x24590, 0xc8880, 0x185ab0, 0x185b00, 0x185b30, 0x187b30, 0x1a4900 MATCH throughout; base 396
+// [aligned 98]): the current weapon of the controlled unit through the existing inline unit_get_current_weapon
+// (include/unknown_1e1f20.h) in place of the slot lookup written out: that block is then retail's byte for byte, `mov eax, edx`
+// before 0x100f70 included, 675 [86] (one instruction more, so the lockstep tail shifts); with the second mask loop's mask
+// in its own long local (retail's one `movzx eax, word ptr`) 683 [84]; that pair with the default 1.0 in an else arm 552 [82]
+// (1000 instructions as retail, but the loop pads move: the front is 24 bytes short before the first mask loop, so its
+// alignment pad and the second loop's `jmp` over its pad differ); the weapon helper with the else-arm default only 909 [85].
+// Diagnostic, restored: 0x24590 moved into a file that sorts after this one 396 (same code: not link order). Retail scan of
+// all 25 call sites of 0x24590: none keeps an XMM value live across the call (0x1aa0d0's retail registers are those of the
+// `inline` build), so retail treats it as clobbering everywhere. Lead (diagnostic, not kept): `inline` on 0x24590 plus the
+// else-arm default, the weapon helper and the long mask local 76 [59] (fast); plus the havok pool data read first through
+// `s_havok_component *const &` (the 0xb9b90 form) 74 [59] (the pool load then precedes the mask as retail; the object
+// pointer and the pool global sit in ECX/EDX where retail has EDX/ECX). BLOCKED-BY 0x24590 (its six unmatched callers rise).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
