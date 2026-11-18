@@ -809,6 +809,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // written out as `j*j + k*k + i*i` 79, `k*k + j*j + i*i` 79, `j*j + i*i + k*k` 79 (chains i first), `j*j + (k*k + i*i)` 53
 // (chains j first again, but so are the stores); this body's j, i, k deltas with `k*k + j*j + i*i` 32 (same code). Retail
 // stores i before j and still squares j first, which no single written order gives.
+// Aggregate correction mutable or const 32/32, aggregate corrected velocity mutable
+// or const 50/50, both aggregates mutable or const 50/50, aggregate correction
+// with shared sum or setter 57/32. NOT kept: the i/j store sequence and correction
+// registers remain different.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
