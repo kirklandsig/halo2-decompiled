@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// score 43 (was 43): left: the player datum's address in EBX for EDI with the unit in EDI for EBX, and the root
+// walk: retail starts it at the unit with the root NONE and keeps its entry test (the shape of 0xbaf80 expanded in
+// place, the step object in EAX), ours reads the first parent before the loop. BLOCKED-BY 0xbaf80.
 // MiniMax R run 92 (11-17): no new form, no lower score (43): the permuter cannot search this body over the reduced
 // image (it reads 44 there against 43 in the full one), and the carriers still come from the out-of-line 0xbaf80 walk
 // in src/unknown_0bad50.cpp and from the iterator's registers in include/data_iterator.h, both outside this lane's
@@ -803,7 +806,7 @@ bool function_e4050(long object_index);
 // MiniMax H (11-14): no new form, no lower score (43): this round compared retail's listing with ours
 // region by region; the entry test and the 0x10 frame agree, and the difference opens inside the root
 // walk, whose body is the out-of-line 0xbaf80 in src/unknown_0bad50.cpp; the body is unchanged.
-// score 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
+// Earlier at 43 (was 43): unchanged this round: the unit record's address takes EBX where retail takes EDI
 // and the unit index takes EDI where retail takes EBX, and retail reads the unit object out of the
 // record into EBX once the record's address is dead; the root walk itself is the out-of-line 0xbaf80
 // whose body is in another file.
@@ -949,10 +952,10 @@ bool function_e4050(long object_index);
 // in edi and has no entry test; writing retail's shape makes the compiler peel the first iteration (109) and the same
 // walk with the record loaded after it gives 102, so both were restored. The remaining rotation comes from the datum
 // iterator's helper (include/data_iterator.h and src/unknown_0bad50.cpp), which this lane may not edit.
-// score 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
+// Earlier at 43 (was 43): unchanged this round: the datum iterator's register use (EBX against retail's EDI) comes from
 // include/data_iterator.h and src/unknown_0bad50.cpp.
 // MiniMax E (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where retail takes EDI; that helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane may not edit.
-// score 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
+// Earlier at 43 (was 43): unchanged this round: the datum iterator's data pointer still takes EBX where retail takes
 // EDI; the helper's register use comes from include/data_iterator.h and src/unknown_0bad50.cpp, which this lane
 // may not edit.
 // MiniMax I (11-17): no new form, no lower score (43): the datum iterator's data pointer still takes EBX where
@@ -969,6 +972,16 @@ bool function_e4050(long object_index);
 // and the iterator index EBX, because the step object reuses ECX where retail's takes EAX). Grid of three walk shapes x
 // long/dword unit x inline/named parent x unit object before/after the walk: long unit 171/162/113, dword unit
 // 109/102/107/98; none under 43. Best match-only recipe: none reached a match.
+// M3 lane 1 r118 (fast with 0x14deb0/0xbadc0/0xbaf40/0xe4050/0xbaf80/0x226190, all matched throughout; control 43,
+// aligned 27 including two padding lines, register-masked 8): re-measured the NONE-root walk from a long unit 109
+// (431 B, aligned 40: no entry test; player EBP, unit EDI, unit object EBX, table EDX) and from a dword unit or with
+// a dword walk variable 171/171 (405 B, aligned 43: the entry test is back with the table in ESI, the unit object in
+// EBP and the player in EDI as retail, but the unit stays in EAX, the step object reuses ECX and the iterator index
+// takes EBX, so the frame goes). New: the continue test compared as unsigned on a long unit (`(dword)unit ==
+// (dword)NONE`) with the long NONE-root walk 171 (405 B, the same code as the dword unit), the same test read from
+// the field ahead of the unit local 171 (same code), the dword unit with 0xe4050 passed the field 171 (same code);
+// the unsigned continue test on the kept parent-first walk 43 (same code). Any signed/unsigned mismatch between the
+// continue test and the walk keeps the entry test and gives that one 405-byte allocation. Body unchanged.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
