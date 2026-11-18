@@ -522,11 +522,11 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 		{
 			real local_11 = (real)cos(1.5707963705062866);
 			g_5047f8[local_6].field_4 = 1.5707963705062866f;
-			real rotated_y = arg_3->y * local_11;
+			real turned_y = arg_3->y * local_11;
 			real local_12 = (real)sin(local_7 == 0 ? -1.5707963705062866 : 1.5707963705062866);
-			rotated_y += arg_3->x * local_12;
+			turned_y += arg_3->x * local_12;
 			g_5047f8[local_6].field_c.x = local_11 * arg_3->x - local_12 * arg_3->y;
-			g_5047f8[local_6].field_c.y = rotated_y;
+			g_5047f8[local_6].field_c.y = turned_y;
 			g_5047f8[local_6].field_0 = local_10;
 			g_5047f8[local_6].field_1 = false;
 			g_5047f8[local_6].field_8 = 1.0f;
@@ -534,11 +534,11 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 			local_6++;
 			local_11 = (real)cos(-1.5707963705062866);
 			g_5047f8[local_6].field_4 = -1.5707963705062866f;
-			rotated_y = arg_3->y * local_11;
+			turned_y = arg_3->y * local_11;
 			local_12 = (real)sin(local_7 == 0 ? 1.5707963705062866 : -1.5707963705062866);
-			rotated_y += arg_3->x * local_12;
+			turned_y += arg_3->x * local_12;
 			g_5047f8[local_6].field_c.x = local_11 * arg_3->x - local_12 * arg_3->y;
-			g_5047f8[local_6].field_c.y = rotated_y;
+			g_5047f8[local_6].field_c.y = turned_y;
 			g_5047f8[local_6].field_0 = local_10;
 			g_5047f8[local_6].field_1 = false;
 			g_5047f8[local_6].field_8 = 1.0f;
