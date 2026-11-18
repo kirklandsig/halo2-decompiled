@@ -608,6 +608,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH391: Shared origin generation/query cursor, hit query/response cursor and hit-distance
 // query/response cursor, seven subsets 563/563/663/558/665/665/670; all with origin
 // advance and rewind 651 (2886 bytes). NOT kept: no gain or matching success-byte home.
+// Individual up/left/down/right branch-local response roots 559/559/559/559;
+// positive, negative and vertical branch-local pairs 558/558/558; root scratch
+// shared per opposing axis 559. The success byte remains at +0x13. Restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

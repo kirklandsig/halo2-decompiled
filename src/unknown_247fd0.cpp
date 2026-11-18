@@ -814,6 +814,11 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // with the base and the index in one operand where retail
 // adds the index to the base first and reads the byte from it into a second register, the gate flag's home is at +0x1f
 // here against retail's +0x1b, and the effect definition's home is at +0x18 here against retail's +0x1c.
+// Enclosing bit-field and raw-byte admission 344/334; staged gate 418;
+// plain positive gate 395; enclosing gate with combined header word 344,
+// allocator-failure exit 344, query-scoped collision 344 or separate refreshed
+// settings 344. The staged gate gains the two slots through an extra readback;
+// the split effect address and DL load remain. Restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

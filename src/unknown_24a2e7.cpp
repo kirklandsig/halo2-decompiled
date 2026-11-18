@@ -200,6 +200,11 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Nested guard with plain-name copy input 66, also with last append result 66.
 // Early append result with named suffix 90. NOT kept: nested guards reserve
 // 0x28 and gain one. The slot holds the result. The entry base stays in a register.
+// Comparison-bound search with a shared exhaustion return 56; with an explicit cursor 56;
+// guarded end pointer with live ordinal 74; counted comparison before formatting 59;
+// skip mismatches with indexed terminator 84; formatted arm breaks 84; fixed-array
+// destination 84; selected name then result 84. NOT kept: the 56 forms recover length
+// but retain 46 differing instructions, no base spill and no final ordinal multiply.
 // @retail 0x24a691
 word const *c_list_24a64d::function_24a691(long index, bool append)
 {
