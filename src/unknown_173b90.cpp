@@ -472,6 +472,10 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax B (11-18): no new form, no lower score (42): a local copy of the emitter definition for the three property
+// tests measures 125 and a local copy of the emitter flags for the same three tests 181, both above the plain body; the
+// permuter's annealed run (900 s) finds nothing below 39, so row i of both rotations still sums the up product before
+// the forward one and the three post-call reload pairs still restore ebx before esi.
 // MiniMax S (11-17): no new form kept, no lower score (42): the emitter walk as a guarded do-while with the offset's
 // zero store inside it measures 41 on its own and 39 with the scale declared before the multiplier (the form MiniMax
 // R 11-14 and MiniMax A 11-12 measured), under the keep bar, so the body stands; row i of both rotations still sums
