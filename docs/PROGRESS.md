@@ -6,6 +6,16 @@ The newest entry comes first.
 
 ```
 matched 10676 of 11326 game functions (2066727 of 2786206 bytes, 74.18%)
+matched 1408 of 1436 Havok functions (248373 of 290362 bytes, 85.54%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1304: `0x2fb150` match.
+
+## 2026-11-17: 10676 functions match
+
+```
+matched 10676 of 11326 game functions (2066727 of 2786206 bytes, 74.18%)
 matched 1407 of 1436 Havok functions (246780 of 290362 bytes, 84.99%)
 ```
 
