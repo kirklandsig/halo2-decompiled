@@ -87,6 +87,13 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax G (11-18): no new form, no lower score (77): an annealed permutation search over this body (11 tries,
+// 320 s) found no better variant: best 73 differing instruction pairs against a baseline of 73 on both images; the
+// reduced image it needs pulls in 541 sources, so one try takes many minutes.
+// MiniMax G (11-18): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]`
+// where retail reads `[edx + eax + 0x40]`, and the operand order of the address does not change that order
+// here; the success tail still pushes what retail hands over in EAX, EBX and ECX, which the 0x1d0cf0
+// convention in another file decides: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax E (11-15): no new form, no lower score (77): the rigid-body lookup still reads `[eax + edx + 0x40]` where
 // retail reads `[edx + eax + 0x40]`, and the success tail still pushes what retail passes in EAX, EBX and ECX;
 // retail's own parameter order puts the settling count in EAX with six stack arguments while this build's

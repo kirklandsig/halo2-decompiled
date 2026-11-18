@@ -607,6 +607,10 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // declaration forms tie at 489. Ending the query workspace at its result reaches the 3499-byte
 // retail extent but regresses to 665. The returned point and later query flag also regress. The
 // position and target stack homes and the order of the normalizer squares still differ.
+// Query/target/pre-turn shared vector 487; target/pre-turn shared vector 489; position
+// result copy 679; typed heading and index fields 489; typed actor predicates 489;
+// y-first side point 708; signed side branch 489; typed radial difference 665 at retail length.
+// NOT kept: two-point gain below threshold, ties or regressions. Position and query homes still differ.
 // Round 455: Common fallback with path admission and fallback arm first 753, Common fallback with path
 // admission and fallback arm first, query outputs declared before admission 753, Common fallback with path
 // admission and movement arm first 753, Common fallback with path admission and movement arm first, query

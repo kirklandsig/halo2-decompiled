@@ -438,6 +438,10 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // each arm of the allocation test 100 (491 B; both drop the second test), those arms with the plain tail 85.
 // Diagnostic, reverted at once: the result made memory-resident through a volatile pointer to it, on the
 // single-return form 159, on this body 152 (the hit path still joins the test).
+// Separate cache-hit and replacement results, with initialization after the join
+// or inside the miss, early or common exhaustion, and hit predicate or stale
+// handle reset: 186/155/192/134/186/134/177/164. NOT kept: none retains the
+// native hit bypass and trailing ESI return. Shared selected result restored.
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {

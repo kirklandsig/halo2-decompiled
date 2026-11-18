@@ -329,6 +329,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Two cosine-weighted scalars, shared complement, and compound factors 479/421/479.
 // Incremental weighted axis, aggregate, const shared-complement aggregate, shared scaler
 // and component loop 477/477/433/446/496. All shorten the body. Square and sine spills remain.
+// AC570: Matrix return with component, aggregate, row or const row construction,
+// with and without earlier forward diagonal: 488/617/726/805/497/617/726/805. NOT kept: the returned
+// matrix grows the body and leaves the axis-specific spills and table placement.
 // Squared terms in diagonal fields 495; with named cosine corrections 437; axis copied into the
 // diagonal and squared in place 478; with named cosine corrections 476. Sine terms in the addition
 // or subtraction output fields 437/437; with squares in the diagonal fields 539/539.

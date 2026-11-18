@@ -1048,234 +1048,11 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
-// score 90 (was 90): retail's length, frame 0x20. Left (masked aligned count 20, registers and esp offsets masked): at the head ours
-// MiniMax G (11-10): no new form, no lower score (91).
-// MiniMax I (11-10): no new form, no lower score (163).
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax B (11-12): no new form, no lower score (90): the reduced image scores this function at 225, so the fast number
-// is not the full build's 90; at the head the actor index stays in EDI where retail keeps it in EBX, and the pool global
-// is loaded before the frame setup instead of after it.
-// MiniMax A (11-13): no new form, no lower score (90; the reduced image still gives 225): the object pool global and
-// the game time swap their places at the head, the suppressed and current byte homes stay swapped, and the first
-// 0x1c8df0 call keeps the root in a register where retail stores it into the squad's slot and evaluates !current
-// among the pushes.
-// MiniMax E (11-16): no new form, no lower score (90; the reduced image gives 91): the head still loads the object pool global before the game time, the suppressed and current byte homes are still swapped, and the first 0x1c8df0 call still keeps the root in a register where retail stores it into the squad's slot.
-// loads the object pool global before the game time and the object index, retail after them (so the object and table registers swap:
-// ours EAX/ECX, retail ECX/EAX, through the type-15 arm), the suppressed/current byte homes swapped, and the first 0x1c8df0 call, where retail
-// stores the root into the squad's slot at once, keeps current in AL and evaluates `!current` with `sete` among the pushes (CSE'd into the
-// second call through a stack slot), while ours computes the named not_current before the hit pointer and keeps the root in EAX.
-// M3 lane 8 r165 (plain; --fast gives 225 here): the game time through the existing function_146650 90 (same code); the head's
-// object through the existing ai_object_get (its argument is read before the pool global, retail's load order) 90 (same code:
-// ours still loads the pool global first), both together 90; a named object index used at its five uses 343 (1277 B); the
-// unit's NULL default declared after the two flags 346 (1240 B, the cmovne goes). Also read: ours puts not_current in the
-// squad's freed slot (+0x1c) and the root at +0x24, retail the root at +0x1c and `!current` at +0x24.
-// The two stacked notes below (first at 163, then at 90) are merged into this one.
-// Earlier at 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
-// suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first
-// call's arguments, and BLOCKED-BY 0x25cb60: retail pushes the short sight as ESI, a short last parameter; a contributor's signature takes a long, so ours adds `movsx`.
-// Earlier (257, was 257): frame 0x20 and actor EBX agree; squad/object, flag and root/hit homes differ.
-// Earlier: actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
-// call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
-// scheduling before the branch, the suppression/current byte homes swapped ([esp+0x12]/[esp+0x13]),
-// and at the first 0x1c8df0 call retail spills the root into the squad's slot and keeps the hit
-// pointer in EDX where ours keeps the root in EAX and spills the hit pointer (so the root and the
-// priority swap homes and everything after shifts one instruction); 0x25cb60's sight is pushed after a
-// movsx (retail: as is), BLOCKED-BY 0x25cb60 (its sight parameter width). 1276 bytes against 1268.
-// Earlier (331): the tracking view is cleared before the tracking test, so the
-// pointer is zeroed where retail zeroes it instead of being assigned in an else
-// branch. Retail holds the actor in EBX and spills it at [esp+8] right after the
-// actor[9] test where ours holds it in ESI and spills it at [esp+0x14]; retail keeps
-// the squad pointer at [esp+0x10] where ours uses [esp+0xc]. The body is 1251 bytes
-// against retail's 1268.
-// Earlier (319): retail holds the actor in EBX (spilled at [esp+8]) and the prop in ESI where
-// ours swaps them, keeps the squad pointer at [esp+0x10] where ours uses [esp+0xc], acquires the
-// object, suppression, current flag and unit pointer before the actor-type branch, and after the
-// 0x1c8df0 call keeps a zero in EBX and the sight in ESI. The body is 1253 bytes against 1268.
-// The tracking view is cleared before the tracking test, so the pointer is zeroed where retail
-// zeroes it instead of being assigned in an else branch.
-// Equal-zero reference, equal-four sight, view zero, priority zero, paired defaults, all defaults chains
-// 363/363/363/363/363/363; alternate-view short pair memmove 374; copy field order 363 (control 363).
-// Original stores, body and local pointer qualifier retained; full baseline 358.
-// actor/view registers and pointer/flag homes; ordinary
-// path first 373; maximum result 372 (plain 370); wide other priorities 376;
-// visible-view arm first 376; tracking-handle snapshot 373.
-// ordinary current scope 375; suppression scope 366 (plain 373); object/unit
-// scope 371; all ordinary captures scoped 363 (plain 358); active single exit 373.
-// Prop pointer scoped to ordinary arm 369; prop/squad scopes 371; Boolean
-// mode snapshots 378; branch-assigned two-priority maximum 363; single final
-// priority store 367 (fast control 363, full baseline 358); all restored.
-// saved actor in ordinary arm 371 (plain 367); native actor fields 363;
-// both 371; timestamp name 363; inline depth one 363 (preview 363).
-// object/current/suppression alone at entry 367/368/368; group/prop/reference
-// pointer names 363; shared squad getter 363; entry pointer declarations 363
-// (fast control 363, full baseline 358); all restored.
-// Pairwise object/current, object/suppression, suppression/current entry captures
-// 366/375/371; false-default suppression on those pairs 366/375/371;
-// optional unit pointer on first two pairs 370/373 (fast control 363).
-// Object/current pair plain 373 versus 358; actor ESI and saved-pointer/flag homes remain.
-// frame 0x20 agrees; actor ESI versus EBX and saved-actor/flag homes remain.
-// Native prop/datum/sample/motion references 363f/363f/363f/363f; direct alternate
-// sight result 363f; child/guarded-parent handles 363f/363f; adjacent priority memmove
-// 377f (preview 363f); all original bodies and call arguments restored.
-// Ordinary object-type/suppression/current orders 012/021/102/120/201/210
-// 366/366/351/355/369/388; coordinated priority names 341; names with 210 order 388
-// (fast control 341; full baseline 358).
-// Round 203: native squad flag with squad-index, tracking-index and masked actor-slot producer
-// combinations 372 each in all eight fast trials (control 372/1260, full 331/1251).
-// Actor ESI and saved/squad homes remain; all native views, handles and temporary include restored.
-// Round 358: Complete different-target bool/byte/short/long carriers 376/341/376/375; before
-// suppression 376/341/364/366 (preview 341). Exact-length 364 regresses; original current predicate
-// and body restored.
-// Round 205: Special copied-result byte/char/short/long 372 each; with complete ancestry
-// producer scope 372 each (fast control 372, full 331). Original body restored.
-// Round 237: shared initial view lookup 372; actor/reference/prop at uses 414/503/415;
-// actor-reference/actor-prop/reference-prop/all 573/468/570/657 (fast control 372; full 331).
-// All restored; actor ESI and saved/squad/flag homes remain.
-// Round 245: Signed-short three-input priority trees in six candidate orders
-// 352/352/350/351/353/353; two reversed comparison trees 352/351
-// (fast control 356, full 331). Sub-eight gains rejected; original body restored.
-// Round 174 (fast control 372/1262, full 331/1251): existing saved-pointer
-// actor_snapshot/retained_actor/actor_saved/saved_owner identities, each with
-// original/actor_squad receiver identity, 372 each. All restored; full frame 0x20
-// agrees, actor ESI/EBX and saved/squad/flag homes remain.
-// Round 231: positive current/unit bool-byte-short pairs 372/372/372/372/372/365/365/365;
-// short-current priority tree/accumulator/full-width priorities 366/364/368 (fast control 372).
-// Accumulator ordinary 338 versus 331, rejected; original predicates, priorities and body restored.
-// Round 389: suppression byte/short/long 372/363/366; unsigned timestamp 372; native
-// wide timestamp alone/with byte/short/long suppression 377/377/377/376 (fast control
-// 372). Short suppression plain 344 versus 331; all original types and body restored.
-// DL167 (fast control 356, full 331): repeated flag25/flag23/parent observations,
-// entry masks 1..7 348/349/367/353/354/369/359; all byte 367. First-mode flag25,
-// flag25+parent, flag23, both flags and byte flag25 350/355/351/337/357;
-// both flags+parent 333; byte pair/+parent 358/359. Shared mode 371/366/368;
-// shared object getters ordinary/ancestry/all 333 each. Full flag25/pair/pair+parent
-// 354/350/351 versus 331; all restored. Actor ESI/EBX and saved/squad homes remain.
-// Round 397 (fast control 356, full 331): complete tracking-root view access; root branches, ordinary saved actor and readonly source-view masks 0..7
-// 355/360/378/376/355/360/378/376; all restored.
-// Round 240: Complete pre-branch object/suppression/current acquisition in six
-// producer orders 360/360/376/394/391/387; first two with the saved-pointer declaration
-// before actor construction 360/360 (fast control 356, full 331).
-// Original observations, qualified local pointer and complete body restored.
-// Round 250: paired ancestry category outputs in char/byte/short/long, category-first
-// 375/375/381/377, priority-first 375/375/381/377 (fast control 372, full 331).
-// All exact-only field-result forms restored; actor ESI/EBX and saved/squad homes remain.
-// Round 90 (full LTCG relink screens; --fast misbuilds this function): the mode argument written in
-// both 0x1c8df0 calls 319 (plain, kept: retail evaluates the hit pointer, then the mode). On it: the
-// sight parameter of 0x25c9d0 short 350 (sight then in ESI as retail, prop takes EBX); the type-15 arm
-// as an if/else on a found index (other_index NONE unless 0x25d810 finds one; view handled in both
-// arms) 334 at 1268 bytes, that arm then identical to retail; with MAX(priority, MAX(object, extra))
-// 350; with the object/suppression/current/unit acquired before the actor-type branch 347; without the
-// volatile saved actor 332 (actor EBX, prop ESI as retail; aligned 128 against 248); with `unit = object;
-// if (type) unit = NULL;` 330 (plain 338 at 1270); that plus the short sight 342 (zero in EBX, sight in
-// ESI as retail; left: squad kept in EDX not at [esp+0x10], the stack zero for retail's cmovne, root/hit
-// pointer slots at the 0x1c8df0 call). Those restructured forms align far better and are the base to
-// continue from; renaming current/suppressed 0 change; typed prop record 358 (control 322).
-// Round 92 (plain): round 90's restructured body (no volatile saved actor, object/suppression/current/unit
-// before the actor-type branch, if/else on the found index, MAX twice) with the unit NULL-first and set
-// when the object type is 0: 338 at 1268 bytes (cmov, register zero); renaming current to sort after
-// suppressed 338 and declaring it first 338 (byte homes unchanged); with 0x25c9d0's sight short 294;
-// the unit's NULL defined before the suppression test 269 (squad spilled, the cmovne from the unit's
-// NULL home as retail); the existing prop record type, its +0x25 flag passed directly 265, kept;
-// on it, the game time read after the object lookup 268.
-// Round 114 (lane 5, plain checks; --fast misbuilds it): the object lookup ahead of the prop lookup and
-// the time read (the order matched 0x264330 uses) 242 at 1277 bytes, not kept: an aligned diff of the
-// listing is unchanged (96), the head folds the prop table load (`add esi, [edx+0x44]`, retail loads it
-// into EAX) and the one-instruction shift realigns the tail; object/prop/unit/time 242 (aligned 96);
-// object/time/prop 239 (aligned 98); prop/object/time 270 (aligned 99); object-first with current declared
-// before suppressed 361 (1268 bytes, actor then in EBP); object-first with the time read right after the
-// reference lookup 262, with current computed there 303 (aligned 105 each); root and sight declared at the
-// top of the else block 267; root declared at the function top 267 (both identical code). Left: retail's
-// EAX/ECX roles for the object and its table, the current/suppressed byte homes, the root kept in EAX at
-// the first 0x1c8df0 call (retail stores it into the squad's slot and loads current into AL, so its hit
-// pointer stays in EDX where ours spills it), the root/priority homes after it, and BLOCKED-BY 0x25cb60
-// (contributor) for the movsx of the sight.
-// Round 38 (lane 15, plain checks; aligned = LCS-aligned differing instructions, 105 at 267): current
-// computed before suppressed 372; the time read before the prop lookup 271; the unit as
-// `object[0xaa] == 0 ? object : NULL` 257 (kept: plain 1256 bytes; the code is now branchless
-// setne/dec/and where retail selects with cmovne from the NULL-first home, aligned 117, so the
-// NULL-first form remains the closer structure once the slot swaps are solved). On it: the ternary
-// inverted 257; time before prop 258; current before suppressed 366; the unit selected right after the
-// object lookup 289; `prop_ref_index ==` operand order 257. Byte homes: ours puts suppressed (3 byte
-// refs plus its address) at [esp+0x12] and current (4 refs) at [esp+0x13], retail the reverse.
-// Round 254: Squad acquired at suppression producer with readonly ownership, existing object
-// getter and null-first unit combinations 380/397/380/397/380/397/380/397 (fast control 372; full
-// baseline 257). Ordinary late-squad and late-squad/null-first forms 359/364; both regress.
-// Original source and include restored; squad/object, flag and root/hit homes remain.
-// Round 126 (lane 8, plain): unit NULL-first (`byte *unit = NULL;` before the suppression test, set when the
-// object type is 0) 267 at 1278 bytes: head as retail (squad spilled, NULL home, cmovne) but the current-record
-// argument of the first 0x1c8df0 call spills; on it: current renamed to sort after suppressed 267 (byte homes
-// unchanged); a named current-record pointer for both calls before/after the root lookup 272/270; a named
-// sight mode for both calls 326.
-// J247: 25c9d0/25cca0/263810/268c60 inline contracts, original/null-first unit pairs:
-// 257/267/257/267/257/267/257/267; frame 0x20, 1256/1278 bytes (retail 1268).
-// NOT kept: no gain; body/contracts restored. Squad, flag and root/hit homes remain.
-// DH334: Standard inner/outer/both short maxima, with/without null-first unit (fast 372, full 257);
-// then full maximum and secondary-result stages: 350/365/366/368/346/346/365/355.
-// NOT kept: new maximum call and larger frame absent in retail; original complete body restored.
-// Round 87 (m3 lane 16, plain; --fast misbuilds this function, aligned counts in brackets, 257 is [112]): unit NULL-first 267 at 1278 bytes [96], re-measured; on it a named
-// `not_current` for both 0x1c8df0 calls at the top 308 at 1270 [76], alone 262 at 1248 [91]; named after the root lookup 163 at 1268 [74], kept. On the kept form: time read
-// after the object 163, before the reference 163; a named object table for the three lookups 163; an object index local (before the kept form) 267, the object through
-// an array of pointers 267, current declared before suppressed 267; a named record pointer before not_current 159 (one use, not kept); a named mode 258 at 1272 [85]; not_current
-// declared before root 163, at function scope 163; root declared bare 163; suppressed renamed to sort before current 163 (byte homes unchanged).
-// Round 115 (fast control 372, full 257): scoped early squad 372; suppressed/unit/current 370;
-// current/unit/suppressed 390; unit/current/suppressed 381; suppression array 372; array with NULL-first unit 379;
-// array with object-first/null-override unit 352 (plain 295, 1255 bytes); scalar object-first/null-override 352.
-// NOT kept: scope/array forms have no effect, orders regress or gain too little, and object-first uses a branch
-// absent in retail and regresses plain. Original declarations and ternary restored; array forms were exact-only.
-// Round 139 (m3 lane 7, plain with the file's other functions; --fast misbuilds this one): the two 0x1c8df0 calls through one
-// file-local sight helper (actor, sample, target cell, target, root, prop, current) that writes `!current` and the hit pointer among
-// its arguments: plain `inline` 434 (1133 bytes, it stays out of line), forced inline 208 (1273 bytes); `!current` written in both
-// calls with no named local, re-measured, 267 (1278 bytes); the three object lookups through the existing ai_object_get 163 (same
-// code); current as a byte 163 (same code); the time read ahead of the prop lookup 168 (1269 bytes). Retail computes the hit
-// pointer and the mode ahead of the pushes and then `sete` for `!current` between them, storing it for the second call.
-// At 90 (was 163; PR #1006, landed in batch r746;
-// the same change as lane 12 r107's held patch): 0x25cb60's last two parameters as (long location, short sight), the 0x263ed0 call's `(short)` cast dropped.
-// Lane 12 r107 (plain; masked aligned count with registers and esp offsets masked in brackets, 30 at 163): 0x25cb60's last parameter as `short` (contributor code: its definition line and its cast to 0x263ed0, plus the
-// declaration here; the held patch is listed in the round 107 report) 90 [27] (1268 B; 0x25cb60 stays 12, the movsx goes). What is
-// left on that base: the game time read ahead of the object index and the object pool load (ours loads the pool global first),
-// and `!current` (retail's `sete` sits between the first call's pushes, stored for the second call). On the held base: `!current`
-// written in both calls 263 [24] (1275 B; the hit pointer spills, current takes CL where retail's root is stored at once and
-// current takes AL); the time read after the object 93 [32]; before the prop 92 [34]; current before suppressed 373 [82]
-// (1274 B); not_current declared before root 258 [25] (1269 B).
-// Round 114 (m3 lane 9, plain; --fast misbuilds it unless 0x1c8df0's file is in the reduced image; masked counts in brackets, base [20]):
-// `!current` written in both calls re-measured 263 [23] (the root stays in EAX, so current takes CL, the mode EDX and the hit pointer
-// spills); on it both hit pointers as `!current ? NULL : (long *)(actor + 0x348)` 264, current computed before suppressed 371 (1270 B);
-// on the base both hit pointers as `not_current ? NULL : ...` 95 [28]; the root's argument as an object_index local set by an if (the
-// parent unit's index first) 260 [21], with `!current` in both calls 270 [26] (1277 B).
-// The actor through the existing actor_get 90 (same code, kept: it replaces the written-out lookup).
-// MiniMax C (11-14): no new form, no lower score (91 in the reduced image, the queue's 90); the actor
-// pointer still lives in edi where retail keeps it in ebx.
-// MiniMax S (11-14): no new form, no lower score (91): the actor pointer still lives in EDI where retail keeps it in EBX, and retail's `sete` for !current still sits between the first call's pushes.
-// b10D (11-17) walk against retail, fast build on r841: no logic difference found. Checked: the head (actor[9]
-// test, squad 0x264b7e-0x264baa, tracking view 0x264bd0-0x264be8), the sense of every jcc (the 25.0f test at
-// 0x264e1f-0x264e2b skips on NaN as ours: `comiss; jbe`; constant 0x45e0d8 reads 25.0), the register and stack
-// arguments of both 0x1c8df0 calls, 0x25c9d0, 0x25cb60, 0x263810 and 0x26bfa0, the unit/root selection
-// (0x264d8c-0x264d9b), the type-15 arm's copies and 4-valued stores, the nested MAX (0x264f9e-0x264fb6), the `== 1
-// && state >= 1` bump and the tail's `>= 2` / `> 0` signed tests. Retail reuses the unit's slot [esp+0x24] for the
-// CSE'd `!current` byte (store at 0x264de7, reload at 0x264edd). Fast recipe that reproduces the full build's code
-// (91, 1268 B): check 0x264b50 with 0x1c8df0's other callers (0x1b0400 0x1b2770 0x1be120 0x25f7b0) plus the
-// callees; without them the reduced image misbuilds it (225, 1259 B). Not kept (91 base): the prop/time/object
-// lookups in the other five orders 93/326/328/94/323 (three of them 1264 B); a named object index before the prop,
-// before the object, or one use only 91 (same code); `volatile long root` 275 (1281 B, retail's two root reads
-// from [esp+0x1c] but the frame grows); a named `attached` bool before root / after not_current 276/270 (1275 B);
-// `volatile bool` current 311, suppressed 315. Left as before: the object/table registers, the 0x12/0x13 byte
-// homes, and root/`!current` evaluation at the first 0x1c8df0 call.
-// Still differing: object data and game-time load order, current/suppression bytes, and root/!current call homes.
-// Typed primary/other/both object getter roles 91/91/91, typed motion cluster 91,
-// separate range output in arm/at entry 230/308, typed cluster and distance fields 91,
-// call-local range output from suppression 230. Reduced control 91, full 90.
-// NOT kept: typed reads tie the reduced control and the separate output moves the native byte homes.
-// MiniMax D (11-17): no new form, no lower score (90 in the full-program check, unchanged); retail keeps the object pool
-// base in EAX and the object index in ECX where ours keeps the pool base in ECX, so the whole type-15 arm differs, and the
-// permuter found nothing in 300 s.
-// Shared source handle through root, ancestry or both 321/328/329. Both with the existing object
-// getter 329. With the checked parent handle through byte reads or the getter 415/415.
-// Cached header base with shared source, without or with checked parent 329/415.
-// NOT kept: the initial object registers recover on the shared form, but the extra spill and
-// displaced time and null homes lengthen it.
-// Object-table/time load order and current/suppression bytes still differ. Shared header lookup at
-// primary, parent and other-unit fetches, seven subsets, then all with a read-only prop record
-// reference: eight at 91 reduced (control 91, full 90).
+// Updates one actor's view of a prop: the sight result, the awareness levels and the last-seen times.
+// Forms the match depends on: the root lookup is written in both arms of the unit test (retail merges the two
+// calls and keeps the root in memory), `!current` is written at both sight calls, the 0x25c9d0 call has its own
+// unread output flag (it shares the suppression flag's byte once that is dead), the game time is read after the
+// object lookup, and the other unit's actor index is read from its field at both uses.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
@@ -1296,8 +1073,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 			view = &tracking->view;
 	}
 	s_type_76cf92 *prop = prop_get(reference->prop_index);
-	long time = g_510c54->game_time;
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
+	long time = g_510c54->game_time;
 	byte *unit = NULL;
 	bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
 	bool current = *(long *)(actor + 0x338) == prop_ref_index;
@@ -1311,9 +1088,8 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 		if (other_unit != NONE && other_unit != *(long *)(actor + 0x18))
 		{
 			byte *other = *(byte **)(g_4e0300->data + (other_unit & 0xffff) * 12 + 8);
-			long other_actor = *(long *)(other + 0x12c);
-			if (other_actor != NONE)
-				other_index = function_25d810(reference->object_index, other_actor, false);
+			if (*(long *)(other + 0x12c) != NONE)
+				other_index = function_25d810(reference->object_index, *(long *)(other + 0x12c), false);
 		}
 		if (other_index != NONE)
 		{
@@ -1357,10 +1133,13 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	}
 	else
 	{
-		long root = function_baf40(unit && *(long *)(unit + 0x14) != NONE ? *(long *)(unit + 0x14) : reference->object_index);
-		bool not_current = !current;
+		long root;
+		if (unit && *(long *)(unit + 0x14) != NONE)
+			root = function_baf40(*(long *)(unit + 0x14));
+		else
+			root = function_baf40(reference->object_index);
 		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), *(short *)((byte *)motion + 0x28),
-			&motion->field_0, root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, not_current,
+			&motion->field_0, root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 			current ? (long *)(actor + 0x348) : NULL);
 		if (*(long *)(actor + 0x7c) != NONE && prop->unknown25 && 25.0f > reference->unknown28 &&
 			(sight == 0 || sight == 1))
@@ -1369,8 +1148,9 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 			view->unknown06 = (short)sight;
 		if (!prop->unknown26[0] && !suppressed)
 		{
+			bool out_of_range;
 			short priority = (short)function_25c9d0(actor_index, prop_ref_index, prop->unknown25, sight,
-				sample, (byte *)motion, (long)&suppressed);
+				sample, (byte *)motion, (long)&out_of_range);
 			if (reference->state >= 3 && view)
 			{
 				s_type_5cfb45 *state = function_25d690(reference);
@@ -1378,7 +1158,7 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 				{
 					short other_sight = function_1c8df0(*(short *)((byte *)sample + 0x28),
 						*(short *)((byte *)state + 0x2c), (point3f const *)((byte *)state + 0x30),
-						root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, not_current,
+						root, (point3f const *)sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
 						current ? (long *)(actor + 0x348) : NULL);
 					view->unknown8c = (short)other_sight;
 					view->unknown8a = function_263810((point3f const *)sample, actor_index, (point3f const *)((byte *)state + 0x30), NULL, 2, (short)other_sight, true, NULL);

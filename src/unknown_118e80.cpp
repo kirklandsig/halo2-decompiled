@@ -1391,6 +1391,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // callees do not. A match therefore needs the bool formal (three declarations sit in other lanes' files this round and
 // a contributor's 0xe24f0 moves 586 -> 601), this helper, 0x1ec690 written as real code and 0x1eb6f0's chain
 // (0x1eb8a0, 0x109fd0) keeping its output to itself. BLOCKED-BY 0x1c4b00 (declarations), 0x1ec690 and 0x1eb6f0.
+// MiniMax A (11-17): no new form tried this round, no lower score (43): the tail still differs where retail spills the 0x119bc0 result to a stack byte and pushes the containing dword where this build keeps the result in al; that shape needs 0x1c4b00's last parameter to be a bool in its definition and in its 14 declarations, which live in other files. BLOCKED-BY 0x1c4b00.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
