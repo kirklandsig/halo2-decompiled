@@ -49,7 +49,6 @@ static __forceinline void reserve_workspace_31c100(workspace_sizes_31c100 const 
 		terms = cursor;
 		cursor += sizes->term_bytes;
 		term_limit = cursor;
-		long allocation_size;
 		for (;;)
 		{
 			results = cursor;
@@ -61,7 +60,7 @@ static __forceinline void reserve_workspace_31c100(workspace_sizes_31c100 const 
 			if (term_limit >= end)
 			{
 				long spill = 2 * sizes->maximum_term_bytes + terms + sizes->term_bytes - end;
-				allocation_size = spill + result_bytes + sizes->op_bytes + 4;
+				long allocation_size = spill + result_bytes + sizes->op_bytes + 4;
 				allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
 				term_limit = end - sizes->maximum_term_bytes;
 				end = allocated + allocation_size;
@@ -71,30 +70,30 @@ static __forceinline void reserve_workspace_31c100(workspace_sizes_31c100 const 
 			}
 			else
 			{
-				allocation_size = result_bytes + sizes->op_bytes + 4;
+				long allocation_size = result_bytes + sizes->op_bytes + 4;
 				allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
 				end = allocated + allocation_size;
 				cursor = allocated;
 			}
 		}
-		allocation_size = cursor - initial;
+		long allocation_size = cursor - initial;
 		allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
 		end = allocated + allocation_size;
 		cursor = allocated;
 	}
 }
 
-// Review cleanup score 316: unmatched volatile/goto tuning removed.
-// score 155 (was 262): the workspace is laid out with one cursor that is advanced past
-// each part in turn (bodies, terms, results, operations) and replaced by the block the
-// allocator returns (the block is assigned to `allocated` first and the cursor copied
-// from it); the values are plain locals. The result count is read before the two zero
-// stores and turned into the byte size after the scratch buffer is marked active. The
-// constraint loop steps the list parameter itself (a reference to field_58), which
-// frees esi for the cursors and leaves the base in edx with a home slot, as in retail.
-// Left: the entity cursor of the first loop is kept in memory (retail: esi), retail
-// saves the first body's address and the mode for the last loop, and the profiling
-// record is written through the stepped pointer (fstp [ecx-4]) in retail.
+// score 61 (was 155): the end-of-segment block of the profiling stream is filled through a
+// local copy of the stream cursor, the island range end is the expression itself (one
+// compiler temporary shared by both island loops), the last loop's mode is a float
+// (integrate_output takes a float: copied through integer registers and kept in its stack
+// slot, which leaves ebx for the island end), the solver output only lives in the block
+// around the constraint loop, and each of the three workspace sizes is its own local.
+// Left: retail copies the term limit into a second limit before the constraint loop
+// (needs the motion helper without its memcpy local to keep the first loop, but then the
+// terms reload of the spill branch is not coloured: 2 bytes shorter), the result count
+// is scaled before the scratch buffer is marked active in retail, and register choices
+// at the third allocation and the first loop's range.
 // @retail 0x31c100
 void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *world_info,
 	void *simulation, void *islands, long island_count, long field_58, long field_5c)
@@ -126,8 +125,7 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	zero->rows[6] = _mm_setzero_ps();
 	char *body = base + 0x80;
 	void **entity = (void **)islands;
-	void **entity_end = entity + island_count;
-	for (; entity < entity_end; ++entity)
+	for (; entity < (void **)islands + island_count; ++entity)
 	{
 		class_3193c0 *motion = motion_31c100(*entity);
 		long offset = body - base;
@@ -135,39 +133,42 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 		body = motion->export_state((long)step_10, (long)world_info, (lane_a_motion_output *)body);
 	}
 	*body = 3;
-	lane_a_constraint **&constraint = *(lane_a_constraint ***)&field_58;
+	lane_a_constraint **constraint = (lane_a_constraint **)field_58;
 	lane_a_constraint **constraint_end = constraint + field_5c;
-	solver_output_31e7b0 output;
-	output.terms = (__m128 *)terms;
-	output.operations = (unsigned long *)operations;
-	for (; constraint < constraint_end; ++constraint)
 	{
-		void **pair = (void **)step_50;
-		class_3193c0 *second = motion_31c100((*constraint)->body_b);
-		pair[0] = base + motion_31c100((*constraint)->body_a)->field_8;
-		pair[1] = base + second->field_8;
-		if ((char *)output.terms >= term_limit)
+		solver_output_31e7b0 output;
+		output.terms = (__m128 *)terms;
+		output.operations = (unsigned long *)operations;
+		for (; constraint < constraint_end; ++constraint)
 		{
-			output.terms = (__m128 *)overflow;
-			term_limit = (char *)0xffffffff;
+			void **pair = (void **)step_50;
+			class_3193c0 *second = motion_31c100((*constraint)->body_b);
+			pair[0] = base + motion_31c100((*constraint)->body_a)->field_8;
+			pair[1] = base + second->field_8;
+			if ((char *)output.terms >= term_limit)
+			{
+				output.terms = (__m128 *)overflow;
+				term_limit = (char *)0xffffffff;
+			}
+			(*constraint)->build((lane_a_solver_input *)step_50, (lane_a_solver_output *)&output);
 		}
-		(*constraint)->build((lane_a_solver_input *)step_50, (lane_a_solver_output *)&output);
+		*output.operations = 0x400;
 	}
-	*output.operations = 0x400;
 	for (long i = 0; i < sizes->result_count; ++i) ((float *)results)[i] = 0;
 	long success = solve_operations_31c940((solver_step_31c940 *)step_20,
 		(unsigned char *)operations, (solver_velocity_31c940 *)base, (float *)results);
 	if (g_480154 < g_480158)
 	{
-		*(char const **)g_480154 = g_4153f4;
-		*(float *)(g_480154 + 4) = (float)sizes->result_count;
-		g_480154 += 8;
+		char *record = g_480154;
+		*(char const **)record = g_4153f4;
+		*(float *)(record + 4) = (float)sizes->result_count;
+		g_480154 = record + 8;
 	}
 	if (success == 1)
 	{
-		long mode = *(long *)((char *)step_20 + 0x20);
+		float mode = *(float *)((char *)step_20 + 0x20);
 		body = base + 0x80;
-		for (entity = (void **)islands; entity < entity_end; ++entity)
+		for (entity = (void **)islands; entity < (void **)islands + island_count; ++entity)
 			body = motion_31c100(*entity)->integrate_output((lane_a_motion_step *)step_10,
 				mode, (lane_a_motion_output *)body);
 	}
