@@ -802,6 +802,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // /G7 in the link-time build 334 (same code; the compile-only test above was not the linked image); the gate byte
 // through a volatile read 378 (1665 B, still folded). Re-measured listed forms: the flag as a member of the local
 // record 351, the gate bit in one expression 334, the velocity as an if/else 334, the collision record first 334.
+// Optional effect record 421, with the named flag 424, short-circuit flag write
+// 334, with allocation-failure return 334. Staged evaluator mask 347.
+// Shared scale for the first endpoint 340, second 338, both 342.
+// NOT kept: the tied guards leave the folded effect address and the gate slot.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -795,6 +795,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Shared direction/heading renamed or declared after forward 153/153.
 // NOT kept: the shared direction/heading swaps the velocity and forward slots.
 // Velocity-copy registers, early unity and the normalizer/angle registers still differ.
+// The shared planar dot at entry 218, at both input reads 270, named planar
+// input sum 222, raw or both component-array reads 116/116, explicit vehicle
+// header 218, accumulated speed squares 221, in-place compound scaling 116.
+// NOT kept: the three 116 forms retain the velocity receiver exchange and early unity allocation.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
