@@ -1115,6 +1115,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the message getter: reconstructed newest 88/91/88/91; wide distance from
 // oldest 172/165/172/165. NOT kept: native loads and single cursor remain
 // different, and all eight extents move away from 225 bytes.
+// Resend bit updated through byte/word/bool fields with saved word tests 86/89/86;
+// sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
+// packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
+// recovers the memory OR, but the prologue, oldest load and message register differ.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

@@ -804,6 +804,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // `cluster` local 159/162, for(;;) 149, count as long 160, unsigned short or `cluster_count++` 142, volume_index/entry
 // declared outside the loop, head pointer, next-index local (no change). A probe store using cluster_slot in the loop
 // flips ebx/ebp (131), so the pick is a use-count tie; probe not kept.
+// Separate mapped and selected slots 152; existing cluster address before slot assignment 151;
+// order subscript from count 129; mapped value from count 129; chained map/order assignment 129;
+// new cluster address before map/order stores 129; separate slots with chained stores 152;
+// count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
+// The opening EBX save and later BP volume index are still exchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1409,6 +1414,11 @@ struct s_pool_view_172840
 // change.
 // single result from the three failure tests 205;
 // Plain check: 205.
+// Independent pool/projection assignments with direct queue failure or success return 221/221;
+// conditional return 226; pool/projection else-if with direct queue failure 215; carried result with
+// queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
+// with projection before queue or first-write initialization 221/221; four flag names reordered 205.
+// NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1612,7 +1622,7 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 284 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 284 (was 266): Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
 // calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
@@ -1627,6 +1637,11 @@ struct s_camera_reference_171830
 // is probably not fixable before 0x171d00 matches. 0x171d00 now matches (#987), which took this from 266 to 284.
 // Permuter (25 min on r622): 26 below its own baseline, only with a float term truncated through an int and a
 // volatile pointer (a behaviour change); not kept.
+// Shared plane distance 284; clear-side-first separate success arms 252; plane-first split 284;
+// plane-first helper 284; shared scale for up, side or both 284/284/283; shared sample endpoint
+// setter 284; signed reference 281; named plane distance 285. NOT kept: the 252 form puts the
+// clear-side store before the plane arm, away from retail's branch order. The frame and point
+// convention remain different; the 281 form also moves away from retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

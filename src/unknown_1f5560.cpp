@@ -796,6 +796,10 @@ struct s_1f9762
 // tag index before count 6; tag index before count and successor 4; last between tag index and table
 // 143; object header tag lookup 4; object receiver before count 6; scoped count and successor 6; count
 // and prefix successor 6; index via point bound 18. NOT kept because the forms tie or raise the score.
+// Tag entry pointer/reference across terminal test 143/143; table base local 6;
+// entry pointer/reference with count before definition 6/6; table base then count 6; explicit
+// successor/terminal result arms 4; named available successor 200. NOT kept: the count and index
+// sign extensions, increment and compare still use the opposite registers.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)
