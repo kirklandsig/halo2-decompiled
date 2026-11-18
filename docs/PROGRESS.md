@@ -9,6 +9,16 @@ matched 10676 of 11326 game functions (2066727 of 2786206 bytes, 74.18%)
 matched 1415 of 1436 Havok functions (253478 of 290362 bytes, 87.30%)
 ```
 
+0 new matches, none lost:
+- @andrewnakas's #1312: closer scores and notes, no new match.
+
+## 2026-11-18: 10676 functions match
+
+```
+matched 10676 of 11326 game functions (2066727 of 2786206 bytes, 74.18%)
+matched 1415 of 1436 Havok functions (253478 of 290362 bytes, 87.30%)
+```
+
 1 new matches, none lost:
 - @andrewnakas's #1311, #1313: `0x312e00` match.
 
