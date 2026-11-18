@@ -92,11 +92,15 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, on the Avoid list in round 199): our link knows it writes
+// no memory and merges retail's second unit fetch into the entry fetch. Round 199 (m3 lane 5, fast): the weapon lookup's unit
+// fetched into a named pointer 110 (same code); the weapon slot held in a char 114 (355 bytes); the weapon array through a
+// named pointer 110 and the weapon's definition index named 110 (both the same code).
 // MiniMax R run 92 (11-17): no new form, no lower score (110): the weapon lookup as an if-statement instead of the
 // ternary gives 114, and the user index as a short gives 107 - a gain of three, under the review bar, so the body
 // stands with the 32-bit index retail reads - and this link still knows that 0xbadc0 writes no memory and merges the
 // unit fetches where retail fetches the unit again: BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
-// score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
+// Earlier 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
 // 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
 // where this build merges the two fetches, because that callee writes no memory, and the callee's body is in

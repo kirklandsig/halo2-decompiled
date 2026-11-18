@@ -65,7 +65,12 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
-// score 387 (was 426): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// score 387 (was 387): The secondary state lives in ESI rather than EAX, both dead state stores share a slot, and the existing data getter expands at its call site.
+// Round 199 (m3 lane 5, fast): the data getter called only when the surface lookup succeeded 428 (1573 bytes; the getter stays
+// inlined, so a natural test ahead of it is not enough); the getter called before 0x192e60 429 (diagnostic); the two
+// missing-input tests as one `||` 412 (re-measured); the deadline sum with the record's field first 387 and the transition
+// flag declared before the reset flag 387 (both the same code).
+// Earlier 387 (was 426).
 // MiniMax I (11-17): no new form, no lower score (387): retail calls 0x5b080 out of line where this build inlines it (that body lives in another file), keeps the second session state in EAX against our ESI, and writes the two dead state stores to +0x20 and +0x18 where this build shares one slot, so the second dispatch block's value store lands before the pops here and after them in retail and every later branch target differs; the frame is retail's 0x3e4 but the body is 8 bytes longer.
 // MiniMax B (11-03): no new form, no lower score. The frame stays 0x3e8 against retail's 0x3e4 and the
 // state and result bytes keep their homes; retail still calls 0x5b080 out of line at this site, so the
