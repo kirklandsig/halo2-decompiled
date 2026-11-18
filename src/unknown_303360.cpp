@@ -9,6 +9,7 @@
 // function earlier in the same file.
 #include <math.h>
 #include <xmmintrin.h>
+#include "search_flag_3037a0.h"
 
 static __declspec(align(16)) const unsigned long g_4124a0[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 static __declspec(align(16)) const float g_ones_412420[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -105,7 +106,7 @@ public:
 	};
 
 	int function_303360(__m128 const *point, triangle_303360 *triangle, int orient);
-	int function_3037a0(segment_3037a0 *segment, triangle_3037a0 *triangle, int *segment_count, int *facet_total, bool own_plane, long value);
+	int function_3037a0(segment_3037a0 *segment, triangle_3037a0 *triangle, int *segment_count, int *facet_total, search_flag_3037a0 own_plane, long value);
 };
 
 // @retail 0x303360
@@ -159,9 +160,9 @@ int class_303360::function_303360(__m128 const *point, triangle_303360 *triangle
 // search's point), 0 when one end of the segment is dropped, 2 when one
 // corner of the triangle is
 // @retail 0x3037a0
-int class_303360::function_3037a0(segment_3037a0 *segment, triangle_3037a0 *triangle, int *segment_count, int *facet_total, bool own_plane, long value)
+int class_303360::function_3037a0(segment_3037a0 *segment, triangle_3037a0 *triangle, int *segment_count, int *facet_total, search_flag_3037a0 own_plane, long value)
 {
-	if (own_plane)
+	if (own_plane.value)
 	{
 		__m128 const second_edge = _mm_sub_ps(triangle->corners[1], triangle->corners[2]);
 		__m128 const first_edge = _mm_sub_ps(triangle->corners[0], triangle->corners[2]);

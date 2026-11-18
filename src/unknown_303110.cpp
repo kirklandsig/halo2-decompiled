@@ -60,35 +60,24 @@ inline __m128 cross_303540(__m128 const &a, __m128 const &b)
 	return _mm_sub_ps(_mm_mul_ps(a_yzx, b_zxy), second);
 }
 
-// Shared tetrahedron reduction used by the convex-search callers. Exporting
-// it gives those callers the same actual implementation; it remains unmatched.
-// score 111 (was 111): stack arguments and a 0x58 frame replace retail
-// register inputs and a 0x5c frame. Explicit distance branches 108
-// (NOT kept: gain 3 and longer); default first 141; direct vertex reads 111;
-// value cross inputs 111; set1 broadcast 181; aligned mask load 174;
-// one result 111; advancing normal pointer 111.
-// Shared cross helper 111; shared dot helper 111; standard float swaps 208;
-// arrays declared at entry 111; all product terms named 111; staged dot sum
-// 111; length scalar renamed 111; unsigned array index 111.
-// NOT kept: no gain; original code and helper restored.
-// P428: fourth vertex reused 111; normal-array initialization 111; all
-// vertex references 200; unweighted-vector name 111; zero-first ternary
-// 113; distance cursor 206; one exchange temporary 111; standard transpose
-// 111. NOT kept: no improvement; incoming registers and saved-register
-// count still differ, followed by the scalar fallback store.
+// The tetrahedron reduction shared by the two convex-search functions below.
+// Matched (was 111): it is static, and its two callers (0x303dd0, 0x3048a0)
+// are in this file, so it takes retail's register inputs and 0x5c frame; the
+// vertices are read through references, and a face's distance is set by an
+// if/else.
 // @retail 0x303540
-int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float orientation)
+static int __cdecl function_303540(__m128 const *point, __m128 const *vertices, float orientation)
 {
-	__m128 const a = vertices[0];
-	__m128 const b = vertices[1];
-	__m128 const d = vertices[3];
-	__m128 const c = vertices[2];
-	__m128 const ba = _mm_sub_ps(b, a);
+	__m128 const &a = vertices[0];
+	__m128 const &b = vertices[1];
+	__m128 const &c = vertices[2];
+	__m128 const &d = vertices[3];
+	__m128 const cb = _mm_sub_ps(c, b);
 	__m128 const ac = _mm_sub_ps(a, c);
+	__m128 const ba = _mm_sub_ps(b, a);
 	__m128 const da = _mm_sub_ps(d, a);
 	__m128 const db = _mm_sub_ps(d, b);
 	__m128 const dc = _mm_sub_ps(d, c);
-	__m128 const cb = _mm_sub_ps(c, b);
 	__m128 normals[3];
 	normals[0] = cross_303540(cb, db);
 	normals[1] = cross_303540(ac, dc);
@@ -114,7 +103,8 @@ int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float o
 	for (int i = 0; i < 3; i++)
 	{
 		float const length = dot3_303110(normals[i], normals[i]);
-		distances[i] = length != 0.0f ? scores.m128_f32[i] / length : FLT_MAX;
+		if (length != 0.0f) distances[i] = scores.m128_f32[i] / length;
+		else distances[i] = FLT_MAX;
 	}
 	int best = 1;
 	if (distances[0] > distances[1])
@@ -137,3 +127,196 @@ int __cdecl function_303540(__m128 const *vertices, __m128 const *point, float o
 	scores = dots;
 	return function_303110(vertices, point, scores.m128_f32);
 }
+
+#include "convex_search_internal.h"
+
+// Havok: seed a penetration query from the current features, reduce its
+// returned features, and retain its penetration direction.
+struct transform_30a6b0;
+long __cdecl function_30a6b0(long, long, transform_30a6b0 const *, long, long, long);
+struct simplex_303dd0 { __m128 a[4], b[4]; int count; };
+struct penetration_303dd0 { __m128 direction, point; float distance, fraction; };
+
+// score 654 (was 981): same size as retail now. The simplex is seeded one
+// difference at a time, the transform loop steps the source pointer and
+// writes the target through the difference, and every separating exit of the
+// reduction (in the header) breaks to one shared exit. Left: the simplex
+// count register and an extra register for &source_b at +0x1bd, and the mask
+// tests, where retail reads the mask from memory in the third test.
+// @retail 0x303dd0
+int class_3048a0::function_303dd0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state)
+{
+	search_features_303dd0 &s = *(search_features_303dd0 *)this;
+	simplex_303dd0 simplex;
+	__m128 differences[4];
+	penetration_303dd0 penetration;
+	simplex.count = 4;
+	differences[0] = _mm_sub_ps(s.a[0],s.b[0]); simplex.a[0] = s.a[0]; simplex.b[0] = s.source_b[0];
+	if (s.count_b >= 3)
+	{
+		differences[1] = _mm_sub_ps(s.a[0],s.b[1]); simplex.a[1] = s.a[0]; simplex.b[1] = s.source_b[1];
+		differences[2] = _mm_sub_ps(s.a[0],s.b[2]); simplex.a[2] = s.a[0]; simplex.b[2] = s.source_b[2];
+		if (s.count_b > 3) { differences[3] = _mm_sub_ps(s.a[0],s.b[3]); simplex.a[3] = s.a[0]; simplex.b[3] = s.source_b[3]; }
+		else if (s.count_a > 1) { differences[3] = _mm_sub_ps(s.a[1],s.b[0]); simplex.a[3] = s.a[1]; simplex.b[3] = s.source_b[0]; }
+		else simplex.count = 3;
+	}
+	else if (s.count_a >= 3)
+	{
+		differences[1] = _mm_sub_ps(s.a[1],s.b[0]); simplex.a[1] = s.a[1]; simplex.b[1] = s.source_b[0];
+		differences[2] = _mm_sub_ps(s.a[2],s.b[0]); simplex.a[2] = s.a[2]; simplex.b[2] = s.source_b[0];
+		if (s.count_a > 3) { differences[3] = _mm_sub_ps(s.a[3],s.b[0]); simplex.a[3] = s.a[3]; simplex.b[3] = s.source_b[0]; }
+		else if (s.count_b > 1) { differences[3] = _mm_sub_ps(s.a[0],s.b[1]); simplex.a[3] = s.a[0]; simplex.b[3] = s.source_b[1]; }
+		else simplex.count = 3;
+	}
+	else simplex.count = 1;
+	int result = function_30a6b0((long)first,(long)second,(transform_30a6b0 const *)transform,(long)&simplex,(long)differences,(long)&penetration);
+	int i;
+	for (i=0; i<3; ++i) s.a[i] = simplex.a[i];
+	for (i=0; i<3; ++i) s.source_b[i] = simplex.b[i];
+	if (simplex.count == 1) {
+		s.normal.m128_f32[0] = 1.0f; s.normal.m128_f32[1] = 0.0f; s.normal.m128_f32[2] = 0.0f; s.normal.m128_f32[3] = 0.0f;
+		s.count_a = s.count_b = 1;
+		return result;
+	}
+	s.count_a = s.count_b = 3;
+	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[1],s.a[2]),*(__m128 const *)search_magnitude))) & 7) || !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[2]),*(__m128 const *)search_magnitude))) & 7)) s.count_a = 2;
+	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[1]),*(__m128 const *)search_magnitude))) & 7)) { __m128 const &last = s.a[--s.count_a]; s.a[0] = last; }
+	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[1],s.source_b[2]),*(__m128 const *)search_magnitude))) & 7) || !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[2]),*(__m128 const *)search_magnitude))) & 7)) --s.count_b;
+	if (s.count_b >= 2 && !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[1]),*(__m128 const *)search_magnitude))) & 7)) { __m128 const &last = s.source_b[--s.count_b]; s.source_b[0] = last; }
+	{ __m128 const *source = s.source_b; __m128 *target = s.b; for (i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
+	if (s.count_b+s.count_a > 4) ((class_303360 *)this)->function_303b80();
+	s.restricted_side = 0;
+	search_reduce_features(s);
+	s.normal = search_negate(penetration.direction);
+	return result;
+}
+// Havok: reduce cached convex features, alternate supporting-point queries,
+// and return the separating direction and signed distance with updated IDs.
+
+// Only the two observed query slots are called through this interface view.
+class search_shape_3048a0
+{
+public:
+	virtual void slot_0() = 0; virtual void slot_1() = 0;
+	virtual void slot_2() = 0; virtual void slot_3() = 0;
+	virtual void slot_4() = 0; virtual void slot_5() = 0;
+	virtual void slot_6() = 0; virtual void slot_7() = 0;
+	virtual void slot_8() = 0; virtual void slot_9() = 0;
+	virtual void slot_10() = 0; virtual void slot_11() = 0;
+	virtual void support(__m128 const *, __m128 *) const = 0;
+	virtual int vertices(unsigned short const *, int, __m128 *) const = 0;
+};
+inline void search_support(convex_2fefd0 const *shape, __m128 const *direction, __m128 *out)
+{
+	((search_shape_3048a0 const *)shape)->support(direction,out);
+}
+inline int search_vertices(convex_2fefd0 const *shape, __m128 *out, int count, unsigned short const *ids)
+{
+	return ((search_shape_3048a0 const *)shape)->vertices(ids,count,out);
+}
+__forceinline bool search_new_point(__m128 const &first_corner, __m128 const &second_corner, __m128 const &third_corner, __m128 const &point, int count, __m128 const &direction, float threshold)
+{
+	__m128 const along = direction;
+	__m128 const added = point;
+	float first = search_dot(_mm_sub_ps(added,first_corner),along);
+	if (!(fabs(first)*first > threshold)) return false;
+	switch (count)
+	{
+	case 3:
+	{
+		float third = search_dot(_mm_sub_ps(added,third_corner),along);
+		if (fabs(third)*third < threshold) return false;
+	}
+	case 2:
+	{
+		float second = search_dot(_mm_sub_ps(added,second_corner),along);
+		if (fabs(second)*second < threshold) return false;
+	}
+	}
+	return true;
+}
+
+// score 111 (was 1955): same size as retail now. The inverse direction is
+// the transpose of the three columns, the second support point is read through
+// a const reference, the normal is bound after the squared length, the tail
+// stores the distance through a float, and the reduction's separating exits
+// break to one shared exit. Left: two lea instructions in the transform loop,
+// the previous_b load before push 1 (ecx, retail edx), scratch registers at a
+// few movmskps sites.
+// @retail 0x3048a0
+int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state, closest_3048a0 *closest)
+{
+	search_features_303dd0 &s = *(search_features_303dd0 *)this;
+	signed char *counts = (signed char *)state;
+	unsigned short *ids = (unsigned short *)state;
+	int iteration = 0;
+	float tolerance = 1.0e-10f;
+	s.count_a = counts[8]; s.count_b = counts[9];
+	((search_shape_3048a0 const *)first)->vertices(ids,s.count_a,s.a);
+	((search_shape_3048a0 const *)second)->vertices(ids+s.count_a,s.count_b,s.source_b);
+	{ __m128 const *source = s.source_b; __m128 *target = s.b; for (int i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
+	int result = 0;
+	for (;;)
+	{
+		__m128 direction;
+		tolerance += tolerance;
+		++iteration;
+		s.restricted_side = 0;
+		int overlap = search_reduce_features(s);
+		float length_squared = search_dot(s.normal,s.normal);
+		__m128 const &normal = s.normal;
+		float separation = search_dot(_mm_sub_ps(s.b[0],s.a[0]),normal);
+		if (overlap || separation*separation*separation <= (1.1920928955078125e-7f*tolerance)*length_squared)
+		{
+			if (!s.skip_penetration) result = function_303dd0(first,second,transform,state);
+			else {
+				if (s.count_a+s.count_b > 4) {
+					if (s.count_a > s.count_b) { s.count_a=3; s.count_b=1; }
+					else { s.count_a=1; s.count_b=3; }
+				}
+				result = 3;
+			}
+			break;
+		}
+		float threshold = length_squared*tolerance;
+		if ((iteration & 1) && s.count_a != counts[10] && s.restricted_side != 1)
+		{
+			search_support(first,&s.normal,&s.a[s.count_a]);
+			if (search_new_point(s.a[0],s.a[1],s.a[2],s.a[s.count_a],s.count_a,s.normal,threshold)) { ++s.count_a; continue; }
+		}
+		if (s.count_b != counts[11] && s.restricted_side != -1)
+		{
+			direction = search_inverse_direction(transform,s.normal);
+			search_support(second,&direction,&s.source_b[s.count_b]);
+			if (search_new_point(s.source_b[0],s.source_b[1],s.source_b[2],s.source_b[s.count_b],s.count_b,direction,threshold)) {
+				s.b[s.count_b] = search_transform(transform,s.source_b[s.count_b]);
+				int &count = s.count_b;
+				++count;
+				continue;
+			}
+		}
+		if (!(iteration & 1) && s.count_a != counts[10] && s.restricted_side != 1)
+		{
+			search_support(first,&s.normal,&s.a[s.count_a]);
+			if (search_new_point(s.a[0],s.a[1],s.a[2],s.a[s.count_a],s.count_a,s.normal,threshold)) { ++s.count_a; continue; }
+		}
+		break;
+	}
+	__m128 const &normal = s.normal;
+	__m128 const projected = _mm_mul_ps(_mm_sub_ps(s.b[0],s.a[0]),normal);
+	__m128 length = search_sum(_mm_mul_ps(s.normal,s.normal));
+	__m128 estimate = _mm_rsqrt_ss(length);
+	__m128 correction = _mm_sub_ss(_mm_set_ss(3.0f),_mm_mul_ss(_mm_mul_ss(length,estimate),estimate));
+	__m128 inverse = _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f),estimate),correction);
+	closest->point = _mm_mul_ps(_mm_shuffle_ps(inverse,inverse,0),normal);
+	float distance;
+	_mm_store_ss(&distance,_mm_mul_ss(search_sum(projected),inverse));
+	closest->point.m128_f32[3] = distance;
+	counts[8] = (signed char)s.count_a; counts[9] = (signed char)s.count_b;
+	int j=0;
+	do { ids[j] = *(unsigned short const *)&s.a[j].m128_f32[3]; ++j; } while (j<s.count_a);
+	int k=0;
+	do { ids[j++] = *(unsigned short const *)&s.source_b[k].m128_f32[3]; ++k; } while (k<s.count_b);
+	return result;
+}
+
