@@ -635,6 +635,18 @@ void function_125a90(long value);
 // retail multiplies a copy into eax and forms the address with a lea, and the special arm still sits after the kind arm;
 // retail's block order needs the getter 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp,
 // which this lane may not edit: BLOCKED-BY 0x221810.
+// M3 lane 7 r179 (fast with 0x221810, 0x127320 and 0x125a90, all MATCH in every trial). HELD, needs the build-flag decision
+// for 0x221810 (build/r179/held-1264c0.patch): with 0x221810 in a file of its own built /Ob1, as build/r178/held-21d110.patch
+// moves it, this function MATCHES byte for byte with no implied test: the record through the shared header's playback type and
+// its SOUND_PLAYBACK_GET accessor (pool global at each use, no pool or index local), a named class-type bool, the special arm as
+// `if (type == 0x26) remove = !a; else remove = false;`, the kind arm's lookup test nested, and the keep store through the
+// accessor again. On that configuration: the special arm as `remove = type == 0x26 && !a` with a second `if (!special && K &&
+// f == 1)` 71 (the `!a` is threaded); the if/else special arm with that second `if` MATCH; this file's own record type in
+// place of the shared one MATCH; every field through the accessor with no record local 148 (397 bytes). In the present
+// configuration: the matching body 142 (467 bytes, 0x221810 expanded); the same with the class-type test inline as `||` 29
+// (first difference +0x9d: the head agrees and the kind arm is still laid out first; a mixed read worth seven points, not
+// kept). A full check of the whole held configuration loses nothing and gains this function and 0x21d110. Body unchanged.
+// BLOCKED-BY 0x221810.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
