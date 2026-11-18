@@ -155,6 +155,13 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // sample declared bare at the top in either order 216 / 216; update as long (diagnostic) 200; the update-time test moved right after
 // or right before the force block 228 / 228; update initialised from the update-time test at its declaration 262 (802 bytes), after
 // force 227; the force block after the update-time test 221; the clamp after the force block 232 (816 bytes).
+// M3 lane 2 r99 (fast with 0x3d2c0, 0xd1850 and 0xd4080, control 21; aligned, the kept form differs only in the entry block:
+// the object loaded into EAX and stored, then loaded into EBX ahead of the force branch, where retail keeps it in EBX from the
+// lookup, stores the false update ahead of the object's home store and reloads EBX in the force arm only): the sample interval
+// from a forceinline helper returning the threshold 207 (836 bytes); the object lookup through a local copy of the pool
+// pointer 21 (same code), on update-first 218; update-first with `sample` started as the sample-time NONE test and the
+// thresholds under `if (!sample)` 168 (sete/test; the timestamps stay EDI/ESI); the hidden-object test through a bool
+// scoped to the else arm 21 (same code).
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

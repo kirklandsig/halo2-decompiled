@@ -145,6 +145,8 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // retail loads the palette globals ahead of the entry pointer because the entry goes to EDX for the call (ours ECX with `xor edx, edx` for the
 // source). Retail's pair (source ECX, point EDX) is the plain register order of the declared parameters; ours is the pair 0x17e670's own unmatched
 // body picks. BLOCKED-BY 0x17e670 (contributor code); the held patch also changes a call line in src/unknown_175bd0.cpp, another lane's file this round.
+// M3 lane 2 r99: no trial; baseline 16 at +0xba, every difference is still the 0x17e670 call's register pair. BLOCKED-BY
+// 0x17e670 (contributor code); held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

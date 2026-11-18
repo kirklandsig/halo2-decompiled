@@ -1090,6 +1090,11 @@ extern "C" void _ReadWriteBarrier(void);
 // read through a const pointer to the driver's volumes block (0x220fd0's parameter type) 21, without barriers 28.
 // Between the memset and the decibels load every other value is pinned to EAX (the ftol result, lahf), so the zero is the
 // only rotating allocation there.
+// M3 lane 6 r192 (compile-only; it reproduces decibels ECX, truncation EDX, setg CL, each with and without both barriers):
+// the voice through an inline getter taking only the index, `*&decibels` for the attenuation call, the parameters declared
+// ahead of the globals and voice pointers, the first two gains through a `real const *` to the volume block, the filter and
+// the parameters in one local aggregate, the pinned room stored to both fields from the local, the loss in its own local
+// with `room -= loss`: all keep ours (21).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

@@ -655,6 +655,13 @@ struct s_1af5c6
 // inside the block after the copy 27 (masked 2) or ahead of a bare copy 27; the cell as its own long or one-member
 // aggregate 158 (566 bytes: it folds, so retail's cell and point are one object); the first half as an inline helper
 // owning the copy 312 (439 bytes: it stays out of line).
+// M3 lane 12 r139 (fast with 0x1af810, 0x1b2770, 0x1c8df0 and 0x1c8df0's other callers; diagnostics with 0x1c8df0's separate
+// noinline declaration dropped, restored): whether an inline-level boundary at 0x1b2770's call keeps 0x1c8df0 out of line
+// there: 0x1b2770's visibility query in a static helper 957 bytes (the helper stays out of line with 0x1c8df0
+// inlined into it), the same helper forceinline 1425 bytes (0x1c8df0 inlined through it), the whole unknown040 block as a static
+// helper 148 bytes (out of line, 0x1c8df0 inside); LTCG inlines 0x1c8df0 at that call site at any nesting level. On this body:
+// the object index re-read through a fresh prop node lookup 178 (594 bytes); the ignore index bound by `long &` for the probe 20
+// (same code). Still BLOCKED-BY 0x1c8df0's call-site inlining.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

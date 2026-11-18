@@ -13,9 +13,10 @@
 /* the state of a saved game file operation */
 struct s_saved_game_file_task
 {
-	bool done;
-	bool unknown1;
-	bool succeeded;
+	/* written by the job thread that runs the operation, while its caller waits */
+	volatile bool done;
+	volatile bool unknown1;
+	volatile bool succeeded;
 	byte unknown3;
 	long state;
 	char path[256];

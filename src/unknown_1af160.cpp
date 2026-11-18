@@ -181,6 +181,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // code); the scratch buffer fetched before the marker pointer is chosen 257 (978 bytes); the two 0x1f4a20 flags' declarations swapped
 // around the 0x262b40 result 15. Each tied pair holds four and two slot references in both builds, so the order still looks like
 // the allocator's tie-break; 0x260670 on the bool output's chain is still 440 at 3097 bytes against 3077.
+// M3 lane 12 r139 (`--fast 0x1af160 0x1e1f20`, control 12): fresh actor lookups to give the actor fewer uses, none folding
+// back (calls sit between): the saved reference copy 295 (990 bytes), the first test's +0x3c flag 297 (994 bytes), its
+// unknown227 306 (1002 bytes), the first two together 306; the node looked up again after the first 0x25d690 call, its first
+// lookup inline in that call's argument, 311 (1003 bytes). Body unchanged.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

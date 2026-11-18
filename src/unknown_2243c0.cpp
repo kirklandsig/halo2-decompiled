@@ -227,6 +227,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // spelling, which hoists the tag table global into ECX before `sub esp` (152), while the `(word)` cast keeps the table in
 // EDI but gives `movzx eax, dx` (117); the mask assigned back to the tag, a masked-tag local and a named element address
 // leave the code unchanged (117) or worse (152). The block chain's argument registers and unfused element loads stand.
+// score 117 (was 117): Retail masks the fallback tag in EDX and materializes its stage and pass element addresses separately.
+// Earlier: The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
+// MiniMax H (11-18): score 117 (was 117): no new form, no lower score: the permuter (301 s, 36 tries on the reduced
+// image, then the full image) found nothing below 117, and the full image confirms the same 117. The fallback tag index
+// is still zero-extended through EAX where retail masks the 32-bit value in place (and edx, 0xffff), and the stage and
+// pass elements still land in other registers than retail's ESI and EBP with the element loads unfused. The score-8 chain
+// needs the head, stage and pass elements bound by reference and is kept only with an exact match, so the plain-pointer
+// body stands.
 // score 117 (was 117): The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
 // M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
@@ -707,6 +715,18 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // `long const &` straight into the pass element 8; the pass definition's tag data named before its +0x20 read 8;
 // local_11 declared ahead of local_10 and assigned after it 8; local_11 through the tag-data and material-index accessors
 // 8 (all the same code); the four cache zeros grouped ahead of local_10 60 (first +0x50).
+// M3 lane 16 r135 (fast, 0x2243c0 and 0x224d90 matched each time; base 117): the group test read through the table
+// at each compare (no instance pointer) 165 (first +0xe); the two arms swapped with the tests negated 117 (same code);
+// the first cache zero moved between local_10 and local_11 117 (same code); the other three zeros moved there instead
+// 150; the tag data named before its +0x5c read 117 (same code).
+// Typed root/stage/pass arrays singly, in pairs, and together 117 each.
+// All typed arrays with full-width fallback mask 152. NOT kept: element addressing
+// still fuses, and the full-width fallback moves the tag table out of EDI.
+// The fallback still zero-extends DX into EAX, and the stage/pass reads remain fused.
+// Group/fallback table receiver 117, with full-width mask 152; shader/pass/material table
+// receiver 117; separate receivers 117, with full-width fallback mask 152.
+// Shader index selected in the arms, selected absolute index, typed fields, and selected index
+// with a shared shader table each 133.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

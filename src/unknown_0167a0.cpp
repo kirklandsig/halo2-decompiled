@@ -320,6 +320,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // read after a reference store to another field is a real load, after a store to the same field it is forwarded, so no spelling
 // here turns the early re-read into retail's load; retail's reload sits where the allocator starts the second piece of the tables
 // value (as the direct entry store gives), while its `second` load stays at its use (as the reference entry store gives).
+// M3 lane 2 r99 (fast, control 5 at +0x19e; the direct entry store re-measured 5 at +0x1a7, where its listing differs from
+// main's only in that window): the entry stored by a chained assignment into the existing `entry` local, the word read
+// through it, 5 (+0x1a7, the direct form's code); a named `entry_offset = first * 10` shared by both blocks 5 (+0x19e), with
+// the direct store 5 (+0x1a7); the restore block's definition looked up through the just-published parameters field and the
+// tables published straight from the definition 5 (+0x19e), with the direct store 5 (+0x1a7) (all the same code).
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

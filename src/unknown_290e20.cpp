@@ -562,6 +562,15 @@ struct s_ai_scene_assignment
 // with an `unsigned long` copy, `dword` with a long copy) 59 each (every same-width copy is propagated, so the maximum
 // loses ESI to the role as on the direct form). Diagnostic, restored: the role index as a one-member aggregate by value
 // 94 (359 bytes; 0x291b40 173).
+// M3 lane 11 r116 (fast with 0x291b40 and 0x291800, both matched each time; base 12): the role index as a 32-bit
+// parameter with `(short)` at its entry uses, the scorer argument and the four stores and a raw `role_index + 1` for the
+// recursion (retail's stores load the slot's dword and sign-extend from CX, its recursion adds 1 to that dword): on the
+// direct maximum 59 (350 bytes, the role still takes ESI), on the int copy 12 (same code as the short parameter), with the
+// scorer given the raw 32-bit role 12 (same code); that parameter with the recursion given `(short)role_index + 1`, direct
+// maximum, 116 (364 bytes: the next role is kept across the loop, frame 0x40); the actor index and then a short role copy
+// named at the top of the found arm, the copy stepped (`++role`) for the recursion, on the int copy 12, on the direct
+// maximum 59 (same code each: the copy is merged with the parameter, its reload still heads the block). The int copy's
+// three differences are unchanged: the movsx, and the role's dword reload ahead of the actor index load.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)
