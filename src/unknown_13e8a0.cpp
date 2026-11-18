@@ -695,6 +695,9 @@ struct s_text_line_measurement
 // Two-use glyph sum for offset/kerning/width, offset/kerning, kerning/width, and staged
 // offset/kerning/width, each inline/forceinline 77/77/77/77/77/77/77/77. The independent advance
 // copy and early width load still differ.
+// M3 lane 12 r139 (fast with 0x13f700/0x13f0e0, control 77): the width update before `count++` 77 (the stores then follow
+// retail, width first; no score change); the header pointer const 77; can_break read into a bool before its test 77 (both
+// same code); the advance defined before the kerning call 82; the update summed a+k+o+w, o+a+k+w, o+k+a+w, k+a+o+w 77 each.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {
