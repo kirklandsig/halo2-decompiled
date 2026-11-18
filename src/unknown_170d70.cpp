@@ -1059,6 +1059,11 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // Shared cross 346; staged cross 350; unconditional input vector 370; input scalars 413;
 // staged output scalars 465; complete output vector 396; native three-axis matrix 346; reciprocal-bound ternary 346.
 // NOT kept: the four alias-free transforms also demote the matched view initializer in preview.
+// Unity remains in XMM3, while retail uses XMM5 and carries the squares through the tangent.
+// Squared-axis vector 387; squared axis in matrix diagonal 361; shared weighted k 376;
+// weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
+// vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
+// NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1871,6 +1876,10 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
 // named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
 // cached vector-transform scale 397; signed-word location cluster 336.
+// The camera state remains in EBP and the collision point argument still uses EBX.
+// Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
+// initial placement clamps on all three coordinates 336; projected-point aggregate 429;
+// in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

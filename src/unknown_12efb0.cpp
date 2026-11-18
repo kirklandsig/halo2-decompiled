@@ -696,6 +696,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // or nested bounds 721/721; required entry count 608; conditional record inside table guard 607;
 // fresh lookup before previous record 607; signed-byte slot with separate guards 700.
 // NOT kept: the shared record test and provider/NONE, palette/record and SIMD homes still differ.
+// Retained palette tag, nested/compound 607/714; alternate tag, compound/nested 607/607.
+// Both retained tags, compound/nested 712/606; with signed palette byte 597/699.
+// NOT kept: the 597 gain only occurs in combination, while the provider homes and shared record test still differ.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

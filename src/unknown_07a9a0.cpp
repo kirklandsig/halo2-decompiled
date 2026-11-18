@@ -1541,6 +1541,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Separate machine-validation bytes shorten the body to 2704 bytes. Initializing the result from admission
 // grows it to 2952 bytes and changes caller 0x73530 from matched to 8 in preview. The other forms tie or
 // regress. The opening call and the ID/histogram frame layout still differ.
+// The separate histogram keeps the frame at 0xd0, and the opening variant lookup still expands.
+// Group range ends for all/eligible passes 886/886; skip other groups 871;
+// per-group player-count snapshot 957; spread from count before last update 907;
+// conditional first accepted size 871; counters cleared before ID copy 871;
+// two-field session ID copy 867; admitted rating before flags 910; one team setup gate 908.
+// NOT kept: the two-field ID copy gains four and shortens the body to 2748 bytes.
+// Admitted player count for availability or also output count 947/908; mode before the minimum or both capacity tests 883/883.
+// Early mode with carried count 927/899; named capacity bounds with carried count 908/927.
+// NOT kept: frame and opening lookup still differ, and every form scores higher.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

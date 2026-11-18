@@ -1212,6 +1212,9 @@ real normalize2d(point2f *v);
 // their three single forms and three pairs 182 each; non-request arm first with
 // speed or normalized-facing return 178 each. NOT kept: both lengths shorten and
 // DL and independent invalid return remain. Original result and body restored.
+// One evolving attempt speed or reused query speed 135/135; with late chosen-speed default 207/204.
+// Direct request return on those four forms 182/182/208/205.
+// NOT kept: neither lifetime recovers DL, and direct returns shorten the body.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

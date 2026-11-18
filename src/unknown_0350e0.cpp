@@ -2122,6 +2122,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // all reference component setters 214; read position x before cross 193; read position y before cross
 // 193; read position z before cross 193; read position components before cross 193. NOT kept: tied or
 // higher scores, with no result-slot recovery.
+// Forward projection before the perpendicular, case one/three/both, with its sign after the
+// vertical projection 197/177/186 or before it 184/176/184. Early projections with a common
+// sign at dispatch exit 392, sign at inverse tangent only 206. NOT kept: 177 and 176 recover
+// the result home and length but compute the projection before retail and raise the caller
+// 492 to 572. Other gains shorten the body. The 0x14 frame still lacks the separate result.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3172,6 +3177,10 @@ real magnitude3d(vector3f const *v);
 // Complete raw tangents before/after sine, sine-weighted tangents before cosine
 // or before projection, each with original projection or its dot before cosine:
 // 170/170/170/170/170/170/170/170. Raw length and promoted-dot homes unchanged.
+// Raw axis assembled or initialized before the angle 237/237, or between inverse cosine and
+// its scaling 241/241. Complete axis product pairs before the angle or across its inverse
+// cosine and scaling 170/241/196/241. NOT kept: tie or regressions. The raw magnitude still
+// shares the clamped length's slot on the baseline frame and the dot still widens to a spill.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3844,6 +3853,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Creation-entry cursor with indexed end, ordered/equality bound and else/continue
 // advancement 337/337/337/337. Paired entry/end cursors 382/382/382/382.
 // NOT kept: the state and prefix registers are still reversed.
+// Separate mutable paired count, creation tail and duplicate tail at their phase boundaries,
+// individually and combined 399/390/397/437/388/397/388. All with a separate fallback count
+// 349. NOT kept: all regress. The state, prefix and creation ordinal still use different
+// registers on the original frame.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

@@ -657,6 +657,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // moves from ECX to EDX and b to the stack, and the matched caller 0x1eb6f0 falls to 22; at the two update-block clamps only
 // 697 (0x1eb6f0 22); at the output clamp only 603 (same count, one caller); the helper taking the fast flag and selecting
 // inside 697 (0x1eb6f0 22); the factor declared before t at all three clamps, no helper, 694 (0x1eb6f0 22).
+// Settled state kept across normalization 603; complemented first-settle state
+// 599; output rate read once 685, activation rate read once 710, both 739; local
+// settling clock 600; shared ramp tick conversion 699; local settling clock and
+// settled-state read 600. NOT kept: best gain is four and the sampled-velocity
+// register still differs. The clock form grows beyond retail length.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

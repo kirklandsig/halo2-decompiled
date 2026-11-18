@@ -5780,6 +5780,11 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
 // assigned from tests 312, friend-query result declarations in spill order 97.
+// The friend-query session, membership and friend bytes still use different slots.
+// Direct rank reads 89, regular-member result cleared by pending state 381, origin
+// default for join 422, pending message guards 376, rank-first removal 104, role-based
+// byte names 89, mode test in the removal arm 224, kick query in its eligibility arm
+// 251. Original body retained.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

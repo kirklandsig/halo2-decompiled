@@ -1446,6 +1446,10 @@ PRIVATE inline long score_string_list_1608e0()
 // The viewer register, early origin and separate late masked-index homes still differ in the four-byte frame gap.
 // Timer-branch score record 681; pre-branch score record 691; shared mask with branch/pre-branch record
 // 687/681; native points record 691, with shared mask 681; timer-field offset 717; native record ternary 681.
+// The frame still lacks the separate origin word, and the viewer remains in EDI.
+// Previous right edge for name/score/time 688/689/705; all three 724; initial caption aggregate 679;
+// reused caption top/bottom 761, with all edges advanced 806; branch-produced full height 710;
+// independent score visibility for name/caption 687, with explicit caption-width branches 687.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
