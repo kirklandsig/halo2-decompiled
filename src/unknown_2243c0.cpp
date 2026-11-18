@@ -227,7 +227,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // spelling, which hoists the tag table global into ECX before `sub esp` (152), while the `(word)` cast keeps the table in
 // EDI but gives `movzx eax, dx` (117); the mask assigned back to the tag, a masked-tag local and a named element address
 // leave the code unchanged (117) or worse (152). The block chain's argument registers and unfused element loads stand.
-// score 117 (was 117): The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
+// score 117 (was 117): Retail masks the fallback tag in EDX and materializes its stage and pass element addresses separately.
+// Earlier: The 0x5c frame agrees. The fallback tag index is zero-extended through EAX, and the stage/pass and later tag-data loads use different registers.
 // M3 lane 8 r170 (fast, match-only screens on lane 13 r59's saved score-8 chain, main's body unchanged):
 // the chain rebuilt on this main 8 (first +0x9e); on it the fallback reference unbound 10, the definition reference unbound
 // 10 (both move only the head: the pass definition stays EDX, the material tag ECX and the definition EDX, so the late
@@ -707,6 +708,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // `long const &` straight into the pass element 8; the pass definition's tag data named before its +0x20 read 8;
 // local_11 declared ahead of local_10 and assigned after it 8; local_11 through the tag-data and material-index accessors
 // 8 (all the same code); the four cache zeros grouped ahead of local_10 60 (first +0x50).
+// Typed root/stage/pass arrays singly, in pairs, and together 117 each.
+// All typed arrays with full-width fallback mask 152. NOT kept: element addressing
+// still fuses, and the full-width fallback moves the tag table out of EDI.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

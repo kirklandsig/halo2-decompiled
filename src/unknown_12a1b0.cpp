@@ -2046,7 +2046,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax S (11-16): score 305 (was 305): no new form; the length 1923 agrees but this build's frame is 0x11c
 // against retail's 0x128, so every stack slot is off by 0xc from the first store on; the missing locals are what
 // keep the two apart.
-// score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 305 (was 305): The 0x11c frame still differs from retail 0x128, as do the playback and range-loop homes.
+// Earlier: the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
@@ -2404,11 +2405,15 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // branched start with separate next-slot conversion 480. Reduced control 479, full baseline 305. NOT
 // kept: the strongest preview regresses to 418 in the plain check and the native frame remains
 // unresolved.
-// score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305 plain, 479 on the reduced image): the frame is
+// Earlier: MiniMax D (11-17): no new form, no lower score (305 plain, 479 on the reduced image): the frame is
 // still 0x11c against retail's 0x128 and the native request, range and pitch homes still sit at other offsets; the second
 // pitch-range loop still hoists the datum index and the track index into EBX/EBP (one use each) and keeps &sounds[i] in EDI
 // with the active bit spilled, where retail holds NONE, the track definition and the active bit there and indexes
 // sounds[i] at each use, and the forms the earlier rounds list all measure 305 or more.
+// Complete play state at admission/detail iteration/detail loop/detail gate 305/305/305/305.
+// Replacement definition handle retained 305, with complete state 305.
+// Complete state and shared pass limit 369, with retained replacement handle 369.
+// NOT kept: the complete state reserves 0x12c, and the shared limit adds more frame space.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
