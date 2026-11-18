@@ -21,6 +21,10 @@ PRIVATE byte *update_object_0a6430(long index)
 	return *(byte **)(g_4e0300->data + (index & 0xffff) * 12 + 8);
 }
 
+// MiniMax B (11-18): no new form, no lower score (14): the 0x200 head still loads the object pool before the index
+// and colours it ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100
+// call's pushed state pointer still takes EDX where retail takes ECX; hoisting the index into a named local changes
+// nothing (the compiler folds it), so the body is as it was.
 // MiniMax R (11-17): no new form, no lower score (14): the 0x200 head still loads the object pool before the index and colours it
 // ECX where retail loads the pool into EAX after the index and the object into EDX, and the 0x100 call's pushed state pointer still
 // takes EDX where retail takes ECX; the lookup through the object header's typed element form needs another header in this file

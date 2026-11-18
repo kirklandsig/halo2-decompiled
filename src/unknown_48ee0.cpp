@@ -39,6 +39,9 @@ extern real g_4c9798[36];
 // MiniMax A (11-13): no new form, no lower score (174): the mode bit loads the flags into EDX where retail uses EAX,
 // the size stays in a register across the two rounding calls where retail reloads it from its slot, and the frame's
 // slots still run from the mode up where retail's start with the size; the rounding callee now matches.
+// MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
+// and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
+// the size, and the mode bit still loads the flags into EDX where retail uses EAX.
 // score 174 (was 174): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
@@ -361,6 +364,10 @@ extern real g_4c9798[36];
 // accessor, group flags accessor, bool mode-off predicate, state offset accessor 102 each (same code); a negated mode-on predicate 290.
 // Left under the held change: a source form for the named near distance (retail loads the three direction components and
 // multiplies each by the distance in XMM0, as the first plane does with its constant), the flags' register and that slot order.
+// M419: shared first sizing bit 180; sampled sizing word and first bit 180; separate size-limit branches 180;
+// first bit with dword height limit 243; reused pixel cap before height alignment 323, with dword height 351;
+// pixel cap between rounding calls 323; cap with separate width alignment 323.
+// NOT kept: every form regressed. Mode flag register, mode and size homes, and rounding reloads still differ.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

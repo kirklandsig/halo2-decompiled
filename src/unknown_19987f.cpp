@@ -1729,7 +1729,6 @@ bool function_19a76d(short index)
 	return result;
 }
 
-extern long g_51098c;
 long function_19c580(void);
 bool function_19a6f2(long campaign_id, long map_id);
 long __stdcall function_120e70(byte *buffer);
@@ -1740,7 +1739,7 @@ long __stdcall function_120e70(byte *buffer);
 void function_19a864(void)
 {
 	s_game_variant variant;
-	long map_id = g_51098c;
+	long map_id = global_preferences_globals.current.unknown16c;
 
 	if (map_id == NONE || !function_19a6f2(NONE, map_id))
 	{

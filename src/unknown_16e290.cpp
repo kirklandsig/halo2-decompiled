@@ -1496,58 +1496,11 @@ void __stdcall function_16f570(long user_index)
 }
 void function_16fe90(long user_index);
 
-void function_170bb0(real *out, real const *second, real const *first);
+void function_170bb0(real const *second, real const *first, real *out);
 void function_1701f0(long player_index);
 void function_1703f0(long player_index);
 void function_170630(long player_index);
 
-// score 7 (was 7): command/base registers and channel address setup differ. BLOCKED-BY 0x170bb0:
-// callers set its register arguments right to left in declared order, and retail sets out
-// (EDX), first (EAX), then second (ECX), so retail declares it (second, first, out); an
-// inline forwarder with that order changes nothing. Round 52: forwarder 7; address from
-// the array element at each argument 7; shifted flag test 7; state pointer inside the guard 7;
-// state before the array pointer 36. This round: forwarder with the (second, first, out)
-// order 7; the three channel addresses as named locals in five orders 7 each; the observer
-// element through a local 28; the command test before the state pointer 18. Earlier:
-// three channel-pointer orders 7/7/7; delta pointer early/late 7/7;
-// command pointer 7; guard return 7; motion-channel view 7.
-// scalar channel addresses 7; timer cursor after delta 11; countdown for 7;
-// inline/noinline delta declarations 7/7; noinline update declaration 7;
-// shifted command bit 33; branch timer stores 27.
-// Single current/previous/delta pointers 7/7/7; direct observer array 36;
-// scoped state/time 18; command flags snapshot 7; countdown entry/before delta/split 7/7/7;
-// fixed base pointers 7.
-// This round: the three channel addresses as named locals in four orders (out/first/second
-// and three others) 7 each and byte-identical to the inline form, the command pointer as a
-// local 7, the state pointer from the observer element 7: the compiler always prepares the
-// three addresses in the argument-register order, while retail prepares out, first, second.
-// Native observer timer/channel fields 7/7/7; full typed receiver 7; timer end pointer
-// with byte/typed receiver 23/23; word/byte countdown 7/7.
-// Round 70: the observer base takes the register of the last-evaluated argument (the leftmost,
-// out in EDX); out from the timer cursor instead 3 (base then in ECX, all else as retail;
-// diagnostic only), so the fix is the callee's consistent (second, first, out) reorder.
-// Real-element receiver 7; forceinline (second, first, out) forwarder 7; timer cursor from the
-// element with state inside the guard 7; named delta 7; state-taking inline call helper 7.
-// Round 25 (0x170bb0's file held): real-pointer base with indices 7; pointer-add element 7; byte
-// base from the global 36; flag test through the state pointer 28; timer cursor in the guard 18.
-// b14J (11-17) walk against retail, fast build on r847: the loop, the calls and the countdown match; the base register
-// (retail ecx at 0x16fe9e, command in edx at 0x16fe98) and the lea order out, first, second (0x16feb0, 0x16feb6,
-// 0x16feb9) differ. New evidence on the blocked reorder: with 0x170bb0 declared (second, first, out) its own bytes
-// change (fast score 3, ebx/edi/esi permuted: registers follow the declaration, last parameter in EAX) and the caller
-// stays 7, so retail's callee cannot be declared that way; the callee must keep (out, second, first). Also tried:
-// first computed once with second = first + 0x40 and out as the literal state + 0x320 17, the same with named
-// second 17, out = first + 0x314 / 4 17, a second-based set (out = second + 0x214 / 4, first = second - 0x40) 31.
-// M3 lane 2 r97 (fast with 0x16f280, 0x170bb0): the out address through a trivial forceinline accessor 7 (folds); out
-// formed into a local and passed through a reference bound to it 11, or `real *const &out = ...` at the call 11: the
-// argument block is then retail's exactly (command EDX, base ECX, out/first/second, `add ecx, 0x10c` last) but the user
-// index moves to ESI and the cursor to EDI, and the matched caller 0x16f280 follows (10); all three arguments as const
-// references 17 (formed in declaration order); that form with a reference-bound loop cursor 11, with the reference in its
-// own block 11, with a redundant `if (0 < remaining)` guard 11, with the command read through `state` 30, the countdown
-// declared before the test 11, the cursor formed ahead of the state 11, both declared inside the test 12. A reference
-// bound to first or second alone (argument order unchanged) also moves the index to ESI (17), and so does dropping a call
-// or adding a cursor read (diagnostics), so any reference-bound temporary causes it. Without references: out through
-// `&observers[user_index]` 7, through the global 24, first and second that way 7; the cursor formed in the loop's
-// scope 24 (the state then lives in ESI).
 // @retail 0x16fe90
 void function_16fe90(long user_index)
 {
@@ -1556,7 +1509,7 @@ void function_16fe90(long user_index)
 	real *time = (real *)(state + 0x9c);
 	if (!(observers[user_index].command->flags & 0x20))
 	{
-		function_170bb0((real *)(state + 0x320), (real *)(state + 0x10c), (real *)(state + 0xc));
+		function_170bb0((real *)(state + 0x10c), (real *)(state + 0xc), (real *)(state + 0x320));
 		function_16ff10(user_index);
 		function_1701f0(user_index);
 		function_1703f0(user_index);
