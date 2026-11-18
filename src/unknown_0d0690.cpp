@@ -1415,6 +1415,11 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // length (2189) and reads 566 on the full image, which is worse than the 529 the kept body reads there, so it was
 // dropped and the body restored. What still differs is the entry: retail keeps the block in EAX and the query in
 // EDX where this build has the block in EDX, and the count is tested twice around the scan.
+// MiniMax H (11-18): score 529 (was 529): no new form, no lower score; retail hands this function its block in
+// EAX and its query in EDX where this build has the block in EDX and the query in EAX, the frame stays 0x2c
+// against retail's 0x28, and the selection result still spills where retail keeps it in a register; the
+// parameter order that would fix the swap is retail's and the callers' declarations are in files this lane
+// may not edit.
 // score 529 (was 529): frame 0x2c against 0x28, the selection result spilled where retail has constant exits, and the block/query arrive swapped (ours block EDX, query EAX; retail EAX/EDX); retail's convention form (452) raises 0xd4080.
 // MiniMax E (11-16): no new form, no lower score (529): the call boundaries agree with retail's; what is left is the entry - our frame is 0x2c against retail's 0x28, retail saves EDI in the prologue where this build pushes it inside the branch, retail keeps the block in EBX and the query in EDX where this build has the block in EDX, and the selection result still spills where retail keeps it in a register.
 // MiniMax E (11-15): no new form, no lower score (529): the call boundaries agree with retail's (0x117c80 and 0x13b390 four times), so what is left is the frame (0x2c against retail's 0x28) and the selection-result spill.

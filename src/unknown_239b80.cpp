@@ -243,6 +243,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // (a bool flag drops it to 80), so the frame stays 0x18; the one-counter while form (260), the two-continuation form
 // (326) and the pass counter as a short (261) all move the loop shape or the homes away from retail's.
 // score 144 (was 144): earlier 144 (was 161), 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
+// MiniMax H (11-18): score 144 (was 144): no new form, no lower score; the frame stays 0x18 against retail's
+// 0x14, retail keeps the departure flag as a byte in the dead indices argument home where this build keeps a
+// dword of its own, and retail starts the previous heading at zero before the lowest scan where this build
+// takes it after; the byte flag and the short hull count were measured again and they move the argument homes
+// (236) or the loop shape (260). Seventeen further forms (the flag as a byte, bool, char, short and unsigned
+// char, the hull count as a short and as an int, the hull count as the loop counter, the pass counter as a
+// short) all measure 174 to 264, the compaction's copy as memcpy instead of memmove measures 145, and the
+// permuter found nothing below 144.
+// score 144 (was 161): earlier 161 (was 169); frame 0x18 against retail's 0x14; the count, the departure flag and the hull count still live
 // in their own homes where retail keeps them in the dead argument homes.
 // MiniMax G (11-12): score 161 (was 169): the departure update is now a short-circuit with the hull's first index
 // passed to the difference helper first, and the compaction runs through memmove; the frame is still 0x18 against
