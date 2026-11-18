@@ -133,6 +133,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // short strip count read at the entry gives 168; all three were restored. What still differs: the count sum and the
 // vertex cursor take the opposite stack slots, and the 0x17cfa0 call still passes the first index in ecx where retail
 // passes it in eax (that callee lives in another file).
+// MiniMax R run 92 (11-17): no new form, no lower score (93): retail's transform rows multiply up.i*z first and keep
+// the second product in the vector's register, where this build computes the second product first and forms the first
+// one the other way round; that middle product written with the matrix term first and the row written as an
+// assignment instead of an accumulation both measure 93 (the same code) and the row written as one expression
+// measures 298, so the body stands; the permuter's run over the reduced image did not finish in its window and was
+// stopped; what still differs is the entry guard's registers, the count loop's sign extension, the swapped count and
+// vertex slots and the 0x17cfa0 call's argument registers (that callee lives in another file).
 // MiniMax R (11-17): no new form, no lower score (93): the permuter's annealed tries over the reduced image found
 // nothing below 93, so the body stands; what still differs is that retail loads the fifth argument into eax before
 // the register saves where this build loads the strip record into ecx after them, the count loop sign-extends the

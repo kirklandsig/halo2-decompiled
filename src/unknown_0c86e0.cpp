@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax R run 92 (11-17): no new form, no lower score (110): the weapon lookup as an if-statement instead of the
+// ternary gives 114, and the user index as a short gives 107 - a gain of three, under the review bar, so the body
+// stands with the 32-bit index retail reads - and this link still knows that 0xbadc0 writes no memory and merges the
+// unit fetches where retail fetches the unit again: BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
 // score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
 // 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls

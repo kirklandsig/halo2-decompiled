@@ -300,6 +300,10 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax R run 92 (11-17): no new form, no lower score (192): the permuter's 34 annealed tries over the reduced image
+// found nothing below its 187 baseline there, and the frame is still 0x84 against retail's 0x90 with the origin's x
+// and y and the edge vectors in stack homes; the point-in-polygon query still needs the points before the point:
+// BLOCKED-BY 0x23a220 (src/unknown_239b80.cpp).
 // MiniMax C (11-16): no new form, no lower score (192): the call to the matched 0x23a220 already gives the point in
 // EBX and the points in EDX as retail does, so the parameter order is no longer the blocker; what is left is retail
 // pushing the count as a dword (push edx, the count it already holds) where ours truncates it to a word first (xor
