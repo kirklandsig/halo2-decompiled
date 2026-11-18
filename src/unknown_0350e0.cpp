@@ -359,6 +359,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
 // caller held.
 // MiniMax R (11-17): no new form, no lower score (334): the first difference is the xmm choice for the two constants (this build keeps them in xmm4 and xmm5 where retail uses xmm0 and xmm7), and the body is two bytes longer than retail's 1779.
+// AC571: Sine/cosine pairs by const reference, initializer or member assignments, each pair before its
+// builder or both before either 342/343/342/343. By value 364/363/364/363. NOT kept: the pair forms
+// shrink the matching frame to 0x80 through 0x88 and raise the score. The native axis/square/sine homes still differ.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2444,6 +2447,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // before texture, with the draw receiver at texture success or at draw 552/511/548/566.
 // The separate draw-point slot at retail's ordering still differs. Original body restored.
 // MiniMax R (11-17): no new form, no lower score (492): the frame is 0x90 against retail's 0x94, so the stack slots sit four bytes off from the start.
+// AC571: Final dimension pair before texture binding / on acceptance / after depth / after vertex
+// 586/535/529/526. Apply size in place to the scale pair at the same sites 586/527/526/526.
+// NOT kept: the last three in-place forms reach frame 0x94 and 2285 bytes but raise the score and
+// keep the tag/time and addressed output homes displaced. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

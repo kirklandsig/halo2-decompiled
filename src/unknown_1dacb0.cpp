@@ -1835,6 +1835,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // into the home of the first found output, so the two stores land in the opposite order; the calls, the
 // argument order and the two requests are unchanged, and the remaining difference follows from where that
 // third output is written.
+// AC570: Resolved mode/class/type snapshots for publication and resource request,
+// seven subsets then snapshots at each output test: 828/828/828/828/828/828/828/828. NOT kept: the
+// snapshots coalesce, leaving the candidate and iterator homes and late zero.
 // B458: Search-exit copies of the resolved mode/class/type, then mode+class/mode+type/class+type/all
 // for both optional stores and the second request. Last form ends the iterator scope at search exit.
 // Scores 828/828/828/828/828/828/828/828. The resolved-mode spill and candidate/result homes remain.

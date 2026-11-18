@@ -655,6 +655,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 194 (same code); the two inverse sums through a force-inline (1-t)*a + b*t helper 238 (1943 B); remaining_blend assigned
 // at the top of each aspect arm 338 (1972 B). Retail's sequence arm jumps over a join block that reloads the blend into
 // XMM5 for the other paths; ours falls through and the aspect block reads the blend from memory (about 19 bytes longer).
+// AC570: Sequence snapshots before and after frame evaluation, shared wrap count
+// and shared frame base: 194/194/194/194/194/194/194/194. NOT kept: the snapshots fold to the same
+// reads. Tint and secondary UV homes remain exchanged, and the blend still spills.
 // The fixed arm still leaves the tint above the second UV record, and the blend is spilled in the aspect block.
 // Definition bounds to first UV 451, second UV used as source for first 211, second UV encoded in place 203,
 // definition bounds to second UV 451. Sequence-local blend published after pivots 273, selected local published

@@ -627,6 +627,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Sound table held through the scan and matched row reacquired after the distance call,
 // with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
 // Original body restored.
+// AC571: Full producer count in the first scan or in repair 915/856. Capacity checked on acceptance,
+// short/full-width count, 950/965. Count advanced before record stores and capacity checked afterward 964/984.
+// Primary set during first inside conversion or first target append 940/956. NOT kept: all regress.
+// The full-width acceptance check recovers ESI at entry but shortens to 3232 bytes and keeps the count-home differences.
+// Entry zero chains for target/choice, target/query, all three, or target/existing counts
+// 859/859/858/868. Choice and ordinal after the query or with its output before the call
+// 847/846. Existing count and bitmap chained before the scan or with target count at
+// entry 847/939. EBP remains the entry zero and the count and array homes differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

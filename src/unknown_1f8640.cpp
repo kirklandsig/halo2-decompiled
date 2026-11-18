@@ -865,6 +865,11 @@ struct s_1f8a70_actor
 // tail-merge the two bodies) and the permuter's 3 tries stayed at 182; retail lays the route check as case 5's fall-through
 // with cases 6-7 jumping back to it and the route==0 block jumping back to one shared switch dispatch, and the goto
 // restructure scored 316, so the shared dispatch needs a source form not found here.
+// AC572: Mode-seven node snapshot with radius-first store 212, radius
+// snapshot with node-first store 360. Both reads node/radius or radius/node,
+// each storing node first or radius first, 360/212/360/212. Native order
+// through the case frame 392, earlier snapshots before point stores 372.
+// NOT kept: all raise the score. Route dispatch and the late false reload remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
