@@ -351,6 +351,16 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // not kept); the early-return helper with the globals' sound as the default 115; the `&&` flag with that default 107.
 // Re-measured on this base: the `&&` flag alone 104 (367 bytes), the early-return helper alone 113, the late zoom
 // flag alone 125, `&&` with the late flag 116, the early-return helper with the late flag 127. Still BLOCKED-BY 0xbadc0.
+// m3 lane 14 r108 (control 110 at 359 B, 80 aligned rows by sequence alignment). The block is not an image-wide property of 0xbadc0: of its 140
+// retail callers this is the only one that loads the pool ahead of a 0xbadc0 call and loads it again after it, and 0xbadc0 defined `inline` (a
+// full check, diagnostic, reverted: the idea was that an inline function kept out of line tells callers nothing) leaves this function at 110
+// with the fetches still merged and loses 11 matched functions (0xc3ad0, 0xd74e0, 0xd9640, 0x155a30, 0x18c720, 0x18c9b0, 0x1a2505, 0x1c9c80,
+// 0x1f40b0, 0x23cbb0, 0x23d260). Retail keeps index * 12 in ESI across the two calls and reloads only the pool pointer and its data field, so
+// the calls end those loads here for a reason local to this function. Fast with 0x103b10 (MATCH each time): the weapon lookup as an inline taking
+// the unit index and fetching the unit itself 110 (same code); one header pointer local read for both fetches 122 (361 B); the unit fetched
+// in the reset block instead of at the top 118 (383 B, aligned 65: the weapon lookup then fetches after the calls as retail's second fetch does,
+// but the top fetch into EBP is gone and the reset block fetches again after 0x100f70); diagnostic, reverted: the second fetch reading the pool's
+// data field as a dword 110 (same code: the merge does not depend on the load's type).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

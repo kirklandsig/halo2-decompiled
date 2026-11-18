@@ -1387,7 +1387,7 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (216), the rate hoisted into a local (541) and the cast-spelled divisor (220) were measured and dropped.
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
-// score 220 (was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier 220 (was 220), merged from a second score line: frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
@@ -1854,6 +1854,20 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // rates followed by upper selections 486, upper-limited rates followed by lower selections 487.
 // Round 401 tested paired look clamps with lower-first/upper-first branch defaults and upper/lower preset bounds, strict then inclusive: 219/220/223/223/221/222/224/224.
 // The one-point lead is below the threshold. The 0x28 frame, shared reciprocal and reused spring homes remain.
+// m3 lane 14 r108 (fast with 0x165dc1, MATCH; control 220, as plain). Retail's slot map: the yaw value has -0x2c to itself (3 stores, 1 load) and
+// the pitch value shares -0x28 with the temporary that carries the channel duration to fmod; neither shares with the aiming springs or the unit,
+// which are dead by then, while the flags, the loop index and the weapon pointer do reuse those slots. Tried: the look values as const references
+// bound to the clamps 220 (same code); one point2f initialised with both clamps 216 (frame 0x30, homes -0x2c/-0x28, reciprocal shared; a grouping,
+// under the bar); one inline two-axis spring helper for the aiming pair and the look pair, the look pair passed by address 588 (2163 B: the
+// time global then lives in EBX across the calls and the user goes to the stack); the look values as an inlined helper's locals 220, as its
+// by-value parameters 221; the clamp through an inline function with three returns, value by value 220, by const reference 220, returning a
+// const reference 499 (2225 B); an empty inline function taking both look addresses after the fourth spring call 220 (same code: the link
+// drops the address-taken state with the call). Diagnostics, reverted at once: both look addresses passed to a fifth 0x11eed0 call 220 (same
+// code: that call is inlined and deleted whole, so round 120's escape to the second aiming call proved nothing); passed to an opaque external
+// call 454 (2208 B, frame 0x30, look homes -0x14/-0x10): the yaw block is then retail's instruction for instruction (rate pointer reloaded, x
+// divided by the rate, the 1.0 load between comiss and jbe) and the pitch divides again after a reload, as (y / rate) * -1 where retail has
+// (-1 / rate) * y. So a store to an address-exposed look value is what ends the shared reciprocal, but retail's two homes sit at the frame's
+// bottom with the compiler's late temporaries, not where an address-exposed local goes, and no code-free form found gives either.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

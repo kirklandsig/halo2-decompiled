@@ -308,6 +308,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // 305 (2663 bytes); the test written `1.0f != scale` 98; the four locals in one declaration 93 (same code). Retail's
 // copies keep each product in its spelled operand order (`up.i * z` loaded, `y * left.i` copied, `left.j * y` loaded);
 // ours commutes those three whatever the spelling. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// m3 lane 14 r108 (fast with 0x17cfa0 105, 0x13d370 201, 0x439d0 5, 0x180b60 MATCH; control 93, 63 aligned rows by sequence alignment with
+// addresses masked): the short count-loop index re-measured 102 (aligned 81; first difference moves from +0xa to +0x29: retail's prologue and
+// count loop, then the three field sums load the lower field first, the count sum and vertex counter keep the opposite slots, the 0x13d370 and
+// 0x17cfa0 setups rotate EAX/ECX/EDX and the loop pad is `mov edi, edi` for retail's nop). New on it: one short index declared ahead of the count
+// loop and shared with the strip loop 292 (2667 B, aligned 117); shared with the vertex loop instead 292 (2667 B, aligned 117); the short index
+// declared first in the block 102 (same code); the short count loop as a `while` 102 (same code); a pointer cursor over the strip lengths with a
+// short countdown 603 (2663 B, aligned 110). The short index is retail's by its prologue and loop, but nothing found turns the field sums back.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
