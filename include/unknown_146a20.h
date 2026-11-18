@@ -47,6 +47,13 @@ public:
 	virtual void *method9(long size);
 	virtual void method10(void *block, long size);
 
+	/* drops one reference; the last one deletes the allocator (0x2d6fe0) */
+	void drop_reference()
+	{
+		if (--m_unknown04 == 0)
+			delete this;
+	}
+
 	/* sets the first two of m_unknown08 (library code, 0x2d6fc0) */
 	void function_2d6fc0(void *buffer, long size);
 

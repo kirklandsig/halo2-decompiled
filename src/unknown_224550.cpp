@@ -677,6 +677,21 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Reciprocal pairs weighted after division, after flip selection, between aspect tests, or after both tests.
 // Secondary pair 241/338/255/162, primary pair 320/300/313/322. NOT kept: the 1942-byte form changes
 // the frame and raises the score. The join still spills blend in the retained body.
+// Supplied spans for both encoders 407. Primary supplied spans 308. Secondary supplied spans 380.
+// Horizontal supplied spans 318. Vertical supplied spans 395. Two-component span input 426.
+// Branch-selected supplied spans 407. Shared span/origin reversal tests 403.
+// Animated-only supplied spans 546.
+// The supplied spans change the reciprocal allocation and move the first difference into the fixed arm or
+// frame. Keeping the fixed call uncached gives 1865 bytes and score 546. All five matched controls stay
+// exact.
+// The tint, UV homes and the 0x60 frame agree. The fixed-arm jump and blend register still differ.
+// Geometry origin in output before extents 158; projected centers before encodes 322; center point 322;
+// interpolated pivot point 342; secondary encode after projection 196; interval assigned per case 170;
+// conditional primary aspects 227; conditional secondary aspect updates 221.
+// NOT kept: the geometry-origin form gains four and leaves the blend spill.
+// Independent initialized/branch-set scales 355/244; final vector scales 363/342.
+// With secondary reciprocals after primary aspect 392/310/415/327.
+// NOT kept: each form regresses and widens the extent; blend remains unmatched.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -80,8 +80,6 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // the null-datum test's jump target (retail's `je` goes to the function's end, ours to a near block), the five string
 // buffers' homes are still one 512-byte buffer out from retail's (the display name at ebp-0x6cc where retail has
 // ebp-0x8cc) and the suffix and message addresses are still re-derived, so the body stands;
-// score 316 (was 316): frame 0xfd4 agrees. Child, text and layout homes and suffix
-// address derivations differ. Earlier score 330.
 // Earlier score 330.
 // MiniMax R (11-14, run 65): no new form, no lower score (316): the first difference is the null-datum test at
 // +0x16, where retail's `je` goes to the function's end (offset 0x920 of 2345) and ours goes to a near block, and
@@ -297,6 +295,21 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // return 620 (2336 B, it stays a call); the loop body with two `continue`s 316 (same code); a named flag set by an if/else
 // 522 (2344 B). Retail parks the shift-by-10 arm after the session player's `jmp` (0x2b3088) and falls from the shift-by-12
 // arm into the bit test; none of these forms moves a block out of the loop.
+// Round 416: The 0xfd4 frame agrees. The null-datum exit displacement differs first, followed by the swapped
+// session and voice homes and a 0x200-byte displacement of the display-name buffer. Retail also re-derives
+// the suffix address at several text continuations. append and terminate through the message with text input
+// 316; append and terminate through the message with buffer reference 316; append and terminate through the
+// message with buffer pointer 316; format text through the message buffer 316; append and format as message
+// buffer members 316; load and append through the message buffer 528; load and append through the suffix
+// buffer 528; load through the list and append through the message buffer 588. NOT kept: Append and format
+// members tie at 316. Combining suffix loads with append and termination shortens the body to 2288 or 2233
+// bytes and scores 528 or 588. The opening buffer methods and body are restored.
+// MiniMax B (11-18): score 316 (was 316): no new form, no lower score. Read the listing again: retail's first buffer
+// clear is `mov word ptr [ebp - 0x8cc], bx` and ours is `mov word ptr [ebp - 0x6cc], bx`, so the two buffers trade their
+// homes (retail: display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258; ours: title -0x8cc,
+// display_name -0x6cc, suffix -0x4cc, layout -0x2cc, message -0x258) while the frame agrees at 0xfd4; the homes follow
+// neither the order of the loads nor the order of the declarations, so they only move with the declarations, which review
+// rejects. The shift arm stays next to the join where retail parks it after the loop.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

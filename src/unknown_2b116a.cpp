@@ -4515,6 +4515,15 @@ bool __stdcall function_2b278e(long controller_index)
 // or an identity-only controller view 199/197. Each pair forms masks at their
 // dialog calls or in the corresponding arm. The original reference and index
 // stack home are still missing.
+// Retail still retains the controller reference through membership and reloads both pointer levels before the dialog context calls.
+// Native membership: bitwise operands 192, ternary decision 60, kind-first confirmation decision 194,
+// named warning decision 199, kind tested before membership 199, explicit window recheck 199,
+// explicit window and channel 187. Both virtual queries explicit with the inherited long result 201.
+// The controller reference and the initial index still need their separate retail homes in the opening body.
+// Independent membership ID value 204. NOT kept: one-use field copy requires a match.
+// The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
+// Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
+// native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5774,6 +5783,15 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses
 // assigned from tests 312, friend-query result declarations in spill order 97.
+// The friend-query session, membership and friend bytes still use different slots.
+// Direct rank reads 89, regular-member result cleared by pending state 381, origin
+// default for join 422, pending message guards 376, rank-first removal 104, role-based
+// byte names 89, mode test in the removal arm 224, kick query in its eligibility arm
+// 251. Original body retained.
+// Title-state scope 89, both title outputs scoped 89, separate regular-status
+// guards 392 or selections 396, roster actions under other-user gate 349 or by
+// player status 402, paired modification actions under rank gate 360 or
+// regular-player gate 365. NOT kept: title output byte remains displaced.
 // @retail 0x2b55ae
 PRIVATE void update_player_actions_2b55ae(c_y_menu_player_selected_list *list)
 {

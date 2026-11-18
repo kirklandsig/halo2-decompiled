@@ -1620,6 +1620,10 @@ void function_2422d0(long slot)
 // nested 7; the team view through an inline accessor 7; the team view read through a const view 7 (all the 7s the
 // same code). Re-measured by mistake (listed): object declared bare first 7, `NONE ==` 7, a named second-loop
 // element 7, `short slot` 7.
+// Round 211 (m3 lane 4, fast): the reference bindings that matched 0x2c5897's mask: the object pointer as
+// `s_slot_object *const &` 7; the slot as `long const &` 7; both 7 (all the same code); the index as a `long const &`
+// to a cast copy of the team entry 104 (267 bytes: the cast folds and the reference reads the entry again after the
+// call); the bound object with no slot local 79.
 // @retail 0x2423f0
 bool function_2423f0()
 {

@@ -616,6 +616,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
+// score 115 (was 115; m3 lane 16 r130 at the end): coefficient XMM roles, classification operands and projection staging still differ.
+// Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
 // forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
@@ -1042,6 +1045,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // both plane dots with normal as first input 152.
 // NOT kept: The shared dot can advance the x load, but changes its register and the surrounding
 // coefficient schedule. All eight forms raise the score.
+// M3 lane 7 r177 (fast with 0x1648d0/0x320b0, both MATCH; control 115, aligned 73): the projection's output pointer
+// advanced at the inner loop's tail 249 (1867 B); `total` declared ahead of segment/segment_count 115 (aligned 71). Lane
+// 16 r72's 19 form rebuilt on current main 19 (aligned 22; match-only); on it the classification and distance j terms
+// point-first 19 (same code), the denominator staged i, k, j 33, `total += 2` ahead of `culled = false` 19 (same code).
 // Common plane loop for normals and offsets 389, normals only 397, offsets only 303;
 // nested component loop for normals 455, pointer walk 472, vector setter 418, near
 // adjustment before common normal loop 396, nested loops with offsets 436. The x

@@ -478,6 +478,10 @@ void __stdcall function_508d0(void *payload_data)
 	g_46713c = true;
 }
 
+// MiniMax B (11-18): no new form, no lower score (626): the frame is still 0x1490 against retail's self-aligned
+// 0x1474 and the mode still has a stack home where retail keeps it in CL; the exponent clamp, the random real and the
+// level float are already retail's, so the body's own arithmetic is not the difference and nothing else in this file
+// can be reached from here.
 // MiniMax S (11-17): no new form, no lower score (626, was 626; the fast image without 0x508d0 scores 680); the frame stays 0x1490 against retail's self-aligned 0x1474 and the flag stays a stack load into AL against retail's CL, the exponent clamp, the random real and the level float are already retail's, and the permuter over this function's source (300 s, fast with 0x508d0) was stopped before its first trial finished on the loaded machine, so the body stays as it is.
 // MiniMax D (11-17): no new form, no lower score (626, was 626); the frame stays 0x1490 against
 // retail's self-aligned 0x1474 and the mode stays a stack home against retail's CL, so nothing else

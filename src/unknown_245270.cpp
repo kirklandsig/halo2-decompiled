@@ -755,6 +755,37 @@ void function_245400(s_source_245400 const *source, long index,
 // into the copy with vector3f_scale 244 (820 B), the plane table read after the edge vector 208 (0x245aa0 3). Left on the
 // flag form: retail's branch-free `shr; and bl, 1` sides, the plane cross's operand order, the scale select (retail copies
 // the edge before the `jnp`, scale-first products), frame 0x28 against 0x2c. Body unchanged.
+// M3 lane 1 r119 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH unless noted; control 206, aligned 244, register
+// and slot masked 134; positional counts stay near 206 because the frame and length move, so the masked count is given
+// too). Three causes read from retail's head, each reproduced: (1) retail's dead `lea edx, [ecx + edx*8]` after the second
+// code's load is a pointer to the second material record that is read again in the block (the second read becomes
+// `movsx edx, bx`); (2) the plane table is read after the codes, which keeps the source live past the first vertex
+// pointer, so it leaves ECX for ESI (`mov esi, ecx`); (3) each side bit is read twice. Forms: the codes masked in place
+// after shifted sides, plane pointers first 211, sides first 212, one plane at a time 228 (762 B), long codes with a
+// dword shift 211, with sign tests 206 (same code), second code first 210 (frame 0x24 each, no local EBP save); the
+// side test as two tests (`same && !(dot > -eps)`, then `differ && !(dot < eps)`) with sign sides 214 (masked 93: the
+// sides are then values compared before the cross, EBP is pushed and popped around the plane code and the matrix is
+// read from its home at its test), the same as two blocks 214 (same code), with shifted dword sides 232 (752 B,
+// masked 104: retail's `shr; and` pairs and `cmp` of the two side bytes), as a conditional expression 224 (766 B),
+// shifted sides alone 211. The second material through a pointer with both codes read again in the block and the two
+// tests: dword codes 234 (754 B, masked 100), with the else form 211, long codes with sign sides 211 (masked 87), both
+// materials through pointers 234 (masked 107), both read again by index 232 (752 B), by index with the else form 214.
+// The pointer declared ahead of the first index, the codes read again, the plane table read after them and the two
+// tests with shifted sides 217 (757 B, masked 91): retail's first 19 instructions then agree but for two slot offsets
+// (`push ebx; push esi; mov esi, ecx` through the `cmp di, bx`, with the dead lea); the same with the table read first
+// 234 (754 B), with the else form 208 (0x245aa0 lost), main's head with the table read late 207 (0x245aa0 lost), main's
+// head with the table late, the two tests and shifted sides 225 (754 B). On the 217 form, the edge vector computed
+// after the sides 220 (760 B, frame 0x28, masked 90), with the first code widened first 216 (761 B, masked 89), both
+// vertex pointers and the edge after the sides 209 (783 B, frame 0x2c but no local EBP save, masked 133), the first
+// vertex pointer early and the second with the edge late 210 (frame 0x30, 0x245aa0 lost), the edge after the plane
+// pointers 230 (0x245aa0 lost), after the codes 217 (same code). Diagnostics, restored at once: the two codes in a
+// two-element array 217 (the array is promoted: same shape, frame 0x20), with the else form 208, with the edge late
+// 216; the 217 form with the scale select written out (the edge copied to three scalars, scaled as `scale * edge`
+// in the arm) 212 (761 B, aligned 173, masked 75), with the edge late 214 (764 B, frame 0x28, masked 74); the select
+// alone on main's body 205 re-measured. Nothing kept: no form lowers the count. Left on the 217 form: retail keeps
+// both codes in stack homes (stored after the widening, masked in the register, reloaded for the shift), the first
+// side in a stack byte and EAX unused through the plane code (frame 0x2c against 0x24 to 0x28), the edge in XMM3 to
+// XMM5, the cross's operand order, the same-side return with its own epilogue, and the rows.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

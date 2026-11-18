@@ -479,6 +479,15 @@ real normalize2d(point2f *arg_0);
 // The dead [esp+0xc] store (0x1bb0b9, 0x1bb0c9) is 0x26d0e0's unused third arg (volatile local_15); centre and radius
 // (0x1bae2a, 0x1bae25) are 0x30c60 inlined, written out here; `(long *)arg_3` is 0x26d100's `long *unknown` (the
 // output point record), a declaration type only.
+// M3 lane 3 r258 (fast with 0x1ba5c0/0x1bdad0/0x1bff80/0x26d100/0x2b400/0x30c60; control 171, aligned 94): diagnostics
+// for the two open causes, body unchanged. The point's escape: the query given a fresh copy of the adjusted point 273
+// (1052 bytes; the callers' conventions move: 0x1ba5c0 5, 0x1bdad0 2, 0x1bff80 2); the query given NULL 710 (the geometry
+// is dropped): neither isolates the opening's copy schedule. The 0x30c60 blocker (0x3d7f0 inlines it once it is
+// `inline`, where retail calls it): `inline` on the definition alone takes 0x3d7f0 51 -> 208 (753 bytes); with
+// 0x3d7f0's case 2 also fetching its position through the helper (two sites, as retail inlines 0xcdff0 at its first site
+// in 0x186ab0 and calls it at the second) 208 again, both sites inlined, and the same with case 2 ahead of case 0 in the
+// source; case 2 as a call without `inline` 222 (755 bytes, two calls). So what keeps retail's call in 0x3d7f0 is not a
+// first-site rule, and 0x24d8d3/0x24da7d keep their calls either way. BLOCKED-BY 0x30c60 / 0x3d7f0 stands.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

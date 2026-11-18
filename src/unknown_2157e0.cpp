@@ -207,7 +207,7 @@ bool function_216800(long file_index, void *location)
 struct s_saved_game_file_location;
 
 // @retail 0x2168b0
-bool function_2168b0(s_saved_game_file_location *location, long file_index)
+bool function_2168b0(long file_index, s_saved_game_file_location *location)
 {
 	long const *index_reference = &file_index;
 	bool result = false;
