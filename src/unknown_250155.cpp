@@ -1368,6 +1368,15 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // item_count -8 and index_count -0xc, retail index_count -8 and item_count -0xc), and swapping them needs an
 // initialiser that costs the mode its register (121) or a frame that grows to 0x58; all of this round's forms
 // were restored.
+// MiniMax H (11-18): no new form, no lower score (83): the declaration order of the two counts does not move their
+// homes (item_count before index_count, or the array first, give the same 83 bytes); item_count initialised at its
+// declaration does swap the homes (index_count -8, item_count -0xc, retail's) but the frame grows to 0x58, the mode
+// spills and the extra prologue store costs 137; the three qsort calls written out reproduce retail's three address
+// pushes and its one tail-merged call (119), the counted tail fill reproduces retail's guarded rep stosd but moves the
+// count into EBX and the mode to its slot (172), and the mode-three block nested in the else arm moves the mode into
+// EDI (131); branch two's scan with the index increment split off the store gives the same code (83); a new form, the
+// comparator selection written as the two qsort calls with the conditional comparator and no null test, gives 121
+// (the three comparator pushes but index_count from its home), so the null-check form stays.
 // MiniMax E (11-17): no new form, no lower score (83): the two count homes stay swapped (ours item_count -8 and
 // index_count -0xc, retail index_count -8 and item_count -0xc) whatever the declaration order, the initialiser or a
 // plain assignment instead of the initialiser; branch two's counted tail fill does give retail's guarded rep stosd
