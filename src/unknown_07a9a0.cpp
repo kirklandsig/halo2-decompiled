@@ -1052,7 +1052,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // stack (frame 0xb4), where ours takes the session from the stack (frame 0xd4), and retail calls the matched 0x192e60
 // out of line where this build expands the lookup inline; the session's EAX home belongs to the callers in the other
 // files.
-// score 942 (was 964): 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
+// score 871 (was 964): 0xd0 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
+// Frame 0xd0 versus retail 0xb4, with an expanded opening variant lookup
+// and a capacity selector call. The dword histogram trials reduce the frame to 0xb0.
+// Earlier score 942 (was 964): 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier: frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // frame 0xd0 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
@@ -1522,6 +1525,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Both histogram passes with a group-size pointer and signed remaining count 871 kept (plain). Identity
 // remaining count/end pointer 942/941; all-group/eligible-party word passes 947/937; all-group/eligible-
 // party/both dword passes 969/997/936. NOT kept: 941, 937 and 936 each gain fewer than eight.
+// Round 605. The 0xd0 frame still exceeds 0xb4 and the entry variant lookup still expands. Per-group total,
+// rated-count and average pointers 871/871/878. All three 852 (NOT kept: only the combination gains and retail
+// advances the counters at a shared stride). Player group, rating and identity cursors 916/931/902. Machine ID
+// destination cursor 969.
+// shared histogram group count 871; shared group count from summary phase 879; count snapshot with
+// native histogram 936; group sizes and count for histograms 871; native histogram with shared size
+// source 936; scoped ids with native width and shared count 936; native histogram bucket addresses
+// 936; native buckets with shared group count 936. NOT kept because the equal-width controls tie and
+// the dword forms shorten the body and raise its score.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

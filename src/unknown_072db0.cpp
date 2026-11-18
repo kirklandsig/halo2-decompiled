@@ -461,6 +461,9 @@ long network_session_get_maximum_players(c_class_58d20 *session);
 // P547: Uninitialized native primary/peer, index and variant declaration phases, seven subsets
 // then complete reverse declaration order: eight reduced 0s; full reverse-order graph 33/138.
 // NOT kept: reversed pure helpers and extra EBP remain in the full image; original body restored.
+// P608: Both capacities initialized/assigned, upper/lower clamp tests, strict-or-equal/
+// complement predicate, direct result/explicit arms: fast 0/0/17/17/17/0/33/33.
+// Initialized capacity pair plain 33 at 138/134. NOT kept: full helper order and extra EBP remain.
 // @retail 0x73360
 bool c_helper_b::v7()
 {

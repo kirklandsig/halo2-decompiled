@@ -888,6 +888,10 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax G (11-18): no new form, no lower score (90): the identity pointer and the requested rank still take
+// the two registers the other way round, so this build copies the identity into EAX before the removal call and
+// that copy costs the two bytes that move every later jump; the colouring follows from the callee's own
+// declaration, which lives in another file, so the body stands.
 // MiniMax R (11-17): no new form, no lower score (90): an annealed permutation search over this body (1500 s,
 // one job, seed 11) lowered the baseline of 88 only to 86, and the have_member block written the other way
 // round measures 114, so the body stands.

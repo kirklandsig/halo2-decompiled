@@ -485,7 +485,7 @@ struct s_16e1b0_list
 
 void function_16e1b0(long value, s_16e1b0_list const *list, long *unknown, long *range_index, long *offset);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
-bool function_11e800(point3f const *a, point3f const *b, point3f const *c, point3f const *p, real *u, real *v);
+bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v);
 
 static inline bool structure_section_get_vertex(s_structure_section const *section, long index, point3f *point)
 {
@@ -729,6 +729,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // `push ebx` first, but section stays in EBX and the BSP in EBP where retail keeps the BSP in EBX and section in its home).
 // MiniMax S (11-16): no new form, no lower score (172): retail holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
 // MiniMax C (11-16): no new form, no lower score (172): retail still holds the BSP global in ebx and keeps the section in its stack home where this build keeps the BSP in ebp and the section in edx, and the 0x11e800 call still takes its four pointers in another register order (the callee's own body is in another file): BLOCKED-BY 0x11e800.
+// MiniMax I (11-17): no new form, no lower score (172): the prologue still pushes ebx first and keeps the BSP global in ebx
+// where this build keeps it in ebp and defers the ebp and esi pushes, and the 0x11e800 call still hands its four pointers
+// over in another register order (retail ecx, edx, eax, esi); that callee's body is in another file: BLOCKED-BY 0x11e800.
 // MiniMax I (11-17): no new form, no lower score.
 // b8B (11-17) walk against retail, fast build on r836: fields, offsets, branch senses, loop shape and callees
 // agree (type 1 at 0x14acb5, type 3 at 0x14acee, loop 0x14ad82-0x14aee0, fill 0x14aef4); no behaviour error
@@ -748,6 +751,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // ebx first while this build keeps the BSP in ebp and defers the ebp and esi pushes, and the 0x11e800 call
 // still takes its four pointers in another register order (retail ecx, edx, eax, esi), that callee's body
 // being in another file: BLOCKED-BY 0x11e800.
+// MiniMax A (11-17): no new form kept, no lower score (172): a null definition with a byte result moved to the top scores 209 and the byte result alone 197, and swapping the section and range declarations gives the same code; what is left is that retail holds the BSP global in ebx and pushes ebx first while this build keeps it in ebp and defers the ebp and esi pushes, and the 0x11e800 call still takes its four pointers in another register order, that callee's body being in src/unknown_11cb00.cpp, which this lane may not edit. BLOCKED-BY 0x11e800.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -829,7 +833,7 @@ bool structure_get_lightmap_triangle(s_structure_collision_result const *collisi
 			{
 				valid = valid && structure_section_get_vertex(section, indices[vertex], &vertices[vertex]);
 			}
-			if (valid && function_11e800(&vertices[0], &vertices[1], &vertices[2], &point, &triangle->u, &triangle->v))
+			if (valid && function_11e800(&point, &vertices[0], &vertices[1], &vertices[2], &triangle->u, &triangle->v))
 			{
 				triangle->part_offset = part_offset;
 				triangle->lightmap_part_index = reference->part_index;
@@ -1104,7 +1108,7 @@ bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 					bounds, &vertices[vertex], &vertex_node);
 				++vertex;
 			} while (vertex < 3);
-			if (function_11e800(&vertices[0], &vertices[1], &vertices[2], &point, &triangle->u, &triangle->v))
+			if (function_11e800(&point, &vertices[0], &vertices[1], &vertices[2], &triangle->u, &triangle->v))
 			{
 				triangle->unknown18 = NONE;
 				*(long *)((byte *)triangle + 8) = COLLISION_OBJECT_14A8E0;

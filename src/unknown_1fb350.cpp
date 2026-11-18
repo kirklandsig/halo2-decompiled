@@ -631,6 +631,9 @@ extern "C" void _ReadWriteBarrier(void);
 // Without the barrier on the old step: function_badc0 in place of the getter 161 (plain agrees); the lookup as one
 // test in the body 161; a direct `if (function_badc0(...))` 161; two release calls 188 (505 bytes); the header's
 // four-field step with the iterator from the global 161 (464 bytes), from a pool local 153.
+// 463: four-field iterator with shared current-datum setter and either index scan. A local or
+// field index with the iterator pool scores 152, and with an entry pool scores 149. NOT kept:
+// the entry pool gives frame 0x14 at retail length, but one pool store and the register split differ.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

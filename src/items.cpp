@@ -2113,6 +2113,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // MiniMax D (11-17): no new form, no lower score (140): the release flag is still cleared with a load, an and and a store where
 // retail masks the byte in place, the returned byte still sits at esp+0xe where retail keeps it at esp+0xf, and retail still
 // keeps two copies of the release impulse where this build shares one: BLOCKED-BY the transform helper's own file.
+// P604: Existing item scaler and shared in-place scaler, each with captured-bit OR,
+// direct success after/before damping, and logical accumulation: 140/190/190/179/140/190/190/179.
+// NOT kept: both captured-bit OR forms tie. Direct success restores +0xf and
+// shortens the body by 18 bytes. The logical join still spills the return byte at +0xe.
 // MiniMax R (11-17): no new form, no lower score (140): the result byte sits at [esp+0xe] where retail has [esp+0xf], the flag clear is a load, an and and a store where retail has a byte read-modify-write, and the impulse helper is shared here where retail has two inlined copies; a permuter run over the body (17 tries, 308 s) found nothing below the 140.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)

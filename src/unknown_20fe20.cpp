@@ -1243,6 +1243,9 @@ void function_2118c0(void)
 // `dword` knot indices with `dword row = b * 8` 135; the band counter byte/char/word/dword/unsigned char/long with `b * 8`
 // or `8 * b` rows 105 each; diagnostics: the knot indices in a function-static or a local `word[3]` with `b * 8` rows
 // 108/105 (all rows still reduce, so an aliasable index home is not what keeps retail's knot rows unreduced).
+// M3 lane 8 r182 (fast): `long row = b; row <<= 3;` 10 (same code); `unsigned long row = (unsigned short)b << 3` 10 (same
+// code); a `long` band counter with `b << 3` 134; the three knot-row pointers declared after p1 and out 10 (same code);
+// `long row = b * 8` with the knot rows packed `row | w` 164 (786 B).
 // @retail 0x211cc0
 void function_211cc0(void)
 {

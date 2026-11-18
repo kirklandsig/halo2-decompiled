@@ -1082,9 +1082,10 @@ bool network_observer_initialize(s_network_observer *observer, void *unknown04, 
 }
 
 /* counts the periods the traffic stayed over or under the configured share
-   of the bandwidth, and tracks the largest and the smoothed value */
+   of the bandwidth, and tracks the largest and the smoothed value; the total
+   comes before the count (0x79260 loads the count first, then the total) */
 // @retail 0x77f90
-void network_observer_update_bandwidth(s_network_observer *observer, long count, long value, long size)
+void network_observer_update_bandwidth(s_network_observer *observer, long value, long count, long size)
 {
 	if (count > 0)
 	{
@@ -1940,16 +1941,6 @@ void function_79660(s_network_observer *observer, long index, long bytes, long d
 		channel->loss_penalty--;
 }
 
-// score 5 (was 8): the remaining differences are the stack slots of count and
-// total: retail keeps count at [esp + 0x14] and total at [esp + 0x18]; ours
-// has them the other way round (qualifying is [esp + 0x10] in both) and the
-// call to function_77f90 then loads them from the swapped slots. The order of
-// the three zero stores follows the declaration order (total, qualifying,
-// count gives retail's store order); all 24 orders of the four locals were
-// tried (5 to 8), and so were count/total declared at the top, moving
-// total += received before or after count++ (105+), and count += 1 (7).
-// Permuter (25 min on r660): best 2, only with network_observer_update_bandwidth's count and total swapped (a
-// behaviour change) and a volatile flag store; not kept.
 // @retail 0x79260
 void function_79260(s_network_observer *observer)
 {
@@ -1969,9 +1960,9 @@ void function_79260(s_network_observer *observer)
 		else if (elapsed >= *(long *)((byte *)observer->configuration + 0x1a4))
 		{
 			long penalized = 0;
-			long total = 0;
-			long qualifying = 0;
 			long count = 0;
+			long qualifying = 0;
+			long total = 0;
 			for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
 			{
 				s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
@@ -1990,7 +1981,7 @@ void function_79260(s_network_observer *observer)
 				}
 			}
 			if (penalized == 0)
-				network_observer_update_bandwidth(observer, count, total, qualifying);
+				network_observer_update_bandwidth(observer, total, count, qualifying);
 		}
 		if (observer->flag4f3e)
 		{
@@ -2269,7 +2260,6 @@ s_network_observer::s_network_observer()
 	memset(owners, 0, sizeof(owners));
 }
 
-#pragma optimize("g", off)
 static __forceinline real observer_budget_rate(s_network_observer *observer, long size, bool limit)
 {
 	real frame_rate = network_frame_rate();
@@ -2286,13 +2276,17 @@ static __forceinline real observer_budget_rate(s_network_observer *observer, lon
 			break;
 		}
 	}
-	if (result == 0.0f) result = observer->configuration->rates[rate_count - 1] * frame_rate;
-	if (limit && result > frame_rate * 0.5f) result = frame_rate * 0.5f;
+	if (result == 0.0f)
+		result = observer->configuration->rates[rate_count - 1] * frame_rate;
+	if (limit)
+	{
+		real maximum = frame_rate * 0.5f;
+		if (result > maximum)
+			result = maximum;
+	}
 	return result;
 }
-#pragma optimize("", on)
 
-#pragma optimize("g", off)
 static __forceinline long function_779f1(s_network_observer *arg_0, long *arg_1, long arg_2)
 {
     long local_0 = 0;
@@ -2307,9 +2301,7 @@ static __forceinline long function_779f1(s_network_observer *arg_0, long *arg_1,
     }
     return local_0;
 }
-#pragma optimize("", on)
 
-#pragma optimize("g", off)
 static __forceinline long function_779f4(s_network_statistics *arg_0)
 {
     real local_0 = (real)arg_0->total.bytes * arg_0->rate_scale;
@@ -2317,11 +2309,8 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
     local_0 *= 1.0f / 1024.0f;
     return observer_round(local_0);
 }
-#pragma optimize("", on)
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
-// score 205 (was 220): no behaviour difference found. Still differs: (1) the stack
+// score 2 (was 89; the text up to the round 135 paragraph describes the older 205 layout): no behaviour difference found. Still differs: (1) the stack
 // slots of rate/j and count/float temp are swapped (retail rate+j at esp+0xc,
 // count at esp+0x10; moving rate's or count's declaration did not change it);
 // (2) retail rereads the refresh word g_485ac0 (movsx) in each of the three
@@ -2333,6 +2322,17 @@ extern "C" void _ReadWriteBarrier(void);
 // min/max written as if/ternary forms (206), ternary vs sum order for
 // value4e28/rate (205-224).
 // Permuter (25 min on r663): nothing below 89.
+// Round 135 (m3 lane 9, plain with 0x78090, 0x78190 and 0x75da0; --fast gives 205 here, it builds this one differently):
+// retail inlines the matched 0x78090 twice (large set, limit clear then set) and 0x78190's test once: the existing
+// network_observer_rate_for_size and network_observer_rate_below called here stay out of line under LTCG (442, 1349
+// bytes). On the private copy: its `#pragma optimize("g", off)` and both barriers dropped, the limited flag through the
+// existing function_78190 92 (the second copy then multiplies frame rate by the table entry, one byte short); its limit
+// test written as 0x78090's (`real maximum = frame_rate * 0.5f; if (result > maximum) result = maximum;`) 2. Left: the
+// flag4f18 test loads into BL where retail uses AL: ours reads the 0x140 value before the flag, retail after the flag
+// test but ahead of the branch. Tried on 2: the sum as one expression `value140 + (flag ? value4e28 : rate)` 93 and
+// with the ternary first 93 (the flag gets AL, but the 0x140 load sinks to the join); if/else with the whole sum in
+// each arm 245; `budget = rate; if (flag) budget = value4e28; budget += value140;` 251; the flag read first into a
+// bool 2 (same code). The same pragma dropped from function_779f1 and function_779f4 as well: 2 (same code).
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2411,14 +2411,8 @@ void network_observer_update_channel_budgets(s_network_observer *observer)
 			{
 				observer->value4f20 = (observer->value4e28 << 10) / count;
 				observer->real4f24 = observer_budget_rate(observer, observer->value4f20, false);
-				_ReadWriteBarrier();
 				observer->real4f28 = observer_budget_rate(observer, observer->value4f20, true);
-				_ReadWriteBarrier();
-				real frame_rate = network_frame_rate();
-				bool limited = false;
-				if (observer->real4f24 + 0.0001f < observer->configuration->real110 * frame_rate) limited = true;
-				if (observer->real4f24 + 0.0001f < frame_rate) limited = true;
-				observer->flag4f18 = limited;
+				observer->flag4f18 = function_78190(network_frame_rate(), observer->real4f24, observer, true, true, false);
 			}
 			else
 			{
@@ -2452,8 +2446,6 @@ void network_observer_update_channel_budgets(s_network_observer *observer)
 		observer->time4f08 = observer_time_get();
 	}
 }
-
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x78880
 void __stdcall function_78880(void *p)
@@ -2504,6 +2496,13 @@ long function_75890(long time);
 // chained, attempts in a local), and the connection reload goes to eax with the lea after its push where retail uses
 // ecx and lea before push ecx (0x77900-0x77909: also tried an address local, connection fetched at the call 218).
 // Tried: if/else state local 188 (599), `next = 6; if (state != 5) next = 8` 187 (600), `if (!due) return;` 8.
+// Round 135 (m3 lane 9, fast with 0x75da0 and 0x76a40): the two timer stores through
+// `observer->channels[channel_index]` 113 (710 bytes); the forget + state 1 pair as an inline helper used at both sites
+// 8 (same code); `due` started false at its declaration 8 (same code); the owner loop as an inline helper returning
+// whether an owner wants the channel, tested in one condition with the attempts test, 320 (539 bytes); the two stores as
+// one 8-byte memset 123 (620 bytes: the stores now precede the attempts load as in retail, but the memset takes its own
+// address temp and zero, so `cmp ax, cx` becomes `test ax, ax` and the out-of-range arm loses the shared zero).
+// The other matched callers of 0x88220 (0x785d0, 0x94b40) set the address up last, so no parameter-order evidence.
 // @retail 0x776a0
 void s_network_observer::function_776a0(long channel_index)
 {

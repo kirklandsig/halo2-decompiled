@@ -913,10 +913,21 @@ static inline long team_score_195ed0(long team)
 
 /* updates the game results: the active teams, the players' configurations,
    the ranks and scores, and which machines are still connected */
-// score 191 (was 191): The flag read precedes the configuration copy, and the final score query expands. Tried:
+// score 191 (was 191): the teams flag is read before the configuration copy and address-index
+// store, and the final team-score lookup expands where retail calls it.
+// Shared properties type 191, typed record copy 191, conditional team index 191, nullable team
+// entry 314, combined team guard 333, team read before flag 309, record reference 191,
+// native counter field 191, and branch-local score stores 192.
+// The flag read precedes the configuration copy, and the final score query expands. Tried:
 // existing score clamp 192; separate clamp stores 147; inline score clamp 100; existing score on lower/upper
 // test 223/216; statistics pointer retained 191; shared active-team query 138; reversed clamp tests 210. NOT
 // kept: 100 and 138 differ at the score or active-team call boundary; 147 grows farther from retail.
+// P608: Empty-slot continue, while-tail/lookup/skip, do-while-tail/latch/skip and terminal
+// inequality: 191/320/886/886/902/902/902/716. NOT kept: tied flag schedule or lost unrolling.
+// Round 416: Shared absolute-slot lookup with a machine-player or byte view,
+// direct or retained pool, and a retained destination each score 191. The same
+// four forms with the destination getter at each access score 732. NOT kept:
+// the getter forms roll the player loop and the flag read stays ahead of the copy.
 // @retail 0x195ed0
 void function_195ed0(void)
 {

@@ -1156,6 +1156,18 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 // Round 27 (lane 13): parameters reordered to (color_a, color_b, system, multiplied, tinted): all three retail
 // callers query the tint before the multiply flag, which a call written with the tint last evaluates first
 // (0x174a30 292 -> 248 with it); this body's code is unchanged (17), and so are 0x177040 and 0x178c80.
+// M3 lane 16 r133 (fast with 0x174a30, matched unless given; control 17): the half path as `color3f *unpacked =
+// unpack_color3f(color_b, &color); vector3f_scale(&color, 0.5f, &color); pack_color3f(unpacked)` 41 (the half path is then
+// retail's but for `push eax` where retail copies the pointer, `mov ecx, eax; push ecx`, and the untinted exit's far jump);
+// the same with the unpacked colour bound by reference 41 (same code); the scale written into the unpacked pointer with its
+// result packed 42 (204 B, stores through EAX); one shared pack of a per-path colour pointer 42 (the pack is duplicated per
+// path as in retail, but the system moves to EDI and colour B to ESI; 0x174a30 27); multiplied tested first with the half
+// path last 47 (204 B).
+// Half buffer scaled and decoder result packed, with the product first return
+// used for pack, read, pack plus second return, or both returns read: 46/48/42/44.
+// Half buffer written from the returned decoder pointer and that pointer packed,
+// with the same four product forms: 46/48/44/46. The two 204-byte forms
+// still branch to the distant exit and differ in their decode/pack registers.
 // @retail 0x175a80
 void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted)
 {
