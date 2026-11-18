@@ -1098,6 +1098,19 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // top 240 (same code). Reading: retail's bit-30 flags load is a separate value from the clear's reload (`mov edi, [ebp +
 // 4]`), as the 0xbfe20 clear gives (re-measured 262, 813 B), and its entry keeps three values (object_index ESI, the
 // parameter EDX, result EDI) where ours coalesces the parameter with result in ESI.
+// M3 lane 1 r118 (fast with 0xbfe20/0xbfe60/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240, aligned 177,
+// register-masked 67). Compile-only sweeps of every combination of the listed levers (early-test object spelling x one
+// or two tests x `object` source x bit-29 object x clear x four exit shapes x final_matrices position x result position,
+// 3,456 bodies; then 1,152 more over the order of result / final_matrices / the header / a named table pointer): none has
+// retail's entry, and the compile-only build does not give the linked build's entry registers here, so it is no guide for
+// this function. Fast: a named table pointer (`headers`) with result declared between it and the header, on this body
+// 240 (aligned 183); the single exit with final_matrices left late, the 0xbfe20 clear and bit 29/+0x34b through
+// header->object 295 (825 B; aligned 91, masked 41: frame 0x4c, result in EDI as a copy of the parameter's register and
+// final_matrices stored late from that register, as retail, but object_index / table / parameter sit in ECX / EDX / ESI
+// where retail has ESI / ECX / EDX: retail loads the table pointer first, then the parameter, then object_index, ours
+// loads object_index first); that with the named table pointer and result ahead of the header 294 (aligned 90); with only
+// the model test nested 304 (813 B, aligned 129); object_index, the matrices parameter or both read through their own
+// address on the 295 form 295/295/295/295, with the table pointer 294 (same code: the reads fold). Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
@@ -1288,8 +1301,10 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
-// score 20 (was 87; b10C): earlier 97; retail is 2 bytes longer. Left: retail tests the node count for > 0 before
-// score 87 (was 87; 97 before): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
+// score 20 (was 20; 87 before b10C, 97 earlier): ours is 5 bytes longer (1399 against 1394). Left: only the
+// no-model branch's parent lookup (ours takes the index in ECX and reloads the pool, retail has the index in ESI
+// copied to EAX and the pool still in ECX from the current-object lookup).
+// Earlier head (at 87, was 87; 97 before): retail was 2 bytes longer. Left then: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
 // in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
 // 81: the parent looked up through the existing object_get/object_node_matrix accessors, once for the
@@ -1561,6 +1576,23 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // array 20, a `headers` local for the current and render-branch lookups 21, the no-model data field read through a
 // `byte *volatile const *` (as 0xb7740 does) 20, that with a pool local shared with the current lookup 292 (pool moves
 // to edi). Retail's `mov eax, esi` needs the index live past the lookup; no form here gives that.
+// M3 lane 1 r119 (fast with 0xb8bd0/0xbdc40/0xbc820/0xbd020/0xbee60/0xbfa40, all MATCH unless noted; control 20,
+// aligned 8): the no-model arm calling 0xb8bd0 as the render arm does 47 (1385 B: the index then takes ESI and is
+// copied to EAX for the call, as retail's block begins, but the call stays); 0xb8bd0 defined inline and called
+// there 394 re-measured (1373 B, both sites inline; the no-model block then has the pool in EBP and the index
+// masked in place in ECX, so a truly inlined 0xb8bd0 does not give retail's copy either); a pool local declared at
+// the current lookup, spelled for current/render/no-model matrix/no-model flag: pool,pool,pool,g 357 and
+// pool,pool,g,pool 358 re-measured, with pool,g,pool,g / pool,g,g,pool / g,g,pool,g / g,g,g,pool / g,pool,pool,g /
+// g,pool,g,pool 357 to 358 as well (all 1394 B, retail's length, but aligned 61 to 142: the pool then lives in EBP
+// from the first lookup on, which retail's three separate loads rule out); the no-model lookups indexed by
+// `(word)parent_index`, both 17 (1396 B, aligned 9: `movzx eax, cx`, not retail's copy and mask; under the keep
+// bar and not retail's form), the first only 373 (1397 B, aligned 66), the second only 377 (1398 B, aligned 50),
+// one parent-object local from it 47 (1387 B, aligned 12). Diagnostics, restored at once: an unread trailing
+// parameter on 0xbdc40 given the parent index in the no-model call 20 (same code here: the argument is dropped
+// before registers are chosen, so it keeps nothing live; 0xbdc40 itself 7), given NONE everywhere 20 (0xbdc40 7).
+// Retail masks the index in place in the render arm (0xbd24c, where it dies) and copies it first in the no-model
+// arm, so there the index is still live after the mask when registers are chosen; what reads it afterwards with no
+// instruction is still open.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

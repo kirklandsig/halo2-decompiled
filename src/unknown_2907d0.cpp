@@ -163,6 +163,16 @@ transform4x3f *function_b8c00(long object_index, long *node_count);
 // matrix through the existing 0xb8bd0 after 0xb8c00 gives the count 146 (451 bytes); the bound test as `node_count <=
 // arg_1` 21 (the compare's operands swap); the initial point copied through a const reference to the global 127 (452
 // bytes). The transform still takes EBX and the point's y EBP, and the constant 1 stays shared.
+// M3 lane 11 r116 (fast with 0xb8c00, 0x11df30, 0x142570 and 0x200e60, matched throughout): the placement part
+// (constructor, position, field10, the angle call) as a forced-inline helper returning true, the caller then storing
+// field1c and field2e and returning that result, 23 (the constant 1 still shared, the root's two products swap); the same
+// helper returning nothing with a literal `return true` 23 (same code); that part as a forced-inline member of the
+// record called on arg_3, field1c/field2e stored by the caller, 19; the whole fill as a forced-inline member returning
+// true, `return arg_3->place_facing(...)`, 19; field1c and field2e through an inline member setter (mode, count) 19 (the
+// three 19s the same code). Reading: 0x2902b0 declares the record, calls this, then overrides field1c/field2e (2 and 3)
+// when its count is at most 1, and 0x256bd0 fills a local record with the same position, NONE, facing, 4 and 1 sequence;
+// in retail both exits set AL at the same place in the pop sequence (after `pop ebp`), ours moves the true exit's load
+// ahead of `pop ebp` because it is the shared 32-bit 1.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

@@ -126,6 +126,22 @@ __forceinline long portal_path_gain(real distance, real range)
 // confirmed). Bitmap clear before cluster 312. Closest distance after seed 308. Search and sort scopes 296.
 // Early scratch 311. Named ordinals 311. Bounded output count 311. Shared output element 311. Explicit gain
 // arms 302 (NOT kept: frame 0x434). Search scope 311. Sort scope with gain arms 302 (NOT kept: frame 0x430).
+// Round 628: signed portal 363, both ordinals signed short 363, const path-list reference 296,
+// integer sort scratch 296, aggregate validity clear 368, shared destination sound index 355,
+// shared seed sound index 367, long packed link 317, sort validity before ordinal 299.
+// The entry still uses EBX for the starting cluster and spills both table bases.
+// The starting cluster still occupies EBX, and both table bases are kept across the portal loop.
+// Shared bitmap setter/range test/order-output tests/all operations 296/317/296/317.
+// Seed-and-walk cluster scope 298; early closest distance 296; signed starting sound at the
+// closest test 296; signed destination through range/bitmap 317, with shared test 317.
+// Closest distance, valid bitmap and starting distance names 296/296/296.
+// Round 422: Explicit portal table / cluster table / both / pointer addition 296/296/296/296.
+// Sort-preparation count snapshot 296, capacity-first limit 296, selected comparison distance 296,
+// default range with an override 351. The table spills, starting-cluster and validity homes remain.
+// Portal/destination record references, separately and together, 296/296/296. Workspace before starting-
+// cluster lookup 296, early path-list lookup 358, packed-entry reference 341, nested flag and sound
+// gates 296, destination lookup inside the flag gate 328. The early list and late destination forms
+// recover EBP at entry, with diffs at +0x28 and higher scores.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -224,7 +240,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
+// score 354 (was 354): The entry frame is 0x430 versus retail's 0x428. Retail keeps the starting cluster in
+// EBP, reloads both BSP table bases per path entry and resolves the destination before testing flags. The
+// extra table-base spills persist in the build.
+// Earlier score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
 // both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
 // before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
@@ -250,6 +269,22 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // nearest distance before portal 354, late order array and integer sort scratch 354.
 // NOT kept: both 323 forms keep the count snapshot where retail reloads the count and retain the 0x430 frame.
 // The 352 form gains two. The path table spills and starting-cluster register still differ.
+// Round 628: scoped sort scratch 354, scoped integer scratch 354, scoped scratch with validity
+// memset 365, and the paired clear/sort/positive guard 364 with the 0x428 frame.
+// Separate traversal scope 354, chained validity words 354, long packed link 351,
+// late distance initialization 358, scoped scratch and explicit output cap 363.
+// NOT kept: the 351 form gains three, with the 0x430 frame still present.
+// Advance the gain, portal or cluster output pointer at each row store 368/355/357.
+// Cursor pairs 350/350/365, all optional cursors 359, every output cursor 359.
+// NOT kept: the two 350 forms recover the 0x428 frame at 1368 bytes and gain four.
+// Both BSP table bases still spill and the starting cluster remains in EDI.
+// portal element reference 354; destination element reference 354; destination reference before portal flags
+// 368; advance starting cluster table base 354; advance reloaded portal table base 354; advance destination
+// table base before flags 368; signed extended packed link receipt 351; distance before nested starting
+// environment check 354. NOT kept: the signed packed-link receipt reaches 1363 bytes and frame 0x42c but
+// gains only three points. One table base still spills and the other remains hoisted. Resolving the
+// destination before the flags with the reference or advanced base shortens the body to 1347 bytes and
+// regresses. The opening body is restored.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

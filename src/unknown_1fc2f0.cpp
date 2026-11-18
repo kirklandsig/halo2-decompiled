@@ -201,6 +201,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax B (11-18): no new form, no lower score (32): retail spills i before j and parks the deltas i, k, j in xmm4, xmm3, xmm2 while this build spills j first and parks i, j; the deltas i, j, k (79), the deltas through the shared scaled_difference helper (83) and the deltas through the union's array members (79) all measure worse, so the body stands.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax C (11-16): no new form, no lower score (32): the correction through the existing vector3f_add_scaled straight
@@ -809,6 +810,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // written out as `j*j + k*k + i*i` 79, `k*k + j*j + i*i` 79, `j*j + i*i + k*k` 79 (chains i first), `j*j + (k*k + i*i)` 53
 // (chains j first again, but so are the stores); this body's j, i, k deltas with `k*k + j*j + i*i` 32 (same code). Retail
 // stores i before j and still squares j first, which no single written order gives.
+// Aggregate correction mutable or const 32/32, aggregate corrected velocity mutable
+// or const 50/50, both aggregates mutable or const 50/50, aggregate correction
+// with shared sum or setter 57/32. NOT kept: the i/j store sequence and correction
+// registers remain different.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
