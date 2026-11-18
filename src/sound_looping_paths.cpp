@@ -157,7 +157,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 846 (was 846): unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 846 (was 846): Frame 0x4e0 agrees. The entry zero uses EBP and the target count, primary source and query arrays have different homes.
 // entry zero, target-count, primary and query-array homes differ in the 0x4e0 frame.
 // unchanged in m3 lane 9 r133 (at the end of this note). Earlier 846 (was 858): MiniMax S's PIN_126660 clamps (11-15, below) on lane 1 r109's form. Earlier 858 (was 866): m3 lane 1 r109 at the end of this note. Earlier 866 (was 866): s1F walk 11-06: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // frame layout and register homes remain (earlier starts 919 and 886 below).
@@ -627,6 +627,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Sound table held through the scan and matched row reacquired after the distance call,
 // with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
 // Original body restored.
+// Round 623: accepted-range cursor throughout, ordinal duplicate scan, ordinal conversion and
+// advance-before-fill 958/989/947/967 with the short query count, 956/958/948/966 with the full
+// query count. NOT kept: the ordinal duplicate scans put zero in ESI but keep other count and query
+// homes and lengthen the body.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

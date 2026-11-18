@@ -216,10 +216,14 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 354 (was 354): Frame 0x430 versus 0x428; the starting-cluster register and portal and cluster table
-// lifetimes differ. Tried: const portal 354; const views 354; endpoint mask before shift 354; const portal and
-// mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
+// score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
+// both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
+// before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
+// Round 623: narrow destination before flags 374, in nested gates 374; unsigned packed link and
+// cluster before flags 373; one destination environment after distance calls 363; rejecting range gates
+// 354, selected distance 354, comparison selected by the validity bit 356; one starting environment 326.
+// NOT kept: retail rereads the starting environment, and the 326 form retains the 0x430 frame.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
