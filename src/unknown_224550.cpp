@@ -668,6 +668,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // leaves the body 10 bytes longer than retail.
 // Separate input bounds for dynamic UV a/b/both, fixed UV a, and their combinations: 219/162/162/202/199/170/207.
 // Aggregate-initialized secondary bounds 162. Kept the secondary input bounds in the bitmap arm.
+// P608: Current-frame weight shared from frame admission, enabled blend, explicit disabled arm
+// or deferred blend into both pivots and both downstream pairs, aspects or inverse extents:
+// 398/416/416/405/397/367/357/396. NOT kept: every form regresses and changes frame layout.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
