@@ -692,6 +692,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Independent initialized/branch-set scales 355/244; final vector scales 363/342.
 // With secondary reciprocals after primary aspect 392/310/415/327.
 // NOT kept: each form regresses and widens the extent; blend remains unmatched.
+// Nested bitmap tests 162; combined sequence/count gate 344; interval decrement after count test 271;
+// wrapped frame ordinals 162; frame references 162; blend published after geometry or after aspect
+// 401/409; conditional draw angle 179. NOT kept: both deferred blend forms expand the frame to 0x64,
+// and the 1939-byte count-gate form changes the entry schedule and raises the score.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

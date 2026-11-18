@@ -172,6 +172,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // assignments 377 (aligned 89, a shared zero register appears); one helper with the first pin in the normal arm 243;
 // macro pins in one helper 254; the exponent as one expression 262 (1352 B). With main's 0x14b240: the test helper
 // alone 317; the long-bits decibel helper alone 323; the path entry types alone 357; all three 359 (none kept).
+// Portal-table, destination-table, both, or seed-through-destination table references 296 each;
+// packed link base or address 296; path ordinal advanced at the link read 367;
+// starting-cluster and decoded portal names 296. NOT kept: the starting cluster and both
+// live BSP table bases retain their opening allocations.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
