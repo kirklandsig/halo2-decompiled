@@ -933,6 +933,16 @@ struct s_1aab50
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax G (11-18): no new form, no lower score (382): our false exit already has retail's own epilogue (xor al, al;
+// pop ebp; add esp, 0x58; ret 8), but it is emitted after the true exit instead of at 0x1aac35; giving the else
+// branch its own return - `return false;` and `local_2 = false; return local_2;` - folds the result byte away and
+// shrinks the frame to 0x54 (508 both times), while retail keeps that byte at [esp+0x13], set to 1 and reloaded at
+// the exit, so both spellings are restored.
+// MiniMax G (11-18): no new form, no lower score (382): retail's false exit (xor al, al; pop ebp; add esp, 0x58;
+// ret 8) still lands after the main exit instead of in the middle of the body, and every early-exit spelling folds
+// the result byte away (508); the body keeps its float chain, where retail evaluates the dot product in a
+// different order. The permuter's best variant only moves 0.5f into a local (381, a gain of one under the keep
+// bar, and a local holding only a constant), so the body stands.
 // score 382 (was 382): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note): the
 // prop view through the existing prop_node_view wrapper 382 (same code); the computed entry result with that
 // wrapper 508 (1921 bytes, frame 0x54: 0x25d740 still expands under the computed result); the result preset
