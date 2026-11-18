@@ -924,6 +924,12 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // MiniMax S (11-17): fast build on r852: the request store through a named local scored 107 (was 87) and the permuter's 5 tries
 // stayed at 87; retail's homes are side0 +0x10, {sum, side1} +0x14, {length, adjusted} +0x18, index +0x1c against ours {sum, side0}
 // +0x10, {length, side1} +0x14, index +0x18, adjusted +0x1c, and retail loads the 0x110ab0 argument in EAX where ours uses ECX.
+// Round 622: second-probe branch with fallback ternary 7; second-probe ternary 7; entry zero default 111; zero
+// default after first rejection 87; const fallback maximum 7; nested fallback side choice 7; named reverse probe
+// with fallback ternary 7; complementary reverse-probe rejection 7.
+// NOT kept: the six 7 forms still exchange the lateral and maximum XMM registers and depend on a one-use unit
+// field. The two zero defaults shorten the body to 959 bytes. The unit-test scratch and target/vector schedule
+// remain in the baseline body.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
