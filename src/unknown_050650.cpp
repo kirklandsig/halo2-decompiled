@@ -940,6 +940,8 @@ struct s_collision_result_buffer_1697c0
 // direct scaled-axis setter 309; planar normalization with field stores/setter 341/357;
 // fallback-first planar normalization 407; planar length from initialized axis 302. NOT kept:
 // the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
+// The startup zero register and random/trig transfer word still differ.
+// Attempt- or function-scope candidate with the two draws and turns in one block, inner pitch block, pitch-only block, and pitch-only block with immutable draws all score 270 (eight forms).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
