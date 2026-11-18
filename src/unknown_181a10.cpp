@@ -1008,6 +1008,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
 // Separate material-arm shape references 327. Shared receiver and early short material 328.
 // NOT kept: the 0x44 frame form still spills the nodes to different slots and raises the score.
+// Named signed distance in the instance/world/both plane arms 238/238/238;
+// named projection in the same arms 238/238/238; all three products or both
+// projection and distance stages 238/238. The frame and origin homes are unchanged.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

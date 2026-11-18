@@ -1826,6 +1826,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with positive header read 165; cleared outcome with positive header read 172; short circuit outcome
 // with positive header read 188; accumulated outcome with positive header read 172. NOT kept because
 // reusing the resize result regresses the score and changes the frame.
+// Unsigned query/write/both differences 166/101/164. Expected-first query/write/both
+// 164/119/163; direct tests of both differences 164/163. All retain the frame and
+// extent but leave the query and transfer homes exchanged.
 // @retail 0x213970
 void function_213970(void)
 {

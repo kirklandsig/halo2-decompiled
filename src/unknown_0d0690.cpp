@@ -1797,6 +1797,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // selected/missing completion assignments 572, missing/selected completion assignments 589.
 // NOT kept: the count-predicate form reaches the retail frame but grows to 2194 bytes. Late readback and both
 // completion assignments lose a matched caller.
+// Primary clamp-only/full-output scope 529/529; reflected clamp-only/full-output
+// scope 529/529; joined and separate output scopes 529/529; scoped curve outputs
+// with separate luminances 530; with the normal scope ending at its final copy 530.
+// The 0x2c frame and selection spill remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

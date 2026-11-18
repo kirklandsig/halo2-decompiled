@@ -549,6 +549,10 @@ struct s_24e9c7_points
 // The across/side spill above the result still differs. Backward addition of the negated side, with original
 // across scalars, a separate pair, a sized side scaled in place, or an in-place two-stage side: 167, 161, 161,
 // 163. Backward subtraction on the same four producers: 167, 161, 161, 163. All eight shrink the frame to 0x40.
+// Seed the upper displacement with the unscaled forward pair before size,
+// after across, after height, or after width. Signed products and separate
+// scale/negate stages respectively 129/129, 129/129, 127/127, 125/125.
+// All retain 743 bytes but the early across spill and height home stay wrong.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
