@@ -457,6 +457,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // order and XMM3/XMM5 swap), and before 0x2104b0 retail stores the collision marker and forms the entry pointer ahead
 // of the point's x/z stores.
 // Earlier head (at 45, was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier score history (71 before).
+// score 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
+// Earlier score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
@@ -1050,6 +1053,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // pathfinding store and the marker are what 0x26d0e0's body does (it sets the marker and calls 0x26d100, and its third
 // parameter is unread), so retail reads as that body inline here with 0x1fa7f0 inline as the unread argument; no
 // existing inline form of it exists, and src/unknown_26c380.cpp was another lane's this round.
+// The rotation still schedules the direction components differently, and the transform
+// input stores precede the collision marker. Lifted coordinates in the point setter
+// 172, lifted point aggregate 67, named lifted coordinates 172, separate collision
+// probe point 58, disjoint transform and probe points 56, scoped pathfinding views
+// 77, direct pathfinding views 26, direction setter 248. Original body retained.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

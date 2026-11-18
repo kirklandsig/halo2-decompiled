@@ -129,6 +129,10 @@ bool function_1946f0(s_bitstream *stream)
 // an early value-numbered data read does not reorder the in-block loads); `short byte_index` 47 (143 bytes, a movsx);
 // a force-inline clear helper taking (data, size, saved) with the stream's data and size passed in 37 (the inlined data
 // parameter is loaded early into EBX, not propagated to its uses); the index through a `long &` bound to a plain local 2.
+// Round 118 (m3 lane 10, fast): the masked byte and the clear start as `byte_index + stream->data` sums 2; a named
+// `long bit_index = saved % 8;` for the mask 2; the pop as `checkpoint_count--;` then the read 2; the mode and position
+// tests nested 2; unknown2c stored first, then the index, then `unknown30++` 15. Both LEAs stay data-first in every
+// 140-byte form.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

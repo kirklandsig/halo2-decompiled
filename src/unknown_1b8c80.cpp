@@ -345,6 +345,13 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // an else block for both unoccupied-arm calls 99 (368 bytes); the unit index read once at function scope with `unknown3b4
 // != 0` 109 (389 bytes); both unoccupied-arm tests through an inline helper taking the seat by `const &` 95 (frame 0x310: the
 // seat address is no longer spilled, its fields read through ESI). Restored.
+// Round 118 (m3 lane 10, fast with 0x1b8eb0/0x11b0c0/0x11ade0, all matched each time): a pointer local to the
+// seat-index field at the bit11 block top for all three calls 3 (same code); a forceinline helper taking (unit, seat
+// pointer) for the 0xc8200 test 74 (frame 0x310, 380 bytes); a `const &` to seats[i] at the bit11 block top for all
+// three calls' arguments 103 (363 bytes); pointer locals to both the object-index and seat-index fields there 102 (392
+// bytes); the seat-index field pointer with 0xc8200 nested under the 0x1b8d80 test and a block-local unit index 3
+// (reload EAX as retail, but the order is reload, unit, seat, object where retail has reload, seat, object, unit).
+// Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -1546,6 +1553,16 @@ void function_1f86a0(long actor_index);
 // byte and keeps the loop entry in EBX, saved after the early return; ours keeps the mask in BL and the entry in
 // memory), and in the head retail takes the actor index in EDX and reads the object table's data ahead of the actor's
 // index arithmetic. The tail from the seat-definition lookup on agrees but for frame offsets.
+// MiniMax G (11-18): no new form, no lower score; the masked flags byte still lives in BL here
+// while retail spills it to F+3 and keeps the loop entry in EBX, so the frame is still 0x10 against retail's 0x14, and
+// the incoming actor index is still taken in ECX where retail keeps it in EDX; the split around the two root calls is
+// decided by the memory summary of 0xbaf40, whose body is in src/unknown_0bad50.cpp: BLOCKED-BY 0xbaf40. Measured and
+// reverted: the 0x20 mask test written at both uses with no local 244 (868 bytes); the mask as a bool 241 and as a short
+// 253 (878 bytes); the mask declared at function scope 134; the two root calls compared the other way round 134; the
+// same test written as an if with the two results in locals 241; one local holding the four true arguments, the seat
+// test split in two and the flags or written as an assignment (together and one by one) 134 each; the permuter's only
+// lower form (123) swaps joint_decline's two arguments, and the callee reads its first parameter as the actor index
+// (retail puts the actor index in EAX at that call), so the swap is not kept.
 // MiniMax I (11-16): no new form, no lower score (134): what still differs is the frame, 0x10 here against retail's
 // 0x14 - retail spills the masked flags byte to the stack and keeps the loop entry in EBX where this build keeps the mask
 // in BL and spills the entry - and the incoming actor index stays in ECX where retail keeps it in EDX; the memory summary

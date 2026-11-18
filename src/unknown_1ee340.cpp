@@ -263,6 +263,11 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // any of them): the vertex bound by reference as the m128 element 6, as a point3f 6; the count bound by reference
 // (`long &count = vertex_count;`) for the address, the tag and the increment 6; the source point bound by const
 // reference 6; the vertex pointer passed through a const reference 6.
+// M3 lane 16 r134 (fast with 0x1ee4d0/0x1ee500, both matched throughout; control 6): the vertex set through a member
+// `set(x, y, z, w)` of a 4-real record view of the array 6 (same code); a member `set(point, w)` reading the point inside 106;
+// the radius from `real g_47f068 = 0.01f;` defined here, the four members in the initializer list and the member setter, in
+// all seven combinations, 6 each; the vertex append (address, set, w, tag, increment) as an inline member function 6; the edge
+// as a `s_shape_edge const &` 6 (same code each).
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
@@ -594,6 +599,13 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // copy 259 (991 B); the found flag declared after the normalize 260. Retail loads the ray's start and end into registers
 // once, subtracts there and stores the start copy from the same registers (frame 0x90): the value-argument setter form for
 // both points, which needs a one-use end copy and so stays with the BLOCKED-BY 0x23a220 chain above.
+// MiniMax B (11-18): score 192 (was 192): no new form, no lower score. Read the retail frame again: with the frame base
+// at esp, retail keeps the length at +0, the plane at +4 (its three components) with plane.d at +0x10, the direction at
+// +0x14, the ray start at +0x20, the projected point's home at +0x14 (the direction's dead home) and the polygon buffer
+// at +0x50..+0x8f, so the 0x90 frame holds three more dwords above the ray start than this build's 0x84 frame, and every
+// local therefore sits at another offset; retail stores plane.d (the zero) and keeps the offset, the origin and the two
+// edge vectors in registers, as this build does, so the extra twelve bytes are the allocator's own, not a missing local.
+// The chain stays BLOCKED-BY 0x23a220, whose definition is in another lane's file.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

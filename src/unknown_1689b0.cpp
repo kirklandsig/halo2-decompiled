@@ -1584,7 +1584,7 @@ bool function_2469b0(s_shapes const *shapes, point3f const *start,
 
 real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
-// score 580 (was 606): frame 0xb964, plane.j cursor and ESI query zero agree. Sum homes, axis reload and early remainder still differ. Earlier scores 610, 637, 640 and 552.
+// score 551 (was 580): frame 0xb964, plane.j cursor and ESI query zero agree; projected and first point now at retail's homes. Sum homes, axis reload and early remainder still differ. Earlier scores 606, 610, 637, 640 and 552.
 // MiniMax I (11-16): no new form, no lower score (606): the first difference is still the early exit's target at +0x2e.
 // Retail saves ESI and walks the prisms from &prism->plane.j (the plane's i at [esi-4], the point count at [esi+0x14])
 // where ours saves EBX and walks from &prism->point_count (the plane's i at [esi-0x18]); the first accumulator has
@@ -2050,6 +2050,19 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // Zero-based advance before/between/within the calls 582/598/607. NOT kept: the
 // 579 and 598 forms still divide after the first reconstruction, and 582 changes
 // the frame. Sum homes, early signed remainder and axis schedule remain. Original body restored.
+// M3 lane 8 r184 (fast and plain with 0x16a440/0x120790/0x2469b0/0x17dd80): kept 0x120790's one-store ternary tail (lane 9
+// r124's lead; retail's two inlined copies here store out[axis] once after the join) 580 -> 551 (2877 B; 0x120790 still
+// matched, 0x17dd80 453 unchanged). On it, match-only: the ray arms as `if (use_normal) { normal } else { edge }` with a
+// 0-based edge loop, `(edge_index + 1) % point_count` named at its top and `radius * radius` at its use 573 (2879 B, frame
+// 0xb968: retail's edge-loop head exactly, but relative.i takes XMM0 where retail has XMM5 and the side cross spills one
+// more value); plus the nearest reset right after the distance 573 (retail's store place); on that, edge computed before
+// relative 581 (2850 B), relative through vector3d_from_points3d 597, both vectors through it 590.
+// Projected-point setter 598, scaled vector sum 629, direct component loop 570,
+// copied origin with component updates 639, separate scaled displacement and add 619,
+// in-place displacement and add 631, in-place scaled sum from copied origin 649,
+// setter with early nearest reset 597. NOT kept: the 570 form grows to 2893
+// bytes and leaves the projected-point homes and late remainder.
+// Component loop with a shared projection scale 614.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

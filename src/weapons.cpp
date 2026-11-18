@@ -2941,6 +2941,11 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // MiniMax G (11-10): no new form, no lower score (389).
 // MiniMax R (11-10): no new form, no lower score; retail's frame is four bytes and keeps the weapon pointer in ebp with only the definition spilled, ours is eight bytes and spills both.
 // MiniMax C (11-01): no new form, no lower score.
+// MiniMax H (11-18): score 389 (was 389): no new form, no lower score; retail opens with one four-byte slot and
+// takes the table entry into EBP where this build reserves eight bytes and keeps the weapon index in EBP with
+// two pointers spilled, and retail's switch is a comparison tree whose root branches jle to the less-or-equal
+// side where this build's branches jg and tests the two activity names before the switch; the single
+// 27-case switch with retail's pivots measures 412.
 // score 389 (was 398): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
 // tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
 // all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,
@@ -3275,6 +3280,9 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax B (11-18): no new form, no lower score (190): the conversion scan written as a while loop with the count in
+// its condition measures 198, and the permuter's annealed run (900 s) over this body finds nothing below 190, so the
+// conversion entry keeps its null test and the destination weapon stays in edi where retail holds it in ebp.
 // MiniMax I (11-17, run 103): no new form, no lower score (190): retail still holds the destination weapon in EBP and
 // stores the acquired flag with setg, where this build holds the destination in EDI and stores the not-acquired flag
 // with setle, and the conversion scan still needs its entry tested for null; the entry kept by its index measures 194
@@ -3604,6 +3612,10 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
 // score 607 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
+// MiniMax H (11-18): score 643 (was 643): no new form, no lower score; the frame stays 0x1c64 against retail's
+// 0x1c60 and the weapon, barrel, definition and holder still live in other homes, so the prologue and the
+// barrel walk's register allocation differ; the plain image reads 607 for the kept body.
+// score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus
 // 0x1c60; weapon/barrel and scalar homes remain.

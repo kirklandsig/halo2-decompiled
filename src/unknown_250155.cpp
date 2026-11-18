@@ -1362,6 +1362,12 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax G (11-18): no new form, no lower score (83): the tail fill is still a pointer loop where retail's is a
+// counted store, and every fill form that reproduces retail's counted store moves the index count into EBX and
+// pushes the mode to the stack (95 to 172 across this round's forms); the two count homes stay swapped (ours
+// item_count -8 and index_count -0xc, retail index_count -8 and item_count -0xc), and swapping them needs an
+// initialiser that costs the mode its register (121) or a frame that grows to 0x58; all of this round's forms
+// were restored.
 // MiniMax E (11-17): no new form, no lower score (83): the two count homes stay swapped (ours item_count -8 and
 // index_count -0xc, retail index_count -8 and item_count -0xc) whatever the declaration order, the initialiser or a
 // plain assignment instead of the initialiser; branch two's counted tail fill does give retail's guarded rep stosd
@@ -1608,6 +1614,22 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // 151. The common scan increased the score in all eight forms. The indexed/pointer tail pair reached retail
 // length with a larger frame and different homes. The two original scans and their pointer fills are
 // restored.
+// M3 lane 6 r191 (fast with 0x199ebc/0x199ef8/0x19a951/0x19a9b4/0x199dc9/0x25142f, control 83): the fill is retail's only as an
+// index loop, and with the index fill in branch two only (107, 437 bytes) that branch's fill is retail's instruction for
+// instruction: index_count in EDI, saved to its home between the compare and the jge, `sub ecx, [home]`, the in-place lea,
+// the reload after rep stosd. What differs is who holds EBX: retail the mode (index_count then takes EDI and is saved around
+// both fills, and the player count is reloaded from its home); ours a forwarded copy of the player count in branch two (107
+// form), or index_count for the whole body once both fills are index loops (172; the mode moves to the stack). Diagnostic:
+// with the else arm's `item_count = player_count` replaced by a constant, index_count takes EBX in both forms 172/169, so
+// the mode loses EBX to index_count even without the forwarded copy. Forms: a separate scan counter copied into
+// index_count before the fill, shared / per branch, fill from either 172/172/159/159; the fill stepping the scan counter
+// itself (for / while, shared / per branch, index_count uninitialised) 172/159/172/172; an inline append helper taking the
+// count by pointer / by reference with index fills 172/172, with the pointer fills 83; the player count stored through an
+// inline out-parameter helper 172; the three qsort calls written out 119, with both index fills 174; memset fills
+// (plain, guarded, sizeof remainder) 164/179/164; the mode, teams and values declared first 171 (173 with the qsort
+// calls), the mode alone first 171, declared first and assigned after the counts 172; index fill in branch one only 169.
+// Homes: the four locals renamed (item_count / index_count to other names) 83 each and declared in four orders 83/83/83/84:
+// neither names nor declaration order move the two homes; they follow how often each is read from memory.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2689,6 +2711,16 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// score 87 (was 87): MiniMax G (11-18): no new form, no lower score; the shown count still takes ebp-8 where retail
+// keeps it at ebp-0xc, the first loop's element address ebp-0x18 where retail keeps it at ebp-8 and the player ebp-0xc
+// where retail keeps it at ebp-0x14, so the six spill slots stay one six-step cycle off retail's; the voice query
+// still keeps the player across 0x53b40 where retail reloads it (that needs a store through a pointer somewhere in the
+// chain in src/network_voice.cpp, another lane's file) and the last loop still keeps the screen in ebx where retail
+// gives ebx to bitmap_a. Measured and reverted: the count declared after the loop counter 87, a named local for the
+// first loop's element address 87, a named local for the second loop's element address 87, the four widget indices
+// returned in one aggregate 275, the helper's default arm reordered 92 and 95, the team test split in two 87, the
+// flags constant hoisted into a local 87; the permuter's only lower form (56) reorders the arguments of the five
+// set_child_value6e calls, which changes what those calls do, so it is not kept.
 // MiniMax E (11-17): no new form, no lower score (87): retail's last loop computes the four widget indices with the
 // mode switch inline, so they live in EAX, EDI and EBX with only bitmap_b in +0x1c; writing the helper's body out
 // there (its two case arms and its default) reproduces that register choice, but the four values then take two spill

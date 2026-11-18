@@ -1032,254 +1032,8 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 }
 
 long function_cbd50(long unit_index, short weapon_index);
+bool function_101640(long weapon_index);
 
-// score 57 (was 57; 215 before round 254): frame 0x18 and the 1006-byte length agree and the code is retail's but for the push order and one
-// register pair: retail keeps the pool pointer in EDI and the slot/weapon temporaries in ESI (ours the other way round), so
-// EBX is pushed at entry in retail and only around the first two loops here. Round 254 below.
-// MiniMax S (11-16): no new form, no lower score (144): the body was re-measured and did not move; the three-point
-// form from the review stays out because it rests on the second lookup of the same unit, the re-read pool global and
-// the locals holding NONE until they are set, so the tag table still stays enregistered (EBX) through the first loop,
-// the player still spills and the frame stays 0x1c against retail's 0x18.
-// MiniMax S (11-16): no new form, no lower score (144): the tag table still stays enregistered (EBX) through the first loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are still not retail's; the counted-phase forms and the permuter tried before all leave the same code.
-// MiniMax S (11-15): no new form, no lower score (215): the tag table still stays enregistered (EBX) through the first
-// loop, so the player spills and the frame stays 0x1c against retail's 0x18, and the player, pool and tag homes are
-// still not retail's; the counted-phase forms tried this round (the bit-3 tests in a second loop after the lookups,
-// the pending lookup ahead of the held one, the weapon's own flags read once ahead of the slot loop, the mode clears
-// chained) all regress or leave the same code, and the grouping that moves the tag table's home is not a form the
-// review keeps.
-// Earlier 215 (was 215): the tag table stays enregistered (EBX) through the first loop, so the player spills (frame 0x1c against 0x18).
-// Earlier header correction: the 144 once on this line belonged to 0x152660.
-// m3 lane 3 r250 (fast with 0x151aa0/0xcbd50, control 215): retail loads the tag table lazily in both arms of the hand
-// loop (ECX at the loop exit) and the weapon_index parameter lazily in the slot copies (EBP, reloaded at the joins),
-// where ours hoists both to dominating points; retail's held arm reads the weapon through the first lookup's unit but
-// re-reads player->unit_index and the pool data for the pending lookup (ours shares the index and slot pointer). Forms:
-// the count declared first 216; the slot weapon read at each use (no held_weapon local) 215; held and pending declared
-// ahead of the player 215; the held weapon in a named local stored into held[hand] and used for the bit-3 test 215; the
-// slot loop's tests nested 215. Diagnostic, reverted: the tag table's address taken at file scope 325 (it is then
-// reloaded after the mode stores, which retail does not do, so retail's lazy loads are allocation, not aliasing).
-// m3 lane 5 r185 (fast with 0xcd7b0/0xcbd50/0x151aa0/0x151940, control 215): the bit-3 tests in a second loop after the
-// lookups 293 (1008 B); held and pending as one `long weapons[2][2]` 215 (same code); the pending lookup ahead of the
-// held one 207 (the pool pointer then takes EDI as retail, but retail reads the held slot first, so the order is against
-// retail's: not kept); `short hand` in the first loop 310 (1027 B); the weapon's own flags read once ahead of the slot
-// loop 371 (902 B); the mode clears as chained `modes[hand + 2] = modes[hand] = false;` in the first loop, the parent
-// loop or both 215 (same code).
-// M3 lane 6 r180 (fast): retail reads each held and pending weapon through its own lookup (the slot and the weapon from
-// one lookup, the unit index re-read from the player for each); 0xd1540's form per iteration (a pool copy per weapon,
-// the slot read and `weapon = NONE; if (slot != NONE) weapon = ...` on it, then stored) gives the one-lookup-per-weapon
-// shape but 274 (the pending lookup reuses the unit index, so the shared index takes shl + [a + b + 8]); the held weapon
-// on the function's pool with one pending copy 274; both copies ahead of the loop 274; the pending copy ahead of the
-// loop 274; the held result also used in the bit-3 test 274; a file-local inline with 0xcbd50's body taking the pool
-// (0x152660's lead) for both 304 (988 bytes: the four reads merge). The tag table and player homes did not move.
-// MiniMax I (11-14): no new form, no lower score (215): a named local for the tag table, that local assigned inside
-// the first loop and the flag helper reading the global itself all keep the table enregistered in EBX and the player
-// spilled (frame 0x1c against retail's 0x18), while a cached unit index (301) and the unit local for the two slot
-// reads (308) are worse.
-// MiniMax S (11-11): no new form, no lower score (215): retail computes the pool element address before the prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add, keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
-// MiniMax G (11-12): no new form, no lower score (215): eight forms tried this round (unit local dropped or re-derived, pool and tag table hoisted or reloaded, player in a register or spilled) all score above 215; retail still inlines the weapon-slot lookup and derives the unit twice per iteration where ours calls function_cbd50.
-// MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
-// MiniMax H (11-06): the permuter's best form (246) needs a volatile cast, hand-written helper bodies and a
-// player expression that reads differently, so only its legal part was kept and it gives 284; the tag table
-// declared without an initializer and the first loop's stores written through byte pointers both give 254,
-// the same code; the two mode stores of the first loop written through a byte pointer give 254 again, the
-// same code, so the store's type does not decide the table's reload.
-// MiniMax H (11-06): retail keeps g_4e0300 in edi, the player in ebp and the weapon index in a stack slot,
-// spills the unit at [esp+0x14] and loads g_4e3b44 inside the two arms of the first loop, keeping it in ecx
-// for the rest; ours keeps the pool in ebx, the tag table in ebp and the unit in ecx, and the loads and the
-// frame slots are the first difference.
-// MiniMax H (11-06): the flag helper takes the tag table as an argument and 0x1509e0 keeps the table in a
-// local, so the table is a local copy rather than a hoisted global; the score drops to 254 and the first
-// difference moves to +0x9, where retail loads the player pool's data before the index arithmetic.
-// MiniMax H (11-06): the pool pointer as a local, with every lookup through pool->data, gives retail's shape of
-// a held pool pointer with the data re-read at each use, but the pool lands in EBX, the player stays on the
-// stack and the frame grows to 0x1c, 296; the score stays 284.
-// MiniMax H (11-06): writing both slot lookups as if/else instead of ?: puts the branch between the two unit
-// derivations, as in retail, and the score drops to 280; the player still lands in ebx instead of ebp, the pool
-// is still re-read from the global in the loop and g_4e3b44 is still hoisted into ebp.
-// MiniMax H (11-06): the shared object getter takes the pool and 0x1509e0 keeps it in a local, so the pool
-// pointer is held in a register and its data is re-read at each use, as in retail; the score drops to 275 and
-// the length is retail's 1006 bytes; the player still lands in ebx instead of ebp, the pool in ebp instead of
-// edi, and g_4e3b44 is still hoisted into edi instead of being loaded into ecx inside the loop.
-// held and pending now come from the existing slot-to-weapon function 0xcbd50 (the idiom matched
-// 0x1e83c0 uses), which gives retail's per-slot `or r, -1; cmp si, -1; je; movsx; mov` code and the pool's data reload
-// inside each lookup, and the tag table is read from its global at each flag test (no `tags` local). Still different:
-// our build keeps the tag table in EBX for the whole function and the pool in EBP, so the player spills to the stack
-// (frame 0x1c against 0x18); retail keeps the player in EBP and the pool in EDI and loads the tag table lazily into ECX.
-// Earlier, at 254 (was 275):
-// The logic matches retail block by block (reads, flag bits 3/4/22/23, stores, count >= 2 pass); only the
-// register allocation differs. Retail keeps g_4e0300 in edi for the whole function, keeps the player in ebp
-// and loads g_4e3b44 lazily into ecx inside the loop; this build keeps the pool in ebx, the player in eax and
-// hoists g_4e3b44 into ebp, so the prologue and the first loop differ and the rest of the function shifts
-// with them.
-// register allocation differs. Retail keeps g_4e0300 in edi for the whole function and loads g_4e3b44 lazily
-// into ecx, with the player in ebp; this build reloads g_4e0300 every iteration of the first loop and hoists
-// g_4e3b44 into ebp, so the player and temporaries land in other registers. Retail's first loop is not
-// aligned (no pad before it), ours is.
-// Tried (scores): taking the parameters' addresses (322, the old form, 962 bytes), `if/else` instead of `?:`
-// for the slot lookups (286), locals for held/pending weapon (295), inline helpers for the held/pending weapon
-// lookups (295), writes through &held[hand] (287), a local copy of g_4e0300 passed to helpers (286, 1019
-// bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284),
-// the pool pointer as a local with the getter taking the pool (275), the same with the lookup written out (275),
-// the same with the modes stored as bytes (275) and the same with the flag test nested (275), the tag table as
-// a local passed to the flag helper (254), the same with the local set at the top of the loop body (264), the
-// same with the local read inside the loop (264) and the same with the modes stored as bytes (264).
-// bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284).
-// AC502: Shared object getter at initial/held/pending/flag lookups, complete main/all
-// receivers, immutable receivers and direct tag-field access: 284 each. Original getters,
-// include set and body restored; pool/player/tag-table allocation remains.
-// Round 552: original ternary producers with direct first-loop do/while, then native slot/final/both
-// loops on each entry graph 284/636/284/636/284/636/284/636. All loops, observations, helper and complete body restored.
-// NOT kept: no score gain or byte match.
-// P295: Original ternary results with delayed held/both publication, completed held-slot scope,
-// immutable results and readonly slot receivers: 284/281/284/281/284/281/284/281.
-// NOT kept: three-point gain and one-use pending receiver; pool/player/tag carriers remain.
-// Y559: Bounded slot count char/short/int/dword, entry then count-phase zero
-// declaration: 287/283/284/284/305/293/294/294. NOT kept: one-point lead below
-// the keep gate; retained pool/player and lazy tag-table ownership remain.
-// Y561: Initial hand selector char/short/word/dword 345/345/345/284;
-// final hand selector char/short/word/dword 283/282/282/284. NOT kept:
-// two-point best below the gate; native full-width selectors/body restored.
-// Y563: Count-slot rejection guards/held guard/Boolean accumulation/rejection plus
-// accumulation, final guarded/early-exit tail: 284/284/318/318/284/284/318/318. NOT kept:
-// no gain; original count admission, field observations and complete body restored.
-// N353: Existing complete slot selector at held/pending/inventory subsets 1-7
-// 288/294/295/337/337/351/346; all with direct slot arguments 346.
-// NOT kept: no qualifying gain; original pool/player/tag acquisition and body restored.
-// DH340: Initial held/pending/modes array walks, subsets 1/2/4/3/5/6/7 then complete
-// plain-step graph: 275/275/284/208/275/275/208/208. NOT kept: the 275 forms grow
-// to 1012 bytes; paired 208 forms keep 1006 bytes but grow frame 0x18 to 0x1c and
-// add a one-use pending receiver. Original indexed producers and full body restored.
-// DH349: Existing nested player/object getter policies ordinary/forced/unhinted,
-// eight nonbaseline pairs, all 284. Original getters and full body restored;
-// native pool/player retention and delayed tag-table acquisition remain.
-// DH351: Existing raw flag pointer/reference returns with local/direct object input
-// 284 each; native bit-field pointer/reference returns 253 each; bit-field value return
-// 290. NOT kept: pointer forms add a flag-address calculation absent in retail; value form regresses.
-// F382: Direct held/pending array-element producers, default-valid/exhaustive-valid/
-// exhaustive-sentinel arms at individual sites and asymmetric pairs: 293/279/283/277/283/277/287/289.
-// NOT kept: best gain seven is below the gate; original ternaries and full body restored.
-// N372: Initial/attached chained false stores and absent-held continuation, seven subsets,
-// then complete flag rejection: 284 each at 1006 bytes with frame 0x18. Original body
-// restored; retained pool/player and lazy tag-table homes remain.
-// DL265: Flag producer table-base domains late/early, then caller-owned object input/byte output:
-// 284/284/284/284/284/284/284/284/284/284. NOT kept: unmatched base/input/output ownership; helper/body restored.
-// Retained pool/player and lazy tag-table allocation remain.
-// N384: Existing whole-metadata pointer/reference result, mutable/read-only and
-// captured/direct object input: eight 284. No field-address result is introduced, but
-// native pool/player/tag homes remain. Original getter and entire body restored.
-// Round 73 (m3 lane 11, fast): held/pending as a NONE default then a slot test 286; positive ternaries 282; one
-// unit_index local for the three lookups 300 (992 bytes); a short hand counter 345 (1053 bytes); the flags helper
-// as plain inline 284. Diagnostics: a char store through modes between the held and pending lookups gives retail's
-// first loop (g_4e0300 hoisted, both lookups redone, no loop pad, lazy g_4e3b44) at 308; held/pending stores
-// through element pointers do not (292).
-// Round 96 (m3 lane 12, fast): held/pending as a NONE store then a guarded store 286; both through the matched slot-to-weapon
-// function 0xcbd50 295 (retail's exact per-slot `or r, -1; cmp si, -1; je; movsx; mov` code, but the held and pending lookups stay
-// shared and the frame grows to 0x1c), with the mode clears chained 295, with the held value in a named local for the store and
-// the flag test 295. Diagnostics: that form with the arrays' addresses taken 288
-// (1009 bytes), the original with them taken 301 (1020 bytes), held stored through an element pointer 287: none redoes the lookups.
-// Round 78 (m3 lane 11, fast): per-lookup pool copies (held_objects / pending_objects, as 0xe8de0 reads its hands) declared
-// first with the named current/next pointers 303 (1020 bytes; the held, pending and flag lookups each reload pool->data from
-// EDI as retail, but the player spills and the frame grows to 0x1c), declared after `pool` 303, written in place 303, the entry
-// unit through the global 303, one copy for pending only 303; the copies with held/pending as ternaries 285 (1006 bytes, frame
-// 0x18, pool in EDI; the player lands in EBX, the tag table is hoisted into EBP), with `tags = g_4e3b44` at the loop top or
-// before the flag test 285/285, with the tags before the test and if/else stores 291; the ternaries alone 292; the copies with
-// a NONE store then a guarded store 279 (aligned rows 148 against 227: retail's reloads, but held and pending share one
-// unit_index read where retail re-reads [ebp+0x2c], and the loop top is still padded); the existing 0xcbd50 for held with a
-// pending copy and if/else, ternary or 0xcbd50 pending 309/305/293; the copies with 0xcbd50 for both 276 (1010 bytes, four
-// lookups per iteration); player pointer copies per lookup 279 (same code); the player re-derived per lookup through
-// tail_player_get with the NONE store, with ternaries, alone 289/306/297; a file helper taking the pool and the player 642
-// (647 bytes).
-// P393: Attachment admission before the paired clear traversal, positive/complementary
-// bool/byte/short/long: 254/254/254/254/254/254/254/254. NOT kept: one-use outcomes remain unmatched;
-// pool/player carriers and lazy tag-table acquisition remain. Original whole body restored.
-// Round 160 (m3 lane 6, fast, confirmed plain): NONE-default weapon locals stored after both lookups 303 (992 bytes); a
-// NONE store then a guarded store with the pool global 286; 0xcbd50 for both with the `tags` local kept 215, with the
-// pool global as well 293, with both slots read from the entry unit 308 (1023 bytes); 0xcbd50 with the tag-table global
-// and the pool global 295. On the kept form: the existing bit-3 getter 0x101240 for the held test 215, the existing
-// bit-22/23 getter 0x101640 for the count test 213, both 213 (both inline; gain under 8, not kept).
-// P402: Attachment output walk, lower/upper range, direct hand count, while range and cursor stepped at use:
-// 263/300/252/254/263/300/263/300. NOT kept: best native-length form gains only two; original indexed
-// attachment clear and entire body restored. Pool/player and lazy tag-table homes remain.
-// T77: Live unit-index field references mutable/read-only and pointer before pool acquisition
-// 303/303/303; first-loop-only references 254/254; real weapon/paired-slot array references
-// 254/254; paired selected-slot field references 280. NOT kept: no native pool/player/tag
-// ownership equality; original lookups, observations and complete body restored.
-// Round 172 (m3 lane 5, fast): the pool copy declared before the player lookup 215 (identical code); the bit-3 held
-// flag test moved ahead of the pending lookup 309 (1020 bytes); the last loop's arms as `if (hand == 0) ... else if
-// (held[1] ...)` 228; the entry unit lookup moved down to the parent test 286. Diagnostics (copy/global mixes, not
-// keepable): the held slot through the pool copy and the pending slot on the global 295 (1018 bytes, aligned 72
-// against 155: the pending query then gets its own data load as retail), the reverse 293 (1022 bytes); both slots on
-// the global 295 (the copy is then propagated, round 160's form). See 0x152660's note: in these trials 0xcbd50's own
-// lookup shared loads with caller lookups on the global, not with lookups through a pool copy that stays a real
-// variable; every way found of keeping the copy real while the slot reads use the global is a copy/global mix. No
-// other untried natural form is left (the notes above cover lookups, selectors, scopes, types, flag producers and
-// walks).
-// MiniMax B (11-11): no new form, no lower score (215); retail computes the pool element address before the
-// prologue's register saves and keeps it whole in ebp, while this build splits the multiply from the base add,
-// keeps the pool pointer in a register of its own and frames 0x1c against retail's 0x18.
-// MiniMax G (11-11): no new form, no lower score (215); retail keeps the player in ebp and the pool in edi and
-// reloads the tag table inside the loop, this build keeps the tag table in ebx and the pool in ebp and spills the
-// player to a stack slot, so the frame is 0x1c against retail's 0x18; the pool global used directly (295), the tag
-// table read inside the loop or before it (215 each), the helper reading the tag table global itself (215) and
-// both of those with the pool global (293) all leave the player in a slot or in a volatile register.
-// T90: Inventory count pass through end-tested for/count-plus-cursor/while/outer
-// cursor, each mutable/read-only: 608/608/215/215/608/608/608/608.
-// End-tested cursors recover frame 0x18 but roll the count pass to 675/1006 bytes; counted cursors tie 215.
-// NOT kept: No native pool/player/tag ownership equality; original inventory index and complete body restored.
-// M3 lane 12 r118 (fast, 0xcbd50 still matched): `count` declared first 216; the held/pending arrays declared before the player
-// 215 (same code); the flag helper plain inline on this body 215; a `short` slot counter 624 (659 B, the slot loop no longer
-// unrolled); the last loop's `hand == 1` arm indexing `held[hand]`/`modes[hand]` 213 (1007 B, gain under the gate). On that 213
-// form: the count test through the existing 0x101640 getter 211 (1007 B), the held test through the existing 0x101240 getter 213,
-// both 211; on the 211 form: the flag helper reading the tag table global itself 211 (same code), `hand != 0` for the arm 221,
-// `count` declared after the unit lookup 211. Best 211 is a gain of 4, under the gate; body restored.
-// P437: Held/pending/inventory/player lexical identities 215 each; immutable player/pool,
-// read-only inventory and fixed shared flag result 215 each. NOT kept: frame 0x1c versus 0x18
-// and native pool/player/tag homes unchanged; original complete body and helpers restored.
-// P440: First-loop do/while with the existing slot provider, and held/pending/paired/output/held-output/all walks: 215/215/330/329/313/215/330/313.
-// NOT kept: Native player/pool/tag homes remain; direct entry ties and genuine producer cursors regress. Original complete body restored.
-// P456: standard one-element zero clears across initial/attached/final output phases, all seven
-// complete phase families 215 each; one complete attached four-Boolean clear 309 at 988/1006 bytes.
-// NOT kept: no gain; original Boolean stores, all slot providers and complete body restored. The tag
-// table still hoists, player/pool homes remain nonnative and frame stays 0x1c versus 0x18.
-// P458: Retained slot-provider count char/short/word/dword, entry then count-phase lifetime:
-// 293/216/216/215/292/274/274/273. NOT kept: late count restores frame 0x18 but regresses length; player/pool/tag homes remain; original complete body restored.
-// P460: Complete count-admission/retained-pair outcomes in bool/byte/short/long on the retained slot-provider graph: eight 215. NOT kept: extra frame word and player/pool/tag homes unchanged; complete body restored.
-// P495: Actual count-pass flag/weapon workspaces and shared three-phase hand induction, seven subsets,
-// then both signed-short slot transports on that graph: eight 215 at 1006 bytes. NOT kept: no native
-// frame/player/pool/tag recovery; every producer, observation, slot provider and complete body restored.
-// P507: Complete uncounted/excluded slot counts byte/short/long/dword:
-// 293/295/292/292/275/313/313/313. NOT kept: no native qualifying-count/frame/player/pool/tag equality; original complete body restored.
-// P532: Independent full-width held/pending/inventory handles in dword/unsigned-int,
-// then full flag words in long/int: 215/215/215/215/215/215/218/218. NOT kept:
-// no native player/pool/tag or frame repair; original complete body restored.
-// P546: Direct and branch-defined clear admissions at initial pair, final second,
-// final first and final pending outputs: 215/215/227/215/276/235/215/230. NOT kept:
-// no exact result-lifetime repair; native player/pool retention, lazy tag-table
-// acquisition and frame 0x18 versus 0x1c remain. Original full body restored.
-// P581: Original-site scalar memcpy at full flag/tag ordinal/inventory weapon, seven
-// subsets, then complete scalar memmove: 215/215/215/215/215/215/215/325. NOT kept: no exact native frame/player/
-// pool/tag ownership; original private flag producer, all observations and complete body restored.
-// M3 lane 2 r92 (fast with 0xcbd50, control 215): retail merges each 0xcbd50 weapon read with its own slot lookup and
-// re-reads player->unit_index and the pool data for every later lookup (pending, flag reads), so the player carries two
-// reads a pass and keeps EBP; ours shares the held lookup with the pending slot read. Forms: every lookup on the global (no
-// pool copy) 295 (the held slot and weapon then share one lookup as retail, but the pending slot joins it too); the held
-// lookup on the global with the pending one through the pool copy 293 (1022 B: held as retail, pending reloads but its
-// weapon read does not merge); the slot reads as `(&unit->held_slots[0])[hand]` (unit_object_type.cpp's matched spelling)
-// 215 (same code); no player local (the getter at each use) 233 (1010 B). Diagnostic: the held/pending stores through
-// pointer locals 287 (the stores do not make the later lookups reload: the compiler resolves the pointers).
-// M3 lane 3 r254 (fast with 0x152660, 0x152580, 0xcbd50, 0xcbe60; confirmed plain): the hand loop's two weapons as matched
-// 0x13c250 reads its slot weapons, `unit_weapon_in_slot(unit_weapon_view_get(unit), <slot>)` in place of function_cbd50 (the
-// slot test and weapon read then share one lookup and each statement looks the unit up again, as retail) 148 (1006 B); with
-// the last loop's `hand == 1` arm indexing `held[hand]`/`modes[hand]` like the other arm (held[1] then stays in a register
-// across the loop, retail's ESI) 57; the one-use pool copy dropped for the global 57 (same code); the unit read through
-// unit_weapon_view_get 57 (same code); `count` declared first 257; the arrays declared before the player 57; every lookup
-// through a two-use pool copy 57; held_weapon declared without its initialiser 57; the 22/23 flag word read at each use 57.
-// M3 lane 4 r209 (fast with 0x152660/0x152580/0xcbd50/0xcbe60, all matched; control 57; an address-masked aligned diff
-// shows a pure ESI/EDI exchange, ours ESI 14 / EDI 29 uses, retail the reverse): one `hand` counter declared at the top
-// for the three hand loops 57; that plus the slot counter declared at the top 57; the unit as an `s_unit_weapon_view *`
-// through unit_weapon_view_get with the slot loop's weapon through unit_weapon_in_slot 57; loop 1's bit-3 test through a
-// named `held_weapon` read from held[hand] 57 (all same code); loop 1's weapons as named held/pending locals stored
-// after both lookups 120.
-// MiniMax A (11-17): no new form kept, no lower score (57): a pool copy used by the three lookups scores 314 (the pool takes ebp, the player ebx and the frame grows to 0x20), and the permuter (900 s annealed, 100 tries) found nothing below 57; what is left is an esi/edi exchange, retail keeping the object pool in edi and the slot and weapon temporaries in esi, this build the other way round.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1311,8 +1065,7 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 		long held_weapon = unit->weapons[slot];
 		if (held_weapon != NONE && !(bool)((player_weapon_flags(g_4e3b44, held_weapon) >> 4) & 1))
 		{
-			dword flags = player_weapon_flags(g_4e3b44, weapon_index);
-			if (!((bool)((flags >> 22) & 1) || (bool)((flags >> 23) & 1)) || held_weapon != held[1] || held_weapon != pending[1])
+			if (!function_101640(weapon_index) || held_weapon != held[1] || held_weapon != pending[1])
 				count++;
 		}
 	}
@@ -1478,6 +1231,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // copy of the player pointer, or a `long const &` to the field, for the lookup 17/17/17; test, lookup and call reads
 // each through the player pointer or the getter in place, with the result before or after the player (14 forms), best
 // 5 (lookup through the getter), the rest 26-68; the player fetched again ahead of the lookup 26 (parameter in EDX).
+// M3 lane 6 r192 (fast with 0x152bf0), the lookup's unit-index read only: as `*(word const *)&player->unit_index` 38, every
+// register retail's with retail's player address, left `movzx edx, di` for `mov edx, edi; and edx, 0xffff` (a narrow read
+// stays a separate load until after allocation); `(word)` and `(short)` conversions 38/38 (same code); full-width reads as
+// `(long)*(void *const *)&`, `*(unsigned long const *)&`, `*(int const *)&`, `*(&player->previous_unit_index - 1)` and
+// `(&player->unit_index)[0]` 17 each (merged early); `(word)tail_player_get(player_index)->unit_index` 43.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1524,7 +1282,8 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
-// score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
+// score 43 (was 43): The 210-byte extent still agrees. Retail uses ESI for the player, EDI for the hand and EDX for the unit index. This build assigns those values to EDI, ESI and ECX.
+// Earlier score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
 // ESI/EDI exchange. LEAD (round 209, end of this note): the unit lookup reading the index again through the player
 // getter leaves only the player address (aligned 3).
 // MiniMax S (11-16): no new form, no lower score (43): the whole difference is still the one register rotation - retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and the two bodies are 210 bytes with the same instruction sequence; the hand's width, the declaration order and the hand test's spelling all leave the rotation where it is.
@@ -1756,11 +1515,17 @@ void function_150820(dword *bits, bool local_only)
 // pointer to const 73 (same code); the hand computed after the unit lookup 75 (208 bytes). Also the unit test through
 // the getter with the player fetched inside the block (0x151b80's 26 form) 18 (212 bytes, aligned 7). Every form on this
 // lead turns the player address into a shared temp formed by `lea esi, [eax + edx]`.
-// score 43 (was 43): MiniMax D (11-17): no new form, no lower score (43): the whole difference is still one register
+// Earlier score 43 (was 43): MiniMax D (11-17): no new form, no lower score (43): the whole difference is still one register
 // rotation - retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in
 // edi, esi and ecx - and both bodies are 210 bytes; the rotation starts at the entry block, where retail reuses edx (the
 // pool data pointer's register) for the unit index and leaves ecx free for the policy byte, and this build reuses ecx (the
 // table's register) and takes the policy byte in al, and no declaration order, hand width or result form in the list moves it.
+// shared player pool getter 43; shared player pool getter for separate unit read 73; shared player pool
+// getter at both player reads 73; shared ordinal for two player lookups 73; shared record displacement
+// for two player lookups 73; direct object header index after separate player read 73; common success
+// after dispatch with sole exit 63; common success after dispatch with failure return 106. NOT kept: the
+// separate lookups recover those three registers but combine the player-address calculation into LEA and
+// score worse. The shared success paths change the extent and regress. The original body was restored.
 // MiniMax A (11-17): no new form tried this round, no lower score (43): a register rotation only (retail keeps the player in esi, the unit index in edx and the hand in edi, this build keeps them in edi, ecx and esi, and the primary byte follows in cl against al); the body, the length (210) and the calls agree.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)

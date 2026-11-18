@@ -2637,6 +2637,9 @@ static __forceinline long player_round_ticks(real value)
 // still 0x4c against retail's 0x74 and the first 0x151b80 call is still expanded here where retail calls
 // it, and the definitions of 0x151b80, 0x151940 and 0xccd20 are in other files.
 // MiniMax G (11-12): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, our link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail makes out of line, and retail's two request homes are still one here.
+// MiniMax G (11-18): no new form, no lower score (701): the length agrees (2740 bytes) but the frame is still 0x4c against retail's 0x74, our
+// link-time inlining still expands the 0x151b80 and 0xccd20 calls that retail keeps out of line, and retail's two request homes are still one
+// here; the definitions of those callees sit in files this lane may not edit.
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // MiniMax S (11-10): no new form, no lower score (701): the frame is still 0x4c against retail's 0x74, the first 0x151b80 call is still expanded here, and retail's two separate request homes are still one here.
 // MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
@@ -3200,6 +3203,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // (0x510c50) ahead of the frame setup and keeps the globals pointer in ESI across the first block,
 // while this build loads the globals pointer first and takes the field's address with a lea, so the
 // two loads come in the other order from the first instruction on; the body is unchanged.
+// MiniMax G (11-18): no new form, no lower score (103): the globals pointer still ends up in EDI where retail loads it into ESI and
+// reloads it after the busy check and again before the final store, and the two loops still swap the datum and unit registers with it; the
+// stubs 0xb8540 and 0xb7b40 and the rounding in 0xe4050 are outside this lane's queue, and the reduced image overstates this body.
 // score 103 (was 103): unchanged this round: the globals pointer stays in EDI to the end of the
 // function where retail loads it into ESI and reloads it after the busy check and again before the
 // final store, and the two loops swap the datum and unit registers with it; the reduced image
