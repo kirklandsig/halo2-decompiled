@@ -8,17 +8,7 @@
 #include "unknown_2accd0.h"
 #include "async.h"
 #include "language.h"
-
-/* the location and type of a saved game file (0x40 bytes) */
-struct s_saved_game_file_location
-{
-	char name[0x14];
-	wchar_t display_name[0x12];
-	long type;
-	byte unknown3c;
-	char language;
-	byte unknown3e[2];
-};
+#include "saved_game_storage.h"
 
 struct s_saved_game_file_id
 {
@@ -75,7 +65,6 @@ char *function_11c9c0(char *buffer, long maximum_count, const char *format, ...)
 bool function_1249f0(long memory_unit, char *drive_letter);
 bool function_1367d0(s_type_acf665 *file);
 bool file_ref_truncate(s_type_acf665 *file, dword position);
-bool function_216da0(long type, wchar_t *name, const wchar_t *display_name, long language);
 bool saved_game_file_write_save_image(long type, s_saved_game_file_location *location);
 bool function_2168b0(s_saved_game_file_location *location, long flags);
 
@@ -435,19 +424,25 @@ done:
 // privately, so the match is recorded here, not built. Tried: location pointer local (43), flags local (17), *(long
 // *)file (4), helpers taking (location, flags) or doing store plus call (4, or 2 with the pointer), no (char) cast
 // (same).
+// b13P (11-18, icarus, revised 11-18 on kirklandsig's review): condition (1) done with the shared
+// s_saved_game_name from include/saved_game_storage.h (no second type for the same buffer), on top of (2),
+// the char-pointer language store already here. Fast check on orion after the rebase: 17 -> 2, 293 B both. Residual: arg0's `lea eax,[esp+0x1c]` comes after `push edx` (flags)
+// where retail loads eax before pushing. 2168b0 consumes its location argument in eax (`mov esi, eax`), so (3)'s
+// parameter swap is a wrong-signed call, not a spelling; the two orders are otherwise identical, so this is
+// queue work. Queued for permute.
 // @retail 0x2ad480
 void saved_game_file_copy_finish(s_saved_game_file *file, bool succeeded)
 {
 	long type = file->flags & 0xf;
 	char root[8];
-	wchar_t name[0x80];
+	s_saved_game_name name;
 
 	saved_game_file_get_root(file, root);
-	name[0] = 0;
+	name.text[0] = 0;
 	if (succeeded)
 	{
-		function_216da0(type, name, file->location.display_name, file->location.language);
-		XDeleteSaveGame(root, name);
+		name.fill(type, (word const *)file->location.display_name, file->location.language);
+		XDeleteSaveGame(root, name.text);
 		saved_game_file_copy_display_name(file->location.display_name, file->display_name);
 		// a store through a pointer keeps retail's order against the flags load
 		char *language = &file->location.language;
@@ -456,8 +451,8 @@ void saved_game_file_copy_finish(s_saved_game_file *file, bool succeeded)
 	}
 	else
 	{
-		function_216da0(type, name, file->display_name, get_current_language());
-		XDeleteSaveGame(root, name);
+		name.fill(type, (word const *)file->display_name, get_current_language());
+		XDeleteSaveGame(root, name.text);
 	}
 	*file->done = true;
 }
