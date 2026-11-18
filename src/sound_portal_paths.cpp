@@ -138,6 +138,10 @@ __forceinline long portal_path_gain(real distance, real range)
 // Round 422: Explicit portal table / cluster table / both / pointer addition 296/296/296/296.
 // Sort-preparation count snapshot 296, capacity-first limit 296, selected comparison distance 296,
 // default range with an override 351. The table spills, starting-cluster and validity homes remain.
+// Portal/destination record references, separately and together, 296/296/296. Workspace before starting-
+// cluster lookup 296, early path-list lookup 358, packed-entry reference 341, nested flag and sound
+// gates 296, destination lookup inside the flag gate 328. The early list and late destination forms
+// recover EBP at entry, with diffs at +0x28 and higher scores.
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

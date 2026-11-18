@@ -4424,6 +4424,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // through the gate 625; explicit mode-result arms 628; same arms through the gate 628; nested mode gate 607;
 // nested gate with walking-only state 615. NOT kept: the 590 form retains the reduced frame excess and retests
 // the result, and the 592 form stores the result with setne and repeats the mode comparison.
+// Direct returns for aim/look/both 614/614/614. Combined mode rejection alone/with aim/with look/with
+// both 614/614/614/614. Separate target and mode guards with both query guards 599 (reduced control 614,
+// full 548). NOT kept: it places the changed-result epilogue before the queries and reverses the mode
+// branch.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

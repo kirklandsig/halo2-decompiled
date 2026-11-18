@@ -1430,6 +1430,9 @@ PRIVATE inline long score_string_list_1608e0()
 // 679, height before x with one-read scroll 717, joined scroll reused for y 727, early height with
 // scroll reused for y 730. NOT kept: the best two-point reduction leaves the four-byte frame gap and
 // falls below the keep bar.
+// DH401: Fade divisor initialized before flags, viewport, height or clamp.
+// Existing qualifier 701/699/700/700, ordinary const 715/724/725/725.
+// All keep the 0x798 frame. The ordinary divisor shortens the body.
 // Round 624: native point with scalar row copy 693; whole point copy, title edges from copied row,
 // and advance copied row 724/724/724. Early near edges in title rectangle 670, with far edges before title text
 // 670, row copy after title initialization 670, and far edges at coordinate producers 670. NOT kept: those

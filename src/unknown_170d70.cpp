@@ -820,6 +820,11 @@ void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, b
 // Portal sentinel value 129. Group count before head 129.
 // The slot still uses EBP and the volume index EBX. The loop-break result grows to 442 bytes and changes
 // the prologue. The matched caller and projection callee stay exact throughout.
+// Separate mapped and selected slots 152; existing cluster address before slot assignment 151;
+// order subscript from count 129; mapped value from count 129; chained map/order assignment 129;
+// new cluster address before map/order stores 129; separate slots with chained stores 152;
+// count advanced from reserved slot 122. NOT kept: seven-point gain, and reduced caller 2.
+// The opening EBX save and later BP volume index are still exchanged.
 // @retail 0x172ee0
 bool function_172ee0(long *cluster_map, s_pool_lists const *lists, s_pool *pool, byte const *cameras,
 	long group, s_view_collection_1733e0 *collection, long entry_index, long cluster_index)
@@ -1463,6 +1468,11 @@ struct s_pool_view_172840
 // store, and the copy and bit set reuse the same destination base as at retail 0x172a9b–0x172aae. All 36
 // checked functions preserve their status, with no score rise elsewhere. The flag homes and false-return
 // tail still differ.
+// Independent pool/projection assignments with direct queue failure or success return 221/221;
+// conditional return 226; pool/projection else-if with direct queue failure 215; carried result with
+// queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
+// with projection before queue or first-write initialization 221/221; four flag names reordered 205.
+// NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1693,6 +1703,11 @@ struct s_camera_reference_171830
 // point difference 286; signed cluster ordinal retained 284; shared rear-displacement scale
 // 284; combined reference admission 284; no-displacement early exit 311; signed winning
 // side 282. NOT kept: signed winning side gains two and shortens to 1213 bytes.
+// Shared plane distance 284; clear-side-first separate success arms 252; plane-first split 284;
+// plane-first helper 284; shared scale for up, side or both 284/284/283; shared sample endpoint
+// setter 284; signed reference 281; named plane distance 285. NOT kept: the 252 form puts the
+// clear-side store before the plane arm, away from retail's branch order. The frame and point
+// convention remain different; the 281 form also moves away from retail length.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)

@@ -1123,6 +1123,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Separate query and resend types: early snapshot 81, conditional return 111, late
 // assignment 35, nested query/count guards 81. With an in-place flag update 93/129/91/93.
 // NOT kept: the result split ties or changes the entry and loses the native oldest reuse.
+// Resend bit updated through byte/word/bool fields with saved word tests 86/89/86;
+// sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
+// packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
+// recovers the memory OR, but the prologue, oldest load and message register differ.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

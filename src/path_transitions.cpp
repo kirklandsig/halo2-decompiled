@@ -474,7 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 218 (was 218; 219 before): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 218 (was 218): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // M3 lane 11 r113 (fast with 0x270d90/0x270400/0x30bf0; control 218, aligned 76): actor_index declared first (the stack
 // order and register arguments unchanged; definition, declaration in src/path.cpp and the call together) with corners a, b,
@@ -1032,6 +1032,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 218/218/219. With case-five vertex base 218/218, with paired-corner vertex
 // base 219, with both vertex bases 219/220.
 // NOT kept: all preserve the delayed EBX save and actor load at the same length.
+// Earlier measurement 219.
+// Admit then carry corner ordinals into paired vertex lookup. Second 219, third 219, second and third as
+// words or longs 220/220, first edge 317, second edge 220, first three 323, last three 247. The paired
+// middle words leave root and actor entry allocation unchanged.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -576,6 +576,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // pitch then the first sine (+0x10), cosine (arg_3's home), final pitch (arg_4's home), i.e. the final pitch gets its home
 // after the first rotation's sine and cosine; ours homes the yaw first (+0xc) and the final pitch before the sine and cosine.
 // Body unchanged.
+// Earlier first rotation source at angle solve or completed yaw 430/435. First yaw rotation before pitch
+// subtraction, limit initialization, base limit selection, limit scaling, clamp or final add
+// 484/471/480/467/479/281. The last retains frame 0x2c and XMM5 for unity. Earlier sites grow the frame.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
