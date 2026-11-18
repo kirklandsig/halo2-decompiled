@@ -862,6 +862,21 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // `this` symbol does not break the tie; on the preset pair with the `while (remaining-- > 0)` copy (108, 477 B): the
 // pair as two flag ternaries 147 (493 B, session EBX, callers match), a redundant `if (0 < member_count)` around the
 // copy 108, the variant passed straight as `session->data4db0` 108 (both the same code).
+// Round 198 (m3 lane 5, fast with the inlined callees and both callers; control 22): a hand countdown over walked
+// address and member pointers with the count declared last (`*address = ...; member++; address++;`) 102 (477 bytes: the
+// count spill follows the two leas as in retail, the mask read folds, callers match), the same on the preset pair 109
+// (session ESI, both callers lost); the stored pair through a new inline getter returning bool with the outputs set only
+// under the flag 46, with a `for` copy 108 (the preset pair's code in both); the variant through a new inline accessor
+// with the live-state test (0x6ec80's idiom) before the summary getter 22 (same code), with a `for` copy 100.
+// Compile-only screens (build/r198): the fold goes with the copy loop's scratch registers, not its spelling. Every copy
+// loop that ends with retail's registers (output EDX, source EAX, count ECX: `for`, `while`, the walked countdown above)
+// folds the player loop's mask read; the ones that end otherwise (the countdown on main with the output in ECX, the
+// walked countdown with `address++` before `member++` and the output in EAX, `*address++ = ...`) keep it unfolded; a
+// 16-trip or deleted copy loop keeps it unfolded with the session in ESI. Player-loop spellings on the `for` copy
+// (do-while, `!= 0`, `1u`, an explicit continue, the slot test first, a player reference, plain `i` for the team
+// argument) all fold; the variant accessor after the summary, before the count or between the loops gives ESI. So
+// retail's unfolded read after its own copy registers needs one more scratch temporary between the copy loop and the
+// mask test than any of these forms creates.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
