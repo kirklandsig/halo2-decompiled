@@ -2047,6 +2047,10 @@ real function_30bf0(vector3f *vector);
 // NOT kept (review 11-17): the mobile flag as a test-set (bool mobile = false; if (...) mobile = true;) took 378
 // -> 362, but a test-set flag is kept only with a byte match; the squared length summed as (k, i, j) took 362 ->
 // 356, under the 8-point keep bar on a function still over 30. Both measured, code back to main.
+// Round J264: The frame is still 0x4c against retail 0x40. The mobile store and 0xd37f0 argument registers differ.
+// reflected color through RGB pin 449, reflected destination pinned in place 499, reflected pin with const bounds 449, in-place reflection pin and rotation 522.
+// primary color from secondary 489, type test before magnitude 405, tag table snapshot 395, branch-owned lookup 505.
+// NOT kept: the reflected clamps recover the frame at higher scores. Primary color reuse, early type classification and the table snapshot lose 0x3db00.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

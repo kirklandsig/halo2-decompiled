@@ -5754,6 +5754,11 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // `group_index = first_group + i`, the `group` reference declared before the loop.
 // Y596: Actual body-stepped entry/group cursors and short list result, seven subsets then all in while:
 // 177/170/179/176/127/173/171/174. NOT kept: no equality or gain; original full loop/pass body restored; scratch registers and pass-11 staging remain.
+// Round J264: The radius, group mask and counter-address registers still differ. Four accumulator encodings account for the size gap.
+// typed clip box 74, named view and projection bounds 74, typed clip bound pairs 54, first record before group save 46.
+// accumulated projection success 118, positive projection guard 47, group save at submission 58, window-first callee on the current pass 45.
+// scoped marker workspace 47.
+// NOT kept: the window-first setup improves two points and the early first-record store improves one. The later group save reaches retail size with a higher score and moves the stores after clipping.
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -5920,6 +5925,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // through it (192), with draw_light_source_pass's cull argument as `g_485898 >= 4 && g_485898 <= 7 ? 0 : (normal_cull
 // ? 1 : 0)` (211: the dead load still folds away, and 0x32350 rises to 587); the gate as `if (!extra_enabled)
 // enabled = 0;` (191; 0x41cc0 186, 0x2bcd0 362); every pass as draw_configured_pass_r18 also with the mode table const (842).
+// Round J264: The clear stub still uses a stack flag. Retail also lays out the nonzero cull arms first in modes 1, 3 and 2.
+// inclusive-range arm first 111, short cull result 187, requested cull then disable 243, two consecutive bound decisions 175.
+// table cull modes 111, table cull and targets 111, table group/cull/target 111, table-driven mode traversal 649.
+// NOT kept: the first branch and constant table forms tie. Single-result cull forms raise shared-user scores. The mode loop removes the retail pass expansions.
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
@@ -5982,6 +5991,11 @@ extern dword g_4b843c;
 // that (all 237): bit 0 tested with bit_vector_test in the `enabled` test or in the last pass's test, every constant bit
 // operation (|= 0x24, &= ~0x2c, &= ~0x10) as bit_vector_set calls, the bit-1 test as a named `moving` bool, the `enabled`
 // test inverted (`!enabled || bit 0` clears). g_4ba014 defined in a non-LTCG object instead (diagnostic) changes nothing (278).
+// Round J264: The 0x4a1e0 argument registers, the first mask publication and the late flag reads still differ.
+// early local mask publication 212, early mask with local gate 212, shared camera classification 218, local mask through special-pass setup 260.
+// camera bit through the mask setter 212, joined clear mask 197, shared two-bit decision 212, sibling bit-mask tests 214.
+// joined flag result with two clears 215, carried flags with two clears 215.
+// NOT kept: the 197 form uses a computed clear mask where retail clears separate constants. The two forms preserving the retail clears score 215.
 // @retail 0x31170
 void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
 {
