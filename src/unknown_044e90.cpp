@@ -21,7 +21,7 @@ struct s_visibility_bound_record
 // them per arm) scores 465 and is not kept: the tag then takes eax and the flags edx, retail's tag is in eax
 // and the flags in ecx, and the body's length stays 1760 against retail's 1742.
 
-// score 443 (was 443): The entry address and tag table have different register homes, moving the entry spill and the plane/query schedule.
+// score 430 (was 443): the geometry lookup goes through the existing visible_entry_geometry (r107, at the end); the entry address and tag table still have different register homes, moving the entry spill and the plane/query schedule.
 // MiniMax S (11-17): no new form, no lower score (443): the frame 0x74a4 agrees with retail's and the first
 // difference is still at +0x10, where retail forms the entry address with a lea into ebx from an index in eax
 // before the register saves and we form it with an add into edi after them; the part centre's body is inlined
@@ -466,33 +466,27 @@ struct s_visibility_bound_record
 // displacement join 462, displacement before the base 464, address join with the bool selector 441,
 // displacement join with the entry by reference 443. NOT kept: 441 saves two points. The entry
 // address and tag-table saves still differ.
+// M3 lane 13 r107 (fast with 0x458d0, 0x45a80, 0x44720, 0x44940, 0x449e0, 0x45560, 0x460d0, all MATCH unless noted; control 443,
+// difflib-aligned 336, masked 148): KEPT 443 -> 430 (plain, 1751 B; aligned 267, masked 129): the hand-written geometry lookup
+// replaced by the existing visible_entry_geometry(short) of 0x458d0/0x45a80, moved from src/unknown_03f2b0.cpp into the header
+// the two files share (both callers stay matched); the flags local goes with it and the table is read where the bottom arm
+// uses it (a table local kept for that one use is the same code). On that: a state local for the views and active reads 434;
+// the query data as `if (!parts) ... else ...` with the +0x2c read in each arm 456 (1763 B). Lead, not kept (it raises this
+// count): 0x458d0's and 0x45a80's index parameter as `long` (retail's two callers show it: this function pushes `movsx eax,
+// word [ebp + 8]` and 0x45560 pushes its long index register) keeps 0x458d0, 0x45a80 and 0x44720 matched with a plain
+// `(short)index` in place of the read through the parameter's address, and 0x45560 too once its call passes `index` without
+// the cast; this function is then 458 (1776 B, first difference +0x14, aligned 254, masked 107): the entry is formed with
+// retail's `lea` from the scaled index and the two call arms come out separately with retail's `movsx` pushes, but in source
+// order (retail lays the !parts arm first at both parts tests). Left on the kept form: the entry in EDI (retail EBX), the
+// table in ECX (retail ESI from entry to the bottom arm), the views and zero in EBX, the plane copy's j/k registers and the
+// plane cursor (0x1428b0's inlined body), the visible-mask read after the node loop (retail before it).
+// Also on the kept form: the +0x30 count as a named local for its two tests 430 (same code).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
     s_visibility_query_workspace workspace;
     s_44940_entry *entry = &g_4ba138[entry_index];
-    s_tag_instance *tags = g_4e3b44;
-    dword flags = entry->flags;
-    byte *geometry;
-    if (entry->tag != NONE)
-    {
-        byte *definition = tags[entry->tag & 0xffff].bytes;
-        byte *sections = *(byte **)(definition + 0x28);
-        geometry = *(byte **)(sections + ((flags >> 9) & 0x1ff) * 0x5c + 0x34);
-    }
-    else
-    {
-        byte *section;
-        if (!((entry->unknown00 >> 12) & 1))
-            section = *(byte **)((byte *)g_4e0348 + 0xa0) + ((flags >> 9) & 0x1ff) * 0xb0;
-        else
-        {
-            byte *instances = *(byte **)((byte *)g_4e0348 + 0x144);
-            short index = *(short *)(instances + ((flags >> 18) & 0x7ff) * 0x58 + 0x34);
-            section = *(byte **)((byte *)g_4e0348 + 0x13c) + index * 0xc8;
-        }
-        geometry = *(byte **)(section + 0x50);
-    }
+    byte *geometry = visible_entry_geometry(entry_index);
     byte *views = *(byte **)g_4c0b78.state->unknown00;
     byte *view_ranges = views + section_index * 0x1a + 0xa6e;
     if (*(long *)(geometry + 0x30) > 0) {
@@ -545,7 +539,7 @@ void __stdcall function_44e90(short entry_index, short section_index)
         release_visibility_list(&workspace.first.list);
         release_visibility_list(&workspace.second.list);
     } else {
-        byte *tag = tags[entry->tag & 0xffff].bytes;
+        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
         long object_index = **(long **)entry->unknown10;
         byte *object = (byte *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
         long node_count = *(short *)(object + 0x114) / sizeof(transform4x3f);

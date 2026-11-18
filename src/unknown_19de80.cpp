@@ -747,6 +747,9 @@ static inline bool teams_enabled_19e1c0()
 // 0x208 only for the opponent loop's spilled down-counter. 121 random combinations of listed spellings (clamp, teams at
 // each use, failure returns, counter/team widths, mode local, declaration order, fallback test) never move token there.
 // So retail's source weights `remaining` above `token` on the dispatch path; no natural spelling found that does.
+// AC571: Teams predicate as unsigned byte/plain byte/word/long 390/390/409/410, and each with ordinary
+// returned count 691. NOT kept: the word predicate reaches frame 0x204 at 1437 bytes but replaces the
+// retail predicate spill with a word compare and misses the token preload. Ordinary results merge name tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

@@ -541,10 +541,15 @@ bool function_2160b0(long file_index, char *path)
 char *function_216400(long memory_unit, char *buffer, short capacity);
 bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long language);
 
-// score 11: argument-setup scheduling and call-layout differences. Permuter:
+// score 2 (was 11): only the argument setup before 0x216da0 differs: retail masks the type (`and ecx, 0xf`) before
+// pushing display_name, ours after. Earlier: argument-setup scheduling and call-layout differences. Permuter:
 // 292 tries in 600 s, best 4 only by swapping the name/display_name arguments
 // at the matched 0x216da0 and reading language through a volatile char, both
 // rejected; the honest form stays at 11.
+// M3 lane 8 r182 (fast): kept: the name buffer as s_saved_game_name (in local_0, as before) filled through its fill(),
+// as 0x215c00, 0x215f40 and 0x216120 do, so its address is formed again after 0x216da0 (11 -> 2). Tried: the same
+// through a `s_saved_game_name &` bound to local_0.name 11; the type in a named local beside unit or just before the
+// call 2/2; fill's display_name and language read through local_0 instead of the location reference 2.
 // @retail 0x215e60
 void __stdcall function_215e60(long file_index)
 {
@@ -556,7 +561,7 @@ void __stdcall function_215e60(long file_index)
         {
             s_saved_game_file_location location;
             byte unknown40[4];
-            wchar_t name[128];
+            s_saved_game_name name;
         } local_0;
         s_saved_game_file_location &location = local_0.location;
         location.name[0] = 0;
@@ -569,10 +574,9 @@ void __stdcall function_215e60(long file_index)
                 char drive;
                 if (function_1249f0(unit, &drive))
                 {
-                    wchar_t *name = local_0.name;
-                    name[0] = 0;
-                    function_216da0(file_index & 15, name, location.display_name, location.language);
-                    XDeleteSaveGame(function_216400(unit, root, 8), name);
+                    local_0.name.text[0] = 0;
+                    local_0.name.fill(file_index & 15, location.display_name, location.language);
+                    XDeleteSaveGame(function_216400(unit, root, 8), local_0.name.text);
                 }
             }
             saved_game_storage_remove_location(file_index);
@@ -591,6 +595,15 @@ bool saved_game_file_write_save_image(long type, s_saved_game_file_location *loc
 long saved_game_file_type_size_in_blocks(long type);
 bool saved_game_storage_has_free_blocks(long blocks);
 
+// score 2 (was 16): only the order of 0x216d70's two register arguments differs: retail forms the path in ecx before
+// the directory name in eax, ours the other way round. Kept (m3 lane 8 r182): both name buffers as s_saved_game_name
+// filled through its fill() (moved to saved_game_storage.h from unknown_216b60.cpp; matched 0x215f40 and 0x216120 use
+// it), so the delete name's address is formed again after 0x216da0 as in retail (16 -> 2; the delete name alone 2).
+// Tried on that: the directory argument as local_0.location.name or &location.name[0], the path as &path[0] (2 each),
+// location.type for the type 131. HELD (needs the owner's OK): 0x216d70 taking (directory, path, type), its
+// definition in unknown_216400.cpp and the call in unknown_2161d0.cpp changed with it (both files held by another lane
+// this round), matches 0x215c00 in a fast build (build/r182/held-215c00.patch), but 0x2164c0, which inlines 0x216d70,
+// goes 20 -> 141 there (its path buffer and location swap stack slots).
 // @retail 0x215c00
 long function_215c00(long type, wchar_t const *display_name)
 {
@@ -602,14 +615,14 @@ long function_215c00(long type, wchar_t const *display_name)
         if ((!g_51ea14 || *(long *)((byte *)g_51ea14 + 0xbef8) < 0x1000) && count < 0x1000)
         {
             long index = g_55c280;
-            wchar_t name[128];
-            name[0] = 0;
-            if (function_216da0(type, name, display_name, index))
+            s_saved_game_name name;
+            name.text[0] = 0;
+            if (name.fill(type, display_name, index))
             {
                 char directory[256] = "";
                 char root[8];
                 function_216400(0, root, 8);
-                if (!XCreateSaveGame(root, name, 1, 0, directory, sizeof(directory)))
+                if (!XCreateSaveGame(root, name.text, 1, 0, directory, sizeof(directory)))
                 {
                     struct
                     {
@@ -645,10 +658,10 @@ long function_215c00(long type, wchar_t const *display_name)
                     }
                     else
                     {
-                        wchar_t remove_name[128];
-                        remove_name[0] = 0;
-                        function_216da0(type, remove_name, display_name, location.language);
-                        XDeleteSaveGame(root, remove_name);
+                        s_saved_game_name remove_name;
+                        remove_name.text[0] = 0;
+                        remove_name.fill(type, display_name, location.language);
+                        XDeleteSaveGame(root, remove_name.text);
                     }
                 }
                 if (result == NONE)

@@ -856,6 +856,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // new inline `session_player_present(session, index)` 46 (accessor copies are propagated before the ranking); a const
 // preset pair with the variant named after the summary getter 46; the three-test opening on the arrays
 // (`!session->data4f24.data`) 22 (same code).
+// Round 138 (m3 lane 12, fast with 0x6e500, 0x72700, 0x6e910, 0x5c5c0; control 22): as a member of the session class
+// (`this` the session, the header declaration moved into the class, both calls `a->function_06e720()`) 22 (same
+// code: the session stays EBX), the member with the preset stored pair 46 (session ESI, both callers lost), so the
+// `this` symbol does not break the tie; on the preset pair with the `while (remaining-- > 0)` copy (108, 477 B): the
+// pair as two flag ternaries 147 (493 B, session EBX, callers match), a redundant `if (0 < member_count)` around the
+// copy 108, the variant passed straight as `session->data4db0` 108 (both the same code).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1243,6 +1249,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // then `count = index + 1` 195; `long index = count++;` before the copy 205 (727 B); the else arm reading the entry
 // count again for the copy size 195; `memcpy(identities[count++], ...)` re-measured 40. Reading: only the forms whose
 // count step comes before the copy in the source keep the count in EBX; retail's copy has the step after it.
+// Round 138 (m3 lane 12, fast with 0x6fcc0, 0x6f940, 0x6fa60; control 9, the indexed `memcpy(identities[count], ...);
+// count++;` form re-measured 195): on the indexed form the NONE arrays and the session id declared at the top 195;
+// the outer branch inverted (else arm first) 204; the tail's live test through the existing `session_state_is_live()`
+// inline (0x6fa60's spelling) 195, on the current form 9 (same code); the else arm through a named entry count copied
+// into the count after the copy 195 (copy-propagated); no `joining` local (read through the owner at both calls) 209
+// (715 B).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

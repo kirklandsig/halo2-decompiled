@@ -496,13 +496,7 @@ real function_11e6f0(
 }
 
 // @retail 0x11e800
-bool function_11e800(
-	point3f const *a,
-	point3f const *b,
-	point3f const *c,
-	point3f const *p,
-	real *u,
-	real *v)
+bool function_11e800(point3f const *p, point3f const *a, point3f const *b, point3f const *c, real *u, real *v)
 {
 	real w[3];
 	real e2[3];
