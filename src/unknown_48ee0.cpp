@@ -39,6 +39,9 @@ extern real g_4c9798[36];
 // MiniMax A (11-13): no new form, no lower score (174): the mode bit loads the flags into EDX where retail uses EAX,
 // the size stays in a register across the two rounding calls where retail reloads it from its slot, and the frame's
 // slots still run from the mode up where retail's start with the size; the rounding callee now matches.
+// MiniMax A (11-18): no new form, no lower score (174): the five source variants tried this round score 250, 280, 264, 258
+// and 258; the frame's homes still run mode, maximum, extent, size, distance, aspect, border where retail's start with
+// the size, and the mode bit still loads the flags into EDX where retail uses EAX.
 // score 174 (was 174): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
