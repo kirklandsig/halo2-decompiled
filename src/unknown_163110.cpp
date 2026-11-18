@@ -616,10 +616,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// score 115 (was 115; m3 lane 16 r130 at the end; earlier at 115, was 115, and again 115, was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax B (11-18): no new form, no lower score (115): the first plane's dot still keeps the copied normal's i in xmm4 and reads view->vector_e4.i late into xmm3, where retail loads the coefficient into xmm4 before the copy; the six term orders of each plane's d re-measured on this tree (plane 0: 115 with i, k, j and 133-149 otherwise, plane 1: 115 with i, k, j and 129-138 otherwise) all leave the coefficient load after the copy.
-// score 115 (was 115; m3 lane 16 r130 at the end): coefficient XMM roles, classification operands and projection staging still differ.
-// Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
-// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
 // forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
 // naming only the i term 141, the i term's two operands swapped 115 and the terms in j, k, i order 133 leave the
@@ -1054,6 +1052,21 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // adjustment before common normal loop 396, nested loops with offsets 436. The x
 // coefficient/zero roles remain. NOT kept: common orientation disturbs the earlier
 // bound and margin setup, even in the four variants at retail length.
+// M3 lane 11 r117 (fast, 0x1652e0 alone; control 115, aligned 73, register-masked 68). Reading: in the first plane's d
+// only the i term differs: retail gives the coefficient (view->vector_e4.i) the fresh register XMM4, so its load rises
+// above the forward copy with the j and k coefficients, and gives the copied normal's i the k coefficient's freed XMM3,
+// so that load waits for the k product; ours colours the two the other way round, and the zero of the negations then
+// takes the i product's register in each build (XMM4 retail, XMM3 ours). The second plane already has retail's shape in
+// both builds (its i coefficient early in XMM5). Single changes: the near clamp as an if-assignment 249 (1867 B); plane
+// 0's negations d first 143 (a listed count); the negated forward vector's components in k, j, i order 121; plane 1's
+// negations d first 159; the point memcpy between the two planes' blocks 182; the bounds copy ahead of the use_plane1
+// update 151; plane 0's d as `near_distance - d` 423 (a listed count). Compile-only screen (it reproduces this
+// function's XMM stream; scored on the first 60 XMM instructions against retail, this body 36): 160 random combinations
+// of the three top statements' order, the clamp form, forward declared before or after the clamp, plane 0's four
+// negation orders, the near add as a statement or in the negation, the negated vector's component order, plane 1's
+// negation order and the memcpy's place: none loads the i coefficient before the copy and none is under 38. Diagnostic
+// (reverted): the planes at elements 1 and 2 of a three-element array 402 (1830 B) with the first plane's i term
+// unchanged, so the role swap does not come from the normal's i sitting at the start of its local.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
