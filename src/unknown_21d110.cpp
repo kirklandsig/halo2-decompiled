@@ -336,6 +336,12 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // register is the caller's; the one form that reaches retail's shape (94 at 427 bytes) needs the caller 0x189fe0 in
 // src/unknown_189010.cpp to move its request register, which loses ten matched functions:
 // BLOCKED-BY 0x189fe0.
+// MiniMax H (11-18): score 181 (was 181): no new form, no lower score; retail takes the state pointer in EAX and
+// keeps it in EBX with a four-byte frame where this build reserves eight bytes and keeps the state in EDI, and
+// the request register is the caller's; the one form that reaches retail's shape (94 at 427 bytes) needs the
+// caller 0x189fe0 in src/unknown_189010.cpp to move its request register, which loses ten matched functions:
+// BLOCKED-BY 0x189fe0. The permuter's best (149 against its 160) swaps the arguments of the definition lookup and
+// adds a constant-only local, so it changes what the lookup is asked for and is dropped.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // MiniMax E (11-10), not kept: 166 (was 181): the effect path starts the sound through the sound
