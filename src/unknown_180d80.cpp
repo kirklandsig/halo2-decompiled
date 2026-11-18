@@ -62,7 +62,7 @@ union s_180d85
 real function_30bf0(vector3f *arg_0);
 void *function_439d0(long arg_0);
 bool __stdcall function_d47d0(s_cluster_query const *arg_0, color3f *arg_1);
-color3f *function_131c20(color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3, color3f *arg_4);
+color3f *function_131c20(color3f *arg_4, color3f const *arg_0, color3f const *arg_1, dword arg_2, real arg_3);
 dword __cdecl pack_color3f(color3f const *arg_0);
 long function_17cfa0(long first_index, long definition_index, short cluster_index, short decal_type, bool permanent);
 void __stdcall function_180b60(s_cluster_query const *arg_0, real arg_1, long arg_2);
@@ -114,6 +114,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // the entry guard's registers (ours loads the strip record into ecx after the pushes, retail into eax before them), the
 // count loop's sign extension where retail zero-extends the word, the swapped count sum and vertex cursor slots, and the
 // 0x17cfa0 call setup (that callee's own body is in another file).
+// MiniMax H (11-18): no new form, no lower score (93): the length agrees (2683 bytes against 2683) and what still
+// differs is the entry guard's registers (ours loads the strip record into ecx after the saves, retail into eax
+// before them), the count loop's extension (ours sign-extends the word into the counter, retail zero-extends it
+// and counts down), the accumulator's slot (0x10 here, 0x14 in retail) and the 0x17cfa0 call setup. The count's
+// extension cannot be changed here without a width cast on the compare or a copy of the field in a local of its
+// own, which the rules drop: BLOCKED-BY 0x17cfa0, whose body is in another file.
 // MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
 // argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
 // still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
@@ -402,7 +408,7 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
                     *(short *)(local_7 + 0x2a) = (short)local_4;
                     *(long *)(local_7 + 0x2c) = arg_2;
                     if (!arg_6->field_0) arg_6->field_8 = function_180d82();
-                    function_131c20((color3f *)(local_2 + 0x1c), (color3f *)(local_2 + 0x28), ((dword)local_2[0] >> 1) & 3, arg_6->field_8, &local_11.field_0);
+                    function_131c20(&local_11.field_0, (color3f *)(local_2 + 0x1c), (color3f *)(local_2 + 0x28), ((dword)local_2[0] >> 1) & 3, arg_6->field_8);
                     *(dword *)(local_7 + 0x24) = pack_color3f(&local_11.field_0);
                     local_7[0x27] = 0xff;
                     short local_13 = 0;

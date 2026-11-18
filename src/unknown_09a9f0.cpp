@@ -230,6 +230,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // share a scaled index and data load where retail forms each address independently.
 // Earlier: entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax B (11-18): no new form, no lower score (49): the outcome byte still lives in EBP where retail keeps it in BL and copies it to AL at the return, and the header test and the object read still share one lookup where retail rebuilds the table pointer between them; the recorded forms (the early bool result 77, the word-cast index 54, the attach through the entity 52) all keep the shared lookup, so nothing found this run opens the BL split.
+// MiniMax H (11-18): no new form, no lower score (49): the outcome byte is still split between BL and AL where retail
+// keeps it in BL from before the creation call, retail's EBP window around the header test is still missing, and the
+// header and the object are still read through one shared address where retail looks the header up twice.
 // score 49 (was 49): entry saves EBP at +0x4 where retail saves EBX for BL. The header validation and object access still share one lookup.
 // MiniMax I (11-16, round 2): no new form, no lower score: the outcome byte's register split
 // remains (retail keeps it in BL and copies it to AL at the return, ours keeps it in EBP) and retail reloads the
@@ -879,6 +882,8 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Creation and notification payload via memcpy with attach-owned result 77.
 // Creation and notification payload via memmove with attach-owned result 95.
 // NOT kept: payload memcpy kept the original allocation on the validity graph, and memmove or the attach-owned result regressed. Original payload and result restored.
+// The early BL and independent header and object loads still differ. Association local in the attachment arm 49/49/77/77.
+// association local in the validation scope 49/49/77/77.
 // Round 418: Common header flag / common object datum / both / existing header getter with common object datum:
 // 49/49/49/49 with validity result, 77/77/77/77 with attachment result. The typed accesses still share the
 // header address, and the attachment result shortens the body to 160 bytes.
@@ -1302,6 +1307,13 @@ bool c_projectile_type::v8(long a, long b)
 // to the end of the file 12 (source position does not order the pair); the entry address written multiply-first 12; the
 // state's two fields as `((real *)d)[0x24]`/`[0x25]` 12; the object's fields as `((real *)object)[0x50]` and
 // `((long const *)object)[0x4f]` 12; the 0x800 test as `(flags & 0x800) == 0x800` 12. Word-read body kept (5).
+// M3 lane 16 r136 (fast with 0xa5e70/0xa02e0/0xa0be0, matched each time; mask control 12), a 60-form combination screen with
+// the full-width mask over field pointers declared next to their bases: the group index as a const reference in the block,
+// a `long const *` declared after the object, a value local or read in place at both uses; the object's power through a
+// `real const *` declared after the object; the state's power through a `real *` declared after the flags; the state's
+// group power through a pointer declared after the flags or inside the 0x800 block; a `real const *` to the group's power
+// in place of the entry pointer; `b` throughout or the flags local. Every form without the state-power and group-power
+// pointers 12 (same code); the group-power pointer 15; the state-power pointer 16; both 19. The object/flags pair never moved.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

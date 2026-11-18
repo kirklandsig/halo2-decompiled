@@ -481,6 +481,18 @@ struct s_visibility_bound_record
 // table in ECX (retail ESI from entry to the bottom arm), the views and zero in EBX, the plane copy's j/k registers and the
 // plane cursor (0x1428b0's inlined body), the visible-mask read after the node loop (retail before it).
 // Also on the kept form: the +0x30 count as a named local for its two tests 430 (same code).
+// M3 lane 4 r213 (fast with 0x458d0, 0x45a80, 0x44720, 0x44940, 0x449e0, 0x45560, 0x460d0, all MATCH each run; control 430,
+// difflib-aligned 215 exact / 73 masked). Nothing kept. Lane 13's lead re-measured on today's base: 0x458d0's and
+// 0x45a80's index parameter as `long` with `(short)index` in their bodies and 0x45560 passing its long index 458 (1776
+// bytes, first difference +0x14, aligned 211 / 64; the three callee-side functions stay matched); with the call arms as
+// `if (!parts) 0x458d0 else 0x45a80` 458 (211 / 63). On that: the frustum address as a pointer local with the planes
+// at +0x78 (retail's two `lea`s) 458 (same code); the query data read in each arm, !parts first, 484 (1792 bytes,
+// 207 / 65); both 484. On the kept body: the frustum pointer local 430 (same code); the arms !parts first 430 (216 / 73).
+// Reading of the head on the long-index form: retail keeps the entry in EBX, the tag table in ESI (loaded after the tag
+// compare, kept to the bottom arm) and the geometry in EDI, with the views and the state pointer in ECX/EDX; ours gives
+// EDI to the entry, ESI to the state pointer and EBX to the views and then to a zero that serves the count test, the
+// active test and the four count stores, where retail tests with `test` and has a zero (EDI) only for the count stores
+// and the view counter. The geometry sitting in EDX is what pushes the state pointer into ESI.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

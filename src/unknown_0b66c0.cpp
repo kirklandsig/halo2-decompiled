@@ -491,6 +491,21 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // first with `start += (long)string` right after the compare 36 [6] (start EDX for life, the string read folded into the
 // add); the count tested first with `start = (long)string + start` after the clamp 40 [match] (start ECX for life);
 // diagnostic: the natural body with the copy helper written out 28 [6] (same code as the natural body).
+// Round 110 (m3 lane 14, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time; control 21): 0-30 dead initialised
+// locals at the top 21 each [match] (no symbol-count state). Reading of retail: all seven registers are busy in the scan
+// (AL result, ECX counter, EDX walk, BL byte, ESI count, EDI start, EBP destination), so the string is the one value left
+// in its stack home and read twice; the destination is loaded at entry like a plain stack parameter. New lead, not kept
+// (made-up wrappers, 22 against 21): both pointers passed as one-pointer aggregates by value, the natural body, no
+// `volatile`: 22 at 100 bytes [match], with retail's entry moves, single exit, AL result and the whole scan (walk EDX,
+// counter ECX, BL with EBX saved around the loop); left: ours loads the string once into EBP after the sign tests and the
+// destination into EDI before the pushes, where retail holds the destination in EBP from entry and reads the string at
+// each use. On it: the destination read into a local at the top 22 (same code); `start += (long)text` after the clamp
+// with the cast source 22 (same code). The string alone as a one-pointer aggregate with a plain destination 52 (91 bytes)
+// [83] (the destination is then passed in EBX, the scan byte takes AL and the result is re-made at two exits); that
+// aggregate with a copy constructor 52 (91 bytes) [82]. A plain string with the natural body re-measured 41 (104 bytes)
+// [35] (string ECX -> EBX, start EDX for life, walk EDI, byte AL, two exits); with the length helper walking a local
+// cursor 41 [35], with `start += (long)string` 41 [35], with a named length 41 [35], with both 41 [35] (all the same code:
+// a plain pointer is never left in memory, as rounds 55 and 86 found).
 // Round 118 (m3 lane 10, fast with 0xb5f10/0xb61d0; [0xb5f10], 0xb61d0 matched each time unless noted): the shared
 // length helper's counter started in its own for 21 (same code); the helper as `while (length < 0x1ff &&
 // string[length]) length++;` 57 (86 bytes, 0xb61d0 46); with a plain string parameter: the current body 49 (92 bytes,

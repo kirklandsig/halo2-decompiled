@@ -2938,7 +2938,7 @@ void function_21c400(short voice_index, real gain, s_looping_channel_spatializat
 	properties.pitch = pitch - (real)bounds->unknown00;
 	if (playing->sound_class & 2)
 	{
-		byte const *promotion = (byte const *)function_221810((char)playback->unknown02[0]);
+		byte const *promotion = (byte const *)sound_class_definition_get((char)playback->unknown02[0]);
 		real doppler;
 		if (sound->controller_index != NONE)
 		{
@@ -3095,6 +3095,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // still differ - retail holds the state in EBX, the NONE state in ESI and the track in EBP, while this build
 // holds NONE in EBX, the index in ESI and the track definition in EBP - and the entry's flag mask and the gains
 // clear still use this build's forms.
+// MiniMax A (11-18): no new form, no lower score (597): the entry still hoists the flags byte into BL where retail
+// masks it with 1 after the pushes, and the track loop's register roles are still this build's - retail holds the
+// state in ebx, the NONE state in esi and the track in ebp, where this build holds NONE in ebx, the index in esi and
+// the track definition in ebp; the form that reads `alternate` inside the definition guard measures 615 and is not kept.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
