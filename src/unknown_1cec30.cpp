@@ -2492,6 +2492,22 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them in place, and the i component
 // still ends up in xmm1 where retail keeps it in xmm4; reading the three components into locals ahead of the
 // branch moves the material loop's accumulation order instead (159), so the body stands.
+// MiniMax H (11-18): score 91 (was 91): no new form, no lower score: the material loop's call to 0x181db0 takes the
+// material index in eax and the result pointer in ebx (0x1d8b10, 0x1d8b14), while this build's /Gr fastcall
+// default passes them in ecx and edx, and that convention is fixed in src/unknown_181e90.cpp, which this lane may
+// not edit, so the call site cannot match from here. The velocity's normalisation still scales the j and k
+// components from memory where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them in
+// place, and the i component still ends in xmm1 where retail keeps it in xmm4. Written out this round: the
+// normalisation as a length of its own with the dot in retail's order (k, j, i) and the three components in
+// locals the branch overwrites with the scaled values 359 (the material loop's accumulation changes with it);
+// the same with the products in the order inv*i, j*inv, k*inv 91 (the same code). Both restored.
+// MiniMax H (11-18): score 91 (was 91): no new form, no lower score: the velocity's normalisation still scales the
+// j and k components from memory where retail reloads them into xmm2 and xmm3 ahead of the branch and scales them
+// in place, and the i component still ends in xmm1 where retail keeps it in xmm4; the length's x87 order and the
+// contact and normal blocks agree. Forms tried this round: the normalisation written out with the mixed product
+// order (inv*i, j*inv, k*inv) 91 (the same code); the products in the order j,k,i 91 and k,j,i 91 (the same code);
+// the three components copied into locals ahead of the branch 326; the same copies with fresh destinations 131; the
+// velocity taken through a local pointer 175; the result written as four separate stores 99. All restored.
 // score 91 (was 91): The aligned frame and contact/normal prefix agree. Velocity j/k still load late and the zero property value lacks the retail EDI lifetime.
 // aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
