@@ -263,6 +263,14 @@ void juggernaut_set(long player_index, bool juggernaut)
 // the draw guard as `0 < count` 20; the bit index as `(char)player_index` (as juggernaut_update_teams spells it) 74,
 // as `(char)iterator.index` 74. Retail pushes the count's register at entry and the pointer's only on the path into
 // the loop (shrink-wrapped), as ours does with the pair swapped.
+// Round 110 (m3 lane 14, fast with 0x192530, 0x15db30 and 0x15d770, all matched each time; control 20): 0-30 dead initialised
+// locals at the top 20 each (the pair is not a symbol-count state). Diagnostic (value-wrong): a second real read through the
+// global pointer in the loop's first test 61 (241 bytes) with retail's count EBX / pointer EBP. Read with 0x2423f0's
+// diagnostics this fits callee-saved registers handed out ESI, EDI, EBP, EBX by reference count: retail's pointer carries
+// at least as many references as its count, ours one fewer. Tried: the three rejections as `continue`s with the store at
+// the loop's top level 20 (same code); the draw in its own block with the count copied to a local for the modulo and a
+// named choice 20 (same code); the players word through a `word const &` bound to the global's field at the loop top 20
+// (same code); the candidates written through an end pointer with the count taken from it after the loop 81 (248 bytes).
 // Round 118 (m3 lane 10, fast with 0x192530, matched throughout): the scan as a forceinline helper returning the count
 // to the caller's own count 20 (same code; as a plain inline it stays out of line, 243, and 0x192530 5); a
 // function-scope copy of g_510c9c re-measured 36: the pointer then loads at entry into EBX and count still takes EBP,
