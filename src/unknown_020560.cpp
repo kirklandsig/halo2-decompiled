@@ -1238,6 +1238,20 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Fraction inside opposite-ordinal/resolved-pointer admission; lower-then-upper tests
 // 560/568, upper-then-lower 561/562, partial-before-endpoint 560/569,
 // shared selected-endpoint copy 673/672. Frame stays 0x18.
+// M3 lane 15 r99 (fast with 0x24550, 0x22c30, 0x22750, 0x146020 and the caller 0x23690; [n] = aligned differing lines, this
+// body 547 [961]). The index body re-measured (entries read at each use, scan 1 and scan 2's distance through distance_sq3f
+// with the sample first, delta and offset through vector3d_from_points3d, dot3f, a `nearest` index, the ternary second, then
+// `fraction = 0; if (second)`): 577 (2094 B) [234], 0x23690 330 -> 354. On it: scan 2's offset through the by-value
+// vector3f_assign with the three differences as arguments 761 (2289 B, frame 0x30) [623]: the offset gets a home, but the
+// subtractions are no longer shared with the distance (the same code as the offset written out); the delta through
+// vector3f_assign as well 761 (same code); the delta alone 577 (same code as the index body); the fallback vector through
+// vector3f_assign 578 [247] (on this body 547, same code: the fallback is already float stores); `dword` indices 484 (2110 B)
+// [244], a positional accident (unsigned jb/jae where retail has jl/jge), not kept; an index per loop 577 (same code); `first`
+// as `&source->entries[nearest]` 577 (same code). Retail read again for the homes: nearest is written to +0x14 only after
+// each part of scan 1 and reloaded in scan 2 (once inside the remainder loop's update, at 0x232c3), opposite is stored at
+// every update, the offset's x is stored each pass and never read, and the delta's k is the only delta component with a
+// store (reloaded into XMM7 after each unrolled pass); the fallback vector is float stores with two `push 0` immediates,
+// so the integer zero our index body shares between the count test, nearest and the index does not come from the fallback.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
