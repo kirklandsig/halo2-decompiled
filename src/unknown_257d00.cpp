@@ -2553,6 +2553,24 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // and colour copies, which choose the other registers. The turn-facing sum written with its terms in the other
 // order measures 431, a gain of two, which is below the keep bar.
 // score 433 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
+// m3 lane 14 r111 (fast with 0x110ab0; control 433 = full; aligned counts with the jump table cut off, control 126).
+// What differs: the `if (local_3)` test sits after case 20 where retail places it after case 0, falling into case
+// 13's return-1 epilogue (retail joins the two return-1 blocks there); case 20's else arm stores and reloads the flag
+// where retail loads it into AL and jumps past the reload; case 5's `field_0 == 0` is one join where retail repeats it
+// (with the EBX/EDI reloads) in each arm and shares case 0's `sete`; case 4 copies the facing; case 2 copies the turn
+// facing as floats; case 6 folds its two flag sets into `or 0x69`; case 7/8's flag is normalised. Forms: case 4 reading
+// the state's facing directly 611 (2400 B: actor EDI, state EBX); case 2's copy as an aggregate assignment 611; both
+// 623 (2384 B); case 18's targets in nested two-use locals 583 (flipped too), with case 4 direct 609; those three
+// together 616, with every form below 630 (2368 B; with EBX/EDI swapped back the rest is aligned 136); case 13 as the
+// shared `local_30 = 1; goto` exit 481 (2404 B: the joined epilogue moves to the end with the test), as `break` 481,
+// removed 481; case 0 moved after case 20 525, with case 13's goto 447; case 7/8's flag as `arg_1 == unknown018 ?
+// unknown264 : true` 493 (case 7/8 then exactly retail's; match-only, as listed); case 5 as `!function_e70e0(arg_1) ? 0 :
+// rate` 404 (retail's arm order, AX reused; NOT kept: arms swapped with the condition negated, match-only), as an
+// if/else 592; the two together 494, with case 13's goto 474; the turn-facing products' operands commuted 433 (same
+// code), the two terms swapped 431 (NOT kept: two lower); the 0x465 flag through a long cast 433 (2420 B); case 20's
+// else as `&& !d1` / nested `if (!d1) local_3 = false;` 537/537 (2440 B); the flag as bool 433 (same code); case 21's
+// target in a two-use local 433 (same code); case 20's iterator as data, index, datum_index 433; plain `return 1;` /
+// `return 0;` exits 485 (2400 B), with the case 7/8 and case 5 forms 485.
 // m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // frame 0x1c and entry agree. Dispatch span, planar copy and request flag stores differ.
 // Earlier m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
