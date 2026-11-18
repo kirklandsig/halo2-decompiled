@@ -93,18 +93,26 @@ __forceinline void drop_bit_2e1090(long *bits, int id)
 	bits[word] &= ~bit;
 }
 
-// non-zero when the boxes are apart on y or z: either difference of a
-// box's upper words and the other's lower words goes negative
-__forceinline unsigned long apart_yz_2e1090(element_2e1090 const &box, element_2e1090 const &other)
+// sets `apart` non-zero when the boxes are apart on y or z: either difference
+// of a box's upper words and the other's lower words goes negative
+__forceinline void apart_yz_2e1090(element_2e1090 const &box, element_2e1090 const &other, unsigned long &apart)
 {
+	unsigned long const other_lower = ((unsigned long const *)other.slots)[0];
 	unsigned long const box_lower = ((unsigned long const *)box.slots)[0];
 	unsigned long box_upper = ((unsigned long const *)box.slots)[1];
-	unsigned long const other_lower = ((unsigned long const *)other.slots)[0];
-	unsigned long other_upper = ((unsigned long const *)other.slots)[1];
+	apart = ((unsigned long const *)other.slots)[1];
 	box_upper -= other_lower;
-	other_upper -= box_lower;
-	other_upper |= box_upper;
-	return other_upper & 0x80008000;
+	apart -= box_lower;
+	apart |= box_upper;
+	apart &= 0x80008000;
+}
+
+// non-zero when the boxes are apart on y or z
+__forceinline unsigned long apart_yz_2e1090(element_2e1090 const &box, element_2e1090 const &other)
+{
+	unsigned long apart;
+	apart_yz_2e1090(box, other, apart);
+	return apart;
 }
 
 #endif
