@@ -763,6 +763,9 @@ static inline bool teams_enabled_19e1c0()
 // existing result and returns through cause-team name 390; existing result and early name returns 390;
 // existing result and returns through cause-team score 390.
 // NOT kept: the ordinary result reaches frame 0x204 but moves farther from retail's length and merges the name tails.
+// M3 lane 16 r137 (fast with 0x19e0f0; control 390): the switch-side failure as `result = remaining;` (single exit)
+// 431 (1398 B), with a plain result 732 (1129 B); the engine's token text in its own `written` local with the fallback
+// copy in the else 391 (1450 B), with a plain result 678 (1183 B), plus the single switch-side exit 719 (1142 B).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

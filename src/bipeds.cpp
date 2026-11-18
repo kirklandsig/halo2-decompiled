@@ -5990,6 +5990,10 @@ real magnitude3d(vector3f const *v);
 // `falling` (`!probe || normal.k <= 0.3f`) 98 (899 B); the upright test written `0.6f < vehicle->up.k` 2 (same code).
 // Still BLOCKED-BY 0x24590: magnitude3d's seven unmatched callers hold the scores they rose from in round 101 (542,
 // 749, 947, 590, 375, 902, 920).
+// M3 lane 16 r137 (fast with 0x24590 and 0x1fb7e0; control 2): the actor at the call read through a second
+// `BIPED_GET(...)` 260 (940 B); a 0x56 default with falling setting 0x54 and the joined upright/angular `else if`
+// setting 0x55 60 (895 B); `falling` initialised from the negated first probe 109; the upright arms swapped
+// (`<= 0.6f` gives 0x56 first) 5; the non-falling arm as a 0x56 default plus the joined test setting 0x55 212 (899 B).
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
