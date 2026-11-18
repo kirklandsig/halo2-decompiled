@@ -735,6 +735,9 @@ static inline bool teams_enabled_19e1c0()
 // Token preload, ordinary result and independent copy tails still differ. Capacity-initialized result
 // with zero on rejected cases, through name clamp, formats, both, or both plus engine fallback:
 // ordinary 458/701/458/458, existing qualified result 427/497/431/434.
+// AC571: Teams predicate as unsigned byte/plain byte/word/long 390/390/409/410, and each with ordinary
+// returned count 691. NOT kept: the word predicate reaches frame 0x204 at 1437 bytes but replaces the
+// retail predicate spill with a word compare and misses the token preload. Ordinary results merge name tails.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
