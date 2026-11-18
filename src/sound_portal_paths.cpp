@@ -225,6 +225,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // index 354 at retail length. One destination index through the cap with fresh publication 333, and a separate
 // read at the cap 354. NOT kept: 333 shortens to 1347 and retains frame 0x430; the mixed reads do not match.
 // The short cluster form reaches frame 0x42c. Both BSP table reloads and the 0x428 frame still differ.
+// Path ordinal, destination ordinal, path list and minimum named separately and together 354 each.
+// Uninitialized arrays before the valid bits, minimum between the bits and arrays, or bit clear
+// before the initial cluster lookup 354 each. The 0x430 frame and cached table bases remain.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
