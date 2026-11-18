@@ -601,6 +601,10 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax I (11-17, run 103): no new form, no lower score (675): retail still takes the path pointer into EBX after the
+// pushes, keeps the success result in the stack byte at [esp+0x13] and loads the source radius before the 0.2f
+// constant, where this build takes the path pointer into EAX before the pushes and keeps the result in a dword; the
+// frame and the length still agree, and the earlier rounds' frame probes and permutation searches found nothing lower.
 // MiniMax R (11-17): no new form, no lower score (675): the frame probe over this body (dead locals of 4, 8,
 // 12, 16 and 32 bytes and a long) leaves the count at 675 and the width variants give 674 to 736; an annealed
 // permutation search found no variant below 675 and the radius as one ternary gives 708, so none was kept.

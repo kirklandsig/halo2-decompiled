@@ -560,6 +560,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // frame 0x2c, aligned 187, masked 112; retail computes it after); the matched sibling 0x29c860's angle-taking helper for
 // both rotations 245 (1691 B, masked 97); the first two normalizations through the existing normalize3d after the k
 // store 186 (1718 B, masked 179).
+// M3 lane 7 r175 (fast with 0x29b990, MATCH each time; control 176): the first pitch angle accumulated in local_9 (no
+// local_11: `local_9 = angle; negate; local_9 -= local_12;`) 179; the single-exit normalizer re-measured 171 (unity now
+// XMM4 as retail; the first root takes XMM6 and the first i result XMM5 where retail has XMM3 and XMM6); on it one turn-limit
+// local reassigned for both clamps 173 and the XY vector declared after the second normalization 368 (1712 B); the
+// normalizer with a `result = 0.0f` local declared first, set to the root in the success arm 217 (1718 B). The
+// normalizer's locals renamed (magnitude, inverse) re-measured 176 (listed, same code).
+// Round 401 tested shared planar magnitude from the vector prefix or complete XY value, each direct, before the depth clear, with common length publication, or with shared scaling: 176/396/171/255/178/396/173/254.
+// The common-publication prefix form restores XMM4 and starts differing at +0x84. The root home remains +0x10, and the five-point gain is below the threshold.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

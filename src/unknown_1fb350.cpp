@@ -318,6 +318,7 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax S (11-17): no new form, no lower score (122): retail opens a frame of 0x14 with the object pool in two stack homes and the datum index in edi, where ours opens 0xc, forwards the pool into edi for both reads and keeps the index in eax; the form that reaches retail's frame needs the iterator step written out by hand, which the rules bar.
 // MiniMax E (11-14): no new form, no lower score (122): retail opens a frame of 0x14 and keeps the pool in two stack
 // homes, while this build opens 0xc and forwards the pool in EDI for both the scan and the element; the lead of 99
 // needs a read/write barrier, which the rules forbid, so the iterator's own declaration stands.

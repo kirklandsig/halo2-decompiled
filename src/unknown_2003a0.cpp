@@ -2719,6 +2719,11 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax R (11-17): no new form, no lower score (50): both builds take ebp as a general register and put the squad index
+// there from the prologue, and the one difference left is the instruction before the first 0x1fb8a0 call, where retail
+// reads it from ebp and this build reloads its stack home (two bytes longer, which drops the actor loop's alignment nop).
+// Moving 0x202e90 into another translation unit with the same flags, and dropping its __stdcall declaration, leave the
+// reload in place (0x202e90 and 0x203120 still match); a 300 second permutation run over the reduced image found nothing.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop. Earlier 29 (was 50) with the
@@ -3040,6 +3045,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // word-wide 50 (same code each); the second half's pending test read as a word 52 (580 B). Re-measured, listed: the
 // query result in its own task local with local_4 set in the else 50, the second half's index named 50, the delay named
 // 50. The first follow-up still reloads the index from its home.
+// After-scan action via trigger list, event encoding, completing condition or actor options
+// 50/80/50/50. Remaining qualifying count, normalized count and short/long
+// pre-decrement tests 90/141/100/137. First follow-up reload stays on tied forms.
 // Actor walk after the scan using the selected group, definition or entry 50/50/50; with the latch
 // set at the scan exit 60/60/60. Walk gated by the final predicate count 119; with the earlier latch 119.
 // NOT kept: the first event still reloads the squad index; the count forms add a threshold test.

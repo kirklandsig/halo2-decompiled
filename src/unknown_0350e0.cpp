@@ -338,6 +338,27 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // moves inverse last, j*i first); matrix3x3 locals with the complement in each cross product 371 (1810 B); i and j
 // copied, k read again, with the complement 435 (1673 B); the row copied as an aggregate before the rotation 455
 // (1655 B, integer moves where retail loads floats). Body unchanged.
+// Round 276. Frame 0x90 and the two early x87 angles agree. Axis and square registers
+// and the cross-coefficient and row schedules still differ.
+// Staged cross products 344, shared k partial 336, diagonal accumulator 334,
+// scoped cross pairs 362, shared sine-axis scaler 357, scaler with scoped pairs 357,
+// column dot products 461, and named signed pairs 362.
+// NOT kept: the diagonal form ties, and the other forms regress or change the frame or length.
+// P598: Axis scalars captured at each square/before all squares 369/376. By-value axis
+// with original/named sine products 380/383. Scalar captures with named sine products
+// 400/400, with named diagonal complements 369/376. The 0x90 frame and the square
+// and sine-product register lifetimes still need to agree in one form.
+// Round 601: each axis scalar becomes its sine product immediately after its square 363; capture and square
+// each axis, then reuse all three axis scalars for their sine products 377; capture all axes before their
+// squares, then reuse the three scalar owners for the sine products 391; read each axis into its square's
+// scalar and square that value in place 334; read each independent sine coefficient into its own scalar and
+// multiply it in place 388; build each cross coefficient as two successive multiplies of its own complement
+// accumulator 344; give the three diagonal complements their own multiply stage before summing 334; reuse the
+// three axis scalars for the sine products and compute the cross coefficients with independent accumulators
+// 375. NOT kept: the destructively scaled axis captures either enlarge the frame or leave the opening register
+// assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
+// caller held.
+// MiniMax R (11-17): no new form, no lower score (334): the first difference is the xmm choice for the two constants (this build keeps them in xmm4 and xmm5 where retail uses xmm0 and xmm7), and the body is two bytes longer than retail's 1779.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2064,6 +2085,16 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // the reference 214, scalar reference 201, scoped const reference 180; scalar offsets in case three 179
 // and case four 257, scalar negation in case two 257, all scalar references 201, complete fixed-axis copies 366.
 // NOT kept: 179 and 180 restore the frame and length but raise the caller from 492 to 572.
+// Result zero used for projection admission 193; named scaled angle 193; entry double scale 167, with
+// named scaled angle 167 (NOT kept: qword spill and 0x20 frame against 0x18); zero projections for
+// default cases 194; split case-1 reference 220; case-3 Z first on the original projection order 182
+// (NOT kept: caller 492 to 572); both reference splits 220; entry real scale 193. The result still
+// shares the scale argument's home.
+// N404: Both reference sources produced inside the perpendicular helper after its first cross
+// component, between crosses, or after the first or second perpendicular component: scalar
+// displacement stores 312/312/581/581, vector setter 312/312/316/316. Four forced-inline
+// counterparts reach 178 at 812 bytes with frame 0x18 and result at +8. NOT kept: the caller
+// measures 572 against 492, and the cross and displacement still have different XMM allocation.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2398,6 +2429,16 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // 0x2ec40-0x2ec58, 0x2ed71-0x2ed97, 0x2ed99-0x2edb9); every term order written in the forward dot compiles to the same
 // code, and explicit grouping `(j + i) + k` in all four gives retail's order too (493). With k, i, j all four round as
 // retail's: 492 plain (register-masked aligned 242 -> 237).
+// Frame 0x90 versus 0x94 and the decoded output homes remain. Immutable snapshots of position,
+// direction, tint, position/direction, position/tint, direction/tint and all three: 592/573/572/623/637/617/668.
+// Center components through saved-position stores 469, with aggregate saved-position transfer 486.
+// NOT kept: 469 grows to 2288 bytes and emits scalar stores instead of the integer-word transfer.
+// 486 preserves length and the transfer, but gains six and keeps the 0x90 frame.
+// Round 407: entry rejection guard 487; separate opacity/size guards 487; bind rejection guard 492; entry and
+// bind rejection guards 487; while entry loop 556; depth-disable arm first 495; draw point aggregate 492; draw
+// color aggregate 492.
+// NOT kept: the entry rejection forms gain five at retail length, below the eight-point threshold. The 0x90
+// frame and the draw point overlap remain.
 // B458: Final width and height as in-place scales before/after texture bind, after depth state, and after
 // vertex setup 586/523/517/514; separate width and height values at those sites 586/532/526/523.
 // Frame 0x90 versus 0x94 and shared direction/draw-point home remain.
@@ -2406,6 +2447,7 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // addressed-output homes off and grow the body. Projected point or three coordinates
 // before texture, with the draw receiver at texture success or at draw 552/511/548/566.
 // The separate draw-point slot at retail's ordering still differs. Original body restored.
+// MiniMax R (11-17): no new form, no lower score (492): the frame is 0x90 against retail's 0x94, so the stack slots sit four bytes off from the start.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3075,10 +3117,20 @@ real magnitude3d(vector3f const *v);
 // the sine 178 (1028 B; without 0x1ecf50 in the fast image the helper stays a call, 388 at 820 B). Retail's rotation
 // writes each component's partial sums to +8 and the result into first's slot, sine at +0x10 and the cosine over the
 // angle at +0xc.
+// Separate lower/upper current magnitude stages 268, with exact widened minimum 268, with target
+// stages 283; widened minimum on repeated current magnitude 171; sign-selected dot magnitude 195,
+// inline 195, with staged current bound 274; both reciprocals defined before either normalized vector
+// 170. The raw length still shares the clamped slot and the dot keeps a promoted copy in the restored
+// body.
+// F408: Two-direction magnitude loop 294; magnitude and reciprocal loop 292;
+// original magnitude with scale/point-setting loops 190/190; separate magnitude and
+// normalization loops 297/296; fused magnitude and normalization with the scale helper
+// or component products 349/353. NOT kept: all regress. Raw-length and promoted-dot homes remain.
 // Round 462 scoped angle producer 170, with named sine/cosine 170, immutable cosine complement
 // and projection 170, separate immutable trig results 170, direction/axis/projection names 170,
 // with scoped angle 170, bounded lengths ahead of scoped reciprocals 170, with scoped angle 170.
 // The raw current magnitude still shares the bounded length's slot and the dot promotion persists.
+// MiniMax R (11-17): no new form, no lower score (170): the reduced image is not faithful here (it leaves the callee unresolved, so the body reads 315), and with the callee in the image the first difference is the float comparison this build keeps in esi.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3395,6 +3447,8 @@ s_cached_input_list g_5234e8[4];
 // MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
 // MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
 // MiniMax C (11-16): rounds used; nothing of this file's own moved it.
+// MiniMax C (11-17): no new form, no lower score (147 in this reduced image, 113 in the twenty-address one): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and keeps the native list and total on the stack.
+// MiniMax R (11-17): no new form, no lower score (147): the frame is 0x9c against retail's 0xa0 and the body is 16 bytes shorter than retail's 548.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3735,6 +3789,14 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Admission count and state roles still exchange EDX and EBP, and the ordinal homes differ. Scoped entry-array
 // base in paired scan 375, fallback 317, creation removal 375, duplicate removal 317, both admission scans 367,
 // creation through both sorts 317, admission through creation 370. One-past creation tail pointer 350.
+// Retained-boundary cursor through the paired, fallback, creation and first-sort phases scored
+// 422/440/479/479 with the paired flag and 425/451/485/485 with cursor equality.
+// N404: Creation-pass admission in either loop-test order 351/417, conditional empty start 244,
+// exclusive creation-pass boundary with revisit/advance-on-retention/unsigned ordinal/left
+// bound/short ordinal 381/379/374/379/362. NOT kept: the conditional start recovers early
+// EDX/EBP roles at 1324 bytes, but adds a manufactured out-of-range start and comparison on
+// the path retail skips directly. Counter homes and the decay base still differ.
+// MiniMax C (11-17): no new form, no lower score (317): our body is exactly retail's 1324 bytes and the whole difference is the register allocation - retail keeps the state pointer in ebp and the swap counter in edx with their homes at [esp + 0x10] and [esp + 0x14], this build takes ebp for the counter and edx for the state with the homes swapped; the declaration orders of the two homes measure the same, so the body stands.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4079,6 +4141,19 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // position into a displacement vector, dotted k, j, i 512 (2005 B); a camera-position pointer to view+0x110 for the
 // copy, the store and dz/dy/dx 524 (1994 B), with that displacement 512 (2005 B); a pointer to the phase field at
 // view+0x140 for its five uses 486 (same code); the speed test as `maximum < magnitude` 485 (2035 B, retail's length).
+// F408: Velocity setter 513; moved-point setter 561; both 561. Signed screen displacement with
+// the existing point-difference helper 498; in place 500; in place with typed offset 500;
+// signed projection result 530; signed result in place with typed offset 530.
+// NOT kept: all regress or move length away from retail. The velocity and projection homes remain.
+// Five stride groups with countdown 530 or phase end 542; independent arrays
+// with countdown 505 or phase end 504; random-base cursor 526; screen-y cursor
+// 530; separate position/random cursors 485; independent view scalars 507.
+// NOT kept: the separate position/random form gains one at retail length
+// and grows the frame to 0x64.
+// DH393: Half-angle, tangent and radius-product locals 486/498/486.
+// Half-angle/tangent, half-angle/product and tangent/product 505/490/489.
+// All three with direct assignment or a short producer scope 494/494.
+// NOT kept: ties or regressions. The 0x60 frame, velocity reads and projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -4373,7 +4448,8 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at
 // +0xc; that getter lives in another file, and the initial alpha and kind homes still differ.
 // MiniMax R (11-16): no new form, no lower score (51): the frame is still 0x18 against retail's 0x1c, because retail's final fade inlines the getter 0xc6b90 and keeps its two dead output stores, which take a float slot at +0xc; that getter lives in another file.
-// score 51 (was 51; earlier 51 (was 62), 62 (was 177)): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
+// score 51 (was 51): frame 0x18 versus 0x1c. Earlier 51 (was 62), 62 (was 177).
+// Retail inlines the final fade getter 0xc6b90, which
 // keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
 // (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
 // alpha/kind and final fade scratch homes remain.
@@ -4603,6 +4679,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // case-entry/call-site declarations and both pair orders: eight 51 at 773/773 bytes.
 // NOT kept: no native frame word or final scratch recovery; original common
 // byte outputs, final direct fade path and complete executable body restored.
+// Stored point by byte-range copy, coordinate stores, setter or coordinate
+// aggregate, then each with the region output scoped to its query:
+// 51/205/205/205/51/205/205/205. NOT kept: the range copies tie; coordinate forms
+// use SSE differences and grow the frame to 0x20. Final fade scratch remains.
+// Round 615: frame 0x18 versus 0x1c; the final getter output stores are still absent.
+// Position memcpy 51; direct position distance 221; opacity conversion after switch 262;
+// named transmission 51; fade set in branches 51; header byte member 51;
+// region scope limited to query 51; special result before alpha store 51.
+// MiniMax R (11-17): no new form, no lower score (51): only the frame differs, 0x18 against retail's 0x1c, because retail's final fade keeps two dead stores (a byte 0 in the object index argument home and a float 0.0f in an extra frame slot) that this build eliminates; the fade block itself reproduces retail's sequence exactly when the fade value is named and clamped by hand, and the getter route that would keep them (function_c6b90 with zeroed outputs) is BLOCKED-BY 0xff5f0 in src/weapons.cpp.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5036,6 +5121,17 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // sites gives 412 (the body shrinks to 1799 bytes) and the same local only declared gives the same code as
 // before; the corner order, the colour aggregate and the helper call order that reach 225 stay six short of
 // the keep bar, so the body stands.
+// F408: In-place offset in destination, shared scratch, initialized array, and scoped points:
+// 385/698/388/698. With the four-channel color: 375/700/383/696.
+// NOT kept: all regress, including native-length forms. Frame and corner scalar homes remain.
+// Depth bias at each used corner 231 or after all corners 393; named final depths
+// at their corners 401 or after all corners 393; with four-channel color,
+// 225/390/376/387. NOT kept: the 225 form gains six and grows to 1826 bytes;
+// the 0xe0 frame and radius/scaled-zero homes do not recover together.
+// DH393: One scale observation, unity-first input assignment, scaled-first input assignment,
+// and scaled-first with one scale observation. Scalar alpha 403/412/412/411.
+// Four-channel color 369/398/398/397. NOT kept: the color recovers the frame but radius remains
+// at +0xc instead of +8. All eight regress. Original helper and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -5773,6 +5869,10 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // `group_index = first_group + i`, the `group` reference declared before the loop.
 // Y596: Actual body-stepped entry/group cursors and short list result, seven subsets then all in while:
 // 177/170/179/176/127/173/171/174. NOT kept: no equality or gain; original full loop/pass body restored; scratch registers and pass-11 staging remain.
+// Round 615: four EAX group flag load/store encodings account for the four missing bytes.
+// Named bounds members 47; clip indices 74; first record before flag clear 46 (NOT kept:
+// one point); positive lookup region 47; separate lookup guards 47; clamp assignments 58;
+// shared marker key 147; typed view pointer 47.
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -6173,6 +6273,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // (0x423c0 160), so the alignment demand comes through 0x14ac0, not D3DDevice_Clear. Shared pass helper: the clear
 // test nested under `mode == 1` 138; a `sources` pointer for the flags and g_467138 138; 0x44370's mask-gated
 // flag test 141. 0x44370 is retail-inlined here but lives in an /Ob1 file, so it stays out of line.
+// Round 615: the clear call still pushes its first argument, and the cull fallthroughs differ.
+// One-based payload 233; end cursor 198; separate index base 101; fog mask bit 100;
+// mask set in both arms 113; first record before flag reset 104; direct group fields 100;
+// flags restored before first-record reset 100.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -6279,6 +6383,16 @@ bool function_13630();
 // object register: 20 -> 18 aligned differences); `if (g_4c19ac > 0) f(false, true); else f(true, true);` (421,
 // tail duplicated); `bool last = function_3ba90(...) != 0` (352). BLOCKED-BY 0x44370 (pass flags, dead loads),
 // 0x14b60 (a stub), 0x3ba90 (returns long).
+// P599: Frame 0xc agrees. Cleanup displacement, clear-call transport and selected pass gates still differ.
+// sole cleanup label 269.
+// nested interruption guards 269.
+// admission assigned by branch 414.
+// selected mode arm first 269.
+// inclusive mode range 381.
+// non-2 result at entry 435.
+// non-2 result before pass selection 432.
+// non-2 result at first world phase 292.
+// NOT kept: The cleanup label, nested guards and selected arm first tied. Other forms raised the score. Original admission and pass structure restored.
 // @retail 0x2bcd0
 void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects, bool finish,
     long context_mode, long filter_mode, real transition)
@@ -6570,7 +6684,8 @@ PRIVATE __forceinline real absolute_32350(real value)
 //   exits at entry and reads it back from memory, so it has five epilogue copies where this build folds the exits
 //   together; retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm (a ja/jbe
 //   diamond) where this build selects with a move; 0x4a1e0 takes its three arguments in eax/ecx/edx in retail.
-// score 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
+// score 437 (was 445): frame 0xb34 versus 0xb40, and the false result and second query still use different homes.
+// Earlier 445 (was 448): r136 lane 7: only through the shared draw_light_source_pass change (pass 11's stipple cull and
 // late enable); the notes below were written at 491.
 // Earlier 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
 // non-success exit; the flag 3d7f0 writes is the byte at [esp+0x13]), so a special object returns false; the draft
@@ -6602,6 +6717,18 @@ PRIVATE __forceinline real absolute_32350(real value)
 // both come from 0x44370 inlined there with its mode table folded (retail's table at 0x43fa1c is in .rdata;
 // ours, g_render_modes_storage, is a non-const global; making it const changes nothing here and 0x44370 still stays out of
 // line, 842 for 0x423c0 with every pass calling it), BLOCKED-BY 0x44370.
+// P599: The shape initializer clears 0x7c bytes. The local still reserves 0x74.
+// 0x7c shape extent 445.
+// eligibility query scope 445.
+// object-flag query scope 445.
+// depth calculation scope 445.
+// eligibility and object-flag scopes 445.
+// eligibility and depth scopes 445.
+// object-flag and depth scopes 445.
+// single return with completion stores 514.
+// shared box center displacement 437.
+// NOT kept: the 0x7c shape reaches frame 0xb3c and ties 445. The scopes tie and one return regresses.
+// Kept: one displacement used for all three box center products, 437 in the ordinary check.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {
@@ -6659,9 +6786,10 @@ bool __stdcall function_32350(long index, real input_alpha)
             box.radius.k = *(real *)(shape + 0x5c) * 0.5f;
             point3f center;
             point3f const &second_point = *(point3f *)(g_47fd18 + 0xc);
-            center.x = second_point.x + box.matrix.forward.i * (0.0f - box.radius.i);
-            center.y = second_point.y + box.matrix.forward.j * (0.0f - box.radius.i);
-            center.z = second_point.z + box.matrix.forward.k * (0.0f - box.radius.i);
+            real displacement = 0.0f - box.radius.i;
+            center.x = second_point.x + box.matrix.forward.i * displacement;
+            center.y = second_point.y + box.matrix.forward.j * displacement;
+            center.z = second_point.z + box.matrix.forward.k * displacement;
             box.matrix.position.x = *(real *)(g_47fd18) - center.x + second_point.x;
             box.matrix.position.y = *(real *)(g_47fd18 + 4) - center.y + second_point.y;
             box.matrix.position.z = *(real *)(g_47fd18 + 8) - center.z + second_point.z;

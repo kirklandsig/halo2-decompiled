@@ -927,6 +927,9 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // the velocity copied first in the success block 41; to_camera's components written k, j, i 20; the maximum distance
 // looked up after to_camera 178 (661 B); the along test with the length bound first 15. The epilogue order stays the
 // image-wide state described above.
+// M3 lane 2 r97 (fast with 0x188180, control 2): the camera bound by reference for the active test 2; the 0x1895f0 call
+// in its own block ahead of the result store 2; the result set as `!false` 2; the 0x155760 result named before the
+// player-mode test 2; the maximum-distance lookup below the vector declarations 2 (all the same code).
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

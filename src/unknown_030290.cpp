@@ -226,6 +226,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// MiniMax S (11-17): no new form, no lower score (195): the frame is 0x30 against retail's 0x2c, the two inverse defaults sit at +0xc and in an argument slot where retail keeps them at +4 and +8, the displaced point takes y, x, z in that order where retail takes x, y, z, and the transformed points keep the opposite order.
 // MiniMax D (run 46): no new form, no lower score.
 // MiniMax C (11-17): score 195 (was 195): no lower score; the frame is still 0x30 against retail's 0x2c
 // because the second point transform spills both its scaled x and scaled z into two local slots, where
@@ -557,6 +558,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // transform output in the scale branches, read Z per row 281.
 // NOT kept: Whole-point/scalar and three Z-only forms recover frame 0x2c but still regress, including
 // unresolved inverse homes.
+// N405: Signed displacement selection inside the transform as component
+// branches, captured origin updates, a complete point or component conditionals
+// 255/307/263/307. Explicit expansion repeats those four scores.
+// NOT kept: the transform still needs the native X/Z and inverse allocation.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

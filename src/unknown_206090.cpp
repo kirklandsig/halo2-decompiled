@@ -674,6 +674,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the inactive contact, a `while` loop, the bound written first, `++local_38`, the counter declared outside or shared
 // with the first loop, a `dword` counter, a contact pointer local: all keep the pointers; only a `short` counter gives
 // the `imul`s (with a `movsx` and a second slot, not retail).
+// Native frame 0x58c, component/velocity homes and indexed contact induction still differ.
+// magnitude helper for projection 1421; magnitude helper for slip 1421; magnitude helper for tangent 1433;
+// magnitude helper for projection and slip 1430;
+// magnitude helper for projection and tangent 1452; magnitude helper for slip and tangent 1446; squared-length
+// helper for slip 1421; squared-length helper at the three direct roots 1518.
+// NOT kept: removing individual magnitude input copies reduces the frame to 0x5c0, pairs reach 0x5b8, and
+// replacing all three direct roots reaches 0x5a8 at 6070 bytes. Every preview regresses and the magnitude
+// grouping requires equality.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
@@ -805,7 +813,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                         local_54 = MIN(local_54, MAX(8.0f, g_510c54->field_2_3 * local_47));
                         vector3f local_55;
                         function_206096(local_46, g_510c54->rate * local_54 * -1.0f, &local_55);
-                        havok_component_rigid_body_linear_velocity_change(local_50, local_49, &local_55);
+                        local_49->rigid_body_linear_velocity_change(local_50, &local_55);
                     }
                 }
                 vector3f local_56 = local_0->field_b10[local_38].field_4;

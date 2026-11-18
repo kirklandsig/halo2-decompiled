@@ -230,6 +230,14 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax E (11-17): no new form, no lower score (144): retail keeps the hull count in a frame slot of its own at +0x10
+// with EBX holding the copy, re-reads the count from its argument home as a word for both the hull and the candidate
+// bound, keeps the departure flag as a byte in the dead indices argument home and starts the previous heading at zero
+// before the lowest scan; this build keeps the count in a register for the whole function, the flag as a dword of its
+// own and the heading after the scan, so the frame stays 0x18 against retail's 0x14. The forms this round added to the
+// earlier list: the previous heading initialised at the top of the block (215), the departure flag as a byte (the
+// matched caller 0x239d50 drops to 80 with it), the hull count driving the hull loop on its own with the index
+// written from it (260), and the count's bounds read from the argument home as words (the same code).
 // MiniMax I (11-17): no new form, no lower score (144): a short hull count gives retail's 0x14 frame and puts the
 // departure flag's byte in an argument home (236), but the flag has to stay a dword to keep the matched caller 0x239d50
 // (a bool flag drops it to 80), so the frame stays 0x18; the one-counter while form (260), the two-continuation form
@@ -879,6 +887,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-17): no new form, no lower score (129): retail reads the count argument as a dword home and keeps the low word in cx, where this declaration's short count is read as a word home and the previous side is kept in cl; the parameter's width is declared in another file this lane may not edit, so the zero and epsilon registers and the side bytes stay out of step.
 // MiniMax E (11-14): no new form, no lower score (129): retail still reads the count argument as a dword home and keeps
 // it in CX, and that parameter's type is declared in another file this lane may not edit; the zero constant still takes
 // xmm4 where retail creates it in xmm2, and the previous side byte still sits at [esp+0xd] where retail has it at

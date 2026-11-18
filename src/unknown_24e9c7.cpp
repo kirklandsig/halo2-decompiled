@@ -529,6 +529,10 @@ struct s_24e9c7_points
 // `0.0f -` 138; the in-place side point declared at the function's top ahead of the result, `(0.0f - forward_j)` 139 (742 B:
 // its home stays below the scalars); across j bound as `real &across_j = size; across_j *= forward_i;` with `(0.0f -
 // forward_j)` 139 (742 B); both across terms as a copy of size scaled in place with across j a reference to size 144 (746 B).
+// The across-Y spill still leaves result, kind and bitmap eight bytes above retail.
+// Rectangle span through the existing point difference before bitmap/after bitmap/after size/after across:
+// 143/143/125/125. Aggregate span with the same four boundaries gives the same scores.
+// NOT kept: the early spans grow to 746 bytes, and the later spans tie at retail length.
 // B458: Both scaled pixel extents before conversion, height-first/width-first 125/125; both truncations
 // before returned height, or a direct height conversion with separate integer width 125/125; paired signed
 // dimension reads/conversions 125/125; paired unscaled pixel products with direct/in-place scaling 125/125.
@@ -539,6 +543,9 @@ struct s_24e9c7_points
 // The first upper vertex before side scaling recovers the return and metadata slots at frame
 // 0x48, but the shallow spill holds the converted half width and the body grows. Early across j
 // spill remains. Original body restored.
+// The across/side spill above the result still differs. Backward addition of the negated side, with original
+// across scalars, a separate pair, a sized side scaled in place, or an in-place two-stage side: 167, 161, 161,
+// 163. Backward subtraction on the same four producers: 167, 161, 161, 163. All eight shrink the frame to 0x40.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

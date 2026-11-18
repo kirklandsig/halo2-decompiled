@@ -556,6 +556,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax R (11-17): no new form, no lower score (114; 115 in the batch of all fourteen, whose reduced image is wider): retail's timer message, left coordinate and view pointer still sit in byte and word homes where this build gives them dwords, and the difference still rests on the text buffer's call convention in 0x15f120: BLOCKED-BY 0x15f120.
 // MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
 // keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
 // packs the predicates at -0x14/-0xd/-2 and spills `left` as a dword at -0x50; the only spelling that produces

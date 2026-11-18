@@ -1054,6 +1054,7 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // files.
 // score 942 (was 964): 0xd4 frame versus retail's 0xb4. The opening lookup expands here and the capacity check remains a call.
 // Earlier: frame 0xd4 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
+// frame 0xd0 against retail's 0xb4; the session now arrives in EAX as retail, but the top 0x192e60 is
 // inlined and the capacity test and 0x631f0 are calls (retail the reverse). Earlier first line 766 (was 766): the session on the stack
 // coordinator 11-16: the player loop's group-highest scan through the existing 0x631f0 (retail inlines
 // it here; network_session_membership.cpp calls it the same way), kept because it matches 0x73530 (the session reaches it
@@ -1503,6 +1504,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // `if (!balance_teams_by_count(...)) result = false;` 902 (2764 B: retail's exact `test al, al; jne; mov byte ptr [esp +
 // 0x13], al` after 0x91e30, but its direct form is main's `result &=`, so match-only); both 890 (2768 B). The same
 // conditional clear with the excess exit left as `return false` 917 (2736 B).
+// Deep round 410: existing inline upper-capacity selector 852; selector after summary admission
+// 852; validated count through remaining capacity 942; selector and validated count 900;
+// separate capacity rejection branches 942; const index and variant pointer 942; result
+// initialized after admission 901; late result and inline selector 846. NOT kept: inlining the
+// existing upper-capacity selector reaches 852, and with the later result 846. Both forms stack
+// the session and lose the 0x73530 caller in preview. The later result alone reaches 901 with
+// the caller still exact, but initializes the result after validation where retail stores it
+// before the output clear. The 0xb4 workspace and out-of-line opening lookup still differ.
 // Round 455: overlaid native workspace, both memset clears 975, overlaid native workspace, first range
 // clear 960, overlaid native workspace, second range clear 970, overlaid native workspace, both range
 // clears 959, overlaid native workspace, first counted clear 971, overlaid native workspace, second counted
@@ -1510,6 +1519,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // clears 959. The native-width forms recover frame 0xb4 and shorten the body to 2656–2688 bytes against
 // retail's 2828. The opening lookup still expands. All scores rise. Restored the original machine-ID and
 // histogram storage and call sites.
+// Both histogram passes with a group-size pointer and signed remaining count 871 kept (plain). Identity
+// remaining count/end pointer 942/941; all-group/eligible-party word passes 947/937; all-group/eligible-
+// party/both dword passes 969/997/936. NOT kept: 941, 937 and 936 each gain fewer than eight.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1604,7 +1616,14 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 		else out->averages[i] /= out->rated_counts[i];
 	}
 	word histogram[16] = {0};
-	for (long i = 0; i < out->group_count; i++) histogram[out->total_counts[i] - 1]++;
+	{
+		const long *group_size = out->total_counts;
+		for (long remaining = out->group_count; remaining > 0; --remaining)
+		{
+			++histogram[*group_size - 1];
+			++group_size;
+		}
+	}
 	long last = NONE;
 	long first = NONE;
 	memset(histogram, 0, sizeof(histogram));
@@ -1612,9 +1631,10 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 	long parties = 0;
 	if (ratings_party_limited(variant))
 	{
-		for (long i = 0; i < out->group_count; i++)
+		const long *group_size = out->total_counts;
+		for (long remaining = out->group_count; remaining > 0; --remaining)
 		{
-			long count = out->total_counts[i];
+			long count = *group_size;
 			if (count >= ratings_party_minimum(variant) && count <= ratings_party_maximum(variant))
 			{
 				histogram[count - 1]++;
@@ -1623,6 +1643,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				last = count;
 				spread = last - first;
 			}
+			++group_size;
 		}
 		if (spread > ratings_party_spread(variant)) result = false;
 		if (parties > ratings_variant_teams(variant)) result = false;
