@@ -834,7 +834,9 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
-// score 60 (was 60): Retail uses one sequence counter and reloads newest in the index helper.
+// score 35 (was 60): retail keeps the message in ECX and the flags in AX (ours EAX / CX) and ends the found path with
+// `or byte ptr [ecx + 0xe], 2` (ours `or ecx, 2` and a word store); m3 lane 3 r257's entry is the last one above the marker.
+// Earlier first line: Retail uses one sequence counter and reloads newest in the index helper.
 // Round 112 (m3 lane 10), NOT kept (coordinator 11-16): 44 needs the loop bound re-read as `m_message_window.newest` in
 // place of the named `newest` local (with the local 117), a re-read replacing a named local, which is kept only with a
 // match. The 44 form (fast, plain-confirmed with the file's 26 matched functions): the shared index
@@ -1082,18 +1084,43 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // Head-first with shared count/index pointer and cached/member/live bound
 // 118/76/118. NOT kept: the single-cursor forms miss native count reuse or
 // the upper-bound reload. Original index helper restored.
+// M3 lane 3 r257 (fast with 0x96510, 0x94df0, 0x94bf0 and 0x96b00; kept form plain-confirmed with the file's 28
+// functions: 0x94bf0 at 2, 26 MATCH). KEPT 60 -> 35 (230 B): matched 0x94df0's loop spelling (the bound read as
+// `m_message_window.newest` in the loop test, the index through `&m_message_window`) with the found path's flag update
+// written through the flags local (`message->flags = flags | 2;`). The flags value then stays live through the found
+// path, three scratch registers are busy there, `next` moves to ESI, nothing caches `time`, and the count's oldest stays
+// in EAX for the loop: the prologue, the count, the guard, the loop (but for two registers) and the found path's three
+// stores are retail's. Retail's own found path uses only EDX and ESI for its temporaries although no instruction there
+// reads EAX, so a third value is live in EAX (where the flags were read) through it; the statement that keeps it live
+// while the update stays `or byte ptr [ecx + 0xe], 2` is what is still missing.
+// Tried this round (control 60): the member form with the count as `> 0` 91 (221 B: the count's oldest shared, in EDX,
+// `test`/`jle`); `type = 4;` between the three stores and the flag update on the old body 79 (213 B: the store stays and
+// the return reloads it), on the member `> 0` form 94 (209 B); `return 4` in the loop re-measured 108 (194 B: all four
+// pushes at entry); the member `> 0` form with the flags-local update 47 (231 B), with that update ahead of the three
+// stores 51 (231 B); the old window-pointer body with the flags-local update 68 (231 B); the kept form with `flags |=
+// 2; message->flags = flags;` 35 (same code); flags as a `word &` to the field with `flags |= 2`, as a `word *`, the
+// reference for the tests only 89/89/89 (all fold back to the member form); a found bool set first or last in the found
+// path with `if (found) type = 4;` after the loop 91/91 (threaded away); the kept form with the lookup through the
+// existing reliable_stream_get_message 35 (same code), that with the plain `|=` update 89; `long flags` with a word
+// cast at the store 35, `short flags` 35; flags declared ahead of the message 35, at function scope 35, renamed to sort
+// first 35 (diagnostic); the message as a ternary initialiser 45 (227 B: the message in ECX, the flags in AX and the
+// found path's stores as retail, but the lookup's blocks change), as an if/else 45 (same code), zero-initialised ahead
+// of the index 63 (224 B), after the index 35; the flags-local update ahead of the three stores 39.
+// Diagnostics, reverted at once: a call in the found path 74 (242 B: `next` in a callee-saved register gives retail's
+// head in ECX and flags in AX); the no-alias optimize pragma with `type = 4;` first 104 (209 B), alone 89 (the one
+// compiler-setting trial); `__assume((flags & 1) != 0)` closing the found path 89 (no effect); a local `flags |= 2;`
+// after or ahead of the memory `|=`, or `flags = message->flags;` after it, 89 each (removed before allocation, so
+// the member form's code).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
 	long type = 0;
 	if (!get_next_send(&type, sequence, size, time) && sequence_window_count(&m_message_window))
 	{
-		s_sequence_window *window = &m_message_window;
-		long newest = window->newest;
-		for (long next = m_next_sequence + 1; next < newest; next++)
+		for (long next = m_next_sequence + 1; next < m_message_window.newest; next++)
 		{
 			s_reliable_message *message;
-			long index = sequence_window_index(window, next);
+			long index = sequence_window_index(&m_message_window, next);
 			message = 0;
 			if (index != NONE)
 				message = &m_messages[index];
@@ -1103,7 +1130,7 @@ long c_network_reliable_stream::function_965e0(long *sequence, long *size, long 
 				*sequence = next;
 				*size = message->size;
 				*time = message->unknown08;
-				message->flags |= 2;
+				message->flags = flags | 2;
 				type = 4;
 				break;
 			}
