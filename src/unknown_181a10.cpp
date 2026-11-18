@@ -1011,6 +1011,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
 // Separate material-arm shape references 327. Shared receiver and early short material 328.
 // NOT kept: the 0x44 frame form still spills the nodes to different slots and raises the score.
+// Named signed distance in the instance/world/both plane arms 238/238/238;
+// named projection in the same arms 238/238/238; all three products or both
+// projection and distance stages 238/238. The frame and origin homes are unchanged.
 // M3 lane 10 r119 (fast with the file; control 238), all in the 1..16 classifier: the data read through a `long const *`
 // view 238 (same code: the loads still merge); `1 > value ? 1 : (16 < value ? 16 : value)` 238 (same code); `value > 16
 // ? 16 : value` then `if (limited < 1) limited = 1;` 238; `1 > value ? 1 : value` then `16 < limited ? 16 : limited`
@@ -1029,6 +1032,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // data is a copy of the zero test's load and the operands are swapped); those through a `long const &` to the field 320 (1244
 // bytes); the at-each-use tests inside a multi-return bool helper on the node 263 (1247 bytes: retail's `setne al; test al, al`
 // as well, still one load). Left as before: the zero test's load is shared with the classifier's in every form.
+// Second node first 245, scoped root and entity 238, nested data guards 238,
+// bound-specific classifier returns 336, validated result key 331,
+// entity arm first 310 at 1243 bytes, named coefficient outputs 238,
+// first-node scope ending at input capture 245. NOT kept: frame 0x40 and
+// the second-node spill remain in all eight forms.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

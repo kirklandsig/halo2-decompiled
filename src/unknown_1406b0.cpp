@@ -914,6 +914,24 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // 14; both 14; a long font copy at the function top for the test and the store 14 (all the same code). Diagnostic: a
 // compile-only build of this file with and without the SSE architecture flag gives the same register choice for the
 // body (that build passes the header call's arguments in registers, so it is only a weak lead).
+// Round 193 (m3 lane 6; one-file LTCG harness with scratch copies of this file, 0x13eeb0's and 0x16b840's, exact at 14;
+// harness positional counts). Retail scan: of the functions that pair a `mov r, 1; shl r, cl` mask with a stack parameter
+// loaded near entry, 17 matched ones keep the parameter in EBP and the mask in EBX (0x13d950, 0xbaeb0, 0x2ae940, 0x23f260,
+// 0x101690, 0x57d60 ...; mostly plain functions, where other values hold ESI/EDI/EBX across calls) and 6 the parameter in
+// EBX and the mask in EBP as this build does here (0x2bc110 virtual, 0xc1670, 0xeb7e0, 0x1a9cf0 and 0x1e8d80 `__stdcall`,
+// 0x174d0). 70 retail speed functions open with `push ebp; mov ebp, [esp + 8]`; matched 0x1e97b0 and 0x163ba0 among them
+// leave EBX unused, so a stack parameter's home can be EBP ahead of EBX. Forms: the character as a by-value two-member aggregate of longs and
+// words in one storage with the font a plain long 69 (the font arrives in EBX), as a by-value pair of words read whole
+// 69, each with the font's wrapper 14/14; both parameters as that two-view aggregate 14, the font alone as it 14; the
+// font read through a pointer to its wrapper at its three uses 14, both parameters so 14, read once into a long 14; a
+// plain long font read through its own address with the wrapper character, at each use or once into a long, 14/14;
+// plain long parameters with the font read through its address 70 (the character arrives in EBX), with both read so
+// 69 (the character is loaded into EBX, the font stays in memory: retail's roles mirrored), the character alone 69,
+// the font once into a long 70; the existing out-of-line iterator step inlined at link time (its file's /Ob1 dropped in
+// the scratch copy only) 14, with plain long parameters 70; without that flag the step stays a call 71. Diagnostics:
+// a constant in place of the font at the store 71 or at the compare 70 (the character takes EBX), at the header call
+// 23 (the font is loaded after the call, still EBX); without the header call 71; without the allocation call 45; the
+// header call given a constant character 69. In every form one parameter holds EBX and the mask takes EBP.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
