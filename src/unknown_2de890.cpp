@@ -3,6 +3,7 @@
 // a transform, constructed from the child alone with the identity transform.
 #include "shape_2de750.h"
 #include "havok_reference.h"
+#include <stddef.h>
 
 // a 3x4 transform of SSE columns
 struct transform_2de890
@@ -28,10 +29,10 @@ struct transform_2de890
 // transposed axes applied
 static __forceinline __m128 inverse_transform_2de9e0(transform_2de890 const &transform, __m128 const &point)
 {
+	__m128 offset = _mm_sub_ps(point, transform.columns[3]);
 	__m128 c0 = transform.columns[0];
 	__m128 c1 = transform.columns[1];
 	__m128 c2 = transform.columns[2];
-	__m128 offset = _mm_sub_ps(point, transform.columns[3]);
 	__m128 t0 = _mm_shuffle_ps(c0, c1, 0x44);
 	__m128 t2 = _mm_shuffle_ps(c0, c1, 0xee);
 	__m128 t1 = _mm_shuffle_ps(c2, c2, 0x44);
@@ -91,10 +92,11 @@ struct placement_2deb20
 	s_extent_transform transform;
 };
 
-// a shape with its placement, its parent's value and its parent
+// a shape (carried as its address) with its placement, its parent's value
+// and its parent
 struct description_2deb20
 {
-	void const *shape;
+	unsigned long shape;
 	long field_4;
 	placement_2deb20 const *placement;
 	description_2deb20 const *parent;
@@ -189,27 +191,9 @@ answer_2de9e0 c_child_transform::function_2de9e0(ray_2de9e0 const *ray, hit_2de9
 }
 
 // the same cast with results going to a collector: the child is described
-// with its placement composed with the transform
-// score 51 (was 51): Frame 0xa8 and extent 336 agree. Translation and point
-// loads, metadata stores, argument pushes and descriptor carriers differ.
-// Translation named first 51; offset before transpose 52; shared placement
-// input 51; both metadata first 51; child field first 51; shared child 51;
-// whole descriptor 52; all coordinate products named 51. Both inverse users
-// checked. NOT kept: no match or qualifying gain; original body and helper
-// restored.
-// Round 94: point by value 51; third column first 77; transpose macro 77;
-// direct column reads 91; coordinate broadcasts named 51; second metadata
-// read early 51; all object declarations first 51; both metadata stores late
-// 92. The third-column, macro and direct-read forms also lose the shared
-// user. NOT kept: no gain; original helper and body restored.
-// Serial search: 19 variants, best 41. NOT kept: an added volatile pointer,
-// one-use locals and casts without equality.
-// Round 425: inverse transform/point/both pointer contracts 51/51/51;
-// immutable SIMD intermediates 51; named returned vector 51;
-// lower/upper pair move intrinsics 58/70; complete result accumulator 51.
-// NOT kept: no eligible gain; original helper and body restored. Point/translation
-// loads and descriptor carriers remain; both inverse users checked.
-// Pair moves raise the exact inverse user to 9/28; both restored.
+// with its placement composed with the transform; the placement's transform is
+// addressed from the placement's address, and the child's description takes
+// its parent's value through the parent it was given
 // @retail 0x2deb20
 void c_child_transform::function_2deb20(ray_2de9e0 const *ray, description_2deb20 const *description, void *collector) const
 {
@@ -221,11 +205,11 @@ void c_child_transform::function_2deb20(ray_2de9e0 const *ray, description_2deb2
 	placement_2deb20 placement;
 	placement.field_0 = description->placement->field_0;
 	placement.field_10 = description->placement->field_10;
-	placement.transform.compose(&description->placement->transform, (s_extent_transform const *)&transform);
+	placement.transform.compose((s_extent_transform const *)((unsigned long)description->placement + offsetof(placement_2deb20, transform)), (s_extent_transform const *)&transform);
 	description_2deb20 child_description;
 	child_description.parent = description;
 	child_description.placement = &placement;
-	child_description.shape = child;
-	child_description.field_4 = description->field_4;
+	child_description.field_4 = child_description.parent->field_4;
+	child_description.shape = (unsigned long)child;
 	((child_slots_2de8e0 *)child)->slot_9(&local, &child_description, collector);
 }

@@ -113,19 +113,24 @@ __forceinline int search_reduce_features(search_features_303dd0 &s)
 		switch ((s.count_a << 3) | s.count_b)
 		{
 		{
-			int result;
+		// Each query switches on its own result; a separated result joins
+		// the reduction's shared exit.
 		case 19:
-			result = helper->function_3037a0((segment_3037a0 *)s.a,(triangle_3037a0 *)s.b,&s.count_a,&s.count_b,search_flag_3037a0(s.previous_b == 2),1);
-			if (0)
-			{
-		case 26:
-				result = helper->function_3037a0((segment_3037a0 *)s.b,(triangle_3037a0 *)s.a,&s.count_b,&s.count_a,search_flag_3037a0(s.previous_b == 2),-1);
-			}
-			switch (result)
+			switch (helper->function_3037a0((segment_3037a0 *)s.a,(triangle_3037a0 *)s.b,&s.count_a,&s.count_b,search_flag_3037a0(s.previous_b == 2),1))
 			{
 			case 1: return 1;
 			case 2: break;
-			default: { s.previous_b = s.count_b; return 0; }
+			default: goto separated;
+			}
+			if (0)
+			{
+		case 26:
+				switch (helper->function_3037a0((segment_3037a0 *)s.b,(triangle_3037a0 *)s.a,&s.count_b,&s.count_a,search_flag_3037a0(s.previous_b == 2),-1))
+				{
+				case 1: return 1;
+				case 2: break;
+				default: goto separated;
+				}
 			}
 		}
 		case 18:
@@ -272,7 +277,8 @@ __forceinline int search_reduce_features(search_features_303dd0 &s)
 			break;
 		default: return 1;
 		}
-		s.previous_b = s.count_b;
+	separated:
+		{ int const &count = s.count_b; s.previous_b = count; }
 		return 0;
 	}
 }

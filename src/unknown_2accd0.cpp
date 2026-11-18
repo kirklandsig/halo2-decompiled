@@ -65,7 +65,6 @@ char *function_11c9c0(char *buffer, long maximum_count, const char *format, ...)
 bool function_1249f0(long memory_unit, char *drive_letter);
 bool function_1367d0(s_type_acf665 *file);
 bool file_ref_truncate(s_type_acf665 *file, dword position);
-bool function_216da0(long type, wchar_t *name, const wchar_t *display_name, long language);
 bool saved_game_file_write_save_image(long type, s_saved_game_file_location *location);
 bool function_2168b0(long flags, s_saved_game_file_location *location);
 
