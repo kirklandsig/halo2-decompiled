@@ -867,6 +867,11 @@ real function_30bf0(vector3f *vector);
 // DH398: Positive signed seat admission with a word or dword countdown, pointer stepped
 // before the call, after it or at body end. Word or dword admitted count with indexed walk 184/163/150/139/176/180, 188/184.
 // NOT kept: Four countdown forms reach retail length at 1308 bytes, but all eight score higher and keep the result four bytes above the retail home. The original indexed seat walk is restored.
+// MiniMax G (11-18): no new form, no lower score (84): the frame agrees at 0x350; the result, the range and the three
+// delta components sit in homes four bytes away from retail's (the range at +0x18 against retail's +0x30, the deltas at
+// +0x48..+0x50 against retail's +0x4c..+0x54), and the range is loaded into xmm2 where retail loads it into xmm0; the
+// home offsets follow the declaration order, so moving them is frame shaping. The clip and count homes the earlier
+// rounds record stay unresolved.
 // M3 lane 3 r259 (fast with 0x263740/0x25c9d0/0x26d370, all MATCH; control 84): the clip amount declared at function
 // scope ahead of the result 84 (same code); the seat basis (both crosses and the normalise) through a new forced-inline
 // helper with a local copy of the world-up pointer 88 at 1308 B (the first cross's i product flips the wrong way), with no

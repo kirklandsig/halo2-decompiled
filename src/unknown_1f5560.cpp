@@ -1230,6 +1230,15 @@ real normalize2d(point2f *v);
 // One evolving attempt speed or reused query speed 135/135; with late chosen-speed default 207/204.
 // Direct request return on those four forms 182/182/208/205.
 // NOT kept: neither lifetime recovers DL, and direct returns shorten the body.
+// MiniMax G (11-18): no new form, no lower score (135): the first difference stays the trajectory result. Retail keeps the
+// call's bool in dl across the `force` test (`mov dl, al`, the `force` load, the test, then the store to the result slot),
+// while this build stores the bool to the slot before the test; the later rows then pair with the wrong row after that
+// two-byte shift, and what is left after it are register choices (the object pool in ecx against retail's edx, the result
+// in al against retail's dl, the request copy's fields in ecx and edx the other way round). The permuter (1200 s) wrote
+// nothing and its one-point form was under the keep bar. Three more forms this round: the test spelled `result != 0`,
+// the result declared before the other block locals with a separate assignment (both compile to the identical code),
+// and the request path returning the call's value directly (182, worse: the body shortens). The result held in a byte
+// instead of a bool is 186 (worse: the body shortens by nine bytes).
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
