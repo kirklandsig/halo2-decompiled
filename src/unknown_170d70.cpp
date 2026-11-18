@@ -1072,6 +1072,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
 // vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
 // NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
+// Matrix returned by value 471 (initializer loses its match); shared alias-safe transform 361; staged basis transform 368.
+// Axis-square diagonal accumulators 346; staged diagonal 363; separate scaled cosine terms 363.
+// Original direction copied by memcpy 346; separate transform source pointer 383. Unity still starts in XMM3.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1473,6 +1476,13 @@ struct s_pool_view_172840
 // queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
 // with projection before queue or first-write initialization 221/221; four flag names reordered 205.
 // NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
+// Queue return first 246; boolean AND result 208; positive pool, projection or queue predicate 236 each.
+// Three independent assignments 152; combined geometry failures 150; geometry within queue branch 148.
+// Two geometry assignments and direct queue return 243. Widened cluster at publication 86 with the chain, 55 with independent tests.
+// Chained sentinels 55/57; native portal width 239; portal ID local 55; widen at branch join 55.
+// Native queue index, named point index or earlier bounds pointer 55 each.
+// NOT kept: widening with independent tests restores the flag and spill homes at 870 bytes. Portal store first reaches
+// 19 at 868 bytes, with the portal and cluster stores reversed from retail.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)

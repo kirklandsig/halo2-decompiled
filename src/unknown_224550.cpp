@@ -674,6 +674,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P608: Current-frame weight shared from frame admission, enabled blend, explicit disabled arm
 // or deferred blend into both pivots and both downstream pairs, aspects or inverse extents:
 // 398/416/416/405/397/367/357/396. NOT kept: every form regresses and changes frame layout.
+// Reciprocal pairs weighted after division, after flip selection, between aspect tests, or after both tests.
+// Secondary pair 241/338/255/162, primary pair 320/300/313/322. NOT kept: the 1942-byte form changes
+// the frame and raises the score. The join still spills blend in the retained body.
 // Supplied spans for both encoders 407. Primary supplied spans 308. Secondary supplied spans 380.
 // Horizontal supplied spans 318. Vertical supplied spans 395. Two-component span input 426.
 // Branch-selected supplied spans 407. Shared span/origin reversal tests 403.
