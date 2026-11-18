@@ -2014,6 +2014,23 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // head, so `inc`/`idiv` run first and the successor is stored at once; ours keeps the successor in EBP across the body.
 // Retail tests the edge count and zeroes the index with fresh literals (`test ecx, ecx`, `xor eax, eax`), so its
 // function-level zero dies into the prism cursor (ESI) while ours keeps it in EBX for the edge loop's start.
+// AC564: End-pointer walks, edge < and != 678/678, prism < and != 670/650,
+// both < or != in prism/edge order (<,<), (<,!=), (!=,<), (!=,!=) 726/726/660/660.
+// NOT kept: all increase the score and length. Face-sum home, query-zero register
+// and early signed remainder remain.
+// The sum homes and early remainder still differ with frame 0xb964.
+// Inside accumulated with logical or compound AND 654/645. Outside accumulated with logical or compound OR
+// 661/636. A skip of the exterior edge gives the same respective scores.
+// NOT kept: outside logical OR recovers ESI query zero but moves the outer saves and grows to 2940 bytes.
+// B460: Endpoint array with direct calls and original/early successor 701/641.
+// Paired vertex-index loop with indexed/cursor/separate outputs 607/607/630.
+// Paired vertex-pointer loop with those outputs 538/538/536. NOT kept: one-use vertex
+// pointers and grouped endpoint outputs in the first two forms. The third has retail's
+// frame, length and ESI query zero, but still has different sum/endpoint homes.
+// Direct one-based end ordinal, early remainder, and test increment 579/623/579.
+// Zero-based advance before/between/within the calls 582/598/607. NOT kept: the
+// 579 and 598 forms still divide after the first reconstruction, and 582 changes
+// the frame. Sum homes, early signed remainder and axis schedule remain. Original body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

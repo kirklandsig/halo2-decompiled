@@ -333,6 +333,11 @@ void function_1d56f0(s_havok_component *component)
 // count store at 0x1d53a1, `mov edx,[ebp+0x1c]` at 0x1d5306) and calls 0x1d0cf0 at 0x1d53db with EAX = transform
 // (0x1d53cf), ECX = index, plain ret; ours loads the component at once and pushes component and index. Behaviour is
 // retail's. Both remain BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp), the convention picked over its call cycle.
+// M3 lane 8 r181 (fast; base 77): the first height step as `arg_4 * (real)arg_6` 77; the height read through
+// `m_quad.m128_f32[2]` at both updates 77 (same code); the start count as `local_4 ? arg_6 - 1 : arg_6 + 1` 113
+// (822 B); the count step as `local_5 += local_4 ? -1 : 1` 125 (829 B); the per-step height change as
+// `local_4 ? -arg_4 : arg_4` 93 (819 B, but a negate where retail multiplies by -1.0f/1.0f). Still BLOCKED-BY
+// 0x1d0cf0 for the tail (retail passes it the transform in EAX, the component in EBX and the index in ECX).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

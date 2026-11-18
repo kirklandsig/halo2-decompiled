@@ -654,7 +654,10 @@ struct s_1f9762
 	s_actor_point_entry field_30[4];
 };
 
-// score 10 (was 12): the first dot product takes the projection vector first; left: the two dot
+// score 4 (was 10): the path block is read through the actor's own fields except in the not-last arm, which
+// takes a pointer to it for the segment (the shape retail's 0x2967b0 shows: +0x50c-based segment points, direct
+// count/index reads); left: the entry test loads the index before the count.
+// Before that, 10 (was 12): the first dot product takes the projection vector first; left: the two dot
 // products evaluate their j and k terms in opposite orders (ours j,k / k,j; retail k,j / j,k) and the
 // second dot's i term keeps the projection vector in the register where retail has the point.
 // Round 103: on the projection index read through the actor, a second projection pointer, input pointer,
@@ -751,15 +754,31 @@ struct s_1f9762
 // dot's x-term never moved in 12 forms on that graph.
 // Round 456: Native persistent path reference on recovered block graph, readonly path, actual point value at projection and first-dot operand graphs:
 // 12/10/108/108/12/10/108/108. Original executable body and supporting declarations restored.
+// Round 116 (m3 lane 10, fast unless marked; a compile-only screen reproduces the dot orders): the y/z order of both dots
+// follows how the current point's address is formed: with only the projection's point read as
+// `actor->unknown53c[actor->unknown53a]` beside main's `path` 2 (not kept: a mix of the two views in one scope) both
+// dots take retail's y/z order. With no `path` local at all
+// (actor fields everywhere) all three x/y/z orders are retail's, but the not-last arm loses retail's +0x50c base; that
+// arm with its own arm-scoped `path` (as 0x2967b0's segment pointer) and actor fields elsewhere 4 (kept; left: the entry
+// loads the index before the count). Computing a function-scope `path` before the entry test gives retail's count-first
+// loads and flips the second dot's x term (2); computing it after the test keeps the x term and loads the index first
+// (4); declared early but assigned after the locals 4, assigned just before the test 2. On the arm-scoped form: the
+// test as `count <= index + 1` 4, `1 + index >= count` 4, either field through the +0x50c cast 4/4, through a block
+// or an inline helper taking the block 6/6/6 (helper inline or forceinline), the test before the definition read 143.
+// On the kept form or the function-scope-path form: the 32 combinations of `path` or actor fields at the entry test and
+// the approach's three reads (ten at 2, all the same pair); the locals in five other orders 2 each (with the
+// projection pointer before `path` the first dot's x term flips instead); `path` renamed route/actor_path/zpath/
+// a_path/segment 2 each; `path` as the address of the +0x50c flag 2; the second dot's arguments swapped or
+// non-const 2/2/2; the first dot named 2, the second named 4, both 4, the sum negated 37; a const current point 2;
+// a non-const projection pointer 2; the three vector locals in all six orders 2; actor fields in the arm too 21.
 // @retail 0x1f9760
 bool function_1f9760(long actor_index, long object_index, point3f const *point, real distance,
 	bool *last_out, bool *direction_valid_out, vector3f *direction_out)
 {
 	bool reached = false;
 	s_actor_view *actor = actor_get(actor_index);
-	s_1f9762 *path = (s_1f9762 *)((byte *)actor + 0x50c);
 	byte *definition = g_4e3b44[moving_object_get(object_index)->tag_index & 0xffff].bytes;
-	bool last = path->field_2e + 1 >= path->field_2d;
+	bool last = actor->unknown53a + 1 >= actor->unknown539;
 	bool direction_valid = false;
 	vector3f direction;
 	vector3f approach;
@@ -771,6 +790,7 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 	}
 	else if (!last)
 	{
+		s_1f9762 *path = (s_1f9762 *)((byte *)actor + 0x50c);
 		s_type_c3b527 *next = &path->field_30[path->field_2e + 1].point;
 		function_210be0(&path->field_30[path->field_2e].point, next, &direction);
 		if (function_30bf0(&direction) > 0.0001f)
@@ -791,8 +811,8 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 	{
 		if (direction_valid)
 		{
-			s_type_c3b527 *previous = path->field_2e > 0 ? &path->field_30[path->field_2e - 1].point : (s_type_c3b527 *)path->field_1c;
-			function_210be0(previous, &path->field_30[path->field_2e].point, &approach);
+			s_type_c3b527 *previous = actor->unknown53a > 0 ? &actor->unknown53c[actor->unknown53a - 1].point : (s_type_c3b527 *)actor->unknown528;
+			function_210be0(previous, &actor->unknown53c[actor->unknown53a].point, &approach);
 			if (function_30bf0(&approach) > 0.0f)
 				projection_direction = &approach;
 		}
@@ -801,7 +821,7 @@ bool function_1f9760(long actor_index, long object_index, point3f const *point, 
 		projection_direction = &direction;
 	if (projection_direction)
 	{
-		real remaining = dot3f(projection_direction, (vector3f *)&path->field_30[path->field_2e].point.point) - dot3f((vector3f const *)point, projection_direction);
+		real remaining = dot3f(projection_direction, (vector3f *)&actor->unknown53c[actor->unknown53a].point.point) - dot3f((vector3f const *)point, projection_direction);
 		if (remaining < *(real *)(definition + 4) * 1.2f)
 			reached = true;
 	}
