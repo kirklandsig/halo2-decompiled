@@ -484,10 +484,6 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // angle duplicate and then the axis copy with the trigonometry, so the only difference left is where the flag's OR and store sit
 // around the angle duplicate; the axis is copied through the shared normalizer's pointer, which pins its memory home, and the flag
 // store follows that copy instead of the source order of the statements.
-// MiniMax I (11-17): no new form, no lower score (3): the three differences are still the schedule around the angle
-// duplicate, where retail does the rotating flag's OR and its store together before `fld st(0)` and loads the axis's first
-// component after them; re-measured this round with the statements reordered and with the sine and the cosine in locals of
-// their own, which both give the same three differences, so the body stands.
 // MiniMax I (11-17): no new form, no lower score.
 // MiniMax D (11-17): no new form, no lower score (3): retail still holds the rotating flag's or and store together before the
 // angle's duplicate and loads the axis's first component after them, where this build loads that component between the flag's
@@ -1159,10 +1155,6 @@ real function_30bf0(vector3f *v);
 // differ from the first instruction; splitting the gravity test from the horizontal test, so that the z difference is computed
 // after the gravity comparison the way retail orders it, measures 255, and a permuter run of 300 s over the body found nothing
 // below the baseline.
-// MiniMax I (11-17): no new form, no lower score (232): the frame is still 0x28 against retail's 0x30 and the SSE
-// registers are rotated against retail from the first instruction, so the whole body follows the frame's shift; reading
-// the two pointer parameters directly measures 255 and copying them into plain pointer locals measures 255 as well, so
-// the committed body (which keeps the parameters' addresses in memory) stands.
 // MiniMax I (11-17): no new form, no lower score.
 // MiniMax D (11-17): no new form, no lower score (232): the frame is still 0x28 against retail's 0x30 and the SSE registers
 // still differ from the first instruction, so the whole body follows the frame's shift; the forced-speed and time-scale
@@ -1475,9 +1467,6 @@ extern vector3f *g_4687ac;
 // MiniMax S (11-16): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34 and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
 // MiniMax C (11-16): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, so every later offset is
 // shifted, and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
-// MiniMax I (11-17): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, so every later
-// offset is shifted, and the three ray queries still inline 0x16a040, whose defining file is not this lane's:
-// BLOCKED-BY 0x16a040/0x1697c0.
 // MiniMax I (11-17): no new form, no lower score.
 // MiniMax D (11-17): no new form, no lower score (163): the frame is still 0x48 against retail's 0x34, so every later offset is
 // shifted, and the three ray queries still inline 0x16a040, whose defining file is not this lane's: BLOCKED-BY 0x16a040.
@@ -1959,9 +1948,6 @@ PRIVATE inline long projectile_object_root(long object_index)
 // MiniMax C (11-16): no new form, no lower score (296): retail expands the matched speed setter 0xfbfd0 inline after the 0xfbd40
 // call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66 missing bytes and the pool, tag and
 // seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
-// MiniMax I (11-17): no new form, no lower score (296): re-measured this round; retail still expands the matched speed
-// setter 0xfbfd0 inline after the 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not write out by hand, so
-// the 66 missing bytes and the pool, tag and seat-bit homes behind them stand: BLOCKED-BY 0xfbfd0.
 // MiniMax I (11-17): no new form, no lower score.
 // MiniMax D (11-17): no new form, no lower score (296): retail still expands the matched speed setter 0xfbfd0 inline after the
 // 0xfbd40 call and keeps index * 12 in ebp, a body this lane may not write out by hand, so the 66 missing bytes and the pool,
@@ -2273,9 +2259,6 @@ real function_17c900(short function_type, real input);
 // MiniMax C (11-16): no new form, no lower score (348): the frame is retail's 0x30 but the body is four bytes long, with the
 // index in eax where retail keeps it on the stack, and the normalization and the rotation are still scheduled in another order;
 // the shared normalizer's own callers pin that helper, so it cannot be spelled differently here.
-// MiniMax I (11-17): no new form, no lower score (348): the frame is retail's 0x30 but the body is still four bytes long,
-// with the index in eax where retail keeps it on the stack and the normalization and the rotation scheduled in another
-// order; the shared normalizer's own callers pin that helper, so the body stands.
 // MiniMax I (11-17): no new form, no lower score.
 // MiniMax D (11-17): no new form, no lower score (348): the frame is retail's 0x30 but the body is still four bytes long, with
 // the index in eax where retail keeps it on the stack, and the normalization and the rotation are still scheduled in another
@@ -3273,10 +3256,6 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // MiniMax C (11-16): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity still
 // arrives on the stack where retail takes it in eax, and retail's own parameter order for the callee 0xfd7d0 differs from this one;
 // changing a parameter order is a form the rules forbid, so retail's order is reported instead.
-// MiniMax I (11-17): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, so every later
-// offset is shifted, the velocity still arrives on the stack where retail takes it in eax, and the callee 0xfd7d0 still hands
-// its arguments over in another register order; reordering a callee's parameters is a form the rules forbid, so the body
-// stands.
 // MiniMax I (11-17): no new form, no lower score.
 // MiniMax D (11-17): no new form, no lower score (1196): the frame is still 0x220 against retail's 0x218, the velocity still
 // arrives on the stack where retail takes it in eax, and retail's own parameter order for the callee 0xfd7d0 differs from this

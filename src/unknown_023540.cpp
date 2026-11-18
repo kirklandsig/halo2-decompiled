@@ -2677,12 +2677,6 @@ dword __cdecl function_131fc0(real alpha);
 // store 140 (same code). Reading of the flag difference: ours loads preserve_alpha once above the `simple` branch (CL, kept
 // across 0x131fc0) because both the test and the short arm read it; retail loads it after the global store into AL (the
 // call's result register), so it must load it again after the call (BL).
-// MiniMax I (11-17): no new form, no lower score (140): the body's length matches retail's (1729 bytes) but the blocks' order
-// still differs in the ways the notes above record, and no form of this file's own moves them; the preserve_alpha load is
-// still hoisted above the `simple` branch because the callee at 0x131fc0 that decides the reload lives in
-// src/unknown_131e50.cpp, which this lane may not edit: BLOCKED-BY 0x131fc0. A 240 s permuter run over the body
-// came out one instruction better (139) only with three new locals holding constants, a moved store and a swapped
-// pair of D3DDevice_SetVertexData4f arguments, so it was reverted and the body stands.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2986,10 +2980,6 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // not kept.
 // MiniMax R (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
 // MiniMax S (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, and both copies of 0x235a0 are still inlined here where retail inlines the first and calls the second; the earlier rounds' forms are recorded above and none of this file's own moves them.
-// MiniMax I (11-17): no new form, no lower score (330): the body is still 1591 bytes against retail's 1543, because this
-// build inlines both copies of 0x235a0 where retail inlines the first and calls the second, so the shared exit sits 48 bytes
-// further out and the first difference is the jump to it at +0x52; a static wrapper and an address-taken pointer for the
-// second transform load both leave the copy inlined, and `noinline` and `#pragma` are ruled out.
 // @retail 0x23690
 bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
