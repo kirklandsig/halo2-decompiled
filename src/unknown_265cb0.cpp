@@ -2645,6 +2645,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // still takes ECX); the first normalize through the header's inline normalize3d 405 (2954 B), the relative one 507 (2967 B);
 // approach and facing in two declarations 168 (same code); the player pointer as `if (index == NONE) player = NULL; else
 // player = &...;` 374.
+// Round 620: the inlined iterator load still exchanges base and index. Typed proximity fields 168;
+// typed winning level and view influence 168; one view influence read 409; typed proximity with retained
+// other object 163 (NOT kept: five-point gain above 30), plus one view influence read 404;
+// absent view rejected first 589; direct proximity predicates 621, with retained other object 616.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -479,7 +479,9 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1);
 
 s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 
-// score 87 (was 87): see the forms below.
+// score 79 (was 87): still differs in the unit-test scratch register, target lookup order and
+// the lateral/maximum registers. Testing the projection inside each timing arm gives 79 and
+// puts the length, adjusted projection, radius sum and location index in retail's slots.
 // MiniMax C (11-15): no new form, no lower score (87, was 87): the 0x110ab0 argument is loaded into ECX where retail uses EAX, retail looks the object up before either vector is copied and holds the scaled index in EDX where ours keeps it in ECX, and the radius sum, the first length, the adjusted projection and the location index sit one slot lower than retail's.
 // MiniMax E (11-14): no new form, no lower score (87, was 87): retail loads the object index into EAX before it pushes
 // the timing call's buffer and looks the object up before either vector is copied; this build pushes the buffer first,
@@ -910,6 +912,12 @@ s_slot_handler_0 g_47f7dc = {8, 0, 0, -2, 0, function_255740};
 // {sum, second side, timing3} groups at +0x14/+0x18, retail the reverse) the timing reals declared distance-last 17, the
 // location index and record ahead of the side outputs 17, the second side output declared at function scope 17 (same code
 // each: shared slots follow liveness, not scope or declaration order). Body unchanged at 87.
+// Round 620: on the one-use unit and target-first form, whole side selection 17; threshold on the selected
+// probe 51; fallback ternary 17; named fallback adjustments 17; default second side 82; projection compared
+// in each timing arm 7, named timing decision 7; named fallback predicate 17. On the timing-arm form:
+// second-probe result with sign first 11, named sign 93; maximum initialized first/second 7/14;
+// named fallback adjustments in either order 7/7; inadequate-clearance arm first 77; guarded side choice 7.
+// NOT kept: the 7 form still exchanges XMM2 and XMM3, and the one-use unit field requires an exact match.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
@@ -984,7 +992,8 @@ short __stdcall function_255740(long arg_0, s_slot *arg_1)
 							}
 							short local_19, local_21;
 							real local_20, local_22;
-							if ((unit_animation_get_timing(local_0->unknown018, 0x7000101, local_18, &local_19, &local_20, &local_21, &local_22) ? local_20 * 1.33f : 0.4f) > local_8)
+							if (unit_animation_get_timing(local_0->unknown018, 0x7000101, local_18, &local_19, &local_20, &local_21, &local_22)
+								? local_20 * 1.33f > local_8 : 0.4f > local_8)
 							{
 								s_unit_request local_24;
 								*(long *)(local_24.arguments + 4) = local_0->unknown5ac;

@@ -857,6 +857,10 @@ struct s_1f8a70_actor
 // `result = route_found;` after it 326 (1680 B, re-measured); route_found written through a pointer to it at every
 // assignment 182 (same code: folded, so no reload after 0x1f8750); one actor pointer from a single actor_get ahead of the
 // first test 207. Retail's case 6 `route_mode = 1` cross-jumps into case 5's tail (0x1f8c9d); ours keeps its own store.
+// Round 620: the route join and failed-result reload still differ. Zero-destination guard inside its case
+// with signed range 295, switch default 331, separate precheck 323, named case predicate 331;
+// unsigned bound 307; mode-six query selecting zero/two 410, early movement rejection with that
+// selection 410, and one conditional mode selection 312.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
