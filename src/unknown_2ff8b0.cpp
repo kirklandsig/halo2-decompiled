@@ -113,17 +113,24 @@ ELEMENTS_2D91D0(keys_300290, long);
 #define READ_3_300290(p) (((((p)[0] << 8) + (p)[1]) << 8) + (p)[2])
 #define READ_4_300290(p) (((((((p)[0] << 8) + (p)[1]) << 8) + (p)[2]) << 8) + (p)[3])
 
+inline reporter_2ff210 *reporter_2ff8b0()
+{
+	return g_48017c;
+}
+
 // runs a tree's command stream for a range of cells: commands narrow the
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
-// score 197 (was 216): cases 0x23..0x25 read the
+// score 132 (was 197): the default case reads the error reporter through a small
+// accessor, so it is loaded before the command is pushed, as retail does. Left:
+// the four times-three cases (0x19..0x1c) read each byte into eax and form the
+// product in another register (ours is 4 bytes longer).
+// Before, 197 (was 216): cases 0x23..0x25 read the
 // upper bound from the range, as retail does (it was read from the query's own
 // bounds, a different value), and the corner case adds one to each upper bound and
 // takes the corner off in a second statement (retail's inc before sub); with the
-// second change the first no longer costs a frame slot. Left: the default case loads
-// the reporter before pushing the command, and the four times-three cases
-// (0x19..0x1c) read each byte into eax and form the product in another register.
+// second change the first no longer costs a frame slot.
 // Before, 216 (was 234): cases 0x60..0x63 read the byte before stepping and
 // storing, as in 0x300290.
 // Before, 234 (was 466): each case continues the loop itself instead of breaking
@@ -447,8 +454,8 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			node += 5;
 			break;
 		default:
-			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
-			((class_2d9060 *)g_48017c->slot_1())->function_2d9060();
+			reporter_2ff8b0()->slot_1()->function_2d9000("unknown command %i\n", op);
+			((class_2d9060 *)reporter_2ff8b0()->slot_1())->function_2d9060();
 			*(long *)0 = 0;
 			return;
 		case 0x00:
@@ -894,8 +901,8 @@ void class_3008d0::function_300290(cell_box_300290 const *box, unsigned char con
 			node += 5;
 			break;
 		default:
-			g_48017c->slot_1()->function_2d9000("unknown command %i\n", op);
-			((class_2d9060 *)g_48017c->slot_1())->function_2d9060();
+			reporter_2ff8b0()->slot_1()->function_2d9000("unknown command %i\n", op);
+			((class_2d9060 *)reporter_2ff8b0()->slot_1())->function_2d9060();
 			*(long *)0 = 0;
 			return;
 		case 0x00:
