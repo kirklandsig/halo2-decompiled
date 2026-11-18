@@ -735,6 +735,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 249. Current after the successor transfer 144, heading published on
 // continuation 177, both index and heading published on continuation 253.
 // NOT kept: the 144 forms leave the extra frame word and the departure home.
+// Input end-pointer bounds with the original short ordinals in the lowest/candidate/both scans 211/250/231;
+// derive the ordinal at selection in the lowest/candidate/both scans 270/263/279; candidate/both with byte departure
+// 249/297. NOT kept: the lowest-only bound gives frame 0x14 but changes the register allocation at +0x4;
+// every candidate endpoint form regresses and loses the matched caller 0x239d50. The 0x18 frame and hull-count home remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
