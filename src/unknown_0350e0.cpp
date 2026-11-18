@@ -359,6 +359,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
 // caller held.
 // MiniMax R (11-17): no new form, no lower score (334): the first difference is the xmm choice for the two constants (this build keeps them in xmm4 and xmm5 where retail uses xmm0 and xmm7), and the body is two bytes longer than retail's 1779.
+// M3 lane 8 r183 (fast with 0x137ed0, matched throughout; control 334): each angle in its own block with the build
+// (`{ double angle = step * 0.5f; rotation_from_axis(...); }`) 333 at retail's 1779 B (the products no longer both on the
+// x87 stack before the first fsin; one point, not kept); on it: the angles as real 372 (1813 B); the first pass in place
+// (i and j copied, k read again) 367 (1810 B); the names forward_angle/up_angle kept 333; the complement in each cross
+// product 351 (1792 B); each second-pass row stored straight to g_467104 333. Diagnostic: the first pass in place with the
+// running sum in a reference-bound local 333 (1783 B): the partial sums go to a stack slot as retail's do, but ours reads
+// them back at each step where retail's are spill stores only. Body unchanged.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

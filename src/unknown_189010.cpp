@@ -930,6 +930,9 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // M3 lane 2 r97 (fast with 0x188180, control 2): the camera bound by reference for the active test 2; the 0x1895f0 call
 // in its own block ahead of the result store 2; the result set as `!false` 2; the 0x155760 result named before the
 // player-mode test 2; the maximum-distance lookup below the vector declarations 2 (all the same code).
+// M3 lane 8 r183 (fast with 0x188180/0x1895f0/0x189210, control 2): 0x1895f0's result kept in an unused local 2; the play
+// call cast to void 2; the result flag as char 170 (657 B); the sound position sums camera-first 2; the position products
+// distance-first 2. All restored.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
