@@ -8,12 +8,7 @@
 struct triangle_303360;
 struct segment_3037a0;
 struct triangle_3037a0;
-struct search_flag_3037a0
-{
-	search_flag_3037a0(bool value_) : value(value_) {}
-	search_flag_3037a0(search_flag_3037a0 const &other) : value(other.value) {}
-	bool value;
-};
+#include "search_flag_3037a0.h"
 class class_303360
 {
 public:
