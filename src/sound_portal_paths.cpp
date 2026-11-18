@@ -116,10 +116,16 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 311 (was 371): Frame 0x42c versus 0x428; the starting-cluster register and BSP table lifetimes differ.
+// score 296 (was 311): The 0x428 frame agrees. The starting-cluster register, table loads, validity words
+// and sort scratch offset differ.
+// Before the sort scope, the frame was 0x42c.
 // Tried: const portal 371; const views 371; endpoint mask before shift 371; const portal and mask 371; shared
 // seed array index with separate bit read 373; validity memset 311 kept (plain); path ordinal in while 371;
 // index test before closest distance 371.
+// Round 605. The sort scratch scoped to its call scores 296 and restores the four 64-entry array offsets (plain
+// confirmed). Bitmap clear before cluster 312. Closest distance after seed 308. Search and sort scopes 296.
+// Early scratch 311. Named ordinals 311. Bounded output count 311. Shared output element 311. Explicit gain
+// arms 302 (NOT kept: frame 0x434). Search scope 311. Sort scope with gain arms 302 (NOT kept: frame 0x430).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -181,8 +187,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 		if (!(valid[i >> 5] & (1 << (i & 31))))
 			distances[i] = FLT_MAX;
 	}
-	real scratch;
-	sort_4byte(&scratch, order, bsp->sound_count, (t_portal_path_compare)function_18ae50, distances);
+	{
+		real scratch;
+		sort_4byte(&scratch, order, bsp->sound_count, (t_portal_path_compare)function_18ae50, distances);
+	}
 	if (count)
 		*count = 0;
 	long limit = bsp->sound_count < 64 ? bsp->sound_count : 64;
