@@ -353,6 +353,11 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // frame changes); the second-axis cases written first in the rotation switch 491 (1720 B, frame changes), with
 // forward.i moved 407 (1784 B); the sine vector renamed to sort after the squared one, on this order and on retail's,
 // 219 / 357 (same code each: the two vectors' homes do not follow their names here).
+// M3 lane 6 r194 (fast, control 219, aligned 221, masked 157): a private forced-inline helper returning the components'
+// squares as a vector by value (an aggregate return, which elsewhere stops the scheduler hoisting across it) for the
+// rotation's squares 370; one returning the sine products by value in place of the three sine statements 419 (1884 B);
+// both 617 (2020 B); the sine helper after the i square (retail's first copy computes k^2, k*s, i^2, then the other sine
+// products) 416 (1884 B); that with forward.i moved ahead of ij 413 (1880 B).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
