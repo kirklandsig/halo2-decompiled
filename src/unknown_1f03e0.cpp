@@ -1563,6 +1563,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // desired then takes 0x14 and the flying left 0x20), with the 12-byte direct vector 441. Lead: the 8-byte slot at 0xc goes to the
 // only 8-byte aggregate when the other one is 12 bytes, and a variable live in more arms sorts to the lowest 12-byte slot; retail's
 // general limited shares desired's slot without being desired. Body unchanged.
+// M3 lane 11 r116 (fast with 0x1f0450/0x24590/0x30bf0/0xa75d0, all MATCH; base 234, difflib-aligned 158 with addresses
+// masked): the direct arm's rotated.y with its two terms the other way round (`facing.i * input.j + facing.j * input.i`:
+// retail computes the facing.i product first and adds it into the facing.j one) 234; the positive-normal arm's desired.j the
+// same way 234; both 234 (same code each: VC orders the sum's operands itself); the direct arm's output as three statements
+// i, j, k, re-measured, 543 (aligned 193); that with the flags declared flying, direct, damping, gravity, the input pointer
+// after them and the first arm clearing gravity first 543 (aligned 192; the first difference moves to +0x3d, the entry
+// block exact). Body unchanged.
+// MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
+// ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
+// score, so the body stands.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
