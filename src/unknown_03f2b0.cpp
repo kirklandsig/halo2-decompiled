@@ -1309,8 +1309,7 @@ struct s_133f70;
 // distance into EAX and pushes that, this build loads it into ECX and pushes that; what follows are the two
 // globals' addresses, which differ between the two builds, and the layout of the entry test.
 // MiniMax I (11-11): no new form, no lower score (355 in the reduced image, 93 in the full build): the first difference is at +0x1 and the reduced image's score is inflated because the globals it leaves out are not masked; the tail is BLOCKED-BY 0x23690.
-
-// score 93 (was 93): The frame agrees, and distance still loads into ECX after the force push. The cache and previous-level homes also differ.
+// Earlier 93 (was 93): The frame agrees, and distance still loads into ECX after the force push. The cache and previous-level homes also differ.
 // Signed-short query count widened across the level store, after count clear, or at loop entry 96/367/367.
 // Native count selection widened before count clear, widened after type, or used directly 367/109/109.
 // Explicit suppressed/admitted long count 110. Zero count with an admitted assignment 354.
@@ -1567,6 +1566,14 @@ struct s_133f70;
 // Those forms with a signed-byte previous level: 356, 150, 358, 365. The 150 form keeps the original first
 // difference and takes more differences through the view and cache blocks. Body restored.
 // MiniMax A (11-17): no new form tried this round, no lower score (93): every difference still sits before the 0x4c190 call (the 0x4bcc0 argument load, the entries in ecx, retail's dead entry lea, the header's global loaded first and its object in eax, the success value stored before the 0x3d4f0 call, the byte previous level, the record offset added in two steps, the reuse test's registers and the 0x4c190 argument order) plus one object load near the end; the tail needs 0x23690, which is still todo in config/functions.csv. BLOCKED-BY 0x23690. The reduced image scores 344 here, so --fast is only a screen.
+// M3 lane 7 r179 (all plain, control 93, aligned 130, addresses masked 48). On the first difference (retail loads the distance
+// into EAX ahead of the force push, which fixes the scratch rotation down to the type store): the distance read once through
+// its own address 93 (same code); the 0x4bcc0 call through a one-caller forwarding helper whose parameter list puts the
+// distance right before the level pointer (diagnostic) 93 (same code: the helper's arguments are substituted, so their order
+// does not move the load); the level pointer in a named local for the call (diagnostic) 93 (same code); the call's result in
+// a named short widened into the entry count 93 (same code); `success` declared at the loop's top re-measured 91 (two
+// points, a declaration move, not kept). Reading: ours picks ECX for the distance because the force is already pushed when
+// the load's register is chosen; retail's choice of EAX means ECX and EDX were both still taken there. Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

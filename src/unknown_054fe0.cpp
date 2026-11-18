@@ -1868,6 +1868,12 @@ struct s_summary_player_sort_entry
 // cursor 374, map defaults on query failure 357, map stores selected by query success 398.
 // NOT kept: the source cursor adds one frame word and reaches 1292 bytes, but raises the score.
 // Failure-path map defaults reach 1291 bytes and raise the score. The type and membership homes remain.
+// M3 lane 7 r179 (fast with 0x5a680, 0x5b0d0, 0x5b180 and 0x64160, all MATCH each time; control 339, aligned 203). On retail's two
+// pointer homes (the type pointer at +0x18 and the membership at +0x4c stay in the frame there): the type pointer made nullable
+// on the state (`state ? &session->value18 : NULL`, tested and read through) 394 (1323 bytes, frame still 0xa9c); the type
+// pointer as the output of a small getter taking its address 339 (same code: it folds); the membership pointer the same way
+// for the name 339 (same code); the membership and member index from 0x5a680 (NULL, &member_index) for the name and identity
+// 353 (called, as listed); that with the nullable type pointer 392. Neither pointer gains a home in any form. Body unchanged.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {
