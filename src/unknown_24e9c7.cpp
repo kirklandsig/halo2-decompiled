@@ -533,6 +533,19 @@ struct s_24e9c7_points
 // Rectangle span through the existing point difference before bitmap/after bitmap/after size/after across:
 // 143/143/125/125. Aggregate span with the same four boundaries gives the same scores.
 // NOT kept: the early spans grow to 746 bytes, and the later spans tie at retail length.
+// B458: Both scaled pixel extents before conversion, height-first/width-first 125/125; both truncations
+// before returned height, or a direct height conversion with separate integer width 125/125; paired signed
+// dimension reads/conversions 125/125; paired unscaled pixel products with direct/in-place scaling 125/125.
+// Across spill and the result, kind and bitmap homes remain.
+// B460: Upper vertices before side scaling, both/first/both with lower origins 165/149/170.
+// In-place basis with both/all/first vertices and shared forward component 145/156/154/159.
+// Upper-before-width and independent-basis/converted-width variants 176/157/147/163/159.
+// The first upper vertex before side scaling recovers the return and metadata slots at frame
+// 0x48, but the shallow spill holds the converted half width and the body grows. Early across j
+// spill remains. Original body restored.
+// The across/side spill above the result still differs. Backward addition of the negated side, with original
+// across scalars, a separate pair, a sized side scaled in place, or an in-place two-stage side: 167, 161, 161,
+// 163. Backward subtraction on the same four producers: 167, 161, 161, 163. All eight shrink the frame to 0x40.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

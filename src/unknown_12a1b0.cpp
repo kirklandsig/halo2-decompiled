@@ -1387,6 +1387,11 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // `s_sound_playback &` passed to a reference-parameter helper 35, declared at function scope 35. All keep retail's
 // registers (index EDI, element ESI) with the state load hoisted above the element's add (`mov al, [esi + edx + 2];
 // add esi, edx`): the offset is computed in the element's register whenever the element is a named variable.
+// M3 lane 1 r117 (fast with the same four, all matched; `ret 8` and 210 B in both builds): a named element with
+// `__assume(sound != NULL)` after it, call kept, 24; the same `__assume` inside the state arm 24; the loop under a
+// code-free `if (0 <= iterator.count)` guard 24; the element through an `s_sound_playback *&` 24. Diagnostic (the
+// fade-in half written out, not keepable) with the `__assume` after the named element 35 at 211 B: the state load
+// still folds ahead of the add, so a pointer boundary does not split the offset from the element's register.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -2394,6 +2399,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the range read through an s_short_bounds member at +2 246 (frame 0x12c, retail's `lea ebx, [..+2]`).
 // MiniMax I (11-17): no new form, no lower score (305): the frame is still 0x11c against retail's 0x128 and the
 // native request, range and pitch homes still sit at other offsets.
+// P595: The 0x11c frame, playback/NONE allocation and range/ring homes remain. shared long/dword/word
+// datum ordinal 479/479/470, same three with one latch pool read 380/380/459, branched latch start 480,
+// branched start with separate next-slot conversion 480. Reduced control 479, full baseline 305. NOT
+// kept: the strongest preview regresses to 418 in the plain check and the native frame remains
+// unresolved.
 // score 305 (was 305): MiniMax D (11-17): no new form, no lower score (305 plain, 479 on the reduced image): the frame is
 // still 0x11c against retail's 0x128 and the native request, range and pitch homes still sit at other offsets; the second
 // pitch-range loop still hoists the datum index and the track index into EBX/EBP (one use each) and keeps &sounds[i] in EDI

@@ -1025,6 +1025,12 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // retail's position pointer does not, yet its save still precedes the add.
 // Then the flag's position and angles read through a pointer to a position-plus-angles view at +0x24 39 (97 bytes;
 // 0x2a1120 8; the loads become `[eax + edx + 0x34]`).
+// M3 lane 12 r137 (fast with 0x2a1120, which stays matched): the element from a raw byte read of the table pointer
+// (`*(byte **)((byte *)scenario + 0x1e4) + index * 0x38`) 6; a `vector3f *` to the forward vector taken after the flag
+// and passed to the call 6, taken before the flag lookup 6; an empty label ahead of the component stores 6; forward declared before the flag with the
+// position taken after the three components 6. Reading:
+// retail's loads from the flag never pass a stack push (the add waits for `push esi`, the first fld for both `push 1`),
+// ours pass them freely, so retail's scheduler may not have separated the flag's memory from the stack.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

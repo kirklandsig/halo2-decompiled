@@ -64,7 +64,7 @@ PRIVATE inline long swizzle_log2(dword value)
 // them differs: this build widens the third argument into EDI and the second into ESI at the entry where
 // retail copies the third into SI as a word and widens the second only where it is used.
 // MiniMax S (11-06): no new form, no lower score: the two coordinates still arrive in the other registers (retail x in EDX, ours in CX), so the widened copies, the two table lookups and the common count keep different homes; retail's minimum branches once and stores the common count after the join.
-// score 57 (was 57; before that 57 was 82): both logarithms now have retail's loop and the common count is
+// score 57 (was 57): earlier 82. Both logarithms now have retail's loop and the common count is
 // taken by retail's branch, so the height count sits in ebx as in retail; left: the row
 // coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
 // widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
@@ -324,6 +324,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // P574: Immutable width/height/mask producers, seven subsets then complete
 // immutable minimum graph: 57/57/57/57/57/57/57/80. NOT kept: no exact delayed
 // coordinate promotion or native common-count join; original full body restored.
+// N408: Mask both coordinates before branch (long/short) 117/95. High-arm intersection split
+// (long/short/dword) 67/81/67. High index from the intersection at use 57. Mask from full-width
+// unsigned or signed-short span 57/57. NOT kept: ties or regressions. Coordinate promotions and the common-count home differ.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

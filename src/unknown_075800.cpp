@@ -1533,6 +1533,16 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // ahead of the switches 111 (460 B; retail's prologue, delayed ESI save, two-pop range exit and jump table, 0x7afd0 MATCH;
 // left are case 18, which retail calls from its jump table where ours tests it late and inlines 0x94420; not kept: the test
 // is implied by the switches); that with 11 back in the late switch beside 18 121 (round 65's form re-measured).
+// M3 lane 13 r106 (all plain with 0x7afd0, 0x93aa0, 0x94420, which stay matched unless noted; --fast builds this body at
+// 444 bytes and scores every form 196, so it cannot screen here): r105's unsigned range test ahead of the switches with the
+// late 18 test moved into the first switch's default arm 111 (460 B, same code as r105's 111); the range test with 18 in the
+// first switch after 24 (one switch) 217 (420 B, 0x7afd0 3: type ECX, address EAX, message stacked; case 10 moves the
+// address into EDI around 0x94220's call); that with the address read once through its address 219 (424 B: the address
+// stacks but loads into EAX, type ECX, message EAX); the one switch with the address bound to a `const &` local passed to
+// case 18 219 (424 B, same code). Only the late 18 site inlines 0x94420, and only that inlined use across a call gives
+// retail's convention (type EAX, message ECX, address stacked); with the address stacked any other way the type and the
+// message trade registers. The one switch with the range test and the parameters declared (type, message, address), the
+// declaration and 0x7afd0's call changed with it, 217 (420 B, same code as the declared order: 0x7afd0 3). Restored.
 // ESI is saved before the range check. Retail calls case 18 out of line.
 // case 0 before terminal case 18 194; case 0 after terminal case 18 194; case 2 before terminal case 18 196;
 // case 2 after terminal case 18 196;

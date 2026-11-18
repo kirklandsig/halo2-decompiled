@@ -510,6 +510,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax R (11-17): no new form, no lower score (102): the dot product's three products are still summed in the other order and the perpendicular vector's slot still sits below the sweep's where retail keeps it above the collision result; MSVC canonicalises the sum and allocates the slots by liveness, so neither the operand order nor the declaration order moves them (three forms tried and reverted).
 // MiniMax E (11-16): no new form, no lower score (102): the sweep and collision homes still sit twelve bytes below retail's and the body is still twelve bytes longer; retail's dot product adds its terms in another order, a spelling the coordinator has already reverted.
 // MiniMax I (11-17): no new form, no lower score (102): retail adds the dot's three terms as
 // (v.i*n.i + n.k*v.k) + n.j*v.j while this build reassociates the same sum to (n.k*v.k + n.j*v.j) + n.i*v.i;

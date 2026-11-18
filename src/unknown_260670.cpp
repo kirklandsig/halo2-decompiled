@@ -47,7 +47,6 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // retail has 0xc) and the tail's length follows from that; the two call sites still differ (retail calls 0x2600a0 in the
 // sorted loop and inlines 0x262a30's owner lookup, ours does the opposite) and the x87 and SSE operand orders in the loops
 // differ, so the body stands;
-// score 440 (was 528): earlier 611, 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // Earlier 528 (was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // earlier 700 (was 700). Enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
 // (the merged second note line: was 528, 611, 700): enabled from the draft: first difference +0x2a, 3148 bytes against 3077. The draft's two `goto done` as returns 700 (697 with them). Enabling it lets callers keep
@@ -182,6 +181,14 @@ real function_11e000(point3f const *b, point3f const *a, vector3f const *d);
 // Probe source/probe settings/fallback source scope, seven nonempty subsets, then all with search-local records: 577/442/442/577/577/442/577/577.
 // NOT kept: phase-local records regress and keep the 0x8a8 frame and 3097-byte extent.
 // Original executable body restored.
+// Indexed callback with explicit result or direct rejection 654/440, with sort-local scratch
+// 634/440. Single callback read in those two forms 542/420, with sort-local scratch 507/412.
+// Single callback read with row advance before testing result 543, with sort-local scratch 505.
+// NOT kept: the 420/412 forms grow to 3113 bytes and change the callback register. The explicit
+// result forms at the 0x8a0 frame and 3077-byte extent score 507 and 505.
+// Range flags and two call boundaries still differ. Existing request admission, direction/bypass
+// and published evaluator members, seven subsets at 440. All with branch-local sort scratch 440
+// (frame 0x8a4). NOT kept: the frame is four bytes closer, with the same score and extent.
 // @retail 0x260670
 s_reference __stdcall function_260670(long actor_index, s_2605d0_request const *request,
 	s_261d20_entry *entries, short count, long reported_entry, long reported_owner, byte *scratch, bool *has_path)

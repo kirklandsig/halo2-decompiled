@@ -758,10 +758,23 @@ struct s_physical_block_iterator
 // is given its register before the bit (ESI, then EBX), as here in retail (EDI, then EBX); on the lead ours gives the bit EDI
 // first. In retail's found path EBX carries the bit, then the block data, then the pages (the sum is built there) and last the
 // handle argument, and EDI carries the count, then best.offset (copied to EDX for the second test), then `this`. Body unchanged.
+// Page-first time policy as smaller-first ternary, larger-first ternary, explicit branches,
+// and strict default with inclusive override: 286/273/286/245. With both age masks:
+// 265/233/265/188. NOT kept: 188 has a shared AL test but is 1194 bytes against retail's
+// 1213 and moves best-candidate homes. Retail's ordered time comparisons still differ.
 // Round 611: three-way timestamp order, older/equal/newer-first and explicit
 // branches 216/214/231/201; with both unsigned age masks 227/225/216/209.
 // NOT kept: no closer case-zero result or native size. Case-zero/case-one
 // placement and the weighted-age register allocation still differ.
+// Case-zero non-later admission, combined admission, later rejection and non-earlier rejection
+// scored 222/222/222/201, also when reading each timestamp once.
+// P598: Advance the ring ordinal after prefetch/after accumulation/before prefetch 250/355/273.
+// While scan with early advance 250, with undersized entries skipped 355. Conditional
+// best record/pointer/reference 248/248/248. The case-zero Boolean still needs its retail join.
+// Eager tie mask, eager earlier-or-smaller mask, guarded mask and eager complement, then the four
+// with symmetric age clamps 231/227/195/232/222/223/236/217. NOT kept: the 195 guard gains six,
+// is 19 bytes short and still misses the native case-zero join. Case-zero materialization and the
+// native weighted-age homes still differ.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -363,6 +363,10 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// MiniMax R (11-17): no new form, no lower score (84): the seat loop's two cross products load their operands in the
+// other order (retail multiplies a term with the vector's component in the register and this build with the memory
+// operand), and the shared header helper's spelling fixes that order, so the products cannot be moved from here; the
+// seat loop's result still lands four bytes above retail's and the range still loads into xmm2 for xmm0.
 // MiniMax E (11-16): no new form, no lower score (84): the permuter (900 s, one job) left the baseline at 84; the result's first store still lands four bytes above retail's, the range is still loaded into XMM2 for XMM0, and retail multiplies the seat loop's third cross term the other way round (forward.j * up.i), which the shared header helper cannot produce.
 // score 84 (was 84): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
 // Previous stack measurements are in the lane 8 round 166 entry below.
@@ -2114,7 +2118,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 168 (was 168; m3 lane 8 r166 at the end): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
+// score 168 (was 168): retail's 2880-byte extent. The first iterator load reverses the address operands.
+// The players iterator's table pointer loads into ECX where retail
 // uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
 // direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
 // block's established/visible layout. Round 64, fast, masked aligned in brackets (start 194 [66]): the block entered on
@@ -2649,6 +2654,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // typed winning level and view influence 168; one view influence read 409; typed proximity with retained
 // other object 163 (NOT kept: five-point gain above 30), plus one view influence read 404;
 // absent view rejected first 589; direct proximity predicates 621, with retained other object 616.
+// Named primary/other/both reference handles 168/168/168, proximity assigned from both 587.
+// Observed object and both handles 163. NOT kept: the five-point gain at 163 is below the eight-point cutoff.
+// Actor lookup delayed 595, both lookups delayed 592, shared separation 379. Iterator SIB, player searches
+// and direction residence still differ.
+// MiniMax S (11-17): fast build on r852: the permuter's 2 tries and the source order of the inlined 0x26be00 both stay at 168;
+// the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
+// reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
+// further down allocates the table base and the index to different registers.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
