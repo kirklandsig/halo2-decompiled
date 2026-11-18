@@ -11,6 +11,7 @@
 #include "effects.h"
 #include "unknown_1cafc0.h"
 #include "unit_requests.h"
+#include "object_tag_definitions.h"
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
@@ -3451,6 +3452,15 @@ struct s_ammo_conversion_entry
 // EBX, stores the acquisition flag the other way round (a byte zeroed in the prologue and set with `setg` on "acquired") and
 // keeps the conversion entry without a nullable test, while ours holds the destination in EDI, spills the other and tests the
 // entry for null.
+// Lane N round 411 (fast control 190).
+// Shared source definition index 190.
+// Capacity and transfer 192.
+// Transfer join result 204.
+// Conversion block 190.
+// Updated source rounds 209.
+// Retained kind expression 207.
+// Initial transfer flags 196.
+// Both definition indices 190.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3911,7 +3921,8 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
         if (weapon->parent_index != NONE) weapon_index = weapon->parent_index;
     return weapon_index;
 }
-// score 1413 (was 1420): the two definition flag tests read the bit through the field (flag27 at 0xfe02c, flag10 at
+// score 1420 (was 1420): Frame 0x3c versus 0x38. Retail keeps the pool and header offset in EDI and ESI, and computes the scale complement in the two barrel arms.
+// Earlier score 1413 (was 1420): the two definition flag tests read the bit through the field (flag27 at 0xfe02c, flag10 at
 // 0xff128), the blocked and down/up carriers are bytes and the pressed and released bits are taken with retail's shift
 // form, so the function has retail's length (5684 bytes). What still differs is the frame (0x34 against retail's 0x38),
 // the prologue's register homes (the pool pointer in EBX where retail keeps it in EDI, the index in EDI where retail keeps
@@ -3920,7 +3931,7 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // up 0x15, blocked 0x16, pressed 0x1c-0x1e, released 0x20-0x22). Not kept: the result as a bool (1490), the retail
 // shaped down/up split with the two carriers zeroed before the timer test (1426), the pressed and released arrays as
 // bytes (1413, unchanged), the complement inlined at each use site (1436).
-// score 1420: walked statement by statement against retail 11-05 (w1A), with the jump tables at 0xff57c/0xff59c/
+// Earlier score 1420: walked statement by statement against retail 11-05 (w1A), with the jump tables at 0xff57c/0xff59c/
 // 0xff5b4/0xff5c4/0xff5d4 mapped. No behaviour difference: the setup, animation state, ramp, heat and overheat, trigger
 // and barrel state machines, barrel scale/ramp and the final heat/byte/x87 update agree, and all 77 call sites exist in
 // both. The code is unchanged here, since the forms retail shows together score 1485 (5724 bytes), although the
@@ -4055,6 +4066,15 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // lookup graph, activity declaration and metadata restored.
 // Permuter, 40 minutes (11-05): 1369 only with volatile locals and casts that change no value. Not kept.
 // MiniMax B (11-15), NOT kept: 1413 (was 1420), a 7-point gain, under the 8-point bar for a function above 30.
+// Lane N round 411 (fast control 1420).
+// Firing blend publication 1416 (NOT kept: four-point gain with the frame still larger).
+// Recovery blend publication 1416 (NOT kept: four-point gain with the frame still larger).
+// Both blend publications 1416 (NOT kept: four-point gain with the frame still larger).
+// Both rate publications 1420.
+// Tracked datum 1420.
+// Owner player field 1420.
+// Dual and blend homes 1420.
+// Pool after animation 1420.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4529,7 +4549,7 @@ struct s_weapon_projectile_creation
 // them, and the projectile code is a dword narrowed at the store. Not kept: a creation block twelve bytes smaller (the
 // frame stays over), the complement and the owner result held in variables, the average loop rewritten, the game mode
 // helper inlined, the marker select spelled as a bool.
-// score 1143 (was 1161): walked statement by statement against retail 11-05 (w1B). Behaviour fixes: the shot spread is
+// Earlier score 1143 (was 1161): walked statement by statement against retail 11-05 (w1B). Behaviour fixes: the shot spread is
 // computed only while it is still 0 (0x104dbe-0x104dcb: ucomiss, lahf, test ah 0x44, jp past the block) and low/high fall
 // back to +0x74/+0x78 when +0x5c/+0x60 are 0, writing `spread` itself (0x104e4a; the cone call at 0x104e8b reads it);
 // function_1fddd0 gets (average-or-origin, direction) (0x1048a9-0x1048da; the source passed the average as the direction);
@@ -4561,6 +4581,16 @@ struct s_weapon_projectile_creation
 // short target + loop-top initialisers 1252, shift-style flag tests + projectile refetches 1143.
 // Permuter, 40 minutes (11-05): 1082 only with the `unit_index != NONE` test dropped (a behaviour change), temporaries and
 // casts. Not kept.
+// Lane N round 411 (fast control 1121).
+// Muzzle trace point 1121.
+// Ballistic placement 1121.
+// Hit transform homes 1121.
+// Synchronized node 1137.
+// Placement owner scope 1121.
+// Placement owner once 1158.
+// Damage mode gate 1121.
+// Shot player slot 1121.
+// Unit flag field 1121 (kept after plain check).
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
@@ -4658,7 +4688,8 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 long player_index = WEAPON_LONG_AT(unit, 0x13c);
                 long actor_index = WEAPON_LONG_AT(unit, 0x12c);
                 s_entry_pair *aim = (s_entry_pair *)(unit + 0x1c8);
-                bool project = (bool)((WEAPON_LONG_AT(g_4e3b44[WEAPON_LONG_AT(unit, 0) & 0xffff].bytes, 0xbc) >> 3) & 1);
+                s_unit_definition const *unit_tag = (s_unit_definition const *)g_4e3b44[WEAPON_LONG_AT(unit, 0) & 0xffff].bytes;
+                bool project = (bool)((unit_tag->unit.flags >> 3) & 1);
                 bool use_aim = true;
                 player_controlled = player_index != NONE;
                 long parent = WEAPON_LONG_AT(unit, 0x24c);
