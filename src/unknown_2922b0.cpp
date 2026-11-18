@@ -608,6 +608,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH391: Shared origin generation/query cursor, hit query/response cursor and hit-distance
 // query/response cursor, seven subsets 563/563/663/558/665/665/670; all with origin
 // advance and rewind 651 (2886 bytes). NOT kept: no gain or matching success-byte home.
+// Frame 0x108 agrees. The success byte is four bytes below retail. Scoping the collision query did not
+// move it; the for count narrowed the extent gap by four bytes. query workspace scope 558; count and ray
+// in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope
+// with for count 558; staged hit distance 563; query writes hit flag 559; collision displacement inner
+// scope 566. NOT kept: the scored forms tied or regressed.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

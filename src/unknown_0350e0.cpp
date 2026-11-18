@@ -2091,6 +2091,12 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // displacement stores 312/312/581/581, vector setter 312/312/316/316. Four forced-inline
 // counterparts reach 178 at 812 bytes with frame 0x18 and result at +8. NOT kept: the caller
 // measures 572 against 492, and the cross and displacement still have different XMM allocation.
+// Retail has a 0x18-byte frame and a separate result at +8. Earlier position loads alone do not create
+// the XMM pressure from earlier displacement computations. The caller stays at 492. fixed reference
+// component setter 214; negated reference component setter 193; both displacement component setters 193;
+// all reference component setters 214; read position x before cross 193; read position y before cross
+// 193; read position z before cross 193; read position components before cross 193. NOT kept: tied or
+// higher scores, with no result-slot recovery.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {

@@ -2662,6 +2662,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // the prologue and the frame (0x80 in both) match instruction for instruction and the first difference is the inlined 0x26be00
 // reading [eax+ecx+0x58] where retail reads [ecx+eax+0x58] (the same address, the two registers swapped), and the player loop
 // further down allocates the table base and the index to different registers.
+// The first difference reverses the base and index in the inlined iterator load. Both builds have a 0x80
+// frame. The player scans retain different registers even when they share the table and datum index in
+// source. shared datum index for both searches 168; shared player table for both searches 168; shared
+// player table and datum index 168; first scan selects player pointer 378; player selected from first
+// scan bound 375; slot selected from second scan bound 370; both searches select from scan bound 189;
+// player pointer selected after first scan 374. NOT kept: the retention threshold was not met.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

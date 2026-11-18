@@ -3550,6 +3550,11 @@ static inline short sound_voice_find_available_channel(char type)
 // 0x129741, 0x129754, the set at 0x129763, the clear from the re-read channel at 0x129783) agree with the source.
 // The three exits give true at the entry (0x129618), false through BL (0x129717-0x129727) and true after the commit
 // (0x129785), as the source's result. What is left is only the result byte's place and the block layout listed above.
+// Retail uses a register result and an eight-byte frame. The result from the admission tests recovers
+// retail length and frame size with a different entry and failure join. status assigns buffer 122;
+// driver assigns buffer 123; both arms assign buffer 122; result from both tests 135; byte from both
+// tests 177; result guards cleanup 135; cleanup at common exit 135; failure from missing channel or
+// buffer 134. NOT kept: all forms scored above the opening body.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
