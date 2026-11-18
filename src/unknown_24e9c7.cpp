@@ -564,6 +564,26 @@ struct s_24e9c7_points
 // after draw 187; in-place side with interleaved height 143; first raised origin before
 // back 153; shared forward components 142. NOT kept: early commitments tie and the
 // later or combined forms miss the original frame, extent or score.
+// M3 lane 7 r179 (fast with 0x24e59f/0x22a664, both MATCH each time; control 125, aligned 115, addresses masked 87). Reading:
+// retail's 1.0 sits in XMM5 and its across i product is `size-copy * (0 - forward_j)` because the perpendicular pair is set
+// before the size is read, and its integer height lives in ESI because the half width is divided before the height is
+// converted. The side point set to the perpendicular (`side.x = -forward_j; side.y = forward_i;`) after the scale read and
+// ahead of the size, then scaled in place by the size and later by the half width, plain statements: 125 at 745 bytes
+// (aligned 102, masked 73): the listing then agrees with retail from the block's top through `mulss xmm1, xmm4` (the across j
+// product) except for two swapped loads; retail stores that product to its home there and converts in XMM1 with forward_i
+// kept in XMM4, ours keeps it in XMM1 and converts in XMM4. On that form: the half-width scaling through a one-caller
+// pointer helper 145 (755 bytes, aligned 100; the side home moves between result and kind in a compile-only frame listing,
+// retail has it above result); the result conversion after the half width 141 (aligned 109), with the first corner's base
+// copy between them 141 (aligned 106; height in ESI and the corner's x load in EDX after `sub eax, edx` as retail); a
+// separate perpendicular point with side from it and up.x from its y 138 (741 bytes, aligned 113); a named copy of the
+// perpendicular's y for up.x 138 (744 bytes, aligned 107). A compile-only frame listing orders the 4-byte and helper-taken
+// homes by their reference counts (later-declared first on a tie), so retail's side pair sits above result once its y half
+// has five references (both products stored); every form above stores only the second product. A form that does store both
+// (compile-only listing: the size product stored at its definition, `mulss xmm3, [side y]`, the half-width product stored,
+// back y as `0 - [side y]`, as retail): the first corner's base copy and its two up sums written ahead of the side's
+// half-width scaling, the back sums after it. In the real build, with the second corner's base copy and up sums also ahead
+// 148 (758 bytes, frame larger: back gains a home too, aligned 117); with them after the scaling 173 (770 bytes); either
+// with the result conversion after the half width 178; with the helper scaling 188 (778 bytes). Body unchanged.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

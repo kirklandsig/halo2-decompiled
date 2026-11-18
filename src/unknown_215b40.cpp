@@ -247,6 +247,7 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 
 // score 114 (was 110): check with 0x2157e0 in the image (it defines g_51ea14;
 // check with 0x2157e0 in the image (it defines g_51ea14;
+// check with 0x2157e0 in the image (it defines g_51ea14;
 // without it the fast check builds differently). The iterator struct gives
 // retail's frame: table at [esp+0x24], the index's slot [esp+0x28] unused, and
 // index << 6 recomputed for each copy (a plain table pointer and index
@@ -301,6 +302,13 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // the test 51, table local at the block top or entry 186/185 (584 bytes; retail's EDX and latch reload, but from a
 // stack home); cached block with a typed cache local, the getter at each use or split declarations 52 each, with
 // `long index = 0;` before `cached_count` 52 (the form that matches under the diagnostic).
+// M3 lane 7 r177 (plain, 30 functions, 27 MATCH throughout; aligned counts by sequence, base 66): retail packs from the
+// index read before the increment, ((generation << 14 | index) << 4 | unit) << 4 | type. The header's location iterator
+// with `long current = iterator.index++;` (as 0x2170e0) and the or-of-shifts packing from `current` 170 (aligned 67): the
+// packing becomes retail's chain, but the old index takes ECX (retail EAX) and the accumulator EAX (retail ESI), and the
+// table reload stays in the match block; 0x2170e0's handle builder moved to the header with a unit nibble 170 (same code,
+// 0x2170e0 still matched), also in the cached loop 170 (same code); packing from `iterator.index` before an increment at
+// the loop's end 170 (aligned 70); `type == location.type` 170 (same code).
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {
