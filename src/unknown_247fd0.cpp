@@ -802,6 +802,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // /G7 in the link-time build 334 (same code; the compile-only test above was not the linked image); the gate byte
 // through a volatile read 378 (1665 B, still folded). Re-measured listed forms: the flag as a member of the local
 // record 351, the gate bit in one expression 334, the velocity as an if/else 334, the collision record first 334.
+// Optional effect record 421, with the named flag 424, short-circuit flag write
+// 334, with allocation-failure return 334. Staged evaluator mask 347.
+// Shared scale for the first endpoint 340, second 338, both 342.
+// NOT kept: the tied guards leave the folded effect address and the gate slot.
 // MiniMax E (11-17): no new form, no lower score (334): retail computes the blend's x term as the (1 - step) product first
 // and the step product second (0x247c49-0x247c58), so the 1 - step value is made before the products, while this build
 // makes the step product first and the 1 - step value in between; writing the x term the other way round (the (1 - step)
@@ -814,6 +818,15 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Low byte 334/460/446/446. Full word 366/442/442/442.
 // NOT kept: byte memcpy folds as before. The other transfers widen the read
 // or leave a call. Separate base addition and gate/definition homes remain.
+// Enclosing bit-field and raw-byte admission 344/334; staged gate 418;
+// plain positive gate 395; enclosing gate with combined header word 344,
+// allocator-failure exit 344, query-scoped collision 344 or separate refreshed
+// settings 344. The staged gate gains the two slots through an extra readback;
+// the split effect address and DL load remain. Restored.
+// Spatial workspace alone or with collision after the effect gate 334/334. Workspace alone or
+// with collision in the allocation arm 334/334. First-draw workspace and probe collision 334.
+// Post-gate workspace and probe collision 334. Allocated workspace and motion collision 334.
+// Settings declared after the gate 334. NOT kept: folded address and flag/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

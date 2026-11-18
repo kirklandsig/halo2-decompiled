@@ -282,7 +282,7 @@ void function_245400(s_source_245400 const *source, long index,
 }
 // score 206 (was 206; 214 before MiniMax C 11-17, earlier noted 209 (was 209), 214 since B6G's j-row fix; m3 lane 16 r130 and r132 at the end): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // MiniMax I (11-16): score 206 (was 214): the second material code is read before the first, the
-// score 206 (was 214): The frame is 0x24 against retail's 0x2c and the source arrives in ECX.
+// Earlier note (206, was 214): The frame is 0x24 against retail's 0x2c and the source arrives in ECX.
 // Earlier scores were 209 and 214 after the j-row correction.
 // MiniMax I (11-16): the second material code is read before the first, the
 // matrix is taken in a named local inside the transform block, and the side bits are extracted with
@@ -744,6 +744,17 @@ void function_245400(s_source_245400 const *source, long index,
 // guard after in-place decoding 231, rotation rows in existing vector setter 206, named rotation results
 // in existing vector setter 206, rotation rows in native vector initializer 200 (NOT kept: six-point
 // gain and 804 bytes against retail 783), vector setter with direction scale read once 206.
+// m3 lane 5 r196 (fast with 0x245aa0/0x245400/0x244de0/0x245270, MATCH unless noted; control 206). A compile-only copy of
+// the file (no /GL) folds the side compare into the branch for every side spelling: `(x >> 15) & 1` as bool, long, byte or
+// char, the unsigned shift, `& 0x8000`, the short codes shifted, `(word)code >> 15`, ternaries, a named same-side bool, dead
+// `= false` initialisers, and the codes decoded through a local overlay of 15/1-bit fields. Only flags preset false and set
+// by `if (code & 0x8000)` / `if (code < 0)` keep them as values (a flag form, match-only): then the LTCG build gets retail's
+// structure, the matrix read from its home at its test (no EBP from entry), EBP pushed and popped around the plane code,
+// the first side in a stack byte compared with the second (`cmp byte`): 207 (784 B, frame 0x28), the `< 0` spelling 213
+// (787 B); on the `& 0x8000` form: cross3f_staged for the plane cross 207, the edge copied before the scale test and scaled
+// into the copy with vector3f_scale 244 (820 B), the plane table read after the edge vector 208 (0x245aa0 3). Left on the
+// flag form: retail's branch-free `shr; and bl, 1` sides, the plane cross's operand order, the scale select (retail copies
+// the edge before the `jnp`, scale-first products), frame 0x28 against 0x2c. Body unchanged.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

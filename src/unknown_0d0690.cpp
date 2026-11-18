@@ -2060,6 +2060,44 @@ real function_30bf0(vector3f *vector);
 // NOT kept (review 11-17): the mobile flag as a test-set (bool mobile = false; if (...) mobile = true;) took 378
 // -> 362, but a test-set flag is kept only with a byte match; the squared length summed as (k, i, j) took 362 ->
 // 356, under the 8-point keep bar on a function still over 30. Both measured, code back to main.
+// M3 lane 7 r176 (fast with 0xd37f0, 0xd1e10, 0x3db00, 0x3dfe0 and the file's functions; control 378; aligned = difflib
+// count, 320 at 378). Three causes found, none keepable under the one-caller helper rule; the chain is saved as
+// build/r176/lead-d4080.patch (243, 1870 B, frame 0x40).
+// (1) Retail's normalize block (first product scale-first, the other two loaded and then multiplied, stores in sequence) and
+// its frame come out when the local normal is reached only through inline helpers: the shared normalize3d(&normal) in place
+// of the file's ordered helper, and direction0 written by an in/out negate helper (out = 0 - in) instead of three field
+// statements. Any direct field read of the normal (the squares argument, `0.0f - normal.i`) or an aggregate copy out of it
+// (`record->direction0 = normal;` then the in-place negate) puts the folded products back. Found with a compile-only screen.
+// (2) Retail's typed value table at 0x47137c holds the addresses of both angle globals (rows 0x471e94 and 0x471eb4, type
+// code 6), so retail reloads the rotation angle after the pointer stores where ours hoists its `fld` above the blend. Two
+// table rows defined beside the globals put the load where retail has it.
+// (3) The rotation reads its axis through g_4687b0 and uses the 1.0 register; a live-axis copy of the rotate helper for this
+// function only keeps both conventions. Changing the shared helper, or any line of 0xd37f0, moves 0xd37f0's parameters and
+// then this function's (0x3db00 lost).
+// Scores: normalize_inline 378 (same code); normalize3d alone 483 (1894 B); in-place rotation 460 (re-measure); in-place +
+// early square 472, + select stores 458, + (k, i, j) 452, + tag fallback as a ternary 475 (0x3db00 lost; alone 394, 0x3db00
+// lost); in-place + select stores 450; in-place + normalize3d + in/out negate 456 (retail's normalize block), without
+// in-place 476, + early square + select stores 329 (aligned 242: zero xmm4, square xmm5, one xmm6 and the pin block as
+// retail); + the table rows 330 (aligned 235; rows alone 381); + scales applied as computed, direct 336, through an in/out
+// colour scale helper 347, with the scale expressions as its arguments 352 (aligned 217), with the rows 337 (aligned 212);
+// + the shared rotate reading the axis live 485/481 (0x3db00 8, 0xd37f0 610); + a live-axis rotate copy for this function
+// 259 (aligned 191, 1870 B), with dot3f for its projection 272; + the mobile flag as a test-set 243 (aligned 189, first
+// difference +0x57); the blend through an in/out helper 334, with the test-set 318. Subsets with no new helper: direction0
+// as an aggregate copy and the in-place negate, with normalize3d, in-place rotation, early square and select stores, 371
+// with the rows and 370 without; without the select stores 401; without the early square 491; direct field direction0 470.
+// The negate helper generalised to in/out for every call: 0xd37f0 529 -> 574, this function 333; with 0xd37f0's direction0
+// through it 0xd37f0 608 and 0x3db00 lost; with normalize3d there too 607, with an aggregate copy of its normal 545; the new
+// in/out negate at both functions' direction0 only: 0xd37f0 552, this function 508 to 524, 0x3db00 lost. 0xd37f0 with early
+// constant returns 568 (frame 0x28), with a result flag cleared first 573 (0x3db00 lost): its block and query registers
+// stay swapped in both.
+// Left on the 243 form: the squares' term order (ours k, j, i; retail i, k, j), the tag table load hoisted above the NONE
+// test, the 0xd37f0 call (BLOCKED-BY 0xd37f0's body: block EAX, query EDX), the blend's first two products, the rotation's
+// product operand order (retail loads axis i and k first, then the vector, axis j last), each scale applied as computed
+// (colour1 through its address), and the final pins' compare order.
+// Round J264: The frame is still 0x4c against retail 0x40. The mobile store and 0xd37f0 argument registers differ.
+// reflected color through RGB pin 449, reflected destination pinned in place 499, reflected pin with const bounds 449, in-place reflection pin and rotation 522.
+// primary color from secondary 489, type test before magnitude 405, tag table snapshot 395, branch-owned lookup 505.
+// NOT kept: the reflected clamps recover the frame at higher scores. Primary color reuse, early type classification and the table snapshot lose 0x3db00.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2731,6 +2769,18 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // entry reference 543, typed entry with named material index 543, named part-array base 543,
 // typed colour group and bitmap entry 542, typed entry with signed short/byte locals 735.
 // NOT kept: no qualifying score gain. Status/part and mesh still use +0x30/+0x2c instead of +0x24/+0x20.
+// M3 lane 7 r176 (fast with the file's functions; control 542; masked = difflib count with esp offsets masked, 510 at 542):
+// the base colour and normal declared ahead of the dynamic pair 542, the dynamic normal ahead of the dynamic colour 542 (same
+// code: declaration order moves none of these homes); the dynamic status as `result = dynamic_valid ? 0 : 1` 680 (3047 B), as
+// `result = !dynamic_valid` 680; the output scaling through the existing vector3f_scale 542 (same code); the sample offsets
+// written at each use (`vertices[n] * 5` in the six arguments, no offset locals) 614 (3148 B, masked 307: retail's per-arm
+// address setup with only vertices[0] * 5 ahead of the format test); that with the three scaling loops as statements 628
+// (3076 B, masked 254); the loops as statements alone 657 (re-measure). Retail's homes in the second arm, low to high: the
+// dynamic flag byte +0x13, base colour +0x14, dynamic length +0x20, result +0x24, dynamic colour +0x28, base normal +0x34,
+// base length +0x48, the two weights +0x50/+0x54, dynamic normal +0x58, combined colour +0x68; ours puts the dynamic colour
+// at +0x20 and the length and result after it. Retail's three scalings differ in form: the base normal load-multiply-store
+// three times, the dynamic normal in registers, the output load, copy, load (0xd26c8); see the 0xd4080 note for what
+// selects those forms.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

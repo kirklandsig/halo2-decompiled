@@ -1409,11 +1409,35 @@ PRIVATE inline long score_string_list_1608e0()
 // (2858 B; retail keeps a 32-bit counter but compares 16 bits). Volatile `height` / `fade_count`: retail keeps them in
 // their own slots ([esp+0x28] read at 0x160a10/0x160a52, [esp+0x54] read at 0x160b8a/0x160ed6/0x161174), not
 // a match, so Kirk may undo them (no volatile: 721/752 in round 110).
+// m3 lane 5 r195 (fast = full 679; aligned / register-masked aligned counts in brackets, base [593, 221]). Retail's frame
+// from a push-normalised slot map (offsets after the four saves): 0x10 an x/y point (x stored as soon as it is computed,
+// before the scroll clamp; y after it) whose eight bytes later hold the header rectangle; 0x18 the row position, copied
+// from the point as one dword (four unused bytes follow it in both builds); 0x20 the score width, later the row alpha;
+// 0x27 the inlined team query's dead byte; 0x28 height; 0x30 the row number; 0x34 scores; 0x38..0x43 the row total, then
+// the title rectangle (far edges read back from the point after the title-text call, near edges from the x/y registers),
+// then the team row's colour and the time width; 0x44 background; 0x54 the fade count; 0x58 foreground; 0x68 dim; 0x6c
+// the row's masked player index; 0x70 the display. That is 24 four-byte cells below the display against our 23 (frame
+// 0x79c against 0x798): ours has no point and no masked-index cell, and our title rectangle shares the header
+// rectangle's slot where retail's cannot (its point is still live there). A compile-only listing (no link step) names
+// every local's slot and orders them by use density, lowest offset first; declaration order does not move them.
+// Tried: an x/y point with x stored before the clamp, the row position copied from it whole and the title's far edges
+// read from it 681 (2888 bytes) [571, 190]; that with background, fade count and foreground declared in retail's slot
+// order 681 (same code); with height not volatile 721 (2856) [561, 192]; with the fade count not volatile either 738
+// (2840) [554, 195]; with the screen height computed ahead of x as well 717 (2856) [554, 186]. The frame stays 0x798 in
+// each; the aligned counts fall but the positional score does not. Body unchanged.
 // P595: Frame, viewer register and early coordinate homes still differ. single late upper conversion
 // 709, one-read scroll 710, branch stores 677, joined result 710, height before x with late conversion
 // 679, height before x with one-read scroll 717, joined scroll reused for y 727, early height with
 // scroll reused for y 730. NOT kept: the best two-point reduction leaves the four-byte frame gap and
 // falls below the keep bar.
+// Round 624: native point with scalar row copy 693; whole point copy, title edges from copied row,
+// and advance copied row 724/724/724. Early near edges in title rectangle 670, with far edges before title text
+// 670, row copy after title initialization 670, and far edges at coordinate producers 670. NOT kept: those
+// forms restore the 0x79c frame and viewer EBX by using title fields for the separate origin retail stores at +0x10.
+// The separate early origin and viewer homes remain. Early horizontal cursor store 677;
+// vertical cursor and advance 698; direct horizontal cursor 675; direct coordinate pair 689;
+// aggregate cursor 698; title edges from cursor 698; early title bounds 689;
+// caption from title top 689. NOT kept: best gain four, with the frame still 0x798.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
