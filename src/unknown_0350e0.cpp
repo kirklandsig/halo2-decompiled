@@ -69,6 +69,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax A (11-18): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7
+// with the squares in xmm1, xmm4 and xmm6, takes the cosine on the x87 stack before the cross terms and forms them as
+// (inverse * j) * i, (inverse * k) * i and (inverse * k) * j, while this build keeps the axis in xmm4, xmm5 and xmm6,
+// spills the squares and reassociates the cross products; the helper's named sine products in retail's order measure
+// 386, the three diagonals first measure 347, the cross terms split into named scaled components measure 336 and the
+// nine matrix writes in retail's order measure 352, so the body stands.
 // score 334 (was 334): Frame 0x90 agrees. The first axis load uses a different XMM register.
 // The build spills the squares before the cross products.
 // MiniMax S (11-17): no new form, no lower score (334): the body is still 1781 bytes against retail's 1779 and
@@ -384,6 +390,14 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // angle 344, square scalars with builder-owned angle 341, diagonal initialized to squares 344,
 // caller-completed diagonal 361, caller squares and complements 362, caller squares and sine axis 371.
 // The axis-register assignment and early square spills remain.
+// Second matrix after the first forward/left/up result or first forward store,
+// with its angle early or at the builder: 370/371, 370/371, 460/465, 460/465.
+// NOT kept: the early-result placements keep the 0x90 frame but still spill
+// the first squares and grow. The last two placements shrink to frame 0x60.
+// Squares in final diagonal cells, completed in field order, before cross coefficients,
+// after cross partials, or after cross pairs 370/373/359/365. Sine products in their
+// off-diagonal cells 353. Both, with original, early or late diagonal completion 381/348/363.
+// NOT kept: all forms shrink the retail-sized frame and raise the score.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2126,6 +2140,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // all reference component setters 214; read position x before cross 193; read position y before cross
 // 193; read position z before cross 193; read position components before cross 193. NOT kept: tied or
 // higher scores, with no result-slot recovery.
+// Camera-up input to the perpendicular as a value local, component aggregate,
+// by-value input, or per-mode copy passed by pointer. Original
+// displacements / complete origin capture: 421/377, 192/214, 206/279, 206/279.
+// NOT kept: the component aggregate leaves the 0x14 frame and gains one. The
+// value local gets a separate result at +8 in a larger frame and raises the caller.
 // Forward projection before the perpendicular, case one/three/both, with its sign after the
 // vertical projection 197/177/186 or before it 184/176/184. Early projections with a common
 // sign at dispatch exit 392, sign at inverse tangent only 206. NOT kept: 177 and 176 recover
@@ -2500,6 +2519,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // displacement vector with field/aggregate/scoped field stores 492/492/492;
 // named final coordinates 492; displacement vector and point setter 492.
 // The 0x90 frame and the overlapping direction and draw-point homes remain.
+// Earlier draw point after entry admission, primary scales, RGB tint or camera angle,
+// with field stores or a const aggregate: 567/567, 497/497, 497/497, 497/497.
+// NOT kept: all retain frame 0x90 and the shared direction/point home. The first
+// pair shortens to 2255 bytes and the other six regress at retail length.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3197,6 +3220,9 @@ real magnitude3d(vector3f const *v);
 // own ([esp + 0xc]) and reloads it for both clamp tests, while this build keeps it in the x87 stack and lets the
 // clamped value take its place; a named raw magnitude local measures 251 and the same value in a two-element array
 // also 251 (the array is promoted away), so the raw length's home stays as it is.
+// Tried current/target/both vector initializers 170/170/170, axis at outer scope 170, rotated initializer 170,
+// named absolute dot 196, tangent with shared/staged cross 186/186, angle after normalizer 246,
+// shared projected scale and sum 183.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3874,6 +3900,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Creation-entry cursor with indexed end, ordered/equality bound and else/continue
 // advancement 337/337/337/337. Paired entry/end cursors 382/382/382/382.
 // NOT kept: the state and prefix registers are still reversed.
+// Indexed swap through list pointer, list reference, entry pointer, or fixed array
+// reference. Direct subscripts 368 each, record references 380 each. NOT kept:
+// direct subscripts preserve the 0x30 frame but leave prefix and state reversed
+// at 1336 bytes. Record references shrink the frame to 0x2c at 1326 bytes.
 // Separate mutable paired count, creation tail and duplicate tail at their phase boundaries,
 // individually and combined 399/390/397/437/388/397/388. All with a separate fallback count
 // 349. NOT kept: all regress. The state, prefix and creation ordinal still use different
@@ -4242,6 +4272,13 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Separate projection input and scaled ordinates, scaling/identity arm first, whole point input,
 // or whole scaled point output, with field reads/one scale sample: 530/518, 515/505,
 // 576/552, 530/510. Frame 0x5c except whole input 0x7c; velocity reloads still differ.
+// The two x87 lengths still need independent stored-velocity loads, and the projection outputs contribute
+// to the 0x60 frame. sampled placement scale 497; shared scaled horizontal input 524; separate placement
+// scale arms 485; velocity cursor 485; complete screen offset point 504; typed screen offset fields 486;
+// maximum field reload through shared address 508; velocity end bound 495. NOT kept: The explicit placement
+// inputs and independent velocity cursor both reach the retail extent at 485. The former enlarges the frame
+// to 0x64 and the latter keeps 0x60. Their one-point gains fall below the threshold. The other forms tie or
+// regress.
 // Round 422: Scalar previous camera / element / both snapshots 491/491/528;
 // camera readback 530, moved point initialized from previous coordinates 551, both 523,
 // camera displacement with original/scalar element capture 500/489.
@@ -5243,6 +5280,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // conditional depth bias 231/225, separate rotated displacement 390/372,
 // aggregate rotated displacement 390/372.
 // NOT kept: the six-point color gains grow to 1826 bytes. The 0xe0 frame and radius/zero homes still diverge.
+// Separate opacity/collision gates, nested or early-return: 231/231/231/231.
+// The same four with color4f: 225/225/225/225. NOT kept: color recovers frame
+// 0xe0 and the collision home, but the radius stays at +0xc and the six-point
+// gain grows to 1826 bytes against retail 1819.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

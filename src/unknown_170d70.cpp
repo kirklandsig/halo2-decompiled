@@ -1077,6 +1077,9 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
 // vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
 // NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
+// Matrix returned by value 471 (initializer loses its match); shared alias-safe transform 361; staged basis transform 368.
+// Axis-square diagonal accumulators 346; staged diagonal 363; separate scaled cosine terms 363.
+// Original direction copied by memcpy 346; separate transform source pointer 383. Unity still starts in XMM3.
 // @retail 0x171d90
 void function_171d90(s_view_setup *view)
 {
@@ -1176,6 +1179,9 @@ bool function_23a220(point2f const *point, short count, point2f const *points, r
 // byte side with early copy bound 137, native postprojection indices 127, native predicate return 70, named axis component 122,
 // byte side normalized early 118, normalized side with origin record 7, normalized byte with origin record 40,
 // normalized long with origin record 3, normalized signed byte with origin record 40, normalized bool with origin record 40.
+// Tried side ternary 3, side branches 135, side-bit mask 46, side equality 8, byte conversion 4,
+// query before projected workspace 3, named predicate 5, named call count 5, normalization after distance 126.
+// NOT kept: the byte conversion recovers the test but reverses the x product operands.
 // @retail 0x173910
 bool function_173910(s_polygon_context_173910 const *context, s_polygon_173910 const *polygon)
 {
@@ -1294,7 +1300,8 @@ struct s_point_pool_173520
 	point2f points[5120];
 };
 
-// score 96 (was 123): logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
+// score 96 (was 123): the pool count and state test precede pointer publication in retail. The stride spill, x87 clamp reload and bounds expansion still differ.
+// Earlier: logic walked block by block against retail 0x173520-0x17387e: pool/visited bit tests, the 1429d0 and
 // 11fc80 argument lists, the 173890 call (cache as context, count as state), FLT_MAX (0x44aed4), the g_4687dc bounds
 // copy, pool count update, the index/step setup, the 1/z projection loop with its min/max tests and the distance
 // minimum, the state 3 inside clamp (0.015625 as a double) and the memcpy of the view's points, the four 1/256 inflate
@@ -1322,6 +1329,9 @@ struct s_point_pool_173520
 // projected point 184; early signed distance 125.
 // NOT kept: The references and delayed publication fold to the opening code. Whole-point assignment grows the
 // frame, and the depth forms raise the score.
+// Tried negated ordered clamp 96, named clamp test 96, float clamp snapshot 83, clipped pointer range 197,
+// start from direction 119, clip-local buffer 96, population-local buffers 96, count-first recount 96,
+// traversal scoped to the positive count 111. NOT kept: the float snapshot grows to 882 bytes and spills.
 // @retail 0x173520
 s_projected_polygon_173520 *function_173520(long polygon_index, s_polygon_cache_173520 *cache)
 {
@@ -1483,6 +1493,13 @@ struct s_pool_view_172840
 // queue predicate 227; combined pool/projection with direct queue failure 219; independent tests
 // with projection before queue or first-write initialization 221/221; four flag names reordered 205.
 // NOT kept: the return variants lose the early ESI save, and renaming leaves the flag homes in place.
+// Queue return first 246; boolean AND result 208; positive pool, projection or queue predicate 236 each.
+// Three independent assignments 152; combined geometry failures 150; geometry within queue branch 148.
+// Two geometry assignments and direct queue return 243. Widened cluster at publication 86 with the chain, 55 with independent tests.
+// Chained sentinels 55/57; native portal width 239; portal ID local 55; widen at branch join 55.
+// Native queue index, named point index or earlier bounds pointer 55 each.
+// NOT kept: widening with independent tests restores the flag and spill homes at 870 bytes. Portal store first reaches
+// 19 at 868 bytes, with the portal and cluster stores reversed from retail.
 // @retail 0x172840
 bool __stdcall function_172840(long key, s_pool *pool, s_short_list_table *lists,
 	s_ring_buffer *queue, s_polygon_cache_173520 *cache)
@@ -1718,6 +1735,11 @@ struct s_camera_reference_171830
 // setter 284; signed reference 281; named plane distance 285. NOT kept: the 252 form puts the
 // clear-side store before the plane arm, away from retail's branch order. The frame and point
 // convention remain different; the 281 form also moves away from retail length.
+// Fraction guard for the retained pointer 300, copied displacement 298, long/short/Boolean axis 291/302/292,
+// winning sample and derived sign 296, indexed refinement 318, shared sampling and result fraction 292. NOT kept:
+// all regress. The Boolean axis recovers frame 0xb8, but the point stays in EBX.
+// Indexed refinement passes the point in EDI and lowers the caller to 298, with the larger 0xc0 frame in this
+// function.
 // @retail 0x171830
 void function_171830(point3f const *point, vector3f const *forward,
 	vector3f const *up, real *distance, real offset)
@@ -1916,10 +1938,18 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Ordered distance initializer 336; field-of-view readback 441; shared horizontal channel reads 415;
 // named horizontal corrections 409; shared vector addition 336; cached point-transform scale 325 (kept);
 // cached vector-transform scale 397; signed-word location cluster 336.
+// The 0x20 frame agrees. The collision callee still takes the point in EBX, displacing the state to EBP.
+// in-place point helper 709; three in-place vector helpers 1110; direct transform fields 325; direct
+// collision fields 325; local-player lookup helper 325; camera point rename 325; direct initial basis
+// copies 402; horizontal vector initializer 325. NOT kept: The existing transform calls stay out of line
+// and shorten the body. The direct initial view copies also shorten it. The other forms tie at the retail
+// extent.
 // The camera state remains in EBP and the collision point argument still uses EBX.
 // Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
 // initial placement clamps on all three coordinates 336; projected-point aggregate 429;
 // in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
+// The state remains in EBP with the point argument in EBX.
+// Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

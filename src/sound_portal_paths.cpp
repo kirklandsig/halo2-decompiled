@@ -116,7 +116,7 @@ __forceinline long portal_path_gain(real distance, real range)
 	return function_2197f0((upper - lower) * fraction + lower);
 }
 
-// score 296 (was 311): The 0x428 frame agrees. The starting-cluster register, table loads, validity words
+// score 296 (was 296): The 0x428 frame agrees. The starting-cluster register, table loads, validity words
 // and sort scratch offset differ.
 // Before the sort scope, the frame was 0x42c.
 // Tried: const portal 371; const views 371; endpoint mask before shift 371; const portal and mask 371; shared
@@ -146,6 +146,32 @@ __forceinline long portal_path_gain(real distance, real range)
 // cluster lookup 296, early path-list lookup 358, packed-entry reference 341, nested flag and sound
 // gates 296, destination lookup inside the flag gate 328. The early list and late destination forms
 // recover EBP at entry, with diffs at +0x28 and higher scores.
+// M3 lane 13 r110 (fast and plain agree; aligned = difflib count of the listing rows; body unchanged, the full
+// diff is HELD as build/r110/held-0x18dc90.patch): cause found. Retail compiles every caller of 0x14b240 as if that
+// call may write memory: this loop reloads both table bases for every path entry, and 0x222150 keeps a value it read
+// before the call in a register across it. Link-time code generation summarises a callee that way when it stores
+// through a pointer or reference variable, even into its own local (scratch tests in build/r110/micro). With
+// 0x14b240's in-plane offset subtracted through a reference-bound local (its bytes unchanged) this body is 373
+// (1349 B, aligned 161 against 172); rewritten on that base it reaches 249 at retail's 1364 B (aligned 23), 0x18dc90
+// 29 at 1363 B, and 0x222150 matches without its two volatile reads. Steps on that base, each measured:
+// `long encoded`, `short portal_index` and the side bit as `((dword)encoded >> 15) & 1` 366 (1354 B, aligned 148);
+// the valid test through an inline test helper (retail reuses the widened index) aligned 143; the seed stores as
+// clusters, portals, distances aligned 142; the decibel helper on the long bit pattern with an if/else result
+// (0x2195f0's shape) and the range clamp written at the call 366 (aligned 82); the output limit declared in the
+// for-init after the counter aligned 75; the output range through a named element pointer aligned 72; the fraction
+// as a (value, lower, upper) helper testing fabs(lower - upper), pinned arm first 365 (1357 B, aligned 47); the valid
+// words cleared before the cluster lookup 253 (1373 B, aligned 43); the fraction helper pinning after both arms plus
+// a curve helper pinning its scale again 249 (1364 B, aligned 28); the degenerate arm as
+// `!(value < lower) ? 0.0f : 1.0f` 249 (aligned 23). HELD, not kept: without a match the review list reverts the
+// clear moved ahead of the cluster lookup (373 without it), the arms' order (254), the for-init limit (245) and the
+// two one-caller helpers, and 0x18ae80 rises 846 -> 911 on that base. Left on it: the cluster pointer sits in EBX and
+// the widened portal index in EBP (retail the other way round; about sixty forms and a 600 s permuter run did not
+// flip them: declaration order, names, one use more or fewer, helper shapes), and `fmul [0.05]` is scheduled after
+// the next clamp's store (retail before it). Not better on that base: calling 0x2195f0 501 (1222 B, it stays a
+// call); the decibel helper on a real constant 465 (1257 B, it folds); the valid words as an initializer or two
+// assignments 377 (aligned 89, a shared zero register appears); one helper with the first pin in the normal arm 243;
+// macro pins in one helper 254; the exponent as one expression 262 (1352 B). With main's 0x14b240: the test helper
+// alone 317; the long-bits decibel helper alone 323; the path entry types alone 357; all three 359 (none kept).
 // @retail 0x18d730
 void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
@@ -289,6 +315,18 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // gains only three points. One table base still spills and the other remains hoisted. Resolving the
 // destination before the flags with the reference or advanced base shortens the body to 1347 bytes and
 // regresses. The opening body is restored.
+// M3 lane 13 r110 (body unchanged; the full diff is HELD as build/r110/held-0x18dc90.patch, see 0x18d730's note for
+// the cause and each step): with 0x14b240 summarised as a call that may write memory this body is 377 (1343 B) and,
+// rewritten as its twin, 29 at retail's 1363 B (aligned 22; plain check). What is left there is the twin's: cluster
+// pointer in EBX and widened portal index in EBP (retail the other way round), and the `fmul [0.05]` scheduling.
+// Measured on that form: the degenerate arm written directly 32; the seed stores in main's order 33; the limit
+// declared before the loop 225 (1355 B); the fraction's arms in the other order 181 (1370 B); the cluster lookup
+// ahead of the clear 371 (1347 B). With main's 0x14b240: the test helper alone 333 (1347 B); the long-bits decibel
+// helper alone 357; the path entry types alone 351; all three 377 (none kept).
+// Tried flags before endpoint 322, long masked ordinal 351, high-bit predicate 351, short endpoint local 354,
+// packed cursor with live count 354, explicit range cases 354, initial maximum range 365,
+// shared fill and sort count 354, available-first output cap 363. NOT kept: early flags skip retail's
+// pretest endpoint decode and the frame remains larger.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

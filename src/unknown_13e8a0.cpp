@@ -702,6 +702,9 @@ struct s_text_line_measurement
 // sum/accepted width/both sums/both sums with all products 143/126/134/179.
 // All introduce 16-byte stack alignment and regress at the entry. The separate advance
 // register and early width load remain unresolved in the restored body.
+// Conditional overflow count 80; separate wrap first 77 or accepted glyph first 77;
+// conditional width 77, count 77, or both 77; wrap before the separate width or count
+// update 77/77. NOT kept: the ties still lack the independent advance register and early width load.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

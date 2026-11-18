@@ -189,6 +189,9 @@ void player_action_initialize(s_player_action *arg_0);
 // retail's sign extension (mov al / test al against retail's movsx ax / test ax, ax), the selection comparison still
 // has its operands the other way round (cmp ax, cx against retail's cmp cx, ax), and the inlined count read still has
 // retail's index operands the other way round, which is set in src/unit_object_type.cpp.
+// MiniMax A (11-18): no new form, no lower score (114): the inlined 0xcbec0 count read still keeps our [edx + edi]
+// against retail's [edi + edx] and that callee's file is not this lane's; the selection comparison's operand order and
+// the counted byte's sign extension still differ, so the body stands.
 // score 114 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
