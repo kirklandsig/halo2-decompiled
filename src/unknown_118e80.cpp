@@ -410,6 +410,17 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // interleaves them; ours copies forward through `lea ecx`) and the turn-velocity copy's register rotation.
 // MiniMax I (11-17): no new form, no lower score (241 fast, 218 plain): the frame is still 0x78 against retail's
 // 0x6c with the early esi save, and the 0x11ce20 call still takes its two arguments in the other order.
+// M3 lane 3 r258 (fast with 0x118700, 0x11f0d0, 0xc60c0 and the callees; control 218, aligned 104): round 255's lead
+// (build/r258/lead-1197b0.r255.patch) still gives 46 at 1030 bytes on today's tree (aligned 29; 0xc60c0 268 -> 127, 0x11f0d0
+// 2). Diagnostics on it for the tail's copies (retail runs the up and forward copies' loads ahead of each other's stores,
+// ours finishes the up copy and goes through `lea ecx` for the forward one), each restored: the second 0x11f0d0 call
+// given another local for its direction 99, the 0x11ce20 call given another local 51, both 100, the moved-dispatch call
+// given copies of the two vectors 162 (1074 bytes) or NULLs 78: none changes the tail's copy order, so which callee holds
+// the two locals' addresses is still open. In 0x11f0d0 (its frame is what pads this one): the cross product through the
+// existing cross3f 2 (same code, kept there); the first dot through the existing dot3f 6; `real angle` alone 2 (same
+// code, this frame unchanged while the named double quotient stays); 85 orders and types of its seven declarations all
+// give the same seventh product (compile-only). Still BLOCKED-BY 0x11f0d0's double local; the 46 form stays a lead
+// (a one-caller helper and block scopes need a match).
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1363,6 +1374,23 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // The velocity preload and force byte home still differ. Shared signed slot index 43, low-word slot 283,
 // signed header byte offset 43, unsigned header byte offset 283. The same four with a separate Boolean force
 // result: 90, 287, 90, 287. Narrowed slots move the first difference into the opening lookup. Body restored.
+// M3 lane 3 r258 (fast with 0x1c4b00 and all its callers; control 43): HELD, needs the owners' OK
+// (build/r258/held-0x118700.patch, code back to main). Retail's block after the 0x119bc0 call is one inlined helper: the
+// object lookup, `if (linear)` / `if (angular)` copies into +0x88 / +0x94, then the 0x1c4b00 call with the caller's bool
+// passed straight through (0x1189c9-0x1189f9: the bool spilled to its own cell and its dword pushed). Written that way
+// (a file-local inline helper, the object's +0x88 typed as a vector) with 0x1c4b00's last parameter `bool` in its
+// definition and all 13 declarations: 6 at 1034 bytes (aligned 2: the copy loads j and k one step later than retail);
+// the helper with the parameter left `long` 93 (1034 bytes, the flag stays in AL for a movzx); the bool formal without
+// the helper 40 (re-measure of the earlier held form). On the 6 form, same code each: a destination pointer local, raw
+// casts, const pointers, forceinline, the 0x119bc0 call as the argument. The last two rows come from the output local's
+// address: retail hoists the copy's loads above the stores through the object pointer, which this compiler does only
+// when the source local's address is known not to escape (compile-only probe: a source passed to an opaque function
+// gives our order, one that stays in visible code gives retail's). The local goes to 0x1e55d0, which hands it on:
+// with every callee of 0x1e55d0 given NULL in its place (diagnostic, restored) this function MATCHES in the fast check;
+// kept alone, the 0x1ec690 call (a stub, not yet written) or the 0x1eb6f0 call each brings the 6 back, the other five
+// callees do not. A match therefore needs the bool formal (three declarations sit in other lanes' files this round and
+// a contributor's 0xe24f0 moves 586 -> 601), this helper, 0x1ec690 written as real code and 0x1eb6f0's chain
+// (0x1eb8a0, 0x109fd0) keeping its output to itself. BLOCKED-BY 0x1c4b00 (declarations), 0x1ec690 and 0x1eb6f0.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
