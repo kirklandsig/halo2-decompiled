@@ -52,6 +52,7 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax B (11-18): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 and the escaped count's slot and the children's cursor still come out in the other order; a /GL- build of this file's own flags line matches the body exactly but costs 0x97f60, 0x97fe0 and 0x980d0 their matches, so the flags line stays as it is.
 // score 31 (was 31): frame 0x8024 versus 0x8020 and different homes for the escaped callback count and loop cursors.
 // MiniMax I (11-17): no new form, no lower score (31): the frame is still 0x8024 against retail's 0x8020 because
 // the address-taken produced count keeps a slot of its own under /GL; the instruction sequence is retail's and only

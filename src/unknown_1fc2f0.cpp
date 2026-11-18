@@ -201,6 +201,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax B (11-18): no new form, no lower score (32): retail spills i before j and parks the deltas i, k, j in xmm4, xmm3, xmm2 while this build spills j first and parks i, j; the deltas i, j, k (79), the deltas through the shared scaled_difference helper (83) and the deltas through the union's array members (79) all measure worse, so the body stands.
 // score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
 // and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // MiniMax C (11-16): no new form, no lower score (32): the correction through the existing vector3f_add_scaled straight
