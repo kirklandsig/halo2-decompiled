@@ -388,6 +388,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // with its angle early or at the builder: 370/371, 370/371, 460/465, 460/465.
 // NOT kept: the early-result placements keep the 0x90 frame but still spill
 // the first squares and grow. The last two placements shrink to frame 0x60.
+// Squares in final diagonal cells, completed in field order, before cross coefficients,
+// after cross partials, or after cross pairs 370/373/359/365. Sine products in their
+// off-diagonal cells 353. Both, with original, early or late diagonal completion 381/348/363.
+// NOT kept: all forms shrink the retail-sized frame and raise the score.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

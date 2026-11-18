@@ -59,7 +59,8 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
 	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
-// score 489 (was 489; 679 before m3 lane 4 r203): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// score 489 (was 489): The 0x88 frame agrees. Position is at +0x8c for retail's +0x80, and the normalization squares and steering allocation differ.
+// Earlier score history (679 before m3 lane 4 r203).
 // M3 lane 10 r119 (fast; control 489): local_13/local_14 renamed to sort after local_8 489 (same code: names do not order
 // these homes); the input copy as `memcpy` 489 (same code); the input copy defined j, k, i (diagnostic) 767 (the squares then
 // run i, k, j as retail, but the loads follow and 3481 B); the add's point through the position query's returned pointer
@@ -68,6 +69,9 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // 3499 and the three-way branch and the float constants still differ from retail's own expression
 // trees.
 // MiniMax I (11-17): no new form, no lower score (489): the body is 3503 bytes against retail's 3499 and the slot homes still differ (local_8 at +0x8c against retail's +0x80, with local_14 the other way round), which needs the declarations moved; the normaliser still squares k, j, i where retail has i, k, j, and the retail grouping through normalize_inline for local_9 scores 775; the body is unchanged.
+// Earlier score 489 (was 489): Frame 0x88 agrees. Position is at +0x8c for retail's +0x80,
+// and the normalization squares and steering allocation differ. At 679, the target was
+// changed to a vector3f from the existing
 // Earlier at 489: m3 lane 4 r203 (plain, starting at 679) kept the target point local_14 as a vector3f from the existing
 // Earlier score history (679 before m3 lane 4 r203).
 // Earlier at 489: m3 lane 4 r203 (plain) kept the target point local_14 as a vector3f from the existing
@@ -632,12 +636,21 @@ PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 cons
 // snapshot normalized directly 752, with planar target 785, with shared
 // planar input and point difference 776. The position and alternate
 // vector homes remain interchanged in the retained body.
+// The position and query homes are exchanged before the translated target reuses the query slot.
+// Pre-turn snapshot as fallback/weighted/both inputs 674/674/682; separate turn result with
+// delayed publication 716; planar snapshot before separate turns with immediate/late publication
+// 673/714; planar aggregate/component capture before in-place turns 752/765.
+// NOT kept: all scores rise. The separate-result forms reach retail length but lose the native alias.
 // Translated target through the point setter 489, point aggregate 669, position
 // copy plus coordinate updates 718, immutable vector aggregate 669, point
 // destination of the vector addition 489, coordinate loop after copying position
 // 733, direct coordinate loop 615, and target scoped to side selection 771. The
 // aggregates reach retail length while the position still uses the other stack
 // home. Original body retained.
+// Working heading as the ignored query output, with the initial copy at entry, after
+// position lookup, after normalization, or on the no-settings path 487/771/790/804.
+// With a named query result 487/771/790/804. NOT kept: the entry form restores the
+// position's +0x80 home, but changes the separate query destination and gains only two.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

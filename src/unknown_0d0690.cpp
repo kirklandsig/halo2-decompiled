@@ -1815,6 +1815,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 422: Sole-exit missing-selection branch, success after/before the record stores: guarded index 573/547,
 // one-test index 586/586, consumed-count cursor 568/565, end cursor 578/577.
 // The selected result and incoming register homes still differ.
+// Indexed rejection by combined/nested tests 529/529, with a single flags read 530/530.
+// Counted entry cursor with either rejection test 541/541, with a single flags read 578/578.
+// The cursor forms reach frame 0x28 but leave the result spill and shorten the body.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -1933,6 +1933,8 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // Input point after distance clamp 352; coordinate aggregate 468; local distance clamp 362;
 // initial placement clamps on all three coordinates 336; projected-point aggregate 429;
 // in-place projection then point copy 422; point setter 389; local projection clamped before copy 378.
+// The state remains in EBP with the point argument in EBX.
+// Current-channel address, rate-channel address, follow translation reference, current plus rate, current plus translation, rate plus translation, all three, and all with a translated view-vector address 464/325/325/464/464/325/464/464.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

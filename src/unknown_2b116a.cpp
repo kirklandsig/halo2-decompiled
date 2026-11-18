@@ -4515,6 +4515,9 @@ bool __stdcall function_2b278e(long controller_index)
 // or an identity-only controller view 199/197. Each pair forms masks at their
 // dialog calls or in the corresponding arm. The original reference and index
 // stack home are still missing.
+// The controller reference and initial index spill still differ. End the identity object before
+// presentation, carrying the raw kind, kind predicate, combined decision or confirmation decision:
+// 199/54 for each with Boolean/existing qualified membership. NOT kept: no gain or reload recovery.
 // Retail still retains the controller reference through membership and reloads both pointer levels before the dialog context calls.
 // Native membership: bitwise operands 192, ternary decision 60, kind-first confirmation decision 194,
 // named warning decision 199, kind tested before membership 199, explicit window recheck 199,
@@ -4524,6 +4527,8 @@ bool __stdcall function_2b278e(long controller_index)
 // The controller index still occupies ESI, and the two dialog arms still lack the double-pointer reloads.
 // Tried qualified bool member 184, qualified byte member 184, normalized long member 195, qualified inverse member 194,
 // native short selector 54, single animation label 54, shared send cases 280, nested native membership test 201.
+// The incoming controller reference and the two post-membership index reloads still differ.
+// Dispatch-scope controller index for the initial queries, then with name entry, message permission, both dialog masks, name and permission, name and masks, or all three groups each score 54. All uses with Boolean membership score 199.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

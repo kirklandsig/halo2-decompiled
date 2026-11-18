@@ -1131,6 +1131,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // branch 89/35, table base before validation 90/45 (in-place update / saved word).
 // NOT kept: the saved-word absent-index forms recover ECX/AX but change the lookup
 // branches and still write the full word. The in-place update loses the opening allocation.
+// In-place resend bit with conditional selection, invalid-first selection, a scan-scope message,
+// or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
+// NOT kept: the array base preserves the query setup and restores the byte memory OR, but
+// moves the cursor and oldest to different registers. The other forms also change the query setup.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
