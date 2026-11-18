@@ -920,6 +920,11 @@ struct s_collision_result_buffer_1697c0
 // shared rotation 289. NOT kept: the 1423-byte forms at 217/226/228 require
 // one-use trig results. The helper form grows and raises its other user's score
 // from 23 to 245. The 217 form recovers the axis, result byte and magnitude homes.
+// The initial pitch-axis slots and the shared magnitude, random and sine transfer word still differ.
+// Planar magnitude before/after axis initialization 328/328; fallback with planar length 339;
+// direct scaled-axis setter 309; planar normalization with field stores/setter 341/357;
+// fallback-first planar normalization 407; planar length from initialized axis 302. NOT kept:
+// the last form restores two pitch-axis component slots, moves the result byte and lengthens the body.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

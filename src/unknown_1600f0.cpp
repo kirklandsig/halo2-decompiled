@@ -1438,6 +1438,9 @@ PRIVATE inline long score_string_list_1608e0()
 // vertical cursor and advance 698; direct horizontal cursor 675; direct coordinate pair 689;
 // aggregate cursor 698; title edges from cursor 698; early title bounds 689;
 // caption from title top 689. NOT kept: best gain four, with the frame still 0x798.
+// The viewer register, early origin and separate late masked-index homes still differ in the four-byte frame gap.
+// Timer-branch score record 681; pre-branch score record 691; shared mask with branch/pre-branch record
+// 687/681; native points record 691, with shared mask 681; timer-field offset 717; native record ternary 681.
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {

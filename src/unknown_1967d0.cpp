@@ -928,6 +928,11 @@ static inline long team_score_195ed0(long team)
 // direct or retained pool, and a retained destination each score 191. The same
 // four forms with the destination getter at each access score 732. NOT kept:
 // the getter forms roll the player loop and the flag read stays ahead of the copy.
+// The team-mode load still precedes the player copy, and the final score call still expands.
+// Statborg across both tests 107; shared mode 214; shared mask 149; statborg/mode 202; engine
+// receiver 202; statborg/mask 160; statborg/mode/mask 178; shared eligibility 165; engine receiver and
+// mask with both mode guards 210/215. NOT kept: the 107 form grows the frame to 0x78. The mask
+// and shared-eligibility gains omit retail guards, and the final score call still expands.
 // @retail 0x195ed0
 void function_195ed0(void)
 {
