@@ -224,7 +224,10 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 	}
 }
 
-// score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
+// score 354 (was 354): The entry frame is 0x430 versus retail's 0x428. Retail keeps the starting cluster in
+// EBP, reloads both BSP table bases per path entry and resolves the destination before testing flags. The
+// extra table-base spills persist in the build.
+// Earlier score 354 (was 354): Frame 0x430 versus 0x428. Retail keeps the starting cluster in EBP and reloads
 // both BSP table bases inside the portal loop. Tried: const portal 354; const views 354; endpoint mask
 // before shift 354; const portal and mask 354; shared seed array index with separate bit read 373; validity memset 364; short endpoint with early
 // path increment 371; index test before closest distance 354.
@@ -245,6 +248,13 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // nearest distance before portal 354, late order array and integer sort scratch 354.
 // NOT kept: both 323 forms keep the count snapshot where retail reloads the count and retain the 0x430 frame.
 // The 352 form gains two. The path table spills and starting-cluster register still differ.
+// portal element reference 354; destination element reference 354; destination reference before portal flags
+// 368; advance starting cluster table base 354; advance reloaded portal table base 354; advance destination
+// table base before flags 368; signed extended packed link receipt 351; distance before nested starting
+// environment check 354. NOT kept: the signed packed-link receipt reaches 1363 bytes and frame 0x42c but
+// gains only three points. One table base still spills and the other remains hoisted. Resolving the
+// destination before the flags with the reference or advanced base shortens the body to 1347 bytes and
+// regresses. The opening body is restored.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

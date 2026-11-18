@@ -534,7 +534,10 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
+// score 123 (was 84): The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
+// displacement. The build holds the early variant byte across the second fmod in BL and swaps the output and
+// delta saved registers. Retail compares the byte in CL after the call and then stores the rounded blend.
+// Earlier score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
@@ -699,6 +702,13 @@ void function_3dd10(long object_index, bool force);
 // Separate indexed second bank, advancing second bank, fixed-distance first bank cursor, and paired bank cursors:
 // 296/167/290/293. Variant byte after the blend remainder on the same four bank forms: 300/162/293/296.
 // NOT kept: none recovers both retail output registers and the spill order.
+// round blend after model lookup 159; round blend when choice is found 191; round blend at selection entry
+// 182; variant presence before blend rounding 214; model variant presence before blend rounding 222; round
+// blend after nested model lookup 159; conditional variant key before blend rounding 123; separate blend
+// seed and round after model lookup 160. NOT kept: rounding after lookup recovers the output/delta saved
+// registers and CL comparison, but puts the blend store after the entire lookup and shortens to 1019 bytes.
+// The conditional key ties 123 at 1035 bytes and puts the blend in a different slot. The signed scan exits
+// remain different. The opening executable source is restored.
 // @retail 0xbe240
 void __stdcall function_be240(long object_index, dword color_mask, color3f const *colors)
 {
