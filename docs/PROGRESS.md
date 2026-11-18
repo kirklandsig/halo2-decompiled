@@ -6,6 +6,16 @@ The newest entry comes first.
 
 ```
 matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1431 of 1436 Havok functions (279426 of 290362 bytes, 96.23%)
+```
+
+1 new matches, none lost:
+- @andrewnakas's #1347: `0x2dc220` match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
 matched 1430 of 1436 Havok functions (276302 of 290362 bytes, 95.16%)
 ```
 
