@@ -1278,6 +1278,11 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax B (11-18, round 2): no new form, no lower score (121): retail takes the initial velocity in xmm6 and this
+// build passes it on the stack, and the six-float signature may not change, so the three float temporaries keep their
+// own registers (this build xmm7, xmm2 and xmm1 for the duration and the two ramp times, retail xmm5, xmm7 and xmm1);
+// the body is retail's length and the ramp-down minimum written as an if-statement measures 121 in every arrangement
+// tried, so the clamp's XMM homes stand.
 // MiniMax B (11-18): no new form, no lower score (121): the initial velocity is still passed on the stack where retail passes it in xmm6; an early use of it (squared 142, copied 121) does not promote it, and the ramp-down minimum written as an if-statement measures 121 in every arrangement tried, so the clamp's XMM homes stand.
 // score 121 (was 121): Frameless at retail length. Retail keeps ramp-down in memory and takes
 // initial velocity in XMM6. This build keeps ramp-down in an XMM register and takes velocity on the stack.

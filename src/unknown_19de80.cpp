@@ -308,6 +308,10 @@ static inline bool teams_enabled_19e1c0()
 }
 
 /* writes the text of one token for the event, returning its length */
+// MiniMax B (11-18, round 2): no new form, no lower score (390): the frame is still 0x208 against retail's 0x204 and
+// the token preload still differs; the permuter over the body (one job, --fast, 300 s) tried 24 forms and its best is
+// 384 differing instructions against the 385 baseline - one instruction, which the eight-point gate leaves out - and
+// with an ordinary result the four name and team copy tails still merge (691 at 1170 bytes), so the body stands.
 // score 390 (was 390): The token preload and 0x204 frame still differ. With an ordinary result the name-copy tails merge.
 // retail clamps the copy length with `cmp remaining, length` and a conditional
 // move, so the comparison written as `remaining <= result` was tried: with the volatile result 466,

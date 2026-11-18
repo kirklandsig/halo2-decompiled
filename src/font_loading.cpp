@@ -512,6 +512,13 @@ static inline long font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax B (11-18, round 2): no new form, no lower score (59): retail widens the alpha's parity to thirty-two bits
+// at all three decode sites, and dropping the cast from the shared helper reproduces retail's pixel sequence exactly
+// (xor ecx, ecx; mov cl, al; add eax, eax; and ecx, 1; or ecx, eax), but that moves the run to EBP and the count
+// update to a read-modify-write, which measures 203 at 444 bytes, and with the parameter typed as a byte 205 at 456;
+// the two-byte value read from the character data as (source[1] << 8) | source[2] measures 103 at retail's 504 bytes,
+// the run declared out of the type branch 60, and the permuter over the body (two tries in 328 s) found nothing below
+// the baseline, so the body stands.
 // MiniMax B (11-18): no new form, no lower score (59): the alpha's parity is still masked in sixteen bits at the
 // three decode sites where retail widens it to thirty-two, and the type 3 run still stays in EBP where retail keeps
 // it in EBX, so the two fills merge; measured this round: the cast dropped (203), the run and the fill run split (183),

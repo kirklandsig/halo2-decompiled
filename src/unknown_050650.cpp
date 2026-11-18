@@ -2214,6 +2214,11 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax B (11-18, round 2): no new form, no lower score (442): the frame is still 0xcc against retail's 0xc8 and the
+// local layout differs with it - this build keeps the animation state at [esp+0x28] and the four cosines below it,
+// where retail keeps the state at [esp+0x20] and the cosines above it, and the turn request's fields four bytes
+// higher - so every stack home differs; the declaration order that would put the locals where retail has them is not
+// kept, and 0x1fdd90 is still expanded here where retail calls it out of line: BLOCKED-BY 0x1fdd90.
 // MiniMax B (11-18): no new form, no lower score (442): the entry block's register roles still differ - retail keeps
 // the actor index in ESI, the slot offset in EAX, adds it to the base and spills it at esp+0x30, where this build
 // colours the registers differently - and 0x1fdd90 is still expanded here where retail calls it out of line (its
