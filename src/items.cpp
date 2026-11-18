@@ -592,6 +592,11 @@ struct s_item_collision_bsp
 // MiniMax G (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the instance indexing, the plane-normal rows and
 // the spin/speed homes still differ (the spin scale sits in a stack slot where retail holds it in st(1)), and the accumulating-statement form
 // of the plane distance scores 176, under the keep bar, so the body stands.
+// MiniMax A (11-18): no new form, no lower score (198): the frame 0xa0 agrees with retail; the transformed-plane rows
+// written as accumulating statements fix the sum's association to retail's tree and measure 196, and the accumulating
+// plane distance measures 196 as well, both under the eight-point minimum, so the body stands; the marker's coordinates
+// still come from different slots, the instance lookup folds the base into a lea where retail adds it, and the position
+// products stay in fresh registers where retail overwrites them in place.
 // score 198 (was 200): frame 0xa0 agrees; instance indexing, plane-normal and spin/speed homes remain.
 // Earlier header detail: full build on r803, where the walk's fast build on r727 gave 202 -> 200): b6J statement-by-statement walk against retail (11-06): no behaviour difference found.
 // Checked: flag7/parent/flag0 early-out 0x10cfb4..0x10cfcb; trigger test and definition flag 0x10cfd1..0x10d00c; |impulse|^2 < 1e-4 skips

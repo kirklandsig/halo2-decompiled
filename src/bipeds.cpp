@@ -4241,6 +4241,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // both 614/614/614/614. Separate target and mode guards with both query guards 599 (reduced control 614,
 // full 548). NOT kept: it places the changed-result epilogue before the queries and reverses the mode
 // branch.
+// MiniMax A (11-18): no new form, no lower score (548): the frame 0x78 agrees with retail's; the changed byte still
+// sits at +0x12 where retail keeps it at +0x11, the mode's special flag is held as a long in the dword home at +0x14
+// where retail keeps a byte at +0x12 (the byte form measures 656), and the flight call carries its arguments in ecx,
+// edx and eax where retail uses edx, eax and ecx.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
