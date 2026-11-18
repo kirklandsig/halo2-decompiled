@@ -1337,7 +1337,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 87 (was 94): MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
+// score 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
+// Earlier: MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
 // by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
 // local used for the inverse and for the 0.001f test measures 101, and the one-use local form in the notes below (87)
 // is a seven-point gain under the bar; the rest is the XMM colours and the fade-out load order. Body unchanged.
@@ -1708,6 +1709,10 @@ long function_2197f0(real gain);
 // All eight staged forms emit the same measured extent and first difference. The 0xc frame and entry gain store
 // agree with retail. The mixed transition still needs the native elapsed and reciprocal registers, division
 // schedule and first gain addition.
+// Completed fraction assignments in the composite/initial/current attacks: 94/89/93;
+// composite+initial/composite+current/initial+current/all 159/99/95/159;
+// all with the previous release as complete if/else 159. Elapsed/reciprocal XMM
+// roles, the first separate gain load and the late release join still differ.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -4759,6 +4764,9 @@ struct s_128ca0
 // real sums 195; submission decibels and named permutation gains 122; submission decibels and real sums 188.
 // Six forms tie at 122. The direct real sums remove the pin-argument homes and shorten the body to 1027 or
 // 1035 bytes. The pin registers, byte-versus-word flag access and widened synchronisation count remain.
+// The sum and clamp shared by both submissions, taking permutation byte, permutation record,
+// converted permutation gain, or permutation byte with decoded gain, each returning the bits
+// or writing the packet: 122/122/122/122/122/122/122/122. Pin registers and store order unchanged.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

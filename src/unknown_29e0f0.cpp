@@ -624,6 +624,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // and with an increment/decrement branch 400/398. Saved short start with the original
 // cursor 386, or with a preselected word step 387. The selected homes still differ;
 // all eight lengthen the body.
+// DH398: Capture the signed reference index as short or long after root admission, before its
+// validation, after selected defaults, or at entry 382/382/382/382, 427/451/438/438.
+// NOT kept: All short captures reproduce the baseline. The long captures regress, and the selected-index homes remain different. The original reference field reads are restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

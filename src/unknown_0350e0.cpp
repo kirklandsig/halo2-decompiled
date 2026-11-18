@@ -2913,13 +2913,13 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
 // MiniMax S (11-17): no new form, no lower score (170): retail still keeps the raw current length in its own slot
 // and the pinned value in another, where this build reuses one slot for both, so the later homes shift; retail
 // still re-reads the dot as a float for the arccosine where our acosf and fabsf widen to their double forms, and
 // the reduced image of this file is not faithful, so the permuter cannot search this body.
 // MiniMax I (11-15): no new form, no lower score (170): retail still keeps the raw current length in its own slot and the pinned value in another, where this build reuses one slot for both, so the later homes shift; the reduced image of this file is not faithful (it scores 315 against the full build's 170), so the permuter cannot search this body.
 // MiniMax R (11-16): no new form, no lower score (170): the reduced image of this file is not faithful (it scores 315 against the full build's 170), so a permuter search here cannot be kept; retail still keeps the raw current length in its own slot and re-reads the dot as a float for the arccosine, where our acosf and fabsf widen to their double forms and drag the later homes along.
-// score 170 (was 170): the raw current length, the dot's double copy and the angle reload (below).
 // MiniMax E (11-15): no new form, no lower score (170): the reduced image of this file is not faithful (it scores 315 against the full build's 170), so a permuter run cannot be searched here.
 // MiniMax S (11-14): no new form, no lower score (170): retail keeps the raw current length in its own slot at +0xc and the pinned value at +4, where ours reuses one slot for both, so the later homes (the dot's float, the sine at +8, the angle and the cosine at +0xc) all shift; retail re-reads the dot as a float for the arccosine while under /GL our acosf and fabsf widen to their double forms and drag the dot's double copy along, and no source spelling recovers that float load.
 // MiniMax B (11-13): no new form, no lower score (170): the products of each cross product are still multiplied in the other order (this build takes the direction's components into xmm4 and xmm3 where retail takes them in xmm1 and xmm3), and the dot product helper's body may not be written out by hand, so the order is not ours to choose.
@@ -3156,6 +3156,9 @@ real magnitude3d(vector3f const *v);
 // with scoped angle 170, bounded lengths ahead of scoped reciprocals 170, with scoped angle 170.
 // The raw current magnitude still shares the bounded length's slot and the dot promotion persists.
 // MiniMax R (11-17): no new form, no lower score (170): the reduced image is not faithful here (it leaves the callee unresolved, so the body reads 315), and with the callee in the image the first difference is the float comparison this build keeps in esi.
+// Complete raw tangents before/after sine, sine-weighted tangents before cosine
+// or before projection, each with original projection or its dot before cosine:
+// 170/170/170/170/170/170/170/170. Raw length and promoted-dot homes unchanged.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3472,6 +3475,9 @@ s_cached_input_list g_5234e8[4];
 // MiniMax C (11-16): no new form tried this round, no lower score (113): the reduced image's own body length changes with the address set
 // MiniMax C (11-16): (532 bytes in a twenty-address image against retail's 548), so the difference is measured in the set the earlier
 // MiniMax C (11-16): rounds used; nothing of this file's own moved it.
+// Output cursor distance at admission, ordered or exact endpoint, and remaining capacity with final cursor distance:
+// 194/157/157/141. The same with a once-read input list: 205/153/153/145.
+// NOT kept: all disturb the matched caller. The last form recovers frame 0xa0 but grows to 567 bytes.
 // MiniMax C (11-17): no new form, no lower score (147 in this reduced image, 113 in the twenty-address one): the call to 0x31590 still takes the index in edi where retail keeps it in ebx, and the frame is still 0x9c against retail's 0xa0 - retail spills the input list and keeps the native list and total on the stack.
 // MiniMax R (11-17): no new form, no lower score (147): the frame is 0x9c against retail's 0xa0 and the body is 16 bytes shorter than retail's 548.
 // @retail 0x31910
@@ -3948,7 +3954,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
-// score 486 (was 486): see the forms below.
+// score 486 (was 486): frame 0x60 versus 0x38, stored velocity reloads and projection homes.
 // MiniMax S (11-17): no new form, no lower score (486): the frame is still 0x60 against retail's 0x38 - retail
 // keeps one 12-byte home for the previous camera position and each element's old position, reads the delta from
 // the stored view position and copies the scaled projection inputs into fresh registers in both arms, while this
@@ -4186,6 +4192,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Half-angle/tangent, half-angle/product and tangent/product 505/490/489.
 // All three with direct assignment or a short producer scope 494/494.
 // NOT kept: ties or regressions. The 0x60 frame, velocity reads and projection homes remain.
+// Separate projection input and scaled ordinates, scaling/identity arm first, whole point input,
+// or whole scaled point output, with field reads/one scale sample: 530/518, 515/505,
+// 576/552, 530/510. Frame 0x5c except whole input 0x7c; velocity reloads still differ.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

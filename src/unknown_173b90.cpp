@@ -1163,6 +1163,11 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 // result packed 42 (204 B, stores through EAX); one shared pack of a per-path colour pointer 42 (the pack is duplicated per
 // path as in retail, but the system moves to EDI and colour B to ESI; 0x174a30 27); multiplied tested first with the half
 // path last 47 (204 B).
+// Half buffer scaled and decoder result packed, with the product first return
+// used for pack, read, pack plus second return, or both returns read: 46/48/42/44.
+// Half buffer written from the returned decoder pointer and that pointer packed,
+// with the same four product forms: 46/48/44/46. The two 204-byte forms
+// still branch to the distant exit and differ in their decode/pack registers.
 // @retail 0x175a80
 void function_175a80(dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied, bool tinted)
 {

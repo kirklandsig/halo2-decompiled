@@ -1225,6 +1225,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Opposite distance with current bound as conditional/default/explicit fallback 605/645/605.
 // NOT kept: the native copies expand the extent or remove the four-wide scan, and the
 // candidate-result forms add work to the rejected projection path. The 0x18 frame remains.
+// Fraction inside opposite-ordinal/resolved-pointer admission; lower-then-upper tests
+// 560/568, upper-then-lower 561/562, partial-before-endpoint 560/569,
+// shared selected-endpoint copy 673/672. Frame stays 0x18.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

@@ -4506,6 +4506,11 @@ bool __stdcall function_2b278e(long controller_index)
 // Round 416: Case orders 3/2/1/0, 3/0/2/1, 0/3/2/1 and 0/2/3/1 each score 54.
 // Orders 3/1/2/0, 3/0/1/2, 0/3/1/2 and 0/1/2/3 each score 127. NOT kept: case
 // reordering still leaves the original index in ESI and omits the dialog reloads.
+// Scope the initial index to the identity calls, using one numeric snapshot
+// 199/197, a reference to the index field 205/206, both direct reads 199/197,
+// or an identity-only controller view 199/197. Each pair forms masks at their
+// dialog calls or in the corresponding arm. The original reference and index
+// stack home are still missing.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {

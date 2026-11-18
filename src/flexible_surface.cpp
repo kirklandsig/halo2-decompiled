@@ -823,6 +823,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 416: Angle initialized from the sample, first weighting or both weightings,
 // with grouped or separate scale updates, and a named doubly weighted fraction
 // all scored 130. The 0x1c frame and initial sample slot still differ.
+// Separate bounded axis ordinal and named trig values: sine before the
+// draw, cosine before or after sampling 152/158 and 152/158; sine after the
+// draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
+// the table entry whole or by components. Whole-entry forms reach 880 bytes
+// with the 0x1c frame. Direction read order and the frame still differ.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
