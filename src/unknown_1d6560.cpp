@@ -482,6 +482,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // (headers, rigid body, object index, absolute index, type) 94 [13]: the owner then arrives in EDX, the index in EAX and the
 // component on the stack. A `long` type gives retail's `movzx` load (89 positional, 24 aligned). Body unchanged.
 // MiniMax C (11-17): no new form, no lower score (96): retail reads the header's type once before the kind test and this build reads it twice; hoisting the type into a local, hoisting the header pointer, and inlining the rigid body all flip the call's register convention (the level moves into a register and the owner stays on the stack), so the matched caller 0x1d5bf0 loses its match (9 to 213) and the body itself stays worse (105 to 141), and the body stands.
+// M3 lane 3 r259 (fast, caller 0x1d5bf0 matched each time): the case 1 and case 7 flag tests through a two-caller inline
+// accessor (`(flags & 8) != 0`) 96 on this body (same score), 89 on round 60's one-read form with a long type (same as
+// without it). That form's left: headers ESI, object index EDX, rigid body ECX against retail's EDX, ECX, ESI (a cyclic
+// shift of the same three values), and the owner chain through ESI where retail uses EBP. On this body: `long result`
+// declared first 96, the object index typed dword 96 (both same code); the main switch's type and case 0's object
+// through one header element pointer 91 at 256 B (caller 146).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
