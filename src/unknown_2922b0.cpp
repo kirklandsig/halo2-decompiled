@@ -608,9 +608,22 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH391: Shared origin generation/query cursor, hit query/response cursor and hit-distance
 // query/response cursor, seven subsets 563/563/663/558/665/665/670; all with origin
 // advance and rewind 651 (2886 bytes). NOT kept: no gain or matching success-byte home.
+// Component copies at the retained input, forward input, center, both inputs, retained input
+// and center, forward input and center, or all three 660/661/699/656/691/655/675.
+// Direct copy initialization of the retained input and center 558. The success, input and hit
+// homes remain different with the original copies.
 // Individual up/left/down/right branch-local response roots 559/559/559/559;
 // positive, negative and vertical branch-local pairs 558/558/558; root scratch
 // shared per opposing axis 559. The success byte remains at +0x13. Restored.
+// DH398: Reuse the final side axis, the ray displacement or both 603/578/604.
+// The three with the shared scale helper 608/579/603.
+// Reuse the side axis or both with the staged cross 599/600.
+// NOT kept: The success byte stays at +0x13 and the body shortens. The separate projection workspaces are restored.
+// Frame 0x108 agrees. The success byte is four bytes below retail. Scoping the collision query did not
+// move it; the for count narrowed the extent gap by four bytes. query workspace scope 558; count and ray
+// in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope
+// with for count 558; staged hit distance 563; query writes hit flag 559; collision displacement inner
+// scope 566. NOT kept: the scored forms tied or regressed.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -565,17 +565,8 @@ void function_146b80(void)
 	g_47989c = new ((byte *)g_479888 + 0x105410) c_havok_fixed_memory(buffer, size);
 }
 
-// score 5 (was 5): retail's function_1c4040 takes the active flag in AL and reads
-// it after the other arguments are pushed; here the callee takes it in DL, so the
-// byte is loaded into DL before the other byte is stored. The callee lives in
-// src/unknown_1c25a0.cpp and is far from retail.
-// b14H (11-17) walk against retail, fast build on r847: every instruction matches except the call setup at
-// 0x146c8e..0x146ca8 (statement by statement: the bool `recent` stored at [esp+0x1c] and read back as a dword for the
-// even_if_unknown push at 0x146c96/0x146c9a, push -1, then `mov al, byte ptr [esp + 0x1b]` at 0x146ca1 AFTER the
-// pushes). The values, the push order and the loop and flag logic are retail's; ours reads the active byte into dl
-// before the pushes (3 instructions out of step, 5 differing lines). Retail's callee 0x1c4040 tests al at 0x1c4043
-// and ours tests dl (fast check of 0x1c4040: 8), so the register comes from that body, which sits outside this lane.
-// No change is made to this function.
+// Matches only while function_1c4040 keeps retail's link-time convention (AL for the active flag; see the comment
+// above it in src/unknown_1c25a0.cpp).
 // @retail 0x146bf0
 void function_146bf0(void)
 {

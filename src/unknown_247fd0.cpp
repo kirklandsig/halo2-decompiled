@@ -814,11 +814,19 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // with the base and the index in one operand where retail
 // adds the index to the base first and reads the byte from it into a second register, the gate flag's home is at +0x1f
 // here against retail's +0x1b, and the effect definition's home is at +0x18 here against retail's +0x1c.
+// AC572: Gate flag transferred by memcpy, memmove, copy or copy_backward.
+// Low byte 334/460/446/446. Full word 366/442/442/442.
+// NOT kept: byte memcpy folds as before. The other transfers widen the read
+// or leave a call. Separate base addition and gate/definition homes remain.
 // Enclosing bit-field and raw-byte admission 344/334; staged gate 418;
 // plain positive gate 395; enclosing gate with combined header word 344,
 // allocator-failure exit 344, query-scoped collision 344 or separate refreshed
 // settings 344. The staged gate gains the two slots through an extra readback;
 // the split effect address and DL load remain. Restored.
+// Spatial workspace alone or with collision after the effect gate 334/334. Workspace alone or
+// with collision in the allocation arm 334/334. First-draw workspace and probe collision 334.
+// Post-gate workspace and probe collision 334. Allocated workspace and motion collision 334.
+// Settings declared after the gate 334. NOT kept: folded address and flag/settings homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

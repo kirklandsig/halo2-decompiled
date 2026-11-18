@@ -735,6 +735,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 249. Current after the successor transfer 144, heading published on
 // continuation 177, both index and heading published on continuation 253.
 // NOT kept: the 144 forms leave the extra frame word and the departure home.
+// Input end-pointer bounds with the original short ordinals in the lowest/candidate/both scans 211/250/231;
+// derive the ordinal at selection in the lowest/candidate/both scans 270/263/279; candidate/both with byte departure
+// 249/297. NOT kept: the lowest-only bound gives frame 0x14 but changes the register allocation at +0x4;
+// every candidate endpoint form regresses and loses the matched caller 0x239d50. The 0x18 frame and hull-count home remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -1258,6 +1262,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // and result - 2); inside arm 0x23a91b-0x23a9d9 (mask bit from *point_mask when non-null, else cleared); tail
 // 0x23a9f9-0x23aa65 (NONE -> raw copy, < 3 -> 0, no positive -> 0, no negative -> count and raw copy, *point_mask =
 // mask). The difference left is allocation only: previous side in CL against [esp+0xd], zero in XMM4 against XMM2.
+// 463: crossing normal components shared by denominator and numerator, before/after deltas
+// and in x/y or y/x order, 263 each; with named numerator products 270 each. NOT kept:
+// longer crossing code leaves the count load and prior-side home different.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

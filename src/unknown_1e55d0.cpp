@@ -103,7 +103,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
 // EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690
 // (src/stubs/bipeds.cpp).
-// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
+// Earlier measurement: Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Walk b3I (11-06): every statement and block checked against retail 0x1e55d0-0x1e5a58 (field offsets, switch table 1..6 with
 // 4/5 shared, case-6 0.3f scale and fistp into the countdown byte, shape compare at 0x1e5740-0x1e5757/0x1e591a, capsule arm at
 // 0x1e5940-0x1e59f9, position range test at 0x1e587f-0x1e58ae, constants 0.3/1e-4/0.001/0.5/+-32768 read from the XBE): no
@@ -274,6 +274,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // pointer in EAX, the state at +0x8 and the input at +0xc) and only the two pointer registers differ (retail's
 // out in EBX and its input in EDI, ours the other way round), which turns every later instruction; the six
 // orders of the three aliases do not move them.
+// Round 620: the move and input exchange EBX and EDI, and the physics pointer stays in ESI.
+// Live shape slot 328, saved shape identity with live virtual accesses 342, direct shape field 331,
+// conditional child comparison on the saved identity form 353. Capsule floor first 319,
+// single minimum-radius read 319, extracted activity byte 319, typed late parent access 319.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

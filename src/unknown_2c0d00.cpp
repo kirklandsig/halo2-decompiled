@@ -551,10 +551,28 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // retail's second straight store (an else block on the actor NONE path) is what stops ours hoisting the object-table global
 // load to the entry (ours `mov edx, [g_4e0300]` before the actor test; retail loads it in the actor block and again in the
 // location block): it is not, the hoist stays. Body unchanged.
+// M3 lane 13 r107 (fast, control 926f, 0x2c0d00 MATCH in each; aligned/masked by difflib 655/298): retail's frame has three
+// separate 32-marker buffers and loads position/direction into EBX/EBP in each marker loop's preheader, so the three marker scans
+// were tried as file-local helpers returning bool (each with its own buffer; three new one-caller helpers, match-only): declared
+// `inline` 1404f (3241 B: called out of line), `__forceinline` 924f (3724 B, frame still 0x2cb4, aligned 656, masked 307: the same
+// code as the written-out loops, direction still loaded at the prologue); with both volatiles dropped 984f (3659 B; the volatile-
+// free body alone re-measured 975f, 3671 B, frame 0x2cb0, aligned 512, masked 267). The outer counter declared at function scope,
+// the motion pointer declared at function scope, both: 926f each (same code), with both volatiles dropped 975f (same code as that
+// form): scope and declaration position place no home. Retail's cells from the listing (esp offsets after the four pushes): the
+// outer counter 0x4c and the object count 0x50 (the dead location's slot) sit among the function-level shorts (range_min 0x40,
+// self_unit 0x44, range_max 0x48, block 0x58, ignore 0x60) with the motion pointer at 0x5c; the definition pointer 0x2c later
+// holds the sphere counter, and the sphere flags 0x30 reuse the x87 dot temporary; retail has no home for the type (it re-reads the
+// byte) and packs straight with three other bools at 0x10-0x13, which is where ours spends its extra cells. The loop head
+// (0x2c0f68) reloads unit_index, self_unit and actor_index into EDI/EBP/EBX and the first entry jumps over it. Body unchanged.
 // Typed position and definition index 926, index only 926, position only
 // 926, both velocity reads 926, all named fields 926, shared point difference
 // 924, distance-local scope 926, typed selected unit 926 (reduced control 926).
 // NOT kept: shared difference gains two in the preview and leaves frame 0x2cb4.
+// Straight/aligned/both assigned in complete threshold arms 926/926/926 in the reduced image;
+// clear their prior true values on a failed threshold, straight/aligned/both 947/947/922;
+// start both false and set each on success 926; strict threshold first for both results 925.
+// NOT kept: the four-point reduced gain (926 to 922) shortens the body to 3702/3731 bytes
+// and retains frame 0x2cb4. The straight flag's dword-sized slot and actor and unit homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

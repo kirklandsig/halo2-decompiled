@@ -200,6 +200,10 @@ void c_list_24a64d::v20(c_class_1a2c81 *item, long)
 // Nested guard with plain-name copy input 66, also with last append result 66.
 // Early append result with named suffix 90. NOT kept: nested guards reserve
 // 0x28 and gain one. The slot holds the result. The entry base stays in a register.
+// Round 624: writable result with indexed/direct terminator 84/67; const result through copy
+// and appends with indexed terminator 84; publish at first append and terminate by index 70; publish before
+// indexed terminator 84; wide-character suffix with original/indexed/result output 67/84/84. All hold
+// the entry base in a register and reserve 0x24.
 // Comparison-bound search with a shared exhaustion return 56; with an explicit cursor 56;
 // guarded end pointer with live ordinal 74; counted comparison before formatting 59;
 // skip mismatches with indexed terminator 84; formatted arm breaks 84; fixed-array
