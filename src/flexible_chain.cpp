@@ -754,6 +754,9 @@ void __stdcall function_1160c0(real dt)
 // the committed and previous positions 359; vector setter for the angle reference 171; point and vector
 // setters for both attachment outputs 380. NOT kept: the anchor-position and commit setters shorten the body
 // and demote the update caller.
+// Round 415. target-owned blend 329, shared in-place target scale/add 323, indexed target-owned blend 332,
+// weighted correction point 234, shared unit-scale displacement 278, scalar target with in-place blend 329,
+// indexed velocity displacement 193, target blend with shared velocity difference 332.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

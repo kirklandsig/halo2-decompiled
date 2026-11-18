@@ -2158,6 +2158,19 @@ void function_269250(long clump_index, long actor_index);
 // Original body restored.
 // Pool EBX, stack-only selection and the x87 compare still differ. Actor, candidate and position
 // record references in all seven subsets, plus the shared clump layout for the team read: eight at 87.
+// M3 lane 3 r257 (fast with the file's 48 functions and 0x1e46c0/0x268bb0/0x269580/0x2694d0/0x269250/0x269040; control
+// 87, aligned differences exact / fully masked 34 / 23). On the in-arm compare (re-measured 126, 480 B, aligned 36 / 26)
+// the whole difference is one allocation choice: ours carries the selection in EDI through the walk (reloading it at
+// the loop top), retail keeps it in memory only and carries the walk's pool in EBX instead. The choice follows the
+// selection's use count: with one of its four after-loop uses removed (diagnostic) it is memory-only as retail (`mov
+// dword ptr [esp + ..], 0xffffffff` at the start), but the pool is then still reloaded each pass (147, 461 B; two uses
+// removed 145, 463 B). On the in-arm form: the selection stored ahead of the best 126 (same code); the after-loop uses
+// through a one-use copy of the selection 126 (aligned 40); the actor's old clump read once into a local 126 (aligned
+// 40); the two after-loop tests joined with `&&` and the add call under its own test 117 (aligned 52, the tests are
+// repeated; not kept: an implied test and worse in aligned terms); the selection and best score as members of one
+// local record, the selection alone in a record, selection, score and best in one record 126 each (same code: the
+// records are split back into scalars); the selection from the iterator's datum index re-measured 128 (aligned 70:
+// selection memory-only and the pool hoisted, but into EDI, and the exhausted path threads to the exit).
 // @retail 0x2689d0
 void function_2689d0(void)
 {

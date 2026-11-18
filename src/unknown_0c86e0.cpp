@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax R run 92 (11-17): no new form, no lower score (110): the weapon lookup as an if-statement instead of the
+// ternary gives 114, and the user index as a short gives 107 - a gain of three, under the review bar, so the body
+// stands with the 32-bit index retail reads - and this link still knows that 0xbadc0 writes no memory and merges the
+// unit fetches where retail fetches the unit again: BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
 // score 110 (was 110): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail fetches the unit again after the two
 // 0xbadc0 calls although retail's 0xbadc0 neither writes nor calls; ours merges the fetches (rounds below).
 // MiniMax D (11-17): no new form, no lower score (107): retail looks the unit up again after its two 0xbadc0 calls
@@ -351,6 +355,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // not kept); the early-return helper with the globals' sound as the default 115; the `&&` flag with that default 107.
 // Re-measured on this base: the `&&` flag alone 104 (367 bytes), the early-return helper alone 113, the late zoom
 // flag alone 125, `&&` with the late flag 116, the early-return helper with the late flag 127. Still BLOCKED-BY 0xbadc0.
+// P604: Carry the pre-reset level through the reset join as char/short/long/byte,
+// defaulted after the weapon query or in the preserve arm: 131/128/130/129/129/126/128/127.
+// NOT kept: the post-query unit fetch stays merged, and the later level
+// comparison shortens the body farther from retail.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

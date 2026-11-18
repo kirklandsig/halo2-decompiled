@@ -79,7 +79,10 @@ struct s_24e9c7_points
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
-// score 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
+// score 125 (was 125): The result home remains eight bytes high, and the early across-axis product still lacks its retail spill.
+// Positive corners before negative corners, all upper vertices first, origins first, or separate components by side:
+// in-place negation 149/149/149/154. Separately initialized negative displacement 149/146/148/148.
+// Earlier 125 (was 125): round 112 (m3 lane 12) note at the end. The frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
 // MiniMax R (11-17): no new form, no lower score (125): the corner sums written with the other operand first (up + origin, then back + that) compile to the same code, and the same sums written as back + (up + origin) grow the body to 749 bytes (137); retail still computes the two across products right after the size and spills the second to [ebp-8], so the result, kind and bitmap homes stay eight bytes above retail's and the 1.0 constant stays in xmm4 where retail uses xmm5.

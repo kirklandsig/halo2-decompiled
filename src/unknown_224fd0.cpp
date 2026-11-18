@@ -330,6 +330,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Two cosine-weighted scalars, shared complement, and compound factors 479/421/479.
 // Incremental weighted axis, aggregate, const shared-complement aggregate, shared scaler
 // and component loop 477/477/433/446/496. All shorten the body. Square and sine spills remain.
+// AC570: Matrix return with component, aggregate, row or const row construction,
+// with and without earlier forward diagonal: 488/617/726/805/497/617/726/805. NOT kept: the returned
+// matrix grows the body and leaves the axis-specific spills and table placement.
 // Squared terms in diagonal fields 495; with named cosine corrections 437; axis copied into the
 // diagonal and squared in place 478; with named cosine corrections 476. Sine terms in the addition
 // or subtraction output fields 437/437; with squares in the diagonal fields 539/539.
@@ -338,6 +341,18 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // same code; it replaces that helper's body written out). Tried: sine and cosine passed to the rotation helper as `real const &`
 // 219 (same code); the axis passed by const reference 485 (1724 B); sine and cosine declared in two statements 219 (same code);
 // the three sine products through vector3f_scale 440 (1768 B).
+// M3 lane 3 r257 (fast; control 219, aligned differences exact / stack-offset-masked / fully masked 137 / 133 / 87).
+// Reading: the kept statement order of the rotation helper is the best of round 35's 40 random orders, not retail's;
+// retail's first copy runs k^2 (spilled at once), k*s, i^2, j*s, s*i, forward.i, ij, ... with the cosine read from its
+// home at each of its four uses (the second copy loads it into XMM2), and the helper's two vectors sit at +0x1c/+0x28
+// squared-first in the first copy and sine-first in the second (ours the other way round in both). Tried: forward.i
+// moved up to retail's place (after the i sine product, ahead of ij), nothing else changed, 357 (1820 B; aligned 130 /
+// 127 / 68: closer in real terms, 16 bytes short, the sine products are still hoisted and s*i spilled); that with the
+// cross terms in the first copy's text (`axis->j*(1.0f-cosine)*axis->i`, `axis->k*(1.0f-cosine)*axis->i`,
+// `axis->j*(axis->k*(1.0f-cosine))`) 342 (1836 B; aligned 134 / 140 / 91); with the complement named once 418 (1792 B,
+// frame changes); the second-axis cases written first in the rotation switch 491 (1720 B, frame changes), with
+// forward.i moved 407 (1784 B); the sine vector renamed to sort after the squared one, on this order and on retail's,
+// 219 / 357 (same code each: the two vectors' homes do not follow their names here).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

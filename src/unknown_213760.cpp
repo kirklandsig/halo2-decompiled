@@ -1156,8 +1156,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
-// checksum register and header-validation joins remain.
+// score 33 (was 33): Frame 0x1144 and extent agree. Query size and write count exchange stack
+// slots at +0x24/+0x28. The write argument setup, checksum register and header joins still differ.
 // MiniMax G (11-14): no new form, no lower score (33): the query-size and write-count homes stay four bytes off (ours
 // at [esp + 0x34] where retail keeps [esp + 0x30]); retail loads the write's handle before its pushes and compares
 // against esi (1) where ours compares against ecx; the call-target difference (our 0x403320 against retail's 0x1a1050)
@@ -1833,6 +1833,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // on that 6: `remove_later = false;` first 8, `expected_size != size` 7, both 9; trivial inline accessors for the resize handle,
 // the header buffer and the close handle, all seven combinations, 6 each (transparent); one handle copy for query, resize and
 // write 170 (914 B).
+// resize outcome assigned from byte count 112; resize outcome cleared on short write 165; resize
+// outcome short circuit with count 188; resize outcome accumulates write success 165; assigned outcome
+// with positive header read 165; cleared outcome with positive header read 172; short circuit outcome
+// with positive header read 188; accumulated outcome with positive header read 172. NOT kept because
+// reusing the resize result regresses the score and changes the frame.
 // @retail 0x213970
 void function_213970(void)
 {

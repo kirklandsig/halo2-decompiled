@@ -1091,6 +1091,7 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // MiniMax H (11-11): no new form, no lower score (828); the six declaration orders of the mode, class and type out-locals all compile to the same code, so their frame homes are not set by the declaration order, and the first difference is still retail's compare of the weapon class against NONE with the operands the other way round.
 // MiniMax G (11-12): the three resolved outputs now share one array whose entries are set after the class check, which moves the -1 stores past the compare and puts the per-attempt candidate in the found_mode argument home where retail has it; the class load still lands in ECX where retail uses EDX, the result sits at frame+0x00 where retail has frame+0x0c, and the resolved outputs sit at frame+0x04 where retail has frame+0x00.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
+// Earlier lane 8 rounds 164 and 166 are recorded near the end of this note.
 // M3 lane 8 r164 and r166 forms appear at the end.
 // Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain. See also lane 8 r164 and r166 below.
 // Earlier trials from m3 lane 8 rounds 164 and 166 follow below.
@@ -1419,6 +1420,8 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // declared at the iterate call inside the loop. Re-measured: the early `return c_type_709360();` with the result in
 // the block 988 (2825 B, as listed). Retail returns through separate epilogues (early NONE class, no result, loop end)
 // and loads the second request's mode into EBP once where ours reads iterator_mode's home at each kind.
+// DH397: Resolved mode/class/type stored in expired iterator key fields, seven subsets at the second request, then all three before the first 828/828/828/828/828/828/828/828.
+// NOT kept: All eight forms tie at 828. Reusing the iterator keys does not recover the class and NONE registers, the identifier and resolved-output homes, or the later persistent zero. The original body is restored.
 // Fieldwise named identifier 922; fieldwise result publication 979; both 988; aggregate iterator with
 // fieldwise result 979, with fieldwise input 920; candidate index at latch 932, with fieldwise result
 // 996, with fieldwise named input 995. Result and iterator output homes remain, including the dead
@@ -1835,6 +1838,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // into the home of the first found output, so the two stores land in the opposite order; the calls, the
 // argument order and the two requests are unchanged, and the remaining difference follows from where that
 // third output is written.
+// AC570: Resolved mode/class/type snapshots for publication and resource request,
+// seven subsets then snapshots at each output test: 828/828/828/828/828/828/828/828. NOT kept: the
+// snapshots coalesce, leaving the candidate and iterator homes and late zero.
 // B458: Search-exit copies of the resolved mode/class/type, then mode+class/mode+type/class+type/all
 // for both optional stores and the second request. Last form ends the iterator scope at search exit.
 // Scores 828/828/828/828/828/828/828/828. The resolved-mode spill and candidate/result homes remain.

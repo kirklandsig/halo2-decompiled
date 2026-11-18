@@ -1387,7 +1387,7 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (216), the rate hoisted into a local (541) and the cast-spelled divisor (220) were measured and dropped.
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
-// score 220 (was 220): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier at 220 (was 220). Frame 0x28 versus 0x2c. Unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
@@ -1854,6 +1854,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // rates followed by upper selections 486, upper-limited rates followed by lower selections 487.
 // Round 401 tested paired look clamps with lower-first/upper-first branch defaults and upper/lower preset bounds, strict then inclusive: 219/220/223/223/221/222/224/224.
 // The one-point lead is below the threshold. The 0x28 frame, shared reciprocal and reused spring homes remain.
+// AC572: Captured entry unit index 220. Add guarded primary index, conditional
+// NONE or branch-set NONE 220/529/529. The primary-index forms alone
+// 220/529/529. Both captures with a terminal unit guard 220.
+// NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
