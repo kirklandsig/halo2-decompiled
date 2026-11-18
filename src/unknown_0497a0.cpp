@@ -482,6 +482,11 @@
 // paired terms, or separate product families 638/649/646/640. Moving the short
 // wave before those forms gives the same four scores. NOT kept: every form
 // shortens the body and leaves the frame and rounded-wave homes different.
+// The independent rounded-wave homes and 0x60 frame remain. two-factor carrier 534; three-factor modulation
+// 534; unattenuated wave 536; two scaled displacements 704; shared row zero offsets 715; perspective first
+// with shared zero offsets 717; depth axis selected at use 678; scoped row crosses 594. NOT kept: Naming
+// the first two modulation products saves two points at the retail extent. The frame stays 0x54, and the
+// product forms fall below the keep threshold. Separate displacements and projection forms regress.
 // The 0x54 frame and distinct rounded-wave/cross homes still differ. Read-only shape
 // views 536; retained projection mode 669; in-place reciprocal 536; shared negative
 // numerator 537; guard before depth up-vector selection 678; branch-selected normal
