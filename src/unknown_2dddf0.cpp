@@ -110,15 +110,10 @@ void segment_2ddfc0::function_2ddfc0(__m128 const &point, __m128 const &start, _
 #include <math.h>
 #include <xmmintrin.h>
 #include "unknown_0a9f20.h"
+#include "unknown_1c58f0.h"
 
 static __declspec(align(16)) const float g_412420[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-// a value in the first term of a vector (src/unknown_1c58f0.cpp)
-struct s_1c58f0
-{
-	__m128 field_0;
-	s_1c58f0(real arg_0);
-};
 
 // the sphere an end cap is cast as (src/unknown_2def90.cpp; its base's
 // destructor is 0xdc370)
@@ -195,7 +190,12 @@ public:
 	answer_2deda0 function_2de1b0(segment_2deda0 const *segment, hit_2deda0 *hit);
 };
 
-// score 12 (was 150): the closest-point function 0x2ddfc0 is defined in this file,
+// score 2 (was 12): the vector constructor's body is visible here
+// (include/unknown_1c58f0.h), so the compiler knows its call leaves the ones vector
+// alone and keeps one load of it across the call, reloaded in the side blend as
+// retail does; the blend multiplies the scale by `b` and adds the two products
+// first first. Left: retail spills `entry` after the dot product's multiply.
+// Before, 12 (was 150): the closest-point function 0x2ddfc0 is defined in this file,
 // in address order (the caller's frame then keeps `closest` at retail's home), the
 // squared distance and the ray are declared before the two end points (retail's four
 // stores before the first query), and the side blend multiplies `b` by the scale and
@@ -298,9 +298,9 @@ answer_2deda0 capsule_2de1b0::function_2de1b0(segment_2deda0 const *segment, hit
 		// the side
 		s_1c58f0 const fraction(entry_along / axis_length);
 		__m128 const scale = _mm_shuffle_ps(fraction.field_0, fraction.field_0, 0);
-		__m128 const second = _mm_mul_ps(b, scale);
+		__m128 const second = _mm_mul_ps(scale, b);
 		__m128 const first = _mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, scale), a);
-		__m128 const on_axis = _mm_add_ps(second, first);
+		__m128 const on_axis = _mm_add_ps(first, second);
 		__m128 const outward = _mm_sub_ps(entry, on_axis);
 		__m128 const inverse = inverse_sqrt_2de1b0(length_squared_2de1b0(outward));
 		hit->normal = _mm_mul_ps(_mm_shuffle_ps(inverse, inverse, 0), outward);
