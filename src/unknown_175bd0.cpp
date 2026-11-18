@@ -2254,6 +2254,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // B in EDI, drops the system after the type query and reloads it from its home, the cursor in the effect home and colour
 // A at frame+0); on it the colour locals renamed to sort after the cursor 178 (same code: names do not move these homes),
 // tinted declared ahead of the colours 178 (same code), the system bound by reference for the colour call 178 (same code).
+// Staggered color reads around settings/type lookup or type/tint query, both color orders and
+// named/direct multiplied query: 189/186/190/186 and 189/186/190/186. NOT kept: the direct forms
+// recover frame 0x44 but all grow to 572 bytes and score worse.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3776,6 +3779,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // through its own address 127 (352 B, effect index back on the stack but the system index in ECX, frame 0x50; 0x176f60
 // 18); an early `return next_index;` for an empty definition 97 (334 B); the cached mode read first in the block 94; the
 // effect-location pointer declared first 93 (same code); the cached mode as `short` 93 (same code).
+// Explicit first and next queries in while/for traversal, with per-location/traversal-scope matrix:
+// cached mode 93/93/93/93, mode read per query 108/108/108/108. NOT kept: the 0x54-frame forms
+// move both inputs into registers and demote 0x176f60.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

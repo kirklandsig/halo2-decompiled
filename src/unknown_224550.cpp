@@ -674,6 +674,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P608: Current-frame weight shared from frame admission, enabled blend, explicit disabled arm
 // or deferred blend into both pivots and both downstream pairs, aspects or inverse extents:
 // 398/416/416/405/397/367/357/396. NOT kept: every form regresses and changes frame layout.
+// Reciprocal pairs weighted after division, after flip selection, between aspect tests, or after both tests.
+// Secondary pair 241/338/255/162, primary pair 320/300/313/322. NOT kept: the 1942-byte form changes
+// the frame and raises the score. The join still spills blend in the retained body.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

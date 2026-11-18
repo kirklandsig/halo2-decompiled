@@ -1534,6 +1534,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // source 936; scoped ids with native width and shared count 936; native histogram bucket addresses
 // 936; native buckets with shared group count 936. NOT kept because the equal-width controls tie and
 // the dword forms shorten the body and raise its score.
+// Paired machine ID cursors, paired group identity cursors, both, and machine ID destination ordinal:
+// 869/873/881/935. The same forms with dword histogram cells: 931/917/921/996. NOT kept: the two-point
+// gain is below threshold, and the 0xb4-frame cursor ordinal shortens the body to 2636 bytes.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

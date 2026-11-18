@@ -644,6 +644,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Attenuation sampled before the indexed walk with short/long count 847/919.
 // NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
 // count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// First source retained from acceptance, record completion, collection end or inside selection:
+// 943/937/920/952. The same forms with full query count: 945/954/879/945. NOT kept: even the
+// 3327-byte form raises the score, and the entry zero and stack homes still differ.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
