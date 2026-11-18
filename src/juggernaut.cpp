@@ -263,6 +263,13 @@ void juggernaut_set(long player_index, bool juggernaut)
 // the draw guard as `0 < count` 20; the bit index as `(char)player_index` (as juggernaut_update_teams spells it) 74,
 // as `(char)iterator.index` 74. Retail pushes the count's register at entry and the pointer's only on the path into
 // the loop (shrink-wrapped), as ours does with the pair swapped.
+// Round 118 (m3 lane 10, fast with 0x192530, matched throughout): the scan as a forceinline helper returning the count
+// to the caller's own count 20 (same code; as a plain inline it stays out of line, 243, and 0x192530 5); a
+// function-scope copy of g_510c9c re-measured 36: the pointer then loads at entry into EBX and count still takes EBP,
+// so the pointer's longer range does not flip the pair; `dword player_index` 20; the waiting calls folded into the
+// candidate condition with the store in braces 20; a named absolute index with the bit and exclusion tests as two
+// `continue` guards (`player_index == excluded`) 21; a trivial forceinline accessor returning the players word for the
+// bit test 20 (same code).
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {

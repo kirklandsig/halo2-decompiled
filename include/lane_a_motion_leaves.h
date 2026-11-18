@@ -23,7 +23,7 @@ public:
 	virtual void integrate(lane_a_motion_step const *step); //1
 	virtual void slot2(void *, void *) {} //24dc50
 	virtual char *export_state(long, long, lane_a_motion_output *out) const; //3
-	virtual char *integrate_output(lane_a_motion_step const *, long, lane_a_motion_output *); //4
+	virtual char *integrate_output(lane_a_motion_step const *, float, lane_a_motion_output *); //4
 	virtual long output_size() { return 0x80; } //5:31aac0
 	virtual long kind() { return 6; } //6:09ac70
 	virtual void set_mass(float value); //7

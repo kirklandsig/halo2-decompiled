@@ -630,6 +630,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Sound table held through the scan and matched row reacquired after the distance call,
 // with a reloaded or carried index 952/936. Entry zero and target/query/count homes remain.
 // Original body restored.
+// F417: Shared gain after tag 900; two-use computed gain 851; target gain readback 900;
+// tag and decibels before shared gain 900; target entry before range 866; local gain with target-first
+// publication 852; named endpoint before shared gain 900; allocation before choice gain 900.
+// NOT kept: the entry zero and query array homes remain and the scores regress. Original body restored.
 // AC571: Full producer count in the first scan or in repair 915/856. Capacity checked on acceptance,
 // short/full-width count, 950/965. Count advanced before record stores and capacity checked afterward 964/984.
 // Primary set during first inside conversion or first target append 940/956. NOT kept: all regress.
@@ -647,6 +651,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Attenuation sampled before the indexed walk with short/long count 847/919.
 // NOT kept: portal cursors recover ESI zero at +0xf but grow the body and retain displaced
 // count and array homes. Other cursor variants also move the frame away from 0x4e0.
+// Round 628: dword choice count through construction/repair, then short for later use 947/952.
+// Short construction and long count at repair/conversion 912/893. Full query bound in construction
+// with a short completed count 961, or in repair with a short conversion count 890.
+// Typed portal indexing 846, with the first two choice-count splits 947/952.
+// The dword construction forms recover the ESI zero but shorten the body and raise the score.
 // shared sound lookup in first query and primary repair 846; shared sound lookup in query and neighbor
 // repair 846; shared sound lookup through all BSP reads 846; shared sound reference through all BSP reads
 // 846; ordinary inline sound lookup through all BSP reads 846; shared sound lookup with full query count

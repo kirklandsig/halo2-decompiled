@@ -689,6 +689,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax B (11-18): no new form, no lower score (114): the first difference is still inside the shared inlined rotation helper, whose source is in another lane's file, so the block copies, the side crosses and the small-turn exit remain.
 // score 114 (was 114): frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Earlier header detail: 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Earlier copy of the first line (114, was 114; 114 at r76): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
@@ -1203,6 +1204,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // or cosine then sine staged. After the forward copy 186/190/187/191, before it
 // 199/202/198/201. NOT kept: frame 0x18 stays, the trig sequence moves away from
 // retail and every form shortens to 1364–1366 bytes against 1382.
+// Shared up-field pointer 148, shared forward-field pointer 165, both field pointers
+// or references 150/150, both at sampling or entry 150/376, pointer or reference
+// fields with staged crosses 148/148. NOT kept: native rotation multiplicands
+// and final direction copies remain different.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

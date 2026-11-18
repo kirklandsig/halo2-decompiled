@@ -392,6 +392,10 @@ void c_window_channel::v9()
 // early return with the type clear ahead of the declaration and the load result passed straight to set_next 24 (76 bytes);
 // the builder's user flags, a, b and load procedure read into named locals after the type clear 3. Still HELD on round 100's
 // member-builder lead (BLOCKED-BY 0x149f49's free-function form).
+// M3 lane 2 r99 (plain, diagnostic, restored): 0x149f49's body moved from its own file to the end of this one, after every
+// caller here, 3 (v9, 0x2354aa, 0x2358c3 and 0x149f49 stay matched): the re-formed address is not a compile-order effect.
+// Retail's 0x149f49 keeps ECX (only EAX, EDI and ESI change, the last two saved), so the copy is legal; the member-builder
+// lead still needs the call spellings in contributor bodies v9 (0x2352d3), 0x2354aa and 0x2358c3 changed, so it stays HELD.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

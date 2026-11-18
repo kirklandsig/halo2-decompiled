@@ -51,6 +51,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax B (11-18): score 176 (was 176): no new form, no lower score. The single-exit normalizer with the length
+// stored after the branch measures 171 (five points, under the eight-point bar), the length taken from the helper's
+// return value 267 and the length local initialised before the call 171, all dropped; the helper's locals renamed
+// change nothing, so the magnitude still spills to +0x10 where retail keeps it at +0xc and the unity constant still
+// loads into XMM5 against retail's XMM4.
 // MiniMax C (11-17): score 176 (was 176): no new form, no lower score. The first normalizer's magnitude still spills
 // to -0x10 where retail spills it to -0xc (the vector homes differ too), the unity constant still loads into XMM5
 // against retail's XMM4; the length from the helper's return (263), the shared length slot (422) and the length local
@@ -576,6 +581,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // pitch then the first sine (+0x10), cosine (arg_3's home), final pitch (arg_4's home), i.e. the final pitch gets its home
 // after the first rotation's sine and cosine; ours homes the yaw first (+0xc) and the final pitch before the sine and cosine.
 // Body unchanged.
+// Earlier first rotation source at angle solve or completed yaw 430/435. First yaw rotation before pitch
+// subtraction, limit initialization, base limit selection, limit scaling, clamp or final add
+// 484/471/480/467/479/281. The last retains frame 0x2c and XMM5 for unity. Earlier sites grow the frame.
 // Round 416: The 0x2c frame agrees. The first differing instruction loads unity into XMM5, where retail uses
 // XMM4. The root and acos scratch share +0x10 in the build and share the yaw slot at +0xc in retail.
 // fallback first at planar admission 176; fallback first with common planar length publication 171; initial

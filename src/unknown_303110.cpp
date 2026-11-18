@@ -132,17 +132,29 @@ static int __cdecl function_303540(__m128 const *point, __m128 const *vertices, 
 
 // Havok: seed a penetration query from the current features, reduce its
 // returned features, and retain its penetration direction.
+// Separate copy of the magnitude mask for the second shape's pair test.
+static __declspec(align(16)) const unsigned long pair_magnitude_303dd0[4] = {0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff};
+// True when two points differ by no more than the tolerance on every axis.
+inline bool search_points_close(__m128 const &first, __m128 const &second, __m128 const &mask)
+{
+	__m128 difference = _mm_sub_ps(first, second);
+	difference = _mm_and_ps(difference, mask);
+	int const bits = _mm_movemask_ps(_mm_cmplt_ps(g_4801e0, difference));
+	return !(bits & 7);
+}
 struct transform_30a6b0;
 long __cdecl function_30a6b0(long, long, transform_30a6b0 const *, long, long, long);
 struct simplex_303dd0 { __m128 a[4], b[4]; int count; };
 struct penetration_303dd0 { __m128 direction, point; float distance, fraction; };
 
-// score 654 (was 981): same size as retail now. The simplex is seeded one
-// difference at a time, the transform loop steps the source pointer and
-// writes the target through the difference, and every separating exit of the
-// reduction (in the header) breaks to one shared exit. Left: the simplex
-// count register and an extra register for &source_b at +0x1bd, and the mask
-// tests, where retail reads the mask from memory in the third test.
+// MATCH (was 642): the simplex is seeded one difference at a time; the
+// last corner of the first shape is stored through the float view, so the
+// second count is not known to be 3 when it is decremented. Each closeness
+// test masks its difference in place and names its sign bits; the second
+// shape's pair test reads its own mask copy and decrements the count in each
+// branch (the two decrements share one tail). The returned source corners and
+// the first normal component are stored through references, and the transform
+// loop steps the source pointer first.
 // @retail 0x303dd0
 int class_3048a0::function_303dd0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state)
 {
@@ -172,17 +184,18 @@ int class_3048a0::function_303dd0(convex_2fefd0 const *first, convex_2fefd0 cons
 	int result = function_30a6b0((long)first,(long)second,(transform_30a6b0 const *)transform,(long)&simplex,(long)differences,(long)&penetration);
 	int i;
 	for (i=0; i<3; ++i) s.a[i] = simplex.a[i];
-	for (i=0; i<3; ++i) s.source_b[i] = simplex.b[i];
+	for (i=0; i<3; ++i) { __m128 &point = s.source_b[i]; point = simplex.b[i]; }
 	if (simplex.count == 1) {
-		s.normal.m128_f32[0] = 1.0f; s.normal.m128_f32[1] = 0.0f; s.normal.m128_f32[2] = 0.0f; s.normal.m128_f32[3] = 0.0f;
+		{ float &normal_x = s.normal.m128_f32[0]; normal_x = 1.0f; } s.normal.m128_f32[1] = 0.0f; s.normal.m128_f32[2] = 0.0f; s.normal.m128_f32[3] = 0.0f;
 		s.count_a = s.count_b = 1;
 		return result;
 	}
 	s.count_a = s.count_b = 3;
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[1],s.a[2]),*(__m128 const *)search_magnitude))) & 7) || !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[2]),*(__m128 const *)search_magnitude))) & 7)) s.count_a = 2;
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[1]),*(__m128 const *)search_magnitude))) & 7)) { __m128 const &last = s.a[--s.count_a]; s.a[0] = last; }
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[1],s.source_b[2]),*(__m128 const *)search_magnitude))) & 7) || !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[2]),*(__m128 const *)search_magnitude))) & 7)) --s.count_b;
-	if (s.count_b >= 2 && !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[1]),*(__m128 const *)search_magnitude))) & 7)) { __m128 const &last = s.source_b[--s.count_b]; s.source_b[0] = last; }
+	if (search_points_close(s.a[1],s.a[2],search_magnitude_mask()) || search_points_close(s.a[0],s.a[2],search_magnitude_mask())) s.count_a = 2;
+	if (search_points_close(s.a[0],s.a[1],search_magnitude_mask())) { __m128 const &last = s.a[--s.count_a]; _mm_store_ps(s.a[0].m128_f32, last); }
+	if (search_points_close(s.source_b[1],s.source_b[2],*(__m128 const *)pair_magnitude_303dd0)) --s.count_b;
+	else if (search_points_close(s.source_b[0],s.source_b[2],*(__m128 const *)pair_magnitude_303dd0)) --s.count_b;
+	if (s.count_b >= 2 && search_points_close(s.source_b[0],s.source_b[1],search_magnitude_mask())) { __m128 const &last = s.source_b[--s.count_b]; s.source_b[0] = last; }
 	{ __m128 const *source = s.source_b; __m128 *target = s.b; for (i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
 	if (s.count_b+s.count_a > 4) ((class_303360 *)this)->function_303b80();
 	s.restricted_side = 0;
@@ -236,13 +249,10 @@ __forceinline bool search_new_point(__m128 const &first_corner, __m128 const &se
 	return true;
 }
 
-// score 111 (was 1955): same size as retail now. The inverse direction is
-// the transpose of the three columns, the second support point is read through
-// a const reference, the normal is bound after the squared length, the tail
-// stores the distance through a float, and the reduction's separating exits
-// break to one shared exit. Left: two lea instructions in the transform loop,
-// the previous_b load before push 1 (ecx, retail edx), scratch registers at a
-// few movmskps sites.
+// MATCH (was 58): the reduction switches on each query's result in its own
+// case, the separating results jump to its shared exit, and the source
+// pointer receives the second shape's vertices before it is reset for the
+// transform loop, after the target pointer.
 // @retail 0x3048a0
 int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state, closest_3048a0 *closest)
 {
@@ -253,8 +263,9 @@ int class_3048a0::function_3048a0(convex_2fefd0 const *first, convex_2fefd0 cons
 	float tolerance = 1.0e-10f;
 	s.count_a = counts[8]; s.count_b = counts[9];
 	((search_shape_3048a0 const *)first)->vertices(ids,s.count_a,s.a);
-	((search_shape_3048a0 const *)second)->vertices(ids+s.count_a,s.count_b,s.source_b);
-	{ __m128 const *source = s.source_b; __m128 *target = s.b; for (int i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
+	__m128 *source = s.source_b;
+	((search_shape_3048a0 const *)second)->vertices(ids+s.count_a,s.count_b,source);
+	{ __m128 *target = s.b; source = s.source_b; for (int i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
 	int result = 0;
 	for (;;)
 	{

@@ -534,7 +534,10 @@ void function_3dd10(long object_index, bool force);
 // loop; this round a separate blend-seed local, a do-while first scan, computing the inverse inside the
 // found block (132, but retail's exact length) and reading the variant byte before the blend's fmod (123,
 // but a changed prologue) all score worse, so the body stands.
-// score 123 (was 84): The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
+// score 123 (was 84): frame 0x54 and length agree. The first-bank and input-delta registers are swapped,
+// and the variant byte is read before the second remainder. The first scan's `!=` exits
+// differ from retail's signed `<` loop (unrolled by 4 in every
+// The 0x54 frame and 1034-byte extent agree. The first difference is an outer exit
 // displacement. The build holds the early variant byte across the second fmod in BL and swaps the output and
 // delta saved registers. Retail compares the byte in CL after the call and then stores the rounded blend.
 // Earlier score 123 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
@@ -695,6 +698,9 @@ void function_3dd10(long object_index, bool force);
 // late read and both single-precision absolute values and remainders 129. Both remainder overloads
 // recover the CL compare before the blend spill at +0x1c. NOT kept: overall score rises and the
 // signed scan exits and fallback unity reload still differ.
+// Signed weight pointer end with carried/derived ordinal 558/643; unequal end 283/313;
+// signed selection pointer end 297/301 and both signed ranges 574/652.
+// Signed weight ranges unroll. The unequal bound grows the frame and leaves the two output registers exchanged.
 // Round 415. last eligible choice address 219, last address with signed bound 635, last address and weight cursor
 // 229, last address with signed bound and weight cursor 576, last address and selection cursor 216, last address
 // with both cursors 229, last address and const indexed choices 219, last address with early ineligible skip 219.
@@ -702,6 +708,10 @@ void function_3dd10(long object_index, bool force);
 // Separate indexed second bank, advancing second bank, fixed-distance first bank cursor, and paired bank cursors:
 // 296/167/290/293. Variant byte after the blend remainder on the same four bank forms: 300/162/293/296.
 // NOT kept: none recovers both retail output registers and the spill order.
+// Round 628: current color reference/pointer and reference before entry 132 each; tint-first mask arm
+// 249, tint entry on fallback only 144, first-bank cursor with indexed second bank 283,
+// rounded blend at selection 198, const tint/choice references 123, shift supplied mask 179.
+// Output/delta saved registers, blend publication and the signed weight-scan exits still differ.
 // round blend after model lookup 159; round blend when choice is found 191; round blend at selection entry
 // 182; variant presence before blend rounding 214; model variant presence before blend rounding 222; round
 // blend after nested model lookup 159; conditional variant key before blend rounding 123; separate blend
@@ -994,6 +1004,10 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // walk both cursors with the ordinal advanced at the entry lookup 156. NOT kept: rebasing the output at setup
 // reshuffles both cursor homes and raises every score. The input spill and the destination register at the
 // blend call still differ.
+// Round 575: the late input spill and advancing destination in EBX remain unresolved. NOT kept:
+// explicit blend stride 85, scale stride 165, both strides 164, tint-entry stride 93;
+// byte-cursor countdown with returned receiver 187, library copy 83 (retail length, gain below bar),
+// read-only input reference 89, entry post-increment 169.
 // P603. Blend name bound at the guard 89, scale name bound at the guard 111, both names bound 111,
 // indexed blend guard before the record pointer 137, indexed blend name with admitted record 135,
 // both indexed names with admitted blend record 152, all indexed blend metadata 152, both names with
@@ -1008,6 +1022,12 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // channel 117/117; out-of-range stores only, low then high 116/116 or high then
 // low 116/116. Each pair uses an ordinary or fixed current pointer. The input
 // spill and the current pointer's register through the blend call still differ.
+// Retail still spills the input after admitting the count and keeps the output in EBX.
+// Paired stored values ascending/descending 185/155, byte extent ascending/descending 173/173.
+// With a native tint record byte offset 192/128/173/173. The descending pair forms reach retail length.
+// The source spill and destination register across the blend call still differ. The direct scale-name reads restore the guard span and length but raise the total.
+// Tried explicit blend latch 89, explicit scale latch 89, both explicit latches 89, unsigned ordinal 89,
+// read-only input and indexed output 100, blend value before colour operands 89, direct indexed scale name 110, admission result and remaining count 176.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {

@@ -189,7 +189,7 @@ void class_3193c0::integrate(lane_a_motion_step const *step)
 	LANE_A_INTEGRATE_COMPUTATIONS
 }
 // @retail 0x319490
-char *class_3193c0::integrate_output(lane_a_motion_step const *step,long,lane_a_motion_output *out)
+char *class_3193c0::integrate_output(lane_a_motion_step const *step,float,lane_a_motion_output *out)
 {
 	LANE_A_INTEGRATE_COMPUTATIONS
 	return (char *)out+0x80;

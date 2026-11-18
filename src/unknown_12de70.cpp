@@ -663,6 +663,13 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // through a fresh `geometry_cache_block_get(block_index)->block` lookup (0x12e210's spelling) 115 (293 B); the arm as a new
 // inline helper taking the block by const reference, the group named first inside it, with the test read straight from
 // the field 27 (the reference read merges with the test's before allocation).
+// Round 140 (m3 lane 12, fast with 0x12e210, which stays matched; control 27): round 85's field-reference form with the
+// count stored through g_4e28f0 18 (266 B: the store then sinks below the linked test, the arm still loads ESI late); that
+// form with the roles reversed (the test through the reference, the arm reading the field) 14 (266 B, the same code as the
+// original 14 form), with g_4e28f0 18, with the physical block local dropped 14; the arm's lookup through the block's own
+// `cache_block_index` (0x12de70's apply spelling, a second use of the block in the arm) 71 (the arm forms its own index
+// product, EBP unused); the one-use physical block local dropped (time pointer straight from the lookup) 27 and a named
+// `linked` flag in the real build 27 (both the same code).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

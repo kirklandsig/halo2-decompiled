@@ -452,9 +452,14 @@ struct s_record_collision_view
 
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
+// score 26 (was 26; 45 before, 71 earlier): the 0xd8 frame and 1089-byte length agree. Left: inside the rotation the
+// dot sums (k + i) + j where retail sums (j + i) + k (so the direction's j and k are stored and reloaded in the other
+// order and XMM3/XMM5 swap), and before 0x2104b0 retail stores the collision marker and forms the entry pointer ahead
+// of the point's x/z stores.
+// Earlier head (at 45, was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier score history (71 before).
 // score 26 (was 45): Plain half-axis coordinate traversal recovers native 1089-byte extent;
-// score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
+// Earlier score 45 (was 45; 71 before): The 0xd8 frame and 1089-byte length agree. The rotation's direction XMM assignments and collision-marker scheduling differ.
 // Earlier: Plain half-axis coordinate traversal recovers native 1089-byte extent;
 // frame 0xd8 agrees. Rotation j/k SIMD roles and marker/point publication still differ.
 // Earlier at 71 (was 90): the head (radius copied through XMM0, the sector field read before it), the ring block
@@ -1024,6 +1029,35 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // direct sine and cosine, direction copied by memcpy 215. The alternate axis helper with both trigonometric
 // values named ties the opening score. The other call forms raise it. Restored the original rotation call
 // and direction copy.
+// M3 lane 1 r119 (fast with 0x1ecf50, MATCH each time; control 26, aligned 26, 20 of them in the rotation). Retail's
+// rotation is the plain order: direction j stored and reloaded before k, the dot's products taken i, j, k and summed
+// (j + i) + k; ours exchanges j and k there and nowhere else. The dot's order (first, second, third term) by form:
+// k,i,j on this body and on every form below unless noted. The collision record, its marker store and the entry
+// pointer at the top of the trace's success block 20 re-measured (only the rotation is left; a declaration move, kept
+// only with a match). The sector read at its use 261 (1067 B); the trace origin written at each use 28; sine and
+// cosine written in the call 212 (1093 B); the pathfinding pointer by a conditional expression 199 (1090 B); the trace
+// distance read at each use 146 (1085 B); the ring loop as a plain `for` 262 (1061 B, dot k,j,i); the collision point
+// through real_point3d_set 26 (same code); the direction declared, then assigned 26 (same code); the angle named
+// ahead of the direction copy 233 (1104 B); the count incremented and then tested 26 (same code). The structure read
+// at each use for the trace's pathfinding pointer with a local at the second lookup, a local at the first lookup
+// only, or two locals 77 each (1085 B, dot i,k,j: the 71/77 state of the older notes), with the declaration move 71
+// each; the structure read at each use at both lookups 26 (same code as one local assigned twice). The existing
+// accessor 0x1fa7f0 for the trace's pathfinding pointer 77 (1085 B, it inlines; with the declaration move 71), for
+// both lookups 167 (1084 B). The existing shared axis helper of include/axis_rotation.h (0x2551f0's, which reads
+// the vector's k into a local first) with named sine and cosine 26 (same code as rotate_direction; with the
+// declaration move 20), with sine and cosine written in the call 212 (1093 B). The pathfinding lookup moved ahead of
+// the rotation call 144 (1095 B), to the top of the spoke body 160 (1096 B), after the direction copy 150 (1095 B),
+// after the angle 259 (1105 B). Diagnostics, restored at once: the unread pathfinding pointer in a one-member
+// aggregate in place of the volatile local 155 (1060 B: the stores go); one to six dead locals ahead of the
+// direction, or one to three at the function top, 26 each (same code: no numbering effect). Lead: the unread
+// pathfinding store and the marker are what 0x26d0e0's body does (it sets the marker and calls 0x26d100, and its third
+// parameter is unread), so retail reads as that body inline here with 0x1fa7f0 inline as the unread argument; no
+// existing inline form of it exists, and src/unknown_26c380.cpp was another lane's this round.
+// The rotation still schedules the direction components differently, and the transform
+// input stores precede the collision marker. Lifted coordinates in the point setter
+// 172, lifted point aggregate 67, named lifted coordinates 172, separate collision
+// probe point 58, disjoint transform and probe points 56, scoped pathfinding views
+// 77, direct pathfinding views 26, direction setter 248. Original body retained.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -1031,6 +1031,12 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // position taken after the three components 6. Reading:
 // retail's loads from the flag never pass a stack push (the add waits for `push esi`, the first fld for both `push 1`),
 // ours pass them freely, so retail's scheduler may not have separated the flag's memory from the stack.
+// Round 118 (m3 lane 10, fast with 0x2a1120, which stays matched): a `vector3f *` to forward taken before the flag
+// lookup and used for the three stores and the call, with a const flag and the position inline 6; the up vector read
+// into a named `vector3f const *` before the call 6; forward and the call in an inner block 6; i and j stored as the
+// yaw cosine and sine, then scaled by `*= cosf(pitch)` 29 (93 bytes); a named scenario view with the flag as
+// `cutscene_flags + index` 6. In every form the scenario add and the first fld still pass `push esi` and the second
+// `push 1`.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

@@ -1231,6 +1231,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // copy of the player pointer, or a `long const &` to the field, for the lookup 17/17/17; test, lookup and call reads
 // each through the player pointer or the getter in place, with the result before or after the player (14 forms), best
 // 5 (lookup through the getter), the rest 26-68; the player fetched again ahead of the lookup 26 (parameter in EDX).
+// M3 lane 6 r192 (fast with 0x152bf0), the lookup's unit-index read only: as `*(word const *)&player->unit_index` 38, every
+// register retail's with retail's player address, left `movzx edx, di` for `mov edx, edi; and edx, 0xffff` (a narrow read
+// stays a separate load until after allocation); `(word)` and `(short)` conversions 38/38 (same code); full-width reads as
+// `(long)*(void *const *)&`, `*(unsigned long const *)&`, `*(int const *)&`, `*(&player->previous_unit_index - 1)` and
+// `(&player->unit_index)[0]` 17 each (merged early); `(word)tail_player_get(player_index)->unit_index` 43.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

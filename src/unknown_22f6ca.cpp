@@ -207,6 +207,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // 23; accessor and setter together in the model loop 23; the model call and animation read through a `c_class_1473c9 *&`
 // bound to the screen 23; the model bound to a `c_class_1a2c81 *&` over a plain local 23; `i = 0; if (i < count)` guarding the
 // model loop 23, the text loop 23 (the guard folds away; it moves neither the resets nor the EAX copy).
+// M3 lane 2 r99 (fast): `inline` on 0x22fa5b's definition 23 (stays out of line, same code); the model's value0a store
+// written in both arms of the animation test 23; a separate widget local per loop declared at the pane block's top 23;
+// `long i = 0;` above the pane lookup with the first loop also `for (i = 0;` 66, and the first loop `for (i = 0;` under
+// main's `long i = 0;` 66 (both give one zero register, EBX, for the whole function; the model reset becomes `mov`).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
