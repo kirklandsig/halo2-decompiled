@@ -1111,6 +1111,23 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 // loads object_index first); that with the named table pointer and result ahead of the header 294 (aligned 90); with only
 // the model test nested 304 (813 B, aligned 129); object_index, the matrices parameter or both read through their own
 // address on the 295 form 295/295/295/295, with the table pointer 294 (same code: the reads fold). Body unchanged.
+// M3 lane 11 r117 (fast with 0xbfe60/0xbfe20/0xbdb60/0x137800/0xbfc90, all matched throughout; control 240, aligned 177,
+// register-masked 67). Retail's early exits sit after the main epilogue and return EDI (a copy of the parameter made after
+// the first compare), the main exit returns result from its home, and the parameter stays in EDX from the third
+// instruction to the late final_matrices store; a single exit gives most of that. Re-measured: single exit with the 0xbfe20
+// clear and bit 29/+0x34b through header->object 295 (825 B, aligned 91, masked 41), with final_matrices at the top 287
+// (aligned 83, masked 39). New: single exit with the plain `&=` clear and bit 29/+0x34b through `object` 270 (841 B,
+// aligned 132); single exit with the 0xbfe20 clear and every spelling of the three object reads (early tests through
+// header->object, object_get() or the written-out lookup; `object` through object_get() or header->object; bit 29/+0x34b
+// through header->object, object_get(), the written-out lookup or `object`), 24 forms: 295/280/280/282, 316/305/305/315,
+// 274/289/289/291, 297/277/277/299, 274/289/289/291, 297/277/277/299 (rows: early tests header, header, object_get,
+// object_get, lookup, lookup; `object` object_get then header->object alternately; columns in the bit-29 order above),
+// aligned 71 to 97, masked 33 to 46; on the 295 form result declared ahead of the header 294, a named table pointer then
+// result then the header 294 (same code). Diagnostics (reverted): result held as a `long` copy of the parameter 240
+// (same code); on the 295 form the `object_index == NONE` test removed 289, the parameter's three later reads replaced
+// 295, the outer parameters declared in the opposite order 295, five later object_index arguments made constants 304: in
+// each object_index still loads first (ECX or EAX) and the parameter takes ESI, so the entry roles follow neither
+// declaration order, the parameter's later reads nor object_index's use count. Body unchanged.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)

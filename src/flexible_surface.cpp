@@ -831,6 +831,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // draw, cosine after or before sampling 152/158 and 152/158. Each pair copies
 // the table entry whole or by components. Whole-entry forms reach 880 bytes
 // with the 0x1c frame. Direction read order and the frame still differ.
+// Shared rotation snapshots direction j/k or k/j before the projection. Direct
+// projection 150/148, with cross j/k before i 150/148, named unscaled dot 148/158,
+// with both 148/158. The frame reaches 0x20, first difference +0x2a, with the seed
+// still loaded late. NOT kept: all scores rise and the matched rotation user differs.
 // Unit-range generator 154, directly in the angle 203; integral sample converted in the
 // angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
 // shared draw value or separate const samples 130/130. NOT kept: sample and rotation
@@ -839,6 +843,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // before/after axis 165/165, with named sine/cosine 165/161. Round at the
 // angle producer and hold the promoted argument 161. NOT kept: the last form
 // recovers frame 0x20 at 880 bytes, but the seed placement and rotation differ and the score rises.
+// Tick getter with a direct product, factor-first product, named short factor, or named tick count
+// 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
+// NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
+// The named short factor reaches 880 bytes but raises the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -579,6 +579,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // calls to the C form 446/369/375); the first block's eleven texture-stage calls through the existing wrapper 0x224f0
 // 465 (2236 bytes); the colour bound by a `color3f const &` 2 (same code). Diagnostics: the first quad's inline-depth
 // start moved one call later 2; an unreferenced float function added to the file leaves 2 and 0x254490's 4.
+// Round 185 (m3 lane 8, fast with 0x254490 and 0x254200; control 2): the bitmap and stage calls' 0.f arguments as
+// integer 0 2; every depth constant as a double literal 2; the first quad's four texture calls through a forceinline
+// two-coordinate wrapper 263 (first difference +0x83: the texture-stage block inlines differently); every depth
+// constant through a forceinline accessor returning it 340 (2197 bytes, same cause); the two lookup helpers plain
+// `inline` in place of forceinline 2. The two reloads after the second texture reservation stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

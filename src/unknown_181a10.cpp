@@ -1022,6 +1022,21 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // copy of the zero test's load where retail reloads the data into EDX and compares `cmp ecx, edx`). Reading: matched
 // 0x1c5400 and 0x1d4880 compile the same test with immediate compares and one load, so retail's three loads here go with
 // the bounds-in-register form (the zero test's ECX is taken by the bound, so the data is reloaded, not copied).
+// M3 lane 7 r179 (fast with 0x1829b0, 0x1821d0, 0x182800 and 0x183670, all MATCH each time; control 238, aligned 188, addresses
+// masked 138). Reading: retail's three `cmp ecx, edx` in the 1..16 test have the same operands, the bound in the result register
+// and the data in EDX, so the 1 and 16 arms were threaded past the final compare after the code was laid out (their `mov ecx`
+// loads are dead), and the data is a memory operand loaded once per `&&` operand, not a copy of the zero test's load. Tried:
+// the exclusion test through a helper that writes a bool through a pointer (stores between the reads) 333 (1255 bytes, one
+// load); `limited = 1;` declared ahead of a `value` local with `!(limited > value)` tests 326; the same tests reading
+// `shape->data` at each use, no value local 321 (`mov ecx, 1; mov eax, edx; cmp eax, ecx; jl`: the bounds are in ECX but the
+// data is a copy of the zero test's load and the operands are swapped); those through a `long const &` to the field 320 (1244
+// bytes); the at-each-use tests inside a multi-return bool helper on the node 263 (1247 bytes: retail's `setne al; test al, al`
+// as well, still one load). Left as before: the zero test's load is shared with the classifier's in every form.
+// Second node first 245, scoped root and entity 238, nested data guards 238,
+// bound-specific classifier returns 336, validated result key 331,
+// entity arm first 310 at 1243 bytes, named coefficient outputs 238,
+// first-node scope ending at input capture 245. NOT kept: frame 0x40 and
+// the second-node spill remain in all eight forms.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

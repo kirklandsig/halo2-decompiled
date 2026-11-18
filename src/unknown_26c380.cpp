@@ -126,7 +126,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
-// score 244 (was 244): earlier 410; the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
+// score 244 (was 244): The return and first-edge bytes use exchanged slots, and the two cutoffs miss retail's shared tail.
+// Earlier 410; the held 34 form (see below) with its two goto exits written as breaks.
 // MiniMax G (11-12): no new form, no lower score (244); a plane2f line with the cross written out gives retail's normal/offset homes but grows the body to 1612 bytes (300), and the two-level exits reach the shared tail only through the held form's goto, which is match-only.
 // MiniMax G (11-11): no new form, no lower score (244); retail gives the function scope locals the lower homes and the
 // inner scope ones the higher (the current sector 0x30, the line distance 0x34, the success flag 0x0e, the first-edge
@@ -655,6 +656,11 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // loop-scoped next sector with and without shared cutoff 202/244; positive endpoint state with and without
 // shared cutoff 203/245. NOT kept: shared cutoff still tests hit and next sector at the shared exit and
 // shortens from 1593 to 1588 bytes. Accepted crossing processed after the edge scan 483.
+// Counting at the outer-loop boundary leaves the return and first-edge byte homes exchanged.
+// Post-scan increment and outer for increment 231/231, for-owned count 270; zero-based visit
+// number before iterator setup or at sector entry 364/198; loop-carried previous sector
+// after the scan or in the for increment 384/384; history with post-scan count 362.
+// NOT kept: the lower scores shorten the body further, and the entry-count form changes the prologue.
 // M3 lane 10 r119 (fast; all on the held goto form rebuilt from this body, re-measured 34 at 1605 B): tail C stored
 // blocked, edge, distance without its `success = false;` 60 (1607 B: success moves to a high stack home); the line
 // offset from `(vector2f const *)&normal` after the planar copy 359; `while (next_sector_index != NONE)` 34 (same code);
@@ -667,6 +673,16 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // endpoint 660, common entering and departing endpoints 648. The after-scan
 // edge reaches retail length with the same byte-slot difference. The original
 // body retains the first-edge and success bytes in the exchanged homes.
+// Traversal-local distance history alone or with edge history, crossing count, or both:
+// inside the admitted path 261/410/384/431; inside the projected line 289/289/290/424.
+// NOT kept: each changes allocation before the return-byte initialization. Moving both
+// histories and the count also risks the matched callers.
+// The success and first-edge bytes still occupy exchanged homes. The two cutoff exits still differ.
+// Tried shared result read at the sole return 566; direct result reads at the existing terminal branches 565;
+// constant return for each distance overrun 434; blocked field return for each distance overrun 559;
+// common clear-distance tail with the result local 335; common clear-distance tail with direct returns 480;
+// terminal blocked branch returns true directly 387; terminal blocked branches return the field directly 386.
+// NOT kept: The merged tail shortens the body and leaves its flag placements. The direct returns move the opening zero register.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

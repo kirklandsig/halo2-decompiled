@@ -459,6 +459,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // `add esi, edi`), as an integer sum 9, with the offset local declared ahead of the samples local 9 (same code: the
 // commutative add keeps the offset as its destination whatever the declaration order); the sum named before the set's
 // declaration 2; the scale copied into a local at the call 2 (both the same code).
+// M3 lane 3 r260 (fast with 0x10e480, 0x18c720, 0x18c6a0, 0x18cb10): the sound, data, entry and count locals declared bare
+// and then assigned 2; no sound-tag local (its promotion index read inline) 2; the curve set as an aggregate initializer on
+// the copied samples address 4; the guard written `0 < count ... != 0` 2; the entry index in a named local 2.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

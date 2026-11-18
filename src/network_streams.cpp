@@ -1116,6 +1116,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // the message getter: reconstructed newest 88/91/88/91; wide distance from
 // oldest 172/165/172/165. NOT kept: native loads and single cursor remain
 // different, and all eight extents move away from 225 bytes.
+// Scan selects the entry before publishing the outputs. Index with live cursor 83/67,
+// message with saved sequence 91/35, saved index and sequence 83/67, loop test on
+// pending message with one-past cursor 96/84. Each pair sets the bit in place or
+// writes the saved flag word. NOT kept: the in-place forms still lose the retail
+// message/flag registers. The message and saved sequence tie only with a word store.
 // In-place resend update with size/time/both captured before sequence publication 90/90/90.
 // Both captured with saved flags 88. Single exit from the found path with saved/in-place flags 35/89.
 // Initial send to single exit 89. Complete eligibility with in-place update 89.
@@ -1131,6 +1136,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // branch 89/35, table base before validation 90/45 (in-place update / saved word).
 // NOT kept: the saved-word absent-index forms recover ECX/AX but change the lookup
 // branches and still write the full word. The in-place update loses the opening allocation.
+// In-place resend bit with conditional selection, invalid-first selection, a scan-scope message,
+// or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
+// NOT kept: the array base preserves the query setup and restores the byte memory OR, but
+// moves the cursor and oldest to different registers. The other forms also change the query setup.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
