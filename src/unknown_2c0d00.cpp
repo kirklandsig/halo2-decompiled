@@ -591,6 +591,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // settings tests 920, complete priority or range defaults within the gate 931/916,
 // nullable settings after actor evaluation 927, immutable limits with ordinary/scoped query 960/960.
 // NOT kept: the four-point preview improvement leaves the eight-byte frame difference.
+// N421 previews: slot-object accessor with the existing field view 926; slot-object type field observed
+// through a signed byte reference 944; actor team observed once for the type-one comparison and call 910;
+// actor team observed once for the vehicle comparison and call 932; signed actor team observed once in each
+// comparison and call 913; word team pair observed once in each comparison and call 913; typed facing flags
+// and vectors on both actor paths 926; typed object fields with stable team pairs 913.
+// NOT kept: the reduced 910 and 913 forms retain the larger frame and shorten the body away from retail.
+// The type reference closes four frame bytes and regresses in score and length. Reduced control 926.
+// Opening body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

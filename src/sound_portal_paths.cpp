@@ -363,6 +363,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // 15/16; the valid words as an initializer or assignments flip the pair but share a zero register (1339 B, 348/34); the
 // 24 orders of the deep block's statements 15 or worse; a separate stored-index copy (9 forms) 19/20; an index local in
 // the nearest block 19/20; the nearest test with the NONE test first flips the pair but changes the block order (322/30).
+// Shared bitmap setters at the seed, destination or both 354/354/354. Shared tests for distance,
+// sort fill or output 333/354/354, all three 333, complete bitmap API 333.
+// NOT kept: the distance test shortens the function to 1347 bytes and leaves both BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)

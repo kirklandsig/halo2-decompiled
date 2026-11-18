@@ -1087,6 +1087,14 @@ static inline void rotation_matrix_transform_171d90(s_rotation_matrix const *m, 
 // weighted-axis vector 343; retained original forward scalars 378; one horizontal field read 379;
 // vertical field result reused for the half-angle 363; sin and cos passed to the matrix builder 350.
 // NOT kept: the weighted-axis vector gains three at 1453 bytes and leaves the unity register different.
+// Unity and the first axis squares still have different registers.
+// Tried second angle after the first matrix 367, second angle after the first complete rotation 386,
+// second angle evaluated first 339, both atan results used at their matrix calls 402, earlier scaled
+// vertical tangent with deferred arctangent 352, shared axis-angle builder for the world axis 391, shared
+// axis-angle builder for the rotated axis 331, shared axis-angle builder for both axes 347.
+// NOT kept: The common builder for the rotated axis reaches retail length but combines two axis components
+// before the cosine factor where retail scales one component first. Reversing the angle definitions gains
+// seven and shortens the body.
 // Matrix returned by value 471 (initializer loses its match); shared alias-safe transform 361; staged basis transform 368.
 // Axis-square diagonal accumulators 346; staged diagonal 363; separate scaled cosine terms 363.
 // Original direction copied by memcpy 346; separate transform source pointer 383. Unity still starts in XMM3.

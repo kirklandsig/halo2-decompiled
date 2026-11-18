@@ -1238,6 +1238,16 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Named distance and quotient 394. Signed numerator before division 395.
 // Timer published after both axes with conditional expression or branch result 378/378,
 // or elapsed seconds named on the nonzero path 377. The j preload and zero register still differ.
+// Direction j still needs the initial load and XMM1 still holds zero in the point path.
+// Tried both point cases share the basis reset before projecting 489, recognized point types share the
+// basis setup 489, contiguous point types share the basis setup 487, recognized types reset the basis
+// after any position projection 494, project the displacement from the matrix position onto the plane
+// normal 454, project the displacement toward the matrix position with the corresponding sign 466,
+// explicit origin and offset projections supply the signed factor 412, implicit plane offset gives way to
+// a native normal and independent projections 413.
+// NOT kept: The shared basis reset removes retail copy instructions. Point-difference forms alter
+// arithmetic grouping. The independent projections keep separate dots but still miss the preload and grow
+// the body.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
