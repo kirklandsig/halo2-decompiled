@@ -1140,6 +1140,11 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
 // NOT kept: the array base preserves the query setup and restores the byte memory OR, but
 // moves the cursor and oldest to different registers. The other forms also change the query setup.
+// M3 lane 16 r137 (fast with 0x96510/0x94df0; control 35): on the member update (`message->flags |= 2;`, 89: `time` is
+// loaded into EBP at entry and its home reused for `type`, `next` takes ECX): `*time` written through a pointer to the
+// parameter's home 89 (the indirection folds); `next` declared at function scope 89; the update ahead of the three
+// stores 90; no flags local (tests on the member) 89. On the kept form: flags as `dword` with a `(word)` store 35
+// (same code).
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {
