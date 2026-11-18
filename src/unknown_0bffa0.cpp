@@ -916,6 +916,15 @@ byte g_55e708;
 // 0xc34f4); the opacity reloads into ECX (0xc3568). Tried on the current form, none moves it: if/else with the
 // first-person count assigned inside its test 38; `+ 0` on the fallback result 38; a named long fallback copy also
 // tested in the clamp 146 (623 bytes).
+// M3 lane 15 r97 (fast with the same list; aligned = LCS count in brackets, base 38 [18]): read by alignment, the count
+// lives only in its home (+0x14) in retail: each arm stores it there, the fallback's sign-extended result lands in EDX
+// (EAX had carried the pushed object index) and is copied to EAX for the clamp test, and from there the loop's and the
+// single-marker arm's scratch picks follow. A long raw count copied into a separate count 113 [6] (every line from the
+// clamp on is then retail's; left are the first-person arm's missing home store, the fallback's EDX and copy, and a
+// second home at +0x18), the same with a short raw count 115 [8], both counts short with a conditional 115; the two
+// counts joined by a conditional expression or an if/else assignment 106 [24] each; the first-person count assigned
+// inside its test with the fallback in the else 38 (same code); the clamp through a pointer to the count 38 (same
+// code), through an inline helper taking that pointer 123 (591 B, stays a call).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1341,6 +1350,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // the positional gains ride on retail's length only. Diagnostic: light_projection_point_ab's parameters as (point,
 // matrix, result) and as (result, matrix, point) at the definition and its five calls 290 each (same code: the helper's
 // own symbol order does not move the rows). Body unchanged.
+// M3 lane 8 r184 (fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; control 290): a matrix pointer for every matrix
+// access in the sphere arm 588 (2788 B); light_projection_point_ab's pre-scale through the existing vector3f_scale on a copied
+// vector 715 (2962 B); the sphere bounds call given the constant 4 600 (2777 B); the cone depth as `origin_offset +
+// far_distance` 290 (same code); a const up-vector pointer for both cross products 530 (2815 B). Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

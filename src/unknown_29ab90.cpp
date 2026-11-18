@@ -39,6 +39,12 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// MiniMax G (11-18): no new form, no lower score (286): the frame's homes are still permuted (ours [esp+0x24]
+// where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
+// magnitude), the working-vector group still sits at [esp+0x3c]..[esp+0x64] where retail has
+// [esp+0x48]..[esp+0x38], and site 1's planar normalize still keeps its own zero path where retail uses the
+// shared helper in include/unknown_11cc90.h (BLOCKED-BY 0x2b400); the body stands.
+// MiniMax B (11-18): no new form, no lower score (286): the magnitude and the settings pointer still take each other's frame homes (ours [esp+0x10] and [esp+0x14] against retail [esp+0x14] and [esp+0x10]), the unit pointer still sits at [esp+0x24] where retail has [esp+0x1c], the three working vectors are still a rotation off retail's, and site 1's planar normalize still keeps its own zero path where retail calls the shared 0x2b400 helper in include/unknown_11cc90.h: BLOCKED-BY 0x2b400.
 // score 286 (was 286): The early object/settings spills and subsequent magnitude, saved direction and planar homes still differ.
 // MiniMax I (11-17): no new form, no lower score (286): the same four bytes of frame separate ours from retail (ours
 // [esp+0x24] where retail has [esp+0x1c] for the unit pointer and ours [esp+0x14] where retail has [esp+0x10] for the
@@ -482,6 +488,17 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // Object/settings spills and the initial vector homes remain. Separate vector declarations in all six
 // orders with original assignments, call-scoped query outputs, and scoped outputs with the
 // published vector declared first: eight at 286.
+// M3 lane 6 r191 (fast with 0x29b2e0/0x1f9760/0x1e5450/0x30bf0/0xb9dd0; control 286, of which 37 flagged lines differ only in a
+// stack offset): what orders the 12-byte homes is the order of first assignment, not the declarations or the names. The
+// output vector (the first copy of the global) initialised ahead of the working vector puts both in retail's homes (+0x38 and
+// +0x44) but emits its copy first, 290; the second copy of the global initialised ahead of the first 286 (its home does not
+// move); the output vector declared bare ahead of the working vector 286, and at the top of the function 286 (same code);
+// the four vectors renamed in ascending and in descending alphabetical order of retail's homes 286/286 (same code).
+// Diagnostics: two more whole reads of the output vector at the end 301, three more settings-field reads 349 (1898 bytes):
+// neither moves a home, so reference counts do not order them either. Retail therefore refers to the output vector before
+// the working vector's copy without storing to it there; no natural form found. Site 1's planar normalize is still the
+// inlined 0x2b400 (`x = x * inv; y = inv * y`, the zero written into the magnitude's own home, scaling path first), and
+// 0x2b400 is pinned out of line in machine 1's src/unknown_02b400.cpp: BLOCKED-BY 0x2b400.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

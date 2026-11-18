@@ -2119,6 +2119,24 @@ void function_b7360(long object_index);
 // 0x25ab50 writes nothing (0x25a380 in the same file keeps its reference and the scenario pointer in ESI/EBX across the same
 // call, which named locals would also give); a natural form of 0x25ab50 that hides that, with locals at its other callers
 // (0x25a380, 0x1b0f20, 0x1b13b0, 0x1c1080, 0x2773d0), is what would unlock this body. Body unchanged.
+// Select the point through the existing set accessor in cases 1/19, case 5, or both,
+// 270/270/270. Name both decoded ordinals in each path or both paths, 270/270/270;
+// name just the set or element ordinal in both paths, 270/270. NOT kept: ties. The point
+// reference still stays live across validation and the entry and output registers differ.
+// M421: Low-word actor/command/both pool ordinals 471/471/482; point-set accessor in movement/recording/both 272/272/270;
+// named point sets 270; word set and point ordinals 465. NOT kept: the word ordinals change entry scheduling without
+// restoring actor/output register roles. The packed reference still stays live across validation.
+// Tried const actor view 270, const actor reference 270, native state flag and slot fields 270,
+// countdown reference 272, selected payload reference before object call 275, payload reference at publication 272,
+// validation result in the point, movement and equipment cases 270/270/270.
+// DH406: Positive validation scopes for movement/initial point, recording and follow, each alone, all
+// three pairs and all together 270 each. With separate actor and point guards in recording, 270. NOT
+// kept: ties. The actor and output registers stay reversed and the post-validation reference reload is
+// still missing.
+// Perception index after both lookups 272, before the command lookup as a value/reference/predicate 487/487/487,
+// command getter or named type in the guard before payload lookup 506/506, early perception with explicit type
+// comparisons 477, early perception and type 487. NOT kept: the actor-first forms load the actor data too early,
+// and the actor/output roles and packed-reference reloads still differ.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2527,7 +2545,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 }
 
 // MiniMax E (11-16): no new form, no lower score (479): our body still runs eight bytes longer than retail's, so the jump table lands later; the two floats read from the actor view still reach the local through eax/ecx with the store before the lea, and the aggregate copy at +0x424 and case 4's direct facing reads are still not reproduced.
-// score 479 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
+// MiniMax H (11-18): score 433 (was 479): the switch's cases now sit in retail's order and case 13 returns 1;
+// what still differs is the shared return-1 block, which this build keeps at the end of the function where retail
+// places it after case 0's body at the case-13 slot, the case-13 body, which returns through a 16-bit move
+// where retail's is the shared 32-bit one, the turn-facing sum, which is added in the other order, the case-4
+// dot product, which this build computes with another file's helper where retail inlines it, and the facing
+// and colour copies, which choose the other registers. The turn-facing sum written with its terms in the other
+// order measures 431, a gain of two, which is below the keep bar.
+// score 433 (was 479): The dispatch branch span and timer/exit layout still differ. The 0x1c frame and entry registers agree.
 // m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
 // frame 0x1c and entry agree. Dispatch span, planar copy and request flag stores differ.
 // Earlier m3 lane 16 r120 (fast control 479 = full; all restored): every result goto as a plain `return 1;`
@@ -2938,6 +2963,21 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Request bit setter for 0x29/0x48/both 453/445/452. NOT kept: copy forms tie or regress versus the
 // reduced control 474. Setters increase length to 2416-2432/2396 bytes and give different store sequences.
 // MiniMax R (11-17): no new form, no lower score (479): the switch's jump table still lays the case blocks out in the source's order rather than retail's (1, 2-group, 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21, 14, 20), so the actor takes edi where retail keeps the state in ebx, and the rounds above record that no case order or arm spelling moves them.
+// guarded pending tail 657; three facing branches 474; delayed facing first 578; negative delay admission
+// 474; fallback point selection 478; carried turn admission 474; separate active timer paths 481; selected
+// animation ticks 627. NOT kept: The delayed-facing branch forms tie the reduced control at 474. Selecting
+// the fallback point by address reaches 2396 bytes at 478 in that image, but changes the load boundary and
+// scores above the reduced control. The other variants regress.
+// The dispatch span, state-bit completion layout and animation copy registers still
+// differ. Shared subtype flags 479; subtype completion from the flag 618; incomplete
+// subtype guard 479; signed tick-reset value 477; shared countdown/facing flags 479;
+// retained selected object 479; facing scalars 627; playback admission guard 479;
+// committed turn flags 475. NOT kept: the tick and turn forms shorten to 2400 bytes,
+// but gain only two and four points and leave the dispatch span different.
+// DH406: Direct completed returns for case 1 distance, case 4 facing, or the clear timer flag in cases
+// 7/8 at 574/452/482. The three pairs 559/574/451; all three 559; all three with the default and case
+// 13 sharing a return 619. NOT kept: every form regresses at 2416 bytes. The native full-width
+// completion tail and dispatch span still differ.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -3025,6 +3065,8 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 	case 0:
 		local_3 = local_2->field_0 == 0;
 		break;
+	case 13:
+		return 1;
 	case 5:
 		if (arg_1 == local_0->unknown018)
 		{
@@ -3081,14 +3123,6 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			local_3 = false;
 		}
 		break;
-	case 14:
-		if (!(local_2->field_3 & 0x20))
-		{
-			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
-			local_3 = false;
-		}
-		break;
 	case 18:
 		if (!(local_2->field_3 & 0x20) && function_25ab50(local_1->unknown28) && function_25ab50(local_1->unknown2c))
 		{
@@ -3109,6 +3143,14 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			function_1c1080((s_slot_82 *)g_5023fc, local_1->unknown28);
 			local_2->field_3 |= 0x20;
 			*(short *)g_502400 = 0x82;
+			local_3 = false;
+		}
+		break;
+	case 14:
+		if (!(local_2->field_3 & 0x20))
+		{
+			local_2->field_3 |= 0x20;
+			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
 			local_3 = false;
 		}
 		break;

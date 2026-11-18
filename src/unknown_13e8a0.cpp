@@ -695,10 +695,16 @@ struct s_text_line_measurement
 // Two-use glyph sum for offset/kerning/width, offset/kerning, kerning/width, and staged
 // offset/kerning/width, each inline/forceinline 77/77/77/77/77/77/77/77. The independent advance
 // copy and early width load still differ.
+// M3 lane 12 r139 (fast with 0x13f700/0x13f0e0, control 77): the width update before `count++` 77 (the stores then follow
+// retail, width first; no score change); the header pointer const 77; can_break read into a bool before its test 77 (both
+// same code); the advance defined before the kerning call 82; the update summed a+k+o+w, o+a+k+w, o+k+a+w, k+a+o+w 77 each.
 // Scalar SSE advance/offset/kerning/all products 121/129/129/153. Scalar SSE comparison
 // sum/accepted width/both sums/both sums with all products 143/126/134/179.
 // All introduce 16-byte stack alignment and regress at the entry. The separate advance
 // register and early width load remain unresolved in the restored body.
+// Conditional overflow count 80; separate wrap first 77 or accepted glyph first 77;
+// conditional width 77, count 77, or both 77; wrap before the separate width or count
+// update 77/77. NOT kept: the ties still lack the independent advance register and early width load.
 // @retail 0x13ef40
 s_text_line_measurement function_13ef40(s_text_iterator *iterator, point2f const *position, box2f const *bounds, real scale)
 {

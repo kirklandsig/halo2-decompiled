@@ -205,6 +205,11 @@ public:
 // Ordinary split tail 327; offsets after pointer step 652; partial predicates
 // 773; value width tests 456; inner value switch 553; paired sum parts 327;
 // named mask inputs 327; upward plane count 922. All restored.
+// MATCH (was 3): the other side's upper corner is assembled through references
+// (high bytes shifted in place, the low byte a separate named value declared
+// first): one more named value in that arm makes second_offset outrank
+// first_offset, which moves the fixed_point/bound reloads of the first side's
+// three-byte bound into retail's order.
 // @retail 0x2dc220
 void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, fixed_point_2dc220 const *fixed_point)
 {
@@ -304,7 +309,16 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, f
 			if (bound >= 0x29)
 			{
 				other[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				other[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				// the upper corner is assembled in place: high bytes first, the low byte added last
+				long low_byte;
+				long &low = low_byte;
+				long high_bytes = q[4];
+				long &upper = high_bytes;
+				upper <<= 8;
+				upper += q[5];
+				upper <<= 8;
+				low = q[6];
+				other[1].m128_f32[bound - 0x29] = (float)(upper + low) * scale;
 				second_offset += 7;
 			}
 			else
@@ -522,11 +536,13 @@ public:
 	void function_2dce60(pending_2ddbd0 *pending, void const *root, __m128 const *offset);
 };
 
-// score 4 (was 86): the split section sits inside the switch; the sphere test declares the
-// extent before the diameter; case 0x20's low and high values are built through references;
-// and one such value carries both three-byte reads of the first bound loop, which puts the
-// spill cells where retail has them. Left: `add ebx, 7` and `fild` are exchanged in both bound
-// loops' three-byte arm.
+// MATCH (was 4): the split section sits inside the switch; the sphere test declares the
+// extent before the diameter; case 0x20's low and high values are built through references,
+// with the shifted high bound in the walk's `value`, which also carries a nested node's
+// length across the call: that one variable is what puts the two sides' saved pointer and
+// state in retail's stack cells.
+// Before, 4 (was 86): one reference value carried both three-byte reads of the first bound
+// loop; `add ebx, 7` and `fild` were exchanged in both bound loops' three-byte arm.
 // Before, 86 (was 172): from the plane test's guarded group loop shared with
 // 0x2dc220 (this function's own text is unchanged).
 // Before, 86 (was 122): the same length as retail. The walk's position is
@@ -590,12 +606,12 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, _
 		case 0x13: case 0x14: case 0x15: case 0x16: case 0x17: case 0x18: case 0x19:
 		case 0x1a: case 0x1b: case 0x1c:
 		{
-			long const skip = commands[3];
+			value = commands[3];
 			other[0] = box[0];
 			other[1] = box[1];
 			commands += 4;
 			function_2dce60(position, commands, other);
-			commands += skip;
+			commands += value;
 			continue;
 		}
 		case 0x10:
@@ -622,10 +638,10 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, _
 			long &below = low;
 			long high = below + 1;
 			long &kept = high;
-			kept = (kept << position->shift) + position->corner[op - 0x20];
+			value = (kept << position->shift) + position->corner[op - 0x20];
 			below = (below << position->shift) + position->corner[op - 0x20];
 			other[0].m128_f32[op - 0x20] = (float)below * scale;
-			box[1].m128_f32[op - 0x20] = (float)kept * scale;
+			box[1].m128_f32[op - 0x20] = (float)value * scale;
 			first_offset = 0;
 			commands += 3;
 			second_offset = commands[-1];
@@ -654,10 +670,10 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, _
 				long high = q[1];
 				long &kept = high;
 				kept <<= 8;
-				kept = ((q[2] + kept) << 8) + q[3];
-				box[0].m128_f32[bound - 0x29] = (float)kept * scale;
-				kept = READ_3_2DCE60(q + 4);
-				box[1].m128_f32[bound - 0x29] = (float)kept * scale;
+				long const sum = ((q[2] + kept) << 8) + q[3];
+				box[0].m128_f32[bound - 0x29] = (float)sum * scale;
+				long const top = READ_3_2DCE60(q + 4);
+				box[1].m128_f32[bound - 0x29] = (float)top * scale;
 				first_offset += 7;
 			}
 			else

@@ -556,6 +556,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// score 115 (was 114): earlier 114 (was 114), 114 (was 115); frame 0x264 agrees; the predicate bytes' packing, the left word and the colour, rectangle and scalar homes differ.
+// The body is unchanged: 114 and 115 are the same source in two whole-image states (one adjacent reload pair swaps). One note, the rounds' entries below.
 // MiniMax R (11-17): no new form, no lower score (114; 115 in the batch of all fourteen, whose reduced image is wider): retail's timer message, left coordinate and view pointer still sit in byte and word homes where this build gives them dwords, and the difference still rests on the text buffer's call convention in 0x15f120: BLOCKED-BY 0x15f120.
 // MiniMax R (11-14, run 65): no new form, no lower score (114 in the reduced image, 115 in the full one): retail
 // keeps the three message predicates as bytes at -0xf/-0xe/-0xd and `left` in a word at -0x3c, while this build
@@ -580,7 +582,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and
 // retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
 // MiniMax G (11-12): no new form, no lower score (114); the three message predicates are still packed in different homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at -0x3c where ours spills it as a dword at -0x50.
-// score 114 (was 115): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// Earlier score line (114, was 115): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // MiniMax E (11-11): no new form, no lower score (114); the three message predicates are still packed in different
 // homes (ours at -0x14/-0xd/-2 against retail's bytes at -0xf/-0xe/-0xd) and retail keeps `left` in a word at
@@ -796,6 +798,27 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // 463: text measurer left/top/both as short 184/181/182; with byte timer 206/203/205.
 // View scoped to the end of the message rows, mutable/read-only 115/115. NOT kept: shorter
 // coordinate forms and tied scoped forms leave the view, predicate and coordinate homes different.
+// Status rectangle 115; row draw/measurement/both 172/115/172; banner draw/measurement 115/115.
+// All phase-owned rectangles 162; with byte timer 208. NOT kept: ties or regressions against the 115 preview control; no native view or left-coordinate repair.
+// MiniMax A (11-18): no new form, no lower score (114; 115 on this build's reduced image); the tutorial colour's condition in
+// De Morgan form (`!flag_1384 && (flags_b6 & 1) ? color_a8 : color_a4`) compiles exactly as before (115), and holding the
+// colour in a local so that it is loaded first and only then overwritten (retail's order) scores 398; what still differs is
+// the stack homes (the timer byte, the left word, the view and the font), the tutorial colour's block order and 0x24ce9d's
+// argument setup; reordering 0x24ce9d's parameters reaches 103 to 110 but changes a function's parameter order, so it is not
+// applied.
+// M3 lane 15 r99 (fast with 0x24ce9d, 0x24c80b, 0x24cedf and 0x1fa30, matched each time; control 115 fast, 114 in the full
+// build): the three message flags as one three-bool array (timer, tutorial, scripted; retail's -0xf/-0xe/-0xd are consecutive
+// bytes in that order) 241 (1888 B): the array homes above the origin slot at -8/-7/-6 where retail's bytes sit below it; the
+// three flags declared ahead of the origin with the byte timer 191 (the byte-timer code unchanged: scripted still back-fills
+// -2); the tutorial colour as an if / else-if / else of three unpack calls (a4, a8, a4) 214 (1890 B); left and the first top
+// as the two elements of a `short position[2]` (the sibling 0x13954b's integer origin) with top a copy of the second and the
+// byte timer 109 (1889 B, the two-short lead's code; a locals-grouping form, not kept), the same without the byte timer 194
+// (1890 B); a second view pointer copied after the sort for the row loop's three reads 115 (same code); the split-screen flag
+// as a long with the byte timer 496 (1893 B). In every form retail's split-screen byte keeps -1 to itself (-2..-4 unused)
+// while ours packs the scripted flag at -2; declaration order, an array and the other flags' widths do not change that.
+// The full build reads 115 once src/unknown_1ee340.cpp's constructor stores its vertices through the component accessor
+// (this round's 0x1edd00 match) and 114 with that file as before (plain checks of both trees): the reload pair before the
+// flag setup (`mov edi, [ebp - 0x64]` against retail's `mov ecx, [ebp - 0x40]`) follows the whole-image link, as in round 97.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

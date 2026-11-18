@@ -104,6 +104,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax B (11-18): no new form, no lower score (949, was 949): the frame is still 0x1f0 against retail's
+// 0x1d4, so every stack home differs; retail unrolls the scale helper into three multiplies with both
+// vectors in memory while this build rolls the loop, retail reloads the delta from its stack copy after the
+// 0x24590 call and keeps two subtract arms, and retail's loop head (the element pointer formed with
+// `shl eax,3; add`, the object index in EDI across 0xbadc0) belongs to that callee's own file; the calls,
+// the argument values and the float constants are unchanged.
 // MiniMax H (11-14): no new form, no lower score (902): this round re-walked retail's listing block by
 // block against the source; the conditions, fields, constants and callee arguments agree, so what is
 // left opens with the frame and the entry's register roles, and the loop head's shape is settled in the
@@ -124,6 +130,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // stack home below the top differs, and the loop head's shape is still decided by the callee 0xbadc0, whose file
 // this lane may not edit.
 // MiniMax S (11-16): no new form, no lower score (902); retail's scale helper is still unrolled while this build's loop is rolled, the frame stays 0x1f0 against retail's 0x1d4, and the contact array's destructor that blocks the unroll is set in another lane's header.
+// score 949 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// MiniMax A (11-18): no new form, no lower score (949 in the reduced image): the first difference is still the argument's register (retail keeps the argument in ECX and tests the field in EAX, ours the other way round) and the frame (0x1f0 against retail's 0x1d4), so every stack home below the top is out of step.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Walked against retail block by block (b2A, 11-06): conditions, fields, callees, argument order and loop/removal shape agree. One precision
 // difference fixed: the angular block's x87 dot product (0x1d31a6-0x1d31f2) adds (i + k) + j, where the helper's other two sites (0x1d289c, 0x1d2c6d) add
@@ -482,6 +490,17 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // register (retail reads it into EAX and tests EAX, ours into ECX) and the frame (retail 0x1d4 against our
 // 0x1f0), so every later stack home differs by four bytes; retail's rolled scale loop is also still
 // unrolled into three multiplies with both vectors in memory, which is what decides the frame size here.
+// M3 lane 11 r115 (fast with 0x1cf9f0, 0x1d2070, 0x1d1260, 0x24590, 0x1d2280; the baseline is 949 since main made 0x1d1010 a
+// member; aligned unmatched [exact/stack-masked/register-masked], base [528/391/229]): the unroll lead with the header free.
+// The contact array freed through a plain release member in place of its destructor and operator delete, at all three users,
+// with a long scale counter 1170 (4032 bytes, frame 0x1d4) [450/316/206], but 0x1d2070 loses its match (32, 510 bytes: its
+// `delete` carries a null test the member lacks). The release member beside the destructor, used here only: 1170 (4032
+// bytes) [450/316/206], 0x1cf9f0 and 0x1d2070 still matched. On that, `inline` on 0x24590's definition 1044 (4171 bytes)
+// [536/253/144]; with the rigid-body position copied field by field 1033 (4176 bytes) [435/214/121]; with the record flags
+// read from the field at each pair as well 1033 (4156 bytes) [434/213/120]. Positionally every one is above the base (the
+// body is then 83 to 103 bytes short, mostly the loop head that 0xbadc0 decides), so none is kept; aligned, the three
+// cross-file causes (destructor-free release, `inline` 0x24590, opaque 0xbadc0) account for about half of what differs.
+// Body, header and both other files restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

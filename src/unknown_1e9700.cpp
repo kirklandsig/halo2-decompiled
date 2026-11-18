@@ -75,6 +75,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax B (11-18): no new form, no lower score (76): this build still holds the enable byte in a bool local across the counter store where retail reloads it into CL, keeps the old maximum in EAX where retail keeps it in ECX, zero-extends the fifteen-bit counter where retail reads it with `xor eax, eax; mov ax, [mem]`, and forms the row pointer before the increment where retail increments `word ptr [eax + edx + 0x16]` first (85 when the increment comes first, where the prologue's kind and player homes swap); this round's forms: the comparison's operands swapped (76, the same code), the old maximum as a short (76, the read becomes sign-extending), the old maximum read as a nested if (101) and the permuter (started, stopped before it printed a result); the enable reload needs one object for the enable byte and the counters (include/globals.h and src/unknown_1967d0.cpp) and the clamp's store through the counter's address is a one-use pointer kept only with a match: BLOCKED-BY both.
 // MiniMax G (11-18): score 76 (was 106): the enable byte is read once into a bool local before the counter store (the
 // maximum's test and the clamp's test then share one value) and the clamp's limits are taken as the table's own
 // `word` type; what still differs is that retail reloads the enable byte after the counter store (into CL, and again
@@ -109,6 +110,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // where this build holds it in dl across that store; the reload needs one object for the enable byte and the counters
 // (include/globals.h and src/unknown_1967d0.cpp) and the maxima's homes follow the held helpers 0x196960 and 0x1968b0
 // in src/unknown_1967d0.cpp: BLOCKED.
+// MiniMax H (11-18): score 106 (was 106): no new form, no lower score; retail keeps the old maximum in ECX with
+// the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (`xor eax, eax` then a word load),
+// this build keeps the maximum in EAX and the enable byte in DL; the enable reload needs the enable byte and
+// the input counters in one object: BLOCKED-BY include/globals.h and src/unknown_1967d0.cpp. The permuter's best
+// (80 against its 99) swaps the arguments of 0x196e60 and 0x1968b0 and adds a volatile pointer and constant-only
+// locals, so it changes what the calls do and is dropped.
 // score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // M3 lane 8 r165 (fast, plain where noted): both maxima and the clamp store through the flat `all[index * 0x1b5 + 12]`
 // / `counters[0][team * 0x2d + 12]` indexing the two held helpers use 106/106/106 (same code); LEAD, match-only: the

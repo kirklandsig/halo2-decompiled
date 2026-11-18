@@ -333,6 +333,16 @@ void function_125a90(long value);
 // change; re-measured at 36 (415 bytes, as retail's). BLOCKED-BY 0x221810.
 // MiniMax R (11-15): no new form, no lower score (36): the special arm and the kind arm still swap their block, and the record's address is still built with an imul into esi where retail multiplies into eax and forms the address with a lea; the layout that puts retail's special arm first needs 0x221810 kept out of line, and that getter lives in src/unknown_221490.cpp. BLOCKED-BY 0x221810.
 // MiniMax R (11-16): no new form, no lower score (36): the body is retail's 415 bytes; the four blocks still come out special, removal, kind, keep where retail lays the kind arm first, and the record's address is still an imul into ESI against retail's multiply into EAX and a lea. BLOCKED-BY 0x221810.
+// MiniMax G (11-18): no new form, no lower score (36): the record's address is still built with an imul into ESI where
+// retail multiplies into EAX and forms the address with a lea, and the special arm and the kind arm still swap their
+// block; that layout needs 0x221810 out of line, and it lives in another file. BLOCKED-BY 0x221810.
+// MiniMax A (11-18): no new form kept, no lower score (36): the record's address is still multiplied in place into esi
+// where retail multiplies a copy into eax and forms the address with a lea, and the special arm still comes after the
+// kind arm. Writing the special arm as `type == 0x26 ? !a : false` reproduces retail's materialised test and its
+// 32-bit re-test but measures 88, the same test with the negated type condition measures 88, and the long re-test
+// alone measures 46, so all three were reverted. Retail's removal block is reached from four paths, which this
+// source's single remove flag does not produce, and retail's block order needs the getter 0x221810 kept out of line;
+// that getter's body lives in src/unknown_221490.cpp, which this lane may not edit: BLOCKED-BY 0x221810.
 // score 36 (was 36): the address of the record is built here with an imul
 // into ESI and an add; retail multiplies into EAX and forms the address with a
 // lea, so the type byte that is tested afterwards is compared in another value.

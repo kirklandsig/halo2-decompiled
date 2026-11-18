@@ -299,16 +299,6 @@ void function_2216f0(
 		IDirectSoundBuffer_SetMixBinVolumes(buffer, &out_mixbins);
 }
 
-/* a sound class of the sound classes tag. Retail calls it out of line
-   everywhere, but moving it into a file of its own built /Ob1 (which matched
-   0x218d30) changed 0x189fe0's convention and lost 0x189650 and 0x189760 */
-// @retail 0x221810
-s_unknown_5c *function_221810(
-	short index)
-{
-	return sound_class_definition_get(index);
-}
-
 // @retail 0x221850
 void function_221850(void)
 {
@@ -1090,6 +1080,11 @@ extern "C" void _ReadWriteBarrier(void);
 // read through a const pointer to the driver's volumes block (0x220fd0's parameter type) 21, without barriers 28.
 // Between the memset and the decibels load every other value is pinned to EAX (the ftol result, lahf), so the zero is the
 // only rotating allocation there.
+// M3 lane 6 r192 (compile-only; it reproduces decibels ECX, truncation EDX, setg CL, each with and without both barriers):
+// the voice through an inline getter taking only the index, `*&decibels` for the attenuation call, the parameters declared
+// ahead of the globals and voice pointers, the first two gains through a `real const *` to the volume block, the filter and
+// the parameters in one local aggregate, the pinned room stored to both fields from the local, the loss in its own local
+// with `room -= loss`: all keep ours (21).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

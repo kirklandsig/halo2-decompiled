@@ -122,10 +122,12 @@ inline reporter_2ff210 *reporter_2ff8b0()
 // range to a child cell, split the walk where the range spans both sides of a
 // plane (the first side by recursion), cut it off where the range misses a
 // slab, move the key base, or give a key to add to the list
-// score 132 (was 197): the default case reads the error reporter through a small
-// accessor, so it is loaded before the command is pushed, as retail does. Left:
-// the four times-three cases (0x19..0x1c) read each byte into eax and form the
-// product in another register (ours is 4 bytes longer).
+// Matched (was 132): the four times-three cases (0x19..0x1c) bind each product to a
+// constant reference before copying it to the shared bound, so each product is a
+// value of its own case and the byte is read into eax and multiplied into the
+// bound's register, as in retail.
+// Before, 132 (was 197): the default case reads the error reporter through a small
+// accessor, so it is loaded before the command is pushed, as retail does.
 // Before, 197 (was 216): cases 0x23..0x25 read the
 // upper bound from the range, as retail does (it was read from the query's own
 // bounds, a different value), and the corner case adds one to each upper bound and
@@ -203,26 +205,42 @@ void class_300150::function_2ff8b0(cell_range_2ff8b0 const *range, unsigned char
 			above = range->upper[0] - range->lower[1];
 			goto split;
 		case 0x19:
-			low = node[1] * 3;
-			high = node[2] * 3;
+			{
+				long const &scaled_low = node[1] * 3;
+				long const &scaled_high = node[2] * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[2] + range->lower[1] + range->lower[0];
 			above = range->upper[2] + range->upper[1] + range->upper[0];
 			goto split;
 		case 0x1a:
-			low = (node[1] - 0x55) * 3;
-			high = (node[2] - 0x55) * 3;
+			{
+				long const &scaled_low = (node[1] - 0x55) * 3;
+				long const &scaled_high = (node[2] - 0x55) * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[1] - range->upper[2] + range->lower[0];
 			above = range->upper[1] - range->lower[2] + range->upper[0];
 			goto split;
 		case 0x1b:
-			low = (node[1] - 0x55) * 3;
-			high = (node[2] - 0x55) * 3;
+			{
+				long const &scaled_low = (node[1] - 0x55) * 3;
+				long const &scaled_high = (node[2] - 0x55) * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[2] - range->upper[1] + range->lower[0];
 			above = range->upper[2] - range->lower[1] + range->upper[0];
 			goto split;
 		case 0x1c:
-			low = (node[1] - 0xaa) * 3;
-			high = (node[2] - 0xaa) * 3;
+			{
+				long const &scaled_low = (node[1] - 0xaa) * 3;
+				long const &scaled_high = (node[2] - 0xaa) * 3;
+				low = scaled_low;
+				high = scaled_high;
+			}
 			below = range->lower[0] - range->upper[2] - range->upper[1];
 			above = range->upper[0] - range->lower[2] - range->lower[1];
 		// the range below the plane's first value goes on to the first side,

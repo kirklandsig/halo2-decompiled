@@ -1905,10 +1905,25 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax G (11-18): no new form, no lower score (251): retail loads the object-pool global into EDI above the
+// options lookup's `je` and keeps that base for every field read ([edi+0x84], [edi+0x18], [edi+0x225],
+// [edi+0x722], [edi+0x764]), while ours holds the actor in EDI and re-reads the global for the second lookup; the
+// actor and the weapon options take the other two registers (ours actor EDI, options ESI; retail actor ESI,
+// options EBP), and the unit pointer still rides across the opaque callee 0x1e53e0, so the residency is settled
+// in another file (src/unknown_1e53e0.cpp) together with the /GL- build of 0x259a0 (src/unknown_0259a0.cpp).
+// MiniMax H (11-18): no new form, no lower score (251): the pool and seed globals still take retail's registers the
+// other way round (retail holds the pool in EDI and reloads the seed into EBX), the two-weapon index is still
+// strength-reduced into a cursor and a countdown where retail keeps a 32-bit index in the frame's slot at +0x14 and
+// reads the pair at +0x1c, retail re-derives the unit from the pool for each of the two slot queries where this build
+// keeps one unit pointer, and retail gives the grenade options pointer a frame home that the random draw then reuses
+// where this build keeps it in a register; the 0x259a0 call is opaque to this build because src/unknown_0259a0.cpp is
+// built /GL-, which is another lane's file; the permuter (--fast, 300 s, 18 tries) reached 246, a five-point gain that
+// is under the keep bar, and its variant swaps 0xc6f80's arguments and adds a constant-only local.
 // MiniMax R run 92 (11-17): no new form, no lower score (251): the pool global is still re-read after each lookup
 // where retail holds it in EDI across them, and the actor and options still take the other two registers (ours:
 // actor EDI, options ESI; retail: actor ESI, options EBP); the random-state load still rides across the opaque call
 // 0x259a0 in src/unknown_0259a0.cpp, which this lane may not edit.
+// MiniMax A (11-18): no new form, no lower score (251): the permuter's tries leave the baseline at 251, and the actor, the weapon options and the object-pool global still rotate against retail (retail ESI/EBP/EDI, ours EDI/ESI); the residency is decided by the opaque callee 0x1e53e0 in another file.
 // score 251 (was 251): frame 0x14 and the actor index in EBX agree; retail loads the pool global into EDI above the
 // options lookup's `je` and holds it across 0x1e5280 (actor ESI, options EBP); ours re-reads it (actor EDI, options ESI).
 // MiniMax E (11-16): no new form, no lower score (251): the permuter (1500 s, 131 tries, one job) left the baseline at 251, so the pool global is still re-read after each lookup where retail holds it in EDI across the callees, and the actor, options and pool registers still rotate the way the notes below say.

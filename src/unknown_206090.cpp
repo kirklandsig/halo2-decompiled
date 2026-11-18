@@ -139,7 +139,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 }
 
 #include "vector_products.h"
-// score 1375 (was 1375): earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1375 (was 1375): The 0x5d0 frame, component and velocity homes and contact indexing still differ from retail.
+// Earlier: earlier 1391, 1367, 1379, 1355; frame 0x5d0 versus 0x58c, component/velocity homes and indexed contact induction remain.
 // g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
 // fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
 // 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
@@ -682,6 +683,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: removing individual magnitude input copies reduces the frame to 0x5c0, pairs reach 0x5b8, and
 // replacing all three direct roots reaches 0x5a8 at 6070 bytes. Every preview regresses and the magnitude
 // grouping requires equality.
+// The frame remains 0x5d0 against 0x58c. Component and velocity homes and contact indexing differ.
+// Slip in impact buffer 1447. Save slip before in-place force normalization 1517.
+// Direct tangential velocity 1373. Direct projected forward 1445. Both projections 1403.
+// Both with slip in impact buffer 1559. Both with in-place normalization 1508.
+// Direct tangential with slip in impact buffer 1454. Direct forward with in-place normalization 1547.
+// NOT kept: the direct tangential form gains two points. The smaller frames shorten the body.
 // Round 415. typed physics object 1375, shared collision ray 1375, ray length shared with compression 1389,
 // conditional world choice 1396, branch-selected world 1394, ray scoped to admitted query 1440, shared ray scale
 // 1371, typed object with conditional world 1396. NOT kept: the shared ray scale gains four points while adding 21
@@ -699,6 +706,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // (6211 bytes, 957 / 589); that on the copy-free forms 1650 (5948 bytes, 959 / 567); with one function-scope counter
 // for the first two loops as well 1649 (955 / 562). All three keep the stepped pointers (one `imul` in the listing
 // against retail's three). Body unchanged.
+// score 1375 (was 1375):
+// The extra 0x44 frame bytes, escaped velocity and component homes, and indexed contact loop remain.
+// Independent slip/tangent lengths use a default then tangent 1447, complete branch results
+// with direct or selected tangent 1455/1455, and a common predicate with selected or direct
+// tangent 1388/1455. Selected-pointer test 1389, choice before coefficients 1453,
+// slip branch first 1455. Every form retained the 0x5d0 frame.
+// Query scope 1375. Ray scope 1374. Velocity scope 1394. Typed query scope 1375.
+// Descriptive workspace names 1375. Query and ray scopes 1374.
+// Velocity scope with typed query 1394, with workspace names 1394.
+// NOT kept: ray scope gains one point and all forms retain the larger frame.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

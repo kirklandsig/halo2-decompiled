@@ -78,6 +78,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 
 // score 558 (was 558): earlier 576, 592 and 618. Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17;
 // the minimum now has retail's +0x18, the input copy and hit flags sit 4 bytes off retail's.
+// M3 lane 10 r119 (fast; control 558): `*arg_5 = 0.0f;` ahead of the minimum's initializer 559; the hit flags as `{ 0 }`
+// 689 (2819 B, block store); the success flag declared after the hit flags 552 (first difference +0x2e; the success store
+// moves after the call and to +0xf, a declaration move under the bar); the early exit as `field_48 <= 0.0f` and as
+// `0.0f >= field_48` 663 each (the first re-measures the listed 663). Body unchanged.
 // MiniMax I (11-16): no new form, no lower score (558): retail materialises the zero in XMM0 after the minimum's store
 // at +0x18 and keeps the range in XMM1, ours materialises it in XMM1 before the minimum's load and keeps the range in
 // XMM0, so every later row is one off. Naming the ray length once (retail computes the half width plus the range once
@@ -619,11 +623,26 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // The three with the shared scale helper 608/579/603.
 // Reuse the side axis or both with the staged cross 599/600.
 // NOT kept: The success byte stays at +0x13 and the body shortens. The separate projection workspaces are restored.
+// DH401: Separate measured and clipped clearance. For explicit arms and measured
+// default, direct fraction with minimum after/before hit stores 564/665
+// and 564/665, named fraction 554/587 and 554/587.
+// NOT kept: minimum first gives the native success slot but regresses. The
+// best reduction is four points and leaves the success slot unchanged.
 // Frame 0x108 agrees. The success byte is four bytes below retail. Scoping the collision query did not
 // move it; the for count narrowed the extent gap by four bytes. query workspace scope 558; count and ray
 // in for scope 558; count and ray in exclusive scope 558; preincremented ray ordinal 667; query scope
 // with for count 558; staged hit distance 563; query writes hit flag 559; collision displacement inner
 // scope 566. NOT kept: the scored forms tied or regressed.
+// The success byte and input/hit homes remain displaced. Hold the vertical/lateral/both
+// corrections in scalars 660/645/706, with axis-specific publication 690. Whole correction snapshot
+// with per-axis or conditional whole-vector publication 660/709. Opposing pairs collected
+// together or published separately 706/687. NOT kept: delayed output differs from the per-hit
+// retail stores, and the entry homes remain different.
+// DH406: Previous minimum read before the distance or between hit stores 563/563; early comparison at
+// those sites 650/650; selected minimum formed before/between the hit stores and published last
+// 665/654; formed first and published between stores 665; conditional update between the stores 556.
+// NOT kept: selecting the minimum first recovers the success slot but regresses. The conditional
+// update gains only two points and leaves ESP+0x13.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
