@@ -52,7 +52,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 	return value;
 }
 
-// score 30 (was 30): the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
+// score 2 (was 30): at retail's 821 bytes everything matches except 0x131c20's `&color` pair, formed in edi and copied
+// to ecx where retail forms it in ecx and copies it to edi (see the round 136 block at the end of this note).
+// HELD (needs the coordinator's OK; build/r136/held-0xd1a30.patch): with 0x131c20's parameters as (result, a, b, flags, t)
+// at its definition, four declarations and six calls this function matches byte for byte (fast and plain check);
+// 0x131c20, 0x131d60 and 0xc0c80 stay matched and 0x180d80 stays 93, but 0xbe8e0 goes 89 -> 171 (583 bytes; its aligned
+// differences fall 50 -> 37 and its blend call's setup becomes retail's) and its file is another lane's this round.
+// Earlier at 30: the frame, the sky/count homes, the trig temporaries, the x87 direction adds,
 // the blend registers, the color0 store, the in-place strength add and the sete collision test match.
 // Left: the i == 0 block loads the strength before the colour copy, so the copy advances ebp (retail
 // copies through `lea eax, [ebp + 4]` first), and 0x131c20's `&color` is formed in edi and copied to ecx
@@ -319,6 +325,24 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // direction stored field by field 134 (838 B); the light pointer declared ahead of the loop 121; the first-light strength read
 // as `((real *)(entry + 4))[3]` 121 (same code). Screen (24 combinations of the index local, the hit local, the blend in the
 // call, the sky helper's count local, three declaration orders and the open test written in the if): best 121, none in place.
+// M3 lane 16 r136 (fast with 0xbe8e0/0xc0c80/0x131d60/0x131c20/0x180d80; aligned = difflib rows). Kept, 30 -> 2 (plain):
+// colour first with a `real const *power` pointer to the entry's power, declared right after the entry pointer and used at
+// all four reads (the first-light assignment, the test, the divide and the post-call add): the first-light arm, the in-place
+// add and the length are then retail's. The pointer with strength first 30 (aligned 16, the code as before); colour first
+// alone 121 (re-measured). 0x131c20's parameter orders on the earlier body: (result, a, b, flags, t) 28 with 0xbe8e0 171;
+// (result, b, flags, t, a) 28 and (flags, t, result, b, a) 30, both with 0x131c20 4, 0xc0c80 4 and 0x131d60 2 (`b` ahead of
+// `a` breaks the callee). On colour first with (result, a, b, flags, t), 119 (aligned 3, only the load-first add): named
+// yaw/pitch locals 159 (821 bytes, aligned 14); the angles through a `real const *` pointer 119 (same code); the
+// contribution's fields assigned directly 160 (825 bytes, aligned 7); an entry-colour pointer for the copy and the call 165
+// (aligned 40); the add's inputs swapped 119; `strength = strength + power` and `power + strength` 119/119; the blend
+// computed in the call 119; the power pointer: match. Orders with the kept body: this function matches when the result
+// comes ahead of both `a` and the flags ((result, a, b, flags, t), (result, a, b, t, flags), (result, flags, a, b, t),
+// (result, a, flags, b, t); also (b, result, a, flags, t) and (result, b, a, flags, t), which break the callee), and stays
+// 2 otherwise ((flags, result, a, b, t), (flags, t, result, a, b), (b, flags, result, a, t), (a, b, result, t, flags),
+// (a, b, result, flags, t), (a, result, b, flags, t)); 0xbe8e0 takes its 171 form whenever the result comes ahead of the
+// flags, in those last three orders too. 0xbe8e0 diagnostics under the held order (another lane's file, not kept): result
+// set first in the loop 171, `result = count > 0` ahead of the loop 176 (567 bytes), the flag test as `!= 0` or as a shifted
+// bit 171 each; what is left there is the constant 1 kept in BL for the flag test and the result store (retail: immediates).
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -342,21 +366,22 @@ long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_
                     if (*(long *)(light + 0x2c) > 0)
                     {
                         byte *entry = *(byte **)(light + 0x30);
+                        real const *power = (real const *)(entry + 0x10);
                         vector3f contribution;
                         vector3f_assign(&contribution, (real)(cos(*(real *)(light + 0xc)) * cos(*(real *)(light + 0x10))),
                             (real)(sin(*(real *)(light + 0xc)) * cos(*(real *)(light + 0x10))), (real)sin(*(real *)(light + 0x10)));
                         vector3f_add(&direction, &contribution, &direction);
                         if (i == 0)
                         {
-                            strength = *(real *)(entry + 0x10);
                             color = *(color3f *)(entry + 4);
+                            strength = *power;
                         }
-                        else if (*(real *)(entry + 0x10) > 0.0f)
+                        else if (*power > 0.0f)
                         {
-                            real blend = pinned_real(1.0f - strength / *(real *)(entry + 0x10) / ((real)i + 2.0f),
+                            real blend = pinned_real(1.0f - strength / *power / ((real)i + 2.0f),
                                 0.0f, 1.0f);
                             function_131c20(&color, (color3f *)(entry + 4), 0, blend, &color);
-                            strength += *(real *)(entry + 0x10);
+                            strength += *power;
                         }
                     }
                 }
