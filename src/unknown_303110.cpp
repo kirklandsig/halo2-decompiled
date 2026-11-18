@@ -132,18 +132,29 @@ static int __cdecl function_303540(__m128 const *point, __m128 const *vertices, 
 
 // Havok: seed a penetration query from the current features, reduce its
 // returned features, and retain its penetration direction.
+// Separate copy of the magnitude mask for the second shape's pair test.
+static __declspec(align(16)) const unsigned long pair_magnitude_303dd0[4] = {0x7fffffff,0x7fffffff,0x7fffffff,0x7fffffff};
+// True when two points differ by no more than the tolerance on every axis.
+inline bool search_points_close(__m128 const &first, __m128 const &second, __m128 const &mask)
+{
+	__m128 difference = _mm_sub_ps(first, second);
+	difference = _mm_and_ps(difference, mask);
+	int const bits = _mm_movemask_ps(_mm_cmplt_ps(g_4801e0, difference));
+	return !(bits & 7);
+}
 struct transform_30a6b0;
 long __cdecl function_30a6b0(long, long, transform_30a6b0 const *, long, long, long);
 struct simplex_303dd0 { __m128 a[4], b[4]; int count; };
 struct penetration_303dd0 { __m128 direction, point; float distance, fraction; };
 
-// h2m 133 (was 642): the simplex is seeded one difference at a time; the
+// MATCH (was 642): the simplex is seeded one difference at a time; the
 // last corner of the first shape is stored through the float view, so the
-// second count is not known to be 3 when it is decremented; the transform loop
-// reads the source points by index and steps only the target pointer, so no
-// register holds &source_b. Left: the mask tests (retail reads the mask from
-// memory in each single test) and the transform loop's pre-header (retail
-// steps the source and writes the target through the difference).
+// second count is not known to be 3 when it is decremented. Each closeness
+// test masks its difference in place and names its sign bits; the second
+// shape's pair test reads its own mask copy and decrements the count in each
+// branch (the two decrements share one tail). The returned source corners and
+// the first normal component are stored through references, and the transform
+// loop steps the source pointer first.
 // @retail 0x303dd0
 int class_3048a0::function_303dd0(convex_2fefd0 const *first, convex_2fefd0 const *second, c_query_transform const *transform, pair_state_2fefd0 *state)
 {
@@ -173,18 +184,19 @@ int class_3048a0::function_303dd0(convex_2fefd0 const *first, convex_2fefd0 cons
 	int result = function_30a6b0((long)first,(long)second,(transform_30a6b0 const *)transform,(long)&simplex,(long)differences,(long)&penetration);
 	int i;
 	for (i=0; i<3; ++i) s.a[i] = simplex.a[i];
-	for (i=0; i<3; ++i) s.source_b[i] = simplex.b[i];
+	for (i=0; i<3; ++i) { __m128 &point = s.source_b[i]; point = simplex.b[i]; }
 	if (simplex.count == 1) {
-		s.normal.m128_f32[0] = 1.0f; s.normal.m128_f32[1] = 0.0f; s.normal.m128_f32[2] = 0.0f; s.normal.m128_f32[3] = 0.0f;
+		{ float &normal_x = s.normal.m128_f32[0]; normal_x = 1.0f; } s.normal.m128_f32[1] = 0.0f; s.normal.m128_f32[2] = 0.0f; s.normal.m128_f32[3] = 0.0f;
 		s.count_a = s.count_b = 1;
 		return result;
 	}
 	s.count_a = s.count_b = 3;
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[1],s.a[2]),search_magnitude_mask()))) & 7) || !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[2]),search_magnitude_mask()))) & 7)) s.count_a = 2;
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.a[0],s.a[1]),search_magnitude_mask()))) & 7)) { __m128 const &last = s.a[--s.count_a]; _mm_store_ps(s.a[0].m128_f32, last); }
-	if (!(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[1],s.source_b[2]),search_magnitude_mask()))) & 7) || !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[2]),search_magnitude_mask()))) & 7)) --s.count_b;
-	if (s.count_b >= 2 && !(_mm_movemask_ps(_mm_cmplt_ps(g_4801e0,_mm_and_ps(_mm_sub_ps(s.source_b[0],s.source_b[1]),search_magnitude_mask()))) & 7)) { __m128 const &last = s.source_b[--s.count_b]; s.source_b[0] = last; }
-	{ __m128 *target = s.b; int k = 0; for (i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,&s.source_b[k]); ++target; ++k; } }
+	if (search_points_close(s.a[1],s.a[2],search_magnitude_mask()) || search_points_close(s.a[0],s.a[2],search_magnitude_mask())) s.count_a = 2;
+	if (search_points_close(s.a[0],s.a[1],search_magnitude_mask())) { __m128 const &last = s.a[--s.count_a]; _mm_store_ps(s.a[0].m128_f32, last); }
+	if (search_points_close(s.source_b[1],s.source_b[2],*(__m128 const *)pair_magnitude_303dd0)) --s.count_b;
+	else if (search_points_close(s.source_b[0],s.source_b[2],*(__m128 const *)pair_magnitude_303dd0)) --s.count_b;
+	if (s.count_b >= 2 && search_points_close(s.source_b[0],s.source_b[1],search_magnitude_mask())) { __m128 const &last = s.source_b[--s.count_b]; s.source_b[0] = last; }
+	{ __m128 const *source = s.source_b; __m128 *target = s.b; for (i = s.count_b - 1; i >= 0; --i) { *target = search_transform_ordered(transform,source); ++source; ++target; } }
 	if (s.count_b+s.count_a > 4) ((class_303360 *)this)->function_303b80();
 	s.restricted_side = 0;
 	search_reduce_features(s);
