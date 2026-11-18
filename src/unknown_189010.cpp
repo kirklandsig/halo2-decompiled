@@ -118,8 +118,9 @@ struct s_sound_class_play_flags
 	word flag13 : 1;
 	word flag14 : 1;
 	word flag15 : 1;
-	byte unknown0a : 7;
-	byte flag23 : 1;
+	word unknown0a : 7;
+	word flag23 : 1;
+	word : 8;
 };
 
 struct s_sound_play_tag
@@ -448,6 +449,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // (161). On the byte-read end test: the marker pointer in a local 45, the lookup's record through a reference 45, the priority
 // stored first with no local 115, the variant bytes read through the local pointer only 88 (470 B); the request stays in EBP.
 // Left: the end test (retail tests bit 8 as a byte, then loads the dword for bit 11) without EBX going to the object index.
+// Coordinator (11-18): with 0x221810 called out of line from its own /Ob1 file (0x21d110's match) and the flags set bit by bit
+// on state.flags (the source read once), 89 at 458 B (was 106 at 472 B).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -456,23 +459,18 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 	if (tag_index != NONE)
 	{
 		s_sound_play_tag *sound = (s_sound_play_tag *)g_4e3b44[tag_index & 0xffff].bytes;
+		s_sound_source_callbacks const *source = request->source;
 		s_sound_play_state state;
+		long priority = request->location.audible ? 3 : 1;
+		state.flags = 5;
+		source ? (state.flags |= 0x20) : (state.flags &= ~0x20);
+		request->object_index != NONE ? (state.flags |= 8) : (state.flags &= ~8);
+		request->platform_playback != NONE ? (state.flags |= 0x100) : (state.flags &= ~0x100);
 		// Retail also clears the padding after the priority field.
-		*(long *)&state.priority = request->location.audible ? 3 : 1;
+		*(long *)&state.priority = priority;
 		state.location = request->location;
-		dword flags = (request->source ? 0x20 : 0) + 5;
-
-		if (request->object_index != NONE)
-		{
-			flags |= 8;
-		}
-		if (request->platform_playback != NONE)
-		{
-			flags |= 0x100;
-		}
-		state.flags = flags;
 		state.object_index = request->object_index;
-		state.source = request->source;
+		state.source = source;
 		state.platform_playback = request->platform_playback;
 
 		if (TEST_FIELD_BIT(((s_sound_class_play_flags *)function_221810(sound->class_index))->flag23) && !(sound->flags & 1))

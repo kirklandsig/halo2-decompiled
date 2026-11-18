@@ -2933,7 +2933,7 @@ void function_21c400(short voice_index, real gain, s_looping_channel_spatializat
 	properties.pitch = pitch - (real)bounds->unknown00;
 	if (playing->sound_class & 2)
 	{
-		byte const *promotion = (byte const *)function_221810((char)playback->unknown02[0]);
+		byte const *promotion = (byte const *)sound_class_definition_get((char)playback->unknown02[0]);
 		real doppler;
 		if (sound->controller_index != NONE)
 		{
