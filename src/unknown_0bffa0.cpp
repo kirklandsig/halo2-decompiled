@@ -1354,6 +1354,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // access in the sphere arm 588 (2788 B); light_projection_point_ab's pre-scale through the existing vector3f_scale on a copied
 // vector 715 (2962 B); the sphere bounds call given the constant 4 600 (2777 B); the cone depth as `origin_offset +
 // far_distance` 290 (same code); a const up-vector pointer for both cross products 530 (2815 B). Body unchanged.
+// M3 lane 13 r111 (fast, base 290; the one-file harness gives 2815 B here, not faithful): the negate helper returning
+// its result pointer 290, the projection helper returning its result pointer 290, both 290 (same code: an unused pointer
+// return adds no symbol); the projection storing y first re-measured 299 (2840 B), with those returns 299; named x and
+// y locals in the projection 479 (2814 B), storing y first 469 (2819 B); a named depth for the divide 537 (2809 B), y
+// first 533 (2812 B); the three rows as scalar locals 539 (2801 B), y first 567 (2775 B); scalar rows with x and y locals
+// 552 (2794 B), y first 578 (2769 B); the result built in a local point and copied 701 (2977 B).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

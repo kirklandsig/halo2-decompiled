@@ -389,12 +389,13 @@ PRIVATE inline long polygon_round_19f(real value)
    at 0x47ff94; only 0x19f680 reads it) */
 real g_47ff94 = 1.5f;
 
+// score 322 (was 322): frame 0x34 against retail 0x30; retail expands 0x1ccb0(59) and 0x1cd90 in place and passes 0x4b2d0 two stack arguments; rounds below. BLOCKED-BY 0x4b2d0.
 // MiniMax H (11-18): no new form, no lower score (322): the frame is still 0x34 against retail's 0x30 because the
 // step counter has a stack home where retail keeps the step, and the 0x4b2d0 call still takes the variant on the
 // stack where retail passes it in a register (that callee's argument order is set in another file); reading the
 // current vertex through a pointer local gives retail's frame but scores 331 on its own, and the 1.5 factor still
 // comes from a literal where retail reads its own writable .data float.
-// score 322 (was 370): Frame 0x34 versus 0x30, with the material and render-state call transport still different.
+// Earlier (score 322, was 370): Frame 0x34 versus 0x30, with the material and render-state call transport still different.
 // Carried predecessor ordinal, one-based ordinal, or explicit wrap 328/323/335. Carried predecessor pointer 348 at frame 0x30.
 // Joint ordinal selection 325. Two edge pointers 332. Shared current vertex and carried predecessor 328.
 // Post-submission predecessor from the current ordinal 324, and as a separate fallback branch 324.
@@ -628,6 +629,13 @@ real g_47ff94 = 1.5f;
 // scale and initial position scopes 322.
 // all three setup scopes 371.
 // NOT kept: Shared search and texture-only scopes tied. Material scopes raised the score. Both matched callers stayed matched in every preview.
+// M3 lane 13 r111 (fast with the file, 0x4b2d0 and 0x116b00; 0x4b2d0 is a contributor's finished function, so its order
+// and body are off limits here): a natural form of piece 2. The three planar distances (centre to camera, vertex to
+// camera, previous vertex to vertex) through one inline helper taking two point pointers: 331 (1475 B, aligned 23 from
+// 111, frame 0x30 and the whole loop retail's); for the vertex and edge distances only, or the edge only, 331 (same
+// code); taking references 331 (same code); forceinline 331 (same code); for the fade and vertex distances but not the
+// edge 321 (1497 B). Not kept: the positional score rises (the body is 20 bytes shorter). Left on that form: 0x1ccb0(59)
+// and 0x1cd90 expanded in place and the 0x4b2d0 call. BLOCKED-BY 0x4b2d0 and the /Ob1 file of 0x1ccb0/0x1cd90.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long variant, long pass, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
