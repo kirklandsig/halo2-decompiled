@@ -18,7 +18,8 @@
 
 /* Light pool queries and the shapes copied from definitions and placements. */
 s_record_pool *g_4e030c;
-long g_4e0308;
+#include "light_marks_storage.h"
+s_light_marks_storage g_light_marks_storage;
 
 
 // @retail 0xc0a50

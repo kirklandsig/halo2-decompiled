@@ -710,8 +710,8 @@ extern short g_4686c4;
 extern short g_47d8e0;
 extern byte *g_4ed280;
 #include "cluster_marks_storage.h"
-long g_4e7c1c;
-bool g_4e7c18;
+#include "instance_marks_storage.h"
+s_instance_marks_storage g_instance_marks_storage;
 extern s_bsp3d *g_4e033c;
 
 static inline long collision_leaf_cluster(long leaf_index)
@@ -1402,7 +1402,6 @@ void __stdcall function_16a280(long object_index, dword flags, point3f const *po
     while (object_index != NONE);
 }
 
-extern long g_4e7c20[1024];
 struct s_shapes;
 struct s_shape_counts
 {
