@@ -180,6 +180,9 @@ struct s_physical_block_iterator
 };
 
 // MiniMax S (11-16): no new form, no lower score (201): the default arm still clamps both ages as retail does, but the age lands in EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead of loading it into EAX; clamping the second age as well measures 209 in this build, worse, and the case 0 and case 1 blocks still sit after the loop instead of in place between the default arm and the merge, so the merge's block placement is what differs.
+// MiniMax G (11-18): no new form, no lower score (201): the age still lands in EAX with the mask in ECX against retail's
+// ECX and ECX, the best-pages product still folds the stack slot instead of loading it into EAX, and the case 0 and case 1
+// blocks still sit after the loop instead of between the default arm and the merge.
 // score 201 (was 201): MiniMax I (11-16, round 2): no new form, no lower score: clamping the second age as well
 // (`MAX(physical->time - best.time, 0)`) measures 209, worse - the clamp restores retail's mask, but the age lands in
 // EAX with the mask in ECX against retail's ECX and ECX, and the best-pages product still folds the stack slot instead
