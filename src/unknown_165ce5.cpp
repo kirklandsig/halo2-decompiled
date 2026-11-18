@@ -1388,6 +1388,7 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // MiniMax I (11-16): score 220 (was 220): no new form, no lower score; the frame stays 0x28 against
 // retail's 0x2c and the ESI/EDI save region is still blocked by the reduced image's stand-in caller.
 // Earlier 220 (was 220), merged from a second score line: frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier at 220 (was 220). Frame 0x28 versus 0x2c. Unit/mode homes and independent look divisions/homes remain.
 // MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
 // outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // b6D statement walk against retail (11-06, fast build, control 220 before and after; every address an instruction
@@ -1868,6 +1869,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // divided by the rate, the 1.0 load between comiss and jbe) and the pitch divides again after a reload, as (y / rate) * -1 where retail has
 // (-1 / rate) * y. So a store to an address-exposed look value is what ends the shared reciprocal, but retail's two homes sit at the frame's
 // bottom with the compiler's late temporaries, not where an address-exposed local goes, and no code-free form found gives either.
+// AC572: Captured entry unit index 220. Add guarded primary index, conditional
+// NONE or branch-set NONE 220/529/529. The primary-index forms alone
+// 220/529/529. Both captures with a terminal unit guard 220.
+// NOT kept: frame 0x28, exchanged unit/mode homes and shared reciprocal persist.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

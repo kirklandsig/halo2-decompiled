@@ -386,7 +386,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // `previous` pointer, set to NULL here and left alone there; dropping that initializer gives retail's frame but the body grows
 // by two bytes and the score rises to 357), the node depth is still read at one address here and through a lea there, and the
 // prologue's saves and stores are in another order; the permuter (27 tries in 313 s, annealing) found no variant under 286.
-// score 286 (was 286; round 95 m3 lane 11 at the end): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
+// score 286 (was 286): frame 0xe8 versus retail 0xe4 (long link count), the node acquisition and the link/special flag
 // homes remain; retail spills both flags to one byte slot (+0xf), so its source sets them by tests (match-only here).
 // M3 lane 8 r159 (fast with 0x270930, which stays matched): lane 11 r71's flag form rebuilt on the current file 2 again
 // (1388 bytes, masked 0, re-measured; only `mov edx, [esp + 0x10]` / `mov ebp, [esp + 0x104]` swapped at the scan's back
@@ -843,6 +843,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // width differences, not observable: retail compares, indexes and stores link_count as 16 bits (0x270e3f, 0x270e86,
 // 0x2712e8) while incrementing a dword (0x270e96), and its vertex words are widened then compared with -1
 // (0x27109b, 0x2710ac: never equal), as the body already does.
+// Carried start node with pointer or indexed predecessor, pointer-tested for update, and index-tested carried node:
+// 343/385/343/374 with long link count, 387/372/387/315 with short link count.
+// NOT kept: pointer-tested predecessor omits the retail predecessor-index check and shortens the body.
+// The index-tested form at retail length still has the extra frame word. Original node traversal restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

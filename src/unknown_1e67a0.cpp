@@ -1181,6 +1181,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // 236 (1382 B), both 394 (1423 B); a `vector3f const *axis = &state->up;` for the rotation only 144 (1397 B). Reading of
 // the listing: in the rotation, retail keeps every product with axis.j or axis.k text-ordered (vector copy, axis from
 // memory) while ours loads axis.j/axis.k first; the axis.i products and those with vector.i agree in both.
+// DH397: Each cross consumed with its side dot, shared or separate storage and three alignment-test placements, then the staged shared cross 229/234/220/229/216/228/236/219.
+// NOT kept: Sequentially consuming each cross changes the matching frame and shortens the body well past retail. The separate workspace with the alignment result after both sides is closest at 216. Rotation products, side dots and output scheduling remain. The original body is restored.
 // Turned-vector forward and backward range output with initialized, block, forward-range or
 // backward-range input scored 110/110/193/193 each. NOT kept: 110 gains four points and
 // calls a copy routine where retail loads and stores the three components directly.
@@ -1190,6 +1192,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // small-turn exit tie at 114. The shared forward and axis values, point setter, aggregate input
 // and angle-first setup all regress. The axis-memory rotation products, oriented side products
 // and forward-copy scheduling still differ.
+// m3 lane 5 r196 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114): the rotation through the existing header
+// rotate function_x84d9e8 (include/axis_rotation.h: the vector's k read into a local first, the dot written out) 111 (1393 B:
+// the rotation's four axis-first products are unchanged, the turn block's first cross lines move; 3 points, under the bar);
+// on it lane 1's single-store lead 111, the moved-away flag preset false and set in its test 108 (1391 B, a flag form), the
+// side crosses through cross3f_staged 112 (1389 B). A private rotate reading only the vector's j and k into locals first
+// (diagnostic, to test whether those two ranking ahead of the axis gives retail's copy-first products) 118 (1393 B: the four
+// products stay axis-first, v.j/v.k swap XMM5/XMM6). Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

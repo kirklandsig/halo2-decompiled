@@ -1013,6 +1013,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // sector-trace and collision calls keep their argument roles. The 0xd8 frame and the matched
 // companion functions agree. The initial rotation loads, planar-dot order and collision-marker
 // scheduling still differ.
+// Scalar-axis rotation 243; nonpositive capacity ternary 206; typed object radius 26;
+// trace output in the callee type 26; point setter return 26; shared half-axis addition 177;
+// entry array pointer addition 26; typed collision result with extension 26. NOT kept: ties or
+// regressions. SIMD component order and collision marker versus point stores still differ.
 // Round 455: Axis rotation helper, named sine and cosine 45, Axis rotation helper, named sine 215, Axis
 // rotation helper, named cosine 59, Axis rotation helper, direct sine and cosine 215, Axis rotation helper,
 // named sine and cosine, direction copied by memcpy 45, Axis rotation helper, named sine, direction copied

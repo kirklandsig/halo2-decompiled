@@ -682,6 +682,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // NOT kept: removing individual magnitude input copies reduces the frame to 0x5c0, pairs reach 0x5b8, and
 // replacing all three direct roots reaches 0x5a8 at 6070 bytes. Every preview regresses and the magnitude
 // grouping requires equality.
+// Round 415. typed physics object 1375, shared collision ray 1375, ray length shared with compression 1389,
+// conditional world choice 1396, branch-selected world 1394, ray scoped to admitted query 1440, shared ray scale
+// 1371, typed object with conditional world 1396. NOT kept: the shared ray scale gains four points while adding 21
+// bytes. The frame is still 0x5d0.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
