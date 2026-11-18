@@ -304,6 +304,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // buffer 528; load through the list and append through the message buffer 588. NOT kept: Append and format
 // members tie at 316. Combining suffix loads with append and termination shortens the body to 2288 or 2233
 // bytes and scores 528 or 588. The opening buffer methods and body are restored.
+// MiniMax B (11-18): score 316 (was 316): no new form, no lower score. Read the listing again: retail's first buffer
+// clear is `mov word ptr [ebp - 0x8cc], bx` and ours is `mov word ptr [ebp - 0x6cc], bx`, so the two buffers trade their
+// homes (retail: display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258; ours: title -0x8cc,
+// display_name -0x6cc, suffix -0x4cc, layout -0x2cc, message -0x258) while the frame agrees at 0xfd4; the homes follow
+// neither the order of the loads nor the order of the declarations, so they only move with the declarations, which review
+// rejects. The shift arm stays next to the join where retail parks it after the loop.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

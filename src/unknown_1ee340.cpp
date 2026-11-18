@@ -599,6 +599,13 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // copy 259 (991 B); the found flag declared after the normalize 260. Retail loads the ray's start and end into registers
 // once, subtracts there and stores the start copy from the same registers (frame 0x90): the value-argument setter form for
 // both points, which needs a one-use end copy and so stays with the BLOCKED-BY 0x23a220 chain above.
+// MiniMax B (11-18): score 192 (was 192): no new form, no lower score. Read the retail frame again: with the frame base
+// at esp, retail keeps the length at +0, the plane at +4 (its three components) with plane.d at +0x10, the direction at
+// +0x14, the ray start at +0x20, the projected point's home at +0x14 (the direction's dead home) and the polygon buffer
+// at +0x50..+0x8f, so the 0x90 frame holds three more dwords above the ray start than this build's 0x84 frame, and every
+// local therefore sits at another offset; retail stores plane.d (the zero) and keeps the offset, the origin and the two
+// edge vectors in registers, as this build does, so the extra twelve bytes are the allocator's own, not a missing local.
+// The chain stays BLOCKED-BY 0x23a220, whose definition is in another lane's file.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

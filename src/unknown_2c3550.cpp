@@ -882,6 +882,13 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // [480, 357, 275]; the radius through the maximum helper 782 [482, 361, 279]. At retail's exact length the positional count only
 // falls when the whole frame lines up at once, so single structural fixes all raise it; the next round needs the whole body
 // rebuilt against retail by alignment (start from that shape: state left in its stack slot, count unregistered, NONE in EBX).
+// MiniMax B (11-18): score 675 (was 675): no new form, no lower score. Read the listing again: retail pushes ebx, ebp
+// and esi before it stores anything and edi after the radius compare, keeps the pathfinding pointer in ebx and stores it
+// at +0x44, writes the success result as a byte at +0x13, keeps the actor pointer at +0x4c (zeroed first), the radius at
+// +0x2c and the completion flag at +0x2b, while this build takes the pathfinding pointer into eax before the pushes and
+// spills it at +0x50, writes the result as a dword at +0x64, and keeps the actor pointer at +0x54, the radius at +0x24 and
+// the completion flag at +0x22; the frame agrees at 0x1f88. The out parameter's short type stays BLOCKED by its
+// declaration and the caller in path.cpp.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
