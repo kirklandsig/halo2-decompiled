@@ -1223,6 +1223,11 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 // transition id at esp+0x14 and the animation id at esp+0x18 - while both ids' -1 stores, the lookup's out-parameter
 // and the blend id's home agree; declaring the transition id at the function scope measures 357 (the fraction then
 // takes esp+0x14), with the same re-init 250, and the transition id declared after the animation id measures 250.
+// M3 lane 8 r183 (fast with the nine callers, 0x1ccda0 and 0x1cc3f0, control 210): transition_find's blend output as `bool &`
+// (declaration, definition and call; 0x1ccda0 still matched) 210; the transition id read through a const reference at the
+// channel test 210; the 0x200 test with its arms swapped 214 (1133 B); the fraction declared where first set 210; the
+// transition set declared at its initialisation 210. Diagnostic: the channel test's id use dropped 337 (1116 B): the id
+// then stays in memory, but the id slots stay swapped and the set still does not take EBP. All restored.
 // @retail 0x1cd070
 bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_type, long set, long state_flags, long channel_flags)
 {

@@ -2171,6 +2171,16 @@ void function_269250(long clump_index, long actor_index);
 // local record, the selection alone in a record, selection, score and best in one record 126 each (same code: the
 // records are split back into scalars); the selection from the iterator's datum index re-measured 128 (aligned 70:
 // selection memory-only and the pool hoisted, but into EDI, and the exhausted path threads to the exit).
+// M3 lane 8 r184 (fast with the nine matched neighbours, all still matched; diagnostics, each a new one-caller step or record,
+// so match-only): the activity flag as a walk-record member, in-arm compare 130 (480 B, same allocation); the walk as the
+// record-pool iterator with data_iterator_next_inlined and `while (active && ...)` 160 (458 B: pool hoisted into EDI, selection
+// memory-only, but the activity test leaves the loop); that iterator with the test in a step helper 150 (482 B, index also
+// enregistered); the datum iterator stepped by data_datum_iterator_next_inlined with no clump-index copy, selection from its
+// datum index, 134 (480 B: selection memory-only, pool hoisted into EDI against retail's EBX, index in memory, actor EBP,
+// retail's improving-arm cross-jump; the exhausted step threads to the exit, freeing EAX in the scan); that with the step
+// writing the clump index to a caller local on both paths 132 (the original allocation returns: the clump-index write on
+// every step is what costs the pool its register); in-arm with the selection copied before the after-loop calls 126 (same
+// code). Body unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
