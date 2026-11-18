@@ -67,6 +67,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// score 319 (was 319): the aligned 0x94 frame agrees. Left: retail keeps the output in EBX and the input in EDI (0x1ec690,
+// still a stub, takes its input in EDI in retail) and never gives the state a register; it lays the non-compound and
+// capsule arms after the epilogue, calls 0x1c4a80 where ours expands it, loads the rate once and tests the 0x20 flag by
+// shift. Round 191's line at the end of this note has the latest forms.
 // MiniMax I (11-17, run 103): no new form, no lower score (319): re-measured the baseline (1176 bytes against retail's
 // 1164) and the frame still agrees at 0x94; the output pointer's and the input pointer's registers still trade with
 // each other against retail, and that trade is settled by the 0x1ec690 stub's convention in src/stubs/bipeds.cpp:
@@ -80,7 +84,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // EDI and the input in EBX; both take the second argument from the stack, and the trade is settled by the 0x1ec690
 // stub's convention in another file (a 900-second permuter run found no variant below the baseline of 310
 // differing instructions): BLOCKED-BY 0x1ec690 (src/stubs/bipeds.cpp).
-// score 319 (was 319): no new form and no lower score; the aligned 0x94 frame still agrees, but the move
+// Earlier 319 (was 319): no new form and no lower score; the aligned 0x94 frame still agrees, but the move
 // pointer is in EDI here and in EBX in retail while the physics pointer trades it with it, and that swap is
 // settled by the stub for 0x1ec690 (src/stubs/bipeds.cpp).
 // MiniMax R (11-14): no new form, no lower score (319): retail keeps the output pointer in EBX and the input
@@ -103,7 +107,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // MiniMax H (11-10): no new form, no lower score (319): the move and input pointers still trade EBX and
 // EDI, and the case-3 callee's stub convention settles that swap: BLOCKED-BY 0x1ec690
 // (src/stubs/bipeds.cpp).
-// score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
+// Earlier 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Walk b3I (11-06): every statement and block checked against retail 0x1e55d0-0x1e5a58 (field offsets, switch table 1..6 with
 // 4/5 shared, case-6 0.3f scale and fistp into the countdown byte, shape compare at 0x1e5740-0x1e5757/0x1e591a, capsule arm at
 // 0x1e5940-0x1e59f9, position range test at 0x1e587f-0x1e58ae, constants 0.3/1e-4/0.001/0.5/+-32768 read from the XBE): no
@@ -274,6 +278,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // pointer in EAX, the state at +0x8 and the input at +0xc) and only the two pointer registers differ (retail's
 // out in EBX and its input in EDI, ours the other way round), which turns every later instruction; the six
 // orders of the three aliases do not move them.
+// M3 lane 6 r191 (fast with 0xb77d0/0x1c4b00/0x1ed340/0x2901e0/0x1c4a80, all MATCH; control 319): stubs are built without
+// link-time conventions (docs/DECOMPILING.md), so no stub signature can take the input in EDI as retail's 0x1ec690 does
+// (it reads [edi + 0x18] at entry, two stack arguments, callee pops): the EBX/EDI trade needs the real 0x1ec690, whose
+// draft is disabled in src/unknown_1eb8a0.cpp. With that trade masked out 298 of 335 aligned instructions still differ,
+// from the block layout, the expanded 0x1c4a80 and the hand-written 0xb77d0/0xb7430 bodies. Combinations of forms that
+// need no match, all worse: the rate named for its three products 320; the 0x20 flag in shift form 325 (1180 bytes);
+// both 330 (1184); both with the rate on the right of each product 330; both with the object index read again for the
+// position move 331. BLOCKED-BY 0x1ec690.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

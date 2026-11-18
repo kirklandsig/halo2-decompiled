@@ -187,25 +187,29 @@ vector3f *function_170c00(vector3f const *first_forward, vector3f const *first_u
 	return matrix4x3_rotation_between(&first, &second, out);
 }
 
-__declspec(noinline) void function_170bb0(real *out, real const *second, real const *first);
+__declspec(noinline) void function_170bb0(real const *second, real const *first, real *out);
 
+/* Retail's one caller (0x16fe90) forms the output address first, then first, then second (0x16feb0, 0x16feb6,
+   0x16feb9): right to left over (second, first, out). The output is walked through its own cursor; with the
+   parameter itself stepped, this order moves the three incoming registers (round 191). */
 // @retail 0x170bb0
-void function_170bb0(real *out, real const *second, real const *first)
+void function_170bb0(real const *second, real const *first, real *out)
 {
+	real *difference = out;
 	long channel_index = 0;
 
 	do
 	{
-		*out++ = *first++ - *second++;
+		*difference++ = *first++ - *second++;
 	} while (++channel_index < 10);
 	for (; channel_index < 11; channel_index++)
 	{
 		/* the subtracted state's basis goes first */
 		function_170c00((vector3f const *)second, (vector3f const *)(second + 3),
-			(vector3f const *)first, (vector3f const *)(first + 3), (vector3f *)out);
+			(vector3f const *)first, (vector3f const *)(first + 3), (vector3f *)difference);
 		second += 6;
 		first += 6;
-		out += 3;
+		difference += 3;
 	}
 }
 
