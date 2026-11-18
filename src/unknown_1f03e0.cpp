@@ -1512,6 +1512,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // flying, direct, damping, gravity 228 (3050 B, first difference +0x31: the damping bit then takes EDX as retail; under the
 // bar, a declaration order, not kept). On the 469 form (re-measured 469): the direct arm's `limited` renamed `bounded`
 // 469 (identical listing: names do not place the delta/limited slots, retail delta +0xc, limited +0x14, ours the reverse).
+// Flag mask before the shift for damping, direct movement and gravity, singly and in each pair,
+// then all three and all four including flying: eight at 234. NOT kept: the compiler emits the opening
+// comparison with damping in ECX, the same gravity spill order and the same raw and limited homes.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

@@ -1590,7 +1590,7 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// score 270 (was 270): see the forms below.
+// score 270 (was 270): actor and command pool loads, actor/output registers and the point-reference reloads differ.
 // MiniMax R (11-16): no new form, no lower score (270); the prologue still reads the cs pool global before the actor pool and takes arg_0 into ESI after the pushes where retail reads the actor pool first and takes arg_0 into EBP, and the case-10 flag store still follows the selector compare where retail stores the flag first; the permuter's best (221) swaps the arguments of the call to 0x1fb360, but retail's call site passes the unit index in EAX, the second argument in ECX and the constant on the stack, so the swap would change what the call does.
 // MiniMax B (11-14): no new form, no lower score (270): a permutation search over this body (68 tries in 1224 s, with the
 // reduced image allowed to agree with the full one) found a best of 191, but that variant needs a one-use bool local and
@@ -2076,6 +2076,10 @@ void function_b7360(long object_index);
 // the 1/19 check and copy 272, for case 5's check and point 272, both 270 (the reference folds back, the read stays held
 // across 0x25ab50); case 4's unit test as `arg_1 == local_0->unknown018` 271; case 10's +0x8c clear through a byte
 // pointer 270 (same code: the selector load still moves above the clear); case 7's dot sides swapped 276 (a repeat).
+// Short/long selector shared by perception and notification only, command-first 477/451,
+// actor-first 470/457; with positive admission, command-first 462/414 and actor-first 468/408.
+// NOT kept: the best form starts with the actor pool, then loads its data before the first save
+// and puts the actor index in EBX. The native EBP/ESI assignment and point-reference reloads remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2867,6 +2871,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // as `c ? 1 : 0` 610; cases 9 and 11 as `local_0->unknown018 == arg_1` 610; case 6 with g_5023fc read at each use 610
 // (same code); case 1's point at function scope 610 (same code); case 4's facing read from the state's fields 639 (as
 // listed). Every one still gives the actor EDI and the state EBX.
+// Two-field planar initializers at the animation release, turning and fallback sites 501/488/494;
+// release+turning/release+fallback/turning+fallback 502/509/503; all three 510; separate component assignments
+// at all three 510. NOT kept: component transfers grow the body to 2412 to 2440 bytes against retail's 2396;
+// the first difference is still the dispatch displacement at +0x51.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
