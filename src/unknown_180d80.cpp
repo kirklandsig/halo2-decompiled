@@ -308,6 +308,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // 305 (2663 bytes); the test written `1.0f != scale` 98; the four locals in one declaration 93 (same code). Retail's
 // copies keep each product in its spelled operand order (`up.i * z` loaded, `y * left.i` copied, `left.j * y` loaded);
 // ours commutes those three whatever the spelling. Still BLOCKED-BY 0x17cfa0 for the call setup.
+// P604: Forward strip-length cursor with long/short/word ordinals, long/short remaining
+// counts, the cursor bound before normalization, and checked-count reuse with a short
+// ordinal/remaining count: 583/285/660/583/603/637/284/604. NOT kept: the entry load stays late and
+// the cursor forms disturb the loop and frame slots.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
