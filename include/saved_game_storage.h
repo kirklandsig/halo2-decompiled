@@ -176,4 +176,19 @@ wchar_t const *saved_game_type_get_assault_name(long language);
 wchar_t const *saved_game_type_get_territories_name(long language);
 wchar_t const *saved_game_type_get_playlist_name(long language);
 
+/* writes a file's name: the type's localized name and ": " when the language
+   has one, then the display name (0x216da0) */
+bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long language);
+
+/* a file name buffer, filled by 0x216da0 (0x215c00, 0x215e60, 0x215f40, 0x216120) */
+struct s_saved_game_name
+{
+	word text[128];
+
+	bool fill(long type, word const *display_name, long language)
+	{
+		return function_216da0(type, text, display_name, language);
+	}
+};
+
 #endif

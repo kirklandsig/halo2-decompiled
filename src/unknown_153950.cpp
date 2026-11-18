@@ -829,6 +829,11 @@ struct s_player_axes_153d10
 // 345 at 1335 B): the second unit index as one ternary 2 (same code); as `unit_index = NONE;` then the lookup under the
 // player test 63 (1296 B); the cross as three named scalars feeding relative.i (real build) 47; delta declared after
 // the cross 121 (1303 B); all three dots written delta-first 2 (same code).
+// Round 138 (m3 lane 12, fast with 0x154d70, 0x154df0, 0x155240, 0x170d70; control 2): delta as three statements in
+// k, j, i order 35; this product's up.k read through the array form of up (`[2]`) 2, its forward.i through the array
+// form of forward 2, the i row's up.k through the array form 2 (all the same code: the array reads fold before the
+// operands are ordered); this product written forward first in the text 2 (same code: the compiler orders the two
+// operands itself, so the text order of this product never reaches the code).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

@@ -1696,6 +1696,11 @@ PRIVATE __forceinline real const &component_time_step()
 	return g_510c54->rate;
 }
 
+// MiniMax A (11-18): no new form, no lower score (43): the tail still keeps the scaled value in XMM1 where retail
+// holds it in XMM0 (retail divides XMM0 by XMM1 and multiplies the step in place with `mulss xmm0, [eax + 4]` and
+// `add eax, 4`, ours loads the step into XMM0 and multiplies it by the same memory operand), retail's second product
+// multiplies by the base field while ours keeps the field at +4, and the zero register is XMM3 in retail and XMM2
+// here; the step's own value still sits in a register instead of the memory multiply retail uses.
 // score 43 (was 26): retail's stop-first test order, see b13C below; earlier 43; Acceleration XMM0/memory
 // timestep prefix and stop-test schedule still differ;
 // negative-target guard 50; stopping branch first 106; step predicate first 26 (kept, plain 26);

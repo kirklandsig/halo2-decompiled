@@ -6,6 +6,8 @@
 #include "partition_noncolliding_storage.h"
 #include "projection_storage.h"
 #include "view_context_storage.h"
+#include "instance_marks_storage.h"
+#include "light_marks_storage.h"
 /* UNKNOWN_1321F0.CPP */
 
 #include "unknown_11c920.h"
@@ -148,7 +150,6 @@ long function_461c0(point3f const *a, point3f const *b, real radius);
 bool function_c3110(long index);
 bool function_c3140(long index);
 extern s_record_pool *g_4e030c;
-extern long g_4e0308;
 
 struct s_132a30_light
 {
@@ -616,6 +617,10 @@ struct s_visibility_object_header
 // Secondary output update inside the visibility branch 170, mode conjunction 115, clear-only guard 152.
 // visibility predicate at plane call 276, visibility bool reused for front plane 67, fallback assignment 161.
 // duplicate guard with return 203, new-object guard with return 4. The plane outputs still exchange homes.
+// Round 98 (m3 lane 2, fast, control 4): `in_front` renamed `ahead` 4 and `behind` renamed `rear` 4 (same code: the
+// param-home pick does not follow names); 0x132b10's first and last parameters swapped with the call 202 (0x132b10 12:
+// a register parameter's position picks its register); the plane outputs and both calls in their own block 4;
+// `contained` declared before first/second 7 (only the init stores move).
 // @retail 0x133050
 void function_133050(s_bit_vector_pool *data, long object_index, short section, bool flag_a, bool flag_b)
 {
@@ -701,8 +706,6 @@ void function_133050(s_bit_vector_pool *data, long object_index, short section, 
 	}
 }
 
-extern long g_4e7c1c;
-long g_4e7c20[1024];
 bool function_16e210(long cluster_index, long value);
 
 struct s_visible_cluster
@@ -759,6 +762,10 @@ short function_2cbf0(long arg_1, short arg_2, dword arg_3,
 // j, i sum): volatile locals as before (86; 96 with a plain long), real locals (114), volatile vector3f (96),
 // double sums (82-93), no corner point (38+), centre orders (16-20), corner orders (19, 35), plane test before the
 // extent (85), corner before centre (49), sqrt inlined (84).
+// Round 98 (m3 lane 2, fast, control 2): BLOCKED-BY 0x2cbf0 (contributor's; its register-argument order sets which
+// constant loads first). Caller forms: the flags `| 0x40` folded into the 0x1332f0 result's declaration 30; the radius
+// product written in the call argument 2; the list pointer read at the top of each iteration (loop bound through
+// arg_1->lists[0]) 2; the indices byte read after the cluster pointer 80 (410 bytes); `0x40 | local_3` 2.
 // @retail 0x133390
 void function_133390(s_bit_vector_pool const *arg_1)
 {
@@ -1141,32 +1148,10 @@ void function_132900(s_bit_vector_pool *arg_1, s_sort_context const *arg_2, s_so
 	}
 }
 
-extern bool g_4e7c18;
-bool g_4e0304;
 struct s_view_collection_1733e0;
 void __stdcall function_173130(long camera_count, byte *cameras, long cluster_index, s_view_collection_1733e0 *collection);
-void function_1733e0(s_view_collection_1733e0 *collection, long cluster_index, byte const *camera);
+void function_1733e0(long cluster_index, s_view_collection_1733e0 *collection, byte const *camera);
 
-// score 26 (was 26): camera argument load order and the pre-call flag stores. Reduced opening score 25.
-// the camera argument loads and pre-call flag store differ. Fast score 25.
-// b13F (11-17) walk against retail, fast build on r846: the arguments of 0x132b80, the switch (0x13213f-0x132149)
-// and the three case bodies with their call arguments (0x13214b-0x132157, 0x132159-0x13215b, 0x132162-0x13217d) agree.
-// Retail keeps `mov byte ptr [0x4e7c18], bl` (0x13218f) before the call to 0x134390; ours drops it as a dead store,
-// so retail's `mov bl, 1` (0x13218c) shared by the stores at 0x1321b6 and 0x1321c2 becomes `mov al, 1` after the call,
-// and `inc dword ptr [0x4e7c1c]` (0x132186) becomes load/inc/store through ebx. 0x4e7c18 is never read in retail
-// (writes at 0x13218f, 0x1321a9, 0x1699f8, 0x169e10, 0x16a52a, 0x16a773), so the store survives only if the compiler
-// thinks 0x134390 may read it: shared-storage lead, as for cluster_marks_storage.h: 0x4e7c18 flag, 0x4e7c1c tick and the
-// 0x4e7c20 table are one 8 + 0x1000 byte block (the callee reads tick and table), which needs edits outside this
-// function (unknown_1689b0.cpp:713, unknown_244c10.cpp:9, and the table above). Also: retail loads ebx (data->context)
-// before eax (cluster) at 0x13214b-0x13214d, ours eax first (a local for the collection leaves it as is).
-// NOT kept (reduced scores): camera/cluster/collection signature 23, only two points gained and the flag gap remains.
-// Typed frustum array 25; collection read before dispatch 43; common collection cases 64; selected pool
-// reference 26; short location cluster 25; chained completion clears 25; prefix stamp increment 25;
-// sort context reference 25.
-// Raw case-2 context 25; context then cluster 25; context then camera 25;
-// camera then context 25; flag before stamp 25; computed stamp snapshot 25;
-// filter declared in its test 25; missing-filter break 25.
-// NOT kept: all tie the reduced build and leave both divergences.
 // @retail 0x1320f0
 s_bit_vector_pool *function_1320f0(long mode, long count, bool use_plane, long flags, byte const *frusta,
 	byte const *center, real radius, void *filter, real plane_offset, long cluster)
@@ -1189,7 +1174,7 @@ s_bit_vector_pool *function_1320f0(long mode, long count, bool use_plane, long f
 		function_132d60((s_132d60 *)data);
 		break;
 	case 2:
-		function_1733e0((s_view_collection_1733e0 *)data->context, cluster, frusta);
+		function_1733e0(cluster, (s_view_collection_1733e0 *)data->context, frusta);
 		break;
 	}
 	g_4e7c1c++;

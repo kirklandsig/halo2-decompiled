@@ -94,7 +94,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
-// score 194 (was 194): earlier 211 (round 95 m3 lane 11 at the end) and 223; the tint and the second UV set's bounds have swapped homes and the aspect pair's spill homes are swapped too; the blend leaves XMM5 in the aspect block.
+// score 162 (was 194): tint and secondary UV now use retail offsets. The 0x60 frame is unchanged.
+// The bitmap path still allocates blend and aspect intermediates differently. The body is 1947 bytes against 1937.
+// Earlier scores 211 and 223.
 // MiniMax C (11-15): no new form, no lower score (194): the tint still sits at +0x60 where retail has +0x50 with the
 // second UV set in the other slot, and the aspect block still leaves the blend in XMM5; the tint in a nested scope
 // measures 234 and swapping the two UV declarations gives the same code, so the homes cannot be moved that way.
@@ -655,6 +657,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 194 (same code); the two inverse sums through a force-inline (1-t)*a + b*t helper 238 (1943 B); remaining_blend assigned
 // at the top of each aspect arm 338 (1972 B). Retail's sequence arm jumps over a join block that reloads the blend into
 // XMM5 for the other paths; ours falls through and the aspect block reads the blend from memory (about 19 bytes longer).
+// AC570: Sequence snapshots before and after frame evaluation, shared wrap count
+// and shared frame base: 194/194/194/194/194/194/194/194. NOT kept: the snapshots fold to the same
+// reads. Tint and secondary UV homes remain exchanged, and the blend still spills.
 // The fixed arm still leaves the tint above the second UV record, and the blend is spilled in the aspect block.
 // Definition bounds to first UV 451, second UV used as source for first 211, second UV encoded in place 203,
 // definition bounds to second UV 451. Sequence-local blend published after pivots 273, selected local published
@@ -664,6 +669,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // scored 194 (same code, the slot order does not follow the declarations), so the tint keeps its home at +0x60 against retail's
 // +0x50 with uv_b the other way round; retail's join block reloads the blend into XMM5 where ours reads it from memory, which
 // leaves the body 10 bytes longer than retail.
+// Separate input bounds for dynamic UV a/b/both, fixed UV a, and their combinations: 219/162/162/202/199/170/207.
+// Aggregate-initialized secondary bounds 162. Kept the secondary input bounds in the bitmap arm.
+// P608: Current-frame weight shared from frame admission, enabled blend, explicit disabled arm
+// or deferred blend into both pivots and both downstream pairs, aspects or inverse extents:
+// 398/416/416/405/397/367/357/396. NOT kept: every form regresses and changes frame layout.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
@@ -706,7 +716,8 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 	{
 		s_draw_sprite_bitmap const *bitmap=context->bitmap;
 		uv_a.bounds.x0=0.0f; uv_a.bounds.x1=1.0f; uv_a.bounds.y0=0.0f; uv_a.bounds.y1=1.0f;
-		uv_b.bounds.x0=0.0f; uv_b.bounds.x1=1.0f; uv_b.bounds.y0=0.0f; uv_b.bounds.y1=1.0f;
+		box2f bounds_b;
+		bounds_b.x0=0.0f; bounds_b.x1=1.0f; bounds_b.y0=0.0f; bounds_b.y1=1.0f;
 		point2f pivot={0.5f,0.5f};
 		if(bitmap && bitmap->type==3)
 		{
@@ -729,14 +740,14 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 					s_draw_sprite_frame const *first=&context->sequence->frames[index%context->sequence->count];
 					s_draw_sprite_frame const *next=&context->sequence->frames[(index+1)%context->sequence->count];
 					if(!(definition->flags&0x20)) blend=frame-(real)index;
-					uv_a.bounds=first->bounds; uv_b.bounds=next->bounds;
+					uv_a.bounds=first->bounds; bounds_b=next->bounds;
 					pivot.x=(1.0f-blend)*first->pivot.x+blend*next->pivot.x;
 					pivot.y=(1.0f-blend)*first->pivot.y+blend*next->pivot.y;
 				}
 			}
 		}
 		real ax=uv_a.bounds.x1-uv_a.bounds.x0,ay=uv_a.bounds.y1-uv_a.bounds.y0;
-		real bx=uv_b.bounds.x1-uv_b.bounds.x0,by=uv_b.bounds.y1-uv_b.bounds.y0;
+		real bx=bounds_b.x1-bounds_b.x0,by=bounds_b.y1-bounds_b.y0;
 		real inv_ax=1.0f/ax,inv_ay=1.0f/ay,inv_bx=1.0f/bx,inv_by=1.0f/by;
 		real aspect_x=1.0f,aspect_y=1.0f;
 		long flip=sprite_flip(definition,seed);
@@ -757,7 +768,7 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 		real width=context->width*aspect_x;
 		real inverse_y_next=inv_by*blend;
 		real inv_y=remaining_blend*inv_ay+inverse_y_next;
-		function_x0ec080(&uv_a.bounds,flip,uv_a.values); function_x0ec080(&uv_b.bounds,flip,uv_b.values);
+		function_x0ec080(&uv_a.bounds,flip,uv_a.values); function_x0ec080(&bounds_b,flip,uv_b.values);
 		real x=inv_x*pivot.x*2.0f-1.0f,y=inv_y*pivot.y*2.0f-1.0f;
 		real x0=(-1.0f-x)*width, y0=(-1.0f-y)*aspect_y;
 		real x1=(1.0f-x)*width, y1=(1.0f-y)*aspect_y;

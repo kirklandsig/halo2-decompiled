@@ -4506,6 +4506,11 @@ bool __stdcall function_2b278e(long controller_index)
 // Round 416: Case orders 3/2/1/0, 3/0/2/1, 0/3/2/1 and 0/2/3/1 each score 54.
 // Orders 3/1/2/0, 3/0/1/2, 0/3/1/2 and 0/1/2/3 each score 127. NOT kept: case
 // reordering still leaves the original index in ESI and omits the dialog reloads.
+// Scope the initial index to the identity calls, using one numeric snapshot
+// 199/197, a reference to the index field 205/206, both direct reads 199/197,
+// or an identity-only controller view 199/197. Each pair forms masks at their
+// dialog calls or in the corresponding arm. The original reference and index
+// stack home are still missing.
 // @retail 0x2b24ff
 void c_clan_options_list::handle_item(s_controller_reference **controller, long *item)
 {
@@ -5757,6 +5762,10 @@ PRIVATE __declspec(noinline) void update_player_actions_2b55ae(c_y_menu_player_s
 // by roster state 388 or addition gate 381; add/pending branches by roster state
 // 381 or admission 86; shared removal gate 360; joined title and joinability 95.
 // NOT kept: the admission form gains three; the title-state output slot still differs.
+// Request as preliminary add permission 106; staged join admission 89; selection origin as
+// preliminary join permission 100; valid-session protection conditional 389; invitation
+// branch 369; offer branch 340; staged roster removal 89; staged title permission 89.
+// NOT kept: ties or regressions. The title-state byte address still differs.
 // Round 456: one member result for change and removal 358, shared roster-mode predicate 351, shared rank
 // and roster permission 367, shared listed-friend cancellation and removal guard 169, reused regular-
 // friend result in removal test 320, reused removal result in kick test 269, membership statuses

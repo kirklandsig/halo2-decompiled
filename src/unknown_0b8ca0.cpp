@@ -1912,6 +1912,11 @@ done:
 // the same code); the palette pointer formed after the placements read 26 (237 B). On the 27 form (re-measured 27, 236 B: type
 // ESI, definition ECX, size read first, no copy): one function-scope placement type declared at the top and assigned in the
 // placement block 27 (same code).
+// Round 98 (m3 lane 2, fast with 0xbf0f0/0xbf090; on the 27 form, re-measured 27 at 236 B: type ESI, definition ECX, size
+// read first, no copy): the type local for the table index with the name field read again for the push 27; the palette
+// offset read through the table in place with the definition local declared after it for size and placement offset 27;
+// the size as a dword 27; the definition typed as the object type definition (the 0xa offset through its field, the
+// header included) 27; the placement index widened once into a long local for the product and the push 32.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
