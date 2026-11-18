@@ -245,7 +245,7 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 	return result;
 }
 
-// score 110 (was 156): check with 0x2157e0 in the image (it defines g_51ea14;
+// score 114 (was 114): check with 0x2157e0 in the image (it defines g_51ea14;
 // without it the fast check builds differently). The iterator struct gives
 // retail's frame: table at [esp+0x24], the index's slot [esp+0x28] unused, and
 // index << 6 recomputed for each copy (a plain table pointer and index
@@ -259,6 +259,40 @@ bool __stdcall function_2163d0(long first, long second, void const *context)
 // struct (151, but adds a count test at entry: 580 bytes), memcpy copy (156),
 // local cache pointer (153, spilled: 584 bytes), unit/count initialized in
 // other places (167).
+// (This note's first line read 110, was 156, before round 141's baseline.)
+// M3 lane 12 r141 (fast with every function of this file and src/unknown_2157e0.cpp, the callers and callees; that
+// image reproduces the plain 114): BLOCKED-BY the `/GL-` flag of src/unknown_215880.cpp. That object is native and
+// names g_51ea14 (0x215880 stores it), so the link takes every store through a pointer to modify the global: it is
+// reloaded at each use and never carried. Retail carries it in EDX from the entry test to the cached block (reload
+// at the pass latch, none after the loop), which the compiler only does for a global no native object names (screen:
+// a native object that reads or writes the global, or one `&`, is enough). Diagnostic (not kept, flags are not a
+// lane's to change): with that file built as an LTCG object this function MATCHES byte for byte in the plain check
+// with the body below (0x215880 then 28 and 0x215b40 5; with 0x215880's table as a real array member 0x215b40
+// matches again and 0x215880 is 34: retail calls 0x20670 there and re-reads g_55c15c after its store).
+// The body that matches then (52 in the real build, aligned 35 against 66; not kept: without a match its count
+// placement, one-use `current` and declaration order are steering forms, and without the count placement it is 170):
+// the header's s_saved_game_location_iterator with `do { if (!saved_game_location_iterator_get(&iterator,
+// &location)) break; long current = iterator.index++; if (location.type == type) indices[count++] = chain; }
+// while (count < *capacity);`, chain = `(((((cache->generation & 0x1ff) << 14) | (current & 0x1fff)) << 4 |
+// (unit & 0xf)) << 4) | (type & 0xf)` with the generation read through the getter inside it (a `generation` local
+// keeps the old registers); the count declared without a value and zeroed first thing inside the cache block and
+// in an else (the compiler hoists the first zeroed long of the block above the entry test and uses its register
+// for every zero: retail's is the count's EBX, ours picked the unit's EBP); in the cached block `long index = 0;`
+// declared before `cached_count` and `for (; ...)`. Full diff: build/r141/held-215900.patch.
+// Scores on the way (real build): cached table read before the include test 113; a typed cache local through the
+// function 187 (584 bytes), as the entry local only 184 (588); unit/pass zero placements (for-init, before the
+// unit count, with the count, pass first, pass from the count) 114 each; the iterator + `current` + chain with a
+// `generation` local 170 (aligned 67), as a while with a break 170, increment at the loop's end 170 (aligned 70),
+// a for with the increment in its header 170 (69); generation at its use 170 (aligned 42), with the compare's sides
+// swapped 170 (43); on that: cached block with the table before the test, a typed cache local or the getter at each
+// use 170/170/171; unit count by if/else 170 (42), preset then if 170 (44), short unit count 163 (35), short pass
+// 222 (512 bytes), short unit 215 (520), short count 250 (644), `!= NULL` or the getter in the entry test 170,
+// a while with the increment at the end 170, the loop condition's halves swapped 55 (aligned 39; retail tests the
+// unit count first); renamed locals 170 each; count zeroed in both branches 52 (35), a second `count = 0;` 52, the
+// count inside the block with `*capacity = 0` in an else 200 (596 bytes); on the both-branches form: table before
+// the test 51, table local at the block top or entry 186/185 (584 bytes; retail's EDX and latch reload, but from a
+// stack home); cached block with a typed cache local, the getter at each use or split declarations 52 each, with
+// `long index = 0;` before `cached_count` 52 (the form that matches under the diagnostic).
 // @retail 0x215900
 void __stdcall function_215900(long controller, long type, word *capacity, long *indices, bool include_cached)
 {

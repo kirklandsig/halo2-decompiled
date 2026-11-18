@@ -1032,6 +1032,29 @@ long function_14a280(s_bsp3d *bsp, long index, point3f *point);
 // Round 415. shared actor displacement with explicit speed result 554, per-branch speed store 551, full-width
 // default copy 551, typed unit choice 554, prop capacity after each visit 539, prop capacity on insert 549, typed
 // group slots 554, typed actor walk 554. The 0x1c frame returns, with the displacement at +0x1c against retail +0x18.
+// M3 lane 12 r141: the distance through vector3d_from_points3d + the existing magnitude3d 433 (kept: retail expands
+// both; r139's 574 was a fast-image artefact, magnitude3d's file was not in the reduced image, so list 0x24590).
+// The body MATCHES byte for byte (fast and plain, 2059 bytes) once 0x25d740 is called, measured with the one pragma
+// diagnostic (inline_depth(0) around that call, not kept): r139's lead (first loop through 0x26be00/0x26be30 with
+// iterator.index passed to 0x267840, the request type read at each use, the 0x53/0x644 flags stored as bool, the
+// group flag set by one if) plus the speed stored in each arm of an if/else-if chain (retail stores after the join
+// and copies +0x18 to +0x1c from memory), the root as `if (type || (root = parent) == NONE) root = node object`,
+// and the +0x60c point in a pointer local declared before the unit choice. With the getter expanded (the real link)
+// that body scores 461 (2095 bytes), so it is not kept; full diff in build/r141/held-261510.patch. Steps on the way
+// (called / expanded): lead 357/568; + distance3d 314 (orig 441; `fmulp` shape, not this helper); + magnitude3d
+// 317/567; + per-arm speed stores 250/463 (orig 540); root as a ternary in the call or into the local 250, parent
+// read first 376, assigned in the test 3; unit choice as a ternary argument (either sense), if/else or a ternary
+// local 3 each, the pointer local MATCH.
+// Why the getter is expanded here: the link's inliner goes by the callee's compiled size, the site's static
+// frequency (halved per enclosing test, else arm, && operand, early return or switch case; a loop gives back three)
+// and a limit that rises with program size. It expands 0x25d740 under up to 3 tests and calls it under 4; retail
+// expands it under 2 (0x1b57f0, 0x1b5aa0, 0x1b2630) and calls it under 3 (here, 0x1aa0d0, and 0x1b7b90, 0x1b4560,
+// 0x1b4680, which carry the pragma on main). Caller size, argument/result spelling, other callers, `inline`,
+// wrappers, member or convention forms do not move it, and every spelling of the getter that compiles to the same
+// 13 instructions measures the same (9 screened), so no source form here or in 0x25d740 changes it: BLOCKED-BY the
+// link's inline limit for 0x25d740 at 3-test sites (build calibration; or the ruling on the pragma). A call nested
+// in an expanded helper is decided inside that helper before constant arguments fold (a constant-guarded helper
+// keeps the getter out of line), but retail has no out-of-line copy of this target block to justify one.
 // @retail 0x261510
 void __stdcall function_261510(long actor_index, s_2605d0_request const *request)
 {
@@ -1054,13 +1077,12 @@ void __stdcall function_261510(long actor_index, s_2605d0_request const *request
   *(long *)(parameters + 0x64c) = *(long *)(parameters + 0x40);
   parameters[0x618] = 1;
   *(short *)(parameters + 0x660) = *(short *)(parameters + 0x44);
-  double x = (double)*(real *)(parameters + 0x620) - *(real *)(actor + 0x238);
-  double y = (double)*(real *)(parameters + 0x624) - *(real *)(actor + 0x23c);
-  double z = (double)*(real *)(parameters + 0x628) - *(real *)(actor + 0x240);
+  vector3f delta;
+  vector3d_from_points3d((point3f *)(actor + 0x238), (point3f *)(parameters + 0x620), &delta);
   *(long *)(parameters + 0x664) = NONE;
   *(long *)(parameters + 0x648) = NONE;
   *(real *)(parameters + 0x678) = 0.0f;
-  *(real *)(parameters + 0x61c) = (real)sqrt(z * z + y * y + x * x);
+  *(real *)(parameters + 0x61c) = magnitude3d(&delta);
   function_1e3b00(*(long *)(actor + 0x18), 1, (point3f *)(parameters + 0x620), NULL, NULL, (point3f *)(parameters + 0x62c));
   *(point3f *)(parameters + 0x638) = *(point3f *)(parameters + 0x62c);
  }
