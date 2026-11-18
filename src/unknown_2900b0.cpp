@@ -469,6 +469,11 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // pointer bound, 60; the scaled index named ahead of the copy 30 (same colouring as 28). Re-measured: actor_get ahead of
 // the copy 38 (it does give `add eax, edx; mov edx, eax` with the data in EDX, but the add then precedes the copy and the
 // origin takes EAX). Next: a form where the data and the actor pointer are two values that the allocator still ties.
+// Round 185 (m3 lane 8, fast with 0x1e3b60 and 0x28f890): the centre update as a plain static function 343 (154
+// bytes, out of line); the centre update taking the centre pointer, the count pointer and the first creature 96 (the
+// first creature is read at the call); the sample reset (memset, the three NONE stores, the flag, the call) in a
+// forceinline helper taking the actor pointer and the first creature 50 (392 bytes); the loop's object and creature
+// pointers declared at the helper's top 28 (same code); that with the creature loop as a for 28 (same code).
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

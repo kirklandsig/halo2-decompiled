@@ -335,6 +335,13 @@ long g_55e6c0;
 // as `count < 0 ? 0 : count` stored, then `if (field > 4) field = 4;` 156 (495 bytes); as an unsigned range test
 // `(dword)count > 4 ? (count < 0 ? 0 : 4) : count` 140; the height bound by `long const &` for its store and the packing
 // 29 (same code). All restored.
+// Round 185 (m3 lane 8, fast with 0x1dc40/0x1db10, all on the round-51 signed pitch/packed lead, 29 at 484 bytes):
+// the clamp through a forceinline helper that clamps its own parameter by the ternary and returns it 166 (497 bytes,
+// the count takes EBP); the clamp's store ahead of the +0x8c clear 33; the clamp assigned through a reference-bound
+// local then stored 29 (same code); a copy of the count made ahead of the kind store and clamped at the store 29
+// (propagated); that copy clamped in place by the ternary, then stored, 166 (503 bytes; 0x1dc40 and 0x1db10 go to 5).
+// Reading: retail's top block fits the clamp value interfering with the kind value (count loaded before the kind
+// store, so it cannot share EAX) while the height starts after it; ours starts the clamp after the kind store.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

@@ -1200,10 +1200,24 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // side crosses through cross3f_staged 112 (1389 B). A private rotate reading only the vector's j and k into locals first
 // (diagnostic, to test whether those two ranking ahead of the axis gives retail's copy-first products) 118 (1393 B: the four
 // products stay axis-first, v.j/v.k swap XMM5/XMM6). Body unchanged.
+// Scale the sampled angle in place with sine only, cosine only, sine then cosine,
+// or cosine then sine staged. After the forward copy 186/190/187/191, before it
+// 199/202/198/201. NOT kept: frame 0x18 stays, the trig sequence moves away from
+// retail and every form shortens to 1364–1366 bytes against 1382.
 // Shared up-field pointer 148, shared forward-field pointer 165, both field pointers
 // or references 150/150, both at sampling or entry 150/376, pointer or reference
 // fields with staged crosses 148/148. NOT kept: native rotation multiplicands
 // and final direction copies remain different.
+// m3 lane 1 r120 (fast with 0x24590/0x1cd6c0/0x1ecf50, all MATCH; control 114). A compile-only copy with the rotation helper's
+// text pasted in reproduces the real floating-point stream but three lines. In it, no-code mentions (`(void)rotated.j;` and
+// the like) of the rotated copy's or either cross's components, before the rotation, after it or inside the turn block, turn
+// every rotation product (masked count 129 to 210 against 66); mentions of the state's up or forward fields change nothing.
+// A 450-form combination screen (exit form, the eight side-dot argument orders, test order, five moved-away spellings,
+// float trig, alignment order, cross helper per cross, cross order) is lowest with the old cross through cross3f_staged and
+// the side dots as (up, old) * (new, up) or (new, up) * (old, up); in the real build those give: staged old cross with
+// (up, old) * (new, up) 112 (1393 B), on the single-store exit 112, with the preset flag too 109 (1391 B); (new, up) *
+// (old, up) with the staged old cross, single-store exit and preset flag 109, on this body 112; the staged old cross alone
+// 112 (1389 B); staged old cross, (up, old) * (new, up) and the preset flag 109. Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
