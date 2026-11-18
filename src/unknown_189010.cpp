@@ -149,6 +149,16 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax H (11-18): score 106 (was 150): the priority is read from the request's audible byte, then the location is
+// copied, then the flag word is built, which is retail's order, and the source size's zero default is stored before the
+// marker's own assignment instead of in an else arm; what still differs: retail keeps the sound pointer in a frame
+// slot and reloads it, this build keeps it in EBP and pushes EBP at the start; retail loads the source before the tag lookup and builds
+// the flag word in EAX, this build builds it in EDX afterwards; retail's object and platform bits use the or/and
+// complement form; retail's end test takes bit 8 as a byte and bit 11 by a shift where this build merges both into one
+// word test; the first 0x221810 lookup is still expanded here where retail calls it out of line (that helper's
+// inline-ness is set in src/unknown_221490.cpp) and the 0x21d110 call still takes the play state by pointer on the
+// stack where retail passes it in a register (that callee's declaration is in another file).
+// BLOCKED-BY 0x221810 and 0x21d110.
 // score 150 (was 110): The 0xa8 frame agrees. The first class lookup still expands, and playback state still passes on the stack.
 // Native short priority and padding by separate stores, chain first, after flags, or before location 162/162/163/163.
 // Native priority and padding published before or after flags 152/152. Complete priority copy at the original store 150.
@@ -427,6 +437,7 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 		s_sound_play_state state;
 		// Retail also clears the padding after the priority field.
 		*(long *)&state.priority = request->location.audible ? 3 : 1;
+		state.location = request->location;
 		dword flags = (request->source ? 0x20 : 0) + 5;
 
 		if (request->object_index != NONE)
@@ -438,7 +449,6 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 			flags |= 0x100;
 		}
 		state.flags = flags;
-		state.location = request->location;
 		state.object_index = request->object_index;
 		state.source = request->source;
 		state.platform_playback = request->platform_playback;
@@ -448,14 +458,11 @@ long function_189fe0(s_sound_request const *request, long tag_index)
 			state.location.flags |= 0x800;
 		}
 
+		state.source_data_size = 0;
 		if (request->marker)
 		{
 			state.marker = *request->marker;
 			state.source_data_size = sizeof(s_sound_marker);
-		}
-		else
-		{
-			state.source_data_size = 0;
 		}
 
 		char const *variant = request->variant;
