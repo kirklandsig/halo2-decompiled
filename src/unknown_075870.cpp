@@ -310,7 +310,7 @@ bool network_observer_get_bandwidth(s_network_observer *observer, long *value4e0
 }
 
 // @retail 0x769a0
-bool network_observer_channel_timed_out(s_network_observer *observer, long channel_index)
+bool network_observer_channel_timed_out(s_network_observer *observer, long owner, long channel_index)
 {
 	s_network_observer *const *local_0 = &observer;
 	s_network_observer_channel *channel = &(*local_0)->channels[channel_index];

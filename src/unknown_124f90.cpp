@@ -737,6 +737,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // member of the voice aggregate 3 (same code; 0x128500/0x128700/0x128920 unchanged); the voice as a const reference bound
 // to the pointer temporary 11 (both increments sink below the stores), the same temporary used for only the first store,
 // the first two or the stores from unknown0a on 11 each (any such temporary changes the store schedule of the whole body).
+// Round 118 (m3 lane 10, fast with 0x128500/0x128700/0x128920, all matched): the type stored before the sound index
+// with the voice index advanced after both stores 2 (re-measure: only the two stores swap, `inc esi` stays right after
+// `inc edi`); channel and 0e as one chained NONE store (0e first) 3; `short type; for (type = 0; ...)` 3; a `byte` type
+// counter 7 (`xor dl, dl`); the voice index declared before the system reload 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1337,6 +1341,9 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 87 (was 87): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
+// MiniMax G (11-18): no new form, no lower score (87): the elapsed time and its reciprocal still take different registers
+// (XMM2 against retail's XMM3), the first gain load is still separate, and the release-to-attack join still differs.
 // score 87 (was 94): elapsed and reciprocal registers, separate first gain load and release-to-attack join.
 // Earlier: MiniMax I (11-16, round 2): no new form, no lower score: arm 1's clamp value still multiplies
 // by the reciprocal where retail divides, because the divisor's spelling lets this build reuse the inverse - a fade-in
@@ -1713,6 +1720,11 @@ long function_2197f0(real gain);
 // composite+initial/composite+current/initial+current/all 159/99/95/159;
 // all with the previous release as complete if/else 159. Elapsed/reciprocal XMM
 // roles, the first separate gain load and the late release join still differ.
+// M3 lane 15 r98 (fast with 0x221810 and 0x1251e0, both MATCH; control 87, LCS-aligned 46): for the arm-3/arm-4 join (ours
+// carries the gain in XMM0 into arm 4, retail re-reads its home there): arm 4's sum as `gain +=` 87, arms 3 and 4 as `+=` 87,
+// the three interpolated arms as `+=` 87 (all the same code: the join still carries XMM0); every sum as `+=` 100 (678 B: the
+// hold arm then reads the ducking gain directly where retail copies it through the stack for the by-value operand); arm 4's
+// sum written interpolation first 115.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2851,6 +2863,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // fixed by that callee's declaration in another file, so this one stays BLOCKED-BY 0x219070 and 0x218f50.
 // score 17 (was 17): unchanged this round: the sound set index is sign-extended where retail copies the dword
 // (one byte longer) and 0x219070 is called with two arguments where retail passes one; both live in other files.
+// MiniMax G (11-18): no new form, no lower score (17): the sound set index is still sign-extended (movsx ebp, ax) where
+// retail copies the dword, because 0x218f50 is declared to return a short in another file, and 0x219070 is still called
+// with two arguments where retail passes one. BLOCKED-BY 0x218f50 and 0x219070.
 // score 17 (was 17): unchanged this round: our code is one byte longer - the sound set index is sign-extended
 // (`movsx ebp, ax`) where retail copies the dword, and we call 0x219070 with two arguments where retail passes one.
 // MiniMax S (11-14): no lower score (17): the set index is still sign-extended (movsx ebp, ax) where retail copies
@@ -3575,6 +3590,14 @@ static inline short sound_voice_find_available_channel(char type)
 // driver assigns buffer 123; both arms assign buffer 122; result from both tests 135; byte from both
 // tests 177; result guards cleanup 135; cleanup at common exit 135; failure from missing channel or
 // buffer 134. NOT kept: all forms scored above the opening body.
+// M3 lane 15 r98 (fast with 0x129100, 0x127320, 0x12a5d0, 0x21de90, all MATCH; control 96): lane 5 r178's match-only form
+// (build/r178/held-1295e0-form15.txt in that lane's tree) rebuilt as found: 108 at 430 B (aligned 7: the search helper here
+// takes a char, so the type byte is loaded and then sign-extended); with the file-local search helper taking `long type`
+// 15 (aligned 4, as before: `mov al, bl` sunk below three pops in the failure tail, the channel store one slot late and
+// the commit's two pops at its end, because the early exits share the commit's epilogue). On the char rebuild (same code
+// as it, 108, each): the early exit as `goto done;` to a label at the return; the commit arm ending `goto done;`; the
+// commit arm first with the failure arm (and its label) second. The early test nested with its own `return result;` 135
+// (431 B).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -4525,7 +4548,7 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
-// score 122 (was 130): the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
+// score 122 (was 122): the second flag3 test shares its flag-word load with the flag6 store where retail reads a byte for the test
 // and sets the bit in memory, both pin sums trade EAX/EDX with the field_c store one slot late, and the synchronisation byte is
 // widened (see r136 at the end of this note).
 // Earlier at 130 (was 158; 167 on r727, 222 before MiniMax H): the head through both pins now agrees but for scratch registers (the
@@ -4773,6 +4796,15 @@ struct s_128ca0
 // The sum and clamp shared by both submissions, taking permutation byte, permutation record,
 // converted permutation gain, or permutation byte with decoded gain, each returning the bits
 // or writing the packet: 122/122/122/122/122/122/122/122. Pin registers and store order unchanged.
+// M3 lane 15 r98 (fast with 0x1293f0, 0x12a810, 0x1251e0, 0x125e60, 0x12a420, 0x12a9d0, all MATCH; control 122, LCS-aligned
+// 49): the synchronisation value as a char 189 (1054 B, aligned 78: the byte ops at the store are retail's, but the scratch
+// registers from the voice lookup on rotate); as a char defaulted to NONE and overridden 189 (same code); the first flag3
+// test with its two other conditions nested inside it 122 (same code); the second flag3 test as `(flags >> 3) & 1` 122 (same
+// code: the word load is still shared with the flag6 store); that plus the stream bit through the existing 0x12a420 123.
+// Synchronization count from postdecrement as char, byte or long 189/147/122.
+// Default char plus postdecrement 189, branch-local publication 208, default
+// char plus prefix decrement 189, single-read subtract as char or long 188/129.
+// NOT kept: no gain in the existing pin layout and byte update.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -5070,6 +5102,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // 0x1420f0 and 0x11c120 still have to stay out of line, which their noinline declarations in other files decide.
 // score 535 (was 535): unchanged this round: the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and
 // 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
+// MiniMax G (11-18): no new form, no lower score (535): the frame is still 0x130 against retail's 0xe8 and 0x16f3a0,
+// 0x1420f0 and 0x11c120 still have to stay out of line, and their noinline declarations live in other files.
+// BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.
 // score 535 (was 535): unchanged this round: 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line, and their
 // noinline declarations live in other files.
 // MiniMax A (11-17): no new form tried this round, no lower score (535): the frame is 0x130 against retail's 0xe8 and 0x16f3a0, 0x1420f0 and 0x11c120 have to stay out of line; their noinline declarations live in other files. BLOCKED-BY 0x16f3a0, 0x1420f0 and 0x11c120.

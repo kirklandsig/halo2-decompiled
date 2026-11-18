@@ -24,20 +24,20 @@ static void release_service(c_sized_reference_a9ef0 *service)
 	}
 }
 
-// Score 22: retail keeps a separate counter address and a test before its
+// Older score 22: retail keeps a separate counter address and a test before its
 // store. The compiler folds those operations into the object's field access.
 // Prefix decrement scores 26; explicit-count and pointer-helper forms 22.
+// coldspear (11-18) walk against retail, fast build on r858: MATCH. Retail tests the global once (0x2d6fe5), keeps
+// the counter's address apart from the object (add eax,4 at 0x2d6fee, store at 0x2d6ff4) and calls the deleting
+// destructor with no null test (0x2d6ffc). That is a reference release written as a member that ends in
+// `delete this`, called through the global it tests: c_havok_abstract_allocator::drop_reference() in
+// unknown_146a20.h. The same member called through a local copy of the global scores 26, the member's body written
+// out here 22, and a header pointer tested in place of the object 8.
 // @retail 0x2d6fe0
 void __cdecl function_2d6fe0(c_havok_abstract_allocator *replacement)
 {
-	c_havok_abstract_allocator *old = (c_havok_abstract_allocator *)g_480118;
-	if (old)
-	{
-		long remaining = old->m_unknown04 - 1;
-		old->m_unknown04 = remaining;
-		if (remaining == 0)
-			delete old;
-	}
+	if (g_480118)
+		((c_havok_abstract_allocator *)g_480118)->drop_reference();
 	g_480118 = (c_allocator *)replacement;
 }
 

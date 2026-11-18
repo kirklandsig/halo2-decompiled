@@ -750,7 +750,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // score 235 (was 163; 163 at r76; 162 with the one-use settings copy dropped, not kept): 1242 bytes (retail 1229), frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax H (11-11): no new form, no lower score (163); the state dot still takes its registers from XMM4-6 where retail uses
 // XMM5-7, and the rotation block still schedules its products differently.
-// score 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// Earlier 163 (was 163; 162 with the one-use settings copy dropped, not kept): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
 // gives retail's (k + j) + i order when the three products have fresh component nodes, so the
 // state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
@@ -966,6 +966,11 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // parenthesized (k + j) + i: 235 with all three (1242 B; 0x1e5af0 and 0x30bf0 MATCH), +72 points and 13 bytes, the
 // rotation dot's limited.i folds from memory. With the state fix: rotation only 235, acceptance only 175; axis-first
 // products 236, dot scaled in a second statement 235, (1.0f - cosine) first 235. Left: up in XMM4-6, retail XMM5-7.
+// Round 140 (m3 lane 12, fast, 0x1e5af0 and 0x30bf0 MATCH in each; control 235): in the rotation dot retail copies the
+// `limited` components and multiplies by axis, ours copies axis (the copied operand ranks later). The axis fallback
+// written per component (axis named before limited) 307 (1270 B); `limited` declared, then assigned 235; the rotation's
+// cross declared at the top of its block 235; the outer cross declared ahead of the old-forward pointer 235 (all three the
+// same code); the rotation dot through the file's `shape_dot(limited, axis)` (forward-declared) 239 (1243 B).
 // @retail 0x1f1460
 void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
@@ -1565,6 +1570,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // i, j, k, re-measured, 543 (aligned 193); that with the flags declared flying, direct, damping, gravity, the input pointer
 // after them and the first arm clearing gravity first 543 (aligned 192; the first difference moves to +0x3d, the entry
 // block exact). Body unchanged.
+// MiniMax A (11-18): no new form, no lower score (234); what still differs is the damping's first extraction (ours keeps it in
+// ECX), the vector homes and the vertical output tail; the homes only move when the arms' shapes change, which raises the
+// score, so the body stands.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

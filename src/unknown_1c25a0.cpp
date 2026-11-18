@@ -1417,6 +1417,7 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
  contact_vector_set(out, (*value)(0), (*value)(1), (*value)(2));
 }
 
+// MiniMax B (11-18): no new form, no lower score (1): the entry guard still compares the count with the zeroed index register where retail tests the count against zero; dropping the volatile mirror folds the guard into retail's test but also loses the index reload after the 0x1d1160 call (126, 858 bytes), and a positive guard, a while, a do-while and the increment in the for clause all merge back into the register compare, so the last byte needs the write through the velocity pointer in 0x1d1160's impulse branch, in another file.
 // score 1 (was 3): retail tests the loop count against zero at entry; ours compares
 // it with the zeroed index register. The member call now matches retail's register setup.
 // Further trials: shared scale helper for both vectors 3; shared scale and output
@@ -1531,6 +1532,10 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // retail sets up its component register last, as for its member siblings); `velocity` and 0x1d1010's `change` both
 // non-const; the forwarded argument in 0x1d1160's velocity-change arm written as the address of the vector's first member,
 // or as its component array. The member form with the mirror 1 (same code). All four files restored.
+// Descending count with saved or ordinary ascending ordinal 155/168; bounded pointer range 171;
+// endpoint advanced during selection 165; saved ordinal as sole induction variable 125;
+// count of populated indices 2; fill cursor distance as count 157; nonnegative unsigned extent 156;
+// inclusive next position test 23. The populated count changes the count store and retains the entry compare.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

@@ -516,6 +516,11 @@ real g_55e618;
 // (v.i*n.i + n.k*v.k) + n.j*v.j while this build reassociates the same sum to (n.k*v.k + n.j*v.j) + n.i*v.i;
 // writing the sum with += restores retail's order but measures 103, and the sweep and collision homes still sit
 // twelve bytes below retail's, so the first difference stays at +0xfe.
+// MiniMax H (11-18): score 102 (was 102): no new form, no lower score; the sweep and collision homes still sit
+// twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0) and the dot's three products are still summed
+// in the other order; the position set through the existing real_point3d_set was measured again at 245, so the
+// plain stores stay. Nine spellings of the dot's three terms compile to the same instructions (102), the typed
+// particle record is the same code (102), and the velocity read through a pointer measures 194.
 // score 102 (was 102): the sweep and collision homes sit twelve bytes below retail's (+0x38/+0xa4 against +0x44/+0xb0)
 // because the reflection block spills differently (retail copies dot for perp.i/j, multiplies perp.k in place and spills
 // tangent.i/j and perp.k). M3 lane 8 r165 (fast): perpendicular and tangent declared ahead of the dot 102 (same code);
