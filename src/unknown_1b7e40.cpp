@@ -95,6 +95,14 @@ bool function_25d9b0(long prop_index);
 // passed the invitation index local 65, the fallback through actor->prop_index 65, the participant priority read once
 // after the found/acquired arms 105 (560 B), the busy test through a fresh actor lookup 213 (610 B); on the body the
 // decline with the invitation index local 49 (same code).
+// MiniMax I (11-17): the busy call's result branches to the priority epilogue now, and the conditions' failure has a
+// zero return of its own; retail holds the priority in SI and the view in EDI where this build uses DI and ESI, retail's
+// zero exit is a 32-bit `xor eax, eax`, and retail compares the slot's field in memory. The fallback's failures
+// returning 0 directly (no priority zeroing) give retail's SI and EDI homes for the priority and the view but swap the
+// actor and the node (65), the guard-return fallback measures 65 as well, the joint's target read hoisted into a local
+// measures 121 at retail's length, and the permuter's three rewrites in 300 s found nothing below the baseline.
+// score 38 (was 49): the busy test branches to the priority epilogue like retail; the priority and view registers, the
+// zero exit's width and the fallback's memory compare still differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
 // Round 107 kept form, 86 -> 49: the `priority > 0` gate after both branches gives retail's block order (no-invitation
@@ -361,6 +369,11 @@ bool function_25d9b0(long prop_index);
 // return priority;` after `return 0;` all 49 (select kept); `if (!busy) goto done;` with `return 0; done: return
 // priority;` 65 (success inline, actor/node swap); fallback textually after the evaluation with gotos 120; `volatile
 // bool busy` (match-only) 63 (569 bytes). No match-only recipe below 49.
+// MiniMax I (11-17): no new form, no lower score (49): retail branches on the busy call's result, keeps its 32-bit
+// zero exit ahead of the fallback and its priority exit last, while this build if-converts the two returns into a
+// mask select; the permuter's rewrites (300 s) found nothing below the baseline, the switch, while, goto and
+// one-use-flag forms of the earlier rounds all keep the select, and the two returns swapped (if (!busy) return
+// priority; return 0;) compile to the same bytes (49).
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -419,10 +432,13 @@ evaluate:
 		{
 			if (function_25d9b0(actor->prop_index))
 				return 0;
-			return priority;
+		}
+		else
+		{
+			return 0;
 		}
 	}
-	return 0;
+	return priority;
 }
 
 /* the slot's status: 0x10 when the prop node's distance is under 0.8; continue (g_46fbe8)

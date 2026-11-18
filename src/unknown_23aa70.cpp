@@ -138,6 +138,9 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // rows as context and that pairing can only be measured with the avoided 0x17e670 files edited: a lead for when the patch
 // lands); the palette types pointer named first with the tag read in the original expression 16; the cluster's first entry
 // index in a long local for both index expressions 95 (364 bytes). Still BLOCKED-BY 0x17e670; held patch unchanged.
+// M3 lane 15 r96 (fast with 0x23aa70 and 0x17a8a0): no trial; baseline 16 at +0xba, every difference is still the 0x17e670
+// call's register pair (ours the entry in ECX with `xor edx, edx` for the source, retail the entry in EDX with `xor ecx, ecx`).
+// BLOCKED-BY 0x17e670 (contributor code); held patch unchanged.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

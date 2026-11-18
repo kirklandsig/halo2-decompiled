@@ -4082,6 +4082,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the channel bound as `s_voice_channel &` for every index read 164 (same code); an `if (0 < data[1])` guard around the
 // loop 166 (494 B: the clamp's count takes EBP instead); the cursor, consumed and size advances in the order cursor,
 // consumed, size 167. Body unchanged.
+// MiniMax C (11-17): no new form, no lower score (139): retail still takes the channel in ebp from the entry and spills the member, where this build keeps the member in ebp and the channel in a register; the member's life across the three calls is what wins it ebp here, and clearing the bit before the talker call measures 161, so the body stands.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

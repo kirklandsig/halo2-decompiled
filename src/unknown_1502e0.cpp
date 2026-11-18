@@ -1033,7 +1033,7 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 
 long function_cbd50(long unit_index, short weapon_index);
 
-// score 57 (was 215): frame 0x18 and the 1006-byte length agree and the code is retail's but for the push order and one
+// score 57 (was 57; 215 before round 254): frame 0x18 and the 1006-byte length agree and the code is retail's but for the push order and one
 // register pair: retail keeps the pool pointer in EDI and the slot/weapon temporaries in ESI (ours the other way round), so
 // EBX is pushed at entry in retail and only around the first two loops here. Round 254 below.
 // MiniMax S (11-16): no new form, no lower score (144): the body was re-measured and did not move; the three-point
@@ -1273,6 +1273,12 @@ long function_cbd50(long unit_index, short weapon_index);
 // across the loop, retail's ESI) 57; the one-use pool copy dropped for the global 57 (same code); the unit read through
 // unit_weapon_view_get 57 (same code); `count` declared first 257; the arrays declared before the player 57; every lookup
 // through a two-use pool copy 57; held_weapon declared without its initialiser 57; the 22/23 flag word read at each use 57.
+// M3 lane 4 r209 (fast with 0x152660/0x152580/0xcbd50/0xcbe60, all matched; control 57; an address-masked aligned diff
+// shows a pure ESI/EDI exchange, ours ESI 14 / EDI 29 uses, retail the reverse): one `hand` counter declared at the top
+// for the three hand loops 57; that plus the slot counter declared at the top 57; the unit as an `s_unit_weapon_view *`
+// through unit_weapon_view_get with the slot loop's weapon through unit_weapon_in_slot 57; loop 1's bit-3 test through a
+// named `held_weapon` read from held[hand] 57 (all same code); loop 1's weapons as named held/pending locals stored
+// after both lookups 120.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1508,6 +1514,9 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// score 43 (was 43): a one-step scratch rotation (ours ECX/EAX/EDX where retail has EDX/ECX/EAX) and the player/hand
+// ESI/EDI exchange. LEAD (round 209, end of this note): the unit lookup reading the index again through the player
+// getter leaves only the player address (aligned 3).
 // MiniMax S (11-16): no new form, no lower score (43): the whole difference is still the one register rotation - retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in edi, esi and ecx - and the two bodies are 210 bytes with the same instruction sequence; the hand's width, the declaration order and the hand test's spelling all leave the rotation where it is.
 // MiniMax S (11-15): no new form, no lower score (43): the whole difference is still the one register rotation -
 // retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in edi,
@@ -1520,7 +1529,7 @@ void function_150820(dword *bits, bool local_only)
 // keeps the player in ESI, the unit index in EDX and the hand in EDI, this build keeps them in EDI, ECX and ESI - and the
 // two bodies are 210 bytes with the same instruction sequence; no hand width, declaration order or result spelling tried
 // before moves it, and the permuter has found nothing below 43.
-// score 43 (was 43): player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
+// Earlier at 43: player and hand exchanged between ESI and EDI, with the scratch roles rotated (retail unit index
 // EDX, primary ECX, hand EAX; ours ECX, EAX, EDX); 0x151b80 shows the same exchange.
 // m3 lane 3 r250 (fast with 0x151b80/0xa8f80/0xcd4e0, control 43): `long hand = primary == false;` 43 (same code);
 // `bool result;` declared first and assigned after the player lookup 43 (same code); hand passed as `(short)hand` to
@@ -1724,6 +1733,19 @@ void function_150820(dword *bits, bool local_only)
 // P582: Original-site hand/signed held-slot/selected-weapon scalar memcpy, seven
 // subsets, then complete scalar memmove: 43/43/43/43/43/43/43/170. NOT kept: no native ESI-player/EDI-hand equality;
 // original producers, signed conversions, complete body and game-call tuples restored.
+// M3 lane 4 r209 (fast with 0xcd7b0/0x151940/0x14f820/0xa8f80/0xcd4e0, control 43): the mode test through the existing
+// `function_138880()` (0x151940's spelling) 48 (208 bytes: the call stays out of line here); the unit as an
+// `s_unit_weapon_view *` with the slot weapon through `unit_weapon_in_slot(unit, (&unit->current_weapon_index)[hand])` 43
+// (same code); the cd4e0 arm as `result = function_cd4e0(...) || result;` 87 (198 bytes); the unit pointer declared
+// ahead of the hand and assigned after it 43 (same code). LEAD, 0x151b80's getter-reload lead (a hand reload,
+// match-only): the unit lookup as `tail_object_get(g_4e0300, tail_player_get(player_index)->unit_index)` 73, but only
+// 3 aligned rows differ: every register is retail's, left is the player address, `lea esi, [eax + edx]` where retail
+// has `add eax, edx; mov esi, eax` (0x151b80's leftover on that lead as well). On it: the reload also at the cd7b0
+// argument 18 (212 bytes, aligned 7); the reload only at cd7b0 70; only at the unit test 24 (aligned 10); at the lookup
+// and the test 50; the result declared first 73; the unit_weapon_in_slot spelling 73 (same code); the player as a
+// pointer to const 73 (same code); the hand computed after the unit lookup 75 (208 bytes). Also the unit test through
+// the getter with the player fetched inside the block (0x151b80's 26 form) 18 (212 bytes, aligned 7). Every form on this
+// lead turns the player address into a shared temp formed by `lea esi, [eax + edx]`.
 // score 43 (was 43): MiniMax D (11-17): no new form, no lower score (43): the whole difference is still one register
 // rotation - retail keeps the player record in esi, the hand in edi and the unit index in edx, this build keeps them in
 // edi, esi and ecx - and both bodies are 210 bytes; the rotation starts at the entry block, where retail reuses edx (the

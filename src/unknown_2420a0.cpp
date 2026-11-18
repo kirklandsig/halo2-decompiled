@@ -1615,6 +1615,11 @@ void function_2422d0(long slot)
 // of the i store, the pair stays); `if (0 < count)` around the second loop 71 (the NONE fill takes ECX), around both
 // 71; the slot passed to 0x243a80 through an inline `object_slot(*object)` with no slot local 79; the getter called
 // through an inline wrapper taking the index by const reference 7 (same code).
+// Round 116 (m3 lane 10, fast): the object pointer bound by const reference to the object header's field 64 (it is
+// reloaded after the call); the team entry bound by reference for the index read 7; the third loop's two tests
+// nested 7; the team view through an inline accessor 7; the team view read through a const view 7 (all the 7s the
+// same code). Re-measured by mistake (listed): object declared bare first 7, `NONE ==` 7, a named second-loop
+// element 7, `short slot` 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {
