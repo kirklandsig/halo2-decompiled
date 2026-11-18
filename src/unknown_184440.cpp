@@ -186,6 +186,11 @@ __forceinline bool function_184448(long arg_0)
 // the surface list at +0xe0/+0xe4 from the start; dropping the two cached axis indices gives retail's frame and
 // retail's length but scores 976, because the first difference moves later and the homes stay different; the 0x48e70
 // call, whose body is in another machine's file, still decides the register rotation.
+// MiniMax H (11-18): no new form, no lower score (965): the first difference is still the frame (ours 0x11d4,
+// retail 0x11cc) and the record pointer's home (ours at +0x64, retail at +0x98 with the slot zeroed at the start),
+// with the surface record in edi where retail keeps it in esi; the two cached axis shorts are what the eight bytes
+// are made of, and reading them from g_440b94 at their use gives retail's frame and length but scores 976, so the
+// body stands: BLOCKED-BY 0x48e70, whose body is in another file.
 // MiniMax E (11-11): no new form, no lower score (965); the frame is 0x11d4 against retail's 0x11cc and the two
 // cached short axis locals are what costs the eight bytes - the form that drops them matches retail's frame and
 // length but scores 976 because the first difference moves earlier, so the 965 body stays.

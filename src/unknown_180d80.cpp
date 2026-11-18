@@ -114,6 +114,12 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // the entry guard's registers (ours loads the strip record into ecx after the pushes, retail into eax before them), the
 // count loop's sign extension where retail zero-extends the word, the swapped count sum and vertex cursor slots, and the
 // 0x17cfa0 call setup (that callee's own body is in another file).
+// MiniMax H (11-18): no new form, no lower score (93): the length agrees (2683 bytes against 2683) and what still
+// differs is the entry guard's registers (ours loads the strip record into ecx after the saves, retail into eax
+// before them), the count loop's extension (ours sign-extends the word into the counter, retail zero-extends it
+// and counts down), the accumulator's slot (0x10 here, 0x14 in retail) and the 0x17cfa0 call setup. The count's
+// extension cannot be changed here without a width cast on the compare or a copy of the field in a local of its
+// own, which the rules drop: BLOCKED-BY 0x17cfa0, whose body is in another file.
 // MiniMax I (11-16): no new form, no lower score (93): reading the third argument's point through a pointer to that
 // argument scores 270 and was restored, and the permuter's 35 tries over the reduced image found nothing below 93; what
 // still differs is the entry guard's registers (retail takes the fifth argument in eax before the saves, ours in ecx
