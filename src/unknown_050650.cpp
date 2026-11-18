@@ -2345,6 +2345,11 @@ struct s_actor_looking_turn_request
 // MiniMax D (11-16): no new form, no lower score (442).
 // MiniMax S (11-16): no new form, no lower score (442): the same cold block placement as in 0x2967b0, this
 // build puts the default and the case blocks in a far section where retail keeps them in the function.
+// MiniMax A (11-18): no new form, no lower score (442): the entry block still differs in register roles and in when the
+// record address is formed - retail keeps the actor index in esi, builds the slot offset in eax and adds it to the base,
+// where this build keeps the actor index in edi and the offset in esi - and the shared getter cannot change because
+// sixteen matched functions in this file use it; retail also calls 0x1fdd90 out of line where this build expands it
+// inline, and that callee's file is not this lane's: BLOCKED-BY 0x1fdd90.
 // score 442 (was 442): MiniMax D (11-17): no new form, no lower score (442 plain, 548 on the reduced image): the entry
 // block still differs in register roles and in when the record address is formed - retail keeps the actor index in esi,
 // builds the slot offset in eax and adds it to the base (`and eax, 0xffff`, `imul eax, eax, 0x888`, `add ebp, eax`) and

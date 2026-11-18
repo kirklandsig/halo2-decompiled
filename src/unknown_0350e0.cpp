@@ -69,6 +69,12 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax A (11-18): no new form, no lower score (334): retail's rotation helper keeps the axis in xmm0, xmm3 and xmm7
+// with the squares in xmm1, xmm4 and xmm6, takes the cosine on the x87 stack before the cross terms and forms them as
+// (inverse * j) * i, (inverse * k) * i and (inverse * k) * j, while this build keeps the axis in xmm4, xmm5 and xmm6,
+// spills the squares and reassociates the cross products; the helper's named sine products in retail's order measure
+// 386, the three diagonals first measure 347, the cross terms split into named scaled components measure 336 and the
+// nine matrix writes in retail's order measure 352, so the body stands.
 // score 334 (was 334): Frame 0x90 agrees. The first axis load uses a different XMM register.
 // The build spills the squares before the cross products.
 // MiniMax S (11-17): no new form, no lower score (334): the body is still 1781 bytes against retail's 1779 and

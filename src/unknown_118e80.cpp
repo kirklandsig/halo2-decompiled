@@ -243,6 +243,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // (src/unknown_11eed0.cpp): its named `double s` (and `double angle`, and its acos helper's double
 // return) makes this function keep 8-byte stack parity under LTCG, so the frame stays 0x78 against
 // retail's 0x6c and ESI is still saved in the prologue where retail pushes it after the 0x1faf80 exit.
+// MiniMax A (11-18): no new form, no lower score (218): the call to 0x1faf80 still takes the 0x148 and 0x13c
+// addresses by adding to ebp where retail leas them, so the tail's registers differ, and the frame stays 0x78 against
+// retail's 0x6c; that frame needs 0x11f0d0's named double local and double parameter, whose body is in
+// src/unknown_11eed0.cpp, which this lane may not edit: BLOCKED-BY 0x11f0d0.
 // score 218 (was 218; earlier 220; fast with callers, b6B walk below): BLOCKED-BY 0x11f0d0. Our frame is 0x78 with ESI saved in the prologue; retail's
 // is 0x6c with ESI pushed after the 0x1faf80 exit and popped after the dispatch call. The cause is
 // 0x11f0d0's named `double s` (and `double angle`, and its acos helper's double return): under LTCG a
@@ -1149,7 +1153,15 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// score 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
+// MiniMax A (11-18): the 0x119bc0 result now has its own named bool, which is stored into the move output's byte
+// member and passed to 0x1c4b00 from that local: 14 (was 43). The force argument's own zero extension and the member's
+// slot are what still differ; retail still spills the result to a stack byte of its own and reloads the containing dword.
+// Dropping that member store measures 90, so the store stays.
+// score 14 (was 43): the 0x119bc0 result has its own named bool, which is stored into the move output's byte member
+// and passed to 0x1c4b00 from that local, so the copy of the move output's velocity now loads the object before the
+// source's first component and keeps the destination pointer in eax where this build keeps it in edx; retail still
+// spills the result to a stack byte of its own and reloads the containing dword where this build keeps it in al.
+// Before, 43 (was 43): m3 lane 9 r134 (fast; the stacked score lines below merged into this one note). Ours differs only
 // from the 0x119bc0 result on: retail keeps it in its own stack cell [esp+0x14] (shared with the rounding temporary),
 // pushes that dword, and every later scratch register follows; ours stores it in the move output's byte member and
 // zero-extends it, one scratch step ahead from there on. A bool local for it (long force) 90 (1034 bytes: the tail
@@ -1421,10 +1433,11 @@ bool __stdcall function_118700(long arg_0)
         }
         bool local_13 = length_sq3f(&local_3.field_138) > 0.0f;
         forward_flags_set(&local_0->flags, 0x10, local_13);
-        local_11.field_8 = function_119bc0(arg_0);
+        bool local_force = function_119bc0(arg_0);
+        local_11.field_8 = local_force;
         s_forward_object *local_15 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
         *(vector3f *)((byte *)local_15 + 0x88) = local_11.field_c;
-        function_1c4b00(arg_0, &local_11.field_c, NULL, local_11.field_8);
+        function_1c4b00(arg_0, &local_11.field_c, NULL, local_force);
         function_119500(arg_0, local_11.field_4, (s_orientation_request_118f90 *)&local_6);
         function_1195c0(arg_0, (s_orientation_request_118f90 *)&local_6);
         if (!TEST_FIELD_BIT(local_0->frozen) && (*((byte *)local_0 + 0x144) & 8)
