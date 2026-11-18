@@ -1523,6 +1523,14 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // J262: carried loop predicate 1; clamped fallback/traversal count 149/156; conditional singleton index 16;
 // append via count 3; save the next ordinal 11; continue with common step 1; named positive guard with equality 2;
 // remaining count as local/condition 18/18. Kept the shared object-tag acceleration scale fields at 1.
+// M3 lane 11 r115 (fast with 0x1d10b0, 0x1d1160, 0x1d1010, 0xe5300, all MATCH in every trial; the record form {a, b, index}
+// with no mirror re-measured 106 at 864 bytes, aligned one line: the reload after the 0x1d1160 call). The mirror cannot
+// reach retail's entry test: a volatile store in the block keeps the index compare from folding to `test eax, eax`, so
+// the cause is the callee's summary alone. On the record form, none gives the reload (106 each): 0x1d1160 as a member of
+// s_havok_component (index, point, velocity) at its definition, declarations and both calls (it and 0xe5300 stay matched;
+// retail sets up its component register last, as for its member siblings); `velocity` and 0x1d1010's `change` both
+// non-const; the forwarded argument in 0x1d1160's velocity-change arm written as the address of the vector's first member,
+// or as its component array. The member form with the mirror 1 (same code). All four files restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

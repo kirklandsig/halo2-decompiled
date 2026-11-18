@@ -1266,6 +1266,13 @@ bool __stdcall function_2399da(long controller_index)
 // copy costs the two bytes that move every later jump; the forms the earlier rounds list (the requested rank copied into a
 // local at entry, the may-change flag as `(flags & 0x800) != 0`, the rank read once through its own address or at each of
 // the four uses) all measure 90 or more.
+// M3 lane 11 r115 (fast with 0xac050, 0xac360, 0x2399da, 0x23955e, 0x2b278e; control 90, aligned unmatched 12 lines, 2 with
+// registers masked): the removal callee's parameters as (member, controller, team) at its definition, every declaration
+// and all three calls 16 here at retail's 432 bytes, but 0xac050 13 and its matched callers 0x23955e and 0x2b278e 4 each; as
+// (controller, member, team) 17 here, 0xac050 12, the two callers 2 each. The link puts the last-declared parameter in EAX,
+// so either order hands the callee the team there: the gain is the shorter call, the identity stays in ECX and the rank in
+// EAX, and the present order is retail's. Restored. Same code (90 each): the identity pointer declared non-const; the
+// task index declared with the function's other locals; the rank parameter typed int.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
