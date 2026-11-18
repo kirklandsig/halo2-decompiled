@@ -1031,6 +1031,14 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // position taken after the three components 6. Reading:
 // retail's loads from the flag never pass a stack push (the add waits for `push esi`, the first fld for both `push 1`),
 // ours pass them freely, so retail's scheduler may not have separated the flag's memory from the stack.
+// Round 110 (m3 lane 14, fast with 0x2a1120 and 0x1765e0, both matched but where noted; control 6): 0-30 dead initialised
+// locals at the top 6 each (no symbol-count state). Counted in slots, retail keeps two instructions between the imul and
+// the table add (both register saves) and two between the add and the first fld (both `push 1`); ours keeps one after the
+// imul and two after the add (`push esi`, `push 1`), so the whole difference is the add issued one slot early. Tried: the
+// table pointer read into a `byte *` local with the element at a byte offset from it (the sibling 0x2a06a0's retail
+// shape) 6; the angles through a `real const *` to the yaw with a named pitch cosine 6; the two constants as named
+// enumerators with the call's result discarded through a void cast 6 (all the same code). Diagnostic (compiler setting,
+// reverted): a size preference around the body 34 (90 bytes; 0x2a1120 8).
 // Round 118 (m3 lane 10, fast with 0x2a1120, which stays matched): a `vector3f *` to forward taken before the flag
 // lookup and used for the three stores and the call, with a const flag and the position inline 6; the up vector read
 // into a named `vector3f const *` before the call 6; forward and the call in an inner block 6; i and j stored as the
