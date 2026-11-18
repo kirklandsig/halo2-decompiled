@@ -1127,6 +1127,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
 // packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
 // recovers the memory OR, but the prologue, oldest load and message register differ.
+// In-place resend bit with conditional selection, invalid-first selection, a scan-scope message,
+// or a scan-scope array base 90/90/89/67. With the three output lvalues bound 90/90/89/67.
+// NOT kept: the array base preserves the query setup and restores the byte memory OR, but
+// moves the cursor and oldest to different registers. The other forms also change the query setup.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

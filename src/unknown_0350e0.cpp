@@ -380,6 +380,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // scaled add 381, scaled add into the squares 342, late scaled add 347, late separate scale and sum
 // 426, parallel cross and diagonal scaling 413, late scaled add with scaled cross products 339.
 // NOT kept: the closest extent still moves the prologue away from the retail frame.
+// Squares in final diagonal cells, completed in field order, before cross coefficients,
+// after cross partials, or after cross pairs 370/373/359/365. Sine products in their
+// off-diagonal cells 353. Both, with original, early or late diagonal completion 381/348/363.
+// NOT kept: all forms shrink the retail-sized frame and raise the score.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

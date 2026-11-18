@@ -835,6 +835,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // angle or after the oscillation 154/154; initial-direction and axis setters 152/149;
 // shared draw value or separate const samples 130/130. NOT kept: sample and rotation
 // homes remain different and none lowers the score.
+// Tick getter with a direct product, factor-first product, named short factor, or named tick count
+// 130/130/152/130. With the shared vector sampler for both table draws, 126 each.
+// NOT kept: the sampler's four-point gain misses the eight-point bar and leaves the 0x1c frame.
+// The named short factor reaches 880 bytes but raises the score.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

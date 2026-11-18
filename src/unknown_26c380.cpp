@@ -126,7 +126,8 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
-// score 244 (was 244): earlier 410; the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
+// score 244 (was 244): The return and first-edge bytes use exchanged slots, and the two cutoffs miss retail's shared tail.
+// Earlier 410; the held 34 form (see below) with its two goto exits written as breaks.
 // MiniMax G (11-12): no new form, no lower score (244); a plane2f line with the cross written out gives retail's normal/offset homes but grows the body to 1612 bytes (300), and the two-level exits reach the shared tail only through the held form's goto, which is match-only.
 // MiniMax G (11-11): no new form, no lower score (244); retail gives the function scope locals the lower homes and the
 // inner scope ones the higher (the current sector 0x30, the line distance 0x34, the success flag 0x0e, the first-edge
@@ -672,6 +673,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // endpoint 660, common entering and departing endpoints 648. The after-scan
 // edge reaches retail length with the same byte-slot difference. The original
 // body retains the first-edge and success bytes in the exchanged homes.
+// Traversal-local distance history alone or with edge history, crossing count, or both:
+// inside the admitted path 261/410/384/431; inside the projected line 289/289/290/424.
+// NOT kept: each changes allocation before the return-byte initialization. Moving both
+// histories and the count also risks the matched callers.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
