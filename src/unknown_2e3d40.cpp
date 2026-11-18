@@ -153,7 +153,7 @@ __forceinline long count_2e3d40(elements_2e1090 const &list)
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
-// MATCH (was 14). What changed: the compare reads the endpoint's value
+// Matched (was 49). What changed: the compare reads the endpoint's value
 // before the walking pointer is advanced and re-read from the position (so
 // the value is a register of its own, as in retail); earlier: the start
 // loop walks the axes with a cursor stepped after the bit, the word count is
@@ -385,7 +385,9 @@ __forceinline void exchange_2e4660(T &a, T &b)
 // each box the moving box overlaps at the start, then each box whose three
 // intervals it enters on the way, is passed to the collector, until the
 // collector's distance left is passed
-// score 77 (was 434), registers and stack cells only (sem 0). What changed:
+// score 434 (unchanged by the lockstep check, which is positional here: the
+// function is still 16 bytes longer than retail; aligned, 144 -> 76 differing
+// instructions), registers and stack cells only (sem 0). What changed:
 // the leading-end loop reads the endpoint's value before advancing the
 // position and re-reads the pointer from it (retail's `&scale` cell in the
 // first quantize and the direction loop's registers follow), and the
