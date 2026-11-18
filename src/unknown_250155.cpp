@@ -2721,6 +2721,15 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // returned in one aggregate 275, the helper's default arm reordered 92 and 95, the team test split in two 87, the
 // flags constant hoisted into a local 87; the permuter's only lower form (56) reorders the arguments of the five
 // set_child_value6e calls, which changes what those calls do, so it is not kept.
+// MiniMax B (11-18): no new form, no lower score (87, was 87): a 900 s permuter run over this body (seed 0, one
+// job, --fast, 69 tries) reaches 56 differing instruction pairs against a baseline of 84, which is 60 on
+// --fast, but every mutation it keeps is barred: a constant local (dword tmp0 = 0x84), a bool flag set by one
+// test and read by the next, a volatile store, the first widget call's arguments swapped (retail pushes the
+// index then the type then the false flag) and a local's declaration moved to shape the frame; its first
+// difference is still the shown count's home (-8 against retail's -0xc), retail keeps two distinct
+// `&players[i]` temps (-8 in the first loop, -0x18 in the second) where this build shares one at -0x18, the
+// voice query's reload of players[i] is BLOCKED-BY src/network_voice.cpp and the last loop's inline switch
+// needs the widget helper's body written out by hand, so the body stands.
 // MiniMax E (11-17): no new form, no lower score (87): retail's last loop computes the four widget indices with the
 // mode switch inline, so they live in EAX, EDI and EBX with only bitmap_b in +0x1c; writing the helper's body out
 // there (its two case arms and its default) reproduces that register choice, but the four values then take two spill

@@ -1083,6 +1083,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax B (11-18): no new form, no lower score (828, was 828): the frame 0x2c agrees, but retail keeps its
+// three iterator outputs at the bottom of the frame with the result four bytes above ours and gives the dead
+// found_mode argument's home to the per-pass candidate, and the opening compare still loads the weapon class
+// into ECX where retail uses EDX; the calls, the argument order and the two requests are unchanged, so the body
+// stays as it is.
 // MiniMax S (11-17): no new form, no lower score (828, was 828); the frame 0x2c agrees, but retail keeps its three iterator outputs at the bottom of the frame with the result four bytes above ours and a dead input slot for the candidate, and the earlier home moves (991-1004) and the grouped-outputs array (807, an aggregate grouping, dropped) did not recover them, so the body stays as it is.
 // MiniMax E (11-14): no new form, no lower score (828, was 828): retail holds the found mode in EBP across the lookups
 // and keeps the graph pointer in EBX, so the table pointer takes the dead parameter's home; this build re-reads the mode
