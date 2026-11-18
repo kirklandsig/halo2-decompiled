@@ -1127,6 +1127,10 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // sent from word and resend from field 88; sent from field and resend from word 88; both fields 84;
 // packed test with byte field update 88; word fields with Boolean tests 88. NOT kept: the word field
 // recovers the memory OR, but the prologue, oldest load and message register differ.
+// Absent-index branch 90/43, absent-index conditional 90/43, table base in the valid
+// branch 89/35, table base before validation 90/45 (in-place update / saved word).
+// NOT kept: the saved-word absent-index forms recover ECX/AX but change the lookup
+// branches and still write the full word. The in-place update loses the opening allocation.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

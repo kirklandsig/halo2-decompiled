@@ -1011,6 +1011,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Immutable shape pointer 327. Shared receiver used in the plane arm or both arms 327/327.
 // Separate material-arm shape references 327. Shared receiver and early short material 328.
 // NOT kept: the 0x44 frame form still spills the nodes to different slots and raises the score.
+// Named signed distance in the instance/world/both plane arms 238/238/238;
+// named projection in the same arms 238/238/238; all three products or both
+// projection and distance stages 238/238. The frame and origin homes are unchanged.
 // M3 lane 10 r119 (fast with the file; control 238), all in the 1..16 classifier: the data read through a `long const *`
 // view 238 (same code: the loads still merge); `1 > value ? 1 : (16 < value ? 16 : value)` 238 (same code); `value > 16
 // ? 16 : value` then `if (limited < 1) limited = 1;` 238; `1 > value ? 1 : value` then `16 < limited ? 16 : limited`

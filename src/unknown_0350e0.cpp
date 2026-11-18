@@ -384,6 +384,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // angle 344, square scalars with builder-owned angle 341, diagonal initialized to squares 344,
 // caller-completed diagonal 361, caller squares and complements 362, caller squares and sine axis 371.
 // The axis-register assignment and early square spills remain.
+// Second matrix after the first forward/left/up result or first forward store,
+// with its angle early or at the builder: 370/371, 370/371, 460/465, 460/465.
+// NOT kept: the early-result placements keep the 0x90 frame but still spill
+// the first squares and grow. The last two placements shrink to frame 0x60.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2500,6 +2504,10 @@ void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 // displacement vector with field/aggregate/scoped field stores 492/492/492;
 // named final coordinates 492; displacement vector and point setter 492.
 // The 0x90 frame and the overlapping direction and draw-point homes remain.
+// Earlier draw point after entry admission, primary scales, RGB tint or camera angle,
+// with field stores or a const aggregate: 567/567, 497/497, 497/497, 497/497.
+// NOT kept: all retain frame 0x90 and the shared direction/point home. The first
+// pair shortens to 2255 bytes and the other six regress at retail length.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -5250,6 +5258,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // conditional depth bias 231/225, separate rotated displacement 390/372,
 // aggregate rotated displacement 390/372.
 // NOT kept: the six-point color gains grow to 1826 bytes. The 0xe0 frame and radius/zero homes still diverge.
+// Separate opacity/collision gates, nested or early-return: 231/231/231/231.
+// The same four with color4f: 225/225/225/225. NOT kept: color recovers frame
+// 0xe0 and the collision home, but the radius stays at +0xc and the six-point
+// gain grows to 1826 bytes against retail 1819.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
