@@ -6,6 +6,16 @@ The newest entry comes first.
 
 ```
 matched 10685 of 11326 game functions (2071632 of 2786206 bytes, 74.35%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
+2 new matches, none lost:
+- @andrewnakas's #1333, #1339: `0x303dd0` and `0x3048a0` match.
+
+## 2026-11-18: 10685 functions match
+
+```
+matched 10685 of 11326 game functions (2071632 of 2786206 bytes, 74.35%)
 matched 1425 of 1436 Havok functions (266353 of 290362 bytes, 91.73%)
 ```
 
