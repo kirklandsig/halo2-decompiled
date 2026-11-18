@@ -78,7 +78,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // the null-datum test's jump target (retail's `je` goes to the function's end, ours to a near block), the five string
 // buffers' homes are still one 512-byte buffer out from retail's (the display name at ebp-0x6cc where retail has
 // ebp-0x8cc) and the suffix and message addresses are still re-derived, so the body stands;
-// score 316 (was 316; earlier 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// score 316 (was 316): frame 0xfd4 agrees. Child, text and layout homes and suffix
+// address derivations differ. Earlier score 330.
 // MiniMax R (11-14, run 65): no new form, no lower score (316): the first difference is the null-datum test at
 // +0x16, where retail's `je` goes to the function's end (offset 0x920 of 2345) and ours goes to a near block, and
 // the five string buffers' homes are one buffer apart from retail's (the display name at ebp-0x6cc where retail
@@ -278,6 +279,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // five string buffers keep their homes a rotation apart from retail's (display_name -0x8cc, title -0x6cc, layout -0x4cc,
 // suffix -0x458, message -0x258 in retail), the switch's shift arm stays out of line, and the suffix address is
 // re-derived after every 0x230134 call in retail, which this lane may not change because that callee is another file.
+// P603. Text lookup pair 316, bitmap lookup trio 316, both specific lookups 316,
+// bitmap lookup for session and voice 316, typed session and voice 316, all
+// typed bitmap receivers 316, typed bitmaps and name 316, all typed lookups
+// and receivers 316. NOT kept: all eight reproduce the same text and child
+// stack homes and leave the suffix address reuse unchanged.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

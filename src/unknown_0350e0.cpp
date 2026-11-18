@@ -352,6 +352,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 375. NOT kept: the destructively scaled axis captures either enlarge the frame or leave the opening register
 // assignment. The square and diagonal compound forms tie 334, and the cross accumulators raise it. The matched
 // caller held.
+// P603. Caller-side sine-axis through the scaler 360, aggregate 354, staged components 354,
+// or in-place scaler 372. Scaler with a value argument 367, aggregate with a reference 354,
+// both sine axes produced first with scaler 360 or aggregates 354. NOT kept: every split
+// moves the frame from 0x90 and raises the score. The original coefficient builder and caller
+// remain, with the first-axis square and sine-product register homes still different.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -6168,6 +6173,11 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // (0x423c0 160), so the alignment demand comes through 0x14ac0, not D3DDevice_Clear. Shared pass helper: the clear
 // test nested under `mode == 1` 138; a `sources` pointer for the flags and g_467138 138; 0x44370's mask-gated
 // flag test 141. 0x44370 is retail-inlined here but lives in an /Ob1 file, so it stays out of line.
+// P603. Nested clear checks 100, paired clear-byte guard 100, named clear admission 100,
+// one mode read with the in-range cull branch 100, assigned short cull 223, ternary short
+// cull 172, upper range bound first 104, nested clear with the one-read range 100.
+// NOT kept: the clear guards tie and the shorter shared cull calls raise the peer scores.
+// The stub still passes the clear flags on the stack.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -6620,6 +6630,11 @@ PRIVATE __forceinline real absolute_32350(real value)
 // shared box center displacement 437.
 // NOT kept: the 0x7c shape reaches frame 0xb3c and ties 445. The scopes tie and one return regresses.
 // Kept: one displacement used for all three box center products, 437 in the ordinary check.
+// P603. Complete typed shape 437, typed projections 437, both typed records 437,
+// both records with extents first 436, one extent-vector initializer 503, staged box cross 437,
+// staged light and box crosses 528, or renamed query and result locals 437.
+// NOT kept: the full shape gives frame 0xb3c, still four bytes short, and the best variant
+// gains one. The original 0x74-byte buffer remains, against the initializer's 0x7c-byte clear.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {
