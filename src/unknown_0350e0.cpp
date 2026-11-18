@@ -3205,6 +3205,9 @@ real magnitude3d(vector3f const *v);
 // own ([esp + 0xc]) and reloads it for both clamp tests, while this build keeps it in the x87 stack and lets the
 // clamped value take its place; a named raw magnitude local measures 251 and the same value in a two-element array
 // also 251 (the array is promoted away), so the raw length's home stays as it is.
+// Tried current/target/both vector initializers 170/170/170, axis at outer scope 170, rotated initializer 170,
+// named absolute dot 196, tangent with shared/staged cross 186/186, angle after normalizer 246,
+// shared projected scale and sum 183.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
