@@ -830,6 +830,10 @@ extern "C" void _ReadWriteBarrier(void);
 // between the state and the actor lookup 6; the actor as a typed array element of the pool's data 6; the
 // state as a reference-bound local (the copy not folded back), with/without the barrier 6/44 (the copy is
 // still propagated and the slot loaded after the branch).
+// Round 210 (m3 lane 4, fast): a forced-inline accessor returning the slot as the 0x4c state, called before the
+// actor lookup or after the barrier 6/6 (same code), without the barrier 44 (208 bytes); a flags byte read after
+// the barrier and tested in the NONE block 6 (forwarded to its use), without the barrier 44; the state as the slot's
+// data block minus 0xc, no barrier, 44 (folds back to the slot).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
