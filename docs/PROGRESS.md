@@ -9,6 +9,16 @@ matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
 matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
 ```
 
+0 new matches, none lost:
+- @andrewnakas's #1341: closer scores and notes, no new match.
+
+## 2026-11-18: 10697 functions match
+
+```
+matched 10697 of 11326 game functions (2076336 of 2786206 bytes, 74.52%)
+matched 1427 of 1436 Havok functions (272679 of 290362 bytes, 93.91%)
+```
+
 13 new matches, none lost:
 - Machine 3's batch 295 (#1340): `0x5e3f0`, `0x7a1c0`, `0x938e0`, `0xb9b90`, `0x133390`, `0x1509e0`, `0x16fe90`, `0x175a80`, `0x1ff360`, `0x215c00`, `0x2162b0`, `0x2ad480` and `0x2c5897` match.
 
