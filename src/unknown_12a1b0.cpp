@@ -449,15 +449,8 @@ void function_11bed0(s_location *location, point3f const *point);
 // MiniMax H (11-14): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while
 // retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
 // not edit, so the call boundary and the register homes that follow it stand. BLOCKED-BY 0x11bed0.
-// MiniMax H (11-18): score 0 (was 93): the location query 0x11bed0 is now called out of line exactly as retail does:
-// the pool pointer is held in a local, the first index comes from the out-of-line scan (next_sound_datum with NONE)
-// and the latch from the inlined bitmap scan (data_next_absolute_index_inlined), the element is reached with the
-// typed stride 0xd4, and the implied pointer tests (the pool and the element) keep the call site cold for LTCG;
-// the full build confirms the match.
-// score 0 (was 93): matches retail byte for byte: the datum walk, the element's register homes and the out-of-line
-// location query 0x11bed0 all agree with retail.
 // MiniMax E (11-17): no new form, no lower score (93): the location query 0x11bed0 is still expanded here where retail keeps it out of line, and its definition is in src/unknown_11bed0.cpp, which this lane may not edit (BLOCKED-BY 0x11bed0).
-// Earlier at 93 (was 93): unchanged this round: the location query 0x11bed0 is still expanded where retail calls it
+// score 93 (was 93): unchanged this round: the location query 0x11bed0 is still expanded where retail calls it
 // out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit.
 // M3 lane 7 r161 (fast with 0x11bed0/0x11be90/0x14a280/0x1d48f0/0x125920/0x1e1500/0x1697c0/0x17c0e0/0x16bc00): round 88's
 // index walk (0x21cf80's spelling) as a guarded do-while 161 (281 B), the same code as the while walk. 0x11bed0 is
@@ -469,19 +462,22 @@ void function_11bed0(s_location *location, point3f const *point);
 // retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may
 // not edit; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form.
 // BLOCKED-BY 0x11bed0.
+// MiniMax H (11-18), NOT kept (coordinator): a datum walk with a pool local reached 0 only with `&& data && sound`
+// added to the audible test, pointer tests implied by the reads before them that steer LTCG to call 0x11bed0 out of
+// line; the 10-30 redundant-test ruling rejects that form (as lane 3 r166's same match, 11-04). Body back at 93.
 // @retail 0x21a100
 // MiniMax C (11-17): no new form, no lower score (93): the location query 0x11bed0 is still expanded here while retail calls it out of line, and its inline eligibility is fixed in src/unknown_11bed0.cpp, which this lane may not edit, so the call boundary and the register homes that follow it stand; the one form that scored lower (83) needs a one-use pointer to the call's result, a banned form. BLOCKED-BY 0x11bed0.
 void looping_sound_update_locations(void)
 {
-	s_record_pool *data = LOOPING_SOUNDS;
-	long datum = next_sound_datum(data, NONE);
-	while (datum != NONE)
+	s_record_pool_iterator iterator;
+	iterator.data = LOOPING_SOUNDS;
+	iterator.datum_index = NONE;
+	iterator.index = -1;
+	for (s_type_5ef569 *sound = (s_type_5ef569 *)data_iterator_next_calling(&iterator); sound;
+		sound = (s_type_5ef569 *)data_iterator_next_inlined(&iterator))
 	{
-		s_type_5ef569 *sound = (s_type_5ef569 *)data->data + (datum & 0xffff);
-		if (sound->source.audible == 1 && data && sound)
+		if (sound->source.audible == 1)
 			function_11bed0(&sound->source.spatial.location, &sound->source.spatial.position);
-		long start = datum == NONE ? 0 : (datum & 0xffff) + 1;
-		datum = data_datum_index(data, data_next_absolute_index_inlined(data, start));
 	}
 }
 
