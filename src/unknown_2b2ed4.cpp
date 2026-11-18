@@ -75,6 +75,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  return result;
 }
 // score 316 (was 316): Frame 0xfd4 agrees. Child, text and layout homes and suffix address derivations differ.
+// Round 199 (m3 lane 5, fast; aligned 49): the string-buffer record given a constructor clearing its first word in place of
+// the explicit display_name/message/suffix clears 316 (same code); with the title as the same record 316 (same code); without
+// the layout's explicit flags clear 316 (same code); the final player/layout/values in their own block 316 (same code);
+// display_name's lifetime in a block ending at its set_text 315 (2348 bytes, frame 0xdd4: it shares the others' space; aligned 59). A compile-only frame screen is not
+// faithful for this body (frame 0x103c without /GL, other homes).
 // MiniMax R (11-17): no new form, no lower score (316): the five string buffers' stack homes stay a rotation apart from retail's (display_name -0x8cc, title -0x6cc, layout -0x4cc, suffix -0x458, message -0x258), the state switch's shift arm stays out of line and the join order differs.
 // MiniMax I (11-17): no new form, no lower score (316): the frame 0xfd4 still agrees and the first difference is still
 // the null-datum test's jump target (retail's `je` goes to the function's end, ours to a near block), the five string
