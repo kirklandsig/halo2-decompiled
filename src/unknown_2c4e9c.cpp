@@ -1598,6 +1598,14 @@ c_variant_parameter_setting_screen::c_variant_parameter_setting_screen(long a, l
 // exit 69, definition declared in guard with title index 69, index reassigned before description 69,
 // shared buffer scoped to valid index 71, title text receiver named at lookup 69, title index with
 // dereferenced buffer clears 69, guarded index reused on description-only path 93.
+// Round 140 (m3 lane 12, fast; control 15): LEAD, the cause of the reload. Any form that reads the list index ahead of
+// the buffer clear gives retail's `mov eax, [ebx + 0xc]; cmp eax, -1` with EAX reused by the first call, so retail
+// evaluates the call's arguments before the clear: a new inline helper (index, id, buffer) that clears and calls 74
+// (203 B), with the buffer first 74, forced inline 74; the index named ahead of the clear in both arms 70 (201 B), in the
+// title arm only 69, with the buffer declared inside the outer test 71, index and id both named in both arms 74; the index
+// assigned inside the outer test (diagnostic) 69. In each of them the title pointer takes ESI, `this` moves to EDI with a
+// stack home and the zero register is gone (`and word ptr`, `test`), where retail keeps `this` in ESI, zero in EDI and
+// spills title/description. Two block-scoped buffers as in 0x2c7c56 71.
 // @retail 0x2c8287
 void c_variant_parameter_setting_screen::v19()
 {
@@ -2209,6 +2217,11 @@ c_controller_settings_edit_list::c_controller_settings_edit_list(word user_flags
 // first. Parameter clear before lookup 58; saved lookup before unconditional clear 18; shared null-loader
 // tail 62; early guard with direct mask, short mask by value, unsigned mask, controller pointer local and
 // clear before selector 14 each.
+// Round 140 (m3 lane 12, fast; control 7): the lookup tested `!= NULL` 7; the field_c clear ahead of the index read 7; the
+// parameter block declared at function scope 7; the lookup result in a named byte pointer tested plainly 7; the index as
+// `short const` 7 (all the same code: the compare stays `test eax, eax` and the zero register starts at the field_c store).
+// Matched siblings that get retail's zero-register compare (0x2c51a2, 0x2c7b7d, 0x2c7f7f, 0x265680) use the zero again in
+// the same block or the null arm; here the null arm is the plain exit.
 // @retail 0x2c8719
 void c_controller_settings_edit_list::handle_item(s_controller_reference **controller, long *item)
 {
