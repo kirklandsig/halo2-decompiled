@@ -79,6 +79,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax R (11-17): no new form, no lower score (219): retail keeps two separately scheduled rotation copies whose complement products take their operands on different sides, which one shared helper cannot produce, and the helper's body may not be written out by hand unless the function then matches.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax I (11-16): score 219 (was 219): no new form, no lower score; the rotation switch bodies
 // still hoist and spill the sine products where retail keeps them in registers, and the jump table
@@ -331,6 +332,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // AC570: Matrix return with component, aggregate, row or const row construction,
 // with and without earlier forward diagonal: 488/617/726/805/497/617/726/805. NOT kept: the returned
 // matrix grows the body and leaves the axis-specific spills and table placement.
+// Squared terms in diagonal fields 495; with named cosine corrections 437; axis copied into the
+// diagonal and squared in place 478; with named cosine corrections 476. Sine terms in the addition
+// or subtraction output fields 437/437; with squares in the diagonal fields 539/539.
+// NOT kept: each form shrinks the 0x6c frame to 0x60 or 0x54 and shortens the body.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

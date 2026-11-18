@@ -259,6 +259,10 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // In the screen the fold needs a pointer variable with more than one definition whose later uses lie past a merge
 // (0x42850's `result = 0; if (...) result = &records[count];`, then the caller's uses); the vertex pointer declared
 // at function scope, set to NULL at the top or at the loop top and then assigned, still forms the address first.
+// Round 116 (m3 lane 10, fast with 0x1ee4d0/0x1ee500, both matched throughout; the compile-only screen shows no fold for
+// any of them): the vertex bound by reference as the m128 element 6, as a point3f 6; the count bound by reference
+// (`long &count = vertex_count;`) for the address, the tag and the increment 6; the source point bound by const
+// reference 6; the vertex pointer passed through a const reference 6.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)

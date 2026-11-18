@@ -658,6 +658,15 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // AC570: Sequence snapshots before and after frame evaluation, shared wrap count
 // and shared frame base: 194/194/194/194/194/194/194/194. NOT kept: the snapshots fold to the same
 // reads. Tint and secondary UV homes remain exchanged, and the blend still spills.
+// The fixed arm still leaves the tint above the second UV record, and the blend is spilled in the aspect block.
+// Definition bounds to first UV 451, second UV used as source for first 211, second UV encoded in place 203,
+// definition bounds to second UV 451. Sequence-local blend published after pivots 273, selected local published
+// after/before pivots 217/217, both pivot weights named with deferred blend 214.
+// NOT kept: the 1942-byte form approaches retail length but leaves the tint stack slot and raises the score.
+// MiniMax S (11-17): fast build on r852: declaring the four 16-byte locals at the top in the order geometry, uv_a, tint, uv_b
+// scored 194 (same code, the slot order does not follow the declarations), so the tint keeps its home at +0x60 against retail's
+// +0x50 with uv_b the other way round; retail's join block reloads the blend into XMM5 where ours reads it from memory, which
+// leaves the body 10 bytes longer than retail.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

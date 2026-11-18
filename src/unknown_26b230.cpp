@@ -1487,24 +1487,6 @@ long function_26bc60(long clump_index)
 
 /* a new clump at the center for the team; when the pool is full, the clump
    whose active time is oldest is freed first */
-// score 48 (was 106, 127): the frame and the walk's slots now match; with the former hand-written walk retail
-// clears the clump register (ebp) before testing the active flag and keeps the result in ebx, the pool in esi
-// and the index in edi; ours clears it just before the search call and keeps the result in
-// ebp, NONE in ebx and the pool in edi. Tried: the stock data_iterator_next_calling in the
-// loop body (139, the empty search jumps straight out), next_clump_in_pool (125),
-// record_pool_iterator_step (164, not inlined), the step written into one helper with the
-// clump cleared first (139), the stock step under this walk (124). Tried at 127 (lane): plain
-// oldest-time/index storage separately 136/126; byte activity 127; native pool step 160; activity while 136.
-// b15G (11-17) walk against retail, fast build on r848: fields, offsets, branch senses, callees and arguments all agree
-// with retail (no behaviour difference). The walk is now this file's s_clump_datum_walk (clump_datum_walk_new, then
-// clump_datum_walk_next_calling with the oldest index read from clump_index): the register assignment of the loop and
-// the 0x269054/0x269108 NONE reloads then match retail, 106 -> 48 (355 bytes needed, 351 made). What remains is the
-// center copy at 0x269122-0x26914d: retail loads z and y with movss (0x269126, 0x26912b) and x into ecx (0x269130),
-// stores x first (0x269132), loads the game-time pointer (0x269135), stores z and y (0x26913b, 0x269148) and only then
-// team (0x26914d); `clump->center = *center` compiles to three integer moves instead. Not kept (one-use locals, match-
-// only): real cz, cy, cx loaded in that order and stored x, z, y gives 355 bytes, score 8 (the team store at +0x12 is
-// hoisted above the x store; moving the team, count or time statements changed nothing); a field-wise copy 111, a copy
-// through a point3f local 77.
 // @retail 0x269040
 long function_269040(point3f const *center, short team)
 {
@@ -1533,7 +1515,7 @@ long function_269040(point3f const *center, short team)
 	if (result != NONE)
 	{
 		s_clump_activity_view *clump = (s_clump_activity_view *)(g_502420->data + (result & 0xffff) * sizeof(s_clump_activity_view));
-		clump->center = *center;
+		real_point3d_set(&clump->center, center->x, center->y, center->z);
 		clump->team = team;
 		clump->count = 0;
 		clump->first_actor = NONE;
@@ -2174,6 +2156,8 @@ void function_269250(long clump_index, long actor_index);
 // guarded datum iterator and team-arm comparison 180;
 // absolute-index scan and current-datum setter 158;
 // Original body restored.
+// Pool EBX, stack-only selection and the x87 compare still differ. Actor, candidate and position
+// record references in all seven subsets, plus the shared clump layout for the team read: eight at 87.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

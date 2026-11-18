@@ -1072,6 +1072,16 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 // in all combinations, 60 each. All three with the existing message lookup 89.
 // The reference forms retain the second induction variable. The lookup restores
 // per-pass subtraction but reloads oldest and changes the saved registers.
+// Window references in index/count/first helpers, seven subsets, and all three with the loop
+// limit read at use: 60 each. NOT kept: the latest-sequence load and reduced offset remain.
+// Round 401 tested previous-sequence for loop, successor-before-step for loop, previous-sequence while, successor at both uses, then offset/head-accumulation forms on each scan: 77/113/77/70/60/60/77/77.
+// The per-pass offset and newest reload remain. Original body and index helper restored.
+// One-based displacement with prior head, head-first accumulation, displacement-
+// first accumulation 73/95/73; displacement from first sequence or in-place
+// decrement 60/60; unsigned displacement, prior head or origin 60/73/95.
+// Head-first with shared count/index pointer and cached/member/live bound
+// 118/76/118. NOT kept: the single-cursor forms miss native count reuse or
+// the upper-bound reload. Original index helper restored.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

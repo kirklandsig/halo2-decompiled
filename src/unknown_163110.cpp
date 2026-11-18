@@ -618,6 +618,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 
 // score 115 (was 115; m3 lane 16 r130 at the end): coefficient XMM roles, classification operands and projection staging still differ.
 // Earlier at 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
+// MiniMax S (11-17): no new form, no lower score (115): the first plane's dot still loads view->vector_e4.i after the
+// forward copy where retail loads it before; naming the three coefficients ahead of the copy gives 294 (1867 bytes),
+// naming only the i term 141, the i term's two operands swapped 115 and the terms in j, k, i order 133 leave the
+// coefficient load where it is, and retail's intersection (the x row copying t, the y and z rows scaled in place) is
+// reached only by writing the scale helper's body out, which the rules forbid: the x row alone with t first and the
+// scale helper kept gives 124 (the first difference moves to +0xb6) and the helper's own rows give 115.
 // MiniMax C (11-16): no new form, no lower score (115): retail loads the view's vector_e4.i into xmm4 before the
 // forward copy and every term order tried here still leaves that load after the copy, so the register colouring of
 // the first plane's dot stays as it is.

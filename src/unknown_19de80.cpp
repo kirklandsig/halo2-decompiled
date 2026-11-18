@@ -725,6 +725,16 @@ static inline bool teams_enabled_19e1c0()
 // ordinary result with reject returns 662;
 // qualified result with reject returns 420;
 // Original body restored.
+// NOT kept: complete string-format returns 643, integer-format returns 655, all formatted returns
+// 707 with plain copy result and 458 with existing result; shared signed name/literal clamp and
+// copy with per-name lengths 557 plain or 519 with existing result; shared name clamp/copy 548;
+// shared name length/clamp/copy 596. The plain result recovers frame 0x204 but merges the name tails.
+// The entry token preload and separate length/clamp blocks still differ. Shared final copy only, with branch-local
+// length and clamp, for player names, team names, all names, or names plus fallback: existing result 422, 478, 527,
+// 539. Ordinary result 605, 569, 550, 568. Ordinary results reach frame 0x204 and shorten the body. Body restored.
+// Token preload, ordinary result and independent copy tails still differ. Capacity-initialized result
+// with zero on rejected cases, through name clamp, formats, both, or both plus engine fallback:
+// ordinary 458/701/458/458, existing qualified result 427/497/431/434.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
