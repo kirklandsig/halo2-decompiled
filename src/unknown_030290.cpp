@@ -562,6 +562,12 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // branches, captured origin updates, a complete point or component conditionals
 // 255/307/263/307. Explicit expansion repeats those four scores.
 // NOT kept: the transform still needs the native X/Z and inverse allocation.
+// M3 lane 13 r108 (fast with 0x30bf0): transform_point as a plain static function (this /Ob1 file keeps it out of line)
+// 728 (465 B); the inverse defaults in one declaration 195 (same code); declared after the three parameter defaults 202
+// (974 B, frame 0x30), after the displaced sums 204 (974 B); the orthographic factors as `fa = fb = 1.f;` 195. Lead, not a
+// source form: retail's frame keeps ta and tb as memory points in name order (b, ta, tb, as address-taken locals sort),
+// which a link-time inline of an out-of-line point transform such as 0x142570 (the same row code) would give; its /Ob1
+// file keeps it a call in our build (a file-flag decision).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

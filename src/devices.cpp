@@ -1045,6 +1045,9 @@ struct s_device_machine_view
 // M3 lane 1 r117 (fast with 0x107870, 0x1071e0): on the group pointer read after the machine test (122, pushed ESI): an
 // `s_device_group *&` bound to it 122; the word through a `word &` bound to a word local 122; `__assume(group != NULL)`
 // placed between the machine test and the word read 122; a word local read after the machine test 122.
+// M3 lane 13 r108 (fast): on the group pointer, the machine and both-bits tests as one `||` test 111 (654 B, the pushed
+// ESI), with the group bits first 119 (654 B); the pointer with a byte machine-flags local 122 (656 B), with a word
+// machine-flags local 123 (657 B); the lane S word local tested with direct `& 1`/`& 2` masks (no byte copy) 115.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1816,6 +1819,10 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // M3 lane 1 r117 (fast): the render model typed dword 2; the first sample call's render model through a `long const &`
 // 2; that call through an `s_animation_state *const &` to the state 2; the time assigned through a `real &` 2; the
 // first call's output through a matrix pointer local 2.
+// M3 lane 13 r108 (fast): the definition's model tag index in a local used at its test and lookup 317 (as round 174's
+// render-model index local); the step read from the frame globals at each of its three uses (no local) 185; the else
+// arm's inverse and relative declared the other way round 2; the orientation declared before the two quaternion
+// pointers 2; the speed as `(real)(sqrt(d) / step)` 2.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

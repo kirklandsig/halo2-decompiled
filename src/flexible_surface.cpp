@@ -816,6 +816,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // forced inline 130, both component sets captured 163. NOT kept: forced inline ties; the
 // other forms break the other caller's match. The i/k capture and scaled cross restore
 // frame 0x20 at 880 bytes but leave the initial random-state load order and raise the score.
+// M3 lane 13 r108 (fast; 0x118140, 0x117c80 and 0x2551f0 matched): the axis declared at function scope and assigned in
+// the block 130; the axis a const local 130; the time as `field_2_3 * (real)game_time` 130; the frame test written
+// `g_55e710 < (long)g_4ba034` 130 (all the same code); the rotation's sine and cosine through sinf/cosf 132.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
