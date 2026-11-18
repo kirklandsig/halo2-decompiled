@@ -830,6 +830,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // reference, a const local, a second copy, by-reference or const formals at any level, the lookup helper taking the
 // mode array, and even macros in place of every helper all keep the graph in a register with the sum by lea; only a
 // resources local read before each loop gives retail's in-place add (but not retail's in-loop read).
+// The complete found-name record at request entry, initialized, const-initialized, assigned or
+// field-initialized: 504/504/504/407. The same forms with Boolean success: 497/497/497/503.
+// NOT kept: the snapshots disturb the agreeing prefix and leave the graph/base reloads unresolved.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

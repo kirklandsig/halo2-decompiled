@@ -327,6 +327,9 @@ void __stdcall function_18d730(s_portal_path_bsp *bsp, long cluster_index, point
 // packed cursor with live count 354, explicit range cases 354, initial maximum range 365,
 // shared fill and sort count 354, available-first output cap 363. NOT kept: early flags skip retail's
 // pretest endpoint decode and the frame remains larger.
+// Shared bitmap setters at the seed, destination or both 354/354/354. Shared tests for distance,
+// sort fill or output 333/354/354, all three 333, complete bitmap API 333.
+// NOT kept: the distance test shortens the function to 1347 bytes and leaves both BSP table spills.
 // @retail 0x18dc90
 void __stdcall function_18dc90(s_portal_path_bsp *bsp, long cluster_index, point3f const *point,
 	real maximum_range, long *indices, long *gains, long *portals, long *clusters, long *count)
